@@ -28,20 +28,29 @@ return new class extends Migration {
             $table->foreign("company_id")->references("id")->on("companies")->onDelete("cascade");
         });
 
-        // ✅
+        // ✔️
         Schema::create("branches", function(Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger("company_id");
+            $table->string("internal_code");
             $table->string("name");
             $table->string("address")->nullable();
+            $table->string("reference")->nullable();
+            $table->string("telephone")->nullable();
+            $table->string("email")->nullable();
+            $table->integer("capacity")->nullable();
+            $table->text("map_url")->nullable();
             $table->enum("status", ["active", "inactive"])->default("active");
 
             $table->timestamp("created_at")->useCurrent()->nullable();
             $table->integer("created_by")->nullable();
             $table->timestamp("updated_at")->nullable();
             $table->integer("updated_by")->nullable();
+            $table->timestamp("deleted_at")->nullable();
+            $table->integer("deleted_by")->nullable();
 
             $table->foreign("company_id")->references("id")->on("companies")->onDelete("cascade");
+            $table->unique(["company_id", "internal_code"]);
         });
 
         // ✅
@@ -274,7 +283,7 @@ return new class extends Migration {
         ]);
 
         DB::table("branches")->insert([
-            ["id" => 1, "company_id" => 1, "name" => "Sede Principal"]
+            ["id" => 1, "internal_code" => Utilities::generateCode(5), "company_id" => 1, "name" => "Sede Principal"]
         ]);
 
         DB::table("series")->insert([

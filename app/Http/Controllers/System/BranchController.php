@@ -43,34 +43,34 @@ class BranchController extends Controller {
 
         $userAuth = Auth::user();
 
-        $list = Branch::when(Utilities::isDefined($request->filter_by), function($query) use($request) {
+        $list = Branch::when(Utilities::isDefined($request->filter_by) && Utilities::isDefined($request->word), function($query) use($request) {
 
                             $filter = Utilities::getWordSearch($request->word);
 
                             if(in_array($request->filter_by, ["all"])) {
 
-                                $query->where(function($query) use($request, $filter) {
+                                $query->where(function($query) use($filter) {
 
-                                    $query->where("name", "like", $filter)
-                                          ->orWhere("address", "like", $filter);
-
-                                });
-
-                            }else if(in_array($request->filter_by, ["name", "address"])) {
-
-                                $query->where(function($query) use($request, $filter) {
-
-                                    $query->where($request->filter_by, "like", $filter);
+                                    $query->where("internal_code", "like", $filter)
+                                          ->orWhere("name", "like", $filter)
+                                          ->orWhere("address", "like", $filter)
+                                          ->orWhere("reference", "like", $filter)
+                                          ->orWhere("telephone", "like", $filter)
+                                          ->orWhere("email", "like", $filter);
 
                                 });
+
+                            }else if(in_array($request->filter_by, ["internal_code", "name", "address", "reference", "telephone", "email"])) {
+
+                                $query->where($request->filter_by, "like", $filter);
 
                             }
 
-                        })
-                        ->where("company_id", $userAuth->company_id)
-                        ->orderBy("name", "ASC")
-                        ->with(["series.documentType", "warehouses"])
-                        ->paginate($request->per_page ?? Utilities::$per_page_default);
+                      })
+                      ->where("company_id", $userAuth->company_id)
+                      ->orderBy("name", "ASC")
+                      ->with(["series.documentType", "warehouses"])
+                      ->paginate($request->per_page ?? Utilities::$per_page_default);
 
         return $list;
 
@@ -99,12 +99,18 @@ class BranchController extends Controller {
             $newSequential = Serie::getNewSequential($userAuth->company_id);
 
             $branch = new Branch();
-            $branch->company_id = $userAuth->company_id;
-            $branch->name       = $request->name;
-            $branch->address    = $request->address;
-            $branch->status     = $request->status;
-            $branch->created_at = now();
-            $branch->created_by = $userAuth->id ?? null;
+            $branch->company_id    = $userAuth->company_id;
+            $branch->internal_code = $request->internal_code;
+            $branch->name          = $request->name;
+            $branch->address       = $request->address;
+            $branch->reference     = $request->reference;
+            $branch->telephone     = $request->telephone;
+            $branch->email         = $request->email;
+            $branch->capacity      = $request->capacity;
+            $branch->map_url       = $request->map_url;
+            $branch->status        = $request->status;
+            $branch->created_at    = now();
+            $branch->created_by    = $userAuth->id ?? null;
             $branch->save();
 
             $documentTypes = DocumentType::whereIn("status", ["active"])
@@ -169,11 +175,17 @@ class BranchController extends Controller {
 
             DB::transaction(function() use($request, $userAuth, &$branch) {
 
-                $branch->name       = $request->name;
-                $branch->address    = $request->address;
-                $branch->status     = $request->status;
-                $branch->updated_at = now();
-                $branch->updated_by = $userAuth->id ?? null;
+                $branch->internal_code = $request->internal_code;
+                $branch->name          = $request->name;
+                $branch->address       = $request->address;
+                $branch->reference     = $request->reference;
+                $branch->telephone     = $request->telephone;
+                $branch->email         = $request->email;
+                $branch->capacity      = $request->capacity;
+                $branch->map_url       = $request->map_url;
+                $branch->status        = $request->status;
+                $branch->updated_at    = now();
+                $branch->updated_by    = $userAuth->id ?? null;
                 $branch->save();
 
                 $seq = 1;

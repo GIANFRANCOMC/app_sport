@@ -123,3 +123,32 @@ input.input-number-no-range[type=number] {
 .animation-pulse {
     animation: keyframes-pulse 2s ease-in-out infinite;
 }
+
+/* MODALS */
+.modal-header {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05) !important;
+}
+
+.a-close-modal {
+    color: #dc3545 !important;
+    font-size: 1.1rem !important;
+    font-weight: 800 !important;
+    transition: all 0.2s ease-in-out !important;
+    cursor: pointer !important;
+    display: inline-block;
+}
+
+.a-close-modal:hover {
+    color: #dc3545 !important;
+    text-decoration: none !important;
+    transform: scale(1.10);
+    opacity: 1 !important;
+}
+
+.modal-header .modal-title {
+    margin-bottom: 1.5px !important;
+}
+
+.text-i-help {
+    color: #a5a3ae !important;
+}
