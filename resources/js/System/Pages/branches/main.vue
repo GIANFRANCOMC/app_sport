@@ -1,170 +1,450 @@
 <template>
     <Breadcrumb :list="breadcrumbTitles"/>
 
-    <!-- Content -->
-    <div class="row align-items-end g-3 mb-3 mb-md-4">
-        <InputSlot
-            hasDiv
-            title="Filtrar por"
-            :titleClass="[config.forms.classes.title]"
-            xl="3"
-            lg="4">
-            <template v-slot:input>
-                <v-select
-                    v-model="lists.entity.filters.filter_by"
-                    :options="filterByOptions"
-                    :class="config.forms.classes.select2"
-                    :clearable="false"
-                    :searchable="false"/>
-            </template>
-        </InputSlot>
-        <InputText
-            v-model="lists.entity.filters.word"
-            @enterKeyPressed="listEntity({})"
-            hasDiv
-            title="Búsqueda"
-            :titleClass="[config.forms.classes.title]"
-            :placeholder="'Buscar por ' + (lists.entity.filters.filter_by?.label || '...').toLowerCase()"
-            xl="4"
-            lg="4"/>
-        <InputSlot
-            hasDiv
-            :isInputGroup="false"
-            :divInputClass="['d-flex flex-wrap justify-content-start gap-2 gap-md-3']"
-            xl="5"
-            lg="4">
-            <template v-slot:input>
-                <button type="button" class="btn btn-info-1 waves-effect" @click="listEntity({})" :disabled="lists.entity.extras.loading">
-                    <i class="fa fa-search"></i>
-                    <span class="ms-2">Buscar</span>
-                </button>
-                <button type="button" class="btn btn-primary waves-effect" @click="modalCreateUpdateEntity({})" :disabled="lists.entity.extras.loading">
-                    <i class="fa fa-plus"></i>
-                    <span class="ms-2">Agregar</span>
-                </button>
-            </template>
-        </InputSlot>
-    </div>
-    <div class="table-responsive">
-        <table class="table table-hover">
-            <thead>
-                <tr class="text-center align-middle">
-                    <th class="bg-secondary text-white fw-semibold" style="width: 60%;">SUCURSAL</th>
-                    <th class="bg-secondary text-white fw-semibold" style="width: 20%;">ESTADO</th>
-                    <th class="bg-secondary text-white fw-semibold" style="width: 20%;">ACCIONES</th>
-                </tr>
-            </thead>
-            <tbody class="table-border-bottom-0 bg-white">
-                <template v-if="lists.entity.extras.loading">
-                    <tr class="text-center">
-                        <td colspan="99" class="py-4">
-                            <Loader/>
-                        </td>
-                    </tr>
-                </template>
-                <template v-else>
-                    <template v-if="lists.entity.records.total > 0">
-                        <tr v-for="record in lists.entity.records.data" :key="record.id" class="text-center">
-                            <td class="text-start">
-                                <span v-text="record.name" class="fw-bold d-block text-nowrap"></span>
-                                <div class="d-flex flex-wrap mt-1">
-                                    <div :class="['d-inline-flex align-items-center text-muted']" v-if="isDefined({value: record.address})">
-                                        <span>📍</span>
-                                        <span v-text="record.address" class="fst-italic ms-1"></span>
+    <div v-if="isDefined({ value: lists }) && isDefined({ value: lists[entity] })">
+        <!-- Filters Section -->
+        <section class="filters-section mb-3 mb-md-4" aria-label="Filters">
+            <div class="row align-items-end g-3">
+                <InputSlot
+                    hasDiv
+                    :title="TEXTS.filters.filterBy"
+                    :titleClass="config?.forms?.classes?.title ? [config.forms.classes.title] : []"
+                    xl="3"
+                    lg="4">
+                    <template v-slot:input>
+                        <v-select
+                            v-model="filterByValue"
+                            :options="filterByOptions"
+                            :class="config?.forms?.classes?.select2 || ''"
+                            :clearable="false"
+                            :searchable="false"
+                            :aria-label="TEXTS.filters.filterBy"
+                            :disabled="entityList?.extras?.loading"/>
+                    </template>
+                </InputSlot>
+                <InputText
+                    v-model="filterWordValue"
+                    @enterKeyPressed="handleSearch"
+                    hasDiv
+                    :title="TEXTS.filters.search"
+                    :titleClass="config?.forms?.classes?.title ? [config.forms.classes.title] : []"
+                    :placeholder="searchPlaceholder"
+                    :disabled="entityList?.extras?.loading"
+                    :aria-label="TEXTS.filters.search"
+                    xl="4"
+                    lg="4"/>
+                <InputSlot
+                    hasDiv
+                    :isInputGroup="false"
+                    :divInputClass="['d-flex flex-wrap justify-content-start gap-2 gap-md-3']"
+                    xl="5"
+                    lg="4">
+                    <template v-slot:input>
+                        <button
+                            type="button"
+                            class="btn btn-info-1 waves-effect"
+                            @click="handleSearch"
+                            :disabled="entityList?.extras?.loading"
+                            :aria-label="TEXTS.actions.search"
+                            :aria-busy="entityList?.extras?.loading">
+                            <i class="fa fa-search" aria-hidden="true"></i>
+                            <span class="ms-2" v-text="TEXTS.actions.search"></span>
+                        </button>
+                        <button
+                            type="button"
+                            class="btn btn-primary waves-effect"
+                            @click="openModal()"
+                            :disabled="entityList?.extras?.loading"
+                            :aria-label="TEXTS.actions.add">
+                            <i class="fa fa-plus" aria-hidden="true"></i>
+                            <span class="ms-2" v-text="TEXTS.actions.add"></span>
+                        </button>
+                    </template>
+                </InputSlot>
+            </div>
+        </section>
+
+        <!-- List Section -->
+        <section
+            v-if="entityList"
+            class="list-section mb-4"
+            :aria-label="`${MODULE_CONFIG.pageTitle} list`">
+            <div
+                v-if="entityList && entityList.extras && entityList.extras.loading"
+                class="py-5 text-center"
+                role="status"
+                aria-live="polite"
+                :aria-label="`Loading ${MODULE_CONFIG.pageTitle}...`">
+                <Loader/>
+                <span class="visually-hidden" v-text="TEXTS.loading"></span>
+            </div>
+            <template v-else>
+                <div
+                    v-if="entityList && entityList.records && entityList.records.total > 0"
+                    class="row g-3 g-lg-4"
+                    role="list"
+                    :aria-label="`${entityList.records.total || 0} ${TEXTS.list.totalItems}`">
+                    <div
+                        v-for="record in (entityList.records && entityList.records.data ? entityList.records.data : [])"
+                        :key="record.id"
+                        class="col-12 col-md-6 col-xl-4"
+                        role="listitem">
+                        <article
+                            class="card border-0 shadow-sm h-100"
+                            :aria-label="`${TEXTS.card.branch} ${record.name}`">
+                            <div class="card-body d-flex flex-column gap-3">
+                                <!-- Header: Code and Status -->
+                                <header class="d-flex align-items-start justify-content-between flex-wrap gap-2">
+                                    <div class="d-flex flex-column">
+                                        <span
+                                            class="text-uppercase text-muted small fw-semibold"
+                                            aria-label="Internal code"
+                                            v-text="TEXTS.card.internalCode"></span>
+                                        <span
+                                            class="fs-5 fw-bold text-primary"
+                                            v-text="record.internal_code || TEXTS.card.notDefined"
+                                            :aria-label="`${TEXTS.card.internalCode}: ${record.internal_code || TEXTS.card.notDefined}`"></span>
                                     </div>
-                                    <div :class="['badge rounded-pill d-inline-flex align-items-center bg-label-danger']" v-else>
-                                        <span v-text="'Sin dirección registrada'"></span>
+                                    <span
+                                        :class="getStatusBadgeClasses(record.status)"
+                                        v-text="record.formatted_status"
+                                        :aria-label="`${TEXTS.card.status}: ${record.formatted_status}`"
+                                        role="status"></span>
+                                </header>
+
+                                <!-- Title -->
+                                <div class="d-flex flex-column gap-1">
+                                    <h3
+                                        class="h5 fw-semibold mb-0 text-dark text-truncate"
+                                        :title="record.name"
+                                        v-text="record.name"
+                                        style="min-width: 0;"></h3>
+                                </div>
+
+                                <!-- Details -->
+                                <div class="d-flex flex-column gap-2" role="group" :aria-label="TEXTS.card.details">
+                                    <!-- Address -->
+                                    <div
+                                        class="d-flex align-items-center gap-2"
+                                        :class="isDefined(record.address) ? 'text-muted' : ''">
+                                        <i
+                                            class="fa fa-map-marker-alt text-danger"
+                                            style="min-width: 20px; flex-shrink: 0;"
+                                            aria-hidden="true"></i>
+                                        <span
+                                            v-if="isDefined(record.address)"
+                                            class="text-truncate flex-grow-1 small"
+                                            :title="record.address"
+                                            v-text="record.address"
+                                            style="min-width: 0;"
+                                            :aria-label="`${TEXTS.card.address}: ${record.address}`"></span>
+                                        <span
+                                            v-else
+                                            class="text-muted small"
+                                            :aria-label="TEXTS.card.noAddress"
+                                            v-text="TEXTS.card.noAddress"></span>
+                                    </div>
+
+                                    <!-- Reference -->
+                                    <div
+                                        v-if="isDefined(record.reference)"
+                                        class="d-flex align-items-center gap-2 text-muted small">
+                                        <i
+                                            class="fa fa-comment-dots text-info"
+                                            style="min-width: 20px; flex-shrink: 0;"
+                                            aria-hidden="true"></i>
+                                        <span
+                                            class="text-truncate flex-grow-1"
+                                            :title="record.reference"
+                                            v-text="record.reference"
+                                            style="min-width: 0;"
+                                            :aria-label="`${TEXTS.card.reference}: ${record.reference}`"></span>
+                                    </div>
+
+                                    <!-- Telephone -->
+                                    <div
+                                        class="d-flex align-items-center gap-2"
+                                        :class="isDefined(record.telephone) ? 'text-muted' : ''">
+                                        <i
+                                            class="fa fa-phone text-primary"
+                                            style="min-width: 20px; flex-shrink: 0;"
+                                            aria-hidden="true"></i>
+                                        <span
+                                            v-if="isDefined(record.telephone)"
+                                            class="text-truncate flex-grow-1 small"
+                                            :title="record.telephone"
+                                            v-text="record.telephone"
+                                            style="min-width: 0;"
+                                            :aria-label="`${TEXTS.card.telephone}: ${record.telephone}`"></span>
+                                        <span
+                                            v-else
+                                            class="text-muted small"
+                                            :aria-label="TEXTS.card.noTelephone"
+                                            v-text="TEXTS.card.noTelephone"></span>
+                                    </div>
+
+                                    <!-- Email -->
+                                    <div
+                                        class="d-flex align-items-center gap-2"
+                                        :class="isDefined(record.email) ? 'text-muted' : ''">
+                                        <i
+                                            class="fa fa-envelope text-primary"
+                                            style="min-width: 20px; flex-shrink: 0;"
+                                            aria-hidden="true"></i>
+                                        <span
+                                            v-if="isDefined(record.email)"
+                                            class="text-truncate flex-grow-1 small"
+                                            :title="record.email"
+                                            v-text="record.email"
+                                            style="min-width: 0;"
+                                            :aria-label="`${TEXTS.card.email}: ${record.email}`"></span>
+                                        <span
+                                            v-else
+                                            class="text-muted small"
+                                            :aria-label="TEXTS.card.noEmail"
+                                            v-text="TEXTS.card.noEmail"></span>
+                                    </div>
+
+                                    <!-- Capacity -->
+                                    <div class="d-flex align-items-center gap-2 text-muted">
+                                        <i
+                                            class="fa fa-users text-success"
+                                            style="min-width: 20px; flex-shrink: 0;"
+                                            aria-hidden="true"></i>
+                                        <span
+                                            :class="['text-truncate flex-grow-1', hasValidCapacity(record.capacity) ? '' : 'small']"
+                                            v-text="formatCapacity(record.capacity)"
+                                            style="min-width: 0;"
+                                            :aria-label="`${TEXTS.card.capacity}: ${formatCapacity(record.capacity)}`"></span>
                                     </div>
                                 </div>
-                            </td>
-                            <td>
-                                <span :class="['badge', 'fw-semibold', 'text-capitalize', { 'bg-label-success': ['active'].includes(record.status), 'bg-label-danger': ['inactive'].includes(record.status) }]" v-text="record.formatted_status"></span>
-                            </td>
-                            <td>
-                                <InputSlot
-                                    hasDiv
-                                    :isInputGroup="false"
-                                    :divInputClass="['d-flex flex-wrap justify-content-center gap-2 gap-md-1']"
-                                    xl="12"
-                                    lg="12">
-                                    <template v-slot:input>
-                                        <button type="button" class="btn btn-sm btn-warning waves-effect" @click="modalCreateUpdateEntity({record})">
-                                            <i class="fa fa-pencil"></i>
-                                            <span class="ms-2">Editar</span>
-                                        </button>
-                                    </template>
-                                </InputSlot>
-                            </td>
-                        </tr>
-                    </template>
-                    <template v-else>
-                        <tr>
-                            <td class="text-center" colspan="99">
-                                <WithoutData type="image"/>
-                            </td>
-                        </tr>
-                    </template>
-                </template>
-            </tbody>
-        </table>
-    </div>
-    <div class="d-flex justify-content-center" v-if="!lists.entity.extras.loading && lists.entity.records?.total > 0">
-        <Paginator :links="lists.entity.records.links" @clickPage="listEntity"/>
-    </div>
-
-    <!-- Modals -->
-    <div class="modal fade" :id="forms.entity.createUpdate.extras.modals.default.id" data-bs-backdrop="static" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title text-uppercase fw-bold" v-text="forms.entity.createUpdate.extras.modals.default.titles[isUpdate ? 'update' : 'store']"></h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="row g-3">
-                        <InputText
-                            v-model="forms.entity.createUpdate.data.name"
-                            hasDiv
-                            title="Nombre"
-                            isRequired
-                            maxlength="100"
-                            hasTextBottom
-                            :textBottomInfo="forms.entity.createUpdate.errors?.name"
-                            xl="12"
-                            lg="12"/>
-                        <InputText
-                            v-model="forms.entity.createUpdate.data.address"
-                            hasDiv
-                            title="Dirección"
-                            maxlength="100"
-                            hasTextBottom
-                            :textBottomInfo="forms.entity.createUpdate.errors?.address"
-                            xl="12"
-                            lg="12"/>
-                        <InputSlot
-                            hasDiv
-                            title="Estado"
-                            isRequired
-                            hasTextBottom
-                            :textBottomInfo="forms.entity.createUpdate.errors?.status"
-                            xl="6"
-                            lg="6">
-                            <template v-slot:input>
-                                <v-select
-                                    v-model="forms.entity.createUpdate.data.status"
-                                    :options="statuses"
-                                    :clearable="false"
-                                    :searchable="false"/>
-                            </template>
-                        </InputSlot>
+                            </div>
+                            <!-- Footer: Actions -->
+                            <footer class="card-footer bg-transparent border-0 pt-0 mt-auto">
+                                <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 pt-3 border-top">
+                                    <a
+                                        v-if="isDefined(record.map_url)"
+                                        :href="record.map_url"
+                                        class="btn btn-sm btn-outline-success waves-effect"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        :aria-label="`${TEXTS.actions.viewMap} ${record.name}`">
+                                        <i class="fa fa-map-location-dot" aria-hidden="true"></i>
+                                        <span class="ms-2 d-none d-sm-inline" v-text="TEXTS.actions.viewMap"></span>
+                                    </a>
+                                    <button
+                                        type="button"
+                                        class="btn btn-sm btn-warning waves-effect"
+                                        :class="isDefined(record.map_url) ? '' : 'ms-auto'"
+                                        @click="openModal(record)"
+                                        :aria-label="`${TEXTS.actions.edit} ${record.name}`">
+                                        <i class="fa fa-pencil" aria-hidden="true"></i>
+                                        <span class="ms-2 d-none d-sm-inline" v-text="TEXTS.actions.edit"></span>
+                                    </button>
+                                </div>
+                            </footer>
+                        </article>
                     </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary waves-effect" data-bs-dismiss="modal">Cerrar</button>
-                    <button type="button" :class="['btn waves-effect', isUpdate ? 'btn-warning' : 'btn-primary']" @click="createUpdateEntity()">
-                        <i class="fa fa-save"></i>
-                        <span class="ms-2">Guardar</span>
-                    </button>
+                <div
+                    v-else
+                    class="text-center"
+                    role="status"
+                    aria-live="polite">
+                    <WithoutData type="image"/>
+                    <p class="visually-hidden" v-text="TEXTS.list.noData"></p>
+                </div>
+            </template>
+        </section>
+
+        <!-- Pagination -->
+        <nav
+            v-if="entityList && entityList.records && entityList.records.last_page > 1 && entityList.records.total > 0 && entityList.extras && !entityList.extras.loading"
+            class="d-flex justify-content-center"
+            aria-label="Pagination">
+            <Paginator
+                :links="(entityList.records && entityList.records.links ? entityList.records.links : [])"
+                @clickPage="listEntity"/>
+        </nav>
+
+        <!-- Modal: Create/Update -->
+        <div
+            v-if="forms[entity]?.createUpdate?.extras?.modals?.default?.id"
+            class="modal fade"
+            :id="forms[entity].createUpdate.extras.modals.default.id"
+            data-bs-backdrop="static"
+            tabindex="-1"
+            :aria-labelledby="`${forms[entity].createUpdate.extras.modals.default.id}-title`"
+            aria-hidden="true"
+            role="dialog">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5
+                            class="modal-title text-uppercase fw-bold"
+                            :id="`${forms[entity].createUpdate.extras.modals.default.id}-title`"
+                            v-text="modalTitles[isUpdate ? 'update' : 'store']"></h5>
+                        <button
+                            type="button"
+                            class="a-close-modal"
+                            data-bs-dismiss="modal"
+                            :aria-label="TEXTS.modal.close"
+                            :aria-describedby="`${forms[entity].createUpdate.extras.modals.default.id}-title`">
+                            <i class="fa fa-times" aria-hidden="true"></i>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <form @submit.prevent="saveEntity" :aria-label="modalTitles[isUpdate ? 'update' : 'store']">
+                            <div class="row g-3">
+                                <InputText
+                                    v-model="forms[entity].createUpdate.data.internal_code"
+                                    hasDiv
+                                    :title="TEXTS.form.internalCode"
+                                    :titleClass="config?.forms?.classes?.title ? [config.forms.classes.title, 'fw-semibold'] : ['fw-semibold']"
+                                    isRequired
+                                    maxlength="50"
+                                    :placeholder="TEXTS.form.placeholders.internalCode"
+                                    hasTextBottom
+                                    :textBottomInfo="forms[entity].createUpdate.errors?.internal_code"
+                                    :aria-label="TEXTS.form.internalCode"
+                                    xl="4"
+                                    lg="4"/>
+                                <InputText
+                                    v-model="forms[entity].createUpdate.data.name"
+                                    hasDiv
+                                    :title="TEXTS.form.name"
+                                    :titleClass="config?.forms?.classes?.title ? [config.forms.classes.title, 'fw-semibold'] : ['fw-semibold']"
+                                    isRequired
+                                    maxlength="100"
+                                    :placeholder="TEXTS.form.placeholders.name"
+                                    hasTextBottom
+                                    :textBottomInfo="forms[entity].createUpdate.errors?.name"
+                                    :aria-label="TEXTS.form.name"
+                                    xl="8"
+                                    lg="8"/>
+                                <InputText
+                                    v-model="forms[entity].createUpdate.data.address"
+                                    hasDiv
+                                    :title="TEXTS.form.address"
+                                    :titleClass="config?.forms?.classes?.title ? [config.forms.classes.title, 'fw-semibold'] : ['fw-semibold']"
+                                    maxlength="100"
+                                    :placeholder="TEXTS.form.placeholders.address"
+                                    hasTextBottom
+                                    :textBottomInfo="forms[entity].createUpdate.errors?.address"
+                                    :aria-label="TEXTS.form.address"
+                                    xl="12"
+                                    lg="12"/>
+                                <InputText
+                                    v-model="forms[entity].createUpdate.data.reference"
+                                    hasDiv
+                                    :title="TEXTS.form.reference"
+                                    :titleClass="config?.forms?.classes?.title ? [config.forms.classes.title, 'fw-semibold'] : ['fw-semibold']"
+                                    maxlength="150"
+                                    :placeholder="TEXTS.form.placeholders.reference"
+                                    hasTextBottom
+                                    :textBottomInfo="forms[entity].createUpdate.errors?.reference"
+                                    :aria-label="TEXTS.form.reference"
+                                    xl="12"
+                                    lg="12"/>
+                                <InputText
+                                    v-model="forms[entity].createUpdate.data.telephone"
+                                    hasDiv
+                                    :title="TEXTS.form.telephone"
+                                    :titleClass="config?.forms?.classes?.title ? [config.forms.classes.title, 'fw-semibold'] : ['fw-semibold']"
+                                    maxlength="25"
+                                    :placeholder="TEXTS.form.placeholders.telephone"
+                                    hasTextBottom
+                                    :textBottomInfo="forms[entity].createUpdate.errors?.telephone"
+                                    :aria-label="TEXTS.form.telephone"
+                                    xl="6"
+                                    lg="6"/>
+                                <InputText
+                                    v-model="forms[entity].createUpdate.data.email"
+                                    hasDiv
+                                    :title="TEXTS.form.email"
+                                    :titleClass="config?.forms?.classes?.title ? [config.forms.classes.title, 'fw-semibold'] : ['fw-semibold']"
+                                    maxlength="120"
+                                    :placeholder="TEXTS.form.placeholders.email"
+                                    hasTextBottom
+                                    :textBottomInfo="forms[entity].createUpdate.errors?.email"
+                                    :aria-label="TEXTS.form.email"
+                                    xl="6"
+                                    lg="6"/>
+                                <InputNumber
+                                    v-model="forms[entity].createUpdate.data.capacity"
+                                    hasDiv
+                                    :title="TEXTS.form.capacity"
+                                    :titleClass="config?.forms?.classes?.title ? [config.forms.classes.title, 'fw-semibold'] : ['fw-semibold']"
+                                    :decimals="0"
+                                    :minValue="0"
+                                    :placeholder="TEXTS.form.placeholders.capacity"
+                                    hasTextBottom
+                                    :textBottomInfo="forms[entity].createUpdate.errors?.capacity"
+                                    :aria-label="TEXTS.form.capacity"
+                                    xl="4"
+                                    lg="4">
+                                    <template v-slot:default>
+                                        <i
+                                            class="fa fa-info-circle cursor-pointer text-i-help mx-1"
+                                            data-bs-toggle="tooltip"
+                                            data-bs-placement="top"
+                                            :title="TEXTS.form.capacityTooltip"
+                                            :aria-label="TEXTS.form.capacityTooltip"></i>
+                                    </template>
+                                </InputNumber>
+                                <InputText
+                                    v-model="forms[entity].createUpdate.data.map_url"
+                                    hasDiv
+                                    :title="TEXTS.form.mapUrl"
+                                    :titleClass="config?.forms?.classes?.title ? [config.forms.classes.title, 'fw-semibold'] : ['fw-semibold']"
+                                    maxlength="255"
+                                    :placeholder="TEXTS.form.placeholders.mapUrl"
+                                    hasTextBottom
+                                    :textBottomInfo="forms[entity].createUpdate.errors?.map_url"
+                                    :aria-label="TEXTS.form.mapUrl"
+                                    xl="8"
+                                    lg="8"/>
+                                <InputSlot
+                                    hasDiv
+                                    :title="TEXTS.form.status"
+                                    :titleClass="config?.forms?.classes?.title ? [config.forms.classes.title, 'fw-semibold'] : ['fw-semibold']"
+                                    isRequired
+                                    hasTextBottom
+                                    :textBottomInfo="forms[entity].createUpdate.errors?.status"
+                                    xl="4"
+                                    lg="4">
+                                    <template v-slot:input>
+                                        <v-select
+                                            v-model="forms[entity].createUpdate.data.status"
+                                            :options="statuses"
+                                            :class="config?.forms?.classes?.select2 || ''"
+                                            :clearable="false"
+                                            :searchable="false"
+                                            :aria-label="TEXTS.form.status"/>
+                                    </template>
+                                </InputSlot>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button
+                            type="button"
+                            class="btn btn-secondary waves-effect"
+                            data-bs-dismiss="modal"
+                            :aria-label="TEXTS.modal.close"
+                            v-text="TEXTS.modal.close">
+                        </button>
+                        <button
+                            type="button"
+                            :class="['btn waves-effect', isUpdate ? 'btn-warning' : 'btn-primary']"
+                            @click="saveEntity"
+                            :disabled="isSaving"
+                            :aria-label="TEXTS.modal.save"
+                            :aria-busy="isSaving">
+                            <i class="fa fa-save" aria-hidden="true"></i>
+                            <span class="ms-2" v-text="TEXTS.modal.save"></span>
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -174,295 +454,764 @@
 <script>
 import * as Alerts    from "../../Helpers/Alerts.js";
 import * as Constants from "../../Helpers/Constants.js";
+import * as Crud      from "../../Helpers/Crud.js";
+import * as Forms     from "../../Helpers/Forms.js";
 import * as Requests  from "../../Helpers/Requests.js";
 import * as Utils     from "../../Helpers/Utils.js";
 
-export default {
-    components: {
-        //
+// ============================================
+// MODULE CONFIGURATION
+// ============================================
+// This configuration object makes the component easily replicable for other modules
+// Just change the values below to adapt to a new module
+const MODULE_CONFIG = {
+    entity: "branches",
+    menuId: "menu-item-configuration-branches",
+    pageTitle: "Sucursales",
+    breadcrumbParent: "Configuración",
+    perPage: 6
+};
+
+// ============================================
+// FORM CONFIGURATION
+// ============================================
+// Form fields with default values
+const FORM_FIELDS = {
+    internal_code: "",
+    name: "",
+    address: "",
+    reference: "",
+    telephone: "",
+    email: "",
+    capacity: "",
+    map_url: "",
+    status: null
+};
+
+// Field preparation configuration (trim, normalize, toNumber, getCode)
+const FORM_FIELD_CONFIG = {
+    internal_code: {trim: true},
+    name: {trim: true},
+    address: {normalize: true},
+    reference: {normalize: true},
+    telephone: {normalize: true},
+    email: {normalize: true},
+    map_url: {normalize: true},
+    capacity: {toNumber: true, minValue: 0},
+    status: {getCode: true}
+};
+
+// Validation rules
+const VALIDATION_RULES = {
+    internal_code: {required: true},
+    name: {required: true},
+    status: {required: true},
+    email: {email: true},
+    map_url: {url: true},
+    capacity: {number: true, min: 0}
+};
+
+// Error labels for validation messages
+const ERROR_LABELS = {
+    internal_code: "Código interno",
+    name: "Nombre",
+    status: "Estado",
+    email: "Correo electrónico",
+    map_url: "URL del mapa",
+    capacity: "Capacidad",
+    required: "Es obligatorio"
+};
+
+// ============================================
+// TEXT CONSTANTS
+// ============================================
+// All user-facing texts centralized for easy translation and maintenance
+const TEXTS = {
+    loading: `Loading ${MODULE_CONFIG.pageTitle}...`,
+    filters: {
+        filterBy: "Filtrar por",
+        search: "Búsqueda"
     },
-    mounted: async function() {
+    actions: {
+        search: "Buscar",
+        add: "Agregar",
+        edit: "Editar",
+        viewMap: "Ver mapa"
+    },
+    card: {
+        branch: "Sucursal",
+        internalCode: "Código interno",
+        notDefined: "No definido",
+        status: "Estado",
+        details: "Detalles",
+        address: "Dirección",
+        noAddress: "Sin dirección registrada",
+        reference: "Referencia",
+        telephone: "Teléfono",
+        noTelephone: "Sin teléfono registrado",
+        email: "Correo electrónico",
+        noEmail: "Sin correo registrado",
+        capacity: "Capacidad"
+    },
+    list: {
+        totalItems: "sucursales encontradas",
+        noData: "No hay sucursales registradas"
+    },
+    form: {
+        internalCode: "Código interno",
+        name: "Nombre",
+        address: "Dirección",
+        reference: "Referencia",
+        telephone: "Teléfono",
+        email: "Correo electrónico",
+        capacity: "Capacidad",
+        capacityTooltip: "Cantidad de personas",
+        mapUrl: "URL del mapa",
+        status: "Estado",
+        placeholders: {
+            internalCode: "Ej. SUC-001",
+            name: "Ej. Sucursal Centro",
+            address: "Ej. Av. Principal 123, Distrito",
+            reference: "Ej. Frente al parque principal",
+            telephone: "Ej. +51 999 999 999",
+            email: "Ej. contacto@sucursal.com",
+            capacity: "Ej. 40",
+            mapUrl: "https://maps.google.com/..."
+        }
+    },
+    modal: {
+        close: "Cerrar",
+        save: "Guardar"
+    }
+};
 
-        Utils.navbarItem("menu-item-configuration", {addClass: "open"});
-        Utils.navbarItem(this.config.entity.page.menu.id, {});
-        Alerts.swals({type: "initParams"});
+// ============================================
+// FILTER OPTIONS
+// ============================================
+const FILTER_OPTIONS = [
+    {code: "all", label: "Todos los filtros"},
+    {code: "internal_code", label: "Código interno"},
+    {code: "name", label: "Nombre"},
+    {code: "address", label: "Dirección"},
+    {code: "reference", label: "Referencia"},
+    {code: "telephone", label: "Teléfono"},
+    {code: "email", label: "Correo electrónico"}
+];
 
-        let initParams = await this.initParams({}),
-            initOthers = await this.initOthers({});
+export default {
+    name: "BranchesMain",
+    components: {},
+    data() {
+        // CRITICAL: Initialize lists[entity] FIRST, before anything else
+        // Vue evaluates computed properties during template compilation, so this MUST exist immediately
+        const initialEntity = {
+            extras: {
+                loading: false,
+                route: ""
+            },
+            filters: {
+                filter_by: FILTER_OPTIONS[0],
+                word: ""
+            },
+            records: {
+                total: 0,
+                data: [],
+                current_page: 1,
+                last_page: 1,
+                links: []
+            }
+        };
 
-        if(initParams && initOthers) {
+        // Initialize CRUD module structure
+        const crudModule = Crud.initCrudModule({
+            entity: MODULE_CONFIG.entity,
+            menuId: MODULE_CONFIG.menuId,
+            pageTitle: MODULE_CONFIG.pageTitle
+        });
 
-            Alerts.swals({show: false});
-            this.listEntity({});
+        // Ensure lists structure is properly initialized
+        const entityLists = crudModule.lists[MODULE_CONFIG.entity] || {
+            extras: {
+                loading: false,
+                route: ""
+            },
+            filters: {
+                filter_by: FILTER_OPTIONS[0],
+                word: ""
+            },
+            records: {
+                total: 0
+            }
+        };
 
+        // Ensure filters are initialized
+        if(!entityLists.filters) {
+            entityLists.filters = {
+                filter_by: FILTER_OPTIONS[0],
+                word: ""
+            };
+        }else if(!entityLists.filters.filter_by) {
+            entityLists.filters.filter_by = FILTER_OPTIONS[0];
         }
 
-    },
-    data() {
-        return {
-            lists: {
-                entity: {
-                    extras: {
-                        loading: false,
-                        route: Requests.config({entity: "branches", type: "list"})
-                    },
-                    filters: {
-                        filter_by: null,
-                        word: ""
-                    },
-                    records: {
-                        total: 0
-                    }
-                }
-            },
-            forms: {
-                entity: {
-                    createUpdate: {
-                        extras: {
-                            modals: {
-                                default: {
-                                    id: Utils.uuid(),
-                                    titles: {
-                                        store: "Agregar",
-                                        update: "Editar"
-                                    }
-                                }
+        // Ensure forms structure is properly initialized
+        const entityForms = crudModule.forms[MODULE_CONFIG.entity] || {
+            createUpdate: {
+                extras: {
+                    modals: {
+                        default: {
+                            id: Utils.uuid(),
+                            titles: {
+                                store: `AGREGAR ${MODULE_CONFIG.pageTitle.toUpperCase()}`,
+                                update: `EDITAR ${MODULE_CONFIG.pageTitle.toUpperCase()}`
                             }
-                        },
-                        data: {
-                            id: null,
-                            name: "",
-                            address: "",
-                            status: null
-                        },
-                        errors: {}
-                    }
-                }
-            },
-            options: {},
-            config: {
-                ...Constants.generalConfig,
-                entity: {
-                    ...Requests.config({entity: "branches"}),
-                    page: {
-                        title: "Sucursales",
-                        active: true,
-                        menu: {
-                            id: "menu-item-configuration-branches"
                         }
+                    }
+                },
+                data: Forms.initFormData(FORM_FIELDS),
+                errors: {}
+            }
+        };
+
+        // Ensure createUpdate structure exists
+        if(!entityForms.createUpdate) {
+            entityForms.createUpdate = {
+                extras: {
+                    modals: {
+                        default: {
+                            id: Utils.uuid(),
+                            titles: {
+                                store: `AGREGAR ${MODULE_CONFIG.pageTitle.toUpperCase()}`,
+                                update: `EDITAR ${MODULE_CONFIG.pageTitle.toUpperCase()}`
+                            }
+                        }
+                    }
+                },
+                data: Forms.initFormData(FORM_FIELDS),
+                errors: {}
+            };
+        }else {
+            // Ensure data is initialized
+            if(!entityForms.createUpdate.data) {
+                entityForms.createUpdate.data = Forms.initFormData(FORM_FIELDS);
+            }
+
+            // Ensure errors is initialized
+            if(!entityForms.createUpdate.errors) {
+                entityForms.createUpdate.errors = {};
+            }
+
+            // Ensure modals structure exists
+            if(!entityForms.createUpdate.extras) {
+                entityForms.createUpdate.extras = {
+                    modals: {
+                        default: {
+                            id: Utils.uuid(),
+                            titles: {
+                                store: `AGREGAR ${MODULE_CONFIG.pageTitle.toUpperCase()}`,
+                                update: `EDITAR ${MODULE_CONFIG.pageTitle.toUpperCase()}`
+                            }
+                        }
+                    }
+                };
+            }else if(!entityForms.createUpdate.extras.modals) {
+                entityForms.createUpdate.extras.modals = {
+                    default: {
+                        id: Utils.uuid(),
+                        titles: {
+                            store: `AGREGAR ${MODULE_CONFIG.pageTitle.toUpperCase()}`,
+                            update: `EDITAR ${MODULE_CONFIG.pageTitle.toUpperCase()}`
+                        }
+                    }
+                };
+            }else if(!entityForms.createUpdate.extras.modals.default) {
+                entityForms.createUpdate.extras.modals.default = {
+                    id: Utils.uuid(),
+                    titles: {
+                        store: `AGREGAR ${MODULE_CONFIG.pageTitle.toUpperCase()}`,
+                        update: `EDITAR ${MODULE_CONFIG.pageTitle.toUpperCase()}`
+                    }
+                };
+            }
+        }
+
+        // Ensure config exists
+        const finalConfig = crudModule.config || {
+            ...Constants.generalConfig,
+            entity: {
+                ...Requests.config({entity: MODULE_CONFIG.entity}),
+                page: {
+                    title: MODULE_CONFIG.pageTitle,
+                    active: true,
+                    menu: {
+                        id: MODULE_CONFIG.menuId
                     }
                 }
             }
         };
+
+        // Merge initial entity with crudModule data
+        const entityData = {
+            ...initialEntity,
+            extras: {
+                ...initialEntity.extras,
+                route: entityLists.extras?.route || Requests.config({entity: MODULE_CONFIG.entity, type: "list"}) || ""
+            },
+            filters: {
+                ...initialEntity.filters,
+                filter_by: entityLists.filters?.filter_by || initialEntity.filters.filter_by,
+                word: entityLists.filters?.word || initialEntity.filters.word
+            }
+        };
+
+        // Build final return object - lists[entity] MUST exist as direct property
+        const returnData = {
+            // Expose constants to template
+            TEXTS: TEXTS,
+            FILTER_OPTIONS: FILTER_OPTIONS,
+            MODULE_CONFIG: MODULE_CONFIG,
+            lists: {
+                [MODULE_CONFIG.entity]: entityData  // Dynamic property using MODULE_CONFIG.entity
+            },
+            forms: {
+                [MODULE_CONFIG.entity]: entityForms  // Dynamic property using MODULE_CONFIG.entity
+            },
+            options: crudModule.options || {},
+            config: finalConfig,
+            isSaving: false,
+            isInitialized: false
+        };
+
+        return returnData;
+    },
+    mounted: async function() {
+        // Initialize navigation
+        Utils.navbarItem("menu-item-configuration", {addClass: "open"});
+        Utils.navbarItem(this.config.entity.page.menu.id, {});
+
+        // Show loading alert
+        Alerts.swals({type: "initParams"});
+
+        // Initialize module
+        const initParams = await this.initParams();
+        const initOthers = await this.initOthers();
+
+        if(initParams && initOthers) {
+            // Mark as initialized before showing content
+            this.isInitialized = true;
+            Alerts.swals({show: false});
+            this.listEntity();
+        }else {
+            // Still mark as initialized even if init fails to prevent infinite loading
+            this.isInitialized = true;
+        }
     },
     methods: {
-        // Init
-        async initParams({}) {
+        // ============================================
+        // INITIALIZATION METHODS
+        // ============================================
 
-            let initParams = await Requests.get({route: this.config.entity.routes.initParams, data: {page: "main"}, showAlert: true});
-
-            this.options.branches = initParams.data?.config?.branches;
-
-            return Requests.valid({result: initParams});
-
-        },
-        async initOthers({}) {
-
-            return new Promise(resolve => {
-
-                this.lists.entity.filters.filter_by = this.filterByOptions[0];
-
-                resolve(true);
-
+        /**
+         * Initialize module parameters from backend
+         * @returns {Promise<boolean>} Success status
+         */
+        async initParams() {
+            const result = await Requests.get({
+                route: this.config.entity.routes.initParams,
+                data: {page: "main"},
+                showAlert: true
             });
 
+            this.options[MODULE_CONFIG.entity] = result.data?.config?.[MODULE_CONFIG.entity];
+
+            return Requests.valid({result});
         },
-        // Entity forms
-        async listEntity({url = null}) {
 
-            let filters = Utils.cloneJson(this.lists.entity.filters);
-            const filterJson = {filter_by: filters?.filter_by?.code, word: filters.word};
-
-            this.lists.entity.extras.loading = true;
-            this.lists.entity.records        = (await Requests.get({route: url || this.lists.entity.extras.route, data: filterJson}))?.data;
-            this.lists.entity.extras.loading = false;
-
-        },
-        // Forms
-        modalCreateUpdateEntity({record = null}) {
-
-            const functionName = "modalCreateUpdateEntity";
-
-            // Alerts.swals({});
-            this.clearForm({functionName});
-            this.formErrors({functionName, type: "clear"});
-
-            if(this.isDefined({value: record})) {
-
-                let status = this.statuses.find(e => e.code === record?.status);
-
-                this.forms.entity.createUpdate.data.id      = record?.id;
-                this.forms.entity.createUpdate.data.name    = record?.name;
-                this.forms.entity.createUpdate.data.address = record?.address;
-                this.forms.entity.createUpdate.data.status  = status;
-
-            }else {
-
-                this.forms.entity.createUpdate.data.status = this.statuses[0];
-
-            }
-
-            // Alerts.swals({show: false});
-            Alerts.modals({type: "show", id: this.forms.entity.createUpdate.extras.modals.default.id});
-            this.tooltips({show: true, time: 500});
-
-        },
-        async createUpdateEntity() {
-
-            const functionName = "createUpdateEntity";
-
-            Alerts.swals({});
-            this.formErrors({functionName, type: "clear"});
-
-            let form = Utils.cloneJson(this.forms.entity.createUpdate.data);
-
-            const validateForm = this.validateForm({functionName, form, extras: {type: "descriptive"}});
-
-            if(validateForm?.bool) {
-
-                form.status = form?.status?.code;
-
-                let createUpdate = await (this.isDefined({value: form.id}) ? Requests.patch({route: this.config.entity.routes.update, data: form, id: form.id}) :
-                                                                             Requests.post({route: this.config.entity.routes.store, data: form}));
-
-                if(Requests.valid({result: createUpdate})) {
-
-                    Alerts.modals({type: "hide", id: this.forms.entity.createUpdate.extras.modals.default.id});
-                    // Alerts.toastrs({type: "success", subtitle: createUpdate?.data?.msg});
-                    // Alerts.swals({show: false});
-                    Alerts.generateAlert({type: "success", msgContent: createUpdate?.data?.msg});
-
-                    this.clearForm({functionName});
-                    this.listEntity({url: `${this.lists.entity.extras.route}?page=${this.lists.entity.records?.current_page ?? 1}`});
-
-                }else {
-
-                    this.formErrors({functionName, type: "set", errors: createUpdate?.errors ?? []});
-                    Alerts.toastrs({type: "error", subtitle: createUpdate?.data?.msg});
-                    Alerts.swals({show: false});
-
+        /**
+         * Initialize other module settings
+         * @returns {Promise<boolean>} Success status
+         */
+        async initOthers() {
+            return new Promise(resolve => {
+                // Ensure filter_by is set (already initialized in data(), but ensure it's set)
+                const entityList = this.lists[MODULE_CONFIG.entity];
+                if(entityList && entityList.filters && !entityList.filters.filter_by) {
+                    entityList.filters.filter_by = FILTER_OPTIONS[0];
                 }
 
-            }else {
+                resolve(true);
+            });
+        },
 
-                // this.formErrors({functionName, type: "set", errors: validateForm});
-                // Alerts.toastrs({type: "error", subtitle: this.config.messages.errorValidate});
-                // Alerts.swals({show: false});
-                Alerts.generateAlert({messages: Utils.getErrors({errors: validateForm}), msgContent: `<div class="fw-semibold mb-2">${this.config.messages.errorValidate}</div>`});
+        // ============================================
+        // LIST METHODS
+        // ============================================
 
+        /**
+         * Fetch and display entity list
+         * @param {string|null} url - Optional URL for pagination
+         */
+        async listEntity(url = null) {
+            const entityList = this.lists[MODULE_CONFIG.entity];
+            if(!entityList || !entityList.filters) {
+                console.error(`${MODULE_CONFIG.pageTitle} list not initialized`);
+                return;
             }
 
-        },
-        // Forms utils
-        clearForm({functionName}) {
-
-            switch(functionName) {
-                case "modalCreateUpdateEntity":
-                case "createUpdateEntity":
-                    this.forms.entity.createUpdate.data.id      = null;
-                    this.forms.entity.createUpdate.data.name    = "";
-                    this.forms.entity.createUpdate.data.address = "";
-                    this.forms.entity.createUpdate.data.status  = null;
-                    break;
-            }
-
-        },
-        formErrors({functionName, type = "clear", errors = []}) {
-
-            if(["modalCreateUpdateEntity", "createUpdateEntity"].includes(functionName)) {
-
-                this.forms.entity.createUpdate.errors = ["set"].includes(type) ? errors : [];
-
-            }
-
-        },
-        validateForm({functionName, form = null, extras = null}) {
-
-            let result = {
-                bool: true
+            const filters = Utils.cloneJson(entityList.filters);
+            const filterData = {
+                filter_by: filters?.filter_by?.code,
+                word: filters.word,
+                per_page: MODULE_CONFIG.perPage
             };
 
-            if(["createUpdateEntity"].includes(functionName)) {
+            entityList.extras.loading = true;
 
-                result.name    = [];
-                result.address = [];
-                result.status  = [];
+            try {
+                const response = await Requests.get({
+                    route: url || entityList.extras.route,
+                    data: filterData
+                });
 
-                const isDescriptive = ["descriptive"].includes(extras?.type);
+                entityList.records = response?.data ?? {total: 0, data: []};
+            }catch(error) {
+                console.error(`Error loading ${MODULE_CONFIG.pageTitle}:`, error);
+                entityList.records = {total: 0, data: []};
+            }finally {
+                entityList.extras.loading = false;
+            }
+        },
 
-                if(!this.isDefined({value: form?.name})) {
+        /**
+         * Handle search action
+         */
+        handleSearch() {
+            this.listEntity();
+        },
 
-                    result.name.push(`${isDescriptive ? "Nombre:" : ""} ${this.config.forms.errors.labels.required}`);
-                    result.bool = false;
+        // ============================================
+        // FORM METHODS
+        // ============================================
 
-                }
+        /**
+         * Open modal for create or update
+         * @param {Object|null} record - Record to edit, null for create
+         */
+        openModal(record = null) {
+            const entityForms = this.forms[MODULE_CONFIG.entity];
+            // Clear form data
+            Forms.clearFormData(entityForms.createUpdate.data, FORM_FIELDS);
+            entityForms.createUpdate.errors = {};
 
-                if(!this.isDefined({value: form?.status})) {
+            if(Utils.isDefined({value: record})) {
+                // Edit mode: populate form with record data
+                entityForms.createUpdate.data.id = record?.id;
 
-                    result.status.push(`${isDescriptive ? "Estado:" : ""} ${this.config.forms.errors.labels.required}`);
-                    result.bool = false;
-
-                }
-
+                Object.keys(FORM_FIELDS).forEach(key => {
+                    if(key === "status") {
+                        entityForms.createUpdate.data.status = this.statuses.find(e => e.code === record?.status);
+                    }else {
+                        entityForms.createUpdate.data[key] = record?.[key] ?? FORM_FIELDS[key];
+                    }
+                });
+            }else {
+                // Create mode: set default values
+                entityForms.createUpdate.data.internal_code = Utils.generateCode({length: 6});
+                entityForms.createUpdate.data.status = this.statuses[0];
             }
 
-            return result;
-
+            // Show modal and initialize tooltips
+            Alerts.modals({type: "show", id: entityForms.createUpdate.extras.modals.default.id});
+            Alerts.tooltips({show: true, time: 500});
         },
-        // Others
-        isDefined({value}) {
 
+        /**
+         * Save entity (create or update)
+         */
+        async saveEntity() {
+            // Prevent double submission
+            if(this.isSaving) return;
+
+            Alerts.swals({});
+            const entityForms = this.forms[MODULE_CONFIG.entity];
+            entityForms.createUpdate.errors = {};
+            this.isSaving = true;
+
+            try {
+                // Clone form data for validation
+                const formData = Utils.cloneJson(entityForms.createUpdate.data);
+
+                // Validate form
+                const validation = Forms.validateFormData(formData, VALIDATION_RULES, {
+                    isDescriptive: true,
+                    errorLabels: ERROR_LABELS
+                });
+
+                if(!validation.bool) {
+                    Alerts.generateAlert({
+                        messages: Utils.getErrors({errors: validation.errors}),
+                        msgContent: `<div class="fw-semibold mb-2">${this.config.messages.errorValidate}</div>`
+                    });
+                    return;
+                }
+
+                // Prepare data for submission
+                const preparedData = Forms.prepareFormData(formData, FORM_FIELD_CONFIG);
+                const isUpdate = Utils.isDefined({value: preparedData.id});
+                const requestMethod = isUpdate ? Requests.patch : Requests.post;
+                const route = isUpdate ? this.config.entity.routes.update : this.config.entity.routes.store;
+
+                // Submit request
+                const result = await requestMethod({
+                    route,
+                    data: preparedData,
+                    id: preparedData.id
+                });
+
+                if(Requests.valid({result})) {
+                    // Success: close modal and refresh list
+                    Alerts.modals({type: "hide", id: entityForms.createUpdate.extras.modals.default.id});
+                    Alerts.generateAlert({type: "success", msgContent: result?.data?.msg});
+
+                    Forms.clearFormData(entityForms.createUpdate.data, FORM_FIELDS);
+                    const entityList = this.lists[MODULE_CONFIG.entity];
+                    const currentPage = entityList?.records?.current_page ?? 1;
+                    this.listEntity(`${entityList?.extras?.route || ""}?page=${currentPage}`);
+                }else {
+                    // Error: display validation errors
+                    entityForms.createUpdate.errors = result?.errors ?? {};
+                    Alerts.toastrs({type: "error", subtitle: result?.data?.msg});
+                    Alerts.swals({show: false});
+                }
+            }catch(error) {
+                console.error(`Error saving ${MODULE_CONFIG.pageTitle}:`, error);
+                Alerts.toastrs({type: "error", subtitle: `Error al guardar ${MODULE_CONFIG.pageTitle.toLowerCase()}. Por favor, intente nuevamente.`});
+                Alerts.swals({show: false});
+            }finally {
+                this.isSaving = false;
+            }
+        },
+
+        // ============================================
+        // HELPER METHODS
+        // ============================================
+
+        /**
+         * Check if value is defined
+         * @param {*} value - Value to check
+         * @returns {boolean}
+         */
+        isDefined(value) {
             return Utils.isDefined({value});
-
         },
-        tooltips({show = true, time = 10}) {
 
-            Alerts.tooltips({show, time});
+        /**
+         * Format capacity value
+         * @param {number|null} capacity - Capacity value
+         * @returns {string} Formatted capacity
+         */
+        formatCapacity(capacity) {
+            return Utils.formatCapacity(capacity);
+        },
 
+        /**
+         * Get CSS classes for status badge
+         * @param {string} status - Status value
+         * @returns {Array} CSS classes
+         */
+        getStatusBadgeClasses(status) {
+            return Utils.getStatusBadgeClasses(status);
+        },
+
+        /**
+         * Check if capacity is valid
+         * @param {number|null} capacity - Capacity value
+         * @returns {boolean}
+         */
+        hasValidCapacity(capacity) {
+            return Utils.isDefined({value: capacity}) && Utils.isNumber({value: capacity, minValue: 1});
         }
     },
     computed: {
-        breadcrumbTitles: function() {
-
-            return [{title: "Configuración"}, this.config.entity.page];
-
+        /**
+         * Entity name from MODULE_CONFIG
+         * @returns {string} Entity name
+         */
+        entity() {
+            return MODULE_CONFIG.entity;
         },
-        filterByOptions: function() {
 
-            return [
-                {code: "all", label: "Todos"},
-                {code: "name", label: "Nombre"},
-                {code: "address", label: "Dirección"}
-            ];
+        /**
+         * Safe access to entity list
+         * @returns {Object} Entity list object
+         */
+        entityList() {
+            // Protect against lists being undefined
+            if(!this.lists) {
+                return {
+                    extras: {loading: false, route: ""},
+                    filters: {filter_by: FILTER_OPTIONS[0], word: ""},
+                    records: {total: 0, data: []}
+                };
+            }
 
+            // Dynamic property access using MODULE_CONFIG.entity - guaranteed to exist from data()
+            return this.lists[MODULE_CONFIG.entity] || {
+                extras: {loading: false, route: ""},
+                filters: {filter_by: FILTER_OPTIONS[0], word: ""},
+                records: {total: 0, data: []}
+            };
         },
-        statuses: function() {
 
-            return this.options?.branches?.statuses.map(e => ({code: e.code, label: e.label}));
-
+        /**
+         * Breadcrumb titles for navigation
+         * @returns {Array} Breadcrumb items
+         */
+        breadcrumbTitles() {
+            return [{title: MODULE_CONFIG.breadcrumbParent}, this.config.entity.page];
         },
-        isUpdate: function() {
 
-            return this.isDefined({value: this.forms.entity.createUpdate.data?.id});
+        /**
+         * Filter options for search
+         * @returns {Array} Filter options
+         */
+        filterByOptions() {
+            return FILTER_OPTIONS;
+        },
 
-        }
-    },
-    watch: {
-        "lists.entity.filters.filter_by": function(newValue, oldValue) {
+        /**
+         * Status options for form
+         * @returns {Array} Status options
+         */
+        statuses() {
+            return (this.options?.[MODULE_CONFIG.entity]?.statuses ?? []).map(e => ({code: e.code, label: e.label}));
+        },
 
-            // this.listEntity({});
+        /**
+         * Check if form is in update mode
+         * @returns {boolean}
+         */
+        isUpdate() {
+            const entityForms = this.forms[MODULE_CONFIG.entity];
+            if(!entityForms || !entityForms.createUpdate || !entityForms.createUpdate.data) {
+                return false;
+            }
 
+            return Utils.isDefined({value: entityForms.createUpdate.data.id});
+        },
+
+        /**
+         * Modal titles (create/update)
+         * @returns {Object} Modal titles
+         */
+        modalTitles() {
+            const entityForms = this.forms[MODULE_CONFIG.entity];
+            if(!entityForms || !entityForms.createUpdate || !entityForms.createUpdate.extras || !entityForms.createUpdate.extras.modals || !entityForms.createUpdate.extras.modals.default) {
+                return {
+                    store: `AGREGAR ${MODULE_CONFIG.pageTitle.toUpperCase()}`,
+                    update: `EDITAR ${MODULE_CONFIG.pageTitle.toUpperCase()}`
+                };
+            }
+
+            return entityForms.createUpdate.extras.modals.default.titles;
+        },
+
+        /**
+         * Filter by value (computed for v-model safety)
+         * @returns {Object|null} Current filter_by value
+         */
+        filterByValue: {
+            get() {
+                // Use entityList computed property for safe access
+                const entityList = this.entityList;
+
+                if(!entityList || !entityList.filters) {
+                    return FILTER_OPTIONS[0];
+                }
+
+                return entityList.filters.filter_by || FILTER_OPTIONS[0];
+            },
+            set(value) {
+                // Use entityList computed property for safe access
+                const entityList = this.entityList;
+
+                if(entityList && entityList.filters) {
+                    entityList.filters.filter_by = value;
+                }
+            }
+        },
+
+        /**
+         * Filter word value (computed for v-model safety)
+         * @returns {string} Current search word
+         */
+        filterWordValue: {
+            get() {
+                // Use entityList computed property for safe access
+                const entityList = this.entityList;
+
+                if(!entityList || !entityList.filters) {
+                    return "";
+                }
+
+                return entityList.filters.word || "";
+            },
+            set(value) {
+                // Use entityList computed property for safe access
+                const entityList = this.entityList;
+
+                if(entityList && entityList.filters) {
+                    entityList.filters.word = value;
+                }
+            }
+        },
+
+        /**
+         * Search input placeholder
+         * @returns {string} Placeholder text
+         */
+        searchPlaceholder() {
+            const entityList = this.entityList;
+
+            if(!entityList || !entityList.filters || !entityList.filters.filter_by) {
+                return "Buscar...";
+            }
+
+            const filterLabel = entityList.filters.filter_by.label || "...";
+            return `Buscar por ${filterLabel.toLowerCase()}`;
         }
     }
 };
 </script>
+
+<style scoped>
+/* Card hover effect for better UX */
+.card {
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Improve focus states for accessibility */
+.btn:focus-visible,
+a:focus-visible {
+    outline: 2px solid #0d6efd;
+    outline-offset: 2px;
+}
+
+/* Screen reader only text */
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+}
+</style>
