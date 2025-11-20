@@ -60,7 +60,7 @@ Route::middleware(["web"])
             Route::prefix('/dashboard')->group($systemRoute.'/Dashboard.php');
             Route::prefix('/helpers')->group($systemRoute.'/Helper.php');
             Route::prefix('/home')->group($systemRoute.'/Home.php');
-            Route::prefix('/branches')->group($systemRoute.'/Branch.php');
+            Route::prefix('/branches')->group($systemRoute.'/Organizations/Branch.php');
             Route::prefix('/sales')->group($systemRoute.'/Sale.php');
             Route::prefix('/users')->group($systemRoute.'/User.php');
             Route::prefix('/categories')->group($systemRoute.'/Category.php');
