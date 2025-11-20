@@ -25,7 +25,11 @@ export function initCrudModule(config = {}) {
                     word: ""
                 },
                 records: {
-                    total: 0
+                    total: 0,
+                    data: [],
+                    current_page: 1,
+                    last_page: 1,
+                    links: []
                 }
             }
         },
