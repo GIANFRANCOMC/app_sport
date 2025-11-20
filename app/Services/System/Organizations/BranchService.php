@@ -21,6 +21,26 @@ use App\Models\System\Organizations\Branch;
 class BranchService {
 
     /**
+     * Translation namespace for branch module
+     */
+    private const TRANSLATION_NAMESPACE = "System.Organizations.branch";
+
+    /**
+     * Allowed fields for branch creation and update
+     */
+    private const ALLOWED_FIELDS = [
+        "internal_code",
+        "name",
+        "address",
+        "reference",
+        "telephone",
+        "email",
+        "capacity",
+        "map_url",
+        "status"
+    ];
+
+    /**
      * @var BranchRepository
      */
     private static $repository;
@@ -43,6 +63,71 @@ class BranchService {
     }
 
     /**
+     * Get translation with fallback
+     *
+     * @param string $key Translation key
+     * @param array $replace Replacements
+     * @return string
+     */
+    private static function trans(string $key, array $replace = []): string {
+
+        return TranslationHelper::getWithFallback(self::TRANSLATION_NAMESPACE, $key, $replace);
+
+    }
+
+    /**
+     * Prepare branch data for creation
+     *
+     * @param array $data Input data
+     * @param int $companyId Company ID
+     * @param int $userId User ID
+     * @return array
+     */
+    private static function prepareBranchDataForCreate(array $data, int $companyId, int $userId): array {
+
+        $branchData = [
+            "company_id" => $companyId,
+            "status"      => $data["status"] ?? "active",
+            "created_at"  => now(),
+            "created_by"  => $userId
+        ];
+
+        foreach(self::ALLOWED_FIELDS as $field) {
+
+            $branchData[$field] = $data[$field] ?? null;
+
+        }
+
+        return $branchData;
+
+    }
+
+    /**
+     * Prepare branch data for update (only changed fields)
+     *
+     * @param Branch $branch Branch instance
+     * @param array $data Input data
+     * @return array
+     */
+    private static function prepareBranchDataForUpdate(Branch $branch, array $data): array {
+
+        $updateData = [];
+
+        foreach(self::ALLOWED_FIELDS as $field) {
+
+            if(isset($data[$field]) && $data[$field] !== $branch->$field) {
+
+                $updateData[$field] = $data[$field];
+
+            }
+
+        }
+
+        return $updateData;
+
+    }
+
+    /**
      * Create a new branch with related series and warehouse
      *
      * @param array $data Branch data from request
@@ -56,32 +141,19 @@ class BranchService {
 
         DB::transaction(function() use($data, $userId, &$branch) {
 
-            $userAuth = Auth::user();
+            $userAuth  = Auth::user();
             $companyId = $data["company_id"] ?? $userAuth->company_id ?? null;
 
             if(!$companyId) {
 
-                throw new Exception(TranslationHelper::getWithFallback("System.Organizations.branch", "company_id_required"));
+                throw new Exception(self::trans("company_id_required"));
 
             }
 
             $userId = $userId ?? $userAuth->id;
 
             // Prepare branch data with only allowed fields
-            $branchData = [
-                "company_id"    => $companyId,
-                "internal_code" => $data["internal_code"] ?? null,
-                "name"          => $data["name"] ?? null,
-                "address"       => $data["address"] ?? null,
-                "reference"     => $data["reference"] ?? null,
-                "telephone"     => $data["telephone"] ?? null,
-                "email"         => $data["email"] ?? null,
-                "capacity"      => $data["capacity"] ?? null,
-                "map_url"       => $data["map_url"] ?? null,
-                "status"        => $data["status"] ?? "active",
-                "created_at"    => now(),
-                "created_by"    => $userId
-            ];
+            $branchData = self::prepareBranchDataForCreate($data, $companyId, $userId);
 
             // Create the branch
             $branch = Branch::create($branchData);
@@ -112,39 +184,10 @@ class BranchService {
 
             $userAuth = Auth::user();
             $userId = $userId ?? $userAuth->id;
-            $originalName = $branch->name;
-            $nameChanged = false;
 
             // Prepare update data with only changed fields
-            $updateData = [];
-
-            $allowedFields = [
-                "internal_code",
-                "name",
-                "address",
-                "reference",
-                "telephone",
-                "email",
-                "capacity",
-                "map_url",
-                "status"
-            ];
-
-            foreach($allowedFields as $field) {
-
-                if(isset($data[$field]) && $data[$field] !== $branch->$field) {
-
-                    $updateData[$field] = $data[$field];
-
-                    if($field === "name") {
-
-                        $nameChanged = true;
-
-                    }
-
-                }
-
-            }
+            $updateData = self::prepareBranchDataForUpdate($branch, $data);
+            $nameChanged = isset($updateData["name"]);
 
             // Only update if there are changes
             if(!empty($updateData)) {

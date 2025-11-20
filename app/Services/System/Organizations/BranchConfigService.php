@@ -20,25 +20,29 @@ class BranchConfigService {
     /**
      * Get initialization parameters for branch module
      *
-     * @param string $page Page identifier
+     * @param int $companyId Company ID
+     * @param string $page Page identifier (only used to determine what data to return, not for cache key)
      * @return stdClass
      */
-    public static function getInitParams(string $page = ""): stdClass {
+    public static function getInitParams(int $companyId, string $page = ""): stdClass {
 
-        $cacheKey = self::CACHE_PREFIX . "_init_" . $page;
+        $cacheKey = self::buildCacheKey($companyId);
 
         return Cache::remember($cacheKey, self::CACHE_TTL, function() use($page) {
 
             $initParams = new stdClass();
+
             $config = new stdClass();
 
             if($page === "main") {
+
                 $config->branches = new stdClass();
                 $config->branches->statuses = Branch::getStatuses();
+
             }
 
             $initParams->config = $config;
-            $initParams->bool = true;
+            $initParams->bool   = true;
 
             return $initParams;
 
@@ -47,26 +51,39 @@ class BranchConfigService {
     }
 
     /**
+     * Build cache key for branch configuration
+     *
+     * @param int $companyId Company ID
+     * @return string
+     */
+    private static function buildCacheKey(int $companyId): string {
+
+        return self::CACHE_PREFIX."_company_{$companyId}";
+
+    }
+
+    /**
      * Clear cache for branch configuration
      *
-     * @param string $page Page identifier
+     * @param int $companyId Company ID
      * @return void
      */
-    public static function clearCache(string $page = ""): void {
+    public static function clearCache(int $companyId): void {
 
-        $cacheKey = self::CACHE_PREFIX . "_init_" . $page;
+        $cacheKey = self::buildCacheKey($companyId);
         Cache::forget($cacheKey);
 
     }
 
     /**
-     * Clear all branch configuration cache
+     * Clear all branch configuration cache for a company
      *
+     * @param int $companyId Company ID
      * @return void
      */
-    public static function clearAllCache(): void {
+    public static function clearAllCache(int $companyId): void {
 
-        Cache::forget(self::CACHE_PREFIX . "_init_main");
+        self::clearCache($companyId);
 
     }
 

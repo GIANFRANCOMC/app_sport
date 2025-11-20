@@ -32,9 +32,10 @@ class BranchController extends Controller {
      */
     public function initParams(Request $request) {
 
-        $page = $request->input("page", "");
+        $userAuth = Auth::user();
+        $page     = $request->input("page", "");
 
-        return BranchConfigService::getInitParams($page);
+        return BranchConfigService::getInitParams($userAuth->company_id, $page);
 
     }
 
@@ -97,7 +98,7 @@ class BranchController extends Controller {
 
             }
 
-            BranchConfigService::clearAllCache();
+            BranchConfigService::clearAllCache($userAuth->company_id);
 
             return $this->createdResponse($branch, "created", "branch");
 
@@ -164,7 +165,7 @@ class BranchController extends Controller {
 
             }
 
-            BranchConfigService::clearAllCache();
+            BranchConfigService::clearAllCache($userAuth->company_id);
 
             return $this->updatedResponse($branch, "updated", "branch");
 

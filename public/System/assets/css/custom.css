@@ -152,3 +152,50 @@ input.input-number-no-range[type=number] {
 .text-i-help {
     color: #a5a3ae !important;
 }
+
+/* CARD LIST CUSTOM - Reusable card styles for list views */
+.card-list-custom {
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    border-radius: 0.5rem;
+}
+
+.card-list-custom:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+}
+
+.card-list-custom .card-body {
+    padding: 1.25rem;
+}
+
+.card-list-custom .card-footer {
+    padding: 0.75rem 1.25rem;
+}
+
+.card-list-custom header {
+    margin-bottom: 0.75rem;
+}
+
+.card-list-custom .fa {
+    font-size: 0.875rem;
+}
+
+/* Improve focus states for accessibility */
+.card-list-custom .btn:focus-visible,
+.card-list-custom a:focus-visible {
+    outline: 2px solid #0d6efd;
+    outline-offset: 2px;
+}
+
+/* SCREEN READER ONLY - Reusable utility class for accessibility */
+.visually-hidden-custom {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+}
