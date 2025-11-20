@@ -501,7 +501,7 @@ export function formatCapacity(capacity) {
 
     if(!isDefined({value: capacity})) {
 
-        return "Capacity not defined";
+        return "Capacidad no definida";
 
     }
 
@@ -509,11 +509,11 @@ export function formatCapacity(capacity) {
 
     if(isNaN(numericCapacity) || numericCapacity <= 0) {
 
-        return "Capacity not defined";
+        return "Capacidad no definida";
 
     }
 
-    const label = numericCapacity === 1 ? "person" : "people";
+    const label = numericCapacity === 1 ? "persona" : "personas";
 
     return `${separatorNumber(numericCapacity)} ${label}`;
 

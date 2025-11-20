@@ -1,7 +1,7 @@
 <template>
     <Breadcrumb :list="breadcrumbTitles"/>
 
-    <div v-if="isDefined({ value: lists }) && isDefined({ value: lists[entity] })">
+    <div v-if="lists && lists[entity]">
         <!-- Filters Section -->
         <section class="filters-section mb-3 mb-md-4" aria-label="Filters">
             <div class="row align-items-end g-3">
@@ -97,19 +97,22 @@
                                 <header class="d-flex align-items-start justify-content-between flex-wrap gap-2">
                                     <div class="d-flex flex-column">
                                         <span
-                                            class="text-uppercase text-muted small fw-semibold"
+                                            :class="['text-uppercase text-muted small fw-semibold', isDefined(record.internal_code) ? '' : 'text-muted']"
                                             aria-label="Internal code"
-                                            v-text="MODULE.texts.card.internalCode"></span>
+                                            v-text="MODULE.texts.card.internalCode">
+                                        </span>
                                         <span
                                             class="fs-5 fw-bold text-primary"
                                             v-text="record.internal_code || MODULE.texts.card.notDefined"
-                                            :aria-label="`${MODULE.texts.card.internalCode}: ${record.internal_code || MODULE.texts.card.notDefined}`"></span>
+                                            :aria-label="`${MODULE.texts.card.internalCode}: ${record.internal_code || MODULE.texts.card.notDefined}`">
+                                        </span>
                                     </div>
                                     <span
                                         :class="getStatusBadgeClasses(record.status)"
                                         v-text="record.formatted_status"
                                         :aria-label="`${MODULE.texts.card.status}: ${record.formatted_status}`"
-                                        role="status"></span>
+                                        role="status">
+                                    </span>
                                 </header>
 
                                 <!-- Title -->
@@ -118,7 +121,8 @@
                                         class="h5 fw-semibold mb-0 text-dark text-truncate"
                                         :title="record.name"
                                         v-text="record.name"
-                                        style="min-width: 0;"></h3>
+                                        style="min-width: 0;">
+                                    </h3>
                                 </div>
 
                                 <!-- Details -->
@@ -130,19 +134,22 @@
                                         <i
                                             class="fa fa-map-marker-alt text-danger"
                                             style="min-width: 20px; flex-shrink: 0;"
-                                            aria-hidden="true"></i>
+                                            aria-hidden="true">
+                                        </i>
                                         <span
                                             v-if="isDefined(record.address)"
                                             class="text-truncate flex-grow-1 small"
                                             :title="record.address"
                                             v-text="record.address"
                                             style="min-width: 0;"
-                                            :aria-label="`${MODULE.texts.card.address}: ${record.address}`"></span>
+                                            :aria-label="`${MODULE.texts.card.address}: ${record.address}`">
+                                        </span>
                                         <span
                                             v-else
                                             class="text-muted small"
                                             :aria-label="MODULE.texts.card.noAddress"
-                                            v-text="MODULE.texts.card.noAddress"></span>
+                                            v-text="MODULE.texts.card.noAddress">
+                                        </span>
                                     </div>
 
                                     <!-- Reference -->
@@ -152,13 +159,15 @@
                                         <i
                                             class="fa fa-comment-dots text-info"
                                             style="min-width: 20px; flex-shrink: 0;"
-                                            aria-hidden="true"></i>
+                                            aria-hidden="true">
+                                        </i>
                                         <span
                                             class="text-truncate flex-grow-1"
                                             :title="record.reference"
                                             v-text="record.reference"
                                             style="min-width: 0;"
-                                            :aria-label="`${MODULE.texts.card.reference}: ${record.reference}`"></span>
+                                            :aria-label="`${MODULE.texts.card.reference}: ${record.reference}`">
+                                        </span>
                                     </div>
 
                                     <!-- Telephone -->
@@ -168,19 +177,22 @@
                                         <i
                                             class="fa fa-phone text-primary"
                                             style="min-width: 20px; flex-shrink: 0;"
-                                            aria-hidden="true"></i>
+                                            aria-hidden="true">
+                                        </i>
                                         <span
                                             v-if="isDefined(record.telephone)"
                                             class="text-truncate flex-grow-1 small"
                                             :title="record.telephone"
                                             v-text="record.telephone"
                                             style="min-width: 0;"
-                                            :aria-label="`${MODULE.texts.card.telephone}: ${record.telephone}`"></span>
+                                            :aria-label="`${MODULE.texts.card.telephone}: ${record.telephone}`">
+                                        </span>
                                         <span
                                             v-else
                                             class="text-muted small"
                                             :aria-label="MODULE.texts.card.noTelephone"
-                                            v-text="MODULE.texts.card.noTelephone"></span>
+                                            v-text="MODULE.texts.card.noTelephone">
+                                        </span>
                                     </div>
 
                                     <!-- Email -->
@@ -190,19 +202,22 @@
                                         <i
                                             class="fa fa-envelope text-primary"
                                             style="min-width: 20px; flex-shrink: 0;"
-                                            aria-hidden="true"></i>
+                                            aria-hidden="true">
+                                        </i>
                                         <span
                                             v-if="isDefined(record.email)"
                                             class="text-truncate flex-grow-1 small"
                                             :title="record.email"
                                             v-text="record.email"
                                             style="min-width: 0;"
-                                            :aria-label="`${MODULE.texts.card.email}: ${record.email}`"></span>
+                                            :aria-label="`${MODULE.texts.card.email}: ${record.email}`">
+                                        </span>
                                         <span
                                             v-else
                                             class="text-muted small"
                                             :aria-label="MODULE.texts.card.noEmail"
-                                            v-text="MODULE.texts.card.noEmail"></span>
+                                            v-text="MODULE.texts.card.noEmail">
+                                        </span>
                                     </div>
 
                                     <!-- Capacity -->
@@ -210,12 +225,14 @@
                                         <i
                                             class="fa fa-users text-success"
                                             style="min-width: 20px; flex-shrink: 0;"
-                                            aria-hidden="true"></i>
+                                            aria-hidden="true">
+                                        </i>
                                         <span
-                                            :class="['text-truncate flex-grow-1', hasValidCapacity(record.capacity) ? '' : 'small']"
+                                            class="text-truncate flex-grow-1 small"
                                             v-text="formatCapacity(record.capacity)"
                                             style="min-width: 0;"
-                                            :aria-label="`${MODULE.texts.card.capacity}: ${formatCapacity(record.capacity)}`"></span>
+                                            :aria-label="`${MODULE.texts.card.capacity}: ${formatCapacity(record.capacity)}`">
+                                        </span>
                                     </div>
                                 </div>
                             </div>
@@ -259,7 +276,10 @@
 
         <!-- Pagination -->
         <nav v-if="entityList && entityList.records && entityList.records.last_page > 1 && entityList.records.total > 0 && entityList.extras && !entityList.extras.loading" class="d-flex justify-content-center" aria-label="Pagination">
-            <Paginator :links="(entityList.records && entityList.records.links ? entityList.records.links : [])" @clickPage="listEntity"/>
+            <Paginator
+                :links="entityList.records.links"
+                @clickPage="listEntity"
+            />
         </nav>
 
         <!-- Modal: Create/Update -->
@@ -272,15 +292,24 @@
             :aria-labelledby="`${forms[entity].createUpdate.extras.modals.default.id}-title`"
             aria-hidden="true"
             role="dialog">
-            <div class="modal-dialog modal-dialog-centered" role="document">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title text-uppercase fw-bold" :id="`${forms[entity].createUpdate.extras.modals.default.id}-title`" v-text="modalTitles[isUpdate ? 'update' : 'store']"></h5>
-                        <button type="button" class="a-close-modal" data-bs-dismiss="modal" :aria-label="MODULE.texts.modal.close" :aria-describedby="`${forms[entity].createUpdate.extras.modals.default.id}-title`">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                        <h5
+                            class="modal-title text-uppercase fw-bold"
+                            :id="`${forms[entity].createUpdate.extras.modals.default.id}-title`"
+                            v-text="modalTitles[isUpdate ? 'update' : 'store']">
+                        </h5>
+                        <button
+                            type="button"
+                            class="a-close-modal"
+                            data-bs-dismiss="modal"
+                            :aria-label="MODULE.texts.modal.close"
+                            :aria-describedby="`${forms[entity].createUpdate.extras.modals.default.id}-title`">
                             <i class="fa fa-times" aria-hidden="true"></i>
                         </button>
-                    </div>
-                    <div class="modal-body">
+                </div>
+                <div class="modal-body">
                         <form @submit.prevent="saveEntity" :aria-label="modalTitles[isUpdate ? 'update' : 'store']">
                             <div class="row g-3">
                                 <InputText
@@ -376,7 +405,8 @@
                                             data-bs-toggle="tooltip"
                                             data-bs-placement="top"
                                             :title="MODULE.texts.form.capacityTooltip"
-                                            :aria-label="MODULE.texts.form.capacityTooltip"></i>
+                                            :aria-label="MODULE.texts.form.capacityTooltip">
+                                        </i>
                                     </template>
                                 </InputNumber>
                                 <InputText
@@ -414,8 +444,20 @@
                         </form>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary waves-effect" data-bs-dismiss="modal" :aria-label="MODULE.texts.modal.close" v-text="MODULE.texts.modal.close"></button>
-                        <button type="button" :class="['btn waves-effect', isUpdate ? 'btn-warning' : 'btn-primary']" @click="saveEntity" :disabled="isSaving" :aria-label="MODULE.texts.modal.save" :aria-busy="isSaving">
+                        <button
+                            type="button"
+                            class="btn btn-secondary waves-effect"
+                            data-bs-dismiss="modal"
+                            :aria-label="MODULE.texts.modal.close"
+                            v-text="MODULE.texts.modal.close">
+                        </button>
+                        <button
+                            type="button"
+                            :class="['btn waves-effect', isUpdate ? 'btn-warning' : 'btn-primary']"
+                            @click="saveEntity"
+                            :disabled="isSaving"
+                            :aria-label="MODULE.texts.modal.save"
+                            :aria-busy="isSaving">
                             <i class="fa fa-save" aria-hidden="true"></i>
                             <span class="ms-2" v-text="MODULE.texts.modal.save"></span>
                         </button>
@@ -427,15 +469,12 @@
 </template>
 
 <script>
-import * as Alerts      from "../../Helpers/Alerts.js";
-import * as Constants   from "../../Helpers/Constants.js";
-import * as Crud        from "../../Helpers/Crud.js";
-import * as Forms       from "../../Helpers/Forms.js";
-import * as Requests    from "../../Helpers/Requests.js";
-import * as Utils       from "../../Helpers/Utils.js";
+import * as Alerts from "../../Helpers/Alerts.js";
+import * as Crud from "../../Helpers/Crud.js";
+import * as Forms from "../../Helpers/Forms.js";
+import * as Requests from "../../Helpers/Requests.js";
+import * as Utils from "../../Helpers/Utils.js";
 
-// MODULE CONFIGURATION
-// Just change the values below to adapt to another module
 const MODULE_CONFIG = {
     entity: "branches",
     menuId: "menu-item-configuration-branches",
@@ -444,8 +483,6 @@ const MODULE_CONFIG = {
     perPage: 6
 };
 
-// FORM CONFIGURATION
-// Form fields with default values
 const FORM_FIELDS = {
     internal_code: "",
     name: "",
@@ -458,7 +495,6 @@ const FORM_FIELDS = {
     status: null
 };
 
-// Field preparation configuration (trim, normalize, toNumber, getCode)
 const FORM_FIELD_CONFIG = {
     internal_code: {trim: true},
     name: {trim: true},
@@ -471,8 +507,6 @@ const FORM_FIELD_CONFIG = {
     status: {getCode: true}
 };
 
-// Validation rules
-// Explicit required: false for optional fields to maintain traceability
 const VALIDATION_RULES = {
     internal_code: {required: true},
     name: {required: true},
@@ -485,7 +519,6 @@ const VALIDATION_RULES = {
     status: {required: true}
 };
 
-// Error labels for validation messages
 const ERROR_LABELS = {
     internal_code: "Código interno",
     name: "Nombre",
@@ -496,8 +529,6 @@ const ERROR_LABELS = {
     required: "Es obligatorio"
 };
 
-// TEXT CONSTANTS
-// All user-facing texts centralized for easy translation and maintenance
 const TEXTS = {
     loading: `Loading ${MODULE_CONFIG.pageTitle}...`,
     filters: {
@@ -557,7 +588,6 @@ const TEXTS = {
     }
 };
 
-// FILTER OPTIONS
 const FILTER_OPTIONS = [
     {code: "all", label: "Todos los filtros"},
     {code: "internal_code", label: "Código interno"},
@@ -568,7 +598,6 @@ const FILTER_OPTIONS = [
     {code: "email", label: "Correo electrónico"}
 ];
 
-// MODULE CONSTANTS - Centralized module configuration
 const MODULE = {
     config: MODULE_CONFIG,
     texts: TEXTS,
@@ -584,12 +613,21 @@ export default {
     components: {},
     data() {
 
-        const crudModule = Crud.initCrudModule({entity: MODULE.config.entity, menuId: MODULE.config.menuId, pageTitle: MODULE.config.pageTitle});
+        const crudModule = Crud.initCrudModule({
+            entity: MODULE.config.entity,
+            menuId: MODULE.config.menuId,
+            pageTitle: MODULE.config.pageTitle
+        });
 
         crudModule.lists[MODULE.config.entity].filters.filter_by = MODULE.filterOptions[0];
         crudModule.forms[MODULE.config.entity].createUpdate.data = Forms.initFormData(MODULE.formFields);
 
-        return {...crudModule, MODULE: MODULE, isSaving: false, isInitialized: false};
+        return {
+            ...crudModule,
+            MODULE: MODULE,
+            isSaving: false,
+            isInitialized: false
+        };
 
     },
     mounted: async function() {
@@ -600,62 +638,41 @@ export default {
         Alerts.swals({type: "initParams"});
 
         const initParams = await this.initParams();
-        const initOthers = await this.initOthers();
 
-        if(initParams && initOthers) {
+        this.isInitialized = true;
 
-            this.isInitialized = true;
+        if(initParams) {
 
             Alerts.swals({show: false});
             this.listEntity({});
-
-        }else {
-
-            this.isInitialized = true;
 
         }
 
     },
     methods: {
-        // INITIALIZATION METHODS
         async initParams() {
 
-            const result = await Requests.get({route: this.config.entity.routes.initParams, data: {page: "main"}, showAlert: true});
+            const result = await Requests.get({
+                route: this.config.entity.routes.initParams,
+                data: {page: "main"},
+                showAlert: true
+            });
 
             this.options[this.MODULE.config.entity] = result.data?.config?.[this.MODULE.config.entity];
 
             return Requests.valid({result});
 
         },
-        async initOthers() {
-
-            return new Promise(resolve => {
-
-                const entityList = this.lists[this.MODULE.config.entity];
-
-                entityList.filters.filter_by = !Utils.isDefined({value: entityList.filters.filter_by}) ? this.filterByOptions[0] : entityList.filters.filter_by;
-
-                resolve(true);
-
-            });
-
-        },
-        // LIST METHODS
         async listEntity(params = null) {
 
             const entityList = this.lists[this.MODULE.config.entity];
-
-            if(!entityList || !entityList.filters) {
-
-                console.error(`${this.MODULE.config.pageTitle} list not initialized`);
-                return;
-
-            }
-
-            // Handle both object {url} and string URL for backward compatibility
-            const url        = typeof params === "object" && params !== null ? params.url : params;
-            const filters    = Utils.cloneJson(entityList.filters);
-            const filterData = {filter_by: filters?.filter_by?.code, word: filters.word, per_page: this.MODULE.config.perPage};
+            const url = typeof params === "object" && params !== null ? params.url : params;
+            const filters = Utils.cloneJson(entityList.filters);
+            const filterData = {
+                filter_by: filters?.filter_by?.code,
+                word: filters.word,
+                per_page: this.MODULE.config.perPage
+            };
 
             entityList.extras.loading = true;
 
@@ -666,27 +683,20 @@ export default {
 
                 if(url) {
 
-                    // Parse URL and ensure per_page parameter is present
                     const urlObj = new URL(url, window.location.origin);
+                    const paramsToSet = {
+                        per_page: this.MODULE.config.perPage,
+                        filter_by: filterData.filter_by,
+                        word: filterData.word
+                    };
 
-                    if(!urlObj.searchParams.has("per_page")) {
+                    Object.entries(paramsToSet).forEach(([key, value]) => {
 
-                        urlObj.searchParams.set("per_page", this.MODULE.config.perPage);
+                        if(value && !urlObj.searchParams.has(key)) {
+                            urlObj.searchParams.set(key, value);
+                        }
 
-                    }
-
-                    // Preserve filter_by and word if they exist in URL
-                    if(!urlObj.searchParams.has("filter_by") && filterData.filter_by) {
-
-                        urlObj.searchParams.set("filter_by", filterData.filter_by);
-
-                    }
-
-                    if(!urlObj.searchParams.has("word") && filterData.word) {
-
-                        urlObj.searchParams.set("word", filterData.word);
-
-                    }
+                    });
 
                     requestUrl = urlObj.pathname + urlObj.search;
 
@@ -696,7 +706,10 @@ export default {
 
                 }
 
-                const response = await Requests.get({route: requestUrl, data: requestData});
+                const response = await Requests.get({
+                    route: requestUrl,
+                    data: requestData
+                });
 
                 entityList.records = response?.data ?? {total: 0, data: []};
 
@@ -717,48 +730,38 @@ export default {
             this.listEntity({});
 
         },
-        // FORM METHODS
         openModal(record = null) {
 
-            const entityForms = this.forms[this.MODULE.config.entity];
+            const entityForms = this.forms[this.MODULE.config.entity].createUpdate;
 
-            if(!entityForms?.createUpdate) {
-
-                console.error(`${this.MODULE.config.pageTitle} form not initialized`);
-                return;
-
-            }
-
-            // Clear form data and errors
-            Forms.clearFormData(entityForms.createUpdate.data, this.MODULE.formFields);
-            entityForms.createUpdate.errors = {};
+            Forms.clearFormData(entityForms.data, this.MODULE.formFields);
+            entityForms.errors = {};
 
             if(Utils.isDefined({value: record})) {
 
-                entityForms.createUpdate.data.id = record?.id;
+                entityForms.data.id = record?.id;
 
                 Object.keys(this.MODULE.formFields).forEach(key => {
 
                     if(key === "status") {
-
-                        entityForms.createUpdate.data.status = this.statuses.find(e => e.code === record?.status) || null;
-
+                        entityForms.data.status = this.statuses.find(e => e.code === record?.status) || null;
                     }else {
-
-                        entityForms.createUpdate.data[key] = record?.[key] ?? this.MODULE.formFields[key];
-
+                        entityForms.data[key] = record?.[key] ?? this.MODULE.formFields[key];
                     }
 
                 });
 
             }else {
 
-                entityForms.createUpdate.data.internal_code = Utils.generateCode({length: 6});
-                entityForms.createUpdate.data.status = this.statuses[0] || null;
+                entityForms.data.internal_code = Utils.generateCode({length: 6});
+                entityForms.data.status = this.statuses[0] || null;
 
             }
 
-            Alerts.modals({type: "show", id: entityForms.createUpdate.extras?.modals?.default?.id});
+            Alerts.modals({
+                type: "show",
+                id: entityForms.extras?.modals?.default?.id
+            });
             Alerts.tooltips({show: true, time: 500});
 
         },
@@ -766,64 +769,67 @@ export default {
 
             if(this.isSaving) return;
 
-            const entityForms = this.forms[this.MODULE.config.entity];
-
-            if(!entityForms?.createUpdate) {
-
-                console.error(`${this.MODULE.config.pageTitle} form not initialized`);
-                return;
-
-            }
+            const entityForms = this.forms[this.MODULE.config.entity].createUpdate;
 
             Alerts.swals({});
-            entityForms.createUpdate.errors = {};
+            entityForms.errors = {};
             this.isSaving = true;
 
             try {
 
-                const formData = Utils.cloneJson(entityForms.createUpdate.data);
-
-                const validation = Forms.validateFormData(formData, this.MODULE.validationRules, {isDescriptive: true, errorLabels: this.MODULE.errorLabels});
+                const formData = Utils.cloneJson(entityForms.data);
+                const validation = Forms.validateFormData(formData, this.MODULE.validationRules, {
+                    isDescriptive: true,
+                    errorLabels: this.MODULE.errorLabels
+                });
 
                 if(!validation.bool) {
 
-                    Alerts.generateAlert({messages: Utils.getErrors({errors: validation.errors}), msgContent: `<div class="fw-semibold mb-2">${this.config.messages.errorValidate}</div>`});
+                    Alerts.generateAlert({
+                        messages: Utils.getErrors({errors: validation.errors}),
+                        msgContent: `<div class="fw-semibold mb-2">${this.config.messages.errorValidate}</div>`
+                    });
                     return;
 
                 }
 
-                // Prepare data for submission
-                const preparedData = Forms.prepareFormData(formData, FORM_FIELD_CONFIG);
+                const preparedData = Forms.prepareFormData(formData, this.MODULE.formFieldConfig);
                 const isUpdate = Utils.isDefined({value: preparedData.id});
                 const requestMethod = isUpdate ? Requests.patch : Requests.post;
                 const route = isUpdate ? this.config.entity.routes.update : this.config.entity.routes.store;
 
-                // Submit request
-                const result = await requestMethod({route, data: preparedData, id: preparedData.id});
+                const result = await requestMethod({
+                    route,
+                    data: preparedData,
+                    id: preparedData.id
+                });
 
                 if(Requests.valid({result})) {
-                    // Success: close modal and refresh list
-                    const modalId = entityForms.createUpdate.extras?.modals?.default?.id;
 
-                    if(modalId) {
+                    Alerts.modals({
+                        type: "hide",
+                        id: entityForms.extras?.modals?.default?.id
+                    });
+                    Alerts.generateAlert({
+                        type: "success",
+                        msgContent: result?.data?.msg
+                    });
 
-                        Alerts.modals({type: "hide", id: modalId});
-
-                    }
-
-                    Alerts.generateAlert({type: "success", msgContent: result?.data?.msg});
-
-                    Forms.clearFormData(entityForms.createUpdate.data, this.MODULE.formFields);
+                    Forms.clearFormData(entityForms.data, this.MODULE.formFields);
                     const entityList = this.lists[this.MODULE.config.entity];
                     const currentPage = entityList?.records?.current_page ?? 1;
 
-                    this.listEntity({url: `${entityList?.extras?.route || ""}?page=${currentPage}`});
+                    this.listEntity({
+                        url: `${entityList?.extras?.route || ""}?page=${currentPage}`
+                    });
 
                 }else {
 
-                    entityForms.createUpdate.errors = result?.errors ?? {};
-
-                    Alerts.toastrs({type: "error", subtitle: result?.data?.msg});
+                    entityForms.errors = result?.errors ?? {};
+                    Alerts.toastrs({
+                        type: "error",
+                        subtitle: result?.data?.msg
+                    });
                     Alerts.swals({show: false});
 
                 }
@@ -831,8 +837,10 @@ export default {
             }catch(error) {
 
                 console.error(`Error saving ${this.MODULE.config.pageTitle}:`, error);
-
-                Alerts.toastrs({type: "error", subtitle: `Error al guardar ${this.MODULE.config.pageTitle.toLowerCase()}. Por favor, intente nuevamente.`});
+                Alerts.toastrs({
+                    type: "error",
+                    subtitle: `Error al guardar ${this.MODULE.config.pageTitle.toLowerCase()}. Por favor, intente nuevamente.`
+                });
                 Alerts.swals({show: false});
 
             }finally {
@@ -842,7 +850,6 @@ export default {
             }
 
         },
-        // HELPER METHODS
         isDefined(value) {
 
             return Utils.isDefined({value});
@@ -860,7 +867,10 @@ export default {
         },
         hasValidCapacity(capacity) {
 
-            return Utils.isDefined({value: capacity}) && Utils.isNumber({value: capacity, minValue: 1});
+            return Utils.isDefined({value: capacity}) && Utils.isNumber({
+                value: capacity,
+                minValue: 1
+            });
 
         }
     },
@@ -877,7 +887,10 @@ export default {
         },
         breadcrumbTitles() {
 
-            return [{title: this.MODULE.config.breadcrumbParent}, this.config.entity.page];
+            return [
+                {title: this.MODULE.config.breadcrumbParent},
+                this.config.entity.page
+            ];
 
         },
         filterByOptions() {
@@ -887,17 +900,25 @@ export default {
         },
         statuses() {
 
-            return (this.options?.[this.MODULE.config.entity]?.statuses ?? []).map(e => ({code: e.code, label: e.label}));
+            return (this.options?.[this.MODULE.config.entity]?.statuses ?? []).map(e => ({
+                code: e.code,
+                label: e.label
+            }));
 
         },
         isUpdate() {
 
-            return Utils.isDefined({value: this.forms[this.MODULE.config.entity]?.createUpdate?.data?.id});
+            return Utils.isDefined({
+                value: this.forms[this.MODULE.config.entity]?.createUpdate?.data?.id
+            });
 
         },
         modalTitles() {
 
-            return this.forms[this.MODULE.config.entity]?.createUpdate?.extras?.modals?.default?.titles;
+            return this.forms[this.MODULE.config.entity]?.createUpdate?.extras?.modals?.default?.titles || {
+                store: `AGREGAR ${this.MODULE.config.pageTitle.toUpperCase()}`,
+                update: `EDITAR ${this.MODULE.config.pageTitle.toUpperCase()}`
+            };
 
         },
         filterByValue: {
@@ -929,9 +950,7 @@ export default {
             const filterBy = this.entityList.filters?.filter_by;
 
             if(!filterBy) {
-
                 return "Buscar...";
-
             }
 
             return `Buscar por ${(filterBy.label || "...").toLowerCase()}`;
