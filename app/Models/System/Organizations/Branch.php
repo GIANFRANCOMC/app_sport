@@ -21,8 +21,14 @@ class Branch extends Model {
 
     protected $fillable = [
         "company_id",
+        "internal_code",
         "name",
         "address",
+        "reference",
+        "telephone",
+        "email",
+        "capacity",
+        "map_url",
         "status",
         "created_at",
         "created_by",
@@ -95,6 +101,12 @@ class Branch extends Model {
 
         return $this->hasMany(Warehouse::class, "branch_id", "id")
                     ->whereIn("status", ["active"]);
+
+    }
+
+    public function warehousesAll() {
+
+        return $this->hasMany(Warehouse::class, "branch_id", "id");
 
     }
 
