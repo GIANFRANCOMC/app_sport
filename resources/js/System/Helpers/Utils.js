@@ -1,5 +1,6 @@
 import { requestRoute, generalConfig } from "./Constants.js";
 import * as Requests from "./Requests.js";
+import * as Constants from "./Constants.js";
 import { toastrs } from "./Alerts.js";
 
 import axios from "axios";
@@ -75,22 +76,22 @@ export function uuid(length = 36) {
 
 export function getCurrentDate(type = "date") {
 
-    // Obtener la fecha actual
+    // Get current date
     const currentDate = new Date();
 
-    // Obtener el año actual
+    // Get current year
     const currentYear = currentDate.getFullYear();
 
-    // Obtener el mes actual (agregando un cero adelante si es necesario)
+    // Get current month (adding leading zero if necessary)
     const currentMonth = ('0' + (currentDate.getMonth() + 1)).slice(-2);
 
-    // Obtener el día del mes actual (agregando un cero adelante si es necesario)
+    // Get current day of month (adding leading zero if necessary)
     const currentDay = ('0' + currentDate.getDate()).slice(-2);
 
     const currentHour = currentDate.getHours().toString().padStart(2, '0');
     const currentMinute = currentDate.getMinutes().toString().padStart(2, '0');
 
-    // Construir la fecha en formato "YYYY-MM-DD"
+    // Build date in "YYYY-MM-DD" format
     let formattedDate = "";
 
     if(type == "date") {
@@ -109,17 +110,17 @@ export function getCurrentDate(type = "date") {
 
 export function parseISOToDatetimeLocal(isoString) {
 
-    // Crear un objeto Date a partir del string ISO
+    // Create a Date object from ISO string
     const date = new Date(isoString);
 
-    // Extraer los componentes de la fecha
+    // Extract date components
     const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0'); // Mes (0-11) a (1-12)
-    const day = String(date.getDate()).padStart(2, '0'); // Día del mes
-    const hours = String(date.getHours()).padStart(2, '0'); // Hora
-    const minutes = String(date.getMinutes()).padStart(2, '0'); // Minutos
+    const month = String(date.getMonth() + 1).padStart(2, '0'); // Month (0-11) to (1-12)
+    const day = String(date.getDate()).padStart(2, '0'); // Day of month
+    const hours = String(date.getHours()).padStart(2, '0'); // Hours
+    const minutes = String(date.getMinutes()).padStart(2, '0'); // Minutes
 
-    // Formatear como "YYYY-MM-DDTHH:MM"
+    // Format as "YYYY-MM-DDTHH:MM"
     return `${year}-${month}-${day}T${hours}:${minutes}`;
 
 }
@@ -149,9 +150,53 @@ export function fixedNumber(value, decimals = null) {
 
 export function separatorNumber(value) {
 
-    let number = value == "" ? 0 : value;
+    const number = isDefined({value}) ? value : 0;
 
     return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+
+}
+
+export function normalizeOptional(value) {
+
+    if(!isDefined({value})) {
+
+        return null;
+
+    }
+
+    const sanitized = String(value ?? "").trim();
+
+    return sanitized === "" ? null : sanitized;
+
+}
+
+export function isValidEmail(value) {
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(String(value ?? "").trim());
+
+}
+
+export function isValidUrl(value) {
+
+    const candidate = typeof value === "string" ? value : value?.url;
+
+    if(!isDefined({value: candidate})) {
+
+        return false;
+
+    }
+
+    try {
+
+        const url = new URL(String(candidate ?? "").trim());
+        return ["http:", "https:"].includes(url.protocol);
+
+    }catch(e) {
+
+        return false;
+
+    }
 
 }
 
@@ -167,18 +212,18 @@ export function diffDaysLegible({diff}) {
     let diffDaysLegible = "";
     let numberDiff = Number(diff);
 
-    if(isNaN(numberDiff)) return "No identificado";
+    if(isNaN(numberDiff)) return "Not identified";
 
     if(numberDiff === 0) {
 
-        diffDaysLegible = "Hoy";
+        diffDaysLegible = "Today";
 
     }else {
 
         let absNumberDiff = Math.abs(numberDiff);
-        let daysLegible   = absNumberDiff > 1 ? "días" : "día";
+        let daysLegible   = absNumberDiff > 1 ? "days" : "day";
 
-        diffDaysLegible = `${numberDiff > 0 ? "En" : "Hace"} ${absNumberDiff} ${daysLegible}`;
+        diffDaysLegible = `${numberDiff > 0 ? "In" : "Ago"} ${absNumberDiff} ${daysLegible}`;
 
     }
 
@@ -313,31 +358,31 @@ export function legibleFormatDate({dateString = null, type = "datetime", separat
 
         }else if(dateString.includes(" ")) {
 
-            // Formato con hora (YYYY-MM-DD HH:mm)
+            // Format with time (YYYY-MM-DD HH:mm)
             const [datePart, timePart] = dateString.split(" ");
             [year, month, day] = datePart.split("-").map(Number);
             [hours, minutes] = timePart.split(":").map(Number);
 
         }else {
 
-            // Formato sin hora (YYYY-MM-DD)
+            // Format without time (YYYY-MM-DD)
             [year, month, day] = dateString.split("-").map(Number);
 
         }
 
-        // Crear la fecha asegurando que respete la zona horaria local
+        // Create date ensuring it respects local timezone
         date = new Date(year, month - 1, day, hours, minutes);
 
-        // Validar si la fecha es válida
+        // Validate if date is valid
         if(isNaN(date.getTime())) {
             throw new Error("Invalid date format. Use 'YYYY-MM-DD' or 'YYYY-MM-DD HH:mm'.");
         }
 
-        // Extraer componentes
+        // Extract components
         const formattedDay = day.toString().padStart(2, "0");
         const formattedMonth = month.toString().padStart(2, "0");
 
-        // Convertir hora a formato 12h
+        // Convert time to 12h format
         const ampm = hours >= 12 ? "PM" : "AM";
         const formattedHours = (hours % 12 || 12).toString().padStart(2, "0");
         const formattedMinutes = minutes.toString().padStart(2, "0");
@@ -360,7 +405,7 @@ export function legibleFormatDate({dateString = null, type = "datetime", separat
 
     }catch (e) {
 
-        return dateString; // Retorna la fecha original en caso de error
+        return dateString; // Return original date in case of error
 
     }
 
@@ -370,11 +415,11 @@ export function sendWhatsapp({phoneNumber, message}) {
 
     if(!isDefined({value: phoneNumber})) {
 
-        toastrs({type: "error", subtitle: "No es posible generar el envío a Whatsapp, diligenciar los campos necesarios."});
+        toastrs({type: "error", subtitle: "Unable to send WhatsApp message, please fill in the required fields."});
 
     }else if(!isDefined({value: message})) {
 
-        toastrs({type: "error", subtitle: "No es posible generar el envío a Whatsapp, mensaje no identificado."});
+        toastrs({type: "error", subtitle: "Unable to send WhatsApp message, message not identified."});
 
     }else {
 
@@ -424,24 +469,6 @@ export function decodeBase64UTF8(base64) {
 
 }
 
-
-export function isValidUrl({url}) {
-
-    try {
-
-        new URL(url);
-
-        return true && this.isDefined({value: url});
-
-    }catch (e) {
-
-        return false;
-
-    }
-
-}
-
-
 export function getAsset(path, {type = "storage", back = 0}) {
 
     if(["storage"].includes(type)) {
@@ -461,5 +488,58 @@ export function getAsset(path, {type = "storage", back = 0}) {
         return back == 1 ? `../${path}` : `${path}`;
 
     }
+
+}
+
+
+/**
+ * Formats the capacity of people
+ * @param {number|null} capacity - Numeric capacity
+ * @returns {string} Formatted text
+ */
+export function formatCapacity(capacity) {
+
+    if(!isDefined({value: capacity})) {
+
+        return "Capacity not defined";
+
+    }
+
+    const numericCapacity = Number(capacity);
+
+    if(isNaN(numericCapacity) || numericCapacity <= 0) {
+
+        return "Capacity not defined";
+
+    }
+
+    const label = numericCapacity === 1 ? "person" : "people";
+
+    return `${separatorNumber(numericCapacity)} ${label}`;
+
+}
+
+/**
+ * Gets CSS classes for a status badge
+ * @param {string} status - Status (active, inactive, etc.)
+ * @param {Object} variants - Color variants by status
+ * @returns {Array} Array of CSS classes
+ */
+export function getStatusBadgeClasses(status, variants = {}) {
+
+    const defaultVariants = {
+        active: "bg-label-success",
+        inactive: "bg-label-danger",
+        ...variants
+    };
+
+    return [
+        "badge",
+        "fw-semibold",
+        "px-3",
+        "py-2",
+        "text-capitalize",
+        defaultVariants[status] ?? "bg-label-secondary"
+    ];
 
 }

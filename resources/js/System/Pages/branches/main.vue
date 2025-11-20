@@ -76,7 +76,7 @@
                 aria-live="polite"
                 :aria-label="`Loading ${MODULE_CONFIG.pageTitle}...`">
                 <Loader/>
-                <span class="visually-hidden" v-text="TEXTS.loading"></span>
+                <span class="visually-hidden-custom" v-text="TEXTS.loading"></span>
             </div>
             <template v-else>
                 <div
@@ -90,7 +90,7 @@
                         class="col-12 col-md-6 col-xl-4"
                         role="listitem">
                         <article
-                            class="card border-0 shadow-sm h-100"
+                            class="card card-list-custom border-0 shadow-sm h-100"
                             :aria-label="`${TEXTS.card.branch} ${record.name}`">
                             <div class="card-body d-flex flex-column gap-3">
                                 <!-- Header: Code and Status -->
@@ -252,19 +252,14 @@
                     role="status"
                     aria-live="polite">
                     <WithoutData type="image"/>
-                    <p class="visually-hidden" v-text="TEXTS.list.noData"></p>
+                    <p class="visually-hidden-custom" v-text="TEXTS.list.noData"></p>
                 </div>
             </template>
         </section>
 
         <!-- Pagination -->
-        <nav
-            v-if="entityList && entityList.records && entityList.records.last_page > 1 && entityList.records.total > 0 && entityList.extras && !entityList.extras.loading"
-            class="d-flex justify-content-center"
-            aria-label="Pagination">
-            <Paginator
-                :links="(entityList.records && entityList.records.links ? entityList.records.links : [])"
-                @clickPage="listEntity"/>
+        <nav v-if="entityList && entityList.records && entityList.records.last_page > 1 && entityList.records.total > 0 && entityList.extras && !entityList.extras.loading" class="d-flex justify-content-center" aria-label="Pagination">
+            <Paginator :links="(entityList.records && entityList.records.links ? entityList.records.links : [])" @clickPage="listEntity"/>
         </nav>
 
         <!-- Modal: Create/Update -->
@@ -280,16 +275,8 @@
             <div class="modal-dialog modal-dialog-centered" role="document">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5
-                            class="modal-title text-uppercase fw-bold"
-                            :id="`${forms[entity].createUpdate.extras.modals.default.id}-title`"
-                            v-text="modalTitles[isUpdate ? 'update' : 'store']"></h5>
-                        <button
-                            type="button"
-                            class="a-close-modal"
-                            data-bs-dismiss="modal"
-                            :aria-label="TEXTS.modal.close"
-                            :aria-describedby="`${forms[entity].createUpdate.extras.modals.default.id}-title`">
+                        <h5 class="modal-title text-uppercase fw-bold" :id="`${forms[entity].createUpdate.extras.modals.default.id}-title`" v-text="modalTitles[isUpdate ? 'update' : 'store']"></h5>
+                        <button type="button" class="a-close-modal" data-bs-dismiss="modal" :aria-label="TEXTS.modal.close" :aria-describedby="`${forms[entity].createUpdate.extras.modals.default.id}-title`">
                             <i class="fa fa-times" aria-hidden="true"></i>
                         </button>
                     </div>
@@ -427,20 +414,8 @@
                         </form>
                     </div>
                     <div class="modal-footer">
-                        <button
-                            type="button"
-                            class="btn btn-secondary waves-effect"
-                            data-bs-dismiss="modal"
-                            :aria-label="TEXTS.modal.close"
-                            v-text="TEXTS.modal.close">
-                        </button>
-                        <button
-                            type="button"
-                            :class="['btn waves-effect', isUpdate ? 'btn-warning' : 'btn-primary']"
-                            @click="saveEntity"
-                            :disabled="isSaving"
-                            :aria-label="TEXTS.modal.save"
-                            :aria-busy="isSaving">
+                        <button type="button" class="btn btn-secondary waves-effect" data-bs-dismiss="modal" :aria-label="TEXTS.modal.close" v-text="TEXTS.modal.close"></button>
+                        <button type="button" :class="['btn waves-effect', isUpdate ? 'btn-warning' : 'btn-primary']" @click="saveEntity" :disabled="isSaving" :aria-label="TEXTS.modal.save" :aria-busy="isSaving">
                             <i class="fa fa-save" aria-hidden="true"></i>
                             <span class="ms-2" v-text="TEXTS.modal.save"></span>
                         </button>
@@ -452,12 +427,12 @@
 </template>
 
 <script>
-import * as Alerts    from "../../Helpers/Alerts.js";
-import * as Constants from "../../Helpers/Constants.js";
-import * as Crud      from "../../Helpers/Crud.js";
-import * as Forms     from "../../Helpers/Forms.js";
-import * as Requests  from "../../Helpers/Requests.js";
-import * as Utils     from "../../Helpers/Utils.js";
+import * as Alerts      from "../../Helpers/Alerts.js";
+import * as Constants   from "../../Helpers/Constants.js";
+import * as Crud        from "../../Helpers/Crud.js";
+import * as Forms       from "../../Helpers/Forms.js";
+import * as Requests    from "../../Helpers/Requests.js";
+import * as Utils       from "../../Helpers/Utils.js";
 
 // ============================================
 // MODULE CONFIGURATION
@@ -502,13 +477,17 @@ const FORM_FIELD_CONFIG = {
 };
 
 // Validation rules
+// Explicit required: false for optional fields to maintain traceability
 const VALIDATION_RULES = {
     internal_code: {required: true},
     name: {required: true},
-    status: {required: true},
-    email: {email: true},
-    map_url: {url: true},
-    capacity: {number: true, min: 0}
+    address: {required: false},
+    reference: {required: false},
+    telephone: {required: false},
+    email: {required: false, email: true},
+    capacity: {required: false, number: true, min: 0},
+    map_url: {required: false, url: true},
+    status: {required: true}
 };
 
 // Error labels for validation messages
@@ -602,8 +581,8 @@ export default {
     name: "BranchesMain",
     components: {},
     data() {
-        // CRITICAL: Initialize lists[entity] FIRST, before anything else
-        // Vue evaluates computed properties during template compilation, so this MUST exist immediately
+
+        // Initialize lists[entity] first - Vue evaluates computed properties during template compilation
         const initialEntity = {
             extras: {
                 loading: false,
@@ -623,11 +602,7 @@ export default {
         };
 
         // Initialize CRUD module structure
-        const crudModule = Crud.initCrudModule({
-            entity: MODULE_CONFIG.entity,
-            menuId: MODULE_CONFIG.menuId,
-            pageTitle: MODULE_CONFIG.pageTitle
-        });
+        const crudModule = Crud.initCrudModule({entity: MODULE_CONFIG.entity, menuId: MODULE_CONFIG.menuId, pageTitle: MODULE_CONFIG.pageTitle});
 
         // Ensure lists structure is properly initialized
         const entityLists = crudModule.lists[MODULE_CONFIG.entity] || {
@@ -645,13 +620,10 @@ export default {
         };
 
         // Ensure filters are initialized
-        if(!entityLists.filters) {
-            entityLists.filters = {
-                filter_by: FILTER_OPTIONS[0],
-                word: ""
-            };
-        }else if(!entityLists.filters.filter_by) {
-            entityLists.filters.filter_by = FILTER_OPTIONS[0];
+        if(!Utils.isDefined({value: entityLists?.filters?.filter_by})) {
+
+            entityLists.filters = {filter_by: this.filterByOptions[0], word: ""};
+
         }
 
         // Ensure forms structure is properly initialized
@@ -673,66 +645,74 @@ export default {
             }
         };
 
+        // Helper: create modal titles - reusable across modules
+        const createModalTitles = () => ({
+            store: `AGREGAR ${MODULE_CONFIG.pageTitle.toUpperCase()}`,
+            update: `EDITAR ${MODULE_CONFIG.pageTitle.toUpperCase()}`
+        });
+
         // Ensure createUpdate structure exists
         if(!entityForms.createUpdate) {
+
             entityForms.createUpdate = {
                 extras: {
                     modals: {
                         default: {
                             id: Utils.uuid(),
-                            titles: {
-                                store: `AGREGAR ${MODULE_CONFIG.pageTitle.toUpperCase()}`,
-                                update: `EDITAR ${MODULE_CONFIG.pageTitle.toUpperCase()}`
-                            }
+                            titles: createModalTitles()
                         }
                     }
                 },
                 data: Forms.initFormData(FORM_FIELDS),
                 errors: {}
             };
+
         }else {
-            // Ensure data is initialized
+
+            // Ensure data initialized
             if(!entityForms.createUpdate.data) {
+
                 entityForms.createUpdate.data = Forms.initFormData(FORM_FIELDS);
+
             }
 
-            // Ensure errors is initialized
+            // Ensure errors initialized
             if(!entityForms.createUpdate.errors) {
+
                 entityForms.createUpdate.errors = {};
+
             }
 
             // Ensure modals structure exists
             if(!entityForms.createUpdate.extras) {
+
                 entityForms.createUpdate.extras = {
                     modals: {
                         default: {
                             id: Utils.uuid(),
-                            titles: {
-                                store: `AGREGAR ${MODULE_CONFIG.pageTitle.toUpperCase()}`,
-                                update: `EDITAR ${MODULE_CONFIG.pageTitle.toUpperCase()}`
-                            }
+                            titles: createModalTitles()
                         }
                     }
                 };
+
             }else if(!entityForms.createUpdate.extras.modals) {
+
                 entityForms.createUpdate.extras.modals = {
                     default: {
                         id: Utils.uuid(),
-                        titles: {
-                            store: `AGREGAR ${MODULE_CONFIG.pageTitle.toUpperCase()}`,
-                            update: `EDITAR ${MODULE_CONFIG.pageTitle.toUpperCase()}`
-                        }
+                        titles: createModalTitles()
                     }
                 };
+
             }else if(!entityForms.createUpdate.extras.modals.default) {
+
                 entityForms.createUpdate.extras.modals.default = {
                     id: Utils.uuid(),
-                    titles: {
-                        store: `AGREGAR ${MODULE_CONFIG.pageTitle.toUpperCase()}`,
-                        update: `EDITAR ${MODULE_CONFIG.pageTitle.toUpperCase()}`
-                    }
+                    titles: createModalTitles()
                 };
+
             }
+
         }
 
         // Ensure config exists
@@ -764,17 +744,16 @@ export default {
             }
         };
 
-        // Build final return object - lists[entity] MUST exist as direct property
+        // Build final return object - lists[entity] must exist as direct property
         const returnData = {
-            // Expose constants to template
             TEXTS: TEXTS,
             FILTER_OPTIONS: FILTER_OPTIONS,
             MODULE_CONFIG: MODULE_CONFIG,
             lists: {
-                [MODULE_CONFIG.entity]: entityData  // Dynamic property using MODULE_CONFIG.entity
+                [MODULE_CONFIG.entity]: entityData
             },
             forms: {
-                [MODULE_CONFIG.entity]: entityForms  // Dynamic property using MODULE_CONFIG.entity
+                [MODULE_CONFIG.entity]: entityForms
             },
             options: crudModule.options || {},
             config: finalConfig,
@@ -783,176 +762,214 @@ export default {
         };
 
         return returnData;
+
     },
     mounted: async function() {
-        // Initialize navigation
+
         Utils.navbarItem("menu-item-configuration", {addClass: "open"});
         Utils.navbarItem(this.config.entity.page.menu.id, {});
 
-        // Show loading alert
         Alerts.swals({type: "initParams"});
 
-        // Initialize module
         const initParams = await this.initParams();
         const initOthers = await this.initOthers();
 
         if(initParams && initOthers) {
-            // Mark as initialized before showing content
+
             this.isInitialized = true;
+
             Alerts.swals({show: false});
-            this.listEntity();
+            this.listEntity({});
+
         }else {
-            // Still mark as initialized even if init fails to prevent infinite loading
+
             this.isInitialized = true;
+
         }
+
     },
     methods: {
         // ============================================
         // INITIALIZATION METHODS
         // ============================================
-
-        /**
-         * Initialize module parameters from backend
-         * @returns {Promise<boolean>} Success status
-         */
         async initParams() {
-            const result = await Requests.get({
-                route: this.config.entity.routes.initParams,
-                data: {page: "main"},
-                showAlert: true
-            });
+
+            const result = await Requests.get({route: this.config.entity.routes.initParams, data: {page: "main"}, showAlert: true});
 
             this.options[MODULE_CONFIG.entity] = result.data?.config?.[MODULE_CONFIG.entity];
 
             return Requests.valid({result});
-        },
 
-        /**
-         * Initialize other module settings
-         * @returns {Promise<boolean>} Success status
-         */
+        },
         async initOthers() {
+
             return new Promise(resolve => {
-                // Ensure filter_by is set (already initialized in data(), but ensure it's set)
+
                 const entityList = this.lists[MODULE_CONFIG.entity];
-                if(entityList && entityList.filters && !entityList.filters.filter_by) {
-                    entityList.filters.filter_by = FILTER_OPTIONS[0];
-                }
+
+                entityList.filters.filter_by = !Utils.isDefined({value: entityList.filters.filter_by}) ? this.filterByOptions[0] : entityList.filters.filter_by;
 
                 resolve(true);
+
             });
+
         },
 
         // ============================================
         // LIST METHODS
         // ============================================
+        async listEntity(params = null) {
 
-        /**
-         * Fetch and display entity list
-         * @param {string|null} url - Optional URL for pagination
-         */
-        async listEntity(url = null) {
             const entityList = this.lists[MODULE_CONFIG.entity];
+
             if(!entityList || !entityList.filters) {
+
                 console.error(`${MODULE_CONFIG.pageTitle} list not initialized`);
                 return;
+
             }
 
-            const filters = Utils.cloneJson(entityList.filters);
-            const filterData = {
-                filter_by: filters?.filter_by?.code,
-                word: filters.word,
-                per_page: MODULE_CONFIG.perPage
-            };
+            // Handle both object {url} and string URL for backward compatibility
+            const url        = typeof params === "object" && params !== null ? params.url : params;
+            const filters    = Utils.cloneJson(entityList.filters);
+            const filterData = {filter_by: filters?.filter_by?.code, word: filters.word, per_page: MODULE_CONFIG.perPage};
 
             entityList.extras.loading = true;
 
             try {
-                const response = await Requests.get({
-                    route: url || entityList.extras.route,
-                    data: filterData
-                });
+
+                let requestUrl = url || entityList.extras.route;
+                let requestData = {};
+
+                if(url) {
+
+                    // Parse URL and ensure per_page parameter is present
+                    const urlObj = new URL(url, window.location.origin);
+
+                    if(!urlObj.searchParams.has("per_page")) {
+
+                        urlObj.searchParams.set("per_page", MODULE_CONFIG.perPage);
+
+                    }
+
+                    // Preserve filter_by and word if they exist in URL
+                    if(!urlObj.searchParams.has("filter_by") && filterData.filter_by) {
+
+                        urlObj.searchParams.set("filter_by", filterData.filter_by);
+
+                    }
+
+                    if(!urlObj.searchParams.has("word") && filterData.word) {
+
+                        urlObj.searchParams.set("word", filterData.word);
+
+                    }
+
+                    requestUrl = urlObj.pathname + urlObj.search;
+
+                }else {
+
+                    requestData = filterData;
+
+                }
+
+                const response = await Requests.get({route: requestUrl, data: requestData});
 
                 entityList.records = response?.data ?? {total: 0, data: []};
+
             }catch(error) {
+
                 console.error(`Error loading ${MODULE_CONFIG.pageTitle}:`, error);
                 entityList.records = {total: 0, data: []};
-            }finally {
-                entityList.extras.loading = false;
-            }
-        },
 
-        /**
-         * Handle search action
-         */
+            }finally {
+
+                entityList.extras.loading = false;
+
+            }
+
+        },
         handleSearch() {
-            this.listEntity();
+
+            this.listEntity({});
+
         },
 
         // ============================================
         // FORM METHODS
         // ============================================
-
-        /**
-         * Open modal for create or update
-         * @param {Object|null} record - Record to edit, null for create
-         */
         openModal(record = null) {
+
             const entityForms = this.forms[MODULE_CONFIG.entity];
-            // Clear form data
+
+            if(!entityForms?.createUpdate) {
+
+                console.error(`${MODULE_CONFIG.pageTitle} form not initialized`);
+                return;
+
+            }
+
+            // Clear form data and errors
             Forms.clearFormData(entityForms.createUpdate.data, FORM_FIELDS);
             entityForms.createUpdate.errors = {};
 
             if(Utils.isDefined({value: record})) {
-                // Edit mode: populate form with record data
+
                 entityForms.createUpdate.data.id = record?.id;
 
                 Object.keys(FORM_FIELDS).forEach(key => {
+
                     if(key === "status") {
-                        entityForms.createUpdate.data.status = this.statuses.find(e => e.code === record?.status);
+
+                        entityForms.createUpdate.data.status = this.statuses.find(e => e.code === record?.status) || null;
+
                     }else {
+
                         entityForms.createUpdate.data[key] = record?.[key] ?? FORM_FIELDS[key];
+
                     }
+
                 });
+
             }else {
-                // Create mode: set default values
+
                 entityForms.createUpdate.data.internal_code = Utils.generateCode({length: 6});
-                entityForms.createUpdate.data.status = this.statuses[0];
+                entityForms.createUpdate.data.status = this.statuses[0] || null;
+
             }
 
-            // Show modal and initialize tooltips
-            Alerts.modals({type: "show", id: entityForms.createUpdate.extras.modals.default.id});
+            Alerts.modals({type: "show", id: entityForms.createUpdate.extras?.modals?.default?.id});
             Alerts.tooltips({show: true, time: 500});
-        },
 
-        /**
-         * Save entity (create or update)
-         */
+        },
         async saveEntity() {
-            // Prevent double submission
+
             if(this.isSaving) return;
 
-            Alerts.swals({});
             const entityForms = this.forms[MODULE_CONFIG.entity];
+
+            if(!entityForms?.createUpdate) {
+
+                console.error(`${MODULE_CONFIG.pageTitle} form not initialized`);
+                return;
+
+            }
+
+            Alerts.swals({});
             entityForms.createUpdate.errors = {};
             this.isSaving = true;
 
             try {
-                // Clone form data for validation
+
                 const formData = Utils.cloneJson(entityForms.createUpdate.data);
 
-                // Validate form
-                const validation = Forms.validateFormData(formData, VALIDATION_RULES, {
-                    isDescriptive: true,
-                    errorLabels: ERROR_LABELS
-                });
+                const validation = Forms.validateFormData(formData, VALIDATION_RULES, {isDescriptive: true, errorLabels: ERROR_LABELS});
 
                 if(!validation.bool) {
-                    Alerts.generateAlert({
-                        messages: Utils.getErrors({errors: validation.errors}),
-                        msgContent: `<div class="fw-semibold mb-2">${this.config.messages.errorValidate}</div>`
-                    });
+
+                    Alerts.generateAlert({messages: Utils.getErrors({errors: validation.errors}), msgContent: `<div class="fw-semibold mb-2">${this.config.messages.errorValidate}</div>`});
                     return;
+
                 }
 
                 // Prepare data for submission
@@ -962,256 +979,206 @@ export default {
                 const route = isUpdate ? this.config.entity.routes.update : this.config.entity.routes.store;
 
                 // Submit request
-                const result = await requestMethod({
-                    route,
-                    data: preparedData,
-                    id: preparedData.id
-                });
+                const result = await requestMethod({route, data: preparedData, id: preparedData.id});
 
                 if(Requests.valid({result})) {
                     // Success: close modal and refresh list
-                    Alerts.modals({type: "hide", id: entityForms.createUpdate.extras.modals.default.id});
+                    const modalId = entityForms.createUpdate.extras?.modals?.default?.id;
+
+                    if(modalId) {
+
+                        Alerts.modals({type: "hide", id: modalId});
+
+                    }
+
                     Alerts.generateAlert({type: "success", msgContent: result?.data?.msg});
 
                     Forms.clearFormData(entityForms.createUpdate.data, FORM_FIELDS);
                     const entityList = this.lists[MODULE_CONFIG.entity];
                     const currentPage = entityList?.records?.current_page ?? 1;
-                    this.listEntity(`${entityList?.extras?.route || ""}?page=${currentPage}`);
+
+                    this.listEntity({url: `${entityList?.extras?.route || ""}?page=${currentPage}`});
+
                 }else {
-                    // Error: display validation errors
+
                     entityForms.createUpdate.errors = result?.errors ?? {};
+
                     Alerts.toastrs({type: "error", subtitle: result?.data?.msg});
                     Alerts.swals({show: false});
+
                 }
+
             }catch(error) {
+
                 console.error(`Error saving ${MODULE_CONFIG.pageTitle}:`, error);
+
                 Alerts.toastrs({type: "error", subtitle: `Error al guardar ${MODULE_CONFIG.pageTitle.toLowerCase()}. Por favor, intente nuevamente.`});
                 Alerts.swals({show: false});
+
             }finally {
+
                 this.isSaving = false;
+
             }
+
         },
 
         // ============================================
         // HELPER METHODS
         // ============================================
-
-        /**
-         * Check if value is defined
-         * @param {*} value - Value to check
-         * @returns {boolean}
-         */
         isDefined(value) {
+
             return Utils.isDefined({value});
-        },
 
-        /**
-         * Format capacity value
-         * @param {number|null} capacity - Capacity value
-         * @returns {string} Formatted capacity
-         */
+        },
         formatCapacity(capacity) {
+
             return Utils.formatCapacity(capacity);
-        },
 
-        /**
-         * Get CSS classes for status badge
-         * @param {string} status - Status value
-         * @returns {Array} CSS classes
-         */
+        },
         getStatusBadgeClasses(status) {
-            return Utils.getStatusBadgeClasses(status);
-        },
 
-        /**
-         * Check if capacity is valid
-         * @param {number|null} capacity - Capacity value
-         * @returns {boolean}
-         */
+            return Utils.getStatusBadgeClasses(status);
+
+        },
         hasValidCapacity(capacity) {
+
             return Utils.isDefined({value: capacity}) && Utils.isNumber({value: capacity, minValue: 1});
+
         }
     },
     computed: {
-        /**
-         * Entity name from MODULE_CONFIG
-         * @returns {string} Entity name
-         */
         entity() {
-            return MODULE_CONFIG.entity;
-        },
 
-        /**
-         * Safe access to entity list
-         * @returns {Object} Entity list object
-         */
+            return MODULE_CONFIG.entity;
+
+        },
         entityList() {
-            // Protect against lists being undefined
+
             if(!this.lists) {
-                return {
-                    extras: {loading: false, route: ""},
-                    filters: {filter_by: FILTER_OPTIONS[0], word: ""},
-                    records: {total: 0, data: []}
-                };
+
+                return {extras: {loading: false, route: ""}, filters: {filter_by: FILTER_OPTIONS[0], word: ""}, records: {total: 0, data: []}};
+
             }
 
-            // Dynamic property access using MODULE_CONFIG.entity - guaranteed to exist from data()
-            return this.lists[MODULE_CONFIG.entity] || {
-                extras: {loading: false, route: ""},
-                filters: {filter_by: FILTER_OPTIONS[0], word: ""},
-                records: {total: 0, data: []}
-            };
-        },
+            return this.lists[MODULE_CONFIG.entity] || {extras: {loading: false, route: ""}, filters: {filter_by: FILTER_OPTIONS[0], word: ""}, records: {total: 0, data: []}};
 
-        /**
-         * Breadcrumb titles for navigation
-         * @returns {Array} Breadcrumb items
-         */
+        },
         breadcrumbTitles() {
+
             return [{title: MODULE_CONFIG.breadcrumbParent}, this.config.entity.page];
-        },
 
-        /**
-         * Filter options for search
-         * @returns {Array} Filter options
-         */
+        },
         filterByOptions() {
+
             return FILTER_OPTIONS;
-        },
 
-        /**
-         * Status options for form
-         * @returns {Array} Status options
-         */
+        },
         statuses() {
-            return (this.options?.[MODULE_CONFIG.entity]?.statuses ?? []).map(e => ({code: e.code, label: e.label}));
-        },
 
-        /**
-         * Check if form is in update mode
-         * @returns {boolean}
-         */
+            return (this.options?.[MODULE_CONFIG.entity]?.statuses ?? []).map(e => ({code: e.code, label: e.label}));
+
+        },
         isUpdate() {
+
             const entityForms = this.forms[MODULE_CONFIG.entity];
+
             if(!entityForms || !entityForms.createUpdate || !entityForms.createUpdate.data) {
+
                 return false;
+
             }
 
             return Utils.isDefined({value: entityForms.createUpdate.data.id});
-        },
 
-        /**
-         * Modal titles (create/update)
-         * @returns {Object} Modal titles
-         */
+        },
         modalTitles() {
+
             const entityForms = this.forms[MODULE_CONFIG.entity];
+
             if(!entityForms || !entityForms.createUpdate || !entityForms.createUpdate.extras || !entityForms.createUpdate.extras.modals || !entityForms.createUpdate.extras.modals.default) {
+
                 return {
                     store: `AGREGAR ${MODULE_CONFIG.pageTitle.toUpperCase()}`,
                     update: `EDITAR ${MODULE_CONFIG.pageTitle.toUpperCase()}`
                 };
+
             }
 
             return entityForms.createUpdate.extras.modals.default.titles;
-        },
 
-        /**
-         * Filter by value (computed for v-model safety)
-         * @returns {Object|null} Current filter_by value
-         */
+        },
         filterByValue: {
             get() {
-                // Use entityList computed property for safe access
+
                 const entityList = this.entityList;
 
                 if(!entityList || !entityList.filters) {
+
                     return FILTER_OPTIONS[0];
+
                 }
 
                 return entityList.filters.filter_by || FILTER_OPTIONS[0];
+
             },
             set(value) {
-                // Use entityList computed property for safe access
+
                 const entityList = this.entityList;
 
                 if(entityList && entityList.filters) {
+
                     entityList.filters.filter_by = value;
+
                 }
+
             }
         },
 
-        /**
-         * Filter word value (computed for v-model safety)
-         * @returns {string} Current search word
-         */
         filterWordValue: {
             get() {
-                // Use entityList computed property for safe access
+
                 const entityList = this.entityList;
 
                 if(!entityList || !entityList.filters) {
+
                     return "";
+
                 }
 
                 return entityList.filters.word || "";
+
             },
             set(value) {
-                // Use entityList computed property for safe access
+
                 const entityList = this.entityList;
 
                 if(entityList && entityList.filters) {
+
                     entityList.filters.word = value;
+
                 }
+
             }
         },
-
-        /**
-         * Search input placeholder
-         * @returns {string} Placeholder text
-         */
         searchPlaceholder() {
+
             const entityList = this.entityList;
 
             if(!entityList || !entityList.filters || !entityList.filters.filter_by) {
+
                 return "Buscar...";
+
             }
 
             const filterLabel = entityList.filters.filter_by.label || "...";
             return `Buscar por ${filterLabel.toLowerCase()}`;
+
         }
+
     }
 };
 </script>
 
 <style scoped>
-/* Card hover effect for better UX */
-.card {
-    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-}
-
-.card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
-}
-
-/* Improve focus states for accessibility */
-.btn:focus-visible,
-a:focus-visible {
-    outline: 2px solid #0d6efd;
-    outline-offset: 2px;
-}
-
-/* Screen reader only text */
-.visually-hidden {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    margin: -1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
-    border-width: 0;
-}
 </style>
