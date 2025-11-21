@@ -199,3 +199,18 @@ input.input-number-no-range[type=number] {
     white-space: nowrap;
     border-width: 0;
 }
+
+/* FLEX UTILITIES - General utility classes for flex layouts */
+.flex-min-w-0 {
+    min-width: 0;
+}
+
+.flex-shrink-none {
+    flex-shrink: 0;
+}
+
+/* ICON UTILITIES - General utility classes for icons */
+.icon-fixed-width {
+    min-width: 20px;
+    flex-shrink: 0;
+}

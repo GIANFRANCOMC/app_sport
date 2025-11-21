@@ -61,49 +61,32 @@
     </section>
 
     <!-- List Section -->
-    <section class="list-section mb-4">
-        <div v-if="entityList.extras.loading" class="py-3 text-center">
+    <section class="list-section mb-3 mb-md-3">
+        <div v-if="entityList.extras.loading" class="text-center">
             <Loader/>
         </div>
         <div v-else-if="entityList?.records?.total > 0" class="row g-3 g-lg-4">
             <div v-for="record in entityList.records.data" :key="record.id" class="col-12 col-md-6 col-xl-4">
                 <div class="card card-list-custom border-0 shadow-sm h-100">
-                    <div class="card-body d-flex flex-column gap-2">
-                        <header class="d-flex align-items-start justify-content-between flex-wrap gap-2">
-                            <div class="d-flex flex-column">
+                    <div class="card-header">
+                        <div class="d-flex align-items-start justify-content-between gap-3">
+                            <div class="d-flex flex-column flex-grow-1 flex-min-w-0">
                                 <span class="text-muted small fw-semibold" v-text="record.internal_code"></span>
-                                <span class="fs-5 fw-bold text-dark" v-text="record.name" style="min-width: 0;"></span>
+                                <span class="fs-5 fw-bold text-dark text-truncate" v-text="record.name"></span>
                             </div>
-                            <span :class="getStatusBadgeClasses(record.status)" v-text="record.formatted_status"></span>
-                        </header>
+                            <span :class="[getStatusBadgeClasses(record.status), 'flex-shrink-none']" v-text="record.formatted_status"></span>
+                        </div>
+                    </div>
+                    <div class="card-body">
                         <div class="d-flex flex-column gap-2">
-                            <div class="d-flex align-items-center gap-2">
-                                <i class="fa fa-map-marker-alt text-danger" style="min-width: 20px; flex-shrink: 0;"></i>
-                                <span v-if="isDefined(record.address)" class="text-truncate flex-grow-1 small" v-text="record.address" style="min-width: 0;"></span>
-                                <span v-else class="text-muted small" v-text="MODULE.texts.card.noAddress"></span>
-                            </div>
-                            <div class="d-flex align-items-center gap-2">
-                                <i class="fa fa-comment-dots text-info" style="min-width: 20px; flex-shrink: 0;"></i>
-                                <span v-if="isDefined(record.reference)" class="text-truncate flex-grow-1 small" v-text="record.reference" style="min-width: 0;"></span>
-                                <span v-else class="text-muted small" v-text="MODULE.texts.card.noReference"></span>
-                            </div>
-                            <div class="d-flex align-items-center gap-2">
-                                <i class="fa fa-phone text-primary" style="min-width: 20px; flex-shrink: 0;"></i>
-                                <span v-if="isDefined(record.telephone)" class="text-truncate flex-grow-1 small" v-text="record.telephone" style="min-width: 0;"></span>
-                                <span v-else class="text-muted small" v-text="MODULE.texts.card.noTelephone"></span>
-                            </div>
-                            <div class="d-flex align-items-center gap-2">
-                                <i class="fa fa-envelope text-primary" style="min-width: 20px; flex-shrink: 0;"></i>
-                                <span v-if="isDefined(record.email)" class="text-truncate flex-grow-1 small" v-text="record.email" style="min-width: 0;"></span>
-                                <span v-else class="text-muted small" v-text="MODULE.texts.card.noEmail"></span>
-                            </div>
-                            <div class="d-flex align-items-center gap-2">
-                                <i class="fa fa-users text-success" style="min-width: 20px; flex-shrink: 0;"></i>
-                                <span class="text-muted small" v-text="formatCapacity(record.capacity)" style="min-width: 0;"></span>
+                            <div v-for="field in getCardFields(record)" :key="field.key" class="d-flex align-items-center gap-2">
+                                <i :class="[field.icon, 'icon-fixed-width']"></i>
+                                <span v-if="field.value" class="text-truncate flex-grow-1 small flex-min-w-0" v-text="field.value"></span>
+                                <span v-else class="text-muted small" v-text="field.placeholder"></span>
                             </div>
                         </div>
                     </div>
-                    <footer class="card-footer bg-transparent border-0 pt-0 mt-auto">
+                    <div class="card-footer">
                         <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 pt-3 border-top">
                             <a v-if="isDefined(record.map_url)" :href="record.map_url" class="btn btn-sm btn-outline-success waves-effect" target="_blank" rel="noopener noreferrer">
                                 <i class="fa fa-map-location-dot"></i>
@@ -114,7 +97,7 @@
                                 <span class="ms-2" v-text="MODULE.texts.actions.edit"></span>
                             </button>
                         </div>
-                    </footer>
+                    </div>
                 </div>
             </div>
         </div>
@@ -124,11 +107,8 @@
     </section>
 
     <!-- Pagination -->
-    <nav v-if="entityList && entityList.records && entityList.records.last_page > 1 && entityList.records.total > 0 && entityList.extras && !entityList.extras.loading" class="d-flex justify-content-center" aria-label="Pagination">
-        <Paginator
-            :links="entityList.records.links"
-            @clickPage="listEntity"
-        />
+    <nav v-if="!entityList?.extras?.loading && entityList?.records?.total > 0" class="d-flex justify-content-center">
+        <Paginator :links="entityList.records.links" @clickPage="listEntity"></Paginator>
     </nav>
 
     <!-- Modal: Create/Update -->
@@ -719,6 +699,17 @@ export default {
                 value: capacity,
                 minValue: 1
             });
+
+        },
+        getCardFields(record) {
+
+            return [
+                {key: "address", icon: "fa fa-map-marker-alt text-danger", value: this.isDefined(record.address) ? record.address : null, placeholder: this.MODULE.texts.card.noAddress},
+                {key: "reference", icon: "fa fa-comment-dots text-info", value: this.isDefined(record.reference) ? record.reference : null, placeholder: this.MODULE.texts.card.noReference},
+                {key: "telephone", icon: "fa fa-phone text-primary", value: this.isDefined(record.telephone) ? record.telephone : null, placeholder: this.MODULE.texts.card.noTelephone},
+                {key: "email", icon: "fa fa-envelope text-primary", value: this.isDefined(record.email) ? record.email : null, placeholder: this.MODULE.texts.card.noEmail},
+                {key: "capacity", icon: "fa fa-users text-success", value: this.isDefined(record.capacity) ? record.capacity : null, placeholder: 0}
+            ];
 
         }
     },
