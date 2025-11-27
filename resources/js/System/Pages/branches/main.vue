@@ -2,7 +2,7 @@
     <Breadcrumb :list="breadcrumbTitles"/>
 
     <!-- Filters Section -->
-    <section class="filters-section mb-3 mb-md-4">
+    <section class="filters-section mb-4 mb-md-4">
         <div class="row align-items-end g-3">
             <InputSlot
                 hasDiv
@@ -14,7 +14,7 @@
                     <v-select
                         v-model="filterByValue"
                         :options="filterByOptions"
-                        :class="config?.forms?.classes?.select2 || ''"
+                        :class="config?.forms?.classes?.select2"
                         :clearable="false"
                         :searchable="false"
                         :disabled="entityList?.extras?.loading">
@@ -30,8 +30,7 @@
                 :placeholder="searchPlaceholder"
                 :disabled="entityList?.extras?.loading"
                 xl="4"
-                lg="4">
-            </InputText>
+                lg="4"/>
             <InputSlot
                 hasDiv
                 :isInputGroup="false"
@@ -44,7 +43,7 @@
                         class="btn btn-info-1 waves-effect"
                         @click="handleSearch"
                         :disabled="entityList?.extras?.loading">
-                        <i class="fa fa-search" aria-hidden="true"></i>
+                        <i class="fa fa-search"></i>
                         <span class="ms-2" v-text="MODULE.texts.actions.search"></span>
                     </button>
                     <button
@@ -52,7 +51,7 @@
                         class="btn btn-primary waves-effect"
                         @click="openModal()"
                         :disabled="entityList?.extras?.loading">
-                        <i class="fa fa-plus" aria-hidden="true"></i>
+                        <i class="fa fa-plus"></i>
                         <span class="ms-2" v-text="MODULE.texts.actions.add"></span>
                     </button>
                 </template>
@@ -62,9 +61,8 @@
 
     <!-- List Section -->
     <section class="list-section mb-3 mb-md-3">
-        <div v-if="entityList.extras.loading" class="text-center">
-            <Loader/>
-        </div>
+        <Loader v-if="entityList.extras.loading"/>
+        <WithoutData v-else-if="entityList?.records?.total === 0" type="image"/>
         <div v-else-if="entityList?.records?.total > 0" class="row g-3 g-lg-4">
             <div v-for="record in entityList.records.data" :key="record.id" class="col-12 col-md-6 col-xl-4">
                 <div class="card card-list-custom border-0 shadow-sm h-100">
@@ -101,14 +99,11 @@
                 </div>
             </div>
         </div>
-        <div v-else-if="entityList?.records?.total === 0" class="text-center">
-            <WithoutData type="image"/>
-        </div>
     </section>
 
     <!-- Pagination -->
     <nav v-if="!entityList?.extras?.loading && entityList?.records?.total > 0" class="d-flex justify-content-center">
-        <Paginator :links="entityList.records.links" @clickPage="listEntity"></Paginator>
+        <Paginator :links="entityList.records.links" @clickPage="listEntity"/>
     </nav>
 
     <!-- Modal: Create/Update -->
@@ -118,8 +113,6 @@
         :id="forms[entity].createUpdate.extras.modals.default.id"
         data-bs-backdrop="static"
         tabindex="-1"
-        :aria-labelledby="`${forms[entity].createUpdate.extras.modals.default.id}-title`"
-        aria-hidden="true"
         role="dialog">
     <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content">
@@ -132,14 +125,12 @@
                     <button
                         type="button"
                         class="a-close-modal"
-                        data-bs-dismiss="modal"
-                        :aria-label="MODULE.texts.modal.close"
-                        :aria-describedby="`${forms[entity].createUpdate.extras.modals.default.id}-title`">
+                        data-bs-dismiss="modal">
                         <i class="fa fa-times"></i>
                     </button>
             </div>
             <div class="modal-body">
-                    <form @submit.prevent="saveEntity" :aria-label="modalTitles[isUpdate ? 'update' : 'store']">
+                    <form @submit.prevent="saveEntity">
                         <div class="row g-3">
                             <InputText
                                 v-model="forms[entity].createUpdate.data.internal_code"
@@ -151,7 +142,6 @@
                                 :placeholder="MODULE.texts.form.placeholders.internalCode"
                                 hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.errors?.internal_code"
-                                :aria-label="MODULE.texts.form.internalCode"
                                 xl="4"
                                 lg="4"/>
                             <InputText
@@ -164,7 +154,6 @@
                                 :placeholder="MODULE.texts.form.placeholders.name"
                                 hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.errors?.name"
-                                :aria-label="MODULE.texts.form.name"
                                 xl="8"
                                 lg="8"/>
                             <InputText
@@ -176,7 +165,6 @@
                                 :placeholder="MODULE.texts.form.placeholders.address"
                                 hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.errors?.address"
-                                :aria-label="MODULE.texts.form.address"
                                 xl="12"
                                 lg="12"/>
                             <InputText
@@ -188,7 +176,6 @@
                                 :placeholder="MODULE.texts.form.placeholders.reference"
                                 hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.errors?.reference"
-                                :aria-label="MODULE.texts.form.reference"
                                 xl="12"
                                 lg="12"/>
                             <InputText
@@ -200,7 +187,6 @@
                                 :placeholder="MODULE.texts.form.placeholders.telephone"
                                 hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.errors?.telephone"
-                                :aria-label="MODULE.texts.form.telephone"
                                 xl="6"
                                 lg="6"/>
                             <InputText
@@ -212,7 +198,6 @@
                                 :placeholder="MODULE.texts.form.placeholders.email"
                                 hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.errors?.email"
-                                :aria-label="MODULE.texts.form.email"
                                 xl="6"
                                 lg="6"/>
                             <InputNumber
@@ -225,7 +210,6 @@
                                 :placeholder="MODULE.texts.form.placeholders.capacity"
                                 hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.errors?.capacity"
-                                :aria-label="MODULE.texts.form.capacity"
                                 xl="4"
                                 lg="4">
                                 <template v-slot:default>
@@ -233,8 +217,7 @@
                                         class="fa fa-info-circle cursor-pointer text-i-help mx-1"
                                         data-bs-toggle="tooltip"
                                         data-bs-placement="top"
-                                        :title="MODULE.texts.form.capacityTooltip"
-                                        :aria-label="MODULE.texts.form.capacityTooltip">
+                                        :title="MODULE.texts.form.capacityTooltip">
                                     </i>
                                 </template>
                             </InputNumber>
@@ -247,7 +230,6 @@
                                 :placeholder="MODULE.texts.form.placeholders.mapUrl"
                                 hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.errors?.map_url"
-                                :aria-label="MODULE.texts.form.mapUrl"
                                 xl="8"
                                 lg="8"/>
                             <InputSlot
@@ -265,8 +247,7 @@
                                         :options="statuses"
                                         :class="config?.forms?.classes?.select2 || ''"
                                         :clearable="false"
-                                        :searchable="false"
-                                        :aria-label="MODULE.texts.form.status"/>
+                                        :searchable="false"/>
                                 </template>
                             </InputSlot>
                         </div>
@@ -277,16 +258,14 @@
                         type="button"
                         class="btn btn-secondary waves-effect"
                         data-bs-dismiss="modal"
-                        :aria-label="MODULE.texts.modal.close"
                         v-text="MODULE.texts.modal.close">
                     </button>
                     <button
                         type="button"
                         :class="['btn waves-effect', isUpdate ? 'btn-warning' : 'btn-primary']"
                         @click="saveEntity"
-                        :disabled="isSaving"
-                        :aria-label="MODULE.texts.modal.save">
-                        <i class="fa fa-save" aria-hidden="true"></i>
+                        :disabled="isSaving">
+                        <i class="fa fa-save"></i>
                         <span class="ms-2" v-text="MODULE.texts.modal.save"></span>
                     </button>
                 </div>

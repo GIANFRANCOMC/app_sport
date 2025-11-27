@@ -1,7 +1,7 @@
 <template>
-    <template v-if="['default'].includes(type)">
+    <div v-if="['default'].includes(type)" class="d-flex flex-column justify-content-center align-items-center">
         <i class="fas fa-spinner fa-spin fa-3x my-3"></i>
-    </template>
+    </div>
 </template>
 
 <script>
