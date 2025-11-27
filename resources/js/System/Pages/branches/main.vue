@@ -7,17 +7,17 @@
             <InputSlot
                 hasDiv
                 :title="MODULE.texts.filters.filterBy"
-                :titleClass="[config?.forms?.classes?.title]"
+                :titleClass="[config.forms.classes.title]"
                 xl="3"
                 lg="4">
                 <template v-slot:input>
                     <v-select
                         v-model="filterByValue"
                         :options="filterByOptions"
-                        :class="config?.forms?.classes?.select2"
+                        :class="config.forms.classes.select2"
                         :clearable="false"
                         :searchable="false"
-                        :disabled="entityList?.extras?.loading">
+                        :disabled="entityList.extras.loading">
                     </v-select>
                 </template>
             </InputSlot>
@@ -26,9 +26,9 @@
                 @enterKeyPressed="handleSearch"
                 hasDiv
                 :title="MODULE.texts.filters.search"
-                :titleClass="[config?.forms?.classes?.title]"
+                :titleClass="[config.forms.classes.title]"
                 :placeholder="searchPlaceholder"
-                :disabled="entityList?.extras?.loading"
+                :disabled="entityList.extras.loading"
                 xl="4"
                 lg="4"/>
             <InputSlot
@@ -42,7 +42,7 @@
                         type="button"
                         class="btn btn-info-1 waves-effect"
                         @click="handleSearch"
-                        :disabled="entityList?.extras?.loading">
+                        :disabled="entityList.extras.loading">
                         <i class="fa fa-search"></i>
                         <span class="ms-2" v-text="MODULE.texts.actions.search"></span>
                     </button>
@@ -50,7 +50,7 @@
                         type="button"
                         class="btn btn-primary waves-effect"
                         @click="openModal()"
-                        :disabled="entityList?.extras?.loading">
+                        :disabled="entityList.extras.loading">
                         <i class="fa fa-plus"></i>
                         <span class="ms-2" v-text="MODULE.texts.actions.add"></span>
                     </button>
@@ -62,8 +62,8 @@
     <!-- List Section -->
     <section class="list-section mb-3 mb-md-3">
         <Loader v-if="entityList.extras.loading"/>
-        <WithoutData v-else-if="entityList?.records?.total === 0" type="image"/>
-        <div v-else-if="entityList?.records?.total > 0" class="row g-3 g-lg-4">
+        <WithoutData v-else-if="entityList.records.total === 0" type="image"/>
+        <div v-else-if="entityList.records.total > 0" class="row g-3 g-lg-4">
             <div v-for="record in entityList.records.data" :key="record.id" class="col-12 col-md-6 col-xl-4">
                 <div class="card card-list-custom border-0 shadow-sm h-100">
                     <div class="card-header">
@@ -102,21 +102,15 @@
     </section>
 
     <!-- Pagination -->
-    <nav v-if="!entityList?.extras?.loading && entityList?.records?.total > 0" class="d-flex justify-content-center">
+    <nav v-if="!entityList.extras.loading && entityList.records.total > 0" class="d-flex justify-content-center">
         <Paginator :links="entityList.records.links" @clickPage="listEntity"/>
     </nav>
 
     <!-- Modal: Create/Update -->
-    <div
-        v-if="forms[entity]?.createUpdate?.extras?.modals?.default?.id"
-        class="modal fade"
-        :id="forms[entity].createUpdate.extras.modals.default.id"
-        data-bs-backdrop="static"
-        tabindex="-1"
-        role="dialog">
-    <div class="modal-dialog modal-dialog-centered" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
+    <div class="modal fade" :id="forms[entity].createUpdate.extras.modals.default.id" data-bs-backdrop="static" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
                     <h5
                         class="modal-title text-uppercase fw-bold"
                         :id="`${forms[entity].createUpdate.extras.modals.default.id}-title`"
@@ -128,8 +122,8 @@
                         data-bs-dismiss="modal">
                         <i class="fa fa-times"></i>
                     </button>
-            </div>
-            <div class="modal-body">
+                </div>
+                <div class="modal-body">
                     <form @submit.prevent="saveEntity">
                         <div class="row g-3">
                             <InputText
