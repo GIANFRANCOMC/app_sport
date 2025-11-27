@@ -17,8 +17,7 @@
                         :class="config.forms.classes.select2"
                         :clearable="false"
                         :searchable="false"
-                        :disabled="entityList.extras.loading">
-                    </v-select>
+                        :disabled="entityList.extras.loading"/>
                 </template>
             </InputSlot>
             <InputText
@@ -111,16 +110,9 @@
         <div class="modal-dialog modal-dialog-centered" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5
-                        class="modal-title text-uppercase fw-bold"
-                        :id="`${forms[entity].createUpdate.extras.modals.default.id}-title`"
-                        v-text="modalTitles[isUpdate ? 'update' : 'store']">
-                    </h5>
-                    <button
-                        type="button"
-                        class="a-close-modal"
-                        data-bs-dismiss="modal">
-                        <i class="fa fa-times"></i>
+                    <h5 class="modal-title text-uppercase fw-bold" v-text="modalTitles[isUpdate ? 'update' : 'store']"></h5>
+                    <button type="button" class="btn-header-modal" data-bs-dismiss="modal">
+                        <i class="fa fa-times icon-close-modal"></i>
                     </button>
                 </div>
                 <div class="modal-body">
@@ -181,8 +173,8 @@
                                 :placeholder="MODULE.texts.form.placeholders.telephone"
                                 hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.errors?.telephone"
-                                xl="6"
-                                lg="6"/>
+                                xl="5"
+                                lg="5"/>
                             <InputText
                                 v-model="forms[entity].createUpdate.data.email"
                                 hasDiv
@@ -192,8 +184,8 @@
                                 :placeholder="MODULE.texts.form.placeholders.email"
                                 hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.errors?.email"
-                                xl="6"
-                                lg="6"/>
+                                xl="7"
+                                lg="7"/>
                             <InputNumber
                                 v-model="forms[entity].createUpdate.data.capacity"
                                 hasDiv
@@ -204,15 +196,10 @@
                                 :placeholder="MODULE.texts.form.placeholders.capacity"
                                 hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.errors?.capacity"
-                                xl="4"
-                                lg="4">
+                                xl="5"
+                                lg="5">
                                 <template v-slot:default>
-                                    <i
-                                        class="fa fa-info-circle cursor-pointer text-i-help mx-1"
-                                        data-bs-toggle="tooltip"
-                                        data-bs-placement="top"
-                                        :title="MODULE.texts.form.capacityTooltip">
-                                    </i>
+                                    <i class="fa fa-info-circle cursor-pointer text-i-help me-1" data-bs-toggle="tooltip" data-bs-placement="top" :title="MODULE.texts.form.capacityTooltip"></i>
                                 </template>
                             </InputNumber>
                             <InputText
@@ -224,8 +211,8 @@
                                 :placeholder="MODULE.texts.form.placeholders.mapUrl"
                                 hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.errors?.map_url"
-                                xl="8"
-                                lg="8"/>
+                                xl="7"
+                                lg="7"/>
                             <InputSlot
                                 hasDiv
                                 :title="MODULE.texts.form.status"
@@ -239,7 +226,7 @@
                                     <v-select
                                         v-model="forms[entity].createUpdate.data.status"
                                         :options="statuses"
-                                        :class="config?.forms?.classes?.select2 || ''"
+                                        :class="config.forms.classes.select2"
                                         :clearable="false"
                                         :searchable="false"/>
                                 </template>
