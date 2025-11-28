@@ -122,7 +122,7 @@
                                 v-model="forms[entity].createUpdate.data.internal_code"
                                 hasDiv
                                 :title="MODULE.texts.form.internalCode"
-                                :titleClass="config?.forms?.classes?.title ? [config.forms.classes.title, 'fw-semibold'] : ['fw-semibold']"
+                                :titleClass="[config.forms.classes.title, 'fw-semibold']"
                                 isRequired
                                 maxlength="50"
                                 :placeholder="MODULE.texts.form.placeholders.internalCode"
@@ -134,7 +134,7 @@
                                 v-model="forms[entity].createUpdate.data.name"
                                 hasDiv
                                 :title="MODULE.texts.form.name"
-                                :titleClass="config?.forms?.classes?.title ? [config.forms.classes.title, 'fw-semibold'] : ['fw-semibold']"
+                                :titleClass="[config.forms.classes.title, 'fw-semibold']"
                                 isRequired
                                 maxlength="100"
                                 :placeholder="MODULE.texts.form.placeholders.name"
@@ -146,7 +146,7 @@
                                 v-model="forms[entity].createUpdate.data.address"
                                 hasDiv
                                 :title="MODULE.texts.form.address"
-                                :titleClass="config?.forms?.classes?.title ? [config.forms.classes.title, 'fw-semibold'] : ['fw-semibold']"
+                                :titleClass="[config.forms.classes.title, 'fw-semibold']"
                                 maxlength="100"
                                 :placeholder="MODULE.texts.form.placeholders.address"
                                 hasTextBottom
@@ -157,7 +157,7 @@
                                 v-model="forms[entity].createUpdate.data.reference"
                                 hasDiv
                                 :title="MODULE.texts.form.reference"
-                                :titleClass="config?.forms?.classes?.title ? [config.forms.classes.title, 'fw-semibold'] : ['fw-semibold']"
+                                :titleClass="[config.forms.classes.title, 'fw-semibold']"
                                 maxlength="150"
                                 :placeholder="MODULE.texts.form.placeholders.reference"
                                 hasTextBottom
@@ -168,36 +168,36 @@
                                 v-model="forms[entity].createUpdate.data.telephone"
                                 hasDiv
                                 :title="MODULE.texts.form.telephone"
-                                :titleClass="config?.forms?.classes?.title ? [config.forms.classes.title, 'fw-semibold'] : ['fw-semibold']"
+                                :titleClass="[config.forms.classes.title, 'fw-semibold']"
                                 maxlength="25"
                                 :placeholder="MODULE.texts.form.placeholders.telephone"
                                 hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.errors?.telephone"
-                                xl="5"
-                                lg="5"/>
+                                xl="4"
+                                lg="4"/>
                             <InputText
                                 v-model="forms[entity].createUpdate.data.email"
                                 hasDiv
                                 :title="MODULE.texts.form.email"
-                                :titleClass="config?.forms?.classes?.title ? [config.forms.classes.title, 'fw-semibold'] : ['fw-semibold']"
+                                :titleClass="[config.forms.classes.title, 'fw-semibold']"
                                 maxlength="120"
                                 :placeholder="MODULE.texts.form.placeholders.email"
                                 hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.errors?.email"
-                                xl="7"
-                                lg="7"/>
+                                xl="8"
+                                lg="8"/>
                             <InputNumber
                                 v-model="forms[entity].createUpdate.data.capacity"
                                 hasDiv
                                 :title="MODULE.texts.form.capacity"
-                                :titleClass="config?.forms?.classes?.title ? [config.forms.classes.title, 'fw-semibold'] : ['fw-semibold']"
+                                :titleClass="[config.forms.classes.title, 'fw-semibold']"
                                 :decimals="0"
                                 :minValue="0"
                                 :placeholder="MODULE.texts.form.placeholders.capacity"
                                 hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.errors?.capacity"
-                                xl="5"
-                                lg="5">
+                                xl="4"
+                                lg="4">
                                 <template v-slot:default>
                                     <i class="fa fa-info-circle cursor-pointer text-i-help me-1" data-bs-toggle="tooltip" data-bs-placement="top" :title="MODULE.texts.form.capacityTooltip"></i>
                                 </template>
@@ -206,17 +206,17 @@
                                 v-model="forms[entity].createUpdate.data.map_url"
                                 hasDiv
                                 :title="MODULE.texts.form.mapUrl"
-                                :titleClass="config?.forms?.classes?.title ? [config.forms.classes.title, 'fw-semibold'] : ['fw-semibold']"
+                                :titleClass="[config.forms.classes.title, 'fw-semibold']"
                                 maxlength="255"
                                 :placeholder="MODULE.texts.form.placeholders.mapUrl"
                                 hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.errors?.map_url"
-                                xl="7"
-                                lg="7"/>
+                                xl="8"
+                                lg="8"/>
                             <InputSlot
                                 hasDiv
                                 :title="MODULE.texts.form.status"
-                                :titleClass="config?.forms?.classes?.title ? [config.forms.classes.title, 'fw-semibold'] : ['fw-semibold']"
+                                :titleClass="[config.forms.classes.title, 'fw-semibold']"
                                 isRequired
                                 hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.errors?.status"
@@ -289,8 +289,8 @@ const FORM_FIELD_CONFIG = {
     reference: {normalize: true},
     telephone: {normalize: true},
     email: {normalize: true},
-    map_url: {normalize: true},
     capacity: {toNumber: true, minValue: 0},
+    map_url: {normalize: true},
     status: {getCode: true}
 };
 
@@ -329,20 +329,10 @@ const TEXTS = {
         viewMap: "Ver mapa"
     },
     card: {
-        branch: "Sucursal",
-        internalCode: "Código interno",
-        notDefined: "No definido",
-        status: "Estado",
-        details: "Detalles",
-        address: "Dirección",
         noAddress: "Sin dirección registrada",
         noReference: "Sin referencia registrada",
-        reference: "Referencia",
-        telephone: "Teléfono",
         noTelephone: "Sin teléfono registrado",
-        email: "Correo electrónico",
-        noEmail: "Sin correo registrado",
-        capacity: "Capacidad"
+        noEmail: "Sin correo registrado"
     },
     list: {
         totalItems: "sucursales encontradas",
@@ -364,7 +354,7 @@ const TEXTS = {
             name: "Ej. Sucursal Centro",
             address: "Ej. Av. Principal 123, Distrito",
             reference: "Ej. Frente al parque principal",
-            telephone: "Ej. +51 999 999 999",
+            telephone: "Ej. 999 999 999",
             email: "Ej. contacto@sucursal.com",
             capacity: "Ej. 40",
             mapUrl: "https://maps.google.com/..."
@@ -440,11 +430,7 @@ export default {
     methods: {
         async initParams() {
 
-            const result = await Requests.get({
-                route: this.config.entity.routes.initParams,
-                data: {page: "main"},
-                showAlert: true
-            });
+            const result = await Requests.get({route: this.config.entity.routes.initParams, data: {page: "main"}, showAlert: true});
 
             this.options[this.MODULE.config.entity] = result.data?.config?.[this.MODULE.config.entity];
 
@@ -456,11 +442,7 @@ export default {
             const entityList = this.lists[this.MODULE.config.entity];
             const url = typeof params === "object" && params !== null ? params.url : params;
             const filters = Utils.cloneJson(entityList.filters);
-            const filterData = {
-                filter_by: filters?.filter_by?.code,
-                word: filters.word,
-                per_page: this.MODULE.config.perPage
-            };
+            const filterData = {filter_by: filters?.filter_by?.code, word: filters.word, per_page: this.MODULE.config.perPage};
 
             entityList.extras.loading = true;
 
@@ -472,11 +454,8 @@ export default {
                 if(url) {
 
                     const urlObj = new URL(url, window.location.origin);
-                    const paramsToSet = {
-                        per_page: this.MODULE.config.perPage,
-                        filter_by: filterData.filter_by,
-                        word: filterData.word
-                    };
+
+                    const paramsToSet = {per_page: this.MODULE.config.perPage, filter_by: filterData.filter_by, word: filterData.word};
 
                     Object.entries(paramsToSet).forEach(([key, value]) => {
 
@@ -494,10 +473,7 @@ export default {
 
                 }
 
-                const response = await Requests.get({
-                    route: requestUrl,
-                    data: requestData
-                });
+                const response = await Requests.get({route: requestUrl, data: requestData});
 
                 entityList.records = response?.data ?? {total: 0, data: []};
 
@@ -532,9 +508,13 @@ export default {
                 Object.keys(this.MODULE.formFields).forEach(key => {
 
                     if(key === "status") {
+
                         entityForms.data.status = this.statuses.find(e => e.code === record?.status) || null;
+
                     }else {
+
                         entityForms.data[key] = record?.[key] ?? this.MODULE.formFields[key];
+
                     }
 
                 });
@@ -546,10 +526,7 @@ export default {
 
             }
 
-            Alerts.modals({
-                type: "show",
-                id: entityForms.extras?.modals?.default?.id
-            });
+            Alerts.modals({type: "show", id: entityForms.extras?.modals?.default?.id});
             Alerts.tooltips({show: true, time: 500});
 
         },
@@ -566,8 +543,7 @@ export default {
             try {
 
                 const formData = Utils.cloneJson(entityForms.data);
-                const validation = Forms.validateFormData(formData, this.MODULE.validationRules, {
-                    isDescriptive: true,
+                const validation = Forms.validateFormData(formData, this.MODULE.validationRules, {isDescriptive: true,
                     errorLabels: this.MODULE.errorLabels
                 });
 
@@ -594,30 +570,20 @@ export default {
 
                 if(Requests.valid({result})) {
 
-                    Alerts.modals({
-                        type: "hide",
-                        id: entityForms.extras?.modals?.default?.id
-                    });
-                    Alerts.generateAlert({
-                        type: "success",
-                        msgContent: result?.data?.msg
-                    });
+                    Alerts.modals({type: "hide", id: entityForms.extras?.modals?.default?.id});
+                    Alerts.generateAlert({type: "success", msgContent: result?.data?.msg});
 
                     Forms.clearFormData(entityForms.data, this.MODULE.formFields);
                     const entityList = this.lists[this.MODULE.config.entity];
                     const currentPage = entityList?.records?.current_page ?? 1;
 
-                    this.listEntity({
-                        url: `${entityList?.extras?.route || ""}?page=${currentPage}`
-                    });
+                    this.listEntity({url: `${entityList?.extras?.route || ""}?page=${currentPage}`});
 
                 }else {
 
                     entityForms.errors = result?.errors ?? {};
-                    Alerts.toastrs({
-                        type: "error",
-                        subtitle: result?.data?.msg
-                    });
+
+                    Alerts.toastrs({type: "error", subtitle: result?.data?.msg});
                     Alerts.swals({show: false});
 
                 }
@@ -625,10 +591,7 @@ export default {
             }catch(error) {
 
                 console.error(`Error saving ${this.MODULE.config.pageTitle}:`, error);
-                Alerts.toastrs({
-                    type: "error",
-                    subtitle: `Error al guardar ${this.MODULE.config.pageTitle.toLowerCase()}. Por favor, intente nuevamente.`
-                });
+                Alerts.toastrs({type: "error", subtitle: `Error al guardar ${this.MODULE.config.pageTitle.toLowerCase()}. Por favor, intente nuevamente.`});
                 Alerts.swals({show: false});
 
             }finally {
@@ -699,10 +662,7 @@ export default {
         },
         statuses() {
 
-            return (this.options?.[this.MODULE.config.entity]?.statuses ?? []).map(e => ({
-                code: e.code,
-                label: e.label
-            }));
+            return (this.options?.[this.MODULE.config.entity]?.statuses ?? []).map(e => ({code: e.code, label: e.label}));
 
         },
         isUpdate() {
