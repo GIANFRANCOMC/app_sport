@@ -430,19 +430,30 @@ export default {
     methods: {
         async initParams() {
 
-            const result = await Requests.get({route: this.config.entity.routes.initParams, data: {page: "main"}, showAlert: true});
+            const response = await Requests.get({
+                route: this.config.entity.routes.initParams,
+                data: {page: "main"},
+                showAlert: true
+            });
 
-            this.options[this.MODULE.config.entity] = result.data?.config?.[this.MODULE.config.entity];
+            this.options[this.MODULE.config.entity] = response?.data?.config?.[this.MODULE.config.entity] ?? {};
 
-            return Requests.valid({result});
+            return Requests.valid({result: response});
 
         },
+        // List
         async listEntity(params = null) {
 
             const entityList = this.lists[this.MODULE.config.entity];
             const url = typeof params === "object" && params !== null ? params.url : params;
+            const emptyRecords = {total: 0, data: []};
             const filters = Utils.cloneJson(entityList.filters);
-            const filterData = {filter_by: filters?.filter_by?.code, word: filters.word, per_page: this.MODULE.config.perPage};
+
+            const filterData = {
+                per_page: this.MODULE.config.perPage,
+                filter_by: filters?.filter_by?.code,
+                word: filters?.word
+            };
 
             entityList.extras.loading = true;
 
@@ -455,17 +466,23 @@ export default {
 
                     const urlObj = new URL(url, window.location.origin);
 
-                    const paramsToSet = {per_page: this.MODULE.config.perPage, filter_by: filterData.filter_by, word: filterData.word};
+                    const paramsToSet = {
+                        per_page: this.MODULE.config.perPage,
+                        filter_by: filterData?.filter_by,
+                        word: filterData?.word
+                    };
 
                     Object.entries(paramsToSet).forEach(([key, value]) => {
 
                         if(value && !urlObj.searchParams.has(key)) {
+
                             urlObj.searchParams.set(key, value);
+
                         }
 
                     });
 
-                    requestUrl = urlObj.pathname + urlObj.search;
+                    requestUrl = `${urlObj.pathname}${urlObj.search}`;
 
                 }else {
 
@@ -473,14 +490,17 @@ export default {
 
                 }
 
-                const response = await Requests.get({route: requestUrl, data: requestData});
+                const response = await Requests.get({
+                    route: requestUrl,
+                    data: requestData,
+                    showAlert: true
+                });
 
-                entityList.records = response?.data ?? {total: 0, data: []};
+                entityList.records = response?.data ?? emptyRecords;
 
             }catch(error) {
 
-                console.error(`Error loading ${this.MODULE.config.pageTitle}:`, error);
-                entityList.records = {total: 0, data: []};
+                entityList.records = emptyRecords;
 
             }finally {
 
@@ -494,6 +514,8 @@ export default {
             this.listEntity({});
 
         },
+        // Forms
+        // REVISAAR
         openModal(record = null) {
 
             const entityForms = this.forms[this.MODULE.config.entity].createUpdate;
@@ -543,16 +565,11 @@ export default {
             try {
 
                 const formData = Utils.cloneJson(entityForms.data);
-                const validation = Forms.validateFormData(formData, this.MODULE.validationRules, {isDescriptive: true,
-                    errorLabels: this.MODULE.errorLabels
-                });
+                const validation = Forms.validateFormData(formData, this.MODULE.validationRules, {isDescriptive: true, errorLabels: this.MODULE.errorLabels});
 
                 if(!validation.bool) {
 
-                    Alerts.generateAlert({
-                        messages: Utils.getErrors({errors: validation.errors}),
-                        msgContent: `<div class="fw-semibold mb-2">${this.config.messages.errorValidate}</div>`
-                    });
+                    Alerts.generateAlert({messages: Utils.getErrors({errors: validation.errors}), msgContent: `<div class="fw-semibold mb-2">${this.config.messages.errorValidate}</div>`});
                     return;
 
                 }
@@ -590,7 +607,6 @@ export default {
 
             }catch(error) {
 
-                console.error(`Error saving ${this.MODULE.config.pageTitle}:`, error);
                 Alerts.toastrs({type: "error", subtitle: `Error al guardar ${this.MODULE.config.pageTitle.toLowerCase()}. Por favor, intente nuevamente.`});
                 Alerts.swals({show: false});
 
@@ -601,27 +617,15 @@ export default {
             }
 
         },
+        // Others
         isDefined(value) {
 
             return Utils.isDefined({value});
 
         },
-        formatCapacity(capacity) {
-
-            return Utils.formatCapacity(capacity);
-
-        },
         getStatusBadgeClasses(status) {
 
             return Utils.getStatusBadgeClasses(status);
-
-        },
-        hasValidCapacity(capacity) {
-
-            return Utils.isDefined({value: capacity}) && Utils.isNumber({
-                value: capacity,
-                minValue: 1
-            });
 
         },
         getCardFields(record) {
