@@ -132,15 +132,40 @@ export function modals({type = "show", id = null, timeout = 0}) {
 
 }
 
+/**
+ * Genera un alert de SweetAlert2 con formato optimizado
+ * @param {Array} messages - Array de mensajes para mostrar en tabla
+ * @param {String} type - Tipo de alert (success, error, warning, info)
+ * @param {String} headerTitle - Título del header del alert
+ * @param {String} msgContent - Contenido del mensaje (se envuelve automáticamente con div fw-semibold si no contiene HTML)
+ * @param {Array} keys - Claves para la tabla de mensajes
+ * @param {Number} width - Ancho del alert
+ */
 export function generateAlert({messages = [], type = "warning", headerTitle = null, msgContent = null, keys = [], width = 550}) {
 
 	let tableAlertHtml = messages.length > 0 ? generateTableAlert({messages, type, keys}) : "";
+	
+	// Envolver msgContent automáticamente con div fw-semibold si es un string simple (sin HTML)
+	let formattedMsgContent = msgContent;
+	
+	if(msgContent && typeof msgContent === "string") {
+		
+		const trimmedContent = msgContent.trim();
+		const hasHtml = trimmedContent.startsWith("<") || trimmedContent.includes("<div") || trimmedContent.includes("<span") || trimmedContent.includes("<p");
+		
+		if(!hasHtml) {
+			
+			formattedMsgContent = `<div class="fw-semibold">${msgContent}</div>`;
+			
+		}
+		
+	}
 
 	Swal.fire({title             : headerTitle,
                icon              : type,
 		       allowOutsideClick : false,
 		       allowEscapeKey    : false,
-		       html              : `${msgContent ?? ""} <div>${tableAlertHtml}</div>`,
+		       html              : `${formattedMsgContent ?? ""} <div>${tableAlertHtml}</div>`,
                width             : width,
                confirmButtonText: "Entendido",
                customClass: {
@@ -189,7 +214,7 @@ export function generateTableAlert({messages, keys = []}) {
     }
 
 	let result = messages.length === 0 ? "" : `
-	<table class="table table table-hover table-bordered">
+	<table class="table table table-hover table-bordered mt-3">
 		<thead class="table-light">
 			${header}
 		</thead>

@@ -515,7 +515,6 @@ export default {
 
         },
         // Forms
-        // REVISAAR
         openModal(record = null) {
 
             const entityForms = this.forms[this.MODULE.config.entity].createUpdate;
@@ -559,56 +558,51 @@ export default {
             const entityForms = this.forms[this.MODULE.config.entity].createUpdate;
 
             Alerts.swals({});
+
             entityForms.errors = {};
             this.isSaving = true;
 
             try {
 
-                const formData = Utils.cloneJson(entityForms.data);
+                const formData   = Utils.cloneJson(entityForms.data);
                 const validation = Forms.validateFormData(formData, this.MODULE.validationRules, {isDescriptive: true, errorLabels: this.MODULE.errorLabels});
 
                 if(!validation.bool) {
 
-                    Alerts.generateAlert({messages: Utils.getErrors({errors: validation.errors}), msgContent: `<div class="fw-semibold mb-2">${this.config.messages.errorValidate}</div>`});
+                    Alerts.generateAlert({messages: Utils.getErrors({errors: validation.errors}), msgContent: this.config.messages.errorValidate});
+                    this.isSaving = false;
                     return;
 
                 }
 
-                const preparedData = Forms.prepareFormData(formData, this.MODULE.formFieldConfig);
-                const isUpdate = Utils.isDefined({value: preparedData.id});
-                const requestMethod = isUpdate ? Requests.patch : Requests.post;
-                const route = isUpdate ? this.config.entity.routes.update : this.config.entity.routes.store;
-
-                const result = await requestMethod({
-                    route,
-                    data: preparedData,
-                    id: preparedData.id
-                });
+                const preparedData  = Forms.prepareFormData(formData, this.MODULE.formFieldConfig);
+                const id            = preparedData.id;
+                const isUpdate      = Utils.isDefined({value: id});
+                const requestMethod = isUpdate ? "patch" : "post";
+                const route         = this.config.entity.routes[isUpdate ? "update" : "store"];
+                const result        = await Requests[requestMethod]({route, data: preparedData, id});
 
                 if(Requests.valid({result})) {
 
-                    Alerts.modals({type: "hide", id: entityForms.extras?.modals?.default?.id});
-                    Alerts.generateAlert({type: "success", msgContent: result?.data?.msg});
+                    Alerts.modals({type: "hide", id: entityForms.extras.modals.default.id});
+                    Alerts.generateAlert({type: "success", msgContent: result.data.msg});
 
                     Forms.clearFormData(entityForms.data, this.MODULE.formFields);
-                    const entityList = this.lists[this.MODULE.config.entity];
+
+                    const entityList  = this.lists[this.MODULE.config.entity];
                     const currentPage = entityList?.records?.current_page ?? 1;
 
                     this.listEntity({url: `${entityList?.extras?.route || ""}?page=${currentPage}`});
 
                 }else {
 
-                    entityForms.errors = result?.errors ?? {};
-
-                    Alerts.toastrs({type: "error", subtitle: result?.data?.msg});
-                    Alerts.swals({show: false});
+                    this.handleSaveErrors({result, entityForms});
 
                 }
 
             }catch(error) {
 
-                Alerts.toastrs({type: "error", subtitle: `Error al guardar ${this.MODULE.config.pageTitle.toLowerCase()}. Por favor, intente nuevamente.`});
-                Alerts.swals({show: false});
+                Alerts.generateAlert({type: "error", messages: [error], msgContent: this.config.messages.catchError});
 
             }finally {
 

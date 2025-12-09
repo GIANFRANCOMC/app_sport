@@ -10,7 +10,8 @@ export const generalConfig = {
     messages: {
         withoutResults: "Sin registros",
         errorValidate: "Por favor, revisar el formulario para continuar.",
-        errorSearchValidate: "Para realizar la búsqueda, complete los siguientes campos:"
+        errorSearchValidate: "Para realizar la búsqueda, complete los siguientes campos:",
+        catchError: "Ha ocurrido un error al realizar la acción."
     },
     forms: {
         classes: {
