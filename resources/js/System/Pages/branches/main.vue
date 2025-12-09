@@ -430,11 +430,7 @@ export default {
     methods: {
         async initParams() {
 
-            const response = await Requests.get({
-                route: this.config.entity.routes.initParams,
-                data: {page: "main"},
-                showAlert: true
-            });
+            const response = await Requests.get({route: this.config.entity.routes.initParams, data: {page: "main"}, showAlert: true});
 
             this.options[this.MODULE.config.entity] = response?.data?.config?.[this.MODULE.config.entity] ?? {};
 
@@ -444,37 +440,30 @@ export default {
         // List
         async listEntity(params = null) {
 
-            const entityList = this.lists[this.MODULE.config.entity];
-            const url = typeof params === "object" && params !== null ? params.url : params;
+            const entityList   = this.lists[this.MODULE.config.entity];
             const emptyRecords = {total: 0, data: []};
-            const filters = Utils.cloneJson(entityList.filters);
+            const filters      = Utils.cloneJson(entityList.filters);
 
-            const filterData = {
-                per_page: this.MODULE.config.perPage,
-                filter_by: filters?.filter_by?.code,
-                word: filters?.word
-            };
+            const filterData = {per_page: this.MODULE.config.perPage, filter_by: filters?.filter_by?.code, word: filters?.word};
 
             entityList.extras.loading = true;
 
             try {
 
+                const url = this.isDefined(params) && typeof params === "object" ? params.url : params;
+
                 let requestUrl = url || entityList.extras.route;
                 let requestData = {};
 
-                if(url) {
+                if(this.isDefined(url)) {
 
                     const urlObj = new URL(url, window.location.origin);
 
-                    const paramsToSet = {
-                        per_page: this.MODULE.config.perPage,
-                        filter_by: filterData?.filter_by,
-                        word: filterData?.word
-                    };
+                    const paramsToSet = {per_page: filterData?.per_page, filter_by: filterData?.filter_by, word: filterData?.word};
 
                     Object.entries(paramsToSet).forEach(([key, value]) => {
 
-                        if(value && !urlObj.searchParams.has(key)) {
+                        if(this.isDefined(value) && !urlObj.searchParams.has(key)) {
 
                             urlObj.searchParams.set(key, value);
 
@@ -490,11 +479,7 @@ export default {
 
                 }
 
-                const response = await Requests.get({
-                    route: requestUrl,
-                    data: requestData,
-                    showAlert: true
-                });
+                const response = await Requests.get({route: requestUrl, data: requestData, showAlert: true});
 
                 entityList.records = response?.data ?? emptyRecords;
 
@@ -519,10 +504,10 @@ export default {
 
             const entityForms = this.forms[this.MODULE.config.entity].createUpdate;
 
-            Forms.clearFormData(entityForms.data, this.MODULE.formFields);
             entityForms.errors = {};
+            Forms.clearFormData(entityForms.data, this.MODULE.formFields);
 
-            if(Utils.isDefined({value: record})) {
+            if(this.isDefined(record)) {
 
                 entityForms.data.id = record?.id;
 
@@ -542,12 +527,12 @@ export default {
 
             }else {
 
-                entityForms.data.internal_code = Utils.generateCode({length: 6});
-                entityForms.data.status = this.statuses[0] || null;
+                entityForms.data.internal_code = this.generateCode({length: 7});
+                entityForms.data.status        = this.statuses[0];
 
             }
 
-            Alerts.modals({type: "show", id: entityForms.extras?.modals?.default?.id});
+            Alerts.modals({type: "show", id: entityForms.extras.modals.default.id});
             Alerts.tooltips({show: true, time: 500});
 
         },
@@ -612,29 +597,6 @@ export default {
 
         },
         // Utils
-        handleErrors({result, entityForms}) {
-
-            const isValidationError = result?.code === 422;
-            const hasFieldErrors    = result?.errors && Object.keys(result.errors).length > 0;
-            const errorMessage      = result?.data?.msg || this.config.messages.errorValidate;
-
-            entityForms.errors = result?.errors ?? {};
-
-            const msgContent = (isValidationError && hasFieldErrors) ? this.config.messages.errorValidateFields : errorMessage;
-
-            Alerts.generateAlert({type: "error", msgContent});
-
-        },
-        isDefined(value) {
-
-            return Utils.isDefined({value});
-
-        },
-        getStatusBadgeClasses(status) {
-
-            return Utils.getStatusBadgeClasses(status);
-
-        },
         getCardFields(record) {
 
             return [
@@ -644,6 +606,39 @@ export default {
                 {key: "email", icon: "fa fa-envelope text-primary", value: this.isDefined(record.email) ? record.email : null, placeholder: this.MODULE.texts.card.noEmail},
                 {key: "capacity", icon: "fa fa-users text-success", value: this.isDefined(record.capacity) ? record.capacity : null, placeholder: 0}
             ];
+
+        },
+        handleErrors({result, entityForms, setErrors = true, showAlert = true}) {
+
+            const isValidationError = result?.code === 422;
+            const hasFieldErrors    = result?.errors && Object.keys(result.errors).length > 0;
+            const errorMessage      = result?.data?.msg || this.config.messages.errorValidate;
+
+            if(setErrors) entityForms.errors = result?.errors ?? {};
+
+            if(showAlert) {
+
+                const msgContent = (isValidationError && hasFieldErrors) ? this.config.messages.errorValidateFields : errorMessage;
+
+                Alerts.generateAlert({type: "error", msgContent});
+
+            }
+
+        },
+        // Others
+        isDefined(value) {
+
+            return Utils.isDefined({value});
+
+        },
+        generateCode({length}) {
+
+            return Utils.generateCode({length});
+
+        },
+        getStatusBadgeClasses(status) {
+
+            return Utils.getStatusBadgeClasses(status);
 
         }
     },
