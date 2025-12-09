@@ -596,7 +596,7 @@ export default {
 
                 }else {
 
-                    this.handleSaveErrors({result, entityForms});
+                    this.handleErrors({result, entityForms});
 
                 }
 
@@ -611,7 +611,20 @@ export default {
             }
 
         },
-        // Others
+        // Utils
+        handleErrors({result, entityForms}) {
+
+            const isValidationError = result?.code === 422;
+            const hasFieldErrors    = result?.errors && Object.keys(result.errors).length > 0;
+            const errorMessage      = result?.data?.msg || this.config.messages.errorValidate;
+
+            entityForms.errors = result?.errors ?? {};
+
+            const msgContent = (isValidationError && hasFieldErrors) ? this.config.messages.errorValidateFields : errorMessage;
+
+            Alerts.generateAlert({type: "error", msgContent});
+
+        },
         isDefined(value) {
 
             return Utils.isDefined({value});

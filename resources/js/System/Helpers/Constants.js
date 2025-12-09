@@ -11,7 +11,8 @@ export const generalConfig = {
         withoutResults: "Sin registros",
         errorValidate: "Por favor, revisar el formulario para continuar.",
         errorSearchValidate: "Para realizar la búsqueda, complete los siguientes campos:",
-        catchError: "Ha ocurrido un error al realizar la acción."
+        catchError: "Ha ocurrido un error al realizar la acción.",
+        errorValidateFields: "El formulario contiene errores de validación. Por favor, revise los campos marcados en rojo y corrija la información según se indique."
     },
     forms: {
         classes: {
