@@ -443,8 +443,7 @@ export default {
             const entityList   = this.lists[this.MODULE.config.entity];
             const emptyRecords = {total: 0, data: []};
             const filters      = Utils.cloneJson(entityList.filters);
-
-            const filterData = {per_page: this.MODULE.config.perPage, filter_by: filters?.filter_by?.code, word: filters?.word};
+            const filterData   = {per_page: this.MODULE.config.perPage, filter_by: filters.filter_by?.code, word: filters.word};
 
             entityList.extras.loading = true;
 
@@ -452,14 +451,14 @@ export default {
 
                 const url = this.isDefined(params) && typeof params === "object" ? params.url : params;
 
-                let requestUrl = url || entityList.extras.route;
+                let requestUrl  = url || entityList.extras.route;
                 let requestData = {};
 
                 if(this.isDefined(url)) {
 
                     const urlObj = new URL(url, window.location.origin);
 
-                    const paramsToSet = {per_page: filterData?.per_page, filter_by: filterData?.filter_by, word: filterData?.word};
+                    const paramsToSet = {per_page: filterData.per_page, filter_by: filterData.filter_by, word: filterData.word};
 
                     Object.entries(paramsToSet).forEach(([key, value]) => {
 
