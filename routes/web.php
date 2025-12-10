@@ -45,8 +45,11 @@ Route::middleware(["web"])
 
             Route::prefix('/assets_management')->group($systemRoute.'/Assets/AssetManagement.php');
 
-            Route::prefix('/book_complaints')->group($systemRoute.'/BookComplaint.php');
-            Route::prefix('/companies')->group($systemRoute.'/Company.php');
+            Route::prefix('/branches')->group($systemRoute.'/Organizations/Branch.php'); // 1
+            Route::prefix('/book_complaints')->group($systemRoute.'/Organizations/BookComplaint.php'); // 2
+
+
+            Route::prefix('/companies')->group($systemRoute.'/Organizations/Company.php');
             Route::prefix('/products')->group($systemRoute.'/Product.php');
             Route::prefix('/services')->group($systemRoute.'/Service.php');
             Route::prefix('/tracking_customers')->group($systemRoute.'/TrackingCustomer.php');
@@ -60,7 +63,6 @@ Route::middleware(["web"])
             Route::prefix('/dashboard')->group($systemRoute.'/Dashboard.php');
             Route::prefix('/helpers')->group($systemRoute.'/Helper.php');
             Route::prefix('/home')->group($systemRoute.'/Home.php');
-            Route::prefix('/branches')->group($systemRoute.'/Organizations/Branch.php');
             Route::prefix('/sales')->group($systemRoute.'/Sale.php');
             Route::prefix('/users')->group($systemRoute.'/User.php');
             Route::prefix('/categories')->group($systemRoute.'/Category.php');

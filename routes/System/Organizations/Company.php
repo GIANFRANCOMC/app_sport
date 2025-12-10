@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\System\{CompanyController};
+use App\Http\Controllers\System\Organizations\{CompanyController};
 use Illuminate\Support\Facades\Route;
 
 $entity = "companies";

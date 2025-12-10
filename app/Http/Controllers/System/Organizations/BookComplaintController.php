@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\System;
+namespace App\Http\Controllers\System\Organizations;
 
 use App\Helpers\System\Utilities;
 use App\Http\Controllers\Controller;
@@ -83,7 +83,7 @@ class BookComplaintController extends Controller {
 
     public function index() {
 
-        return view("System/general/book_complaints/main");
+        return view("System/general/Organizations/book_complaints/main");
 
     }
 
