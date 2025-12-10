@@ -37,14 +37,12 @@ class BookComplaintConfigService {
 
             if($page === "main") {
 
-                $userAuth = Auth::user();
+                $config->identity_document_types = new stdClass();
+                $config->identity_document_types->records = IdentityDocumentType::getAll("book_complaint", $companyId);
 
-                $config->identityDocumentTypes = new stdClass();
-                $config->identityDocumentTypes->records = IdentityDocumentType::getAll("book_complaint", $companyId);
-
-                $config->bookComplaints = new stdClass();
-                $config->bookComplaints->types    = BookComplaint::getTypes();
-                $config->bookComplaints->statuses = BookComplaint::getStatuses();
+                $config->book_complaints = new stdClass();
+                $config->book_complaints->types    = BookComplaint::getTypes();
+                $config->book_complaints->statuses = BookComplaint::getStatuses();
 
             }
 

@@ -16,6 +16,7 @@ import InputTextArea    from "@System/Components/InputTextArea.vue";
 import Paginator    from "@System/Components/Paginator.vue";
 import Loader       from "@System/Components/Loader.vue";
 import WithoutData  from "@System/Components/WithoutData.vue";
+import FiltersSection from "@System/Components/Generics/FiltersSection.vue";
 
 // App creation and mounted
 createApp(App)
@@ -31,4 +32,5 @@ createApp(App)
 .component("Paginator", Paginator)
 .component("Loader", Loader)
 .component("WithoutData", WithoutData)
+.component("FiltersSection", FiltersSection)
 .mount("#app");

@@ -11,7 +11,7 @@ return new class extends Migration {
      */
     public function up(): void {
 
-        // ✅
+        // ✔️
         Schema::create("book_complaints", function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger("company_id");
@@ -36,6 +36,8 @@ return new class extends Migration {
             $table->integer("created_by")->nullable();
             $table->timestamp("updated_at")->nullable();
             $table->integer("updated_by")->nullable();
+            $table->timestamp("deleted_at")->nullable();
+            $table->integer("deleted_by")->nullable();
 
             $table->foreign("company_id")->references("id")->on("companies")->onDelete("cascade");
             $table->foreign("branch_id")->references("id")->on("branches")->onDelete("cascade");

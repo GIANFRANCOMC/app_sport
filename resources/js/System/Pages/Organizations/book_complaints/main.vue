@@ -2,53 +2,22 @@
     <Breadcrumb :list="breadcrumbTitles"/>
 
     <!-- Filters Section -->
-    <section class="filters-section mb-4 mb-md-4">
-        <div class="row align-items-end g-3">
-            <InputSlot
-                hasDiv
-                :title="MODULE.texts.filters.filterBy"
-                :titleClass="[config.forms.classes.title]"
-                xl="3"
-                lg="4">
-                <template v-slot:input>
-                    <v-select
-                        v-model="filterByValue"
-                        :options="filterByOptions"
-                        :class="config.forms.classes.select2"
-                        :clearable="false"
-                        :searchable="false"
-                        :disabled="entityList.extras.loading"/>
-                </template>
-            </InputSlot>
-            <InputText
-                v-model="filterWordValue"
-                @enterKeyPressed="handleSearch"
-                hasDiv
-                :title="MODULE.texts.filters.search"
-                :titleClass="[config.forms.classes.title]"
-                :placeholder="searchPlaceholder"
-                :disabled="entityList.extras.loading"
-                xl="4"
-                lg="4"/>
-            <InputSlot
-                hasDiv
-                :isInputGroup="false"
-                :divInputClass="['d-flex flex-wrap justify-content-start gap-2 gap-md-3']"
-                xl="5"
-                lg="4">
-                <template v-slot:input>
-                    <button
-                        type="button"
-                        class="btn btn-info-1 waves-effect"
-                        @click="handleSearch"
-                        :disabled="entityList.extras.loading">
-                        <i class="fa fa-search"></i>
-                        <span class="ms-2" v-text="MODULE.texts.actions.search"></span>
-                    </button>
-                </template>
-            </InputSlot>
-        </div>
-    </section>
+    <FiltersSection
+        :filter-by-value="filterByValue"
+        @update:filterByValue="filterByValue = $event"
+        :filter-word-value="filterWordValue"
+        @update:filterWordValue="filterWordValue = $event"
+        :filter-by-options="filterByOptions"
+        :search-placeholder="searchPlaceholder"
+        :loading="entityList.extras.loading"
+        :filter-by-title="MODULE.texts.filters.filterBy"
+        :search-title="MODULE.texts.filters.search"
+        :search-button-text="MODULE.texts.actions.search"
+        :add-button-text="MODULE.texts.actions.add"
+        :show-add-button="false"
+        :title-class="[config.forms.classes.title]"
+        :select-class="config.forms.classes.select2"
+        @search="handleSearch"/>
 
     <!-- List Section -->
     <section class="list-section mb-3 mb-md-3">
@@ -348,6 +317,8 @@ const TEXTS = {
     },
     actions: {
         search: "Buscar",
+        add: "Agregar",
+        edit: "Editar",
         manage: "Gestionar"
     },
     card: {
@@ -404,7 +375,6 @@ const MODULE = {
 
 export default {
     name: "BookComplaintsMain",
-    components: {},
     data() {
 
         const crudModule = Crud.initCrudModule({entity: MODULE.config.entity, menuId: MODULE.config.menuId, pageTitle: MODULE.config.pageTitle});
@@ -445,7 +415,7 @@ export default {
             const response = await Requests.get({route: this.routeActions.initParams, data: {page: "main"}, showAlert: true});
 
             this.options[this.entity] = response?.data?.config?.[this.entity] ?? {};
-            this.options.identityDocumentTypes = response?.data?.config?.identityDocumentTypes ?? {};
+            this.options.identity_document_types = response?.data?.config?.identity_document_types ?? {};
 
             return Requests.valid({result: response});
 
@@ -707,7 +677,7 @@ export default {
         },
         identityDocumentTypes() {
 
-            return (this.options?.identityDocumentTypes?.records ?? []).map(e => ({code: e.id, label: e.name, data: e}));
+            return (this.options?.identity_document_types?.records ?? []).map(e => ({code: e.id, label: e.name, data: e}));
 
         },
         types() {
