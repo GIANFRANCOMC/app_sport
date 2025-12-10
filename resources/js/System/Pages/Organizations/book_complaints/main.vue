@@ -1,286 +1,272 @@
 <template>
     <Breadcrumb :list="breadcrumbTitles"/>
 
-    <!-- Content -->
-    <div class="row align-items-end g-3 mb-3 mb-md-4">
-        <InputSlot
-            hasDiv
-            title="Filtrar por"
-            :titleClass="[config.forms.classes.title]"
-            xl="3"
-            lg="4">
-            <template v-slot:input>
-                <v-select
-                    v-model="lists.entity.filters.filter_by"
-                    :options="filterByOptions"
-                    :class="config.forms.classes.select2"
-                    :clearable="false"
-                    :searchable="false"/>
-            </template>
-        </InputSlot>
-        <InputText
-            v-model="lists.entity.filters.word"
-            @enterKeyPressed="listEntity({})"
-            hasDiv
-            title="Búsqueda"
-            :titleClass="[config.forms.classes.title]"
-            :placeholder="'Buscar por ' + (lists.entity.filters.filter_by?.label || '...').toLowerCase()"
-            xl="4"
-            lg="4"/>
-        <InputSlot
-            hasDiv
-            :isInputGroup="false"
-            :divInputClass="['d-flex flex-wrap justify-content-start gap-2 gap-md-3']"
-            xl="5"
-            lg="4">
-            <template v-slot:input>
-                <button type="button" class="btn btn-info-1 waves-effect" @click="listEntity({})" :disabled="lists.entity.extras.loading">
-                    <i class="fa fa-search"></i>
-                    <span class="ms-2">Buscar</span>
-                </button>
-            </template>
-        </InputSlot>
-    </div>
-    <div class="table-responsive">
-        <table class="table table-hover">
-            <colgroup>
-                <col style="width: 20%;">
-                <col style="width: 40%;">
-                <col style="width: 20%;">
-                <col style="width: 20%;">
-            </colgroup>
-            <thead>
-                <tr class="text-center align-middle">
-                    <th class="bg-secondary text-white fw-semibold" colspan="2">DETALLE</th>
-                    <th class="bg-secondary text-white fw-semibold">ESTADO</th>
-                    <th class="bg-secondary text-white fw-semibold">ACCIONES</th>
-                </tr>
-            </thead>
-            <tbody class="table-border-bottom-0 bg-white">
-                <template v-if="lists.entity.extras.loading">
-                    <tr class="text-center">
-                        <td colspan="99" class="py-4">
-                            <Loader/>
-                        </td>
-                    </tr>
+    <!-- Filters Section -->
+    <section class="filters-section mb-4 mb-md-4">
+        <div class="row align-items-end g-3">
+            <InputSlot
+                hasDiv
+                :title="MODULE.texts.filters.filterBy"
+                :titleClass="[config.forms.classes.title]"
+                xl="3"
+                lg="4">
+                <template v-slot:input>
+                    <v-select
+                        v-model="filterByValue"
+                        :options="filterByOptions"
+                        :class="config.forms.classes.select2"
+                        :clearable="false"
+                        :searchable="false"
+                        :disabled="entityList.extras.loading"/>
                 </template>
-                <template v-else>
-                    <template v-if="lists.entity.records.total > 0">
-                        <tr v-for="record in lists.entity.records.data" :key="record.id" class="text-center">
-                            <td class="text-start">
-                                <div class="d-flex justify-content-start flex-wrap mb-1">
-                                    <div :class="['badge rounded-pill fst-italic fw-bold text-uppercase', 'bg-label-'+getType({record})?.data?.color]" :title="getType({record})?.label">
-                                        <i :class="['fa', getType({record})?.data?.icon]"></i>
-                                        <span v-text="getType({record})?.label" class="ms-1"></span>
-                                    </div>
-                                </div>
-                                <span v-text="record.document_number" class="text-dark d-block"></span>
-                                <span v-text="record.identity_document_type?.name" class="fst-italic d-block text-muted small"></span>
-                            </td>
-                            <td class="text-start">
-                                <span v-text="record.name" class="fw-bold d-block"></span>
-                                <a :href="'mailto:'+record.email" class="d-flex align-items-center small" v-if="isDefined({value: record.email})">
-                                    <span>📧</span>
-                                    <span v-text="record.email" class="fst-italic ms-1"></span>
-                                </a>
-                                <a :href="'tel:'+record.phone_number" class="d-inline-flex align-items-center small" v-if="isDefined({value: record.phone_number})">
-                                    <span>📞</span>
-                                    <span v-text="record.phone_number" class="fst-italic ms-1"></span>
-                                </a>
-                                <template v-if="!isDefined({value: record.email}) && !isDefined({value: record.phone_number})">
-                                    <span class="small text-muted fst-italic">Sin información de contacto</span>
-                                </template>
-                            </td>
-                            <td>
-                                <div class="small mb-1 d-inline-flex align-items-center" v-if="isDefined({value: record.created_at})">
-                                    <span>📅</span>
-                                    <span v-text="legibleFormatDate({dateString: record.created_at, type: 'datetime'})" class="text-dark fst-italic ms-1"></span>
-                                </div>
-                                <span :class="['badge', 'fw-semibold', { 'bg-label-primary': ['in_progress'].includes(record.status), 'bg-label-success': ['resolved'].includes(record.status), 'bg-label-danger': ['pending'].includes(record.status) }]" v-text="record.formatted_status"></span>
-                            </td>
-                            <td>
-                                <InputSlot
-                                    hasDiv
-                                    :isInputGroup="false"
-                                    :divInputClass="['d-flex flex-wrap justify-content-center gap-2 gap-md-1']"
-                                    xl="12"
-                                    lg="12">
-                                    <template v-slot:input>
-                                        <button type="button" class="btn btn-sm btn-primary waves-effect" @click="modalCreateUpdateEntity({record})">
-                                            <i class="fa-solid fa-screwdriver-wrench"></i>
-                                            <span class="ms-2">Gestionar</span>
-                                        </button>
-                                    </template>
-                                </InputSlot>
-                            </td>
-                        </tr>
-                    </template>
-                    <template v-else>
-                        <tr>
-                            <td class="text-center" colspan="99">
-                                <WithoutData type="image"/>
-                            </td>
-                        </tr>
-                    </template>
+            </InputSlot>
+            <InputText
+                v-model="filterWordValue"
+                @enterKeyPressed="handleSearch"
+                hasDiv
+                :title="MODULE.texts.filters.search"
+                :titleClass="[config.forms.classes.title]"
+                :placeholder="searchPlaceholder"
+                :disabled="entityList.extras.loading"
+                xl="4"
+                lg="4"/>
+            <InputSlot
+                hasDiv
+                :isInputGroup="false"
+                :divInputClass="['d-flex flex-wrap justify-content-start gap-2 gap-md-3']"
+                xl="5"
+                lg="4">
+                <template v-slot:input>
+                    <button
+                        type="button"
+                        class="btn btn-info-1 waves-effect"
+                        @click="handleSearch"
+                        :disabled="entityList.extras.loading">
+                        <i class="fa fa-search"></i>
+                        <span class="ms-2" v-text="MODULE.texts.actions.search"></span>
+                    </button>
                 </template>
-            </tbody>
-        </table>
-    </div>
-    <div class="d-flex justify-content-center" v-if="!lists.entity.extras.loading && lists.entity.records?.total > 0">
-        <Paginator :links="lists.entity.records.links" @clickPage="listEntity"/>
-    </div>
+            </InputSlot>
+        </div>
+    </section>
 
-    <!-- Modals -->
-    <div class="modal fade" :id="forms.entity.createUpdate.extras.modals.default.id" data-bs-backdrop="static" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title text-uppercase fw-bold" v-text="forms.entity.createUpdate.extras.modals.default.titles[isUpdate ? 'update' : 'store']"></h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="row g-3">
-                        <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12">
-                            <div class="card shadow-sm">
-                                <div class="card-header bg-primary text-white py-1">
-                                    <span>👤</span>
-                                    <span class="ms-2">Datos del cliente</span>
+    <!-- List Section -->
+    <section class="list-section mb-3 mb-md-3">
+        <Loader v-if="entityList.extras.loading"/>
+        <WithoutData v-else-if="entityList.records.total === 0" type="image"/>
+        <div v-else-if="entityList.records.total > 0" class="row g-3 g-lg-4">
+            <div v-for="record in entityList.records.data" :key="record.id" class="col-12 col-md-6 col-xl-4">
+                <div class="card card-list-custom border-0 shadow-sm h-100">
+                    <div class="card-header">
+                        <div class="d-flex align-items-start justify-content-between gap-3">
+                            <div class="d-flex flex-column flex-grow-1 flex-min-w-0">
+                                <div class="d-flex justify-content-start flex-wrap mb-1">
+                                    <div :class="['badge rounded-pill fst-italic fw-bold text-uppercase', 'bg-label-'+getType(record)?.data?.color]" :title="getType(record)?.label">
+                                        <i :class="['fa', getType(record)?.data?.icon]"></i>
+                                        <span v-text="getType(record)?.label" class="ms-1"></span>
+                                    </div>
                                 </div>
-                                <div class="card-body py-2">
-                                    <div class="text-start mb-2">
-                                        <span v-text="forms.entity.createUpdate.data.document_number" class="text-dark d-block"></span>
-                                        <span v-text="forms.entity.createUpdate.data.identity_document_type?.label" class="fst-italic d-block text-muted small"></span>
-                                    </div>
-                                    <span v-text="forms.entity.createUpdate.data.name" class="fw-bold d-block"></span>
-                                    <div v-if="isDefined({value: forms.entity.createUpdate.data.email})">
-                                        <a :href="'mailto:'+forms.entity.createUpdate.data.email" class="d-inline-flex align-items-center small">
-                                            <span>📧</span>
-                                            <span v-text="forms.entity.createUpdate.data.email" class="fst-italic ms-1"></span>
-                                        </a>
-                                    </div>
-                                    <div v-if="isDefined({value: forms.entity.createUpdate.data.phone_number})">
-                                        <a :href="'tel:'+forms.entity.createUpdate.data.phone_number" class="d-inline-flex align-items-center small">
-                                            <span>📞</span>
-                                            <span v-text="forms.entity.createUpdate.data.phone_number" class="fst-italic ms-1"></span>
-                                        </a>
-                                    </div>
-                                    <template v-if="!isDefined({value: forms.entity.createUpdate.data.email}) && !isDefined({value: forms.entity.createUpdate.data.phone_number})">
-                                        <span class="small text-muted fst-italic">Sin información de contacto</span>
-                                    </template>
-                                </div>
+                                <span class="fs-5 fw-bold text-dark text-truncate" v-text="record.name"></span>
+                                <span class="text-muted small" v-text="record.document_number"></span>
                             </div>
+                            <span :class="[getStatusBadgeClasses(record.status), 'flex-shrink-none']" v-text="record.formatted_status"></span>
                         </div>
-                        <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12">
-                            <div class="card shadow-sm">
-                                <div class="card-header bg-danger text-white py-1">
-                                    <span>📝</span>
-                                    <span class="ms-2">Detalle del reclamo</span>
-                                </div>
-                                <div class="card-body py-2">
-                                    <div class="d-flex justify-content-center flex-wrap mt-1 mb-2">
-                                        <div :class="['badge rounded-pill fst-italic fw-bold text-uppercase', 'bg-label-'+getType({record: forms.entity.createUpdate.data})?.data?.color]" :title="getType({record: forms.entity.createUpdate.data})?.label">
-                                            <i :class="['fa', getType({record: forms.entity.createUpdate.data})?.data?.icon]"></i>
-                                            <span v-text="getType({record: forms.entity.createUpdate.data})?.label" class="ms-1"></span>
-                                        </div>
-                                    </div>
-                                    <div class="text-start mb-2">
-                                        <span class="text-dark fw-bold colon-at-end">Sucursal</span>
-                                        <span v-text="forms.entity.createUpdate.data?.branch?.name || 'No especifica'" class="ms-2"></span>
-                                    </div>
-                                    <div class="text-start mb-2">
-                                        <span class="text-dark fw-bold colon-at-end">Descripción</span>
-                                        <span v-text="forms.entity.createUpdate.data.description || 'No registrada'" class="ms-2"></span>
-                                    </div>
-                                    <div class="text-start mb-2">
-                                        <span class="text-dark fw-bold colon-at-end">Pedido del cliente</span>
-                                        <span v-text="forms.entity.createUpdate.data.request || 'No registrado'" class="ms-2"></span>
-                                    </div>
-                                    <div class="text-start mb-2">
-                                        <span class="text-dark fw-bold colon-at-end">Fecha y hora</span>
-                                        <span v-text="legibleFormatDate({dateString: forms.entity.createUpdate.data.created_at, type: 'datetime'})" class="ms-2"></span>
-                                    </div>
-                                    <div class="d-flex justify-content-start align-items-center flex-wrap">
-                                        <span class="text-dark fw-bold colon-at-end">Estado actual</span>
-                                        <span :class="['badge', 'fw-semibold', 'ms-2', { 'bg-label-primary': ['in_progress'].includes(forms.entity.createUpdate.data.copy?.status?.code), 'bg-label-success': ['resolved'].includes(forms.entity.createUpdate.data.copy?.status?.code), 'bg-label-danger': ['pending'].includes(forms.entity.createUpdate.data.copy?.status?.code) }]" v-text="forms.entity.createUpdate.data.copy?.status?.label"></span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12">
-                            <div class="card shadow-sm">
-                                <div class="card-header bg-secondary text-white py-1">
-                                    <span>🖥️</span>
-                                    <span class="ms-2">Información técnica</span>
-                                </div>
-                                <div class="card-body py-2">
-                                    <div class="text-start mb-2">
-                                        <span class="text-dark fw-bold colon-at-end">IP enviada</span>
-                                        <span v-text="forms.entity.createUpdate.data.submitted_ip || 'N/A'" class="small text-muted fst-italic ms-2"></span>
-                                    </div>
-                                    <div class="text-start mb-2">
-                                        <span class="text-dark fw-bold colon-at-end">Plataforma</span>
-                                        <span v-text="forms.entity.createUpdate.data.submitted_platform || 'N/A'" class="small text-muted fst-italic ms-2"></span>
-                                    </div>
-                                    <div class="text-start mb-2">
-                                        <span class="text-dark fw-bold colon-at-end">Navegador</span>
-                                        <span v-text="forms.entity.createUpdate.data.submitted_browser || 'N/A'" class="small text-muted fst-italic ms-2"></span>
-                                    </div>
-                                    <div class="text-start">
-                                        <span class="text-dark fw-bold colon-at-end">User Agent</span>
-                                        <span v-text="forms.entity.createUpdate.data.submitted_user_agent || 'N/A'" class="small text-muted fst-italic ms-2"></span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12">
-                            <div class="card shadow-sm">
-                                <div class="card-header bg-success text-white py-1">
-                                    <span>🗂️</span>
-                                    <span class="ms-2">Gestión administrativa</span>
-                                </div>
-                                <div class="card-body py-3">
-                                    <div class="row g-3">
-                                        <InputSlot
-                                            hasDiv
-                                            title="Estado"
-                                            isRequired
-                                            :isInputGroup="false"
-                                            :divInputClass="['d-flex flex-wrap justify-content-start align-items-end gap-2 gap-md-3']"
-                                            hasTextBottom
-                                            :textBottomInfo="forms.entity.createUpdate.errors?.status"
-                                            xl="12"
-                                            lg="12">
-                                            <template v-slot:input>
-                                                <div v-for="option in statuses" :key="option.value" class="form-check">
-                                                    <label class="cursor-pointer">
-                                                        <input class="form-check-input" type="radio" :value="option" v-model="forms.entity.createUpdate.data.status"/>
-                                                        <span class="fw-bold" v-text="option.label"></span>
-                                                    </label>
-                                                </div>
-                                            </template>
-                                        </InputSlot>
-                                        <InputTextArea
-                                            v-model="forms.entity.createUpdate.data.admin_response"
-                                            hasDiv
-                                            title="Respuesta del administrador"
-                                            isRequired
-                                            maxlength="600"
-                                            rows="5"
-                                            hasTextBottom
-                                            :textBottomInfo="forms.entity.createUpdate.errors?.admin_response"
-                                            xl="12"
-                                            lg="12"/>
-                                    </div>
-                                </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex flex-column gap-2">
+                            <div v-for="field in getCardFields(record)" :key="field.key" class="d-flex align-items-center gap-2">
+                                <i :class="[field.icon, 'icon-fixed-width']"></i>
+                                <span v-if="field.value" class="text-truncate flex-grow-1 small flex-min-w-0" v-text="field.value"></span>
+                                <span v-else class="text-muted small" v-text="field.placeholder"></span>
                             </div>
                         </div>
                     </div>
+                    <div class="card-footer">
+                        <div class="d-flex flex-wrap justify-content-end align-items-center gap-2 pt-3 border-top">
+                            <button type="button" class="btn btn-sm btn-primary waves-effect" @click="openModal(record)">
+                                <i class="fa-solid fa-screwdriver-wrench"></i>
+                                <span class="ms-2" v-text="MODULE.texts.actions.manage"></span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pagination -->
+    <nav v-if="!entityList.extras.loading && entityList.records.total > 0" class="d-flex justify-content-center">
+        <Paginator :links="entityList.records.links" @clickPage="listEntity"/>
+    </nav>
+
+    <!-- Modal: Update -->
+    <div class="modal fade" :id="forms[entity].createUpdate.extras.modals.default.id" data-bs-backdrop="static" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title text-uppercase fw-bold" v-text="modalTitles[isUpdate ? 'update' : 'store']"></h5>
+                    <button type="button" class="btn-header-modal" data-bs-dismiss="modal">
+                        <i class="fa fa-times icon-close-modal"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form @submit.prevent="saveEntity">
+                        <div class="row g-3">
+                            <!-- Datos del cliente -->
+                            <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12">
+                                <div class="card shadow-sm">
+                                    <div class="card-header bg-primary text-white py-1">
+                                        <span>👤</span>
+                                        <span class="ms-2" v-text="MODULE.texts.sections.clientData"></span>
+                                    </div>
+                                    <div class="card-body py-2">
+                                        <div class="text-start mb-2">
+                                            <span v-text="forms[entity].createUpdate.data.document_number" class="text-dark d-block"></span>
+                                            <span v-text="forms[entity].createUpdate.data.identity_document_type?.label" class="fst-italic d-block text-muted small"></span>
+                                        </div>
+                                        <span v-text="forms[entity].createUpdate.data.name" class="fw-bold d-block"></span>
+                                        <div v-if="isDefined(forms[entity].createUpdate.data.email)">
+                                            <a :href="'mailto:'+forms[entity].createUpdate.data.email" class="d-inline-flex align-items-center small">
+                                                <span>📧</span>
+                                                <span v-text="forms[entity].createUpdate.data.email" class="fst-italic ms-1"></span>
+                                            </a>
+                                        </div>
+                                        <div v-if="isDefined(forms[entity].createUpdate.data.phone_number)">
+                                            <a :href="'tel:'+forms[entity].createUpdate.data.phone_number" class="d-inline-flex align-items-center small">
+                                                <span>📞</span>
+                                                <span v-text="forms[entity].createUpdate.data.phone_number" class="fst-italic ms-1"></span>
+                                            </a>
+                                        </div>
+                                        <template v-if="!isDefined(forms[entity].createUpdate.data.email) && !isDefined(forms[entity].createUpdate.data.phone_number)">
+                                            <span class="small text-muted fst-italic" v-text="MODULE.texts.card.noContact"></span>
+                                        </template>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Detalle del reclamo -->
+                            <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12">
+                                <div class="card shadow-sm">
+                                    <div class="card-header bg-danger text-white py-1">
+                                        <span>📝</span>
+                                        <span class="ms-2" v-text="MODULE.texts.sections.complaintDetail"></span>
+                                    </div>
+                                    <div class="card-body py-2">
+                                        <div class="d-flex justify-content-center flex-wrap mt-1 mb-2">
+                                            <div :class="['badge rounded-pill fst-italic fw-bold text-uppercase', 'bg-label-'+getType(forms[entity].createUpdate.data)?.data?.color]" :title="getType(forms[entity].createUpdate.data)?.label">
+                                                <i :class="['fa', getType(forms[entity].createUpdate.data)?.data?.icon]"></i>
+                                                <span v-text="getType(forms[entity].createUpdate.data)?.label" class="ms-1"></span>
+                                            </div>
+                                        </div>
+                                        <div class="text-start mb-2">
+                                            <span class="text-dark fw-bold colon-at-end" v-text="MODULE.texts.form.branch"></span>
+                                            <span v-text="forms[entity].createUpdate.data?.branch?.name || MODULE.texts.card.notSpecified" class="ms-2"></span>
+                                        </div>
+                                        <div class="text-start mb-2">
+                                            <span class="text-dark fw-bold colon-at-end" v-text="MODULE.texts.form.description"></span>
+                                            <span v-text="forms[entity].createUpdate.data.description || MODULE.texts.card.notRegistered" class="ms-2"></span>
+                                        </div>
+                                        <div class="text-start mb-2">
+                                            <span class="text-dark fw-bold colon-at-end" v-text="MODULE.texts.form.request"></span>
+                                            <span v-text="forms[entity].createUpdate.data.request || MODULE.texts.card.notRegistered" class="ms-2"></span>
+                                        </div>
+                                        <div class="text-start mb-2">
+                                            <span class="text-dark fw-bold colon-at-end" v-text="MODULE.texts.form.dateTime"></span>
+                                            <span v-text="legibleFormatDate({dateString: forms[entity].createUpdate.data.created_at, type: 'datetime'})" class="ms-2"></span>
+                                        </div>
+                                        <div class="d-flex justify-content-start align-items-center flex-wrap">
+                                            <span class="text-dark fw-bold colon-at-end" v-text="MODULE.texts.form.currentStatus"></span>
+                                            <span :class="['badge', 'fw-semibold', 'ms-2', getStatusBadgeClasses(forms[entity].createUpdate.data.copy?.status?.code)]" v-text="forms[entity].createUpdate.data.copy?.status?.label"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Información técnica -->
+                            <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12">
+                                <div class="card shadow-sm">
+                                    <div class="card-header bg-secondary text-white py-1">
+                                        <span>🖥️</span>
+                                        <span class="ms-2" v-text="MODULE.texts.sections.technicalInfo"></span>
+                                    </div>
+                                    <div class="card-body py-2">
+                                        <div class="text-start mb-2">
+                                            <span class="text-dark fw-bold colon-at-end" v-text="MODULE.texts.form.submittedIp"></span>
+                                            <span v-text="forms[entity].createUpdate.data.submitted_ip || 'N/A'" class="small text-muted fst-italic ms-2"></span>
+                                        </div>
+                                        <div class="text-start mb-2">
+                                            <span class="text-dark fw-bold colon-at-end" v-text="MODULE.texts.form.submittedPlatform"></span>
+                                            <span v-text="forms[entity].createUpdate.data.submitted_platform || 'N/A'" class="small text-muted fst-italic ms-2"></span>
+                                        </div>
+                                        <div class="text-start mb-2">
+                                            <span class="text-dark fw-bold colon-at-end" v-text="MODULE.texts.form.submittedBrowser"></span>
+                                            <span v-text="forms[entity].createUpdate.data.submitted_browser || 'N/A'" class="small text-muted fst-italic ms-2"></span>
+                                        </div>
+                                        <div class="text-start">
+                                            <span class="text-dark fw-bold colon-at-end" v-text="MODULE.texts.form.submittedUserAgent"></span>
+                                            <span v-text="forms[entity].createUpdate.data.submitted_user_agent || 'N/A'" class="small text-muted fst-italic ms-2"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Gestión administrativa -->
+                            <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12">
+                                <div class="card shadow-sm">
+                                    <div class="card-header bg-success text-white py-1">
+                                        <span>🗂️</span>
+                                        <span class="ms-2" v-text="MODULE.texts.sections.adminManagement"></span>
+                                    </div>
+                                    <div class="card-body py-3">
+                                        <div class="row g-3">
+                                            <InputSlot
+                                                hasDiv
+                                                :title="MODULE.texts.form.status"
+                                                :titleClass="[config.forms.classes.title, 'fw-semibold']"
+                                                isRequired
+                                                hasTextBottom
+                                                :textBottomInfo="forms[entity].createUpdate.errors?.status"
+                                                xl="12"
+                                                lg="12">
+                                                <template v-slot:input>
+                                                    <v-select
+                                                        v-model="forms[entity].createUpdate.data.status"
+                                                        :options="statuses"
+                                                        :class="config.forms.classes.select2"
+                                                        :clearable="false"
+                                                        :searchable="false"/>
+                                                </template>
+                                            </InputSlot>
+                                            <InputTextArea
+                                                v-model="forms[entity].createUpdate.data.admin_response"
+                                                hasDiv
+                                                :title="MODULE.texts.form.adminResponse"
+                                                :titleClass="[config.forms.classes.title, 'fw-semibold']"
+                                                isRequired
+                                                maxlength="600"
+                                                rows="5"
+                                                hasTextBottom
+                                                :textBottomInfo="forms[entity].createUpdate.errors?.admin_response"
+                                                xl="12"
+                                                lg="12"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary waves-effect" data-bs-dismiss="modal">Cerrar</button>
-                    <button type="button" :class="['btn waves-effect', isUpdate ? 'btn-primary' : 'btn-primary']" @click="createUpdateEntity()">
+                    <button
+                        type="button"
+                        class="btn btn-secondary waves-effect"
+                        data-bs-dismiss="modal"
+                        v-text="MODULE.texts.modal.close">
+                    </button>
+                    <button
+                        type="button"
+                        :class="['btn waves-effect', isUpdate ? 'btn-warning' : 'btn-primary']"
+                        @click="saveEntity"
+                        :disabled="isSaving">
                         <i class="fa fa-save"></i>
-                        <span class="ms-2">Guardar</span>
+                        <span class="ms-2" v-text="MODULE.texts.modal.save"></span>
                     </button>
                 </div>
             </div>
@@ -289,25 +275,163 @@
 </template>
 
 <script>
-import * as Alerts    from "@System/Helpers/Alerts.js";
-import * as Constants from "@System/Helpers/Constants.js";
-import * as Requests  from "@System/Helpers/Requests.js";
-import * as Utils     from "@System/Helpers/Utils.js";
+import * as Alerts from "@System/Helpers/Alerts.js";
+import * as Crud from "@System/Helpers/Crud.js";
+import * as Forms from "@System/Helpers/Forms.js";
+import * as Requests from "@System/Helpers/Requests.js";
+import * as Utils from "@System/Helpers/Utils.js";
+
+const MODULE_CONFIG = {
+    entity: "book_complaints",
+    menuId: "menu-item-customer_care-book_complaints",
+    pageTitle: "Libro de reclamaciones y sugerencias",
+    breadcrumbParent: "Atención al cliente",
+    perPage: 6
+};
+
+const FORM_FIELDS = {
+    branch: null,
+    identity_document_type: null,
+    document_number: "",
+    name: "",
+    email: "",
+    phone_number: "",
+    type: "",
+    description: "",
+    request: "",
+    evidence: "",
+    admin_response: "",
+    submitted_ip: "",
+    submitted_user_agent: "",
+    submitted_platform: "",
+    submitted_browser: "",
+    status: null,
+    created_at: "",
+    copy: null
+};
+
+const FORM_FIELD_CONFIG = {
+    branch: {getCode: true},
+    identity_document_type: {getCode: true},
+    document_number: {trim: true},
+    name: {trim: true},
+    email: {normalize: true},
+    phone_number: {normalize: true},
+    type: {trim: true},
+    description: {trim: true},
+    request: {normalize: true},
+    evidence: {normalize: true},
+    admin_response: {trim: true},
+    submitted_ip: {normalize: true},
+    submitted_user_agent: {normalize: true},
+    submitted_platform: {normalize: true},
+    submitted_browser: {normalize: true},
+    status: {getCode: true}
+};
+
+const VALIDATION_RULES = {
+    status: {required: true},
+    admin_response: {required: true}
+};
+
+const ERROR_LABELS = {
+    status: "Estado",
+    admin_response: "Respuesta del administrador",
+    required: "Es obligatorio"
+};
+
+const TEXTS = {
+    loading: `Cargando ${MODULE_CONFIG.pageTitle}...`,
+    filters: {
+        filterBy: "Filtrar por",
+        search: "Búsqueda"
+    },
+    actions: {
+        search: "Buscar",
+        manage: "Gestionar"
+    },
+    card: {
+        noEmail: "Sin correo registrado",
+        noPhone: "Sin teléfono registrado",
+        noContact: "Sin información de contacto",
+        noDescription: "Sin descripción registrada",
+        noRequest: "Sin pedido registrado",
+        notSpecified: "No especifica",
+        notRegistered: "No registrado"
+    },
+    sections: {
+        clientData: "Datos del cliente",
+        complaintDetail: "Detalle del reclamo",
+        technicalInfo: "Información técnica",
+        adminManagement: "Gestión administrativa"
+    },
+    form: {
+        branch: "Sucursal",
+        description: "Descripción",
+        request: "Pedido del cliente",
+        dateTime: "Fecha y hora",
+        currentStatus: "Estado actual",
+        status: "Estado",
+        adminResponse: "Respuesta del administrador",
+        submittedIp: "IP enviada",
+        submittedPlatform: "Plataforma",
+        submittedBrowser: "Navegador",
+        submittedUserAgent: "User Agent"
+    },
+    modal: {
+        close: "Cerrar",
+        save: "Guardar"
+    }
+};
+
+const FILTER_OPTIONS = [
+    {code: "all", label: "Todos los filtros"},
+    {code: "document_number", label: "Número de documento"},
+    {code: "name", label: "Nombre"},
+    {code: "email", label: "Correo electrónico"},
+    {code: "phone_number", label: "Celular"}
+];
+
+const MODULE = {
+    config: MODULE_CONFIG,
+    formFields: FORM_FIELDS,
+    formFieldConfig: FORM_FIELD_CONFIG,
+    validationRules: VALIDATION_RULES,
+    errorLabels: ERROR_LABELS,
+    texts: TEXTS,
+    filterOptions: FILTER_OPTIONS
+};
 
 export default {
-    components: {
-        //
+    name: "BookComplaintsMain",
+    components: {},
+    data() {
+
+        const crudModule = Crud.initCrudModule({entity: MODULE.config.entity, menuId: MODULE.config.menuId, pageTitle: MODULE.config.pageTitle});
+
+        crudModule.lists[MODULE.config.entity].filters.filter_by = MODULE.filterOptions[0];
+        crudModule.forms[MODULE.config.entity].createUpdate.data = Forms.initFormData(MODULE.formFields);
+
+        return {
+            ...crudModule,
+            MODULE: MODULE,
+            isInitialized: false,
+            isSaving: false
+        };
+
     },
     mounted: async function() {
 
         Utils.navbarItem("menu-item-customer_care", {addClass: "open"});
         Utils.navbarItem(this.config.entity.page.menu.id, {});
+
         Alerts.swals({type: "initParams"});
 
-        let initParams = await this.initParams({}),
-            initOthers = await this.initOthers({});
+        const initParams = await this.initParams();
 
-        if(initParams && initOthers) {
+        this.isInitialized = true;
+
+        if(initParams) {
 
             Alerts.swals({show: false});
             this.listEntity({});
@@ -315,285 +439,220 @@ export default {
         }
 
     },
-    data() {
-        return {
-            lists: {
-                entity: {
-                    extras: {
-                        loading: false,
-                        route: Requests.config({entity: "book_complaints", type: "list"})
-                    },
-                    filters: {
-                        filter_by: null,
-                        word: ""
-                    },
-                    records: {
-                        total: 0
-                    }
-                }
-            },
-            forms: {
-                entity: {
-                    createUpdate: {
-                        extras: {
-                            modals: {
-                                default: {
-                                    id: Utils.uuid(),
-                                    titles: {
-                                        store: "Agregar",
-                                        update: "Gestionar"
-                                    }
-                                }
-                            }
-                        },
-                        data: {
-                            id: null,
-                            branch: null,
-                            identity_document_type: null,
-                            document_number: "",
-                            name: "",
-                            email: "",
-                            phone_number: "",
-                            type: "",
-                            description: "",
-                            request: "",
-                            evidence: "",
-                            admin_response: "",
-                            submitted_ip: "",
-                            submitted_user_agent: "",
-                            submitted_platform: "",
-                            submitted_browser: "",
-                            status: null,
-                            created_at: "",
-                            copy: null
-                        },
-                        errors: {}
-                    }
-                }
-            },
-            options: {},
-            config: {
-                ...Constants.generalConfig,
-                entity: {
-                    ...Requests.config({entity: "book_complaints"}),
-                    page: {
-                        title: "Libro de reclamaciones y sugerencias",
-                        active: true,
-                        menu: {
-                            id: "menu-item-customer_care-book_complaints"
-                        }
-                    }
-                }
-            }
-        };
-    },
     methods: {
-        // Init
-        async initParams({}) {
+        async initParams() {
 
-            let initParams = await Requests.get({route: this.config.entity.routes.initParams, data: {page: "main"}, showAlert: true});
+            const response = await Requests.get({route: this.routeActions.initParams, data: {page: "main"}, showAlert: true});
 
-            this.options.identityDocumentTypes = initParams.data?.config?.identityDocumentTypes;
-            this.options.bookComplaints        = initParams.data?.config?.bookComplaints;
+            this.options[this.entity] = response?.data?.config?.[this.entity] ?? {};
+            this.options.identityDocumentTypes = response?.data?.config?.identityDocumentTypes ?? {};
 
-            return Requests.valid({result: initParams});
-
-        },
-        async initOthers({}) {
-
-            return new Promise(resolve => {
-
-                this.lists.entity.filters.filter_by = this.filterByOptions[0];
-
-                resolve(true);
-
-            });
+            return Requests.valid({result: response});
 
         },
-        // Entity forms
-        async listEntity({url = null}) {
+        // List
+        async listEntity(params = null) {
 
-            let filters = Utils.cloneJson(this.lists.entity.filters);
-            const filterJson = {filter_by: filters?.filter_by?.code, word: filters.word};
+            const entityList   = this.lists[this.entity];
+            const emptyRecords = {total: 0, data: []};
+            const filters      = Utils.cloneJson(entityList.filters);
+            const filterData   = {per_page: this.MODULE.config.perPage, filter_by: filters.filter_by?.code, word: filters.word};
 
-            this.lists.entity.extras.loading = true;
-            this.lists.entity.records        = (await Requests.get({route: url || this.lists.entity.extras.route, data: filterJson}))?.data;
-            this.lists.entity.extras.loading = false;
+            entityList.extras.loading = true;
+
+            try {
+
+                const url = this.isDefined(params) && typeof params === "object" ? params.url : params;
+
+                let requestUrl  = url || entityList.extras.route;
+                let requestData = {};
+
+                if(this.isDefined(url)) {
+
+                    const urlObj = new URL(url, window.location.origin);
+
+                    Object.entries(filterData).forEach(([key, value]) => {
+
+                        if(this.isDefined(value) && !urlObj.searchParams.has(key)) urlObj.searchParams.set(key, value);
+
+                    });
+
+                    requestUrl = `${urlObj.pathname}${urlObj.search}`;
+
+                }else {
+
+                    requestData = filterData;
+
+                }
+
+                const response = await Requests.get({route: requestUrl, data: requestData, showAlert: true});
+
+                entityList.records = response?.data ?? emptyRecords;
+
+            }catch(error) {
+
+                entityList.records = emptyRecords;
+
+            }finally {
+
+                entityList.extras.loading = false;
+
+            }
+
+        },
+        handleSearch() {
+
+            this.listEntity({});
 
         },
         // Forms
-        getType({record = null}) {
+        openModal(record = null) {
+
+            if(!this.isDefined(record)) return;
+
+            const entityForms = this.forms[this.entity].createUpdate;
+
+            entityForms.errors = {};
+            Forms.clearFormData(entityForms.data, this.MODULE.formFields);
+
+            entityForms.data.id = record?.id;
+
+            // Mapear datos del record
+            Object.keys(this.MODULE.formFields).forEach(key => {
+
+                if(key === "status") {
+
+                    entityForms.data.status = this.statuses.find(e => e.code === record?.status) || null;
+
+                }else if(key === "identity_document_type") {
+
+                    const identityDocType = this.identityDocumentTypes.find(e => e.code === record?.identity_document_type_id);
+                    entityForms.data.identity_document_type = identityDocType || null;
+
+                }else if(key === "branch") {
+
+                    entityForms.data.branch = record?.branch || null;
+
+                }else if(key === "copy") {
+
+                    // Guardar copia del estado original
+                    entityForms.data.copy = {
+                        status: this.statuses.find(e => e.code === record?.status) || null
+                    };
+
+                }else {
+
+                    entityForms.data[key] = record?.[key] ?? this.MODULE.formFields[key];
+
+                }
+
+            });
+
+            Alerts.modals({type: "show", id: entityForms.extras.modals.default.id});
+            Alerts.tooltips({show: true, time: 500});
+
+        },
+        async saveEntity() {
+
+            if(this.isSaving) return;
+
+            const entityForms = this.forms[this.entity].createUpdate;
+
+            Alerts.swals({});
+
+            entityForms.errors = {};
+            this.isSaving = true;
+
+            try {
+
+                const formData   = Utils.cloneJson(entityForms.data);
+                const validation = Forms.validateFormData(formData, this.MODULE.validationRules, {isDescriptive: true, errorLabels: this.MODULE.errorLabels});
+
+                if(!validation.bool) {
+
+                    Alerts.generateAlert({messages: Utils.getErrors({errors: validation.errors}), msgContent: this.config.messages.errorValidate});
+                    this.isSaving = false;
+                    return;
+
+                }
+
+                const preparedData  = Forms.prepareFormData(formData, this.MODULE.formFieldConfig);
+                const id            = preparedData.id;
+                const isUpdate       = this.isDefined(id);
+                const requestMethod  = isUpdate ? "patch" : "post";
+                const route          = this.routeActions[isUpdate ? "update" : "store"];
+
+                // Preparar datos para envío
+                const dataToSend = {
+                    status: preparedData.status,
+                    admin_response: preparedData.admin_response
+                };
+
+                const result = await Requests[requestMethod]({route, data: dataToSend, id});
+
+                if(Requests.valid({result})) {
+
+                    Alerts.modals({type: "hide", id: entityForms.extras.modals.default.id});
+                    Alerts.generateAlert({type: "success", msgContent: result.data.msg});
+
+                    Forms.clearFormData(entityForms.data, this.MODULE.formFields);
+
+                    const entityList  = this.entityList;
+                    const currentPage = entityList?.records?.current_page ?? 1;
+
+                    this.listEntity({url: `${entityList?.extras?.route || ""}?page=${currentPage}`});
+
+                }else {
+
+                    this.handleErrors({result, entityForms});
+
+                }
+
+            }catch(error) {
+
+                Alerts.generateAlert({type: "error", messages: [error], msgContent: this.config.messages.catchError});
+
+            }finally {
+
+                this.isSaving = false;
+
+            }
+
+        },
+        // Utils
+        getCardFields(record) {
+
+            return [
+                {key: "email", icon: "fa fa-envelope text-primary", value: this.isDefined(record.email) ? record.email : null, placeholder: this.MODULE.texts.card.noEmail},
+                {key: "phone_number", icon: "fa fa-phone text-primary", value: this.isDefined(record.phone_number) ? record.phone_number : null, placeholder: this.MODULE.texts.card.noPhone},
+                {key: "description", icon: "fa fa-comment-dots text-info", value: this.isDefined(record.description) ? record.description : null, placeholder: this.MODULE.texts.card.noDescription}
+            ];
+
+        },
+        getType(record) {
 
             return (this.types ?? []).find(e => e.code === record?.type) ?? null;
 
         },
-        modalCreateUpdateEntity({record = null}) {
+        handleErrors({result, entityForms, setErrors = true, showAlert = true}) {
 
-            const functionName = "modalCreateUpdateEntity";
+            const isValidationError = result?.code === 422;
+            const hasFieldErrors    = result?.errors && Object.keys(result.errors).length > 0;
+            const errorMessage      = result?.data?.msg || this.config.messages.errorValidate;
 
-            // Alerts.swals({});
-            this.clearForm({functionName});
-            this.formErrors({functionName, type: "clear"});
+            if(setErrors) entityForms.errors = result?.errors ?? {};
 
-            if(this.isDefined({value: record})) {
+            if(showAlert) {
 
-                let identityDocumentType = this.identityDocumentTypes.find(e => e.code === record?.identity_document_type_id),
-                    status = this.statuses.find(e => e.code === record?.status);
+                const msgContent = (isValidationError && hasFieldErrors) ? this.config.messages.errorValidateFields : errorMessage;
 
-                this.forms.entity.createUpdate.data.id                     = record?.id;
-                this.forms.entity.createUpdate.data.branch                 = record?.branch;
-                this.forms.entity.createUpdate.data.identity_document_type = identityDocumentType;
-                this.forms.entity.createUpdate.data.document_number        = record?.document_number;
-                this.forms.entity.createUpdate.data.name                   = record?.name;
-                this.forms.entity.createUpdate.data.email                  = record?.email;
-                this.forms.entity.createUpdate.data.phone_number           = record?.phone_number;
-                this.forms.entity.createUpdate.data.type                   = record?.type;
-                this.forms.entity.createUpdate.data.description            = record?.description;
-                this.forms.entity.createUpdate.data.request                = record?.request;
-                this.forms.entity.createUpdate.data.evidence               = record?.evidence;
-                this.forms.entity.createUpdate.data.admin_response         = record?.admin_response;
-                this.forms.entity.createUpdate.data.submitted_ip           = record?.submitted_ip;
-                this.forms.entity.createUpdate.data.submitted_user_agent   = record?.submitted_user_agent;
-                this.forms.entity.createUpdate.data.submitted_platform     = record?.submitted_platform;
-                this.forms.entity.createUpdate.data.submitted_browser      = record?.submitted_browser;
-                this.forms.entity.createUpdate.data.status                 = status;
-                this.forms.entity.createUpdate.data.created_at             = record?.created_at;
-                this.forms.entity.createUpdate.data.copy                   = Utils.cloneJson(this.forms.entity.createUpdate.data);
-
-            }else {
-
-                this.forms.entity.createUpdate.data.identity_document_type = this.identityDocumentTypes[1];
-                this.forms.entity.createUpdate.data.status = this.statuses[0];
+                Alerts.generateAlert({type: "error", msgContent});
 
             }
-
-            // Alerts.swals({show: false});
-            Alerts.modals({type: "show", id: this.forms.entity.createUpdate.extras.modals.default.id});
-            this.tooltips({show: true, time: 500});
-
-        },
-        async createUpdateEntity() {
-
-            const functionName = "createUpdateEntity";
-
-            Alerts.swals({});
-            this.formErrors({functionName, type: "clear"});
-
-            let form = Utils.cloneJson(this.forms.entity.createUpdate.data);
-
-            const validateForm = this.validateForm({functionName, form, extras: {type: "descriptive"}});
-
-            if(validateForm?.bool) {
-
-                form.identity_document_type_id = form?.identity_document_type?.code;
-                form.status = form?.status?.code;
-
-                delete form.identity_document_type;
-                delete form.copy;
-
-                let createUpdate = await (this.isDefined({value: form.id}) ? Requests.patch({route: this.config.entity.routes.update, data: form, id: form.id}) :
-                                                                             Requests.post({route: this.config.entity.routes.store, data: form}));
-
-                if(Requests.valid({result: createUpdate})) {
-
-                    Alerts.modals({type: "hide", id: this.forms.entity.createUpdate.extras.modals.default.id});
-                    // Alerts.toastrs({type: "success", subtitle: createUpdate?.data?.msg});
-                    // Alerts.swals({show: false});
-                    Alerts.generateAlert({type: "success", msgContent: createUpdate?.data?.msg});
-
-                    this.clearForm({functionName});
-                    this.listEntity({url: `${this.lists.entity.extras.route}?page=${this.lists.entity.records?.current_page ?? 1}`});
-
-                }else {
-
-                    this.formErrors({functionName, type: "set", errors: createUpdate?.errors ?? []});
-                    Alerts.toastrs({type: "error", subtitle: createUpdate?.data?.msg});
-                    Alerts.swals({show: false});
-
-                }
-
-            }else {
-
-                // this.formErrors({functionName, type: "set", errors: validateForm});
-                // Alerts.toastrs({type: "error", subtitle: this.config.messages.errorValidate});
-                // Alerts.swals({show: false});
-                Alerts.generateAlert({messages: Utils.getErrors({errors: validateForm}), msgContent: `<div class="fw-semibold mb-2">${this.config.messages.errorValidate}</div>`});
-
-            }
-
-        },
-        // Forms utils
-        clearForm({functionName}) {
-
-            switch(functionName) {
-                case "modalCreateUpdateEntity":
-                case "createUpdateEntity":
-                    this.forms.entity.createUpdate.data.id                     = null;
-                    this.forms.entity.createUpdate.data.branch                 = null;
-                    this.forms.entity.createUpdate.data.identity_document_type = null;
-                    this.forms.entity.createUpdate.data.document_number        = "";
-                    this.forms.entity.createUpdate.data.name                   = "";
-                    this.forms.entity.createUpdate.data.email                  = "";
-                    this.forms.entity.createUpdate.data.phone_number           = "";
-                    this.forms.entity.createUpdate.data.type                   = "";
-                    this.forms.entity.createUpdate.data.description            = "";
-                    this.forms.entity.createUpdate.data.request                = "";
-                    this.forms.entity.createUpdate.data.evidence               = "";
-                    this.forms.entity.createUpdate.data.admin_response         = "";
-                    this.forms.entity.createUpdate.data.submitted_ip           = "";
-                    this.forms.entity.createUpdate.data.submitted_user_agent   = "";
-                    this.forms.entity.createUpdate.data.submitted_platform     = "";
-                    this.forms.entity.createUpdate.data.submitted_browser      = "";
-                    this.forms.entity.createUpdate.data.status                 = null;
-                    this.forms.entity.createUpdate.data.created_at             = "";
-                    this.forms.entity.createUpdate.data.copy                   = null;
-                    break;
-            }
-
-        },
-        formErrors({functionName, type = "clear", errors = []}) {
-
-            if(["modalCreateUpdateEntity", "createUpdateEntity"].includes(functionName)) {
-
-                this.forms.entity.createUpdate.errors = ["set"].includes(type) ? errors : [];
-
-            }
-
-        },
-        validateForm({functionName, form = null, extras = null}) {
-
-            let result = {
-                bool: true
-            };
-
-            if(["createUpdateEntity"].includes(functionName)) {
-
-                result.admin_response = [];
-                result.status         = [];
-
-                const isDescriptive = ["descriptive"].includes(extras?.type);
-
-                if(!this.isDefined({value: form?.admin_response})) {
-
-                    result.admin_response.push(`${isDescriptive ? "Respuesta del administrador:" : ""} ${this.config.forms.errors.labels.required}`);
-                    result.bool = false;
-
-                }
-
-                if(!this.isDefined({value: form?.status})) {
-
-                    result.status.push(`${isDescriptive ? "Estado:" : ""} ${this.config.forms.errors.labels.required}`);
-                    result.bool = false;
-
-                }
-
-            }
-
-            return result;
 
         },
         // Others
-        isDefined({value}) {
+        isDefined(value) {
 
             return Utils.isDefined({value});
 
@@ -603,56 +662,114 @@ export default {
             return Utils.legibleFormatDate({dateString, type});
 
         },
-        tooltips({show = true, time = 10}) {
+        getStatusBadgeClasses(status) {
 
-            Alerts.tooltips({show, time});
+            if(typeof status === "string") {
+
+                if(["in_progress"].includes(status)) return "badge bg-label-primary fw-semibold";
+                if(["resolved"].includes(status)) return "badge bg-label-success fw-semibold";
+                if(["pending"].includes(status)) return "badge bg-label-danger fw-semibold";
+
+            }
+
+            return "badge bg-label-secondary fw-semibold";
 
         }
     },
     computed: {
-        breadcrumbTitles: function() {
+        entity() {
 
-            return [{title: "Atención al cliente"}, this.config.entity.page];
+            return this.MODULE.config.entity;
 
         },
-        filterByOptions: function() {
+        routeActions() {
+
+            return this.config.entity.routes;
+
+        },
+        entityList() {
+
+            return this.lists[this.entity];
+
+        },
+        breadcrumbTitles() {
 
             return [
-                {code: "all", label: "Todos"},
-                {code: "document_number", label: "Número de documento"},
-                {code: "name", label: "Nombre"},
-                {code: "email", label: "Correo electrónico"},
-                {code: "phone_number", label: "Celular"}
+                {title: this.MODULE.config.breadcrumbParent},
+                this.config.entity.page
             ];
 
         },
-        identityDocumentTypes: function() {
+        filterByOptions() {
 
-            return this.options?.identityDocumentTypes?.records.map(e => ({code: e.id, label: e.name, data: e}));
-
-        },
-        types: function() {
-
-            return this.options?.bookComplaints?.types.map(e => ({code: e.code, label: e.label, data: e}));
+            return this.MODULE.filterOptions;
 
         },
-        statuses: function() {
+        identityDocumentTypes() {
 
-            return this.options?.bookComplaints?.statuses.map(e => ({code: e.code, label: e.label}));
+            return (this.options?.identityDocumentTypes?.records ?? []).map(e => ({code: e.id, label: e.name, data: e}));
 
         },
-        isUpdate: function() {
+        types() {
 
-            return this.isDefined({value: this.forms.entity.createUpdate.data?.id});
+            return (this.options?.[this.entity]?.types ?? []).map(e => ({code: e.code, label: e.label, data: e}));
+
+        },
+        statuses() {
+
+            return (this.options?.[this.entity]?.statuses ?? []).map(e => ({code: e.code, label: e.label}));
+
+        },
+        isUpdate() {
+
+            return this.isDefined(this.forms[this.entity].createUpdate.data.id);
+
+        },
+        modalTitles() {
+
+            return this.forms[this.entity].createUpdate.extras.modals.default.titles || {
+                store: `AGREGAR ${this.MODULE.config.pageTitle.toUpperCase()}`,
+                update: `GESTIONAR ${this.MODULE.config.pageTitle.toUpperCase()}`
+            };
+
+        },
+        filterByValue: {
+            get() {
+
+                return this.entityList.filters?.filter_by || this.MODULE.filterOptions[0];
+
+            },
+            set(value) {
+
+                this.entityList.filters.filter_by = value;
+
+            }
+        },
+        filterWordValue: {
+            get() {
+
+                return this.entityList.filters.word || "";
+
+            },
+            set(value) {
+
+                this.entityList.filters.word = value;
+
+            }
+        },
+        searchPlaceholder() {
+
+            const filterBy = this.entityList.filters.filter_by;
+
+            if(!filterBy) return "Buscar...";
+
+            return `Buscar por ${(filterBy.label || "...").toLowerCase()}`;
 
         }
-    },
-    watch: {
-        "lists.entity.filters.filter_by": function(newValue, oldValue) {
 
-            // this.listEntity({});
-
-        }
     }
 };
 </script>
+
+<style scoped>
+</style>

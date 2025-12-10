@@ -1,11 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Requests\System\BookComplaints;
 
 use App\Helpers\System\Utilities;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Http\Exceptions\HttpResponseException;
+use Illuminate\Validation\Rule;
 
 class StoreBookComplaintRequest extends FormRequest {
 
@@ -26,13 +29,20 @@ class StoreBookComplaintRequest extends FormRequest {
     public function rules(): array {
 
         return [
-            "admin_response" => "required|string|max:900",
-            "status"         => "required|string"
+            "admin_response" => "required|string|max:600",
+            "status"         => ["required", "string", Rule::in(["pending", "in_progress", "resolved"])]
         ];
 
     }
 
-    protected function failedValidation(Validator $validator) {
+    /**
+     * Handle a failed validation attempt.
+     *
+     * @param Validator $validator
+     * @return void
+     * @throws HttpResponseException
+     */
+    protected function failedValidation(Validator $validator): void {
 
         $errors = $validator->errors()->toArray();
 

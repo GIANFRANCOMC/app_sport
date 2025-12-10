@@ -1,148 +1,198 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\System\Organizations;
 
-use App\Helpers\System\Utilities;
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\{Auth, DB};
-use stdClass;
+use Exception;
+use App\Http\Controllers\{Controller};
+use App\Helpers\System\{Utilities};
+use Illuminate\Http\{JsonResponse, Request};
+use Illuminate\Support\Facades\{Auth};
 
-use App\Http\Requests\System\BookComplaints\{StoreBookComplaintRequest, UpdateBookComplaintRequest};
-use App\Models\System\General\{IdentityDocumentType};
+use App\Http\Controllers\System\Concerns\{HandlesApiResponses};
+use App\Http\Requests\System\BookComplaints\{UpdateBookComplaintRequest};
+use App\Services\System\Organizations\{BookComplaintConfigService, BookComplaintService};
 use App\Models\System\Organizations\{BookComplaint};
 
 class BookComplaintController extends Controller {
 
+    use HandlesApiResponses;
+
+    /**
+     * Translation namespace for book complaint module
+     */
+    private const TRANSLATION_NAMESPACE = "System.Organizations.book_complaint";
+
+    /**
+     * Get initialization parameters for the module
+     *
+     * @param Request $request
+     * @return \stdClass
+     */
     public function initParams(Request $request) {
 
         $userAuth = Auth::user();
+        $page     = $request->input("page", "");
 
-        $initParams = new stdClass();
-
-        $config = new stdClass();
-
-        $page = $request->page ?? "";
-
-        if(in_array($page, ["main"])) {
-
-            $config->identityDocumentTypes = new stdClass();
-            $config->identityDocumentTypes->records = IdentityDocumentType::getAll("book_complaint", $userAuth->company_id);
-
-            $config->bookComplaints = new stdClass();
-            $config->bookComplaints->types    = BookComplaint::getTypes();
-            $config->bookComplaints->statuses = BookComplaint::getStatuses();
-
-        }
-
-        $initParams->config = $config;
-        $initParams->bool   = true;
-
-        return $initParams;
+        return BookComplaintConfigService::getInitParams($userAuth->company_id, $page);
 
     }
 
+    /**
+     * Get paginated list of book complaints with filters
+     *
+     * @param Request $request
+     * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator
+     */
     public function list(Request $request) {
 
         $userAuth = Auth::user();
+        $filters  = ["filter_by" => $request->input("filter_by"), "word" => $request->input("word")];
+        $perPage  = intval($request->input("per_page") ?? Utilities::$per_page_default);
 
-        $list = BookComplaint::when(Utilities::isDefined($request->filter_by), function($query) use($request) {
-
-                                $filter = Utilities::getWordSearch($request->word);
-
-                                if(in_array($request->filter_by, ["all"])) {
-
-                                    $query->where(function($query) use($request, $filter) {
-
-                                        $query->where("document_number", "like", $filter)
-                                              ->orWhere("name", "like", $filter)
-                                              ->orWhere("email", "like", $filter)
-                                              ->orWhere("phone_number", "like", $filter);
-
-                                    });
-
-                                }else if(in_array($request->filter_by, ["document_number", "name", "email", "phone_number"])) {
-
-                                    $query->where(function($query) use($request, $filter) {
-
-                                        $query->where($request->filter_by, "like", $filter);
-
-                                    });
-
-                                }
-
-                             })
-                             ->where("company_id", $userAuth->company_id)
-                             ->orderBy("id", "DESC")
-                             ->with(["branch", "identityDocumentType"])
-                             ->paginate($request->per_page ?? Utilities::$per_page_default);
-
-        return $list;
+        return BookComplaintService::getPaginatedList($userAuth->company_id, $filters, $perPage);
 
     }
 
+    /**
+     * Display the book complaints index page
+     *
+     * @return \Illuminate\Contracts\View\View
+     */
     public function index() {
 
         return view("System/general/Organizations/book_complaints/main");
 
     }
 
-    public function create() {
+    /**
+     * Show the form for creating a new book complaint
+     * (Not used in SPA, but kept for REST compliance)
+     *
+     * @return void
+     */
+    public function create(): void {
 
-        //
-
-    }
-
-    public function store(StoreBookComplaintRequest $request) {
-
-        //
-
-    }
-
-    public function show(BookComplaint $record) {
-
-        //
+        // Form is handled by frontend SPA
 
     }
 
-    public function edit(BookComplaint $record) {
+    /**
+     * Store a newly created book complaint
+     * (Not used in System, book complaints are created from Guest side)
+     *
+     * @return JsonResponse
+     */
+    public function store(): JsonResponse {
 
-        //
+        return $this->errorResponse("not_implemented", [], 501);
 
     }
 
-    public function update(UpdateBookComplaintRequest $request, $id) {
+    /**
+     * Display the specified book complaint
+     * (Not used, but kept for REST compliance)
+     *
+     * @param BookComplaint $record
+     * @return JsonResponse
+     */
+    public function show(BookComplaint $record): JsonResponse {
 
-        $userAuth = Auth::user();
+        return $this->errorResponse("not_implemented", [], 501);
 
-        $bookComplaint = BookComplaint::where("id", $id)
-                                      ->where("company_id", $userAuth->company_id)
-                                      ->first();
+    }
 
-        if(Utilities::isDefined($bookComplaint)) {
+    /**
+     * Show the form for editing the specified book complaint
+     * (Not used in SPA, but kept for REST compliance)
+     *
+     * @param BookComplaint $record
+     * @return void
+     */
+    public function edit(BookComplaint $record): void {
 
-            DB::transaction(function() use($request, $userAuth, &$bookComplaint) {
+        // Form is handled by frontend SPA
 
-                $bookComplaint->admin_response = $request->admin_response;
-                $bookComplaint->status         = $request->status;
-                $bookComplaint->updated_at     = now();
-                $bookComplaint->updated_by     = $userAuth->id ?? null;
-                $bookComplaint->save();
+    }
 
-            });
+    /**
+     * Update the specified book complaint
+     *
+     * @param UpdateBookComplaintRequest $request
+     * @param int $id Book complaint ID
+     * @return JsonResponse
+     */
+    public function update(UpdateBookComplaintRequest $request, int $id): JsonResponse {
+
+        try {
+
+            $userAuth     = Auth::user();
+            $bookComplaint = BookComplaintService::findByIdAndCompany($id, $userAuth->company_id);
+
+            if(!Utilities::isDefined($bookComplaint)) {
+
+                return $this->notFoundResponse();
+
+            }
+
+            $data         = $this->prepareBookComplaintData($request);
+            $bookComplaint = BookComplaintService::update($bookComplaint, $data, $userAuth->id);
+
+            if(!Utilities::isDefined($bookComplaint)) {
+
+                return $this->errorResponse("update_failed");
+
+            }
+
+            BookComplaintConfigService::clearAllCache($userAuth->company_id);
+
+            return $this->updatedResponse($bookComplaint, "updated", "bookComplaint");
+
+        }catch(Exception $e) {
+
+            return $this->errorResponse("exception_update", ["message" => $e->getMessage()]);
 
         }
 
-        $bool = Utilities::isDefined($bookComplaint);
-        $msg  = $bool ? "Respuesta registrada correctamente." : "No se ha podido registrar la respuesta.";
+    }
 
-        return response()->json(["bool" => $bool, "msg" => $msg, "bookComplaint" => $bookComplaint], 200);
+    /**
+     * Remove the specified book complaint
+     * (Not used, but kept for REST compliance)
+     *
+     * @param BookComplaint $record
+     * @return JsonResponse
+     */
+    public function destroy(BookComplaint $record): JsonResponse {
+
+        return $this->errorResponse("not_implemented", [], 501);
 
     }
 
-    public function destroy(BookComplaint $record) {
+    /**
+     * Prepare book complaint data from request
+     *
+     * @param UpdateBookComplaintRequest $request
+     * @return array
+     */
+    private function prepareBookComplaintData(UpdateBookComplaintRequest $request): array {
 
-        //
+        return [
+            "admin_response" => $request->admin_response,
+            "status"         => $request->status
+        ];
+
+    }
+
+    /**
+     * Get translation namespace for book complaint module
+     *
+     * @return string
+     */
+    protected function getTranslationNamespace(): string {
+
+        return self::TRANSLATION_NAMESPACE;
 
     }
 
