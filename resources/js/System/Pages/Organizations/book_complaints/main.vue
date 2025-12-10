@@ -77,7 +77,7 @@
                         <div class="row g-3">
                             <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12">
                                 <div class="card shadow-sm">
-                                    <div class="card-header bg-primary text-white py-1 text-center">
+                                    <div class="card-header bg-primary text-white py-0 text-center">
                                         <span v-text="MODULE.texts.sections.clientData"></span>
                                     </div>
                                     <div class="card-body py-3">
@@ -112,7 +112,7 @@
                             </div>
                             <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12">
                                 <div class="card shadow-sm">
-                                    <div class="card-header bg-primary text-white py-1 text-center">
+                                    <div class="card-header bg-primary text-white py-0 text-center">
                                         <span v-text="MODULE.texts.sections.complaintDetail"></span>
                                     </div>
                                     <div class="card-body py-3">
@@ -140,7 +140,7 @@
                             </div>
                             <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12">
                                 <div class="card shadow-sm">
-                                    <div class="card-header bg-secondary text-white py-1 text-center">
+                                    <div class="card-header bg-secondary text-white py-0 text-center">
                                         <span v-text="MODULE.texts.sections.technicalInfo"></span>
                                     </div>
                                     <div class="card-body py-3">
@@ -165,7 +165,7 @@
                             </div>
                             <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12">
                                 <div class="card shadow-sm">
-                                    <div class="card-header bg-secondary text-white py-1 text-center">
+                                    <div class="card-header bg-secondary text-white py-0 text-center">
                                         <span v-text="MODULE.texts.sections.adminManagement"></span>
                                     </div>
                                     <div class="card-body py-3">

@@ -85,7 +85,7 @@
                                         @foreach($subSectionsFiltered as $subSection)
                                             <li class="menu-item {{ $subSection->dom_id }}" id="{{ $subSection->dom_id }}">
                                                 <a href="{{ $subSection->dom_route_url }}" class="fw-bold menu-link py-1">
-                                                    <div>{{ $subSection->dom_label }}</div>
+                                                    <div class="text-truncate">{{ $subSection->dom_label }}</div>
                                                 </a>
                                             </li>
                                         @endforeach
@@ -125,7 +125,7 @@
                                         @foreach($subSectionsFiltered as $subSection)
                                             <li class="menu-item {{ $subSection->dom_id }}" id="{{ $subSection->dom_id }}">
                                                 <a href="{{ $subSection->dom_route_url }}" class="menu-link py-1">
-                                                    <div>{{ $subSection->dom_label }}</div>
+                                                    <div class="text-truncate">{{ $subSection->dom_label }}</div>
                                                 </a>
                                             </li>
                                         @endforeach
