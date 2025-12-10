@@ -301,10 +301,10 @@ const VALIDATION_RULES = {
 const ERROR_LABELS = {
     internal_code: "Código interno",
     name: "Nombre",
-    status: "Estado",
     email: "Correo electrónico",
-    map_url: "URL del mapa",
     capacity: "Capacidad",
+    map_url: "URL del mapa",
+    status: "Estado",
     required: "Es obligatorio"
 };
 
@@ -360,12 +360,12 @@ const FILTER_OPTIONS = [
 
 const MODULE = {
     config: MODULE_CONFIG,
-    texts: TEXTS,
-    filterOptions: FILTER_OPTIONS,
     formFields: FORM_FIELDS,
     formFieldConfig: FORM_FIELD_CONFIG,
     validationRules: VALIDATION_RULES,
-    errorLabels: ERROR_LABELS
+    errorLabels: ERROR_LABELS,
+    texts: TEXTS,
+    filterOptions: FILTER_OPTIONS
 };
 
 export default {

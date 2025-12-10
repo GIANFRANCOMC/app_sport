@@ -188,6 +188,12 @@ export default {
     computed: {
         formattedValue() {
 
+            if(!isDefined({value: this.modelValue})) {
+
+                return "";
+
+            }
+
             return separatorNumber(this.modelValue);
 
         },
@@ -213,8 +219,19 @@ export default {
     methods: {
         handleTyping(value) {
 
-            // Update without validation
-            this.emitValue({reset: false, result: value})
+            // If value is completely empty, emit null
+            const trimmedValue = String(value ?? "").trim();
+
+            if(trimmedValue === "") {
+
+                this.emitValue({reset: false, result: null});
+                return;
+
+            }
+
+            // Allow typing "-" or "." while editing (will be validated on blur)
+            // Update without validation (will be validated on blur)
+            this.emitValue({reset: false, result: value});
 
         },
         updateValue(value) {
@@ -231,71 +248,75 @@ export default {
 
             }
 
-            const defaultValue = minValue;
+            let valueString = String(value ?? "").trim();
 
-            let valueString = String(value).trim();
+            // If value is empty, emit null to keep field empty
+            if(valueString === "" || valueString === "-" || valueString === ".") {
 
-            if(valueString === "") {
+                this.emitValue({reset: false, result: null});
+                return;
 
-                // console.log(valueString);
-                this.emitValue({reset: false, result: defaultValue});
+            }
 
-            }else {
+            // Validate numeric format
+            const hasFormattedNumber = this.hasNegative ? /^-?\d+(\.\d+)?$/.test(valueString) : /^\d+(\.\d+)?$/.test(valueString);
+            const hasDecimalInitNumber = this.decimals > 0 && (this.hasNegative ? /^-?\d+\.$/.test(valueString) : /^\d+\.$/.test(valueString));
 
-                const hasFormattedNumber = this.hasNegative ? /^-?\d+(\.\d+)?$/.test(valueString) : /^\d+(\.\d+)?$/.test(valueString); // Case: 1  2  3.1  5.67  0.329
-                const hasDecimalInitNumber = this.decimals > 0 && (this.hasNegative ? /^-?\d+\.$/.test(valueString) : /^\d+\.$/.test(valueString)); // Case: With decimals (Input: 12. 3134. 23461.)
+            if(hasFormattedNumber || hasDecimalInitNumber) {
 
-                if(this.hasNegative && value == "-") {
+                let numericValue = Number(valueString);
 
-                    //
+                if(isNaN(numericValue)) {
 
-                }else if(hasFormattedNumber || hasDecimalInitNumber) {
+                    // If not a valid number, keep current value or null
+                    this.emitValue({reset: false, result: isDefined({value: this.modelValue}) ? this.modelValue : null});
+                    return;
 
-                    let numericValue = Number(value);
+                }
 
-                    if(isNaN(numericValue)) {
+                // Apply min/max limits
+                if(numericValue < minValue) {
 
-                        // console.log("isNaN");
-                        this.emitValue({reset: false, result: defaultValue});
+                    numericValue = minValue;
 
-                    }else if(numericValue < minValue) {
+                }else if(numericValue > maxValue) {
 
-                        // console.log("minValue");
-                        this.emitValue({reset: false, result: minValue});
+                    numericValue = maxValue;
 
-                    }else if(numericValue > maxValue) {
+                }
 
-                        // console.log("maxValue");
-                        this.emitValue({reset: false, result: maxValue});
+                // Validate and format decimals
+                const regexDecimals = this.hasNegative ?
+                    (this.decimals > 0 ? new RegExp(`^-?\\d+(\\.\\d{1,${this.decimals}})?$`) : /^-?\d+$/) :
+                    (this.decimals > 0 ? new RegExp(`^\\d+(\\.\\d{1,${this.decimals}})?$`) : /^\d+$/);
+
+                const hasFormattedDecimal = regexDecimals.test(valueString);
+
+                // If has allowed decimals or is typing decimals, keep the value
+                // Otherwise, apply decimal formatting
+                if(this.decimals > 0) {
+
+                    if(hasFormattedDecimal || hasDecimalInitNumber) {
+
+                        this.emitValue({reset: false, result: numericValue});
 
                     }else {
 
-                        const regexDecimals = this.hasNegative ? (this.decimals > 0 ? new RegExp(`^-?\\d+(\\.\\d{1,${this.decimals}})?$`) : /^-?\d+$/) :
-                                                                 (this.decimals > 0 ? new RegExp(`^\\d+(\\.\\d{1,${this.decimals}})?$`) : /^\d+$/);
-
-                        const hasFormattedDecimal = regexDecimals.test(valueString);
-
-                        // hasFormattedDecimal 23.1  43.12 (1.n decimals limit)
-                        // hasDecimalInitNumber 23.  65.
-
-                        if(this.decimals > 0) {
-
-                            hasFormattedDecimal || hasDecimalInitNumber ? this.emitValue({reset: false, result: numericValue}) : this.emitValue({reset: false, result: Number(numericValue.toFixed(this.decimals))});
-
-                        }else {
-
-                            hasFormattedDecimal ? this.emitValue({reset: false, result: numericValue}) : this.emitValue({reset: false, result: Number(numericValue.toFixed(this.decimals))});
-
-                        }
+                        this.emitValue({reset: false, result: Number(numericValue.toFixed(this.decimals))});
 
                     }
 
                 }else {
 
-                    // console.error("Sin formato correcto");
-                    this.emitValue({reset: false, result: defaultValue});
+                    // No decimals, emit as integer
+                    this.emitValue({reset: false, result: hasFormattedDecimal ? numericValue : Math.round(numericValue)});
 
                 }
+
+            }else {
+
+                // Invalid format, keep current value if exists, otherwise null
+                this.emitValue({reset: false, result: isDefined({value: this.modelValue}) ? this.modelValue : null});
 
             }
 
@@ -376,5 +397,6 @@ export default {
     /* Firefox */
     input[type=number] {
         -moz-appearance: textfield;
+        appearance: textfield;
     }
 </style>

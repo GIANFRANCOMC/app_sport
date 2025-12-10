@@ -137,8 +137,8 @@ input.input-number-no-range[type=number] {
     --bs-btn-close-focus-opacity: 1;
     --bs-btn-close-disabled-opacity: 0.25;
     box-sizing: content-box;
-    width: 2rem;
-    height: 2rem;
+    width: 1.7rem;
+    height: 1.7rem;
     padding: 0;
     color: var(--bs-btn-close-color);
     background-color: #fff;
@@ -188,20 +188,23 @@ input.input-number-no-range[type=number] {
     top: 1.56rem;
     right: 1rem;
     transform: translate(30px, -33px);
+    background-color: #dc3545;
 }
 
 .modal-header .btn-header-modal:hover {
     transform: translate(32px, -32px);
-    border-color: rgba(165, 163, 174, 0.3);
-    box-shadow: 0 0.25rem 0.75rem rgba(165, 163, 174, 0.4);
+    background-color: #dc3545;
+}
+
+.modal-header .btn-header-modal:hover .icon-close-modal {
+    color: white;
 }
 
 .icon-close-modal {
     font-size: 0.9375rem;
     line-height: 1;
-    color: #dc3545;
+    color: white;
     font-weight: 900;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
 }
 
 .modal-header .modal-title {

@@ -100,15 +100,15 @@ export function post({route = "", data = {}, id = "", formData = null}) {
 
             if([405].includes(error?.response?.status)) {
 
-                resolve({data: {msg: `${error?.response?.data?.message} (Code ${error?.response?.status})`}, bool: false});
+                resolve({data: {msg: `${error?.response?.data?.message} (Code ${error?.response?.status})`}, bool: false, code: error?.response?.status});
 
             }else if([422].includes(error?.response?.status)) {
 
-                resolve({data: {msg: `${error?.response?.data?.message} (Code ${error?.response?.status})`}, errors: error?.response?.data?.errors, bool: false});
+                resolve({data: {msg: `${error?.response?.data?.message} (Code ${error?.response?.status})`}, errors: error?.response?.data?.errors, bool: false, code: error?.response?.status});
 
             }else {
 
-                resolve({data: {msg: error},  bool: false});
+                resolve({data: {msg: error}, bool: false, code: error?.response?.status});
 
             }
 
@@ -162,15 +162,15 @@ export function patch({route = "", data = {}, id = "", formData = null}) {
 
             if([405].includes(error?.response?.status)) {
 
-                resolve({data: {msg: `${error?.response?.data?.message} (Code ${error?.response?.status})`}, bool: false});
+                resolve({data: {msg: `${error?.response?.data?.message} (Code ${error?.response?.status})`}, bool: false, code: error?.response?.status});
 
             }else if([422].includes(error?.response?.status)) {
 
-                resolve({data: {msg: `${error?.response?.data?.message} (Code ${error?.response?.status})`}, errors: error?.response?.data?.errors, bool: false});
+                resolve({data: {msg: `${error?.response?.data?.message} (Code ${error?.response?.status})`}, errors: error?.response?.data?.errors, bool: false, code: error?.response?.status});
 
             }else {
 
-                resolve({data: {msg: error},  bool: false});
+                resolve({data: {msg: error}, bool: false, code: error?.response?.status});
 
             }
 
