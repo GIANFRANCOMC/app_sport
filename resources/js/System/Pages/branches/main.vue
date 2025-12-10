@@ -309,7 +309,7 @@ const ERROR_LABELS = {
 };
 
 const TEXTS = {
-    loading: `Loading ${MODULE_CONFIG.pageTitle}...`,
+    loading: `Cargando ${MODULE_CONFIG.pageTitle}...`,
     filters: {
         filterBy: "Filtrar por",
         search: "Búsqueda"
@@ -327,8 +327,8 @@ const TEXTS = {
         noEmail: "Sin correo registrado"
     },
     list: {
-        totalItems: "sucursales encontradas",
-        noData: "No hay sucursales registradas"
+        totalItems: "registros",
+        noData: "No hay registros"
     },
     form: {
         internalCode: "Código interno",
@@ -408,7 +408,7 @@ export default {
     methods: {
         async initParams() {
 
-            const response = await Requests.get({route: this.config.entity.routes.initParams, data: {page: "main"}, showAlert: true});
+            const response = await Requests.get({route: this.routeActions.initParams, data: {page: "main"}, showAlert: true});
 
             this.options[this.entity] = response?.data?.config?.[this.entity] ?? {};
 
@@ -533,9 +533,9 @@ export default {
 
                 const preparedData  = Forms.prepareFormData(formData, this.MODULE.formFieldConfig);
                 const id            = preparedData.id;
-                const isUpdate      = Utils.isDefined({value: id});
+                const isUpdate      = this.isDefined(id);
                 const requestMethod = isUpdate ? "patch" : "post";
-                const route         = this.config.entity.routes[isUpdate ? "update" : "store"];
+                const route         = this.routeActions[isUpdate ? "update" : "store"];
                 const result        = await Requests[requestMethod]({route, data: preparedData, id});
 
                 if(Requests.valid({result})) {
@@ -545,7 +545,7 @@ export default {
 
                     Forms.clearFormData(entityForms.data, this.MODULE.formFields);
 
-                    const entityList  = this.lists[this.entity];
+                    const entityList  = this.entityList;
                     const currentPage = entityList?.records?.current_page ?? 1;
 
                     this.listEntity({url: `${entityList?.extras?.route || ""}?page=${currentPage}`});
@@ -619,6 +619,11 @@ export default {
             return this.MODULE.config.entity;
 
         },
+        routeActions() {
+
+            return this.config.entity.routes;
+
+        },
         entityList() {
 
             return this.lists[this.entity];
@@ -644,14 +649,12 @@ export default {
         },
         isUpdate() {
 
-            return Utils.isDefined({
-                value: this.forms[this.entity]?.createUpdate?.data?.id
-            });
+            return this.isDefined(this.forms[this.entity].createUpdate.data.id);
 
         },
         modalTitles() {
 
-            return this.forms[this.entity]?.createUpdate?.extras?.modals?.default?.titles || {
+            return this.forms[this.entity].createUpdate.extras.modals.default.titles || {
                 store: `AGREGAR ${this.MODULE.config.pageTitle.toUpperCase()}`,
                 update: `EDITAR ${this.MODULE.config.pageTitle.toUpperCase()}`
             };
@@ -672,7 +675,7 @@ export default {
         filterWordValue: {
             get() {
 
-                return this.entityList.filters?.word || "";
+                return this.entityList.filters.word || "";
 
             },
             set(value) {
@@ -683,11 +686,9 @@ export default {
         },
         searchPlaceholder() {
 
-            const filterBy = this.entityList.filters?.filter_by;
+            const filterBy = this.entityList.filters.filter_by;
 
-            if(!filterBy) {
-                return "Buscar...";
-            }
+            if(!filterBy) return "Buscar...";
 
             return `Buscar por ${(filterBy.label || "...").toLowerCase()}`;
 
