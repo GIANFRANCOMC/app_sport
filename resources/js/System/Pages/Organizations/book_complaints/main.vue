@@ -81,6 +81,12 @@
                                         <span v-text="MODULE.texts.sections.clientData"></span>
                                     </div>
                                     <div class="card-body py-3">
+                                        <div class="d-flex align-items-start justify-content-between gap-3 mb-3">
+                                            <div class="d-flex flex-column flex-grow-1 flex-min-w-0">
+                                                <span class="text-muted small fw-semibold">Cliente</span>
+                                                <span class="fs-5 fw-bold text-dark text-truncate" v-text="forms[entity].createUpdate.data.name || MODULE.texts.card.notSpecified"></span>
+                                            </div>
+                                        </div>
                                         <div class="text-start mb-1">
                                             <span class="text-dark fw-bold colon-at-end" v-text="MODULE.texts.form.documentNumber"></span>
                                             <span v-text="forms[entity].createUpdate.data.document_number || MODULE.texts.card.notSpecified" class="ms-2"></span>
@@ -90,19 +96,15 @@
                                             <span v-text="forms[entity].createUpdate.data.identity_document_type?.label || MODULE.texts.card.notSpecified" class="ms-2"></span>
                                         </div>
                                         <div class="text-start mb-1">
-                                            <span class="text-dark fw-bold colon-at-end" v-text="MODULE.texts.form.name"></span>
-                                            <span v-text="forms[entity].createUpdate.data.name || MODULE.texts.card.notSpecified" class="ms-2"></span>
-                                        </div>
-                                        <div class="text-start mb-1">
                                             <span class="text-dark fw-bold colon-at-end" v-text="MODULE.texts.form.email"></span>
-                                            <a :href="'mailto:'+forms[entity].createUpdate.data.email" class="d-inline-flex align-items-center small ms-2">
-                                                <span v-text="forms[entity].createUpdate.data.email || MODULE.texts.card.notSpecified" class="fst-italic"></span>
+                                            <a :href="'mailto:'+forms[entity].createUpdate.data.email" class="d-inline-flex align-items-center ms-2">
+                                                <span v-text="forms[entity].createUpdate.data.email || MODULE.texts.card.notSpecified"></span>
                                             </a>
                                         </div>
-                                        <div class="text-start mb-1">
+                                        <div class="text-start">
                                             <span class="text-dark fw-bold colon-at-end" v-text="MODULE.texts.form.phoneNumber"></span>
-                                            <a :href="'tel:'+forms[entity].createUpdate.data.phone_number" class="d-inline-flex align-items-center small ms-2">
-                                                <span v-text="forms[entity].createUpdate.data.phone_number || MODULE.texts.card.notSpecified" class="fst-italic"></span>
+                                            <a :href="'tel:'+forms[entity].createUpdate.data.phone_number" class="d-inline-flex align-items-center ms-2">
+                                                <span v-text="forms[entity].createUpdate.data.phone_number || MODULE.texts.card.notSpecified"></span>
                                             </a>
                                         </div>
                                     </div>
@@ -114,11 +116,12 @@
                                         <span v-text="MODULE.texts.sections.complaintDetail"></span>
                                     </div>
                                     <div class="card-body py-3">
-                                        <div class="d-flex justify-content-center flex-wrap mt-1 mb-2">
-                                            <div :class="['badge rounded-pill fst-italic fw-bold text-uppercase', 'bg-label-'+getType(forms[entity].createUpdate.data)?.data?.color]" :title="getType(forms[entity].createUpdate.data)?.label">
-                                                <i :class="['fa', getType(forms[entity].createUpdate.data)?.data?.icon]"></i>
-                                                <span v-text="getType(forms[entity].createUpdate.data)?.label" class="ms-1"></span>
+                                        <div class="d-flex align-items-start justify-content-between gap-3 mb-3">
+                                            <div class="d-flex flex-column flex-grow-1 flex-min-w-0">
+                                                <span class="text-muted small fw-semibold" v-text="legibleFormatDate({dateString: forms[entity].createUpdate.data.created_at, type: 'datetime'})"></span>
+                                                <span class="fs-5 fw-bold text-dark text-truncate" v-text="getType(forms[entity].createUpdate.data)?.label"></span>
                                             </div>
+                                            <span :class="[getStatusBadgeClasses(forms[entity].createUpdate.data.copy?.status?.code), 'flex-shrink-none']" v-text="forms[entity].createUpdate.data.copy?.status?.label"></span>
                                         </div>
                                         <div class="text-start mb-1">
                                             <span class="text-dark fw-bold colon-at-end" v-text="MODULE.texts.form.branch"></span>
@@ -128,17 +131,9 @@
                                             <span class="text-dark fw-bold colon-at-end" v-text="MODULE.texts.form.description"></span>
                                             <span v-text="forms[entity].createUpdate.data.description || MODULE.texts.card.notRegistered" class="ms-2"></span>
                                         </div>
-                                        <div class="text-start mb-1">
+                                        <div class="text-start">
                                             <span class="text-dark fw-bold colon-at-end" v-text="MODULE.texts.form.request"></span>
                                             <span v-text="forms[entity].createUpdate.data.request || MODULE.texts.card.notRegistered" class="ms-2"></span>
-                                        </div>
-                                        <div class="text-start mb-1">
-                                            <span class="text-dark fw-bold colon-at-end" v-text="MODULE.texts.form.dateTime"></span>
-                                            <span v-text="legibleFormatDate({dateString: forms[entity].createUpdate.data.created_at, type: 'datetime'})" class="ms-2"></span>
-                                        </div>
-                                        <div class="d-flex justify-content-start align-items-center flex-wrap">
-                                            <span class="text-dark fw-bold colon-at-end" v-text="MODULE.texts.form.currentStatus"></span>
-                                            <span :class="['badge', 'fw-semibold', 'ms-2', getStatusBadgeClasses(forms[entity].createUpdate.data.copy?.status?.code)]" v-text="forms[entity].createUpdate.data.copy?.status?.label"></span>
                                         </div>
                                     </div>
                                 </div>
