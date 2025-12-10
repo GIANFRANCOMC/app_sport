@@ -29,14 +29,8 @@
                     <div class="card-header">
                         <div class="d-flex align-items-start justify-content-between gap-3">
                             <div class="d-flex flex-column flex-grow-1 flex-min-w-0">
-                                <div class="d-flex justify-content-start flex-wrap mb-1">
-                                    <div :class="['badge rounded-pill fst-italic fw-bold text-uppercase', 'bg-label-'+getType(record)?.data?.color]" :title="getType(record)?.label">
-                                        <i :class="['fa', getType(record)?.data?.icon]"></i>
-                                        <span v-text="getType(record)?.label" class="ms-1"></span>
-                                    </div>
-                                </div>
-                                <span class="fs-5 fw-bold text-dark text-truncate" v-text="record.name"></span>
-                                <span class="text-muted small" v-text="record.document_number"></span>
+                                <span class="text-muted small fw-semibold" v-text="legibleFormatDate({dateString: record.created_at, type: 'datetime'})"></span>
+                                <span class="fs-5 fw-bold text-dark text-truncate" v-text="getType(record)?.label"></span>
                             </div>
                             <span :class="[getStatusBadgeClasses(record.status), 'flex-shrink-none']" v-text="record.formatted_status"></span>
                         </div>
@@ -593,6 +587,8 @@ export default {
         getCardFields(record) {
 
             return [
+                {key: "name", icon: "fa fa-user text-dark", value: this.isDefined(record.name) ? record.name : null, placeholder: this.MODULE.texts.card.noEmail},
+                {key: "document_number", icon: "fa fa-id-card text-dark", value: this.isDefined(record.document_number) ? record.document_number : null, placeholder: this.MODULE.texts.card.noDocumentNumber},
                 {key: "email", icon: "fa fa-envelope text-primary", value: this.isDefined(record.email) ? record.email : null, placeholder: this.MODULE.texts.card.noEmail},
                 {key: "phone_number", icon: "fa fa-phone text-primary", value: this.isDefined(record.phone_number) ? record.phone_number : null, placeholder: this.MODULE.texts.card.noPhone},
                 {key: "description", icon: "fa fa-comment-dots text-info", value: this.isDefined(record.description) ? record.description : null, placeholder: this.MODULE.texts.card.noDescription}
