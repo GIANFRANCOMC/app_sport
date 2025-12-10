@@ -62,7 +62,7 @@
         <Paginator :links="entityList.records.links" @clickPage="listEntity"/>
     </nav>
 
-    <!-- Modal: Update -->
+    <!-- Modal: Create/Update -->
     <div class="modal fade" :id="forms[entity].createUpdate.extras.modals.default.id" data-bs-backdrop="static" tabindex="-1" role="dialog">
         <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
             <div class="modal-content">
@@ -75,64 +75,64 @@
                 <div class="modal-body">
                     <form @submit.prevent="saveEntity">
                         <div class="row g-3">
-                            <!-- Datos del cliente -->
                             <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12">
                                 <div class="card shadow-sm">
-                                    <div class="card-header bg-primary text-white py-1">
-                                        <span>👤</span>
-                                        <span class="ms-2" v-text="MODULE.texts.sections.clientData"></span>
+                                    <div class="card-header bg-primary text-white py-1 text-center">
+                                        <span v-text="MODULE.texts.sections.clientData"></span>
                                     </div>
-                                    <div class="card-body py-2">
-                                        <div class="text-start mb-2">
-                                            <span v-text="forms[entity].createUpdate.data.document_number" class="text-dark d-block"></span>
-                                            <span v-text="forms[entity].createUpdate.data.identity_document_type?.label" class="fst-italic d-block text-muted small"></span>
+                                    <div class="card-body py-3">
+                                        <div class="text-start mb-1">
+                                            <span class="text-dark fw-bold colon-at-end" v-text="MODULE.texts.form.documentNumber"></span>
+                                            <span v-text="forms[entity].createUpdate.data.document_number || MODULE.texts.card.notSpecified" class="ms-2"></span>
                                         </div>
-                                        <span v-text="forms[entity].createUpdate.data.name" class="fw-bold d-block"></span>
-                                        <div v-if="isDefined(forms[entity].createUpdate.data.email)">
-                                            <a :href="'mailto:'+forms[entity].createUpdate.data.email" class="d-inline-flex align-items-center small">
-                                                <span>📧</span>
-                                                <span v-text="forms[entity].createUpdate.data.email" class="fst-italic ms-1"></span>
+                                        <div class="text-start mb-1">
+                                            <span class="text-dark fw-bold colon-at-end" v-text="MODULE.texts.form.identityDocumentType"></span>
+                                            <span v-text="forms[entity].createUpdate.data.identity_document_type?.label || MODULE.texts.card.notSpecified" class="ms-2"></span>
+                                        </div>
+                                        <div class="text-start mb-1">
+                                            <span class="text-dark fw-bold colon-at-end" v-text="MODULE.texts.form.name"></span>
+                                            <span v-text="forms[entity].createUpdate.data.name || MODULE.texts.card.notSpecified" class="ms-2"></span>
+                                        </div>
+                                        <div class="text-start mb-1">
+                                            <span class="text-dark fw-bold colon-at-end" v-text="MODULE.texts.form.email"></span>
+                                            <a :href="'mailto:'+forms[entity].createUpdate.data.email" class="d-inline-flex align-items-center small ms-2">
+                                                <span v-text="forms[entity].createUpdate.data.email || MODULE.texts.card.notSpecified" class="fst-italic"></span>
                                             </a>
                                         </div>
-                                        <div v-if="isDefined(forms[entity].createUpdate.data.phone_number)">
-                                            <a :href="'tel:'+forms[entity].createUpdate.data.phone_number" class="d-inline-flex align-items-center small">
-                                                <span>📞</span>
-                                                <span v-text="forms[entity].createUpdate.data.phone_number" class="fst-italic ms-1"></span>
+                                        <div class="text-start mb-1">
+                                            <span class="text-dark fw-bold colon-at-end" v-text="MODULE.texts.form.phoneNumber"></span>
+                                            <a :href="'tel:'+forms[entity].createUpdate.data.phone_number" class="d-inline-flex align-items-center small ms-2">
+                                                <span v-text="forms[entity].createUpdate.data.phone_number || MODULE.texts.card.notSpecified" class="fst-italic"></span>
                                             </a>
                                         </div>
-                                        <template v-if="!isDefined(forms[entity].createUpdate.data.email) && !isDefined(forms[entity].createUpdate.data.phone_number)">
-                                            <span class="small text-muted fst-italic" v-text="MODULE.texts.card.noContact"></span>
-                                        </template>
                                     </div>
                                 </div>
                             </div>
-                            <!-- Detalle del reclamo -->
                             <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12">
                                 <div class="card shadow-sm">
-                                    <div class="card-header bg-danger text-white py-1">
-                                        <span>📝</span>
-                                        <span class="ms-2" v-text="MODULE.texts.sections.complaintDetail"></span>
+                                    <div class="card-header bg-primary text-white py-1 text-center">
+                                        <span v-text="MODULE.texts.sections.complaintDetail"></span>
                                     </div>
-                                    <div class="card-body py-2">
+                                    <div class="card-body py-3">
                                         <div class="d-flex justify-content-center flex-wrap mt-1 mb-2">
                                             <div :class="['badge rounded-pill fst-italic fw-bold text-uppercase', 'bg-label-'+getType(forms[entity].createUpdate.data)?.data?.color]" :title="getType(forms[entity].createUpdate.data)?.label">
                                                 <i :class="['fa', getType(forms[entity].createUpdate.data)?.data?.icon]"></i>
                                                 <span v-text="getType(forms[entity].createUpdate.data)?.label" class="ms-1"></span>
                                             </div>
                                         </div>
-                                        <div class="text-start mb-2">
+                                        <div class="text-start mb-1">
                                             <span class="text-dark fw-bold colon-at-end" v-text="MODULE.texts.form.branch"></span>
                                             <span v-text="forms[entity].createUpdate.data?.branch?.name || MODULE.texts.card.notSpecified" class="ms-2"></span>
                                         </div>
-                                        <div class="text-start mb-2">
+                                        <div class="text-start mb-1">
                                             <span class="text-dark fw-bold colon-at-end" v-text="MODULE.texts.form.description"></span>
                                             <span v-text="forms[entity].createUpdate.data.description || MODULE.texts.card.notRegistered" class="ms-2"></span>
                                         </div>
-                                        <div class="text-start mb-2">
+                                        <div class="text-start mb-1">
                                             <span class="text-dark fw-bold colon-at-end" v-text="MODULE.texts.form.request"></span>
                                             <span v-text="forms[entity].createUpdate.data.request || MODULE.texts.card.notRegistered" class="ms-2"></span>
                                         </div>
-                                        <div class="text-start mb-2">
+                                        <div class="text-start mb-1">
                                             <span class="text-dark fw-bold colon-at-end" v-text="MODULE.texts.form.dateTime"></span>
                                             <span v-text="legibleFormatDate({dateString: forms[entity].createUpdate.data.created_at, type: 'datetime'})" class="ms-2"></span>
                                         </div>
@@ -143,39 +143,35 @@
                                     </div>
                                 </div>
                             </div>
-                            <!-- Información técnica -->
                             <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12">
                                 <div class="card shadow-sm">
-                                    <div class="card-header bg-secondary text-white py-1">
-                                        <span>🖥️</span>
-                                        <span class="ms-2" v-text="MODULE.texts.sections.technicalInfo"></span>
+                                    <div class="card-header bg-secondary text-white py-1 text-center">
+                                        <span v-text="MODULE.texts.sections.technicalInfo"></span>
                                     </div>
-                                    <div class="card-body py-2">
-                                        <div class="text-start mb-2">
+                                    <div class="card-body py-3">
+                                        <div class="text-start mb-1">
                                             <span class="text-dark fw-bold colon-at-end" v-text="MODULE.texts.form.submittedIp"></span>
-                                            <span v-text="forms[entity].createUpdate.data.submitted_ip || 'N/A'" class="small text-muted fst-italic ms-2"></span>
+                                            <span v-text="forms[entity].createUpdate.data.submitted_ip || MODULE.texts.card.notSpecified" class="ms-2"></span>
                                         </div>
-                                        <div class="text-start mb-2">
+                                        <div class="text-start mb-1">
                                             <span class="text-dark fw-bold colon-at-end" v-text="MODULE.texts.form.submittedPlatform"></span>
-                                            <span v-text="forms[entity].createUpdate.data.submitted_platform || 'N/A'" class="small text-muted fst-italic ms-2"></span>
+                                            <span v-text="forms[entity].createUpdate.data.submitted_platform || MODULE.texts.card.notSpecified" class="ms-2"></span>
                                         </div>
-                                        <div class="text-start mb-2">
+                                        <div class="text-start mb-1">
                                             <span class="text-dark fw-bold colon-at-end" v-text="MODULE.texts.form.submittedBrowser"></span>
-                                            <span v-text="forms[entity].createUpdate.data.submitted_browser || 'N/A'" class="small text-muted fst-italic ms-2"></span>
+                                            <span v-text="forms[entity].createUpdate.data.submitted_browser || MODULE.texts.card.notSpecified" class="ms-2"></span>
                                         </div>
                                         <div class="text-start">
                                             <span class="text-dark fw-bold colon-at-end" v-text="MODULE.texts.form.submittedUserAgent"></span>
-                                            <span v-text="forms[entity].createUpdate.data.submitted_user_agent || 'N/A'" class="small text-muted fst-italic ms-2"></span>
+                                            <span v-text="forms[entity].createUpdate.data.submitted_user_agent || MODULE.texts.card.notSpecified" class="ms-2"></span>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                            <!-- Gestión administrativa -->
                             <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12">
                                 <div class="card shadow-sm">
-                                    <div class="card-header bg-success text-white py-1">
-                                        <span>🗂️</span>
-                                        <span class="ms-2" v-text="MODULE.texts.sections.adminManagement"></span>
+                                    <div class="card-header bg-secondary text-white py-1 text-center">
+                                        <span v-text="MODULE.texts.sections.adminManagement"></span>
                                     </div>
                                     <div class="card-body py-3">
                                         <div class="row g-3">
@@ -326,12 +322,17 @@ const TEXTS = {
     },
     sections: {
         clientData: "Datos del cliente",
-        complaintDetail: "Detalle del reclamo",
+        complaintDetail: "Detalle",
         technicalInfo: "Información técnica",
         adminManagement: "Gestión administrativa"
     },
     form: {
         branch: "Sucursal",
+        documentNumber: "Número de documento",
+        identityDocumentType: "Tipo de documento",
+        name: "Nombre",
+        email: "Correo electrónico",
+        phoneNumber: "Celular",
         description: "Descripción",
         request: "Pedido del cliente",
         dateTime: "Fecha y hora",
