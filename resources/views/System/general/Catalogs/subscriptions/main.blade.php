@@ -2,5 +2,5 @@
 
 @section("content")
     <div id="app"></div>
-    @vite('resources/js/System/Pages/subscriptions/main.js')
+    @vite('resources/js/System/Pages/Catalogs/subscriptions/main.js')
 @endsection

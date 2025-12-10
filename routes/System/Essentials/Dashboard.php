@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\System\{DashboardController};
+use App\Http\Controllers\System\Essentials\{DashboardController};
 use Illuminate\Support\Facades\Route;
 
 $entity = "dashboard";

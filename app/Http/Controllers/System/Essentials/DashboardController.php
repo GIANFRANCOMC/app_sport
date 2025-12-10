@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\System;
+namespace App\Http\Controllers\System\Essentials;
 
 use App\Helpers\System\Utilities;
 use App\Http\Controllers\Controller;
@@ -36,7 +36,7 @@ class DashboardController extends Controller {
 
     public function index() {
 
-        return view("System/general/dashboard/main");
+        return view("System/general/Essentials/dashboard/main");
 
     }
 

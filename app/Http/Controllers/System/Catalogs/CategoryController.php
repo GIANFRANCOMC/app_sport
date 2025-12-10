@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\System;
+namespace App\Http\Controllers\System\Catalogs;
 
 use App\Helpers\System\Utilities;
 use App\Http\Controllers\Controller;
@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\{Auth, DB};
 use stdClass;
 
 use App\Http\Requests\System\Categories\{StoreCategoryRequest, UpdateCategoryRequest};
-use App\Models\System\General\{Category};
+use App\Models\System\Catalogs\{Category};
 
 class CategoryController extends Controller {
 
@@ -74,7 +74,7 @@ class CategoryController extends Controller {
 
     public function index() {
 
-        return view("System/general/categories/main");
+        return view("System/general/Catalogs/categories/main");
 
     }
 

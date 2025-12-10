@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\System\{ProductController};
+use App\Http\Controllers\System\Catalogs\{ProductController};
 use Illuminate\Support\Facades\Route;
 
 $entity = "products";

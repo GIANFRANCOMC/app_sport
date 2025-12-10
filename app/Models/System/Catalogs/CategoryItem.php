@@ -5,7 +5,7 @@ namespace App\Models\System\Catalogs;
 use App\Helpers\System\Utilities;
 use Illuminate\Database\Eloquent\Model;
 
-use App\Models\System\General\{Category};
+use App\Models\System\Catalogs\{Category};
 
 class CategoryItem extends Model {
 

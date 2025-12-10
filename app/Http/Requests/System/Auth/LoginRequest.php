@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\{Auth, Hash, RateLimiter};
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
-use App\Models\System\Auth\{User};
+use App\Models\System\Organizations\{User};
 
 class LoginRequest extends FormRequest {
 

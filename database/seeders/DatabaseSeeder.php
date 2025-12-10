@@ -2,7 +2,9 @@
 
 namespace Database\Seeders;
 
-use App\Models\System\{Company, Customer, Item, User};
+use App\Models\System\Catalogs\{Item};
+use App\Models\System\Customers\{Customer};
+use App\Models\System\Organizations\{Company, User};
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder {

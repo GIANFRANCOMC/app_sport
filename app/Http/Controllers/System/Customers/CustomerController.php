@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\System;
+namespace App\Http\Controllers\System\Customers;
 
 use App\Helpers\System\Utilities;
 use App\Http\Controllers\Controller;
@@ -83,7 +83,7 @@ class CustomerController extends Controller {
 
     public function index() {
 
-        return view("System/general/customers/main");
+        return view("System/general/Customers/customers/main");
 
     }
 

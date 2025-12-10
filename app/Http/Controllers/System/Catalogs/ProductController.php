@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\System;
+namespace App\Http\Controllers\System\Catalogs;
 
 use App\Helpers\System\Utilities;
 use App\Http\Controllers\Controller;
@@ -9,8 +9,8 @@ use Illuminate\Support\Facades\{Auth, DB};
 use stdClass;
 
 use App\Http\Requests\System\Products\{StoreProductRequest, UpdateProductRequest};
-use App\Models\System\Catalogs\{CategoryItem, Item};
-use App\Models\System\General\{Category, Currency};
+use App\Models\System\Catalogs\{Category, CategoryItem, Item};
+use App\Models\System\General\{Currency};
 use App\Models\System\Organizations\{Branch};
 use App\Models\System\Warehouses\{WarehouseItem};
 
@@ -86,7 +86,7 @@ class ProductController extends Controller {
 
     public function index() {
 
-        return view("System/general/products/main");
+        return view("System/general/Catalogs/products/main");
 
     }
 

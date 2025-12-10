@@ -295,10 +295,10 @@
 </template>
 
 <script>
-import * as Alerts    from "../../Helpers/Alerts.js";
-import * as Constants from "../../Helpers/Constants.js";
-import * as Requests  from "../../Helpers/Requests.js";
-import * as Utils     from "../../Helpers/Utils.js";
+import * as Alerts    from "@System/Helpers/Alerts.js";
+import * as Constants from "@System/Helpers/Constants.js";
+import * as Requests  from "@System/Helpers/Requests.js";
+import * as Utils     from "@System/Helpers/Utils.js";
 
 export default {
     components: {

@@ -16,35 +16,50 @@ export default defineConfig({
             input: [
                 'resources/css/System/app.css',
                 'resources/js/System/app.js',
-                //'resources/js/System/Pages/items/main.js',
 
+                // Guest Pages
                 'resources/js/Guest/Pages/home/main.js',
                 'resources/js/Guest/Pages/book_complaints/main.js',
                 'resources/js/Guest/Pages/tracking_attendances/main.js',
 
-                'resources/js/System/Pages/book_complaints/main.js',
-                'resources/js/System/Pages/assets/main.js',
-                'resources/js/System/Pages/assets_management/main.js',
+                // System Pages - Assets
+                'resources/js/System/Pages/Assets/assets/main.js',
+                'resources/js/System/Pages/Assets/assets_management/main.js',
+
+                // System Pages - Catalogs
+                'resources/js/System/Pages/Catalogs/categories/main.js',
+                'resources/js/System/Pages/Catalogs/products/main.js',
+                'resources/js/System/Pages/Catalogs/services/main.js',
+                'resources/js/System/Pages/Catalogs/subscriptions/main.js',
+
+                // System Pages - Customers
+                'resources/js/System/Pages/Customers/customers/main.js',
+                'resources/js/System/Pages/Customers/tracking_attendances/main.js',
+                'resources/js/System/Pages/Customers/tracking_customers/main.js',
+                'resources/js/System/Pages/Customers/tracking_subscriptions/main.js',
+
+                // System Pages - Essentials
+                'resources/js/System/Pages/Essentials/dashboard/main.js',
+                'resources/js/System/Pages/Essentials/home/main.js',
+                'resources/js/System/Pages/Essentials/reports/main.js',
+
+                // System Pages - Notifications
+                'resources/js/System/Pages/Notifications/tracking_notifications/main.js',
+
+                // System Pages - Organizations
+                'resources/js/System/Pages/Organizations/book_complaints/main.js',
                 'resources/js/System/Pages/Organizations/branches/main.js',
-                'resources/js/System/Pages/companies/main.js',
-                'resources/js/System/Pages/customers/main.js',
-                'resources/js/System/Pages/dashboard/main.js',
-                'resources/js/System/Pages/home/main.js',
-                'resources/js/System/Pages/products/main.js',
-                'resources/js/System/Pages/reports/main.js',
-                'resources/js/System/Pages/sales/list.js',
-                'resources/js/System/Pages/sales/main.js',
-                'resources/js/System/Pages/services/main.js',
-                'resources/js/System/Pages/stocks_management/main.js',
-                'resources/js/System/Pages/subscriptions/main.js',
-                'resources/js/System/Pages/tracking_customers/main.js',
-                'resources/js/System/Pages/tracking_subscriptions/main.js',
-                'resources/js/System/Pages/tracking_attendances/main.js',
-                'resources/js/System/Pages/tracking_notifications/main.js',
-                'resources/js/System/Pages/users/main.js',
-                'resources/js/System/Pages/categories/main.js',
+                'resources/js/System/Pages/Organizations/companies/main.js',
+                'resources/js/System/Pages/Organizations/users/main.js',
 
+                // System Pages - Sales
+                'resources/js/System/Pages/Sales/sales/list.js',
+                'resources/js/System/Pages/Sales/sales/main.js',
 
+                // System Pages - Warehouses
+                'resources/js/System/Pages/Warehouses/stocks_management/main.js',
+
+                // System Helpers
                 'resources/js/System/Helpers/Alerts.js',
                 'resources/js/System/Helpers/Constants.js',
                 'resources/js/System/Helpers/Requests.js',

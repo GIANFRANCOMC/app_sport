@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\System;
+namespace App\Http\Controllers\System\Organizations;
 
 use App\Helpers\System\Utilities;
 use App\Http\Controllers\Controller;
@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\{Auth, DB};
 use stdClass;
 
 use App\Http\Requests\System\Users\{StoreUserRequest, UpdateUserRequest};
-use App\Models\System\Auth\{Role, User};
+use App\Models\System\Organizations\{Role, User};
 use App\Models\System\General\{IdentityDocumentType};
 
 class UserController extends Controller {
@@ -86,7 +86,7 @@ class UserController extends Controller {
 
     public function index() {
 
-        return view("System/general/users/main");
+        return view("System/general/Organizations/users/main");
 
     }
 

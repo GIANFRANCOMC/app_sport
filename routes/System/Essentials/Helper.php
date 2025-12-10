@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\System\{HelperController};
+use App\Http\Controllers\System\Essentials\{HelperController};
 use Illuminate\Support\Facades\Route;
 
 $entity = "helpers";

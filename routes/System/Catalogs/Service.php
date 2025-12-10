@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\System\{ServiceController};
+use App\Http\Controllers\System\Catalogs\{ServiceController};
 use Illuminate\Support\Facades\Route;
 
 $entity = "services";

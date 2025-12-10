@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Carbon\Carbon;
 use Exception;
 
-use App\Models\System\Auth\{User};
+use App\Models\System\Organizations\{User};
 use App\Models\System\Customers\{Customer};
 use App\Models\System\General\{Currency};
 use App\Models\System\Organizations\{Serie};

@@ -59,7 +59,7 @@ class CompanyController extends Controller {
 
     public function index() {
 
-        return view("System/general/companies/main");
+        return view("System/general/Organizations/companies/main");
 
     }
 

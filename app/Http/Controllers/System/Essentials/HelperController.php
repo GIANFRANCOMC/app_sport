@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\System;
+namespace App\Http\Controllers\System\Essentials;
 
 use App\Helpers\System\Utilities;
 use App\Http\Controllers\Controller;

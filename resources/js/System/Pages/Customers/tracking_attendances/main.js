@@ -5,19 +5,19 @@ import App from "./main.vue"
 import VueSelect from "vue-select";
 import "vue-select/dist/vue-select.css";
 
-import Breadcrumb    from "../../Components/Breadcrumb.vue";
-import InputDate     from "../../Components/InputDate.vue";
-import InputDatetime from "../../Components/InputDatetime.vue";
-import InputNumber   from "../../Components/InputNumber.vue";
-import InputSelect   from "../../Components/InputSelect.vue";
-import InputSlot     from "../../Components/InputSlot.vue";
-import InputSelect2  from "../../Components/InputSelect2.vue";
-import InputText     from "../../Components/InputText.vue";
-import Paginator     from "../../Components/Paginator.vue";
-import Loader        from "../../Components/Loader.vue";
-import CodeScanner from "../../Components/CodeScanner.vue";
-import WithoutData   from "../../Components/WithoutData.vue";
-import AnalogClock   from "../../Components/AnalogClock.vue";
+import Breadcrumb    from "@System/Components/Breadcrumb.vue";
+import InputDate     from "@System/Components/InputDate.vue";
+import InputDatetime from "@System/Components/InputDatetime.vue";
+import InputNumber   from "@System/Components/InputNumber.vue";
+import InputSelect   from "@System/Components/InputSelect.vue";
+import InputSlot     from "@System/Components/InputSlot.vue";
+import InputSelect2  from "@System/Components/InputSelect2.vue";
+import InputText     from "@System/Components/InputText.vue";
+import Paginator     from "@System/Components/Paginator.vue";
+import Loader        from "@System/Components/Loader.vue";
+import CodeScanner from "@System/Components/CodeScanner.vue";
+import WithoutData   from "@System/Components/WithoutData.vue";
+import AnalogClock   from "@System/Components/AnalogClock.vue";
 
 // App creation and mounted
 createApp(App)

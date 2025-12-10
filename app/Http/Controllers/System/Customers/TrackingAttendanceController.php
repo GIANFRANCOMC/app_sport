@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\System;
+namespace App\Http\Controllers\System\Customers;
 
 use App\Helpers\System\Utilities;
 use App\Http\Controllers\Controller;
@@ -87,7 +87,7 @@ class TrackingAttendanceController extends Controller {
 
     public function index() {
 
-        return view("System/general/tracking_attendances/main");
+        return view("System/general/Customers/tracking_attendances/main");
 
     }
 

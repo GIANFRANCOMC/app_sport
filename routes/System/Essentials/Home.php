@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\System\{HomeController};
+use App\Http\Controllers\System\Essentials\{HomeController};
 use Illuminate\Support\Facades\Route;
 
 $entity = "home";

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\System;
+namespace App\Http\Controllers\System\Assets;
 
 use App\Helpers\System\Utilities;
 use App\Http\Controllers\Controller;
@@ -74,7 +74,7 @@ class AssetController extends Controller {
 
     public function index() {
 
-        return view("System/general/assets/main");
+        return view("System/general/Assets/assets/main");
 
     }
 

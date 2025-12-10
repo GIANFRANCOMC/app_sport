@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\System;
+namespace App\Http\Controllers\System\Notifications;
 
 use App\Helpers\System\Utilities;
 use App\Http\Controllers\Controller;
@@ -58,7 +58,7 @@ class TrackingNotificationController extends Controller {
 
     public function index() {
 
-        return view("System/general/tracking_notifications/main");
+        return view("System/general/Notifications/tracking_notifications/main");
 
     }
 

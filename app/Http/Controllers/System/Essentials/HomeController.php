@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\System;
+namespace App\Http\Controllers\System\Essentials;
 
 use App\Helpers\System\Utilities;
 use App\Http\Controllers\Controller;
@@ -8,7 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\{Auth, DB};
 use stdClass;
 
-use App\Models\System\Auth\{UserPreference};
+use App\Models\System\Organizations\{UserPreference};
 
 class HomeController extends Controller {
 
@@ -35,7 +35,7 @@ class HomeController extends Controller {
 
     public function index() {
 
-        return view("System/general/home/main");
+        return view("System/general/Essentials/home/main");
 
     }
 

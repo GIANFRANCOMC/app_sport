@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\System\{ReportController};
+use App\Http\Controllers\System\Essentials\{ReportController};
 use Illuminate\Support\Facades\Route;
 
 $entity = "reports";

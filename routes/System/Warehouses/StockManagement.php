@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\System\{StockManagementController};
+use App\Http\Controllers\System\Warehouses\{StockManagementController};
 use Illuminate\Support\Facades\Route;
 
 $entity = "stocks_management";

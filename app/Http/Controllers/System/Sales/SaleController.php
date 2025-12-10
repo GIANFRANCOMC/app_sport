@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\System;
+namespace App\Http\Controllers\System\Sales;
 
 use App\Helpers\System\Utilities;
 use App\Http\Controllers\Controller;
@@ -19,6 +19,8 @@ use App\Models\System\Warehouses\{Warehouse, WarehouseItem};
 class SaleController extends Controller {
 
     public function initParams(Request $request) {
+
+        $userAuth = Auth::user();
 
         $initParams = new stdClass();
 
@@ -113,13 +115,13 @@ class SaleController extends Controller {
 
     public function index() {
 
-        return view("System/general/sales/list");
+        return view("System/general/Sales/sales/list");
 
     }
 
     public function create() {
 
-        return view("System/general/sales/main");
+        return view("System/general/Sales/sales/main");
 
     }
 

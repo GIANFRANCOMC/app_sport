@@ -1,7 +1,7 @@
 <?php
 
 use App\Http\Controllers\System\Auth\AuthenticatedSessionController;
-use App\Http\Controllers\System\NotificationController;
+use App\Http\Controllers\System\Notifications\NotificationController;
 use Illuminate\Support\Facades\Route;
 
 /*

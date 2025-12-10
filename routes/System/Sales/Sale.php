@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\System\{SaleController};
+use App\Http\Controllers\System\Sales\{SaleController};
 use Illuminate\Support\Facades\Route;
 
 $entity = "sales";

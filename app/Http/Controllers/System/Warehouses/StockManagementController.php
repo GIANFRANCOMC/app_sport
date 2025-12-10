@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\System;
+namespace App\Http\Controllers\System\Warehouses;
 
 use App\Helpers\System\Utilities;
 use App\Http\Controllers\Controller;
@@ -56,7 +56,7 @@ class StockManagementController extends Controller {
 
     public function index() {
 
-        return view("System/general/stocks_management/main");
+        return view("System/general/Warehouses/stocks_management/main");
 
     }
 

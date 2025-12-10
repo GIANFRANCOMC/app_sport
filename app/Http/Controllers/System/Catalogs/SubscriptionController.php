@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\System;
+namespace App\Http\Controllers\System\Catalogs;
 
 use App\Helpers\System\Utilities;
 use App\Http\Controllers\Controller;
@@ -9,8 +9,8 @@ use Illuminate\Support\Facades\{Auth, DB};
 use stdClass;
 
 use App\Http\Requests\System\Subscriptions\{StoreSubscriptionRequest, UpdateSubscriptionRequest};
-use App\Models\System\Catalogs\{CategoryItem, Item};
-use App\Models\System\General\{Category, Currency};
+use App\Models\System\Catalogs\{Category, CategoryItem, Item};
+use App\Models\System\General\{Currency};
 
 class SubscriptionController extends Controller {
 
@@ -85,7 +85,7 @@ class SubscriptionController extends Controller {
 
     public function index() {
 
-        return view("System/general/subscriptions/main");
+        return view("System/general/Catalogs/subscriptions/main");
 
     }
 

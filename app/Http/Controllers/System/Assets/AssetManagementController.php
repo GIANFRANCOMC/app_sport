@@ -10,7 +10,7 @@ use stdClass;
 
 use App\Http\Requests\System\Assets\AssetManagements\{AssignAssetToBranchRequest, UnassignAssetFromBranchRequest};
 use App\Models\System\Assets\{Asset, AssetAssignment, BranchAsset};
-use App\Models\System\Auth\{User};
+use App\Models\System\Organizations\{User};
 use App\Models\System\Organizations\{Branch};
 use Illuminate\Pagination\LengthAwarePaginator;
 
@@ -77,7 +77,7 @@ class AssetManagementController extends Controller {
 
     public function index() {
 
-        return view("System/general/assets_management/main");
+        return view("System/general/Assets/assets_management/main");
 
     }
 

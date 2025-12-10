@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\System\{AssetController};
+use App\Http\Controllers\System\Assets\{AssetController};
 use Illuminate\Support\Facades\Route;
 
 $entity = "assets";

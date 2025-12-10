@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\System\{CustomerController};
+use App\Http\Controllers\System\Customers\{CustomerController};
 use Illuminate\Support\Facades\Route;
 
 $entity = "customers";

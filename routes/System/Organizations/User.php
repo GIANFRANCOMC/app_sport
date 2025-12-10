@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\System\{UserController};
+use App\Http\Controllers\System\Organizations\{UserController};
 use Illuminate\Support\Facades\Route;
 
 $entity = "users";

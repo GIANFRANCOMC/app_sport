@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\System;
+namespace App\Http\Controllers\System\Essentials;
 
 use App\Exports\{BranchExport, CustomerExport, ItemExport, SaleExport, UserExport};
 use App\Helpers\System\Utilities;
@@ -9,7 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\{Auth, DB, Storage};
 use stdClass;
 
-use App\Models\System\Auth\{User};
+use App\Models\System\Organizations\{User};
 use App\Models\System\Catalogs\{Item};
 use App\Models\System\Customers\{Customer};
 use App\Models\System\Organizations\{Branch, Company};
@@ -46,7 +46,7 @@ class ReportController extends Controller {
 
     public function index() {
 
-        return view("System/general/reports/main");
+        return view("System/general/Essentials/reports/main");
 
     }
 
