@@ -1,13 +1,13 @@
 <?php
 
-namespace App\Http\Requests\System\Users;
+namespace App\Http\Requests\System\Organizations\Users;
 
 use App\Helpers\System\Utilities;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Http\Exceptions\HttpResponseException;
 
-class UpdateUserRequest extends FormRequest {
+class StoreUserRequest extends FormRequest {
 
     /**
      * Determine if the user is authorized to make this request.
@@ -35,7 +35,7 @@ class UpdateUserRequest extends FormRequest {
             "phone_number"              => "nullable|integer",
             "gender"                    => "nullable|string",
             "birthdate"                 => "nullable|date",
-            "password"                  => "nullable|string|max:200"
+            "password"                  => "required|string|max:200"
         ];
 
     }

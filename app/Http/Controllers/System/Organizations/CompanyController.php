@@ -8,7 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\{Auth, DB};
 use stdClass;
 
-use App\Http\Requests\System\Companies\{StoreCompanyRequest, UpdateCompanyRequest};
+use App\Http\Requests\System\Organizations\Companies\{StoreCompanyRequest, UpdateCompanyRequest};
 use App\Models\System\General\{IdentityDocumentType};
 use App\Models\System\Organizations\{Company, CompanySocialMedia};
 

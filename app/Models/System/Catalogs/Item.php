@@ -118,10 +118,10 @@ class Item extends Model {
 
     }
 
-    public static function getAll($type = "default", $company_id = null) {
+    public static function getAll(string $type = "default", ?int $company_id = null) {
 
         return Item::where("company_id", $company_id)
-                   ->when(in_array($type, ["sale"]), function($query) {
+                   ->when(in_array($type, ["sale", "home"]), function($query) {
 
                         $query->whereIn("status", ["active"])
                               ->orderBy("type", "ASC")

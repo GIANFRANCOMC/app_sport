@@ -8,7 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\{Auth, DB};
 use stdClass;
 
-use App\Http\Requests\System\TrackingSubscriptions\{CancelTrackingSubscriptionRequest, StoreTrackingSubscriptionRequest, UpdateTrackingSubscriptionRequest};
+use App\Http\Requests\System\Customers\TrackingSubscriptions\{CancelTrackingSubscriptionRequest, StoreTrackingSubscriptionRequest, UpdateTrackingSubscriptionRequest};
 use App\Models\System\Customers\{Customer, Subscription};
 use App\Models\System\Organizations\{Branch};
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -16,6 +16,8 @@ use Illuminate\Pagination\LengthAwarePaginator;
 class TrackingSubscriptionController extends Controller {
 
     public function initParams(Request $request) {
+
+        $userAuth = Auth::user();
 
         $initParams = new stdClass();
 
@@ -26,10 +28,10 @@ class TrackingSubscriptionController extends Controller {
         if(in_array($page, ["main"])) {
 
             $config->branches = new stdClass();
-            $config->branches->records = Branch::getAll("tracking_subscription");
+            $config->branches->records = Branch::getAll("tracking_subscription", $userAuth->company_id);
 
             $config->customers = new stdClass();
-            $config->customers->records = Customer::getAll("tracking_subscription");
+            $config->customers->records = Customer::getAll("tracking_subscription", $userAuth->company_id);
 
         }
 

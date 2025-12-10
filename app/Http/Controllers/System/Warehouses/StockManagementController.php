@@ -15,6 +15,8 @@ class StockManagementController extends Controller {
 
     public function initParams(Request $request) {
 
+        $userAuth = Auth::user();
+
         $initParams = new stdClass();
 
         $config = new stdClass();
@@ -24,7 +26,7 @@ class StockManagementController extends Controller {
         if(in_array($page, ["main"])) {
 
             $config->warehouses = new stdClass();
-            $config->warehouses->records = Warehouse::getAll("stock_management");
+            $config->warehouses->records = Warehouse::getAll("stock_management", $userAuth->company_id);
 
         }
 

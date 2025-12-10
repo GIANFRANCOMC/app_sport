@@ -8,7 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\{Auth, DB};
 use stdClass;
 
-use App\Http\Requests\System\Products\{StoreProductRequest, UpdateProductRequest};
+use App\Http\Requests\System\Catalogs\Products\{StoreProductRequest, UpdateProductRequest};
 use App\Models\System\Catalogs\{Category, CategoryItem, Item};
 use App\Models\System\General\{Currency};
 use App\Models\System\Organizations\{Branch};
@@ -17,6 +17,8 @@ use App\Models\System\Warehouses\{WarehouseItem};
 class ProductController extends Controller {
 
     public function initParams(Request $request) {
+
+        $userAuth = Auth::user();
 
         $initParams = new stdClass();
 
@@ -30,7 +32,7 @@ class ProductController extends Controller {
             $config->products->statuses = Item::getStatuses();
 
             $config->categories = new stdClass();
-            $config->categories->records = Category::getAll("product");
+            $config->categories->records = Category::getAll("product", $userAuth->company_id);
 
             $config->currencies = new stdClass();
             $config->currencies->records = Currency::get();
@@ -132,7 +134,7 @@ class ProductController extends Controller {
             $item->save();
 
             // Warehouses
-            $branches = Branch::getAll();
+            $branches = Branch::getAll("default", $userAuth->company_id);
 
             foreach($branches as $branch) {
 

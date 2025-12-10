@@ -8,7 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\{Auth, DB};
 use stdClass;
 
-use App\Http\Requests\System\Users\{StoreUserRequest, UpdateUserRequest};
+use App\Http\Requests\System\Organizations\Users\{StoreUserRequest, UpdateUserRequest};
 use App\Models\System\Organizations\{Role, User};
 use App\Models\System\General\{IdentityDocumentType};
 

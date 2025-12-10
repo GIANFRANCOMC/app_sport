@@ -11,7 +11,7 @@ use Illuminate\Http\{JsonResponse, Request};
 use Illuminate\Support\Facades\{Auth};
 
 use App\Http\Controllers\System\Concerns\{HandlesApiResponses};
-use App\Http\Requests\System\BookComplaints\{UpdateBookComplaintRequest};
+use App\Http\Requests\System\Organizations\BookComplaints\{UpdateBookComplaintRequest};
 use App\Services\System\Organizations\{BookComplaintConfigService, BookComplaintService};
 use App\Models\System\Organizations\{BookComplaint};
 

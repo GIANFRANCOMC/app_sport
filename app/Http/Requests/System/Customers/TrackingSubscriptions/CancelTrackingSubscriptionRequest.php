@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Requests\System\TrackingSubscriptions;
+namespace App\Http\Requests\System\Customers\TrackingSubscriptions;
 
 use Illuminate\Foundation\Http\FormRequest;
 

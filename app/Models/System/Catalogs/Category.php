@@ -51,7 +51,7 @@ class Category extends Model {
 
     }
 
-    public static function getAll($type = "default", $company_id = null) {
+    public static function getAll(string $type = "default", ?int $company_id = null) {
 
         return Category::where("company_id", $company_id)
                        ->when(in_array($type, ["product", "service", "subscription"]), function($query) {

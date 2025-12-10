@@ -8,13 +8,15 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\{Auth, DB};
 use stdClass;
 
-use App\Http\Requests\System\Services\{StoreServiceRequest, UpdateServiceRequest};
+use App\Http\Requests\System\Catalogs\Services\{StoreServiceRequest, UpdateServiceRequest};
 use App\Models\System\Catalogs\{Category, CategoryItem, Item};
 use App\Models\System\General\{Currency};
 
 class ServiceController extends Controller {
 
     public function initParams(Request $request) {
+
+        $userAuth = Auth::user();
 
         $initParams = new stdClass();
 
@@ -28,7 +30,7 @@ class ServiceController extends Controller {
             $config->services->statuses = Item::getStatuses();
 
             $config->categories = new stdClass();
-            $config->categories->records = Category::getAll("service");
+            $config->categories->records = Category::getAll("service", $userAuth->company_id);
 
             $config->currencies = new stdClass();
             $config->currencies->records = Currency::get();

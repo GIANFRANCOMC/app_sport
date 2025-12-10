@@ -8,7 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\{Auth, DB};
 use stdClass;
 
-use App\Http\Requests\System\Categories\{StoreCategoryRequest, UpdateCategoryRequest};
+use App\Http\Requests\System\Catalogs\Categories\{StoreCategoryRequest, UpdateCategoryRequest};
 use App\Models\System\Catalogs\{Category};
 
 class CategoryController extends Controller {

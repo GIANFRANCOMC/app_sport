@@ -8,7 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\{Auth, DB};
 use stdClass;
 
-use App\Http\Requests\System\TrackingAttendances\{CancelTrackingAttendanceRequest};
+use App\Http\Requests\System\Customers\TrackingAttendances\{CancelTrackingAttendanceRequest};
 use App\Models\System\Customers\{Attendance, Customer};
 use App\Models\System\Organizations\{Branch};
 use App\Services\AttendanceService;
@@ -19,6 +19,8 @@ class TrackingAttendanceController extends Controller {
 
     public function initParams(Request $request) {
 
+        $userAuth = Auth::user();
+
         $initParams = new stdClass();
 
         $config = new stdClass();
@@ -28,10 +30,10 @@ class TrackingAttendanceController extends Controller {
         if(in_array($page, ["main"])) {
 
             $config->branches = new stdClass();
-            $config->branches->records = Branch::getAll("tracking_attendance");
+            $config->branches->records = Branch::getAll("tracking_attendance", $userAuth->company_id);
 
             $config->customers = new stdClass();
-            $config->customers->records = Customer::getAll("tracking_attendance");
+            $config->customers->records = Customer::getAll("tracking_attendance", $userAuth->company_id);
 
         }
 

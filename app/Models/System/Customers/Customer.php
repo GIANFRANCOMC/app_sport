@@ -117,22 +117,12 @@ class Customer extends Model {
 
     }
 
-    public static function getAll($type = "default", $company_id = null) {
+    public static function getAll(string $type = "default", ?int $company_id = null) {
 
         return Customer::where("company_id", $company_id)
-                       ->when(in_array($type, ["sale"]), function($query) {
+                       ->when(in_array($type, ["sale", "tracking_subscription", "tracking_attendance"]), function($query) {
 
                             $query->whereIn("status", ["active"]);
-
-                       })
-                       ->when(in_array($type, ["tracking_subscription"]), function($query) {
-
-                            // $query->whereIn("status", ["active"]);
-
-                       })
-                       ->when(in_array($type, ["tracking_attendance"]), function($query) {
-
-                            // $query->whereIn("status", ["active"]);
 
                        })
                        ->get();

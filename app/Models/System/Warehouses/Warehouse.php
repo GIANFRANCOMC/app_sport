@@ -48,7 +48,7 @@ class Warehouse extends Model {
 
     }
 
-    public static function getAll($type = "default", $company_id = null) {
+    public static function getAll(string $type = "default", ?int $company_id = null) {
 
         return Warehouse::with("branch")
                         ->whereHas("branch", function($query) use($company_id) {
@@ -58,7 +58,7 @@ class Warehouse extends Model {
                         })
                         ->when(in_array($type, ["stock_management"]), function($query) {
 
-                            // $query->whereIn("status", ["active"]);
+                            $query->whereIn("status", ["active"]);
 
                         })
                         ->get();

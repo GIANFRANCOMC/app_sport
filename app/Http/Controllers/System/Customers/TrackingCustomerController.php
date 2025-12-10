@@ -8,7 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\{Auth, DB};
 use stdClass;
 
-use App\Http\Requests\System\TrackingAttendances\{CancelTrackingAttendanceRequest};
+use App\Http\Requests\System\Customers\TrackingAttendances\{CancelTrackingAttendanceRequest};
 use App\Models\System\Customers\{Attendance, Customer};
 use App\Services\TrackingCustomerService;
 use Carbon\Carbon;
@@ -17,6 +17,8 @@ use Illuminate\Pagination\LengthAwarePaginator;
 class TrackingCustomerController extends Controller {
 
     public function initParams(Request $request) {
+
+        $userAuth = Auth::user();
 
         $initParams = new stdClass();
 
@@ -27,7 +29,7 @@ class TrackingCustomerController extends Controller {
         if(in_array($page, ["main"])) {
 
             $config->customers = new stdClass();
-            $config->customers->records = Customer::getAll();
+            $config->customers->records = Customer::getAll("default", $userAuth->company_id);
 
         }
 

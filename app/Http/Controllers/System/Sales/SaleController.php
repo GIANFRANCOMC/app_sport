@@ -31,10 +31,10 @@ class SaleController extends Controller {
         if(in_array($page, ["list"])) {
 
             $config->branches = new stdClass();
-            $config->branches->records = Branch::getAll();
+            $config->branches->records = Branch::getAll("default", $userAuth->company_id);
 
             $config->customers = new stdClass();
-            $config->customers->records = Customer::getAll();
+            $config->customers->records = Customer::getAll("default", $userAuth->company_id);
 
             $config->salesHeader = new stdClass();
             $config->salesHeader->statuses = SaleHeader::getStatuses();
@@ -42,20 +42,20 @@ class SaleController extends Controller {
         }else if(in_array($page, ["main"])) {
 
             $config->branches = new stdClass();
-            $config->branches->records = Branch::getAll("sale");
+            $config->branches->records = Branch::getAll("sale", $userAuth->company_id);
 
             $config->currencies = new stdClass();
             $config->currencies->records = Currency::get();
 
             $config->customers = new stdClass();
-            $config->customers->records = Customer::getAll("sale");
+            $config->customers->records = Customer::getAll("sale", $userAuth->company_id);
 
             $config->identityDocumentTypes = new stdClass();
             $config->identityDocumentTypes->records = IdentityDocumentType::getAll("sale");
 
             $config->items = new stdClass();
             $config->items->durationTypes = Item::getDurationTypes();
-            $config->items->records = Item::getAll("sale");
+            $config->items->records = Item::getAll("sale", $userAuth->company_id);
 
             $config->salesHeader = new stdClass();
             $config->salesHeader->statuses = SaleHeader::getStatuses();

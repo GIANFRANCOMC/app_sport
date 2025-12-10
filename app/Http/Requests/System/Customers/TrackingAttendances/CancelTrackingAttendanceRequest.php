@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Requests\System\TrackingAttendances;
+namespace App\Http\Requests\System\Customers\TrackingAttendances;
 
 use Illuminate\Foundation\Http\FormRequest;
 

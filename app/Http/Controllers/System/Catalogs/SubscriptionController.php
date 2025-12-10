@@ -8,13 +8,15 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\{Auth, DB};
 use stdClass;
 
-use App\Http\Requests\System\Subscriptions\{StoreSubscriptionRequest, UpdateSubscriptionRequest};
+use App\Http\Requests\System\Catalogs\Subscriptions\{StoreSubscriptionRequest, UpdateSubscriptionRequest};
 use App\Models\System\Catalogs\{Category, CategoryItem, Item};
 use App\Models\System\General\{Currency};
 
 class SubscriptionController extends Controller {
 
     public function initParams(Request $request) {
+
+        $userAuth = Auth::user();
 
         $initParams = new stdClass();
 
@@ -29,7 +31,7 @@ class SubscriptionController extends Controller {
             $config->subscriptions->statuses      = Item::getStatuses();
 
             $config->categories = new stdClass();
-            $config->categories->records = Category::getAll("subscription");
+            $config->categories->records = Category::getAll("subscription", $userAuth->company_id);
 
             $config->currencies = new stdClass();
             $config->currencies->records = Currency::get();

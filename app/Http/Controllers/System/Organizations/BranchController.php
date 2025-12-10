@@ -11,7 +11,7 @@ use Illuminate\Http\{JsonResponse, Request};
 use Illuminate\Support\Facades\{Auth};
 
 use App\Http\Controllers\System\Concerns\{HandlesApiResponses};
-use App\Http\Requests\System\Branches\{StoreBranchRequest, UpdateBranchRequest};
+use App\Http\Requests\System\Organizations\Branches\{StoreBranchRequest, UpdateBranchRequest};
 use App\Services\System\Organizations\{BranchConfigService, BranchService};
 use App\Models\System\Organizations\{Branch};
 
