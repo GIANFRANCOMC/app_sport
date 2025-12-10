@@ -62,7 +62,7 @@ class BranchController extends Controller {
      */
     public function index() {
 
-        return view("System/general/branches/main");
+        return view("System/general/Organizations/branches/main");
 
     }
 

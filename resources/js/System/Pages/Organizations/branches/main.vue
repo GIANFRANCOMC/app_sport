@@ -248,11 +248,11 @@
 </template>
 
 <script>
-import * as Alerts from "../../Helpers/Alerts.js";
-import * as Crud from "../../Helpers/Crud.js";
-import * as Forms from "../../Helpers/Forms.js";
-import * as Requests from "../../Helpers/Requests.js";
-import * as Utils from "../../Helpers/Utils.js";
+import * as Alerts from "../../../Helpers/Alerts.js";
+import * as Crud from "../../../Helpers/Crud.js";
+import * as Forms from "../../../Helpers/Forms.js";
+import * as Requests from "../../../Helpers/Requests.js";
+import * as Utils from "../../../Helpers/Utils.js";
 
 const MODULE_CONFIG = {
     entity: "branches",

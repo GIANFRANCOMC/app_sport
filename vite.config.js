@@ -1,8 +1,15 @@
 import { defineConfig } from 'vite';
 import laravel from 'laravel-vite-plugin';
 import vue from '@vitejs/plugin-vue';
+import { fileURLToPath, URL } from 'node:url';
 
 export default defineConfig({
+    resolve: {
+        alias: {
+            '@System': fileURLToPath(new URL('./resources/js/System', import.meta.url)),
+            '@': fileURLToPath(new URL('./resources/js', import.meta.url)),
+        },
+    },
     plugins: [
         vue(),
         laravel({
@@ -18,7 +25,7 @@ export default defineConfig({
                 'resources/js/System/Pages/book_complaints/main.js',
                 'resources/js/System/Pages/assets/main.js',
                 'resources/js/System/Pages/assets_management/main.js',
-                'resources/js/System/Pages/branches/main.js',
+                'resources/js/System/Pages/Organizations/branches/main.js',
                 'resources/js/System/Pages/companies/main.js',
                 'resources/js/System/Pages/customers/main.js',
                 'resources/js/System/Pages/dashboard/main.js',
