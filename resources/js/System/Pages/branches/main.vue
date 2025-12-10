@@ -125,7 +125,6 @@
                                 :titleClass="[config.forms.classes.title, 'fw-semibold']"
                                 isRequired
                                 maxlength="50"
-                                :placeholder="MODULE.texts.form.placeholders.internalCode"
                                 hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.errors?.internal_code"
                                 xl="4"
@@ -137,7 +136,6 @@
                                 :titleClass="[config.forms.classes.title, 'fw-semibold']"
                                 isRequired
                                 maxlength="100"
-                                :placeholder="MODULE.texts.form.placeholders.name"
                                 hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.errors?.name"
                                 xl="8"
@@ -148,7 +146,6 @@
                                 :title="MODULE.texts.form.address"
                                 :titleClass="[config.forms.classes.title, 'fw-semibold']"
                                 maxlength="100"
-                                :placeholder="MODULE.texts.form.placeholders.address"
                                 hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.errors?.address"
                                 xl="12"
@@ -159,7 +156,6 @@
                                 :title="MODULE.texts.form.reference"
                                 :titleClass="[config.forms.classes.title, 'fw-semibold']"
                                 maxlength="150"
-                                :placeholder="MODULE.texts.form.placeholders.reference"
                                 hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.errors?.reference"
                                 xl="12"
@@ -170,7 +166,6 @@
                                 :title="MODULE.texts.form.telephone"
                                 :titleClass="[config.forms.classes.title, 'fw-semibold']"
                                 maxlength="25"
-                                :placeholder="MODULE.texts.form.placeholders.telephone"
                                 hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.errors?.telephone"
                                 xl="4"
@@ -181,7 +176,6 @@
                                 :title="MODULE.texts.form.email"
                                 :titleClass="[config.forms.classes.title, 'fw-semibold']"
                                 maxlength="120"
-                                :placeholder="MODULE.texts.form.placeholders.email"
                                 hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.errors?.email"
                                 xl="8"
@@ -193,7 +187,6 @@
                                 :titleClass="[config.forms.classes.title, 'fw-semibold']"
                                 :decimals="0"
                                 :minValue="0"
-                                :placeholder="MODULE.texts.form.placeholders.capacity"
                                 hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.errors?.capacity"
                                 xl="4"
@@ -208,7 +201,6 @@
                                 :title="MODULE.texts.form.mapUrl"
                                 :titleClass="[config.forms.classes.title, 'fw-semibold']"
                                 maxlength="255"
-                                :placeholder="MODULE.texts.form.placeholders.mapUrl"
                                 hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.errors?.map_url"
                                 xl="8"
@@ -348,17 +340,7 @@ const TEXTS = {
         capacity: "Capacidad",
         capacityTooltip: "Cantidad de personas",
         mapUrl: "URL del mapa",
-        status: "Estado",
-        placeholders: {
-            internalCode: "Ej. SUC-001",
-            name: "Ej. Sucursal Centro",
-            address: "Ej. Av. Principal 123, Distrito",
-            reference: "Ej. Frente al parque principal",
-            telephone: "Ej. 999 999 999",
-            email: "Ej. contacto@sucursal.com",
-            capacity: "Ej. 40",
-            mapUrl: "https://maps.google.com/..."
-        }
+        status: "Estado"
     },
     modal: {
         close: "Cerrar",
@@ -391,11 +373,7 @@ export default {
     components: {},
     data() {
 
-        const crudModule = Crud.initCrudModule({
-            entity: MODULE.config.entity,
-            menuId: MODULE.config.menuId,
-            pageTitle: MODULE.config.pageTitle
-        });
+        const crudModule = Crud.initCrudModule({entity: MODULE.config.entity, menuId: MODULE.config.menuId, pageTitle: MODULE.config.pageTitle});
 
         crudModule.lists[MODULE.config.entity].filters.filter_by = MODULE.filterOptions[0];
         crudModule.forms[MODULE.config.entity].createUpdate.data = Forms.initFormData(MODULE.formFields);
@@ -403,8 +381,8 @@ export default {
         return {
             ...crudModule,
             MODULE: MODULE,
-            isSaving: false,
-            isInitialized: false
+            isInitialized: false,
+            isSaving: false
         };
 
     },
@@ -432,7 +410,7 @@ export default {
 
             const response = await Requests.get({route: this.config.entity.routes.initParams, data: {page: "main"}, showAlert: true});
 
-            this.options[this.MODULE.config.entity] = response?.data?.config?.[this.MODULE.config.entity] ?? {};
+            this.options[this.entity] = response?.data?.config?.[this.entity] ?? {};
 
             return Requests.valid({result: response});
 
@@ -440,7 +418,7 @@ export default {
         // List
         async listEntity(params = null) {
 
-            const entityList   = this.lists[this.MODULE.config.entity];
+            const entityList   = this.lists[this.entity];
             const emptyRecords = {total: 0, data: []};
             const filters      = Utils.cloneJson(entityList.filters);
             const filterData   = {per_page: this.MODULE.config.perPage, filter_by: filters.filter_by?.code, word: filters.word};
@@ -458,15 +436,9 @@ export default {
 
                     const urlObj = new URL(url, window.location.origin);
 
-                    const paramsToSet = {per_page: filterData.per_page, filter_by: filterData.filter_by, word: filterData.word};
+                    Object.entries(filterData).forEach(([key, value]) => {
 
-                    Object.entries(paramsToSet).forEach(([key, value]) => {
-
-                        if(this.isDefined(value) && !urlObj.searchParams.has(key)) {
-
-                            urlObj.searchParams.set(key, value);
-
-                        }
+                        if(this.isDefined(value) && !urlObj.searchParams.has(key)) urlObj.searchParams.set(key, value);
 
                     });
 
@@ -501,7 +473,7 @@ export default {
         // Forms
         openModal(record = null) {
 
-            const entityForms = this.forms[this.MODULE.config.entity].createUpdate;
+            const entityForms = this.forms[this.entity].createUpdate;
 
             entityForms.errors = {};
             Forms.clearFormData(entityForms.data, this.MODULE.formFields);
@@ -539,7 +511,7 @@ export default {
 
             if(this.isSaving) return;
 
-            const entityForms = this.forms[this.MODULE.config.entity].createUpdate;
+            const entityForms = this.forms[this.entity].createUpdate;
 
             Alerts.swals({});
 
@@ -573,7 +545,7 @@ export default {
 
                     Forms.clearFormData(entityForms.data, this.MODULE.formFields);
 
-                    const entityList  = this.lists[this.MODULE.config.entity];
+                    const entityList  = this.lists[this.entity];
                     const currentPage = entityList?.records?.current_page ?? 1;
 
                     this.listEntity({url: `${entityList?.extras?.route || ""}?page=${currentPage}`});
@@ -649,7 +621,7 @@ export default {
         },
         entityList() {
 
-            return this.lists[this.MODULE.config.entity];
+            return this.lists[this.entity];
 
         },
         breadcrumbTitles() {
@@ -667,19 +639,19 @@ export default {
         },
         statuses() {
 
-            return (this.options?.[this.MODULE.config.entity]?.statuses ?? []).map(e => ({code: e.code, label: e.label}));
+            return (this.options?.[this.entity]?.statuses ?? []).map(e => ({code: e.code, label: e.label}));
 
         },
         isUpdate() {
 
             return Utils.isDefined({
-                value: this.forms[this.MODULE.config.entity]?.createUpdate?.data?.id
+                value: this.forms[this.entity]?.createUpdate?.data?.id
             });
 
         },
         modalTitles() {
 
-            return this.forms[this.MODULE.config.entity]?.createUpdate?.extras?.modals?.default?.titles || {
+            return this.forms[this.entity]?.createUpdate?.extras?.modals?.default?.titles || {
                 store: `AGREGAR ${this.MODULE.config.pageTitle.toUpperCase()}`,
                 update: `EDITAR ${this.MODULE.config.pageTitle.toUpperCase()}`
             };
