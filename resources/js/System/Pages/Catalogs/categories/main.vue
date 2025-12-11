@@ -189,7 +189,7 @@ export default {
     },
     mounted: async function() {
 
-        Utils.navbarItem("menu-item-catalogs", {addClass: "open"});
+        Utils.navbarItem("menu-parent-items", {addClass: "open"});
         Utils.navbarItem(this.config.entity.page.menu.id, {});
         Alerts.swals({type: "initParams"});
 
@@ -255,7 +255,7 @@ export default {
                         title: "Categorías",
                         active: true,
                         menu: {
-                            id: "menu-item-catalogs-categories"
+                            id: "menu-items-categories"
                         }
                     }
                 }

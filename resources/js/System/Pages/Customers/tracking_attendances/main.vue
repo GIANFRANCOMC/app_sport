@@ -722,7 +722,7 @@ export default {
 
         let el = this;
 
-        Utils.navbarItem("menu-item-trackings", {addClass: "open"});
+        Utils.navbarItem("menu-parent-customers", {addClass: "open"});
         Utils.navbarItem(this.config.entity.page.menu.id, {});
         Alerts.swals({type: "initParams"});
 
@@ -950,7 +950,7 @@ export default {
                         title: "Asistencia",
                         active: true,
                         menu: {
-                            id: "menu-item-trackings-attendances"
+                            id: "menu-customers-attendances"
                         }
                     }
                 }

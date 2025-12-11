@@ -160,7 +160,7 @@ export default {
                         title: "Inicio",
                         active: true,
                         menu: {
-                            id: "menu-item-home"
+                            id: "menu-parent-home"
                         }
                     }
                 }

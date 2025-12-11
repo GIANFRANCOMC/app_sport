@@ -306,7 +306,7 @@ export default {
     },
     mounted: async function() {
 
-        Utils.navbarItem("menu-item-configuration", {addClass: "open"});
+        Utils.navbarItem("menu-parent-configuration", {addClass: "open"});
         Utils.navbarItem(this.config.entity.page.menu.id, {});
         Alerts.swals({type: "initParams"});
 
@@ -378,7 +378,7 @@ export default {
                         title: "Colaboradores",
                         active: true,
                         menu: {
-                            id: "menu-item-configuration-users"
+                            id: "menu-configuration-users"
                         }
                     }
                 }

@@ -130,7 +130,7 @@ export default {
     },
     mounted: async function() {
 
-        Utils.navbarItem("menu-item-trackings", {addClass: "open"});
+        Utils.navbarItem("menu-parent-customers", {addClass: "open"});
         Utils.navbarItem(this.config.entity.page.menu.id, {});
         Alerts.swals({type: "initParams"});
 
@@ -191,7 +191,7 @@ export default {
                         title: "Notificaciones",
                         active: true,
                         menu: {
-                            id: "menu-item-trackings-notifications"
+                            id: "menu-customers-notifications"
                         }
                     }
                 }

@@ -236,7 +236,7 @@ export default {
                         title: "Reportes",
                         active: true,
                         menu: {
-                            id: "menu-item-reports"
+                            id: "menu-parent-reports"
                         }
                     }
                 }

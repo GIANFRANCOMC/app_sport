@@ -275,7 +275,7 @@ export default {
                         title: "Dashboard",
                         active: true,
                         menu: {
-                            id: "menu-item-dashboard"
+                            id: "menu-parent-dashboard"
                         }
                     }
                 }

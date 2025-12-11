@@ -237,7 +237,7 @@ import * as Utils from "@System/Helpers/Utils.js";
 
 const MODULE_CONFIG = {
     entity: "book_complaints",
-    menuId: "menu-item-customer_care-book_complaints",
+    menuId: "menu-customers-book_complaints",
     pageTitle: "Libro de reclamaciones y sugerencias",
     breadcrumbParent: "Atención al cliente",
     perPage: 6
@@ -382,7 +382,7 @@ export default {
     },
     mounted: async function() {
 
-        Utils.navbarItem("menu-item-customer_care", {addClass: "open"});
+        Utils.navbarItem("menu-parent-customers", {addClass: "open"});
         Utils.navbarItem(this.config.entity.page.menu.id, {});
 
         Alerts.swals({type: "initParams"});

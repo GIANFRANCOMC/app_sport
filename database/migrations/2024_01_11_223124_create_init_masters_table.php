@@ -235,53 +235,53 @@ return new class extends Migration {
         ]);
 
         DB::table("sections")->insert([
-            ["id" => 1, "slug" => "sc_home", "name" => "home", "order" => 1, "dom_id" => "menu-item-home", "dom_label" => "Inicio", "dom_icon" => "fa fa-home", "has_sub_menu" => false],
-            ["id" => 2, "slug" => "sc_dashboard", "name" => "dashboard", "order" => 2, "dom_id" => "menu-item-dashboard", "dom_label" => "Dashboard", "dom_icon" => "fa-solid fa-gauge", "has_sub_menu" => false],
-            ["id" => 3, "slug" => "sc_sales", "name" => "sales", "order" => 3, "dom_id" => "menu-item-sales", "dom_label" => "Ventas", "dom_icon" => "fa-solid fa-cash-register", "has_sub_menu" => true],
-            ["id" => 4, "slug" => "sc_customers", "name" => "customers", "order" => 4, "dom_id" => "menu-item-customers", "dom_label" => "Gestión de clientes", "dom_icon" => "fa fa-user", "has_sub_menu" => true],
-            ["id" => 5, "slug" => "sc_items", "name" => "items", "order" => 6, "dom_id" => "menu-item-catalogs", "dom_label" => "Catálogo comercial", "dom_icon" => "fa fa-book", "has_sub_menu" => true],
-            ["id" => 6, "slug" => "sc_infrastructure", "name" => "infrastructure", "order" => 8, "dom_id" => "menu-item-infrastructure", "dom_label" => "Infraestructura", "dom_icon" => "fa-solid fa-industry", "has_sub_menu" => true],
-            ["id" => 7, "slug" => "sc_configuration", "name" => "configuration", "order" => 10, "dom_id" => "menu-item-configuration", "dom_label" => "Configuración", "dom_icon" => "fa fa-gear", "has_sub_menu" => true],
-            ["id" => 8, "slug" => "sc_reports", "name" => "reports", "order" => 11, "dom_id" => "menu-item-reports", "dom_label" => "Reportes", "dom_icon" => "fa fa-print", "has_sub_menu" => false]
+            ["id" => 1, "slug" => "sc_home", "name" => "home", "order" => 1, "dom_id" => "menu-parent-home", "dom_label" => "Inicio", "dom_icon" => "fa fa-home", "has_sub_menu" => false],
+            ["id" => 2, "slug" => "sc_dashboard", "name" => "dashboard", "order" => 2, "dom_id" => "menu-parent-dashboard", "dom_label" => "Dashboard", "dom_icon" => "fa-solid fa-gauge", "has_sub_menu" => false],
+            ["id" => 3, "slug" => "sc_sales", "name" => "sales", "order" => 3, "dom_id" => "menu-parent-sales", "dom_label" => "Ventas", "dom_icon" => "fa-solid fa-cash-register", "has_sub_menu" => true],
+            ["id" => 4, "slug" => "sc_customers", "name" => "customers", "order" => 4, "dom_id" => "menu-parent-customers", "dom_label" => "Gestión de clientes", "dom_icon" => "fa fa-user", "has_sub_menu" => true],
+            ["id" => 5, "slug" => "sc_items", "name" => "items", "order" => 6, "dom_id" => "menu-parent-items", "dom_label" => "Catálogo comercial", "dom_icon" => "fa fa-book", "has_sub_menu" => true],
+            ["id" => 6, "slug" => "sc_infrastructure", "name" => "infrastructure", "order" => 8, "dom_id" => "menu-parent-infrastructure", "dom_label" => "Infraestructura", "dom_icon" => "fa-solid fa-industry", "has_sub_menu" => true],
+            ["id" => 7, "slug" => "sc_configuration", "name" => "configuration", "order" => 10, "dom_id" => "menu-parent-configuration", "dom_label" => "Configuración", "dom_icon" => "fa fa-gear", "has_sub_menu" => true],
+            ["id" => 8, "slug" => "sc_reports", "name" => "reports", "order" => 11, "dom_id" => "menu-parent-reports", "dom_label" => "Reportes", "dom_icon" => "fa fa-print", "has_sub_menu" => false]
         ]);
 
         DB::table("sub_sections")->insert([
             // Home
-            ["id" => 1, "section_id" => 1, "slug" => "sc_home-main", "name" => "home-main", "order" => 1, "dom_id" => "menu-item-home", "dom_label" => "Inicio", "dom_route" => "home.index"],
+            ["id" => 1, "section_id" => 1, "slug" => "sc_home", "name" => "home", "order" => 1, "dom_id" => "menu-home", "dom_label" => "Inicio", "dom_route" => "home.index"],
 
             // Dashboard
-            ["id" => 2, "section_id" => 2, "slug" => "sc_dashboard-main", "name" => "dashboard-main", "order" => 1, "dom_id" => "menu-item-dashboard", "dom_label" => "Dashboard", "dom_route" => "dashboard.index"],
+            ["id" => 2, "section_id" => 2, "slug" => "sc_dashboard", "name" => "dashboard", "order" => 1, "dom_id" => "menu-dashboard", "dom_label" => "Dashboard", "dom_route" => "dashboard.index"],
 
             // Sales
-            ["id" => 3, "section_id" => 3, "slug" => "sc_sales-list", "name" => "sales-list", "order" => 1, "dom_id" => "menu-item-sales-list", "dom_label" => "Listado", "dom_route" => "sales.index"],
-            ["id" => 4, "section_id" => 3, "slug" => "sc_sales-main", "name" => "sales-main", "order" => 2, "dom_id" => "menu-item-sales-create", "dom_label" => "Nuevo", "dom_route" => "sales.create"],
+            ["id" => 3, "section_id" => 3, "slug" => "sc_sales-list", "name" => "sales-list", "order" => 1, "dom_id" => "menu-sales-list", "dom_label" => "Listado", "dom_route" => "sales.index"],
+            ["id" => 4, "section_id" => 3, "slug" => "sc_sales-create", "name" => "sales-create", "order" => 2, "dom_id" => "menu-sales-create", "dom_label" => "Nuevo", "dom_route" => "sales.create"],
 
             // Customers
-            ["id" => 5, "section_id" => 4, "slug" => "sc_customers-main", "name" => "customers-main", "order" => 1, "dom_id" => "menu-item-customers", "dom_label" => "Clientes", "dom_route" => "customers.index"],
-            ["id" => 6, "section_id" => 4, "slug" => "sc_customers-customers", "name" => "customers-customers", "order" => 2, "dom_id" => "menu-item-customers-customers", "dom_label" => "Expediente", "dom_route" => "tracking_customers.index"],
-            ["id" => 7, "section_id" => 4, "slug" => "sc_customers-subscriptions", "name" => "customers-subscriptions", "order" => 3, "dom_id" => "menu-item-customers-subscriptions", "dom_label" => "Membresías", "dom_route" => "tracking_subscriptions.index"],
-            ["id" => 8, "section_id" => 4, "slug" => "sc_customers-attendances", "name" => "customers-attendances", "order" => 4, "dom_id" => "menu-item-customers-attendances", "dom_label" => "Asistencias", "dom_route" => "tracking_attendances.index"],
-            ["id" => 9, "section_id" => 4, "slug" => "sc_customers-notifications", "name" => "customers-notifications", "order" => 5, "dom_id" => "menu-item-customers-notifications", "dom_label" => "Notificaciones", "dom_route" => "tracking_notifications.index"],
-            ["id" => 10, "section_id" => 4, "slug" => "sc_customers-book_complaints", "name" => "customers-book_complaints", "order" => 6, "dom_id" => "menu-item-customers-book_complaints", "dom_label" => "Libro de reclamaciones y sugerencias", "dom_route" => "book_complaints.index"],
+            ["id" => 5, "section_id" => 4, "slug" => "sc_customers", "name" => "customers", "order" => 1, "dom_id" => "menu-customers", "dom_label" => "Clientes", "dom_route" => "customers.index"],
+            ["id" => 6, "section_id" => 4, "slug" => "sc_customers-history", "name" => "customers-history", "order" => 2, "dom_id" => "menu-customers-history", "dom_label" => "Historial", "dom_route" => "tracking_customers.index"],
+            ["id" => 7, "section_id" => 4, "slug" => "sc_customers-subscriptions", "name" => "customers-subscriptions", "order" => 3, "dom_id" => "menu-customers-subscriptions", "dom_label" => "Membresías", "dom_route" => "tracking_subscriptions.index"],
+            ["id" => 8, "section_id" => 4, "slug" => "sc_customers-attendances", "name" => "customers-attendances", "order" => 4, "dom_id" => "menu-customers-attendances", "dom_label" => "Asistencias", "dom_route" => "tracking_attendances.index"],
+            ["id" => 9, "section_id" => 4, "slug" => "sc_customers-notifications", "name" => "customers-notifications", "order" => 5, "dom_id" => "menu-customers-notifications", "dom_label" => "Notificaciones", "dom_route" => "tracking_notifications.index"],
+            ["id" => 10, "section_id" => 4, "slug" => "sc_customers-book_complaints", "name" => "customers-book_complaints", "order" => 6, "dom_id" => "menu-customers-book_complaints", "dom_label" => "Libro de reclamaciones y sugerencias", "dom_route" => "book_complaints.index"],
 
             // Items
-            ["id" => 11, "section_id" => 5, "slug" => "sc_items-products", "name" => "items-products", "order" => 1, "dom_id" => "menu-item-catalogs-products", "dom_label" => "Productos", "dom_route" => "products.index"],
-            ["id" => 12, "section_id" => 5, "slug" => "sc_items-services", "name" => "items-services", "order" => 2, "dom_id" => "menu-item-catalogs-services", "dom_label" => "Servicios", "dom_route" => "services.index"],
-            ["id" => 13, "section_id" => 5, "slug" => "sc_items-subscriptions", "name" => "items-subscriptions", "order" => 3, "dom_id" => "menu-item-catalogs-subscriptions", "dom_label" => "Membresías", "dom_route" => "subscriptions.index"],
-            ["id" => 14, "section_id" => 5, "slug" => "sc_items-categories", "name" => "items-categories", "order" => 4, "dom_id" => "menu-item-catalogs-categories", "dom_label" => "Categorías", "dom_route" => "categories.index"],
-            ["id" => 15, "section_id" => 5, "slug" => "sc_items-stocks_management", "name" => "items-stocks_management", "order" => 5, "dom_id" => "menu-item-catalogs-stocks_management", "dom_label" => "Gestión de stock", "dom_route" => "stocks_management.index"],
+            ["id" => 11, "section_id" => 5, "slug" => "sc_items-products", "name" => "items-products", "order" => 1, "dom_id" => "menu-items-products", "dom_label" => "Productos", "dom_route" => "products.index"],
+            ["id" => 12, "section_id" => 5, "slug" => "sc_items-services", "name" => "items-services", "order" => 2, "dom_id" => "menu-items-services", "dom_label" => "Servicios", "dom_route" => "services.index"],
+            ["id" => 13, "section_id" => 5, "slug" => "sc_items-subscriptions", "name" => "items-subscriptions", "order" => 3, "dom_id" => "menu-items-subscriptions", "dom_label" => "Membresías", "dom_route" => "subscriptions.index"],
+            ["id" => 14, "section_id" => 5, "slug" => "sc_items-categories", "name" => "items-categories", "order" => 4, "dom_id" => "menu-items-categories", "dom_label" => "Categorías", "dom_route" => "categories.index"],
+            ["id" => 15, "section_id" => 5, "slug" => "sc_items-stocks_management", "name" => "items-stocks_management", "order" => 5, "dom_id" => "menu-items-stocks_management", "dom_label" => "Gestión de stock", "dom_route" => "stocks_management.index"],
 
             // Infrastructure
-            ["id" => 16, "section_id" => 6, "slug" => "sc_infrastructure-assets", "name" => "infrastructure-assets", "order" => 1, "dom_id" => "menu-item-infrastructure-assets", "dom_label" => "Activos", "dom_route" => "assets.index"],
-            ["id" => 17, "section_id" => 6, "slug" => "sc_infrastructure-assets_management", "name" => "infrastructure-assets_management", "order" => 2, "dom_id" => "menu-item-infrastructure-assets_management", "dom_label" => "Gestión de activos", "dom_route" => "assets_management.index"],
+            ["id" => 16, "section_id" => 6, "slug" => "sc_infrastructure-assets", "name" => "infrastructure-assets", "order" => 1, "dom_id" => "menu-infrastructure-assets", "dom_label" => "Activos", "dom_route" => "assets.index"],
+            ["id" => 17, "section_id" => 6, "slug" => "sc_infrastructure-assets_management", "name" => "infrastructure-assets_management", "order" => 2, "dom_id" => "menu-infrastructure-assets_management", "dom_label" => "Gestión de activos", "dom_route" => "assets_management.index"],
 
             // Configuration
-            ["id" => 18, "section_id" => 7, "slug" => "sc_configuration-my_company", "name" => "configuration-my_company", "order" => 1, "dom_id" => "menu-item-configuration-companies", "dom_label" => "Mi empresa", "dom_route" => "companies.index"],
-            ["id" => 19, "section_id" => 7, "slug" => "sc_configuration-branches", "name" => "configuration-branches", "order" => 2, "dom_id" => "menu-item-configuration-branches", "dom_label" => "Sucursales", "dom_route" => "branches.index"],
-            ["id" => 20, "section_id" => 7, "slug" => "sc_configuration-users", "name" => "configuration-users", "order" => 3, "dom_id" => "menu-item-configuration-users", "dom_label" => "Colaboradores", "dom_route" => "users.index"],
+            ["id" => 18, "section_id" => 7, "slug" => "sc_configuration-my_company", "name" => "configuration-my_company", "order" => 1, "dom_id" => "menu-configuration-my_company", "dom_label" => "Mi empresa", "dom_route" => "companies.index"],
+            ["id" => 19, "section_id" => 7, "slug" => "sc_configuration-branches", "name" => "configuration-branches", "order" => 2, "dom_id" => "menu-configuration-branches", "dom_label" => "Sucursales", "dom_route" => "branches.index"],
+            ["id" => 20, "section_id" => 7, "slug" => "sc_configuration-users", "name" => "configuration-users", "order" => 3, "dom_id" => "menu-configuration-users", "dom_label" => "Colaboradores", "dom_route" => "users.index"],
 
             // Reports
-            ["id" => 21, "section_id" => 8, "slug" => "sc_reports-main", "name" => "reports-main", "order" => 1, "dom_id" => "menu-item-reports", "dom_label" => "Reportes", "dom_route" => "reports.index"],
+            ["id" => 21, "section_id" => 8, "slug" => "sc_reports", "name" => "reports", "order" => 1, "dom_id" => "menu-reports", "dom_label" => "Reportes", "dom_route" => "reports.index"],
         ]);
 
         DB::table("companies_sub_sections")->insert([

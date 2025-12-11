@@ -298,6 +298,7 @@ export default {
     },
     mounted: async function() {
 
+        Utils.navbarItem("menu-parent-customers", {addClass: "open"});
         Utils.navbarItem(this.config.entity.page.menu.id, {});
         Alerts.swals({type: "initParams"});
 

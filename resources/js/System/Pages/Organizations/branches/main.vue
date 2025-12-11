@@ -218,7 +218,7 @@ import * as Utils from "@System/Helpers/Utils.js";
 
 const MODULE_CONFIG = {
     entity: "branches",
-    menuId: "menu-item-configuration-branches",
+    menuId: "menu-configuration-branches",
     pageTitle: "Sucursales",
     breadcrumbParent: "Configuración",
     perPage: 6
@@ -349,7 +349,7 @@ export default {
     },
     mounted: async function() {
 
-        Utils.navbarItem("menu-item-configuration", {addClass: "open"});
+        Utils.navbarItem("menu-parent-configuration", {addClass: "open"});
         Utils.navbarItem(this.config.entity.page.menu.id, {});
 
         Alerts.swals({type: "initParams"});

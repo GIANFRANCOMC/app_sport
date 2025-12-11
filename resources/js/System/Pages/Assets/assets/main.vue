@@ -190,7 +190,7 @@ export default {
     },
     mounted: async function() {
 
-        Utils.navbarItem("menu-item-infrastructure", {addClass: "open"});
+        Utils.navbarItem("menu-parent-infrastructure", {addClass: "open"});
         Utils.navbarItem(this.config.entity.page.menu.id, {});
         Alerts.swals({type: "initParams"});
 
@@ -256,7 +256,7 @@ export default {
                         title: "Activos",
                         active: true,
                         menu: {
-                            id: "menu-item-infrastructure-assets"
+                            id: "menu-infrastructure-assets"
                         }
                     }
                 }

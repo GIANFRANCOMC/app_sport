@@ -687,7 +687,7 @@ export default {
     },
     mounted: async function() {
 
-        Utils.navbarItem("menu-item-sales", {addClass: "open"});
+        Utils.navbarItem("menu-parent-sales", {addClass: "open"});
         Utils.navbarItem(this.config.entity.page.menu.id, {});
         Alerts.swals({type: "initParams"});
 
@@ -788,7 +788,7 @@ export default {
                         title: "Nuevo",
                         active: true,
                         menu: {
-                            id: "menu-item-sales-create"
+                            id: "menu-sales-create"
                         }
                     }
                 }

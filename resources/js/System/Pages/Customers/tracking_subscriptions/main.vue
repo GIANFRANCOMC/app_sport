@@ -244,7 +244,7 @@ export default {
     },
     mounted: async function() {
 
-        Utils.navbarItem("menu-item-trackings", {addClass: "open"});
+        Utils.navbarItem("menu-parent-customers", {addClass: "open"});
         Utils.navbarItem(this.config.entity.page.menu.id, {});
         Alerts.swals({type: "initParams"});
 
@@ -309,7 +309,7 @@ export default {
                         title: "Membresías",
                         active: true,
                         menu: {
-                            id: "menu-item-trackings-subscriptions"
+                            id: "menu-customers-subscriptions"
                         }
                     }
                 }
