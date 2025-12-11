@@ -393,7 +393,7 @@ export default {
                         title: "Clientes",
                         active: true,
                         menu: {
-                            id: "menu-item-customers"
+                            id: "menu-customers"
                         }
                     }
                 }
