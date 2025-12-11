@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\{Auth};
 
 use App\Http\Controllers\System\Concerns\{HandlesApiResponses};
 use App\Http\Requests\System\Organizations\Branches\{StoreBranchRequest, UpdateBranchRequest};
-use App\Services\System\Organizations\{BranchConfigService, BranchService};
+use App\Services\System\Organizations\Branches\{BranchConfigService, BranchService};
 use App\Models\System\Organizations\{Branch};
 
 class BranchController extends Controller {

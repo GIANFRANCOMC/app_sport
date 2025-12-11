@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\{Auth};
 
 use App\Http\Controllers\System\Concerns\{HandlesApiResponses};
 use App\Http\Requests\System\Organizations\BookComplaints\{UpdateBookComplaintRequest};
-use App\Services\System\Organizations\{BookComplaintConfigService, BookComplaintService};
+use App\Services\System\Organizations\BookComplaints\{BookComplaintConfigService, BookComplaintService};
 use App\Models\System\Organizations\{BookComplaint};
 
 class BookComplaintController extends Controller {

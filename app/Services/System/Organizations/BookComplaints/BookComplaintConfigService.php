@@ -2,23 +2,24 @@
 
 declare(strict_types=1);
 
-namespace App\Services\System\Organizations;
+namespace App\Services\System\Organizations\BookComplaints;
 
-use App\Models\System\Organizations\Branch;
-use Illuminate\Support\Facades\Cache;
+use App\Models\System\General\IdentityDocumentType;
+use App\Models\System\Organizations\BookComplaint;
+use Illuminate\Support\Facades\{Auth, Cache};
 use stdClass;
 
 /**
- * Service for managing Branch configuration and initialization parameters
+ * Service for managing BookComplaint configuration and initialization parameters
  * Implements caching for better performance
  */
-class BranchConfigService {
+class BookComplaintConfigService {
 
-    private const CACHE_PREFIX = "branch_config";
+    private const CACHE_PREFIX = "book_complaint_config";
     private const CACHE_TTL = 3600; // 1 hour
 
     /**
-     * Get initialization parameters for branch module
+     * Get initialization parameters for book complaint module
      *
      * @param int $companyId Company ID
      * @param string $page Page identifier (only used to determine what data to return, not for cache key)
@@ -28,7 +29,7 @@ class BranchConfigService {
 
         $cacheKey = self::buildCacheKey($companyId);
 
-        return Cache::remember($cacheKey, self::CACHE_TTL, function() use($page) {
+        return Cache::remember($cacheKey, self::CACHE_TTL, function() use($companyId, $page) {
 
             $initParams = new stdClass();
 
@@ -36,8 +37,12 @@ class BranchConfigService {
 
             if($page === "main") {
 
-                $config->branches = new stdClass();
-                $config->branches->statuses = Branch::getStatuses();
+                $config->identity_document_types = new stdClass();
+                $config->identity_document_types->records = IdentityDocumentType::getAll("book_complaint", $companyId);
+
+                $config->book_complaints = new stdClass();
+                $config->book_complaints->types    = BookComplaint::getTypes();
+                $config->book_complaints->statuses = BookComplaint::getStatuses();
 
             }
 
@@ -51,7 +56,7 @@ class BranchConfigService {
     }
 
     /**
-     * Build cache key for branch configuration
+     * Build cache key for book complaint configuration
      *
      * @param int $companyId Company ID
      * @return string
@@ -63,7 +68,7 @@ class BranchConfigService {
     }
 
     /**
-     * Clear cache for branch configuration
+     * Clear cache for book complaint configuration
      *
      * @param int $companyId Company ID
      * @return void
@@ -76,7 +81,7 @@ class BranchConfigService {
     }
 
     /**
-     * Clear all branch configuration cache for a company
+     * Clear all book complaint configuration cache for a company
      *
      * @param int $companyId Company ID
      * @return void
@@ -88,3 +93,4 @@ class BranchConfigService {
     }
 
 }
+

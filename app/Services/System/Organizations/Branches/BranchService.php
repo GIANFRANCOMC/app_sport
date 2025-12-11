@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace App\Services\System\Organizations;
+namespace App\Services\System\Organizations\Branches;
 
 use Exception;
 use App\Helpers\System\{TranslationHelper, Utilities};
 use Illuminate\Support\Facades\{Auth, DB};
 
-use App\Services\System\Organizations\SerieService;
+use App\Services\System\Organizations\Branches\SerieService;
 use App\Services\System\Warehouses\WarehouseService;
 use App\Repositories\System\Organizations\BranchRepository;
 use App\Models\System\Organizations\Branch;
@@ -254,3 +254,4 @@ class BranchService {
     }
 
 }
+

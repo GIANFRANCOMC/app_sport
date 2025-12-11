@@ -1,6 +1,8 @@
 <?php
 
-namespace App\Services\System\Organizations;
+declare(strict_types=1);
+
+namespace App\Services\System\Organizations\Branches;
 
 use App\Models\System\General\DocumentType;
 use App\Models\System\Organizations\Serie;

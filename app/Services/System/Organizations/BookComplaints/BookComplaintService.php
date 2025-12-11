@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Services\System\Organizations;
+namespace App\Services\System\Organizations\BookComplaints;
 
 use App\Helpers\System\Utilities;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
