@@ -1,50 +1,26 @@
 <template>
     <Breadcrumb :list="breadcrumbTitles"/>
 
-    <!-- Content -->
-    <div class="row align-items-end g-3 mb-3 mb-md-4">
-        <InputSlot
-            hasDiv
-            title="Filtrar por"
-            :titleClass="[config.forms.classes.title]"
-            xl="3"
-            lg="4">
-            <template v-slot:input>
-                <v-select
-                    v-model="lists.entity.filters.filter_by"
-                    :options="filterByOptions"
-                    :class="config.forms.classes.select2"
-                    :clearable="false"
-                    :searchable="false"/>
-            </template>
-        </InputSlot>
-        <InputText
-            v-model="lists.entity.filters.word"
-            @enterKeyPressed="listEntity({})"
-            hasDiv
-            title="Búsqueda"
-            :titleClass="[config.forms.classes.title]"
-            :placeholder="'Buscar por ' + (lists.entity.filters.filter_by?.label || '...').toLowerCase()"
-            xl="4"
-            lg="4"/>
-        <InputSlot
-            hasDiv
-            :isInputGroup="false"
-            :divInputClass="['d-flex flex-wrap justify-content-start gap-2 gap-md-3']"
-            xl="5"
-            lg="4">
-            <template v-slot:input>
-                <button type="button" class="btn btn-info-1 waves-effect" @click="listEntity({})" :disabled="lists.entity.extras.loading">
-                    <i class="fa fa-search"></i>
-                    <span class="ms-2">Buscar</span>
-                </button>
-                <button type="button" class="btn btn-primary waves-effect" @click="modalCreateUpdateEntity({})" :disabled="lists.entity.extras.loading">
-                    <i class="fa fa-plus"></i>
-                    <span class="ms-2">Agregar</span>
-                </button>
-            </template>
-        </InputSlot>
-    </div>
+    <!-- Filters Section -->
+    <FiltersSection
+        :filter-by-value="filterByValue"
+        @update:filterByValue="filterByValue = $event"
+        :filter-word-value="filterWordValue"
+        @update:filterWordValue="filterWordValue = $event"
+        :filter-by-options="filterByOptions"
+        :search-placeholder="searchPlaceholder"
+        :loading="entityList.extras.loading"
+        :filter-by-title="MODULE.texts.filters.filterBy"
+        :search-title="MODULE.texts.filters.search"
+        :search-button-text="MODULE.texts.actions.search"
+        :add-button-text="MODULE.texts.actions.add"
+        :show-add-button="true"
+        :title-class="[config.forms.classes.title]"
+        :select-class="config.forms.classes.select2"
+        @search="handleSearch"
+        @add="openModal()"/>
+
+    <!-- List Section -->
     <div class="table-responsive">
         <table class="table table-hover">
             <thead>
@@ -58,7 +34,7 @@
                 </tr>
             </thead>
             <tbody class="table-border-bottom-0 bg-white">
-                <template v-if="lists.entity.extras.loading">
+                <template v-if="entityList.extras.loading">
                     <tr class="text-center">
                         <td colspan="99" class="py-4">
                             <Loader/>
@@ -66,8 +42,8 @@
                     </tr>
                 </template>
                 <template v-else>
-                    <template v-if="lists.entity.records.total > 0">
-                        <tr v-for="record in lists.entity.records.data" :key="record.id" class="text-center">
+                    <template v-if="entityList.records.total > 0">
+                        <tr v-for="record in entityList.records.data" :key="record.id" class="text-center">
                             <td v-text="record.internal_code" class="fw-bold"></td>
                             <td v-text="record.name" class="text-start"></td>
                             <td>
@@ -76,27 +52,18 @@
                             </td>
                             <td>
                                 <div class="d-flex justify-content-center align-items-center gap-3 border border-light rounded px-2 py-1">
-                                    <i :class="['fa fa-globe cursor-pointer', record.see_my_web ? 'text-success' : 'text-light']" data-bs-toggle="tooltip" data-bs-placement="top" :title="[record.see_my_web ? 'Visible en mi página' : 'No visible en mi página']"></i>
-                                    <i v-if="record.see_my_web && record.see_my_web_price" :class="['fa-solid fa-dollar-sign cursor-pointer', record.see_my_web_price ? 'text-success' : 'text-light']" data-bs-toggle="tooltip" data-bs-placement="top" :title="[record.see_my_web_price ? 'Precio visible' : 'Precio no visible']"></i>
+                                    <i :class="['fa fa-globe cursor-pointer', record.see_my_web ? 'text-success' : 'text-light']" data-bs-toggle="tooltip" data-bs-placement="top" :title="record.see_my_web ? 'Visible en mi página' : 'No visible en mi página'"></i>
+                                    <i v-if="record.see_my_web && record.see_my_web_price" :class="['fa-solid fa-dollar-sign cursor-pointer', record.see_my_web_price ? 'text-success' : 'text-light']" data-bs-toggle="tooltip" data-bs-placement="top" :title="record.see_my_web_price ? 'Precio visible' : 'Precio no visible'"></i>
                                 </div>
                             </td>
                             <td>
-                                <span :class="['badge', 'fw-semibold', 'text-capitalize', { 'bg-label-success': ['active'].includes(record.status), 'bg-label-danger': ['inactive'].includes(record.status) }]" v-text="record.formatted_status"></span>
+                                <span :class="[getStatusBadgeClasses(record.status), 'badge', 'fw-semibold', 'text-capitalize']" v-text="record.formatted_status"></span>
                             </td>
                             <td>
-                                <InputSlot
-                                    hasDiv
-                                    :isInputGroup="false"
-                                    :divInputClass="['d-flex flex-wrap justify-content-center gap-2 gap-md-1']"
-                                    xl="12"
-                                    lg="12">
-                                    <template v-slot:input>
-                                        <button type="button" class="btn btn-sm btn-warning waves-effect" @click="modalCreateUpdateEntity({record})">
-                                            <i class="fa fa-pencil"></i>
-                                            <span class="ms-2">Editar</span>
-                                        </button>
-                                    </template>
-                                </InputSlot>
+                                <button type="button" class="btn btn-sm btn-warning waves-effect" @click="openModal(record)">
+                                    <i class="fa fa-pencil"></i>
+                                    <span class="ms-2" v-text="MODULE.texts.actions.edit"></span>
+                                </button>
                             </td>
                         </tr>
                     </template>
@@ -111,154 +78,183 @@
             </tbody>
         </table>
     </div>
-    <div class="d-flex justify-content-center" v-if="!lists.entity.extras.loading && lists.entity.records?.total > 0">
-        <Paginator :links="lists.entity.records.links" @clickPage="listEntity"/>
-    </div>
 
-    <!-- Modals -->
-    <div class="modal fade" :id="forms.entity.createUpdate.extras.modals.default.id" data-bs-backdrop="static" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered" role="document">
+    <!-- Pagination -->
+    <nav v-if="!entityList.extras.loading && entityList.records.total > 0" class="d-flex justify-content-center">
+        <Paginator :links="entityList.records.links" @clickPage="listEntity"/>
+    </nav>
+
+    <!-- Modal: Create/Update -->
+    <div class="modal fade" :id="forms[entity].createUpdate.extras.modals.default.id" data-bs-backdrop="static" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title text-uppercase fw-bold" v-text="forms.entity.createUpdate.extras.modals.default.titles[isDefined({value: forms.entity.createUpdate.data?.id}) ? 'update' : 'store']"></h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <h5 class="modal-title text-uppercase fw-bold" v-text="modalTitles[isUpdate ? 'update' : 'store']"></h5>
+                    <button type="button" class="btn-header-modal" data-bs-dismiss="modal">
+                        <i class="fa fa-times icon-close-modal"></i>
+                    </button>
                 </div>
                 <div class="modal-body">
-                    <div class="row g-3">
-                        <InputText
-                            v-model="forms.entity.createUpdate.data.internal_code"
-                            hasDiv
-                            title="Código interno"
-                            isRequired
-                            hasTextBottom
-                            :textBottomInfo="forms.entity.createUpdate.errors?.internal_code"
-                            xl="5"
-                            lg="5">
-                            <template v-slot:inputGroupAppend>
-                                <button type="button" :class="['btn waves-effect', isDefined({value: forms.entity.createUpdate.data?.id}) ? 'btn-warning' : 'btn-primary']" @click="setGenerateCode({length: 7})" data-bs-toggle="tooltip" data-bs-placement="top" title="Generar aleatoriamente">
-                                    <i class="fa fa-rotate"></i>
-                                </button>
-                            </template>
-                        </InputText>
-                        <InputText
-                            v-model="forms.entity.createUpdate.data.name"
-                            hasDiv
-                            title="Nombre"
-                            isRequired
-                            hasTextBottom
-                            :textBottomInfo="forms.entity.createUpdate.errors?.name"
-                            xl="7"
-                            lg="7"/>
-                        <InputText
-                            v-model="forms.entity.createUpdate.data.description"
-                            hasDiv
-                            title="Descripción"
-                            hasTextBottom
-                            :textBottomInfo="forms.entity.createUpdate.errors?.description"
-                            xl="12"
-                            lg="12"/>
-                        <InputNumber
-                            v-model="forms.entity.createUpdate.data.price"
-                            hasDiv
-                            title="Precio de venta"
-                            isRequired
-                            hasTextBottom
-                            :textBottomInfo="forms.entity.createUpdate.errors?.price"
-                            xl="4"
-                            lg="4"/>
-                        <InputNumber
-                            v-model="forms.entity.createUpdate.data.min_price"
-                            hasDiv
-                            title="Precio mínimo"
-                            hasTextBottom
-                            :textBottomInfo="forms.entity.createUpdate.errors?.min_price"
-                            xl="4"
-                            lg="4"
-                            md="6"
-                            sm="6"/>
-                        <InputNumber
-                            v-model="forms.entity.createUpdate.data.max_price"
-                            hasDiv
-                            title="Precio máximo"
-                            hasTextBottom
-                            :textBottomInfo="forms.entity.createUpdate.errors?.max_price"
-                            xl="4"
-                            lg="4"
-                            md="6"
-                            sm="6"/>
-                        <InputSlot
-                            v-if="false"
-                            hasDiv
-                            title="Moneda"
-                            isRequired
-                            hasTextBottom
-                            :textBottomInfo="forms.entity.createUpdate.errors?.currency"
-                            xl="6"
-                            lg="6">
-                            <template v-slot:input>
-                                <v-select
-                                    v-model="forms.entity.createUpdate.data.currency"
-                                    :options="currencies"
-                                    :clearable="false"
-                                    :searchable="false"/>
-                            </template>
-                        </InputSlot>
-                        <InputSlot
-                            hasDiv
-                            title="Categorías"
-                            hasTextBottom
-                            :textBottomInfo="forms.entity.createUpdate.errors?.categories"
-                            xl="12"
-                            lg="12">
-                            <template v-slot:input>
-                                <v-select
-                                    v-model="forms.entity.createUpdate.data.categories"
-                                    :options="categories"
-                                    :clearable="true"
-                                    :searchable="true"
-                                    :multiple="true"/>
-                            </template>
-                        </InputSlot>
-                        <InputSlot
-                            hasDiv
-                            title="Estado"
-                            isRequired
-                            hasTextBottom
-                            :textBottomInfo="forms.entity.createUpdate.errors?.status"
-                            xl="6"
-                            lg="6">
-                            <template v-slot:input>
-                                <v-select
-                                    v-model="forms.entity.createUpdate.data.status"
-                                    :options="statuses"
-                                    :clearable="false"
-                                    :searchable="false"/>
-                            </template>
-                        </InputSlot>
-                        <InputSlot
-                            hasDiv
-                            :isInputGroup="false"
-                            :divInputClass="['d-flex flex-wrap justify-content-end align-items-end h-100']"
-                            xl="6"
-                            lg="6">
-                            <template v-slot:input>
-                                <label class="form-check-label">
-                                    <input class="form-check-input" type="checkbox" v-model="forms.entity.createUpdate.data.see_my_web"/>
-                                    <span class="ms-2">Visualizar en mi página</span>
-                                </label>
-                                <label class="form-check-label" v-if="forms.entity.createUpdate.data.see_my_web">
-                                    <input class="form-check-input" type="checkbox" v-model="forms.entity.createUpdate.data.see_my_web_price"/>
-                                    <span class="ms-2">Visualizar precio</span>
-                                </label>
-                            </template>
-                        </InputSlot>
-                    </div>
+                    <form @submit.prevent="saveEntity">
+                        <div class="row g-3">
+                            <InputText
+                                v-model="forms[entity].createUpdate.data.internal_code"
+                                hasDiv
+                                :title="MODULE.texts.form.internalCode"
+                                :titleClass="[config.forms.classes.title, 'fw-semibold']"
+                                isRequired
+                                maxlength="50"
+                                hasTextBottom
+                                :textBottomInfo="forms[entity].createUpdate.errors?.internal_code"
+                                xl="5"
+                                lg="5">
+                                <template v-slot:inputGroupAppend>
+                                    <button type="button" :class="['btn waves-effect', isUpdate ? 'btn-warning' : 'btn-primary']" @click="generateCodeAction" data-bs-toggle="tooltip" data-bs-placement="top" :title="MODULE.texts.form.generateCodeTooltip">
+                                        <i class="fa fa-rotate"></i>
+                                    </button>
+                                </template>
+                            </InputText>
+                            <InputText
+                                v-model="forms[entity].createUpdate.data.name"
+                                hasDiv
+                                :title="MODULE.texts.form.name"
+                                :titleClass="[config.forms.classes.title, 'fw-semibold']"
+                                isRequired
+                                maxlength="100"
+                                hasTextBottom
+                                :textBottomInfo="forms[entity].createUpdate.errors?.name"
+                                xl="7"
+                                lg="7"/>
+                            <InputText
+                                v-model="forms[entity].createUpdate.data.description"
+                                hasDiv
+                                :title="MODULE.texts.form.description"
+                                :titleClass="[config.forms.classes.title, 'fw-semibold']"
+                                maxlength="255"
+                                hasTextBottom
+                                :textBottomInfo="forms[entity].createUpdate.errors?.description"
+                                xl="12"
+                                lg="12"/>
+                            <InputNumber
+                                v-model="forms[entity].createUpdate.data.price"
+                                hasDiv
+                                :title="MODULE.texts.form.price"
+                                :titleClass="[config.forms.classes.title, 'fw-semibold']"
+                                isRequired
+                                hasTextBottom
+                                :textBottomInfo="forms[entity].createUpdate.errors?.price"
+                                xl="4"
+                                lg="4"/>
+                            <InputNumber
+                                v-model="forms[entity].createUpdate.data.min_price"
+                                hasDiv
+                                :title="MODULE.texts.form.minPrice"
+                                :titleClass="[config.forms.classes.title, 'fw-semibold']"
+                                hasTextBottom
+                                :textBottomInfo="forms[entity].createUpdate.errors?.min_price"
+                                xl="4"
+                                lg="4"
+                                md="6"
+                                sm="6"/>
+                            <InputNumber
+                                v-model="forms[entity].createUpdate.data.max_price"
+                                hasDiv
+                                :title="MODULE.texts.form.maxPrice"
+                                :titleClass="[config.forms.classes.title, 'fw-semibold']"
+                                hasTextBottom
+                                :textBottomInfo="forms[entity].createUpdate.errors?.max_price"
+                                xl="4"
+                                lg="4"
+                                md="6"
+                                sm="6"/>
+                            <InputSlot
+                                hasDiv
+                                :title="MODULE.texts.form.currency"
+                                :titleClass="[config.forms.classes.title, 'fw-semibold']"
+                                isRequired
+                                hasTextBottom
+                                :textBottomInfo="forms[entity].createUpdate.errors?.currency_id"
+                                xl="6"
+                                lg="6">
+                                <template v-slot:input>
+                                    <v-select
+                                        v-model="forms[entity].createUpdate.data.currency"
+                                        :options="currencies"
+                                        :class="config.forms.classes.select2"
+                                        :clearable="false"
+                                        :searchable="false"/>
+                                </template>
+                            </InputSlot>
+                            <InputSlot
+                                hasDiv
+                                :title="MODULE.texts.form.categories"
+                                :titleClass="[config.forms.classes.title, 'fw-semibold']"
+                                hasTextBottom
+                                :textBottomInfo="forms[entity].createUpdate.errors?.categories"
+                                xl="6"
+                                lg="6">
+                                <template v-slot:input>
+                                    <v-select
+                                        v-model="forms[entity].createUpdate.data.categories"
+                                        :options="categories"
+                                        :class="config.forms.classes.select2"
+                                        :clearable="true"
+                                        :searchable="true"
+                                        :multiple="true"/>
+                                </template>
+                            </InputSlot>
+                            <InputSlot
+                                hasDiv
+                                :title="MODULE.texts.form.status"
+                                :titleClass="[config.forms.classes.title, 'fw-semibold']"
+                                isRequired
+                                hasTextBottom
+                                :textBottomInfo="forms[entity].createUpdate.errors?.status"
+                                xl="6"
+                                lg="6">
+                                <template v-slot:input>
+                                    <v-select
+                                        v-model="forms[entity].createUpdate.data.status"
+                                        :options="statuses"
+                                        :class="config.forms.classes.select2"
+                                        :clearable="false"
+                                        :searchable="false"/>
+                                </template>
+                            </InputSlot>
+                            <InputSlot
+                                hasDiv
+                                :isInputGroup="false"
+                                :divInputClass="['d-flex flex-wrap justify-content-end align-items-end h-100']"
+                                xl="6"
+                                lg="6">
+                                <template v-slot:input>
+                                    <label class="form-check-label">
+                                        <input class="form-check-input" type="checkbox" v-model="forms[entity].createUpdate.data.see_my_web"/>
+                                        <span class="ms-2" v-text="MODULE.texts.form.seeMyWeb"></span>
+                                    </label>
+                                    <label class="form-check-label" v-if="forms[entity].createUpdate.data.see_my_web">
+                                        <input class="form-check-input" type="checkbox" v-model="forms[entity].createUpdate.data.see_my_web_price"/>
+                                        <span class="ms-2" v-text="MODULE.texts.form.seeMyWebPrice"></span>
+                                    </label>
+                                </template>
+                            </InputSlot>
+                        </div>
+                    </form>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary waves-effect" data-bs-dismiss="modal">Cerrar</button>
-                    <button type="button" :class="['btn waves-effect', isDefined({value: forms.entity.createUpdate.data?.id}) ? 'btn-warning' : 'btn-primary']" @click="createUpdateEntity()">
+                    <button
+                        type="button"
+                        class="btn btn-secondary waves-effect"
+                        data-bs-dismiss="modal"
+                        v-text="MODULE.texts.modal.close">
+                    </button>
+                    <button
+                        type="button"
+                        :class="['btn waves-effect', isUpdate ? 'btn-warning' : 'btn-primary']"
+                        @click="saveEntity"
+                        :disabled="isSaving">
                         <i class="fa fa-save"></i>
-                        <span class="ms-2">Guardar</span>
+                        <span class="ms-2" v-text="MODULE.texts.modal.save"></span>
                     </button>
                 </div>
             </div>
@@ -267,25 +263,151 @@
 </template>
 
 <script>
-import * as Alerts    from "@System/Helpers/Alerts.js";
-import * as Constants from "@System/Helpers/Constants.js";
-import * as Requests  from "@System/Helpers/Requests.js";
-import * as Utils     from "@System/Helpers/Utils.js";
+import * as Alerts from "@System/Helpers/Alerts.js";
+import * as Crud from "@System/Helpers/Crud.js";
+import * as Forms from "@System/Helpers/Forms.js";
+import * as Requests from "@System/Helpers/Requests.js";
+import * as Utils from "@System/Helpers/Utils.js";
+
+const MODULE_CONFIG = {
+    entity: "services",
+    menuId: "menu-items-services",
+    pageTitle: "Servicios",
+    breadcrumbParent: "Catálogo comercial",
+    perPage: 15
+};
+
+const FORM_FIELDS = {
+    internal_code: "",
+    name: "",
+    description: "",
+    price: "",
+    min_price: "",
+    max_price: "",
+    currency: null,
+    categories: [],
+    see_my_web: false,
+    see_my_web_price: false,
+    status: null
+};
+
+const FORM_FIELD_CONFIG = {
+    internal_code: {trim: true},
+    name: {trim: true},
+    description: {normalize: true},
+    price: {toNumber: true, minValue: 0},
+    min_price: {toNumber: true, minValue: 0},
+    max_price: {toNumber: true, minValue: 0},
+    currency: {getCode: true},
+    categories: {getArray: true},
+    see_my_web: {toBoolean: true},
+    see_my_web_price: {toBoolean: true},
+    status: {getCode: true}
+};
+
+const VALIDATION_RULES = {
+    internal_code: {required: true},
+    name: {required: true},
+    description: {required: false},
+    price: {required: true, number: true, min: 0},
+    min_price: {required: false, number: true, min: 0},
+    max_price: {required: false, number: true, min: 0},
+    currency: {required: true},
+    categories: {required: false},
+    status: {required: true}
+};
+
+const ERROR_LABELS = {
+    internal_code: "Código interno",
+    name: "Nombre",
+    description: "Descripción",
+    price: "Precio de venta",
+    min_price: "Precio mínimo",
+    max_price: "Precio máximo",
+    currency: "Moneda",
+    categories: "Categorías",
+    status: "Estado",
+    required: "Es obligatorio"
+};
+
+const TEXTS = {
+    loading: `Cargando ${MODULE_CONFIG.pageTitle}...`,
+    filters: {
+        filterBy: "Filtrar por",
+        search: "Búsqueda"
+    },
+    actions: {
+        search: "Buscar",
+        add: "Agregar",
+        edit: "Editar"
+    },
+    form: {
+        internalCode: "Código interno",
+        name: "Nombre",
+        description: "Descripción",
+        price: "Precio de venta",
+        minPrice: "Precio mínimo",
+        maxPrice: "Precio máximo",
+        currency: "Moneda",
+        categories: "Categorías",
+        status: "Estado",
+        seeMyWeb: "Visualizar en mi página",
+        seeMyWebPrice: "Visualizar precio",
+        generateCodeTooltip: "Generar aleatoriamente"
+    },
+    modal: {
+        close: "Cerrar",
+        save: "Guardar"
+    }
+};
+
+const FILTER_OPTIONS = [
+    {code: "all", label: "Todos los filtros"},
+    {code: "internal_code", label: "Código interno"},
+    {code: "name", label: "Nombre"},
+    {code: "description", label: "Descripción"},
+    {code: "price", label: "Precio de venta"}
+];
+
+const MODULE = {
+    config: MODULE_CONFIG,
+    formFields: FORM_FIELDS,
+    formFieldConfig: FORM_FIELD_CONFIG,
+    validationRules: VALIDATION_RULES,
+    errorLabels: ERROR_LABELS,
+    texts: TEXTS,
+    filterOptions: FILTER_OPTIONS
+};
 
 export default {
-    components: {
-        //
+    name: "ServicesMain",
+    data() {
+
+        const crudModule = Crud.initCrudModule({entity: MODULE.config.entity, menuId: MODULE.config.menuId, pageTitle: MODULE.config.pageTitle});
+
+        crudModule.lists[MODULE.config.entity].filters.filter_by = MODULE.filterOptions[0];
+        crudModule.forms[MODULE.config.entity].createUpdate.data = Forms.initFormData(MODULE.formFields);
+
+        return {
+            ...crudModule,
+            MODULE: MODULE,
+            isInitialized: false,
+            isSaving: false
+        };
+
     },
     mounted: async function() {
 
         Utils.navbarItem("menu-parent-items", {addClass: "open"});
         Utils.navbarItem(this.config.entity.page.menu.id, {});
+
         Alerts.swals({type: "initParams"});
 
-        let initParams = await this.initParams({}),
-            initOthers = await this.initOthers({});
+        const initParams = await this.initParams();
 
-        if(initParams && initOthers) {
+        this.isInitialized = true;
+
+        if(initParams) {
 
             Alerts.swals({show: false});
             this.listEntity({});
@@ -293,344 +415,285 @@ export default {
         }
 
     },
-    data() {
-        return {
-            lists: {
-                entity: {
-                    extras: {
-                        loading: false,
-                        route: Requests.config({entity: "services", type: "list"})
-                    },
-                    filters: {
-                        filter_by: null,
-                        word: ""
-                    },
-                    records: {
-                        total: 0
-                    }
-                }
-            },
-            forms: {
-                entity: {
-                    createUpdate: {
-                        extras: {
-                            modals: {
-                                default: {
-                                    id: Utils.uuid(),
-                                    titles: {
-                                        store: "Agregar",
-                                        update: "Editar"
-                                    }
-                                }
-                            }
-                        },
-                        data: {
-                            id: null,
-                            internal_code: "",
-                            name: "",
-                            description: "",
-                            price: "",
-                            min_price: "",
-                            max_price: "",
-                            currency: null,
-                            categories: [],
-                            see_my_web: false,
-                            see_my_web_price: false,
-                            status: null
-                        },
-                        errors: {}
-                    }
-                }
-            },
-            options: {},
-            config: {
-                ...Constants.generalConfig,
-                entity: {
-                    ...Requests.config({entity: "services"}),
-                    page: {
-                        title: "Servicios",
-                        active: true,
-                        menu: {
-                            id: "menu-items-services"
-                        }
-                    }
-                }
-            }
-        };
-    },
     methods: {
-        // Init
-        async initParams({}) {
+        async initParams() {
 
-            let initParams = await Requests.get({route: this.config.entity.routes.initParams, data: {page: "main"}, showAlert: true});
+            const response = await Requests.get({route: this.routeActions.initParams, data: {page: "main"}, showAlert: true});
 
-            this.options.categories = initParams.data?.config?.categories;
-            this.options.currencies = initParams.data?.config?.currencies;
-            this.options.services   = initParams.data?.config?.services;
+            this.options.categories = response?.data?.config?.categories ?? {};
+            this.options.currencies = response?.data?.config?.currencies ?? {};
+            this.options[this.entity] = response?.data?.config?.[this.entity] ?? {};
 
-            return Requests.valid({result: initParams});
-
-        },
-        async initOthers({}) {
-
-            return new Promise(resolve => {
-
-                this.lists.entity.filters.filter_by = this.filterByOptions[0];
-
-                resolve(true);
-
-            });
+            return Requests.valid({result: response});
 
         },
-        // Entity forms
-        async listEntity({url = null}) {
+        // List
+        async listEntity(params = null) {
 
-            let filters = Utils.cloneJson(this.lists.entity.filters);
-            const filterJson = {filter_by: filters?.filter_by?.code, word: filters.word};
+            const entityList   = this.lists[this.entity];
+            const emptyRecords = {total: 0, data: []};
+            const filters      = Utils.cloneJson(entityList.filters);
+            const filterData   = {per_page: this.MODULE.config.perPage, filter_by: filters.filter_by?.code, word: filters.word};
 
-            this.lists.entity.extras.loading = true;
-            this.lists.entity.records        = (await Requests.get({route: url || this.lists.entity.extras.route, data: filterJson}))?.data;
-            this.lists.entity.extras.loading = false;
+            entityList.extras.loading = true;
 
-        },
-        // Forms
-        setGenerateCode({length, showAlert = true}) {
+            try {
 
-            this.forms.entity.createUpdate.data.internal_code = this.generateCode({length});
+                const url = this.isDefined(params) && typeof params === "object" ? params.url : params;
 
-            if(showAlert) {
+                let requestUrl  = url || entityList.extras.route;
+                let requestData = {};
 
-                Alerts.toastrs({type: "success", subtitle: "Código interno generado correctamente."});
-                Alerts.tooltips({show: false});
+                if(this.isDefined(url)) {
 
-            }
+                    const urlObj = new URL(url, window.location.origin);
 
-        },
-        modalCreateUpdateEntity({record = null}) {
+                    Object.entries(filterData).forEach(([key, value]) => {
 
-            const functionName = "modalCreateUpdateEntity";
+                        if(this.isDefined(value) && !urlObj.searchParams.has(key)) urlObj.searchParams.set(key, value);
 
-            // Alerts.swals({});
-            this.clearForm({functionName});
-            this.formErrors({functionName, type: "clear"});
+                    });
 
-            if(this.isDefined({value: record})) {
-
-                const categoryItems = (record?.category_items ?? []).map(e => e?.category_id);
-
-                let categories = this.categories.filter(e => categoryItems.includes(e.code)),
-                    currency   = this.currencies.filter(e => e.code === record?.currency_id)[0],
-                    status     = this.statuses.filter(e => e.code === record?.status)[0];
-
-                this.forms.entity.createUpdate.data.id            = record?.id;
-                this.forms.entity.createUpdate.data.internal_code = record?.internal_code;
-                this.forms.entity.createUpdate.data.name          = record?.name;
-                this.forms.entity.createUpdate.data.description   = record?.description;
-                this.forms.entity.createUpdate.data.price         = record?.price;
-                this.forms.entity.createUpdate.data.min_price     = record?.min_price ?? "";
-                this.forms.entity.createUpdate.data.max_price     = record?.max_price ?? "";
-                this.forms.entity.createUpdate.data.currency      = currency;
-                this.forms.entity.createUpdate.data.categories    = categories;
-                this.forms.entity.createUpdate.data.see_my_web    = Boolean(record?.see_my_web ?? false);
-                this.forms.entity.createUpdate.data.see_my_web_price = Boolean(record?.see_my_web_price ?? false);
-                this.forms.entity.createUpdate.data.status        = status;
-
-            }else {
-
-                this.setGenerateCode({length: 7, showAlert: false});
-                this.forms.entity.createUpdate.data.currency = this.currencies[0];
-                this.forms.entity.createUpdate.data.status   = this.statuses[0];
-
-            }
-
-            // Alerts.swals({show: false});
-            Alerts.modals({type: "show", id: this.forms.entity.createUpdate.extras.modals.default.id});
-
-        },
-        async createUpdateEntity() {
-
-            const functionName = "createUpdateEntity";
-
-            Alerts.swals({});
-            this.formErrors({functionName, type: "clear"});
-
-            let form = Utils.cloneJson(this.forms.entity.createUpdate.data);
-
-            const validateForm = this.validateForm({functionName, form});
-
-            if(validateForm?.bool) {
-
-                form.currency_id = form?.currency?.code;
-                form.status = form?.status?.code;
-
-                delete form.currency;
-
-                form.categories.forEach(category => {
-
-                    category.category_id = category.code;
-
-                    delete category.code;
-                    delete category.label;
-
-                });
-
-                let createUpdate = await (this.isDefined({value: form.id}) ? Requests.patch({route: this.config.entity.routes.update, data: form, id: form.id}) :
-                                                                             Requests.post({route: this.config.entity.routes.store, data: form}));
-
-                if(Requests.valid({result: createUpdate})) {
-
-                    Alerts.modals({type: "hide", id: this.forms.entity.createUpdate.extras.modals.default.id});
-                    Alerts.toastrs({type: "success", subtitle: createUpdate?.data?.msg});
-                    Alerts.swals({show: false});
-
-                    this.clearForm({functionName});
-                    this.listEntity({url: `${this.lists.entity.extras.route}?page=${this.lists.entity.records?.current_page ?? 1}`});
+                    requestUrl = `${urlObj.pathname}${urlObj.search}`;
 
                 }else {
 
-                    this.formErrors({functionName, type: "set", errors: createUpdate?.errors ?? []});
-                    Alerts.toastrs({type: "error", subtitle: createUpdate?.data?.msg});
-                    Alerts.swals({show: false});
+                    requestData = filterData;
 
                 }
+
+                const response = await Requests.get({route: requestUrl, data: requestData, showAlert: true});
+
+                entityList.records = response?.data ?? emptyRecords;
+
+            }catch(error) {
+
+                entityList.records = emptyRecords;
+
+            }finally {
+
+                entityList.extras.loading = false;
+
+            }
+
+        },
+        handleSearch() {
+
+            this.listEntity({});
+
+        },
+        // Forms
+        openModal(record = null) {
+
+            const entityForms = this.forms[this.entity].createUpdate;
+
+            entityForms.errors = {};
+            Forms.clearFormData(entityForms.data, this.MODULE.formFields);
+
+            if(this.isDefined(record)) {
+
+                entityForms.data.id = record?.id;
+
+                const categoryItems = (record?.category_items ?? []).map(e => e?.category_id);
+
+                Object.keys(this.MODULE.formFields).forEach(key => {
+
+                    if(key === "status") {
+
+                        entityForms.data.status = this.statuses.find(e => e.code === record?.status) || null;
+
+                    }else if(key === "currency") {
+
+                        entityForms.data.currency = this.currencies.find(e => e.code === record?.currency_id) || null;
+
+                    }else if(key === "categories") {
+
+                        entityForms.data.categories = this.categories.filter(e => categoryItems.includes(e.code));
+
+                    }else if(key === "see_my_web" || key === "see_my_web_price") {
+
+                        entityForms.data[key] = Boolean(record?.[key] ?? false);
+
+                    }else {
+
+                        entityForms.data[key] = record?.[key] ?? this.MODULE.formFields[key];
+
+                    }
+
+                });
 
             }else {
 
-                this.formErrors({functionName, type: "set", errors: validateForm});
-                Alerts.toastrs({type: "error", subtitle: this.config.messages.errorValidate});
-                Alerts.swals({show: false});
+                entityForms.data.internal_code = this.generateCode({length: 7});
+                entityForms.data.currency = this.currencies[0] || null;
+                entityForms.data.status   = this.statuses[0] || null;
+
+            }
+
+            Alerts.modals({type: "show", id: entityForms.extras.modals.default.id});
+            Alerts.tooltips({show: true, time: 500});
+
+        },
+        generateCodeAction() {
+
+            this.forms[this.entity].createUpdate.data.internal_code = this.generateCode({length: 7});
+            Alerts.toastrs({type: "success", subtitle: "Código interno generado correctamente."});
+            Alerts.tooltips({show: false});
+
+        },
+        async saveEntity() {
+
+            if(this.isSaving) return;
+
+            const entityForms = this.forms[this.entity].createUpdate;
+
+            Alerts.swals({});
+
+            entityForms.errors = {};
+            this.isSaving = true;
+
+            try {
+
+                const formData   = Utils.cloneJson(entityForms.data);
+                const validation = this.validateFormData(formData);
+
+                if(!validation.bool) {
+
+                    Alerts.generateAlert({messages: Utils.getErrors({errors: validation.errors}), msgContent: this.config.messages.errorValidate});
+                    this.isSaving = false;
+                    return;
+
+                }
+
+                const preparedData  = this.prepareFormData(formData);
+                const id            = preparedData.id;
+                const isUpdate      = this.isDefined(id);
+                const requestMethod = isUpdate ? "patch" : "post";
+                const route         = this.routeActions[isUpdate ? "update" : "store"];
+                const result        = await Requests[requestMethod]({route, data: preparedData, id});
+
+                if(Requests.valid({result})) {
+
+                    Alerts.modals({type: "hide", id: entityForms.extras.modals.default.id});
+                    Alerts.generateAlert({type: "success", msgContent: result.data.msg});
+
+                    Forms.clearFormData(entityForms.data, this.MODULE.formFields);
+
+                    const entityList  = this.entityList;
+                    const currentPage = entityList?.records?.current_page ?? 1;
+
+                    this.listEntity({url: `${entityList?.extras?.route || ""}?page=${currentPage}`});
+
+                }else {
+
+                    this.handleErrors({result, entityForms});
+
+                }
+
+            }catch(error) {
+
+                Alerts.generateAlert({type: "error", messages: [error], msgContent: this.config.messages.catchError});
+
+            }finally {
+
+                this.isSaving = false;
 
             }
 
         },
-        // Forms utils
-        clearForm({functionName}) {
+        prepareFormData(formData) {
 
-            switch(functionName) {
-                case "modalCreateUpdateEntity":
-                case "createUpdateEntity":
-                    this.forms.entity.createUpdate.data.id            = null;
-                    this.forms.entity.createUpdate.data.internal_code = "";
-                    this.forms.entity.createUpdate.data.name          = "";
-                    this.forms.entity.createUpdate.data.description   = "";
-                    this.forms.entity.createUpdate.data.price         = "";
-                    this.forms.entity.createUpdate.data.min_price     = "";
-                    this.forms.entity.createUpdate.data.max_price     = "";
-                    this.forms.entity.createUpdate.data.currency      = null;
-                    this.forms.entity.createUpdate.data.categories    = [];
-                    this.forms.entity.createUpdate.data.see_my_web    = false;
-                    this.forms.entity.createUpdate.data.see_my_web_price = false;
-                    this.forms.entity.createUpdate.data.status        = null;
-                    break;
-            }
+            const prepared = Utils.cloneJson(formData);
 
-        },
-        formErrors({functionName, type = "clear", errors = []}) {
+            // Prepare currency
+            if(prepared.currency?.code) {
 
-            if(["modalCreateUpdateEntity", "createUpdateEntity"].includes(functionName)) {
-
-                this.forms.entity.createUpdate.errors = ["set"].includes(type) ? errors : [];
+                prepared.currency_id = prepared.currency.code;
+                delete prepared.currency;
 
             }
 
+            // Prepare categories
+            if(Array.isArray(prepared.categories)) {
+
+                prepared.categories = prepared.categories.map(category => ({
+                    category_id: category.code
+                }));
+
+            }
+
+            // Prepare status
+            if(prepared.status?.code) {
+
+                prepared.status = prepared.status.code;
+
+            }
+
+            return Forms.prepareFormData(prepared, this.MODULE.formFieldConfig);
+
         },
-        validateForm({functionName, form = null, extras = null}) {
+        validateFormData(formData) {
 
-            let result = {
-                bool: true
-            };
+            const result = Forms.validateFormData(formData, this.MODULE.validationRules, {isDescriptive: true, errorLabels: this.MODULE.errorLabels});
 
-            if(["createUpdateEntity"].includes(functionName)) {
+            // Custom validation for price ranges
+            const minPrice = parseFloat(formData.min_price) || 0;
+            const maxPrice = parseFloat(formData.max_price) || 0;
+            const price = parseFloat(formData.price) || 0;
 
-                result.internal_code = [];
-                result.name          = [];
-                result.description   = [];
-                result.price         = [];
-                result.min_price     = [];
-                result.max_price     = [];
-                result.currency      = [];
-                result.categories    = [];
-                result.status        = [];
+            if(minPrice > 0 && maxPrice > 0) {
 
-                if(!this.isDefined({value: form?.internal_code})) {
+                if(maxPrice < minPrice) {
 
-                    result.internal_code.push(this.config.forms.errors.labels.required);
+                    if(!result.errors.max_price) result.errors.max_price = [];
+                    result.errors.max_price.push(`${this.MODULE.errorLabels.max_price}: Debe ser mayor o igual al precio mínimo`);
+                    result.bool = false;
+
+                }else if(price < minPrice || price > maxPrice) {
+
+                    if(!result.errors.price) result.errors.price = [];
+                    result.errors.price.push(`${this.MODULE.errorLabels.price}: Debe estar entre ${minPrice} y ${maxPrice}`);
                     result.bool = false;
 
                 }
 
-                if(!this.isDefined({value: form?.name})) {
+            }else if(minPrice > 0 && price < minPrice) {
 
-                    result.name.push(this.config.forms.errors.labels.required);
-                    result.bool = false;
+                if(!result.errors.price) result.errors.price = [];
+                result.errors.price.push(`${this.MODULE.errorLabels.price}: Debe ser mayor o igual al precio mínimo`);
+                result.bool = false;
 
-                }
+            }else if(maxPrice > 0 && price > maxPrice) {
 
-                if(!this.isDefined({value: form?.price})) {
-
-                    result.price.push(this.config.forms.errors.labels.required);
-                    result.bool = false;
-
-                }
-
-                let isValidatedMinPrice = this.isDefined({value: form?.min_price}) && Number(form?.min_price) > 0,
-                    isValidatedMaxPrice = this.isDefined({value: form?.max_price}) && Number(form?.max_price) > 0;
-
-                if(isValidatedMinPrice && isValidatedMaxPrice) {
-
-                    if(Number(form?.max_price) < Number(form?.min_price)) {
-
-                        result.max_price.push(this.config.forms.errors.functions.min.numeric(form?.min_price));
-                        result.bool = false;
-
-                    }else if(Number(form?.price) < Number(form?.min_price) || Number(form?.price) > Number(form?.max_price)) {
-
-                        result.price.push(this.config.forms.errors.functions.beetwen.numeric(form?.min_price, form?.max_price));
-                        result.bool = false;
-
-                    }
-
-                }else if(isValidatedMinPrice) {
-
-                    if(Number(form?.price) < Number(form?.min_price)) {
-
-                        result.price.push(this.config.forms.errors.functions.min.numeric(form?.min_price));
-                        result.bool = false;
-
-                    }
-
-                }else if(isValidatedMaxPrice) {
-
-                    if(Number(form?.price) > Number(form?.max_price)) {
-
-                        result.price.push(this.config.forms.errors.functions.max.numeric(form?.max_price));
-                        result.bool = false;
-
-                    }
-
-                }
-
-                if(!this.isDefined({value: form?.currency})) {
-
-                    result.currency.push(this.config.forms.errors.labels.required);
-                    result.bool = false;
-
-                }
-
-                if(!this.isDefined({value: form?.status})) {
-
-                    result.status.push(this.config.forms.errors.labels.required);
-                    result.bool = false;
-
-                }
+                if(!result.errors.price) result.errors.price = [];
+                result.errors.price.push(`${this.MODULE.errorLabels.price}: Debe ser menor o igual al precio máximo`);
+                result.bool = false;
 
             }
 
             return result;
 
         },
+        // Utils
+        handleErrors({result, entityForms, setErrors = true, showAlert = true}) {
+
+            const isValidationError = result?.code === 422;
+            const hasFieldErrors    = result?.errors && Object.keys(result.errors).length > 0;
+            const errorMessage      = result?.data?.msg || this.config.messages.errorValidate;
+
+            if(setErrors) entityForms.errors = result?.errors ?? {};
+
+            if(showAlert) {
+
+                const msgContent = (isValidationError && hasFieldErrors) ? this.config.messages.errorValidateFields : errorMessage;
+
+                Alerts.generateAlert({type: "error", msgContent});
+
+            }
+
+        },
         // Others
-        isDefined({value}) {
+        isDefined(value) {
 
             return Utils.isDefined({value});
 
@@ -644,47 +707,106 @@ export default {
 
             return Utils.separatorNumber(value);
 
+        },
+        getStatusBadgeClasses(status) {
+
+            return Utils.getStatusBadgeClasses(status);
+
         }
     },
     computed: {
-        breadcrumbTitles: function() {
+        entity() {
 
-            return [{title: "Catálogo comercial"}, this.config.entity.page];
+            return this.MODULE.config.entity;
 
         },
-        filterByOptions: function() {
+        routeActions() {
+
+            return this.config.entity.routes;
+
+        },
+        entityList() {
+
+            return this.lists[this.entity];
+
+        },
+        breadcrumbTitles() {
 
             return [
-                {code: "all", label: "Todos"},
-                {code: "internal_code", label: "Código interno"},
-                {code: "name", label: "Nombre"},
-                {code: "description", label: "Descripción"},
-                {code: "price", label: "Precio de venta"}
+                {title: this.MODULE.config.breadcrumbParent},
+                this.config.entity.page
             ];
 
         },
-        categories: function() {
+        filterByOptions() {
 
-            return this.options?.categories?.records.map(e => ({code: e.id, label: e.name}));
-
-        },
-        currencies: function() {
-
-            return this.options?.currencies?.records.map(e => ({code: e.id, label: e.plural_name}));
+            return this.MODULE.filterOptions;
 
         },
-        statuses: function() {
+        categories() {
 
-            return this.options?.services?.statuses.map(e => ({code: e.code, label: e.label}));
+            return (this.options?.categories?.records ?? []).map(e => ({code: e.id, label: e.name}));
 
-        }
-    },
-    watch: {
-        "lists.entity.filters.filter_by": function(newValue, oldValue) {
+        },
+        currencies() {
 
-            // this.listEntity({});
+            return (this.options?.currencies?.records ?? []).map(e => ({code: e.id, label: e.plural_name}));
+
+        },
+        statuses() {
+
+            return (this.options?.[this.entity]?.statuses ?? []).map(e => ({code: e.code, label: e.label}));
+
+        },
+        isUpdate() {
+
+            return this.isDefined(this.forms[this.entity].createUpdate.data.id);
+
+        },
+        modalTitles() {
+
+            return this.forms[this.entity].createUpdate.extras.modals.default.titles || {
+                store: `AGREGAR ${this.MODULE.config.pageTitle.toUpperCase()}`,
+                update: `EDITAR ${this.MODULE.config.pageTitle.toUpperCase()}`
+            };
+
+        },
+        filterByValue: {
+            get() {
+
+                return this.entityList.filters?.filter_by || this.MODULE.filterOptions[0];
+
+            },
+            set(value) {
+
+                this.entityList.filters.filter_by = value;
+
+            }
+        },
+        filterWordValue: {
+            get() {
+
+                return this.entityList.filters.word || "";
+
+            },
+            set(value) {
+
+                this.entityList.filters.word = value;
+
+            }
+        },
+        searchPlaceholder() {
+
+            const filterBy = this.entityList.filters.filter_by;
+
+            if(!filterBy) return "Buscar...";
+
+            return `Buscar por ${(filterBy.label || "...").toLowerCase()}`;
 
         }
     }
 };
 </script>
+
+<style scoped>
+</style>

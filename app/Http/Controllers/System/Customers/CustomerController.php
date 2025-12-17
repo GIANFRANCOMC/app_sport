@@ -1,210 +1,206 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\System\Customers;
 
-use App\Helpers\System\Utilities;
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\{Auth, DB};
-use stdClass;
+use Exception;
+use App\Http\Controllers\{Controller};
+use App\Helpers\System\{Utilities};
+use Illuminate\Http\{JsonResponse, Request};
+use Illuminate\Support\Facades\{Auth};
 
+use App\Http\Controllers\System\Concerns\{HandlesApiResponses};
 use App\Http\Requests\System\Customers\{StoreCustomerRequest, UpdateCustomerRequest};
+use App\Services\System\Customers\{CustomerConfigService, CustomerService};
 use App\Models\System\Customers\{Customer, Subscription};
-use App\Models\System\General\{IdentityDocumentType};
 
 class CustomerController extends Controller {
 
+    use HandlesApiResponses;
+
+    /**
+     * Translation namespace for customer module
+     */
+    private const TRANSLATION_NAMESPACE = "System.Customers.customer";
+
+    /**
+     * Get initialization parameters for the module
+     *
+     * @param Request $request
+     * @return \stdClass
+     */
     public function initParams(Request $request) {
 
         $userAuth = Auth::user();
+        $page     = $request->input("page", "");
 
-        $initParams = new stdClass();
-
-        $config = new stdClass();
-
-        $page = $request->page ?? "";
-
-        if(in_array($page, ["main"])) {
-
-            $config->identityDocumentTypes = new stdClass();
-            $config->identityDocumentTypes->records = IdentityDocumentType::getAll("customer", $userAuth->company_id);
-
-            $config->customers = new stdClass();
-            $config->customers->genders  = Customer::getGenders();
-            $config->customers->statuses = Customer::getStatuses();
-
-        }
-
-        $initParams->config = $config;
-        $initParams->bool   = true;
-
-        return $initParams;
+        return CustomerConfigService::getInitParams($userAuth->company_id, $page);
 
     }
 
+    /**
+     * Get paginated list of customers with filters
+     *
+     * @param Request $request
+     * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator
+     */
     public function list(Request $request) {
 
         $userAuth = Auth::user();
+        $filters  = ["filter_by" => $request->input("filter_by"), "word" => $request->input("word")];
+        $perPage  = intval($request->input("per_page") ?? Utilities::$per_page_default);
 
-        $list = Customer::when(Utilities::isDefined($request->filter_by), function($query) use($request) {
-
-                            $filter = Utilities::getWordSearch($request->word);
-
-                            if(in_array($request->filter_by, ["all"])) {
-
-                                $query->where(function($query) use($request, $filter) {
-
-                                    $query->where("document_number", "like", $filter)
-                                          ->orWhere("name", "like", $filter)
-                                          ->orWhere("email", "like", $filter)
-                                          ->orWhere("phone_number", "like", $filter);
-
-                                });
-
-                            }else if(in_array($request->filter_by, ["document_number", "name", "email", "phone_number"])) {
-
-                                $query->where(function($query) use($request, $filter) {
-
-                                    $query->where($request->filter_by, "like", $filter);
-
-                                });
-
-                            }
-
-                        })
-                        ->where("company_id", $userAuth->company_id)
-                        ->orderBy("name", "ASC")
-                        ->with(["identityDocumentType"])
-                        ->paginate($request->per_page ?? Utilities::$per_page_default);
-
-        return $list;
+        return CustomerService::getPaginatedList($userAuth->company_id, $filters, $perPage);
 
     }
 
+    /**
+     * Display the customers index page
+     *
+     * @return \Illuminate\Contracts\View\View
+     */
     public function index() {
 
         return view("System/general/Customers/customers/main");
 
     }
 
-    public function create() {
+    /**
+     * Show the form for creating a new customer
+     * (Not used in SPA, but kept for REST compliance)
+     *
+     * @return void
+     */
+    public function create(): void {
 
-        //
-
-    }
-
-    public function store(StoreCustomerRequest $request) {
-
-        $userAuth = Auth::user();
-
-        $customer = null;
-
-        $customerExists = Customer::where("company_id", $userAuth->company_id)
-                                  ->where("document_number", $request->document_number)
-                                  ->exists();
-
-        if($customerExists) {
-
-            return response()->json(["bool" => false, "msg" => "El número de documento ingresado ya ha sido registrado."], 200);
-
-        }
-
-        DB::transaction(function() use($request, $userAuth, &$customer) {
-
-            $customer = new Customer();
-            $customer->company_id                = $userAuth->company_id;
-            $customer->identity_document_type_id = $request->identity_document_type_id;
-            $customer->document_number           = $request->document_number;
-            $customer->name                      = $request->name;
-            $customer->email                     = $request->email;
-            $customer->phone_number              = $request->phone_number;
-            $customer->gender                    = $request->gender ?? "other";
-            $customer->birthdate                 = $request->birthdate;
-            $customer->status                    = $request->status;
-            $customer->created_at                = now();
-            $customer->created_by                = $userAuth->id ?? null;
-            $customer->save();
-
-        });
-
-        $bool = Utilities::isDefined($customer);
-        $msg  = $bool ? "Cliente creado correctamente." : "No se ha podido crear el cliente.";
-
-        return response()->json(["bool" => $bool, "msg" => $msg, "customer" => $customer], 200);
+        // Form is handled by frontend SPA
 
     }
 
-    public function show(Customer $record) {
+    /**
+     * Store a newly created customer
+     *
+     * @param StoreCustomerRequest $request
+     * @return JsonResponse
+     */
+    public function store(StoreCustomerRequest $request): JsonResponse {
 
-        //
+        try {
 
-    }
+            $userAuth = Auth::user();
+            $data     = $this->prepareCustomerData($request, $userAuth);
+            $customer = CustomerService::create($data, $userAuth->id);
 
-    public function edit(Customer $record) {
+            if(!Utilities::isDefined($customer)) {
 
-        //
-
-    }
-
-    public function update(UpdateCustomerRequest $request, $id) {
-
-        $userAuth = Auth::user();
-
-        $customer = Customer::where("id", $id)
-                            ->where("company_id", $userAuth->company_id)
-                            ->first();
-
-        if(Utilities::isDefined($customer)) {
-
-            $customerExists = Customer::where("company_id", $userAuth->company_id)
-                                      ->where("document_number", $request->document_number)
-                                      ->whereNot("id", $customer->id)
-                                      ->exists();
-
-            if($customerExists) {
-
-                return response()->json(["bool" => false, "msg" => "El número de documento ingresado ya ha sido registrado."], 200);
+                return $this->errorResponse("create_failed");
 
             }
 
-            DB::transaction(function() use($request, $userAuth, &$customer) {
+            CustomerConfigService::clearAllCache($userAuth->company_id);
 
-                $customer->identity_document_type_id = $request->identity_document_type_id;
-                $customer->document_number           = $request->document_number;
-                $customer->name                      = $request->name;
-                $customer->email                     = $request->email;
-                $customer->phone_number              = $request->phone_number;
-                $customer->gender                    = $request->gender ?? "other";
-                $customer->birthdate                 = $request->birthdate;
-                $customer->status                    = $request->status;
-                $customer->updated_at                = now();
-                $customer->updated_by                = $userAuth->id ?? null;
-                $customer->save();
+            return $this->createdResponse($customer, "created", "customer");
 
-            });
+        }catch(Exception $e) {
+
+            return $this->errorResponse("exception_create", ["message" => $e->getMessage()]);
 
         }
 
-        $bool = Utilities::isDefined($customer);
-        $msg  = $bool ? "Cliente editado correctamente." : "No se ha podido editar el cliente.";
+    }
 
-        return response()->json(["bool" => $bool, "msg" => $msg, "customer" => $customer], 200);
+    /**
+     * Display the specified customer
+     * (Not used, but kept for REST compliance)
+     *
+     * @param Customer $record
+     * @return JsonResponse
+     */
+    public function show(Customer $record): JsonResponse {
+
+        return $this->errorResponse("not_implemented", [], 501);
 
     }
 
-    public function destroy(Customer $record) {
+    /**
+     * Show the form for editing the specified customer
+     * (Not used in SPA, but kept for REST compliance)
+     *
+     * @param Customer $record
+     * @return void
+     */
+    public function edit(Customer $record): void {
 
-        //
+        // Form is handled by frontend SPA
 
     }
 
-    public function getSubscriptions($id) {
+    /**
+     * Update the specified customer
+     *
+     * @param UpdateCustomerRequest $request
+     * @param int $id Customer ID
+     * @return JsonResponse
+     */
+    public function update(UpdateCustomerRequest $request, int $id): JsonResponse {
+
+        try {
+
+            $userAuth = Auth::user();
+            $customer = CustomerService::findByIdAndCompany($id, $userAuth->company_id);
+
+            if(!Utilities::isDefined($customer)) {
+
+                return $this->notFoundResponse();
+
+            }
+
+            $data     = $this->prepareCustomerData($request, $userAuth);
+            $customer = CustomerService::update($customer, $data, $userAuth->id);
+
+            if(!Utilities::isDefined($customer)) {
+
+                return $this->errorResponse("update_failed");
+
+            }
+
+            CustomerConfigService::clearAllCache($userAuth->company_id);
+
+            return $this->updatedResponse($customer, "updated", "customer");
+
+        }catch(Exception $e) {
+
+            return $this->errorResponse("exception_update", ["message" => $e->getMessage()]);
+
+        }
+
+    }
+
+    /**
+     * Remove the specified customer
+     * (Not used, but kept for REST compliance)
+     *
+     * @param Customer $record
+     * @return JsonResponse
+     */
+    public function destroy(Customer $record): JsonResponse {
+
+        return $this->errorResponse("not_implemented", [], 501);
+
+    }
+
+    /**
+     * Get subscriptions for a customer
+     *
+     * @param int $id Customer ID
+     * @return JsonResponse
+     */
+    public function getSubscriptions(int $id): JsonResponse {
 
         $userAuth = Auth::user();
 
-        $customer = Customer::where("id", $id)
-                            ->where("company_id", $userAuth->company_id)
-                            ->first();
+        $customer = CustomerService::findByIdAndCompany($id, $userAuth->company_id);
 
         $subscriptions = [];
 
@@ -221,6 +217,47 @@ class CustomerController extends Controller {
         $msg  = $bool ? "Membresías encontradas." : "No se ha podido identificar el cliente.";
 
         return response()->json(["bool" => $bool, "msg" => $msg, "subscriptions" => $subscriptions], 200);
+
+    }
+
+    /**
+     * Prepare customer data from request
+     *
+     * @param StoreCustomerRequest|UpdateCustomerRequest $request
+     * @param object|null $userAuth
+     * @return array
+     */
+    private function prepareCustomerData($request, ?object $userAuth = null): array {
+
+        $data = [
+            "identity_document_type_id" => $request->identity_document_type_id,
+            "document_number"           => $request->document_number,
+            "name"                      => $request->name,
+            "email"                     => $request->email,
+            "phone_number"              => $request->phone_number,
+            "gender"                    => $request->gender ?? "other",
+            "birthdate"                 => $request->birthdate,
+            "status"                    => $request->status
+        ];
+
+        if($userAuth) {
+
+            $data["company_id"] = $userAuth->company_id;
+
+        }
+
+        return $data;
+
+    }
+
+    /**
+     * Get translation namespace for customer module
+     *
+     * @return string
+     */
+    protected function getTranslationNamespace(): string {
+
+        return self::TRANSLATION_NAMESPACE;
 
     }
 

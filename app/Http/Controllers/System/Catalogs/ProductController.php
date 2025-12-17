@@ -1,271 +1,236 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\System\Catalogs;
 
-use App\Helpers\System\Utilities;
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\{Auth, DB};
-use stdClass;
+use Exception;
+use App\Http\Controllers\{Controller};
+use App\Helpers\System\{Utilities};
+use Illuminate\Http\{JsonResponse, Request};
+use Illuminate\Support\Facades\{Auth};
 
+use App\Http\Controllers\System\Concerns\{HandlesApiResponses};
 use App\Http\Requests\System\Catalogs\Products\{StoreProductRequest, UpdateProductRequest};
-use App\Models\System\Catalogs\{Category, CategoryItem, Item};
-use App\Models\System\General\{Currency};
-use App\Models\System\Organizations\{Branch};
-use App\Models\System\Warehouses\{WarehouseItem};
+use App\Services\System\Catalogs\Items\{ProductConfigService, ProductService};
+use App\Models\System\Catalogs\{Item};
 
 class ProductController extends Controller {
 
+    use HandlesApiResponses;
+
+    /**
+     * Translation namespace for product module
+     */
+    private const TRANSLATION_NAMESPACE = "System.Catalogs.product";
+
+    /**
+     * Get initialization parameters for the module
+     *
+     * @param Request $request
+     * @return \stdClass
+     */
     public function initParams(Request $request) {
 
         $userAuth = Auth::user();
+        $page     = $request->input("page", "");
 
-        $initParams = new stdClass();
-
-        $config = new stdClass();
-
-        $page = $request->page ?? "";
-
-        if(in_array($page, ["main"])) {
-
-            $config->products = new stdClass();
-            $config->products->statuses = Item::getStatuses();
-
-            $config->categories = new stdClass();
-            $config->categories->records = Category::getAll("product", $userAuth->company_id);
-
-            $config->currencies = new stdClass();
-            $config->currencies->records = Currency::get();
-
-        }
-
-        $initParams->config = $config;
-        $initParams->bool   = true;
-
-        return $initParams;
+        return ProductConfigService::getInitParams($userAuth->company_id, $page);
 
     }
 
+    /**
+     * Get paginated list of products with filters
+     *
+     * @param Request $request
+     * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator
+     */
     public function list(Request $request) {
 
         $userAuth = Auth::user();
+        $filters  = ["filter_by" => $request->input("filter_by"), "word" => $request->input("word")];
+        $perPage  = intval($request->input("per_page") ?? Utilities::$per_page_default);
 
-        $list = Item::when(Utilities::isDefined($request->filter_by), function($query) use($request) {
-
-                        $filter = Utilities::getWordSearch($request->word);
-
-                        if(in_array($request->filter_by, ["all"])) {
-
-                            $query->where(function($query) use($request, $filter) {
-
-                                $query->where("internal_code", "like", $filter)
-                                      ->orWhere("name", "like", $filter)
-                                      ->orWhere("description", "like", $filter)
-                                      ->orWhere("price", "like", $filter);
-
-                            });
-
-                        }else if(in_array($request->filter_by, ["internal_code", "name", "description", "price"])) {
-
-                            $query->where(function($query) use($request, $filter) {
-
-                                $query->where($request->filter_by, "like", $filter);
-
-                            });
-
-                        }
-
-                    })
-                    ->where("company_id", $userAuth->company_id)
-                    ->whereIn("type", ["product"])
-                    ->orderBy("name", "ASC")
-                    ->with(["currency", "categoryItems"])
-                    ->paginate($request->per_page ?? Utilities::$per_page_default);
-
-        return $list;
+        return ProductService::getPaginatedList($userAuth->company_id, $filters, $perPage);
 
     }
 
+    /**
+     * Display the products index page
+     *
+     * @return \Illuminate\Contracts\View\View
+     */
     public function index() {
 
         return view("System/general/Catalogs/products/main");
 
     }
 
-    public function create() {
+    /**
+     * Show the form for creating a new product
+     * (Not used in SPA, but kept for REST compliance)
+     *
+     * @return void
+     */
+    public function create(): void {
 
-        //
+        // Form is handled by frontend SPA
 
     }
 
-    public function store(StoreProductRequest $request) {
+    /**
+     * Store a newly created product
+     *
+     * @param StoreProductRequest $request
+     * @return JsonResponse
+     */
+    public function store(StoreProductRequest $request): JsonResponse {
 
-        $userAuth = Auth::user();
+        try {
 
-        $item = null;
+            $userAuth = Auth::user();
+            $data     = $this->prepareProductData($request, $userAuth);
+            $item     = ProductService::create($data, $userAuth->id);
 
-        $itemExists = Item::where("company_id", $userAuth->company_id)
-                          ->where("internal_code", $request->internal_code)
-                          ->exists();
+            if(!Utilities::isDefined($item)) {
 
-        if($itemExists) {
+                return $this->errorResponse("create_failed");
 
-            return response()->json(["bool" => false, "msg" => "El código interno ya ha sido registrado."], 200);
+            }
+
+            ProductConfigService::clearAllCache($userAuth->company_id);
+
+            return $this->createdResponse($item, "created", "item");
+
+        }catch(Exception $e) {
+
+            return $this->errorResponse("exception_create", ["message" => $e->getMessage()]);
 
         }
 
-        DB::transaction(function() use($request, $userAuth, &$item) {
+    }
 
-            $item = new Item();
-            $item->company_id    = $userAuth->company_id;
-            $item->internal_code = $request->internal_code;
-            $item->name          = $request->name;
-            $item->description   = $request->description ?? "";
-            $item->price         = $request->price;
-            $item->min_price     = floatval($request->min_price) <= 0 ? null : $request->min_price;
-            $item->max_price     = floatval($request->max_price) <= 0 ? null : $request->max_price;
-            $item->currency_id   = $request->currency_id;
-            $item->type          = "product";
-            $item->see_my_web    = $request->see_my_web ?? false;
-            $item->see_my_web_price = $item->see_my_web ? ($request->see_my_web_price ?? false) : false;
-            $item->status        = $request->status;
-            $item->created_at    = now();
-            $item->created_by    = $userAuth->id ?? null;
-            $item->save();
+    /**
+     * Display the specified product
+     * (Not used, but kept for REST compliance)
+     *
+     * @param Item $record
+     * @return JsonResponse
+     */
+    public function show(Item $record): JsonResponse {
 
-            // Warehouses
-            $branches = Branch::getAll("default", $userAuth->company_id);
-
-            foreach($branches as $branch) {
-
-                foreach($branch->warehouses as $warehouse) {
-
-                    $warehouseItem = new WarehouseItem();
-                    $warehouseItem->warehouse_id = $warehouse->id;
-                    $warehouseItem->item_id      = $item->id;
-                    $warehouseItem->quantity     = 0;
-                    $warehouseItem->status       = $request->status;
-                    $warehouseItem->created_at   = now();
-                    $warehouseItem->created_by   = $userAuth->id ?? null;
-                    $warehouseItem->save();
-
-                }
-
-            }
-
-            foreach($request->categories as $category) {
-
-                CategoryItem::updateOrInsert(
-                    [
-                        "category_id" => $category["category_id"],
-                        "item_id"     => $item->id
-                    ],
-                    [
-                        "status"      => "active",
-                        "updated_at"  => now(),
-                        "updated_by"  => $userAuth->id ?? null
-                    ]
-                );
-
-            }
-
-        });
-
-        $bool = Utilities::isDefined($item);
-        $msg  = $bool ? "Producto creado correctamente." : "No se ha podido crear el producto.";
-
-        return response()->json(["bool" => $bool, "msg" => $msg, "item" => $item], 200);
+        return $this->errorResponse("not_implemented", [], 501);
 
     }
 
-    public function show(Item $item) {
+    /**
+     * Show the form for editing the specified product
+     * (Not used in SPA, but kept for REST compliance)
+     *
+     * @param Item $record
+     * @return void
+     */
+    public function edit(Item $record): void {
 
-        //
+        // Form is handled by frontend SPA
 
     }
 
-    public function edit(Item $item) {
+    /**
+     * Update the specified product
+     *
+     * @param UpdateProductRequest $request
+     * @param int $id Product ID
+     * @return JsonResponse
+     */
+    public function update(UpdateProductRequest $request, int $id): JsonResponse {
 
-        //
+        try {
 
-    }
+            $userAuth = Auth::user();
+            $item     = ProductService::findByIdAndCompany($id, $userAuth->company_id);
 
-    public function update(UpdateProductRequest $request, $id) {
+            if(!Utilities::isDefined($item)) {
 
-        $userAuth = Auth::user();
-
-        $item = Item::where("id", $id)
-                    ->where("company_id", $userAuth->company_id)
-                    ->whereIn("type", ["product"])
-                    ->first();
-
-        if(Utilities::isDefined($item)) {
-
-            $itemExists = Item::where("company_id", $userAuth->company_id)
-                              ->where("internal_code", $request->internal_code)
-                              ->whereNot("id", $item->id)
-                              ->exists();
-
-            if($itemExists) {
-
-                return response()->json(["bool" => false, "msg" => "El código interno ya ha sido registrado."], 200);
+                return $this->notFoundResponse();
 
             }
 
-            DB::transaction(function() use($request, $userAuth, &$item) {
+            $data = $this->prepareProductData($request, $userAuth);
+            $item = ProductService::update($item, $data, $userAuth->id);
 
-                $item->internal_code = $request->internal_code;
-                $item->name          = $request->name;
-                $item->description   = $request->description ?? "";
-                $item->price         = $request->price;
-                $item->min_price     = floatval($request->min_price) <= 0 ? null : $request->min_price;
-                $item->max_price     = floatval($request->max_price) <= 0 ? null : $request->max_price;
-                $item->currency_id   = $request->currency_id;
-                $item->see_my_web    = $request->see_my_web ?? false;
-                $item->see_my_web_price = $item->see_my_web ? ($request->see_my_web_price ?? false) : false;
-                $item->status        = $request->status;
-                $item->updated_at    = now();
-                $item->updated_by    = $userAuth->id ?? null;
-                $item->save();
+            if(!Utilities::isDefined($item)) {
 
-                CategoryItem::where("item_id", $item->id)
-                            ->where("status", "active")
-                            ->update([
-                                "status"     => "inactive",
-                                "updated_at" => now(),
-                                "updated_by" => $userAuth->id ?? null
-                            ]);
+                return $this->errorResponse("update_failed");
 
-                foreach($request->categories as $category) {
+            }
 
-                    CategoryItem::updateOrInsert(
-                        [
-                            "category_id" => $category["category_id"],
-                            "item_id"     => $item->id
-                        ],
-                        [
-                            "status"      => "active",
-                            "updated_at"  => now(),
-                            "updated_by"  => $userAuth->id ?? null
-                        ]
-                    );
+            ProductConfigService::clearAllCache($userAuth->company_id);
 
-                }
+            return $this->updatedResponse($item, "updated", "item");
 
-            });
+        }catch(Exception $e) {
+
+            return $this->errorResponse("exception_update", ["message" => $e->getMessage()]);
 
         }
 
-        $bool = Utilities::isDefined($item);
-        $msg  = $bool ? "Producto editado correctamente." : "No se ha podido editar el producto.";
+    }
 
-        return response()->json(["bool" => $bool, "msg" => $msg, "item" => $item], 200);
+    /**
+     * Remove the specified product
+     * (Not used, but kept for REST compliance)
+     *
+     * @param Item $record
+     * @return JsonResponse
+     */
+    public function destroy(Item $record): JsonResponse {
+
+        return $this->errorResponse("not_implemented", [], 501);
 
     }
 
-    public function destroy(Item $item) {
+    /**
+     * Prepare product data from request
+     *
+     * @param StoreProductRequest|UpdateProductRequest $request
+     * @param object|null $userAuth
+     * @return array
+     */
+    private function prepareProductData($request, ?object $userAuth = null): array {
 
-        //
+        $data = [
+            "internal_code"      => $request->internal_code,
+            "name"               => $request->name,
+            "description"        => $request->description ?? "",
+            "price"              => $request->price,
+            "min_price"          => $request->min_price,
+            "max_price"          => $request->max_price,
+            "currency_id"        => $request->currency_id,
+            "see_my_web"         => $request->see_my_web ?? false,
+            "see_my_web_price"   => $request->see_my_web_price ?? false,
+            "status"             => $request->status,
+            "categories"          => $request->categories ?? []
+        ];
+
+        if($userAuth) {
+
+            $data["company_id"] = $userAuth->company_id;
+
+        }
+
+        return $data;
+
+    }
+
+    /**
+     * Get translation namespace for product module
+     *
+     * @return string
+     */
+    protected function getTranslationNamespace(): string {
+
+        return self::TRANSLATION_NAMESPACE;
 
     }
 

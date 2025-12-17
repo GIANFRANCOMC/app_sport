@@ -1,50 +1,26 @@
 <template>
     <Breadcrumb :list="breadcrumbTitles"/>
 
-    <!-- Content -->
-    <div class="row align-items-end g-3 mb-3 mb-md-4">
-        <InputSlot
-            hasDiv
-            title="Filtrar por"
-            :titleClass="[config.forms.classes.title]"
-            xl="3"
-            lg="4">
-            <template v-slot:input>
-                <v-select
-                    v-model="lists.entity.filters.filter_by"
-                    :options="filterByOptions"
-                    :class="config.forms.classes.select2"
-                    :clearable="false"
-                    :searchable="false"/>
-            </template>
-        </InputSlot>
-        <InputText
-            v-model="lists.entity.filters.word"
-            @enterKeyPressed="listEntity({})"
-            hasDiv
-            title="Búsqueda"
-            :titleClass="[config.forms.classes.title]"
-            :placeholder="'Buscar por ' + (lists.entity.filters.filter_by?.label || '...').toLowerCase()"
-            xl="4"
-            lg="4"/>
-        <InputSlot
-            hasDiv
-            :isInputGroup="false"
-            :divInputClass="['d-flex flex-wrap justify-content-start gap-2 gap-md-3']"
-            xl="5"
-            lg="4">
-            <template v-slot:input>
-                <button type="button" class="btn btn-info-1 waves-effect" @click="listEntity({})" :disabled="lists.entity.extras.loading">
-                    <i class="fa fa-search"></i>
-                    <span class="ms-2">Buscar</span>
-                </button>
-                <button type="button" class="btn btn-primary waves-effect" @click="modalCreateUpdateEntity({})" :disabled="lists.entity.extras.loading">
-                    <i class="fa fa-plus"></i>
-                    <span class="ms-2">Agregar</span>
-                </button>
-            </template>
-        </InputSlot>
-    </div>
+    <!-- Filters Section -->
+    <FiltersSection
+        :filter-by-value="filterByValue"
+        @update:filterByValue="filterByValue = $event"
+        :filter-word-value="filterWordValue"
+        @update:filterWordValue="filterWordValue = $event"
+        :filter-by-options="filterByOptions"
+        :search-placeholder="searchPlaceholder"
+        :loading="entityList.extras.loading"
+        :filter-by-title="MODULE.texts.filters.filterBy"
+        :search-title="MODULE.texts.filters.search"
+        :search-button-text="MODULE.texts.actions.search"
+        :add-button-text="MODULE.texts.actions.add"
+        :show-add-button="true"
+        :title-class="[config.forms.classes.title]"
+        :select-class="config.forms.classes.select2"
+        @search="handleSearch"
+        @add="openModal()"/>
+
+    <!-- List Section -->
     <div class="table-responsive">
         <table class="table table-hover">
             <colgroup>
@@ -61,7 +37,7 @@
                 </tr>
             </thead>
             <tbody class="table-border-bottom-0 bg-white">
-                <template v-if="lists.entity.extras.loading">
+                <template v-if="entityList.extras.loading">
                     <tr class="text-center">
                         <td colspan="99" class="py-4">
                             <Loader/>
@@ -69,30 +45,30 @@
                     </tr>
                 </template>
                 <template v-else>
-                    <template v-if="lists.entity.records.total > 0">
-                        <tr v-for="record in lists.entity.records.data" :key="record.id" class="text-center">
+                    <template v-if="entityList.records.total > 0">
+                        <tr v-for="record in entityList.records.data" :key="record.id" class="text-center">
                             <td class="text-start">
                                 <span v-text="record.document_number" class="text-dark d-block"></span>
                                 <span v-text="record.identity_document_type?.name" class="fst-italic d-block text-muted small"></span>
                             </td>
                             <td class="text-start">
                                 <span v-text="record.name" class="fw-bold d-block"></span>
-                                <a :href="'mailto:'+record.email" class="d-flex align-items-center small" v-if="isDefined({value: record.email})">
+                                <a :href="'mailto:'+record.email" class="d-flex align-items-center small" v-if="isDefined(record.email)">
                                     <span>📧</span>
                                     <span v-text="record.email" class="fst-italic ms-1"></span>
                                 </a>
-                                <a :href="'tel:'+record.phone_number" class="d-inline-flex align-items-center small" v-if="isDefined({value: record.phone_number})">
+                                <a :href="'tel:'+record.phone_number" class="d-inline-flex align-items-center small" v-if="isDefined(record.phone_number)">
                                     <span>📞</span>
                                     <span v-text="record.phone_number" class="fst-italic ms-1"></span>
                                 </a>
                                 <div class="d-flex flex-wrap">
-                                    <template v-if="isDefined({value: record.birthdate})">
+                                    <template v-if="isDefined(record.birthdate)">
                                         <div class="badge bg-light text-dark rounded-pill me-2 my-1 d-flex align-items-center">
                                             <span>🎂</span>
                                             <span v-text="legibleFormatDate({dateString: record.birthdate, type: 'date'})" class="fst-italic ms-1"></span>
                                         </div>
                                     </template>
-                                    <template v-if="isDefined({value: record.gender})">
+                                    <template v-if="isDefined(record.gender)">
                                         <div :class="['badge text-dark rounded-pill me-2 my-1 d-flex align-items-center', {'bg-label-info': ['male'].includes(record.gender), 'bg-label-danger': ['female'].includes(record.gender), 'bg-light': ['other'].includes(record.gender)}]">
                                             <span>🚻</span>
                                             <span v-text="record.formatted_gender" class="fst-italic ms-1"></span>
@@ -101,26 +77,19 @@
                                 </div>
                             </td>
                             <td>
-                                <span :class="['badge', 'fw-semibold', 'text-capitalize', { 'bg-label-success': ['active'].includes(record.status), 'bg-label-danger': ['inactive'].includes(record.status) }]" v-text="record.formatted_status"></span>
+                                <span :class="[getStatusBadgeClasses(record.status), 'badge', 'fw-semibold', 'text-capitalize']" v-text="record.formatted_status"></span>
                             </td>
                             <td>
-                                <InputSlot
-                                    hasDiv
-                                    :isInputGroup="false"
-                                    :divInputClass="['d-flex flex-wrap justify-content-center gap-2 gap-md-1']"
-                                    xl="12"
-                                    lg="12">
-                                    <template v-slot:input>
-                                        <button type="button" class="btn btn-sm btn-warning waves-effect" @click="modalCreateUpdateEntity({record})">
-                                            <i class="fa fa-pencil"></i>
-                                            <span class="ms-2">Editar</span>
-                                        </button>
-                                        <button type="button" class="btn btn-sm btn-success waves-effect" @click="modalCarnetEntity({record})">
-                                            <i class="fa-solid fa-id-badge"></i>
-                                            <span class="ms-2">Carnet</span>
-                                        </button>
-                                    </template>
-                                </InputSlot>
+                                <div class="d-flex flex-wrap justify-content-center gap-2 gap-md-1">
+                                    <button type="button" class="btn btn-sm btn-warning waves-effect" @click="openModal(record)">
+                                        <i class="fa fa-pencil"></i>
+                                        <span class="ms-2" v-text="MODULE.texts.actions.edit"></span>
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-success waves-effect" @click="openCarnetModal(record)">
+                                        <i class="fa-solid fa-id-badge"></i>
+                                        <span class="ms-2" v-text="MODULE.texts.actions.carnet"></span>
+                                    </button>
+                                </div>
                             </td>
                         </tr>
                     </template>
@@ -135,151 +104,185 @@
             </tbody>
         </table>
     </div>
-    <div class="d-flex justify-content-center" v-if="!lists.entity.extras.loading && lists.entity.records?.total > 0">
-        <Paginator :links="lists.entity.records.links" @clickPage="listEntity"/>
-    </div>
 
-    <!-- Modals -->
-    <div class="modal fade" :id="forms.entity.createUpdate.extras.modals.default.id" data-bs-backdrop="static" tabindex="-1" aria-hidden="true">
+    <!-- Pagination -->
+    <nav v-if="!entityList.extras.loading && entityList.records.total > 0" class="d-flex justify-content-center">
+        <Paginator :links="entityList.records.links" @clickPage="listEntity"/>
+    </nav>
+
+    <!-- Modal: Create/Update -->
+    <div class="modal fade" :id="forms[entity].createUpdate.extras.modals.default.id" data-bs-backdrop="static" tabindex="-1" role="dialog">
         <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title text-uppercase fw-bold" v-text="forms.entity.createUpdate.extras.modals.default.titles[isUpdate ? 'update' : 'store']"></h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <h5 class="modal-title text-uppercase fw-bold" v-text="modalTitles[isUpdate ? 'update' : 'store']"></h5>
+                    <button type="button" class="btn-header-modal" data-bs-dismiss="modal">
+                        <i class="fa fa-times icon-close-modal"></i>
+                    </button>
                 </div>
                 <div class="modal-body">
-                    <div class="row g-3">
-                        <InputSlot
-                            hasDiv
-                            title="Tipo de documento"
-                            isRequired
-                            hasTextBottom
-                            :textBottomInfo="forms.entity.createUpdate.errors?.identity_document_type"
-                            xl="4"
-                            lg="4">
-                            <template v-slot:input>
-                                <v-select
-                                    v-model="forms.entity.createUpdate.data.identity_document_type"
-                                    :options="identityDocumentTypes"
-                                    @close="tooltips({show: true, time: 500})"
-                                    :clearable="false"
-                                    :searchable="false"/>
-                            </template>
-                        </InputSlot>
-                        <InputText
-                            v-model="forms.entity.createUpdate.data.document_number"
-                            hasDiv
-                            title="Número de documento"
-                            isRequired
-                            maxlength="15"
-                            hasTextBottom
-                            :textBottomInfo="forms.entity.createUpdate.errors?.document_number"
-                            xl="4"
-                            lg="4">
-                            <template v-slot:inputGroupAppend>
-                                <template v-if="['dni', 'ruc'].includes(forms.entity.createUpdate.data.identity_document_type?.data.code)">
-                                    <button :class="['btn waves-effect', isUpdate ? 'btn-warning' : 'btn-primary']" type="button" @click="searchDocumentNumber({consult: forms.entity.createUpdate})" data-bs-toggle="tooltip" data-bs-placement="top" title="Buscar N° documento">
-                                        <i class="fa fa-search"></i>
-                                    </button>
+                    <form @submit.prevent="saveEntity">
+                        <div class="row g-3">
+                            <InputSlot
+                                hasDiv
+                                :title="MODULE.texts.form.identityDocumentType"
+                                :titleClass="[config.forms.classes.title, 'fw-semibold']"
+                                isRequired
+                                hasTextBottom
+                                :textBottomInfo="forms[entity].createUpdate.errors?.identity_document_type_id"
+                                xl="4"
+                                lg="4">
+                                <template v-slot:input>
+                                    <v-select
+                                        v-model="forms[entity].createUpdate.data.identity_document_type"
+                                        :options="identityDocumentTypes"
+                                        :class="config.forms.classes.select2"
+                                        @close="Alerts.tooltips({show: true, time: 500})"
+                                        :clearable="false"
+                                        :searchable="false"/>
                                 </template>
-                            </template>
-                        </InputText>
-                        <InputSlot
-                            hasDiv
-                            title="Estado"
-                            isRequired
-                            hasTextBottom
-                            :textBottomInfo="forms.entity.createUpdate.errors?.status"
-                            xl="4"
-                            lg="4">
-                            <template v-slot:input>
-                                <v-select
-                                    v-model="forms.entity.createUpdate.data.status"
-                                    :options="statuses"
-                                    :clearable="false"
-                                    :searchable="false"/>
-                            </template>
-                        </InputSlot>
-                        <InputText
-                            v-model="forms.entity.createUpdate.data.name"
-                            hasDiv
-                            title="Nombre"
-                            isRequired
-                            maxlength="100"
-                            hasTextBottom
-                            :textBottomInfo="forms.entity.createUpdate.errors?.name"
-                            xl="6"
-                            lg="6"/>
-                        <InputText
-                            v-model="forms.entity.createUpdate.data.email"
-                            hasDiv
-                            title="📧 Correo electrónico"
-                            maxlength="100"
-                            hasTextBottom
-                            :textBottomInfo="forms.entity.createUpdate.errors?.email"
-                            xl="6"
-                            lg="6"/>
-                        <InputText
-                            v-model="forms.entity.createUpdate.data.phone_number"
-                            hasDiv
-                            title="📞 Celular"
-                            maxlength="15"
-                            hasTextBottom
-                            :textBottomInfo="forms.entity.createUpdate.errors?.phone_number"
-                            xl="3"
-                            lg="3"/>
-                        <InputSlot
-                            hasDiv
-                            title="Género"
-                            hasTextBottom
-                            :textBottomInfo="forms.entity.createUpdate.errors?.gender"
-                            xl="3"
-                            lg="3">
-                            <template v-slot:input>
-                                <v-select
-                                    v-model="forms.entity.createUpdate.data.gender"
-                                    :options="genders"
-                                    :clearable="false"
-                                    :searchable="false"/>
-                            </template>
-                        </InputSlot>
-                        <InputDate
-                            v-model="forms.entity.createUpdate.data.birthdate"
-                            hasDiv
-                            title="Fecha de nacimiento"
-                            hasTextBottom
-                            :textBottomInfo="forms.entity.createUpdate.errors?.birthdate"
-                            xl="3"
-                            lg="3"/>
-                    </div>
+                            </InputSlot>
+                            <InputText
+                                v-model="forms[entity].createUpdate.data.document_number"
+                                hasDiv
+                                :title="MODULE.texts.form.documentNumber"
+                                :titleClass="[config.forms.classes.title, 'fw-semibold']"
+                                isRequired
+                                maxlength="15"
+                                hasTextBottom
+                                :textBottomInfo="forms[entity].createUpdate.errors?.document_number"
+                                xl="4"
+                                lg="4">
+                                <template v-slot:inputGroupAppend>
+                                    <template v-if="['dni', 'ruc'].includes(forms[entity].createUpdate.data.identity_document_type?.data?.code)">
+                                        <button :class="['btn waves-effect', isUpdate ? 'btn-warning' : 'btn-primary']" type="button" @click="searchDocumentNumber" data-bs-toggle="tooltip" data-bs-placement="top" :title="MODULE.texts.form.searchDocumentTooltip">
+                                            <i class="fa fa-search"></i>
+                                        </button>
+                                    </template>
+                                </template>
+                            </InputText>
+                            <InputSlot
+                                hasDiv
+                                :title="MODULE.texts.form.status"
+                                :titleClass="[config.forms.classes.title, 'fw-semibold']"
+                                isRequired
+                                hasTextBottom
+                                :textBottomInfo="forms[entity].createUpdate.errors?.status"
+                                xl="4"
+                                lg="4">
+                                <template v-slot:input>
+                                    <v-select
+                                        v-model="forms[entity].createUpdate.data.status"
+                                        :options="statuses"
+                                        :class="config.forms.classes.select2"
+                                        :clearable="false"
+                                        :searchable="false"/>
+                                </template>
+                            </InputSlot>
+                            <InputText
+                                v-model="forms[entity].createUpdate.data.name"
+                                hasDiv
+                                :title="MODULE.texts.form.name"
+                                :titleClass="[config.forms.classes.title, 'fw-semibold']"
+                                isRequired
+                                maxlength="100"
+                                hasTextBottom
+                                :textBottomInfo="forms[entity].createUpdate.errors?.name"
+                                xl="6"
+                                lg="6"/>
+                            <InputText
+                                v-model="forms[entity].createUpdate.data.email"
+                                hasDiv
+                                :title="MODULE.texts.form.email"
+                                :titleClass="[config.forms.classes.title, 'fw-semibold']"
+                                maxlength="100"
+                                hasTextBottom
+                                :textBottomInfo="forms[entity].createUpdate.errors?.email"
+                                xl="6"
+                                lg="6"/>
+                            <InputText
+                                v-model="forms[entity].createUpdate.data.phone_number"
+                                hasDiv
+                                :title="MODULE.texts.form.phoneNumber"
+                                :titleClass="[config.forms.classes.title, 'fw-semibold']"
+                                maxlength="15"
+                                hasTextBottom
+                                :textBottomInfo="forms[entity].createUpdate.errors?.phone_number"
+                                xl="3"
+                                lg="3"/>
+                            <InputSlot
+                                hasDiv
+                                :title="MODULE.texts.form.gender"
+                                :titleClass="[config.forms.classes.title, 'fw-semibold']"
+                                hasTextBottom
+                                :textBottomInfo="forms[entity].createUpdate.errors?.gender"
+                                xl="3"
+                                lg="3">
+                                <template v-slot:input>
+                                    <v-select
+                                        v-model="forms[entity].createUpdate.data.gender"
+                                        :options="genders"
+                                        :class="config.forms.classes.select2"
+                                        :clearable="false"
+                                        :searchable="false"/>
+                                </template>
+                            </InputSlot>
+                            <InputDate
+                                v-model="forms[entity].createUpdate.data.birthdate"
+                                hasDiv
+                                :title="MODULE.texts.form.birthdate"
+                                :titleClass="[config.forms.classes.title, 'fw-semibold']"
+                                hasTextBottom
+                                :textBottomInfo="forms[entity].createUpdate.errors?.birthdate"
+                                xl="6"
+                                lg="6"/>
+                        </div>
+                    </form>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary waves-effect" data-bs-dismiss="modal">Cerrar</button>
-                    <button type="button" :class="['btn waves-effect', isUpdate ? 'btn-warning' : 'btn-primary']" @click="createUpdateEntity()">
+                    <button
+                        type="button"
+                        class="btn btn-secondary waves-effect"
+                        data-bs-dismiss="modal"
+                        v-text="MODULE.texts.modal.close">
+                    </button>
+                    <button
+                        type="button"
+                        :class="['btn waves-effect', isUpdate ? 'btn-warning' : 'btn-primary']"
+                        @click="saveEntity"
+                        :disabled="isSaving">
                         <i class="fa fa-save"></i>
-                        <span class="ms-2">Guardar</span>
+                        <span class="ms-2" v-text="MODULE.texts.modal.save"></span>
                     </button>
                 </div>
             </div>
         </div>
     </div>
-    <div class="modal fade" :id="forms.entity.carnet.extras.modals.default.id" data-bs-backdrop="static" tabindex="-1" aria-hidden="true">
+
+    <!-- Modal: Carnet -->
+    <div class="modal fade" :id="forms[entity].carnet.extras.modals.default.id" data-bs-backdrop="static" tabindex="-1" role="dialog">
         <div class="modal-dialog modal-dialog-centered" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title text-uppercase fw-bold" v-text="forms.entity.carnet.extras.modals.default.titles[isDefined({value: forms.entity.carnet.data?.id}) ? 'update' : 'store']"></h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <h5 class="modal-title text-uppercase fw-bold" v-text="MODULE.texts.modal.carnetTitle"></h5>
+                    <button type="button" class="btn-header-modal" data-bs-dismiss="modal">
+                        <i class="fa fa-times icon-close-modal"></i>
+                    </button>
                 </div>
                 <div class="modal-body">
                     <div class="row g-3">
                         <div class="col-12">
-                            <CarnetCustomer
-                                :customer="forms.entity.carnet.data"/>
+                            <CarnetCustomer :customer="forms[entity].carnet.data"/>
                         </div>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary waves-effect" data-bs-dismiss="modal">Cerrar</button>
+                    <button
+                        type="button"
+                        class="btn btn-secondary waves-effect"
+                        data-bs-dismiss="modal"
+                        v-text="MODULE.texts.modal.close">
+                    </button>
                 </div>
             </div>
         </div>
@@ -287,25 +290,163 @@
 </template>
 
 <script>
-import * as Alerts    from "@System/Helpers/Alerts.js";
-import * as Constants from "@System/Helpers/Constants.js";
-import * as Requests  from "@System/Helpers/Requests.js";
-import * as Utils     from "@System/Helpers/Utils.js";
+import * as Alerts from "@System/Helpers/Alerts.js";
+import * as Crud from "@System/Helpers/Crud.js";
+import * as Forms from "@System/Helpers/Forms.js";
+import * as Requests from "@System/Helpers/Requests.js";
+import * as Utils from "@System/Helpers/Utils.js";
+
+const MODULE_CONFIG = {
+    entity: "customers",
+    menuId: "menu-customers",
+    pageTitle: "Clientes",
+    breadcrumbParent: null,
+    perPage: 15
+};
+
+const FORM_FIELDS = {
+    identity_document_type: null,
+    document_number: "",
+    name: "",
+    email: "",
+    phone_number: "",
+    gender: null,
+    birthdate: "",
+    status: null
+};
+
+const FORM_FIELD_CONFIG = {
+    identity_document_type: {getCode: true},
+    document_number: {trim: true},
+    name: {trim: true},
+    email: {normalize: true},
+    phone_number: {normalize: true},
+    gender: {getCode: true},
+    birthdate: {normalize: true},
+    status: {getCode: true}
+};
+
+const VALIDATION_RULES = {
+    identity_document_type: {required: true},
+    document_number: {required: true},
+    name: {required: true},
+    email: {required: false, email: true},
+    phone_number: {required: false},
+    gender: {required: false},
+    birthdate: {required: false},
+    status: {required: true}
+};
+
+const ERROR_LABELS = {
+    identity_document_type: "Tipo de documento",
+    document_number: "Número de documento",
+    name: "Nombre",
+    email: "Correo electrónico",
+    phone_number: "Celular",
+    gender: "Género",
+    birthdate: "Fecha de nacimiento",
+    status: "Estado",
+    required: "Es obligatorio"
+};
+
+const TEXTS = {
+    loading: `Cargando ${MODULE_CONFIG.pageTitle}...`,
+    filters: {
+        filterBy: "Filtrar por",
+        search: "Búsqueda"
+    },
+    actions: {
+        search: "Buscar",
+        add: "Agregar",
+        edit: "Editar",
+        carnet: "Carnet"
+    },
+    form: {
+        identityDocumentType: "Tipo de documento",
+        documentNumber: "Número de documento",
+        name: "Nombre",
+        email: "📧 Correo electrónico",
+        phoneNumber: "📞 Celular",
+        gender: "Género",
+        birthdate: "Fecha de nacimiento",
+        status: "Estado",
+        searchDocumentTooltip: "Buscar N° documento"
+    },
+    modal: {
+        close: "Cerrar",
+        save: "Guardar",
+        carnetTitle: "Carnet del cliente"
+    }
+};
+
+const FILTER_OPTIONS = [
+    {code: "all", label: "Todos los filtros"},
+    {code: "document_number", label: "Número de documento"},
+    {code: "name", label: "Nombre"},
+    {code: "email", label: "Correo electrónico"},
+    {code: "phone_number", label: "Celular"}
+];
+
+const MODULE = {
+    config: MODULE_CONFIG,
+    formFields: FORM_FIELDS,
+    formFieldConfig: FORM_FIELD_CONFIG,
+    validationRules: VALIDATION_RULES,
+    errorLabels: ERROR_LABELS,
+    texts: TEXTS,
+    filterOptions: FILTER_OPTIONS
+};
 
 export default {
-    components: {
-        //
+    name: "CustomersMain",
+    data() {
+
+        const crudModule = Crud.initCrudModule({entity: MODULE.config.entity, menuId: MODULE.config.menuId, pageTitle: MODULE.config.pageTitle});
+
+        crudModule.lists[MODULE.config.entity].filters.filter_by = MODULE.filterOptions[0];
+        crudModule.forms[MODULE.config.entity].createUpdate.data = Forms.initFormData(MODULE.formFields);
+
+        // Add carnet form
+        crudModule.forms[MODULE.config.entity].carnet = {
+            extras: {
+                modals: {
+                    default: {
+                        id: Utils.uuid(),
+                        titles: {
+                            store: MODULE.texts.modal.carnetTitle,
+                            update: MODULE.texts.modal.carnetTitle
+                        }
+                    }
+                }
+            },
+            data: {
+                id: null,
+                document_number: "",
+                name: ""
+            },
+            errors: {}
+        };
+
+        return {
+            ...crudModule,
+            MODULE: MODULE,
+            isInitialized: false,
+            isSaving: false
+        };
+
     },
     mounted: async function() {
 
         Utils.navbarItem("menu-parent-customers", {addClass: "open"});
         Utils.navbarItem(this.config.entity.page.menu.id, {});
+
         Alerts.swals({type: "initParams"});
 
-        let initParams = await this.initParams({}),
-            initOthers = await this.initOthers({});
+        const initParams = await this.initParams();
 
-        if(initParams && initOthers) {
+        this.isInitialized = true;
+
+        if(initParams) {
 
             Alerts.swals({show: false});
             this.listEntity({});
@@ -313,365 +454,189 @@ export default {
         }
 
     },
-    data() {
-        return {
-            lists: {
-                entity: {
-                    extras: {
-                        loading: false,
-                        route: Requests.config({entity: "customers", type: "list"})
-                    },
-                    filters: {
-                        filter_by: null,
-                        word: ""
-                    },
-                    records: {
-                        total: 0
-                    }
-                }
-            },
-            forms: {
-                entity: {
-                    createUpdate: {
-                        extras: {
-                            modals: {
-                                default: {
-                                    id: Utils.uuid(),
-                                    titles: {
-                                        store: "Agregar",
-                                        update: "Editar"
-                                    }
-                                }
-                            }
-                        },
-                        data: {
-                            id: null,
-                            identity_document_type: null,
-                            document_number: "",
-                            name: "",
-                            email: "",
-                            phone_number: "",
-                            gender: "",
-                            birthdate: "",
-                            status: null
-                        },
-                        errors: {}
-                    },
-                    carnet: {
-                        extras: {
-                            modals: {
-                                default: {
-                                    id: Utils.uuid(),
-                                    titles: {
-                                        store: "Carnet del cliente",
-                                        update: "Carnet del cliente"
-                                    }
-                                }
-                            }
-                        },
-                        data: {
-                            id: null,
-                            identity_document_type: null,
-                            document_number: "",
-                            name: "",
-                            email: "",
-                            phone_number: "",
-                            gender: "",
-                            birthdate: "",
-                            status: null
-                        },
-                        errors: {}
-                    }
-                }
-            },
-            options: {},
-            config: {
-                ...Constants.generalConfig,
-                entity: {
-                    ...Requests.config({entity: "customers"}),
-                    page: {
-                        title: "Clientes",
-                        active: true,
-                        menu: {
-                            id: "menu-customers"
-                        }
-                    }
-                }
-            }
-        };
-    },
     methods: {
-        // Init
-        async initParams({}) {
+        async initParams() {
 
-            let initParams = await Requests.get({route: this.config.entity.routes.initParams, data: {page: "main"}, showAlert: true});
+            const response = await Requests.get({route: this.routeActions.initParams, data: {page: "main"}, showAlert: true});
 
-            this.options.identityDocumentTypes = initParams.data?.config?.identityDocumentTypes;
-            this.options.customers             = initParams.data?.config?.customers;
+            this.options.identityDocumentTypes = response?.data?.config?.identityDocumentTypes ?? {};
+            this.options[this.entity] = response?.data?.config?.[this.entity] ?? {};
 
-            return Requests.valid({result: initParams});
-
-        },
-        async initOthers({}) {
-
-            return new Promise(resolve => {
-
-                this.lists.entity.filters.filter_by = this.filterByOptions[0];
-
-                resolve(true);
-
-            });
+            return Requests.valid({result: response});
 
         },
-        // Entity forms
-        async listEntity({url = null}) {
+        // List
+        async listEntity(params = null) {
 
-            let filters = Utils.cloneJson(this.lists.entity.filters);
-            const filterJson = {filter_by: filters?.filter_by?.code, word: filters.word};
+            const entityList   = this.lists[this.entity];
+            const emptyRecords = {total: 0, data: []};
+            const filters      = Utils.cloneJson(entityList.filters);
+            const filterData   = {per_page: this.MODULE.config.perPage, filter_by: filters.filter_by?.code, word: filters.word};
 
-            this.lists.entity.extras.loading = true;
-            this.lists.entity.records        = (await Requests.get({route: url || this.lists.entity.extras.route, data: filterJson}))?.data;
-            this.lists.entity.extras.loading = false;
+            entityList.extras.loading = true;
 
-        },
-        // Forms
-        modalCreateUpdateEntity({record = null}) {
+            try {
 
-            const functionName = "modalCreateUpdateEntity";
+                const url = this.isDefined(params) && typeof params === "object" ? params.url : params;
 
-            // Alerts.swals({});
-            this.clearForm({functionName});
-            this.formErrors({functionName, type: "clear"});
+                let requestUrl  = url || entityList.extras.route;
+                let requestData = {};
 
-            if(this.isDefined({value: record})) {
+                if(this.isDefined(url)) {
 
-                let identityDocumentType = this.identityDocumentTypes.find(e => e.code === record?.identity_document_type_id),
-                    gender               = this.genders.find(e => e.code === record?.gender),
-                    status               = this.statuses.find(e => e.code === record?.status);
+                    const urlObj = new URL(url, window.location.origin);
 
-                this.forms.entity.createUpdate.data.id                     = record?.id;
-                this.forms.entity.createUpdate.data.identity_document_type = identityDocumentType;
-                this.forms.entity.createUpdate.data.document_number        = record?.document_number;
-                this.forms.entity.createUpdate.data.name                   = record?.name;
-                this.forms.entity.createUpdate.data.email                  = record?.email;
-                this.forms.entity.createUpdate.data.phone_number           = record?.phone_number;
-                this.forms.entity.createUpdate.data.gender                 = gender;
-                this.forms.entity.createUpdate.data.birthdate              = record?.birthdate;
-                this.forms.entity.createUpdate.data.status                 = status;
+                    Object.entries(filterData).forEach(([key, value]) => {
 
-            }else {
+                        if(this.isDefined(value) && !urlObj.searchParams.has(key)) urlObj.searchParams.set(key, value);
 
-                this.forms.entity.createUpdate.data.identity_document_type = this.identityDocumentTypes[1];
-                this.forms.entity.createUpdate.data.status = this.statuses[0];
+                    });
 
-            }
-
-            // Alerts.swals({show: false});
-            Alerts.modals({type: "show", id: this.forms.entity.createUpdate.extras.modals.default.id});
-            this.tooltips({show: true, time: 500});
-
-        },
-        async createUpdateEntity() {
-
-            const functionName = "createUpdateEntity";
-
-            Alerts.swals({});
-            this.formErrors({functionName, type: "clear"});
-
-            let form = Utils.cloneJson(this.forms.entity.createUpdate.data);
-
-            const validateForm = this.validateForm({functionName, form, extras: {type: "descriptive"}});
-
-            if(validateForm?.bool) {
-
-                form.identity_document_type_id = form?.identity_document_type?.code;
-                form.gender = form?.gender?.code;
-                form.status = form?.status?.code;
-
-                delete form.identity_document_type;
-
-                let createUpdate = await (this.isDefined({value: form.id}) ? Requests.patch({route: this.config.entity.routes.update, data: form, id: form.id}) :
-                                                                             Requests.post({route: this.config.entity.routes.store, data: form}));
-
-                if(Requests.valid({result: createUpdate})) {
-
-                    Alerts.modals({type: "hide", id: this.forms.entity.createUpdate.extras.modals.default.id});
-                    // Alerts.toastrs({type: "success", subtitle: createUpdate?.data?.msg});
-                    // Alerts.swals({show: false});
-                    Alerts.generateAlert({type: "success", msgContent: createUpdate?.data?.msg});
-
-                    this.clearForm({functionName});
-                    this.listEntity({url: `${this.lists.entity.extras.route}?page=${this.lists.entity.records?.current_page ?? 1}`});
+                    requestUrl = `${urlObj.pathname}${urlObj.search}`;
 
                 }else {
 
-                    this.formErrors({functionName, type: "set", errors: createUpdate?.errors ?? []});
-                    Alerts.toastrs({type: "error", subtitle: createUpdate?.data?.msg});
-                    Alerts.swals({show: false});
+                    requestData = filterData;
 
                 }
+
+                const response = await Requests.get({route: requestUrl, data: requestData, showAlert: true});
+
+                entityList.records = response?.data ?? emptyRecords;
+
+            }catch(error) {
+
+                entityList.records = emptyRecords;
+
+            }finally {
+
+                entityList.extras.loading = false;
+
+            }
+
+        },
+        handleSearch() {
+
+            this.listEntity({});
+
+        },
+        // Forms
+        openModal(record = null) {
+
+            const entityForms = this.forms[this.entity].createUpdate;
+
+            entityForms.errors = {};
+            Forms.clearFormData(entityForms.data, this.MODULE.formFields);
+
+            if(this.isDefined(record)) {
+
+                entityForms.data.id = record?.id;
+
+                Object.keys(this.MODULE.formFields).forEach(key => {
+
+                    if(key === "identity_document_type") {
+
+                        entityForms.data.identity_document_type = this.identityDocumentTypes.find(e => e.code === record?.identity_document_type_id) || null;
+
+                    }else if(key === "status") {
+
+                        entityForms.data.status = this.statuses.find(e => e.code === record?.status) || null;
+
+                    }else if(key === "gender") {
+
+                        entityForms.data.gender = this.genders.find(e => e.code === record?.gender) || null;
+
+                    }else {
+
+                        entityForms.data[key] = record?.[key] ?? this.MODULE.formFields[key];
+
+                    }
+
+                });
 
             }else {
 
-                // this.formErrors({functionName, type: "set", errors: validateForm});
-                // Alerts.toastrs({type: "error", subtitle: this.config.messages.errorValidate});
-                // Alerts.swals({show: false});
-                Alerts.generateAlert({messages: Utils.getErrors({errors: validateForm}), msgContent: `<div class="fw-semibold mb-2">${this.config.messages.errorValidate}</div>`});
+                entityForms.data.identity_document_type = this.identityDocumentTypes[1] || null;
+                entityForms.data.status = this.statuses[0] || null;
 
             }
 
+            Alerts.modals({type: "show", id: entityForms.extras.modals.default.id});
+            Alerts.tooltips({show: true, time: 500});
+
         },
-        // Carnet
-        modalCarnetEntity({record = null, type = "store"}) {
+        openCarnetModal(record = null) {
 
-            const functionName = "modalCarnetEntity";
+            const carnetForm = this.forms[this.entity].carnet;
 
-            this.forms.entity.carnet.extras.modals.default.type = type;
+            if(this.isDefined(record)) {
 
-            // Alerts.swals({});
-            this.clearForm({functionName});
-            this.formErrors({functionName, type: "clear"});
-
-            if(this.isDefined({value: record})) {
-
-                // let identityDocumentType = this.identityDocumentTypes.find(e => e.code === record?.identity_document_type_id),
-                //     gender               = this.genders.find(e => e.code === record?.gender),
-                //     status               = this.statuses.find(e => e.code === record?.status);
-
-                this.forms.entity.carnet.data.id                     = record?.id;
-                // this.forms.entity.carnet.data.identity_document_type = identityDocumentType;
-                this.forms.entity.carnet.data.document_number        = record?.document_number;
-                this.forms.entity.carnet.data.name                   = record?.name;
-                // this.forms.entity.carnet.data.email                  = record?.email;
-                // this.forms.entity.carnet.data.phone_number           = record?.phone_number;
-                // this.forms.entity.carnet.data.gender                 = gender;
-                // this.forms.entity.carnet.data.birthdate              = record?.birthdate;
-                // this.forms.entity.carnet.data.status                 = status;
+                carnetForm.data.id = record?.id;
+                carnetForm.data.document_number = record?.document_number;
+                carnetForm.data.name = record?.name;
 
             }else {
 
-                // this.forms.entity.carnet.data.identity_document_type = this.identityDocumentTypes[1];
-                // this.forms.entity.carnet.data.status = this.statuses[0];
+                carnetForm.data.id = null;
+                carnetForm.data.document_number = "";
+                carnetForm.data.name = "";
 
             }
 
-            // Alerts.swals({show: false});
-            Alerts.modals({type: "show", id: this.forms.entity.carnet.extras.modals.default.id});
-            this.tooltips({show: true, time: 500});
+            Alerts.modals({type: "show", id: carnetForm.extras.modals.default.id});
+            Alerts.tooltips({show: true, time: 500});
 
         },
-        // Forms utils
-        clearForm({functionName}) {
+        async searchDocumentNumber() {
 
-            switch(functionName) {
-                case "modalCreateUpdateEntity":
-                case "createUpdateEntity":
-                    this.forms.entity.createUpdate.data.id                     = null;
-                    this.forms.entity.createUpdate.data.identity_document_type = null;
-                    this.forms.entity.createUpdate.data.document_number        = "";
-                    this.forms.entity.createUpdate.data.name                   = "";
-                    this.forms.entity.createUpdate.data.email                  = "";
-                    this.forms.entity.createUpdate.data.phone_number           = "";
-                    this.forms.entity.createUpdate.data.gender                 = null;
-                    this.forms.entity.createUpdate.data.birthdate              = "";
-                    this.forms.entity.createUpdate.data.status                 = null;
-                    break;
-            }
+            const entityForms = this.forms[this.entity].createUpdate;
+            const documentNumber = entityForms.data.document_number;
+            const identityDocumentType = entityForms.data.identity_document_type;
 
-        },
-        formErrors({functionName, type = "clear", errors = []}) {
+            if(!this.isDefined(documentNumber)) {
 
-            if(["modalCreateUpdateEntity", "createUpdateEntity"].includes(functionName)) {
-
-                this.forms.entity.createUpdate.errors = ["set"].includes(type) ? errors : [];
+                Alerts.generateAlert({msgContent: "Debe ingresar el número de documento para realizar la búsqueda."});
+                return;
 
             }
 
-        },
-        validateForm({functionName, form = null, extras = null}) {
+            if(!this.isDefined(identityDocumentType)) {
 
-            let result = {
-                bool: true
-            };
-
-            if(["createUpdateEntity"].includes(functionName)) {
-
-                result.identity_document_type = [];
-                result.document_number        = [];
-                result.status                 = [];
-                result.name                   = [];
-
-                const isDescriptive = ["descriptive"].includes(extras?.type);
-
-                if(!this.isDefined({value: form?.identity_document_type})) {
-
-                    result.identity_document_type.push(`${isDescriptive ? "Tipo de documento:" : ""} ${this.config.forms.errors.labels.required}`);
-                    result.bool = false;
-
-                }
-
-                if(!this.isDefined({value: form?.document_number})) {
-
-                    result.document_number.push(`${isDescriptive ? "Número de documento:" : ""} ${this.config.forms.errors.labels.required}`);
-                    result.bool = false;
-
-                }
-
-                if(!this.isDefined({value: form?.status})) {
-
-                    result.status.push(`${isDescriptive ? "Estado:" : ""} ${this.config.forms.errors.labels.required}`);
-                    result.bool = false;
-
-                }
-
-                if(!this.isDefined({value: form?.name})) {
-
-                    result.name.push(`${isDescriptive ? "Nombre:" : ""} ${this.config.forms.errors.labels.required}`);
-                    result.bool = false;
-
-                }
-
-            }
-
-            return result;
-
-        },
-        async searchDocumentNumber({consult}) {
-
-            let route = Requests.config({entity: "helpers", type: "searchDocumentNumber"});
-            const formJson = {document_number: consult.data.document_number, type: consult.data.identity_document_type?.data.code};
-
-            if(!this.isDefined({value: formJson.document_number})) {
-
-                Alerts.generateAlert({msgContent: `Debe ingresar el número de documento para realizar la búsqueda.`});
+                Alerts.generateAlert({msgContent: "Debe seleccionar el tipo de documento."});
                 return;
 
             }
 
             Alerts.swals({});
 
-            let searchDocumentNumber = await Requests.get({route: route, data: formJson});
+            const route = Requests.config({entity: "helpers", type: "searchDocumentNumber"});
+            const formJson = {
+                document_number: documentNumber,
+                type: identityDocumentType.data?.code
+            };
 
-            if(Requests.valid({result: searchDocumentNumber})) {
+            const response = await Requests.get({route, data: formJson});
 
-                const data = searchDocumentNumber.data.data;
+            if(Requests.valid({result: response})) {
 
-                if(consult.data.identity_document_type?.data.code == "dni") {
+                const data = response.data.data;
 
-                    this.forms.entity.createUpdate.data.name = `${data?.first_name} ${data?.last_name} ${data?.second_last_name}`;
+                if(identityDocumentType.data?.code === "dni") {
 
-                }else if(consult.data.identity_document_type?.data.code == "ruc") {
+                    entityForms.data.name = `${data?.first_name || ""} ${data?.last_name || ""} ${data?.second_last_name || ""}`.trim();
 
-                    this.forms.entity.createUpdate.data.name = `${data?.legal_name}`;
+                }else if(identityDocumentType.data?.code === "ruc") {
+
+                    entityForms.data.name = data?.legal_name || "";
 
                 }
 
-                Alerts.toastrs({type: "success", subtitle: searchDocumentNumber?.data?.msg});
+                Alerts.toastrs({type: "success", subtitle: response?.data?.msg});
                 Alerts.swals({show: false});
 
             }else {
 
-                Alerts.toastrs({type: "error", subtitle: searchDocumentNumber?.data?.msg});
+                Alerts.toastrs({type: "error", subtitle: response?.data?.msg});
                 Alerts.swals({show: false});
 
             }
@@ -679,8 +644,95 @@ export default {
             Alerts.tooltips({show: false});
 
         },
+        async saveEntity() {
+
+            if(this.isSaving) return;
+
+            const entityForms = this.forms[this.entity].createUpdate;
+
+            Alerts.swals({});
+
+            entityForms.errors = {};
+            this.isSaving = true;
+
+            try {
+
+                const formData   = Utils.cloneJson(entityForms.data);
+                const validation = Forms.validateFormData(formData, this.MODULE.validationRules, {isDescriptive: true, errorLabels: this.MODULE.errorLabels});
+
+                if(!validation.bool) {
+
+                    Alerts.generateAlert({messages: Utils.getErrors({errors: validation.errors}), msgContent: this.config.messages.errorValidate});
+                    this.isSaving = false;
+                    return;
+
+                }
+
+                const preparedData  = Forms.prepareFormData(formData, this.MODULE.formFieldConfig);
+                const id            = preparedData.id;
+                const isUpdate      = this.isDefined(id);
+                const requestMethod = isUpdate ? "patch" : "post";
+                const route         = this.routeActions[isUpdate ? "update" : "store"];
+
+                // Prepare identity_document_type_id
+                if(preparedData.identity_document_type) {
+
+                    preparedData.identity_document_type_id = preparedData.identity_document_type;
+                    delete preparedData.identity_document_type;
+
+                }
+
+                const result = await Requests[requestMethod]({route, data: preparedData, id});
+
+                if(Requests.valid({result})) {
+
+                    Alerts.modals({type: "hide", id: entityForms.extras.modals.default.id});
+                    Alerts.generateAlert({type: "success", msgContent: result.data.msg});
+
+                    Forms.clearFormData(entityForms.data, this.MODULE.formFields);
+
+                    const entityList  = this.entityList;
+                    const currentPage = entityList?.records?.current_page ?? 1;
+
+                    this.listEntity({url: `${entityList?.extras?.route || ""}?page=${currentPage}`});
+
+                }else {
+
+                    this.handleErrors({result, entityForms});
+
+                }
+
+            }catch(error) {
+
+                Alerts.generateAlert({type: "error", messages: [error], msgContent: this.config.messages.catchError});
+
+            }finally {
+
+                this.isSaving = false;
+
+            }
+
+        },
+        // Utils
+        handleErrors({result, entityForms, setErrors = true, showAlert = true}) {
+
+            const isValidationError = result?.code === 422;
+            const hasFieldErrors    = result?.errors && Object.keys(result.errors).length > 0;
+            const errorMessage      = result?.data?.msg || this.config.messages.errorValidate;
+
+            if(setErrors) entityForms.errors = result?.errors ?? {};
+
+            if(showAlert) {
+
+                const msgContent = (isValidationError && hasFieldErrors) ? this.config.messages.errorValidateFields : errorMessage;
+
+                Alerts.generateAlert({type: "error", msgContent});
+
+            }
+
+        },
         // Others
-        isDefined({value}) {
+        isDefined(value) {
 
             return Utils.isDefined({value});
 
@@ -690,56 +742,105 @@ export default {
             return Utils.legibleFormatDate({dateString, type});
 
         },
-        tooltips({show = true, time = 10}) {
+        getStatusBadgeClasses(status) {
 
-            Alerts.tooltips({show, time});
+            return Utils.getStatusBadgeClasses(status);
 
         }
     },
     computed: {
-        breadcrumbTitles: function() {
+        entity() {
 
-            return [this.config.entity.page];
-
-        },
-        filterByOptions: function() {
-
-            return [
-                {code: "all", label: "Todos"},
-                {code: "document_number", label: "Número de documento"},
-                {code: "name", label: "Nombre"},
-                {code: "email", label: "Correo electrónico"},
-                {code: "phone_number", label: "Celular"}
-            ];
+            return this.MODULE.config.entity;
 
         },
-        identityDocumentTypes: function() {
+        routeActions() {
 
-            return this.options?.identityDocumentTypes?.records.map(e => ({code: e.id, label: e.name, data: e}));
-
-        },
-        genders: function() {
-
-            return this.options?.customers?.genders.map(e => ({code: e.code, label: e.label}));
+            return this.config.entity.routes;
 
         },
-        statuses: function() {
+        entityList() {
 
-            return this.options?.customers?.statuses.map(e => ({code: e.code, label: e.label}));
+            return this.lists[this.entity];
 
         },
-        isUpdate: function() {
+        breadcrumbTitles() {
 
-            return this.isDefined({value: this.forms.entity.createUpdate.data?.id});
+            return this.MODULE.config.breadcrumbParent ? [
+                {title: this.MODULE.config.breadcrumbParent},
+                this.config.entity.page
+            ] : [this.config.entity.page];
 
-        }
-    },
-    watch: {
-        "lists.entity.filters.filter_by": function(newValue, oldValue) {
+        },
+        filterByOptions() {
 
-            // this.listEntity({});
+            return this.MODULE.filterOptions;
+
+        },
+        identityDocumentTypes() {
+
+            return (this.options?.identityDocumentTypes?.records ?? []).map(e => ({code: e.id, label: e.name, data: e}));
+
+        },
+        genders() {
+
+            return (this.options?.[this.entity]?.genders ?? []).map(e => ({code: e.code, label: e.label}));
+
+        },
+        statuses() {
+
+            return (this.options?.[this.entity]?.statuses ?? []).map(e => ({code: e.code, label: e.label}));
+
+        },
+        isUpdate() {
+
+            return this.isDefined(this.forms[this.entity].createUpdate.data.id);
+
+        },
+        modalTitles() {
+
+            return this.forms[this.entity].createUpdate.extras.modals.default.titles || {
+                store: `AGREGAR ${this.MODULE.config.pageTitle.toUpperCase()}`,
+                update: `EDITAR ${this.MODULE.config.pageTitle.toUpperCase()}`
+            };
+
+        },
+        filterByValue: {
+            get() {
+
+                return this.entityList.filters?.filter_by || this.MODULE.filterOptions[0];
+
+            },
+            set(value) {
+
+                this.entityList.filters.filter_by = value;
+
+            }
+        },
+        filterWordValue: {
+            get() {
+
+                return this.entityList.filters.word || "";
+
+            },
+            set(value) {
+
+                this.entityList.filters.word = value;
+
+            }
+        },
+        searchPlaceholder() {
+
+            const filterBy = this.entityList.filters.filter_by;
+
+            if(!filterBy) return "Buscar...";
+
+            return `Buscar por ${(filterBy.label || "...").toLowerCase()}`;
 
         }
     }
 };
 </script>
+
+<style scoped>
+</style>

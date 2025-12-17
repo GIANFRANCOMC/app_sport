@@ -1,249 +1,236 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\System\Catalogs;
 
-use App\Helpers\System\Utilities;
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\{Auth, DB};
-use stdClass;
+use Exception;
+use App\Http\Controllers\{Controller};
+use App\Helpers\System\{Utilities};
+use Illuminate\Http\{JsonResponse, Request};
+use Illuminate\Support\Facades\{Auth};
 
+use App\Http\Controllers\System\Concerns\{HandlesApiResponses};
 use App\Http\Requests\System\Catalogs\Services\{StoreServiceRequest, UpdateServiceRequest};
-use App\Models\System\Catalogs\{Category, CategoryItem, Item};
-use App\Models\System\General\{Currency};
+use App\Services\System\Catalogs\Items\{ServiceConfigService, ServiceService};
+use App\Models\System\Catalogs\{Item};
 
 class ServiceController extends Controller {
 
+    use HandlesApiResponses;
+
+    /**
+     * Translation namespace for service module
+     */
+    private const TRANSLATION_NAMESPACE = "System.Catalogs.service";
+
+    /**
+     * Get initialization parameters for the module
+     *
+     * @param Request $request
+     * @return \stdClass
+     */
     public function initParams(Request $request) {
 
         $userAuth = Auth::user();
+        $page     = $request->input("page", "");
 
-        $initParams = new stdClass();
-
-        $config = new stdClass();
-
-        $page = $request->page ?? "";
-
-        if(in_array($page, ["main"])) {
-
-            $config->services = new stdClass();
-            $config->services->statuses = Item::getStatuses();
-
-            $config->categories = new stdClass();
-            $config->categories->records = Category::getAll("service", $userAuth->company_id);
-
-            $config->currencies = new stdClass();
-            $config->currencies->records = Currency::get();
-
-        }
-
-        $initParams->config = $config;
-        $initParams->bool   = true;
-
-        return $initParams;
+        return ServiceConfigService::getInitParams($userAuth->company_id, $page);
 
     }
 
+    /**
+     * Get paginated list of services with filters
+     *
+     * @param Request $request
+     * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator
+     */
     public function list(Request $request) {
 
         $userAuth = Auth::user();
+        $filters  = ["filter_by" => $request->input("filter_by"), "word" => $request->input("word")];
+        $perPage  = intval($request->input("per_page") ?? Utilities::$per_page_default);
 
-        $list = Item::when(Utilities::isDefined($request->filter_by), function($query) use($request) {
-
-                        $filter = Utilities::getWordSearch($request->word);
-
-                        if(in_array($request->filter_by, ["all"])) {
-
-                            $query->where(function($query) use($request, $filter) {
-
-                                $query->where("internal_code", "like", $filter)
-                                      ->orWhere("name", "like", $filter)
-                                      ->orWhere("description", "like", $filter)
-                                      ->orWhere("price", "like", $filter);
-
-                            });
-
-                        }else if(in_array($request->filter_by, ["internal_code", "name", "description", "price"])) {
-
-                            $query->where(function($query) use($request, $filter) {
-
-                                $query->where($request->filter_by, "like", $filter);
-
-                            });
-
-                        }
-
-                    })
-                    ->where("company_id", $userAuth->company_id)
-                    ->whereIn("type", ["service"])
-                    ->orderBy("name", "ASC")
-                    ->with(["currency", "categoryItems"])
-                    ->paginate($request->per_page ?? Utilities::$per_page_default);
-
-        return $list;
+        return ServiceService::getPaginatedList($userAuth->company_id, $filters, $perPage);
 
     }
 
+    /**
+     * Display the services index page
+     *
+     * @return \Illuminate\Contracts\View\View
+     */
     public function index() {
 
         return view("System/general/Catalogs/services/main");
 
     }
 
-    public function create() {
+    /**
+     * Show the form for creating a new service
+     * (Not used in SPA, but kept for REST compliance)
+     *
+     * @return void
+     */
+    public function create(): void {
 
-        //
+        // Form is handled by frontend SPA
 
     }
 
-    public function store(StoreServiceRequest $request) {
+    /**
+     * Store a newly created service
+     *
+     * @param StoreServiceRequest $request
+     * @return JsonResponse
+     */
+    public function store(StoreServiceRequest $request): JsonResponse {
 
-        $userAuth = Auth::user();
+        try {
 
-        $item = null;
+            $userAuth = Auth::user();
+            $data     = $this->prepareServiceData($request, $userAuth);
+            $item     = ServiceService::create($data, $userAuth->id);
 
-        $itemExists = Item::where("company_id", $userAuth->company_id)
-                          ->where("internal_code", $request->internal_code)
-                          ->exists();
+            if(!Utilities::isDefined($item)) {
 
-        if($itemExists) {
-
-            return response()->json(["bool" => false, "msg" => "El código interno ya ha sido registrado."], 200);
-
-        }
-
-        DB::transaction(function() use($request, $userAuth, &$item) {
-
-            $item = new Item();
-            $item->company_id    = $userAuth->company_id;
-            $item->internal_code = $request->internal_code;
-            $item->name          = $request->name;
-            $item->description   = $request->description ?? "";
-            $item->price         = $request->price;
-            $item->min_price     = floatval($request->min_price) <= 0 ? null : $request->min_price;
-            $item->max_price     = floatval($request->max_price) <= 0 ? null : $request->max_price;
-            $item->currency_id   = $request->currency_id;
-            $item->type          = "service";
-            $item->see_my_web    = $request->see_my_web ?? false;
-            $item->see_my_web_price = $item->see_my_web ? ($request->see_my_web_price ?? false) : false;
-            $item->status        = $request->status;
-            $item->created_at    = now();
-            $item->created_by    = $userAuth->id ?? null;
-            $item->save();
-
-            foreach($request->categories as $category) {
-
-                CategoryItem::updateOrInsert(
-                    [
-                        "category_id" => $category["category_id"],
-                        "item_id"     => $item->id
-                    ],
-                    [
-                        "status"      => "active",
-                        "updated_at"  => now(),
-                        "updated_by"  => $userAuth->id ?? null
-                    ]
-                );
+                return $this->errorResponse("create_failed");
 
             }
 
-        });
+            ServiceConfigService::clearAllCache($userAuth->company_id);
 
-        $bool = Utilities::isDefined($item);
-        $msg  = $bool ? "Servicio creado correctamente." : "No se ha podido crear el servicio.";
+            return $this->createdResponse($item, "created", "item");
 
-        return response()->json(["bool" => $bool, "msg" => $msg, "item" => $item], 200);
+        }catch(Exception $e) {
 
-    }
-
-    public function show(Item $item) {
-
-        //
-
-    }
-
-    public function edit(Item $item) {
-
-        //
-
-    }
-
-    public function update(UpdateServiceRequest $request, $id) {
-
-        $userAuth = Auth::user();
-
-        $item = Item::where("id", $id)
-                    ->where("company_id", $userAuth->company_id)
-                    ->whereIn("type", ["service"])
-                    ->first();
-
-        if(Utilities::isDefined($item)) {
-
-            $itemExists = Item::where("company_id", $userAuth->company_id)
-                              ->where("internal_code", $request->internal_code)
-                              ->whereNot("id", $item->id)
-                              ->exists();
-
-            if($itemExists) {
-
-                return response()->json(["bool" => false, "msg" => "El código interno ya ha sido registrado."], 200);
-
-            }
-
-            DB::transaction(function() use($request, $userAuth, &$item) {
-
-                $item->internal_code = $request->internal_code;
-                $item->name          = $request->name;
-                $item->description   = $request->description ?? "";
-                $item->price         = $request->price;
-                $item->min_price     = floatval($request->min_price) <= 0 ? null : $request->min_price;
-                $item->max_price     = floatval($request->max_price) <= 0 ? null : $request->max_price;
-                $item->currency_id   = $request->currency_id;
-                $item->see_my_web    = $request->see_my_web ?? false;
-                $item->see_my_web_price = $item->see_my_web ? ($request->see_my_web_price ?? false) : false;
-                $item->status        = $request->status;
-                $item->updated_at    = now();
-                $item->updated_by    = $userAuth->id ?? null;
-                $item->save();
-
-                CategoryItem::where("item_id", $item->id)
-                            ->where("status", "active")
-                            ->update([
-                                "status"     => "inactive",
-                                "updated_at" => now(),
-                                "updated_by" => $userAuth->id ?? null
-                            ]);
-
-                foreach($request->categories as $category) {
-
-                    CategoryItem::updateOrInsert(
-                        [
-                            "category_id" => $category["category_id"],
-                            "item_id"     => $item->id
-                        ],
-                        [
-                            "status"      => "active",
-                            "updated_at"  => now(),
-                            "updated_by"  => $userAuth->id ?? null
-                        ]
-                    );
-
-                }
-
-            });
+            return $this->errorResponse("exception_create", ["message" => $e->getMessage()]);
 
         }
 
-        $bool = Utilities::isDefined($item);
-        $msg  = $bool ? "Servicio editado correctamente." : "No se ha podido editar el servicio.";
+    }
 
-        return response()->json(["bool" => $bool, "msg" => $msg, "item" => $item], 200);
+    /**
+     * Display the specified service
+     * (Not used, but kept for REST compliance)
+     *
+     * @param Item $record
+     * @return JsonResponse
+     */
+    public function show(Item $record): JsonResponse {
+
+        return $this->errorResponse("not_implemented", [], 501);
 
     }
 
-    public function destroy(Item $item) {
+    /**
+     * Show the form for editing the specified service
+     * (Not used in SPA, but kept for REST compliance)
+     *
+     * @param Item $record
+     * @return void
+     */
+    public function edit(Item $record): void {
 
-        //
+        // Form is handled by frontend SPA
+
+    }
+
+    /**
+     * Update the specified service
+     *
+     * @param UpdateServiceRequest $request
+     * @param int $id Service ID
+     * @return JsonResponse
+     */
+    public function update(UpdateServiceRequest $request, int $id): JsonResponse {
+
+        try {
+
+            $userAuth = Auth::user();
+            $item     = ServiceService::findByIdAndCompany($id, $userAuth->company_id);
+
+            if(!Utilities::isDefined($item)) {
+
+                return $this->notFoundResponse();
+
+            }
+
+            $data = $this->prepareServiceData($request, $userAuth);
+            $item = ServiceService::update($item, $data, $userAuth->id);
+
+            if(!Utilities::isDefined($item)) {
+
+                return $this->errorResponse("update_failed");
+
+            }
+
+            ServiceConfigService::clearAllCache($userAuth->company_id);
+
+            return $this->updatedResponse($item, "updated", "item");
+
+        }catch(Exception $e) {
+
+            return $this->errorResponse("exception_update", ["message" => $e->getMessage()]);
+
+        }
+
+    }
+
+    /**
+     * Remove the specified service
+     * (Not used, but kept for REST compliance)
+     *
+     * @param Item $record
+     * @return JsonResponse
+     */
+    public function destroy(Item $record): JsonResponse {
+
+        return $this->errorResponse("not_implemented", [], 501);
+
+    }
+
+    /**
+     * Prepare service data from request
+     *
+     * @param StoreServiceRequest|UpdateServiceRequest $request
+     * @param object|null $userAuth
+     * @return array
+     */
+    private function prepareServiceData($request, ?object $userAuth = null): array {
+
+        $data = [
+            "internal_code"      => $request->internal_code,
+            "name"               => $request->name,
+            "description"        => $request->description ?? "",
+            "price"              => $request->price,
+            "min_price"          => $request->min_price,
+            "max_price"          => $request->max_price,
+            "currency_id"        => $request->currency_id,
+            "see_my_web"         => $request->see_my_web ?? false,
+            "see_my_web_price"   => $request->see_my_web_price ?? false,
+            "status"             => $request->status,
+            "categories"          => $request->categories ?? []
+        ];
+
+        if($userAuth) {
+
+            $data["company_id"] = $userAuth->company_id;
+
+        }
+
+        return $data;
+
+    }
+
+    /**
+     * Get translation namespace for service module
+     *
+     * @return string
+     */
+    protected function getTranslationNamespace(): string {
+
+        return self::TRANSLATION_NAMESPACE;
 
     }
 
