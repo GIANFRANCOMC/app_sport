@@ -453,14 +453,24 @@ export default {
         };
     },
     methods: {
-        // Init
+        // ============================================
+        // Initialization Methods
+        // ============================================
         async initParams({}) {
 
-            let initParams = await Requests.get({route: this.config.entity.routes.initParams, data: {page: "main"}, showAlert: true});
+            const initParams = await Requests.get({
+                route: this.config.entity.routes.initParams,
+                data: {page: "main"},
+                showAlert: true
+            });
 
-            this.options.companies             = initParams.data?.config?.companies;
-            this.options.company               = initParams.data?.config?.company;
-            this.options.identityDocumentTypes = initParams.data?.config?.identityDocumentTypes;
+            if(initParams?.data?.config) {
+
+                this.options.companies             = initParams.data.config.companies;
+                this.options.company               = initParams.data.config.company;
+                this.options.identityDocumentTypes = initParams.data.config.identityDocumentTypes;
+
+            }
 
             return Requests.valid({result: initParams});
 
@@ -469,36 +479,17 @@ export default {
 
             return new Promise(resolve => {
 
-                const company = (this.options.company?.records ?? []).length > 0 ? this.options.company?.records[0] : null;
+                const company = (this.options.company?.records ?? []).length > 0
+                    ? this.options.company.records[0]
+                    : null;
 
-                let identityDocumentType = this.identityDocumentTypes.find(e => e.code === company?.identity_document_type_id),
-                    status               = this.statuses.find(e => e.code === company?.status);
+                if(company) {
 
-                this.forms.entity.createUpdate.data.id                     = company?.id;
-                this.forms.entity.createUpdate.data.slug                   = company?.slug;
-                this.forms.entity.createUpdate.data.identity_document_type = identityDocumentType;
-                this.forms.entity.createUpdate.data.document_number        = company?.document_number;
-                this.forms.entity.createUpdate.data.legal_name             = company?.legal_name;
-                this.forms.entity.createUpdate.data.commercial_name        = company?.commercial_name;
-                this.forms.entity.createUpdate.data.tagline                = company?.tagline;
-                this.forms.entity.createUpdate.data.description            = company?.description;
-                this.forms.entity.createUpdate.data.address                = company?.address;
-                this.forms.entity.createUpdate.data.telephone              = company?.telephone;
-                this.forms.entity.createUpdate.data.email                  = company?.email;
-                this.forms.entity.createUpdate.data.token_api_misc         = company?.token_api_misc;
-                this.forms.entity.createUpdate.data.logomark               = company?.logomark;
-                this.forms.entity.createUpdate.data.logotype               = company?.logotype;
-                this.forms.entity.createUpdate.data.combinationmark        = company?.combinationmark;
-                this.forms.entity.createUpdate.data.login_image            = company?.login_image;
-                this.forms.entity.createUpdate.data.facebook               = company?.facebook;
-                this.forms.entity.createUpdate.data.instagram              = company?.instagram;
-                this.forms.entity.createUpdate.data.whatsapp               = company?.whatsapp;
-                this.forms.entity.createUpdate.data.status                 = status;
+                    this.populateFormFromCompany(company);
 
-                const tabTrigger = document.querySelector(`[data-bs-target="#navs-pills-general"]`);
-                const tab = new bootstrap.Tab(tabTrigger);
-                tab.show();
+                }
 
+                this.showFirstTab();
                 this.tooltips({show: true, time: 500});
 
                 resolve(true);
@@ -506,7 +497,51 @@ export default {
             });
 
         },
-        // Forms
+        populateFormFromCompany(company) {
+
+            const identityDocumentType = this.identityDocumentTypes.find(e => e.code === company?.identity_document_type_id);
+            const status               = this.statuses.find(e => e.code === company?.status);
+
+            const formData = this.forms.entity.createUpdate.data;
+
+            formData.id                     = company?.id;
+            formData.slug                   = company?.slug;
+            formData.identity_document_type = identityDocumentType;
+            formData.document_number        = company?.document_number;
+            formData.legal_name             = company?.legal_name;
+            formData.commercial_name        = company?.commercial_name;
+            formData.tagline                = company?.tagline;
+            formData.description            = company?.description;
+            formData.address                = company?.address;
+            formData.telephone              = company?.telephone;
+            formData.email                  = company?.email;
+            formData.token_api_misc         = company?.token_api_misc;
+            formData.logomark               = company?.logomark;
+            formData.logotype               = company?.logotype;
+            formData.combinationmark        = company?.combinationmark;
+            formData.login_image            = company?.login_image;
+            formData.facebook               = company?.facebook;
+            formData.instagram              = company?.instagram;
+            formData.whatsapp               = company?.whatsapp;
+            formData.status                 = status;
+
+        },
+        showFirstTab() {
+
+            const tabTrigger = document.querySelector(`[data-bs-target="#navs-pills-general"]`);
+
+            if(tabTrigger) {
+
+                const tab = new bootstrap.Tab(tabTrigger);
+                tab.show();
+
+            }
+
+        },
+
+        // ============================================
+        // Form Methods
+        // ============================================
         async createUpdateEntity() {
 
             const functionName = "createUpdateEntity";
@@ -514,297 +549,318 @@ export default {
             Alerts.swals({});
             this.formErrors({functionName, type: "clear"});
 
-            let form = Utils.cloneJson(this.forms.entity.createUpdate.data);
+            const form = Utils.cloneJson(this.forms.entity.createUpdate.data);
+            const validateForm = this.validateForm({
+                functionName,
+                form,
+                extras: {type: "descriptive"}
+            });
 
-            const validateForm = this.validateForm({functionName, form, extras: {type: "descriptive"}});
+            if(!validateForm?.bool) {
 
-            if(validateForm?.bool) {
+                Alerts.generateAlert({
+                    messages: Utils.getErrors({errors: validateForm}),
+                    keys: [
+                        {column: "section", label: "Sección"},
+                        {column: "msg", label: "Mensaje"}
+                    ],
+                    msgContent: `<div class="fw-semibold mb-2">${this.config.messages.errorValidate}</div>`,
+                    width: 800
+                });
 
-                form.identity_document_type_id = form?.identity_document_type?.code;
-                form.status = form?.status?.code;
+                return;
 
-                delete form.identity_document_type;
+            }
 
-                let formData = new FormData();
+            const formData = this.prepareFormData(form);
+            const response = await Requests.patch({
+                route: this.config.entity.routes.update,
+                formData: formData,
+                id: form.id
+            });
 
-                for(let key in form) {
+            if(Requests.valid({result: response})) {
 
-                    if(form.hasOwnProperty(key)) {
+                this.updateFormImages(response.data.company);
+                Alerts.generateAlert({
+                    type: "success",
+                    msgContent: response?.data?.msg
+                });
 
-                        if(["logomark", "logotype", "combinationmark", "login_image"].includes(key) && !(form[key] instanceof File)) continue;
-
-                        formData.append(key, form[key] ?? "");
-
-                    }
-
-                }
-
-                const logomarkFile        = document.getElementById("logomarkFileId");
-                const logotypeFile        = document.getElementById("logotypeFileId");
-                const combinationmarkFile = document.getElementById("combinationmarkFileId");
-                const loginImageFile      = document.getElementById("loginImageFileId");
-
-                if(logomarkFile && logomarkFile.files && logomarkFile.files.length > 0) {
-
-                    formData.append("logomark", logomarkFile.files[0]);
-
-                }
-
-                if(logotypeFile && logotypeFile.files && logotypeFile.files.length > 0) {
-
-                    formData.append("logotype", logotypeFile.files[0]);
-
-                }
-
-                if(combinationmarkFile && combinationmarkFile.files && combinationmarkFile.files.length > 0) {
-
-                    formData.append("combinationmark", combinationmarkFile.files[0]);
-
-                }
-
-                if(loginImageFile && loginImageFile.files && loginImageFile.files.length > 0) {
-
-                    formData.append("login_image", loginImageFile.files[0]);
-
-                }
-
-                let createUpdate = await Requests.patch({route: this.config.entity.routes.update, formData: formData, id: form.id});
-
-                if(Requests.valid({result: createUpdate})) {
-
-                    this.forms.entity.createUpdate.data.logomark        = createUpdate.data.company?.logomark;
-                    this.forms.entity.createUpdate.data.logotype        = createUpdate.data.company?.logotype;
-                    this.forms.entity.createUpdate.data.combinationmark = createUpdate.data.company?.combinationmark;
-                    this.forms.entity.createUpdate.data.login_image     = createUpdate.data.company?.login_image;
-
-                    // Alerts.toastrs({type: "success", subtitle: createUpdate?.data?.msg});
-                    // Alerts.swals({show: false});
-                    Alerts.generateAlert({type: "success", msgContent: createUpdate?.data?.msg});
-
-                    this.clearForm({functionName});
-
-                }else {
-
-                    this.formErrors({functionName, type: "set", errors: createUpdate?.errors ?? []});
-                    Alerts.toastrs({type: "error", subtitle: createUpdate?.data?.msg});
-                    Alerts.swals({show: false});
-
-                }
+                this.clearForm({functionName});
 
             }else {
 
-                // this.formErrors({functioname, type: "set", errors: validateForm});
-                // Alerts.toastrs({type: "error", subtitle: this.config.messages.errorValidate});
-                //Alerts.swals({show: false});
-                Alerts.generateAlert({messages: Utils.getErrors({errors: validateForm}), keys: [{"column": "section", "label" : "Sección"}, {"column": "msg", "label" : "Mensaje"}], msgContent: `<div class="fw-semibold mb-2">${this.config.messages.errorValidate}</div>`, width: 800});
+                this.formErrors({
+                    functionName,
+                    type: "set",
+                    errors: response?.errors ?? []
+                });
+
+                Alerts.toastrs({
+                    type: "error",
+                    subtitle: response?.data?.msg
+                });
+
+                Alerts.swals({show: false});
 
             }
 
         },
-        // Forms utils
+        prepareFormData(form) {
+
+            const formData = new FormData();
+
+            // Prepare form fields
+            form.identity_document_type_id = form?.identity_document_type?.code;
+            form.status = form?.status?.code;
+
+            delete form.identity_document_type;
+
+            // Append form fields to FormData
+            for(const key in form) {
+
+                if(form.hasOwnProperty(key)) {
+
+                    // Skip image fields that are not files
+                    if(["logomark", "logotype", "combinationmark", "login_image"].includes(key) && !(form[key] instanceof File)) {
+
+                        continue;
+
+                    }
+
+                    formData.append(key, form[key] ?? "");
+
+                }
+
+            }
+
+            // Append file inputs
+            this.appendFileToFormData(formData, "logomarkFileId", "logomark");
+            this.appendFileToFormData(formData, "logotypeFileId", "logotype");
+            this.appendFileToFormData(formData, "combinationmarkFileId", "combinationmark");
+            this.appendFileToFormData(formData, "loginImageFileId", "login_image");
+
+            return formData;
+
+        },
+        appendFileToFormData(formData, elementId, fieldName) {
+
+            const fileElement = document.getElementById(elementId);
+
+            if(fileElement?.files?.length > 0) {
+
+                formData.append(fieldName, fileElement.files[0]);
+
+            }
+
+        },
+        updateFormImages(company) {
+
+            const formData = this.forms.entity.createUpdate.data;
+
+            formData.logomark        = company?.logomark;
+            formData.logotype        = company?.logotype;
+            formData.combinationmark = company?.combinationmark;
+            formData.login_image     = company?.login_image;
+
+        },
+
+        // ============================================
+        // Form Utility Methods
+        // ============================================
         clearForm({functionName}) {
 
-            switch(functionName) {
-                case "modalCreateUpdateEntity":
-                case "createUpdateEntity":
-                    document.getElementById("logomarkFileId").value        = "";
-                    document.getElementById("logotypeFileId").value        = "";
-                    document.getElementById("combinationmarkFileId").value = "";
-                    document.getElementById("loginImageFileId").value      = "";
-                    break;
+            if(functionName === "createUpdateEntity") {
+
+                const fileInputIds = [
+                    "logomarkFileId",
+                    "logotypeFileId",
+                    "combinationmarkFileId",
+                    "loginImageFileId"
+                ];
+
+                fileInputIds.forEach(id => {
+
+                    const element = document.getElementById(id);
+
+                    if(element) {
+
+                        element.value = "";
+
+                    }
+
+                });
+
             }
 
         },
         formErrors({functionName, type = "clear", errors = []}) {
 
-            if(["modalCreateUpdateEntity", "createUpdateEntity"].includes(functionName)) {
+            if(functionName === "createUpdateEntity") {
 
-                this.forms.entity.createUpdate.errors = ["set"].includes(type) ? errors : [];
+                this.forms.entity.createUpdate.errors = type === "set" ? errors : [];
 
             }
 
         },
         validateForm({functionName, form = null, extras = null}) {
 
-            let result = {
-                bool: true
+            const result = {
+                bool: true,
+                identity_document_type: [],
+                document_number: [],
+                legal_name: [],
+                commercial_name: [],
+                logomark: [],
+                logotype: [],
+                combinationmark: [],
+                login_image: []
             };
 
-            if(["createUpdateEntity"].includes(functionName)) {
+            if(functionName !== "createUpdateEntity") {
 
-                result.identity_document_type = [];
-                result.document_number        = [];
-                result.legal_name             = [];
-                result.commercial_name        = [];
-                result.logomark               = [];
-                result.logotype               = [];
-                result.combinationmark        = [];
-                result.login_image            = [];
-
-                const logomarkFile        = document.getElementById("logomarkFileId");
-                const logotypeFile        = document.getElementById("logotypeFileId");
-                const combinationmarkFile = document.getElementById("combinationmarkFileId");
-                const loginImageFile      = document.getElementById("loginImageFileId");
-
-                const isDescriptive = ["descriptive"].includes(extras?.type);
-
-                let sections = {
-                    general: {
-                        label: "Información general"
-                    },
-                    contacts: {
-                        label: "Información de contacto y redes"
-                    },
-                    branding: {
-                        label: "Identidad visual"
-                    }
-                };
-
-                if(!this.isDefined({value: form?.identity_document_type})) {
-
-                    result.identity_document_type.push({section: sections.general.label, msg: `${isDescriptive ? "Tipo de documento:" : ""} ${this.config.forms.errors.labels.required}`});
-                    result.bool = false;
-
-                }
-
-                if(!this.isDefined({value: form?.document_number})) {
-
-                    result.document_number.push({section: sections.general.label, msg: `${isDescriptive ? "Número de documento:" : ""} ${this.config.forms.errors.labels.required}`});
-                    result.bool = false;
-
-                }
-
-                if(!this.isDefined({value: form?.legal_name})) {
-
-                    result.legal_name.push({section: sections.general.label, msg: `${isDescriptive ? "Nombre legal:" : ""} ${this.config.forms.errors.labels.required}`});
-                    result.bool = false;
-
-                }
-
-                if(!this.isDefined({value: form?.commercial_name})) {
-
-                    result.commercial_name.push({section: sections.general.label, msg: `${isDescriptive ? "Nombre comercial:" : ""} ${this.config.forms.errors.labels.required}`});
-                    result.bool = false;
-
-                }
-
-                const allowedExtensions = ["png", "jpg", "jpeg"];
-
-                if(logomarkFile && logomarkFile.files && logomarkFile.files.length > 0) {
-
-                    const fileExtension = logomarkFile.files[0].name.split(".").pop().toLowerCase();
-
-                    if(logomarkFile.files[0].size > this.config.forms.inputs.maxSize * 1024) {
-
-                        result.logomark.push({section: sections.branding.label, msg: `${isDescriptive ? "Isotipo:" : ""} ${this.config.forms.errors.functions.maxSize.numeric(this.config.forms.inputs.maxSize / 1024)}`});
-                        result.bool = false;
-
-                    }else if(!allowedExtensions.includes(fileExtension)) {
-
-                        result.logomark.push({section: sections.branding.label, msg: `${isDescriptive ? "Isotipo:" : ""} ${this.config.forms.errors.labels.not_valid_extension}`});
-                        result.bool = false;
-
-                    }
-
-                }
-
-                if(logotypeFile && logotypeFile.files && logotypeFile.files.length > 0) {
-
-                    const fileExtension = logotypeFile.files[0].name.split(".").pop().toLowerCase();
-
-                    if(logotypeFile.files[0].size > this.config.forms.inputs.maxSize * 1024) {
-
-                        result.logotype.push({section: sections.branding.label, msg: `${isDescriptive ? "Logotipo:" : ""} ${this.config.forms.errors.functions.maxSize.numeric(this.config.forms.inputs.maxSize / 1024)}`});
-                        result.bool = false;
-
-                    }else if(!allowedExtensions.includes(fileExtension)) {
-
-                        result.logotype.push({section: sections.branding.label, msg: `${isDescriptive ? "Logotipo:" : ""} ${this.config.forms.errors.labels.not_valid_extension}`});
-                        result.bool = false;
-
-                    }
-
-                }
-
-                if(combinationmarkFile && combinationmarkFile.files && combinationmarkFile.files.length > 0) {
-
-                    const fileExtension = combinationmarkFile.files[0].name.split(".").pop().toLowerCase();
-
-                    if(combinationmarkFile.files[0].size > this.config.forms.inputs.maxSize * 1024) {
-
-                        result.combinationmark.push({section: sections.branding.label, msg: `${isDescriptive ? "Marca combinada:" : ""} ${this.config.forms.errors.functions.maxSize.numeric(this.config.forms.inputs.maxSize / 1024)}`});
-                        result.bool = false;
-
-                    }else if(!allowedExtensions.includes(fileExtension)) {
-
-                        result.combinationmark.push({section: sections.branding.label, msg: `${isDescriptive ? "Marca combinada:" : ""} ${this.config.forms.errors.labels.not_valid_extension}`});
-                        result.bool = false;
-
-                    }
-
-                }
-
-                if(loginImageFile && loginImageFile.files && loginImageFile.files.length > 0) {
-
-                    const fileExtension = loginImageFile.files[0].name.split(".").pop().toLowerCase();
-
-                    if(loginImageFile.files[0].size > this.config.forms.inputs.maxSize * 1024) {
-
-                        result.login_image.push({section: sections.branding.label, msg: `${isDescriptive ? "Imagen de login:" : ""} ${this.config.forms.errors.functions.maxSize.numeric(this.config.forms.inputs.maxSize / 1024)}`});
-                        result.bool = false;
-
-                    }else if(!allowedExtensions.includes(fileExtension)) {
-
-                        result.login_image.push({section: sections.branding.label, msg: `${isDescriptive ? "Imagen de login:" : ""} ${this.config.forms.errors.labels.not_valid_extension}`});
-                        result.bool = false;
-
-                    }
-
-                }
+                return result;
 
             }
+
+            const isDescriptive = extras?.type === "descriptive";
+            const getPrefix = (label) => isDescriptive ? `${label}: ` : "";
+
+            const sections = {
+                general: {label: "Información general"},
+                contacts: {label: "Información de contacto y redes"},
+                branding: {label: "Identidad visual"}
+            };
+
+            // Validate required fields
+            this.validateRequiredField(result, form?.identity_document_type, "identity_document_type", sections.general.label, getPrefix("Tipo de documento"));
+            this.validateRequiredField(result, form?.document_number, "document_number", sections.general.label, getPrefix("Número de documento"));
+            this.validateRequiredField(result, form?.legal_name, "legal_name", sections.general.label, getPrefix("Nombre legal"));
+            this.validateRequiredField(result, form?.commercial_name, "commercial_name", sections.general.label, getPrefix("Nombre comercial"));
+
+            // Validate image files
+            this.validateImageFile(result, "logomarkFileId", "logomark", sections.branding.label, getPrefix("Isotipo"));
+            this.validateImageFile(result, "logotypeFileId", "logotype", sections.branding.label, getPrefix("Logotipo"));
+            this.validateImageFile(result, "combinationmarkFileId", "combinationmark", sections.branding.label, getPrefix("Marca combinada"));
+            this.validateImageFile(result, "loginImageFileId", "login_image", sections.branding.label, getPrefix("Imagen de login"));
 
             return result;
 
         },
+        validateRequiredField(result, value, fieldName, section, prefix) {
+
+            if(!this.isDefined({value})) {
+
+                result[fieldName].push({
+                    section: section,
+                    msg: `${prefix}${this.config.forms.errors.labels.required}`
+                });
+
+                result.bool = false;
+
+            }
+
+        },
+        validateImageFile(result, elementId, fieldName, section, prefix) {
+
+            const fileElement = document.getElementById(elementId);
+
+            if(!fileElement?.files?.length) {
+
+                return;
+
+            }
+
+            const file = fileElement.files[0];
+            const allowedExtensions = ["png", "jpg", "jpeg"];
+            const fileExtension = file.name.split(".").pop().toLowerCase();
+            const maxSize = this.config.forms.inputs.maxSize * 1024;
+
+            if(file.size > maxSize) {
+
+                result[fieldName].push({
+                    section: section,
+                    msg: `${prefix}${this.config.forms.errors.functions.maxSize.numeric(this.config.forms.inputs.maxSize / 1024)}`
+                });
+
+                result.bool = false;
+
+            }else if(!allowedExtensions.includes(fileExtension)) {
+
+                result[fieldName].push({
+                    section: section,
+                    msg: `${prefix}${this.config.forms.errors.labels.not_valid_extension}`
+                });
+
+                result.bool = false;
+
+            }
+
+        },
+
+        // ============================================
+        // Helper Methods
+        // ============================================
         async searchDocumentNumber({consult}) {
 
-            let route = Requests.config({entity: "helpers", type: "searchDocumentNumber"});
-            const formJson = {document_number: consult.data.document_number, type: consult.data.identity_document_type?.data.code};
+            const formJson = {
+                document_number: consult.data.document_number,
+                type: consult.data.identity_document_type?.data.code
+            };
 
             if(!this.isDefined({value: formJson.document_number})) {
 
-                Alerts.generateAlert({msgContent: `Debe ingresar el número de documento para realizar la búsqueda.`});
+                Alerts.generateAlert({
+                    msgContent: "Debe ingresar el número de documento para realizar la búsqueda."
+                });
+
                 return;
 
             }
 
             Alerts.swals({});
 
-            let searchDocumentNumber = await Requests.get({route: route, data: formJson});
+            try {
 
-            if(Requests.valid({result: searchDocumentNumber})) {
+                const route = Requests.config({entity: "helpers", type: "searchDocumentNumber"});
+                const response = await Requests.get({route, data: formJson});
 
-                const data = searchDocumentNumber.data.data;
+                if(Requests.valid({result: response})) {
 
-                this.forms.entity.createUpdate.data.legal_name      = `${data?.legal_name}`;
-                this.forms.entity.createUpdate.data.commercial_name = `${data?.commercial_name}`;
-                this.forms.entity.createUpdate.data.address         = `${data?.address}`;
+                    const data = response.data.data;
+                    const formData = this.forms.entity.createUpdate.data;
 
-                Alerts.toastrs({type: "success", subtitle: searchDocumentNumber?.data?.msg});
+                    formData.legal_name      = data?.legal_name ?? "";
+                    formData.commercial_name = data?.commercial_name ?? "";
+                    formData.address         = data?.address ?? "";
+
+                    Alerts.toastrs({
+                        type: "success",
+                        subtitle: response?.data?.msg
+                    });
+
+                }else {
+
+                    Alerts.toastrs({
+                        type: "error",
+                        subtitle: response?.data?.msg
+                    });
+
+                }
+
+            }finally {
+
                 Alerts.swals({show: false});
-
-            }else {
-
-                Alerts.toastrs({type: "error", subtitle: searchDocumentNumber?.data?.msg});
-                Alerts.swals({show: false});
+                Alerts.tooltips({show: false});
 
             }
 
-            Alerts.tooltips({show: false});
-
         },
-        // Others
+
+        // ============================================
+        // Utility Methods
+        // ============================================
         isDefined({value}) {
 
             return Utils.isDefined({value});

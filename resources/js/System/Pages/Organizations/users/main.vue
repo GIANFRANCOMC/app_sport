@@ -386,14 +386,24 @@ export default {
         };
     },
     methods: {
-        // Init
+        // ============================================
+        // Initialization Methods
+        // ============================================
         async initParams({}) {
 
-            let initParams = await Requests.get({route: this.config.entity.routes.initParams, data: {page: "main"}, showAlert: true});
+            const initParams = await Requests.get({
+                route: this.config.entity.routes.initParams,
+                data: {page: "main"},
+                showAlert: true
+            });
 
-            this.options.roles                 = initParams.data?.config?.roles;
-            this.options.identityDocumentTypes = initParams.data?.config?.identityDocumentTypes;
-            this.options.users                 = initParams.data?.config?.users;
+            if(initParams?.data?.config) {
+
+                this.options.roles                 = initParams.data.config.roles;
+                this.options.identityDocumentTypes = initParams.data.config.identityDocumentTypes;
+                this.options.users                 = initParams.data.config.users;
+
+            }
 
             return Requests.valid({result: initParams});
 
@@ -403,61 +413,98 @@ export default {
             return new Promise(resolve => {
 
                 this.lists.entity.filters.filter_by = this.filterByOptions[0];
-
                 resolve(true);
 
             });
 
         },
-        // Entity forms
+
+        // ============================================
+        // Entity List Methods
+        // ============================================
         async listEntity({url = null}) {
 
-            let filters = Utils.cloneJson(this.lists.entity.filters);
-            const filterJson = {filter_by: filters?.filter_by?.code, word: filters.word};
+            const filters = Utils.cloneJson(this.lists.entity.filters);
+            const filterJson = {
+                filter_by: filters?.filter_by?.code,
+                word: filters.word
+            };
 
             this.lists.entity.extras.loading = true;
-            this.lists.entity.records        = (await Requests.get({route: url || this.lists.entity.extras.route, data: filterJson}))?.data;
-            this.lists.entity.extras.loading = false;
+
+            try {
+
+                const response = await Requests.get({
+                    route: url || this.lists.entity.extras.route,
+                    data: filterJson
+                });
+
+                this.lists.entity.records = response?.data;
+
+            }finally {
+
+                this.lists.entity.extras.loading = false;
+
+            }
 
         },
-        // Forms
+
+        // ============================================
+        // Form Methods
+        // ============================================
         modalCreateUpdateEntity({record = null}) {
 
             const functionName = "modalCreateUpdateEntity";
 
-            // Alerts.swals({});
             this.clearForm({functionName});
             this.formErrors({functionName, type: "clear"});
 
             if(this.isDefined({value: record})) {
 
-                let role                 = this.roles.find(e => e.code === record?.role_id),
-                    identityDocumentType = this.identityDocumentTypes.find(e => e.code === record?.identity_document_type_id),
-                    gender               = this.genders.find(e => e.code === record?.gender),
-                    status               = this.statuses.find(e => e.code === record?.status);
-
-                this.forms.entity.createUpdate.data.id                     = record?.id;
-                this.forms.entity.createUpdate.data.role                   = role;
-                this.forms.entity.createUpdate.data.identity_document_type = identityDocumentType;
-                this.forms.entity.createUpdate.data.document_number        = record?.document_number;
-                this.forms.entity.createUpdate.data.name                   = record?.name;
-                this.forms.entity.createUpdate.data.email                  = record?.email;
-                this.forms.entity.createUpdate.data.phone_number           = record?.phone_number;
-                this.forms.entity.createUpdate.data.gender                 = gender;
-                this.forms.entity.createUpdate.data.birthdate              = record?.birthdate;
-                this.forms.entity.createUpdate.data.password               = "";
-                this.forms.entity.createUpdate.data.status                 = status;
+                this.populateFormForUpdate(record);
 
             }else {
 
-                this.forms.entity.createUpdate.data.identity_document_type = this.identityDocumentTypes[1];
-                this.forms.entity.createUpdate.data.status = this.statuses[0];
+                this.setFormDefaults();
 
             }
 
-            // Alerts.swals({show: false});
-            Alerts.modals({type: "show", id: this.forms.entity.createUpdate.extras.modals.default.id});
+            Alerts.modals({
+                type: "show",
+                id: this.forms.entity.createUpdate.extras.modals.default.id
+            });
+
             this.tooltips({show: true, time: 500});
+
+        },
+        populateFormForUpdate(record) {
+
+            const role                 = this.roles.find(e => e.code === record?.role_id);
+            const identityDocumentType = this.identityDocumentTypes.find(e => e.code === record?.identity_document_type_id);
+            const gender               = this.genders.find(e => e.code === record?.gender);
+            const status               = this.statuses.find(e => e.code === record?.status);
+
+            const formData = this.forms.entity.createUpdate.data;
+
+            formData.id                     = record?.id;
+            formData.role                   = role;
+            formData.identity_document_type = identityDocumentType;
+            formData.document_number        = record?.document_number;
+            formData.name                   = record?.name;
+            formData.email                  = record?.email;
+            formData.phone_number           = record?.phone_number;
+            formData.gender                 = gender;
+            formData.birthdate              = record?.birthdate;
+            formData.password               = "";
+            formData.status                 = status;
+
+        },
+        setFormDefaults() {
+
+            const formData = this.forms.entity.createUpdate.data;
+
+            formData.identity_document_type = this.identityDocumentTypes[1];
+            formData.status                 = this.statuses[0];
 
         },
         async createUpdateEntity() {
@@ -467,68 +514,110 @@ export default {
             Alerts.swals({});
             this.formErrors({functionName, type: "clear"});
 
-            let form = Utils.cloneJson(this.forms.entity.createUpdate.data);
+            const form = Utils.cloneJson(this.forms.entity.createUpdate.data);
+            const validateForm = this.validateForm({
+                functionName,
+                form,
+                extras: {type: "descriptive"}
+            });
 
-            const validateForm = this.validateForm({functionName, form, extras: {type: "descriptive"}});
+            if(!validateForm?.bool) {
 
-            if(validateForm?.bool) {
+                Alerts.generateAlert({
+                    messages: Utils.getErrors({errors: validateForm}),
+                    msgContent: `<div class="fw-semibold mb-2">${this.config.messages.errorValidate}</div>`
+                });
 
-                form.role_id = form?.role?.code;
-                form.identity_document_type_id = form?.identity_document_type?.code;
-                form.gender = form?.gender?.code;
-                form.status = form?.status?.code;
+                return;
 
-                delete form.role;
-                delete form.identity_document_type;
+            }
 
-                let createUpdate = await (this.isDefined({value: form.id}) ? Requests.patch({route: this.config.entity.routes.update, data: form, id: form.id}) :
-                                                                             Requests.post({route: this.config.entity.routes.store, data: form}));
+            const preparedForm = this.prepareFormData(form);
+            const isUpdate     = this.isDefined({value: form.id});
 
-                if(Requests.valid({result: createUpdate})) {
+            const createUpdate = await (isUpdate
+                ? Requests.patch({
+                    route: this.config.entity.routes.update,
+                    data: preparedForm,
+                    id: form.id
+                })
+                : Requests.post({
+                    route: this.config.entity.routes.store,
+                    data: preparedForm
+                }));
 
-                    Alerts.modals({type: "hide", id: this.forms.entity.createUpdate.extras.modals.default.id});
-                    // Alerts.toastrs({type: "success", subtitle: createUpdate?.data?.msg});
-                    // Alerts.swals({show: false});
-                    Alerts.generateAlert({type: "success", msgContent: createUpdate?.data?.msg});
+            if(Requests.valid({result: createUpdate})) {
 
-                    this.clearForm({functionName});
-                    this.listEntity({url: `${this.lists.entity.extras.route}?page=${this.lists.entity.records?.current_page ?? 1}`});
+                Alerts.modals({
+                    type: "hide",
+                    id: this.forms.entity.createUpdate.extras.modals.default.id
+                });
 
-                }else {
+                Alerts.generateAlert({
+                    type: "success",
+                    msgContent: createUpdate?.data?.msg
+                });
 
-                    this.formErrors({functionName, type: "set", errors: createUpdate?.errors ?? []});
-                    Alerts.toastrs({type: "error", subtitle: createUpdate?.data?.msg});
-                    Alerts.swals({show: false});
-
-                }
+                this.clearForm({functionName});
+                this.listEntity({
+                    url: `${this.lists.entity.extras.route}?page=${this.lists.entity.records?.current_page ?? 1}`
+                });
 
             }else {
 
-                // this.formErrors({functionName, type: "set", errors: validateForm});
-                // Alerts.toastrs({type: "error", subtitle: this.config.messages.errorValidate});
-                // Alerts.swals({show: false});
-                Alerts.generateAlert({messages: Utils.getErrors({errors: validateForm}), msgContent: `<div class="fw-semibold mb-2">${this.config.messages.errorValidate}</div>`});
+                this.formErrors({
+                    functionName,
+                    type: "set",
+                    errors: createUpdate?.errors ?? []
+                });
+
+                Alerts.toastrs({
+                    type: "error",
+                    subtitle: createUpdate?.data?.msg
+                });
+
+                Alerts.swals({show: false});
 
             }
 
         },
-        // Forms utils
+        prepareFormData(form) {
+
+            const preparedForm = {...form};
+
+            preparedForm.role_id                   = form?.role?.code;
+            preparedForm.identity_document_type_id = form?.identity_document_type?.code;
+            preparedForm.gender                    = form?.gender?.code;
+            preparedForm.status                    = form?.status?.code;
+
+            delete preparedForm.role;
+            delete preparedForm.identity_document_type;
+
+            return preparedForm;
+
+        },
+
+        // ============================================
+        // Form Utility Methods
+        // ============================================
         clearForm({functionName}) {
+
+            const formData = this.forms.entity.createUpdate.data;
 
             switch(functionName) {
                 case "modalCreateUpdateEntity":
                 case "createUpdateEntity":
-                    this.forms.entity.createUpdate.data.id                     = null;
-                    this.forms.entity.createUpdate.data.role                   = null;
-                    this.forms.entity.createUpdate.data.identity_document_type = null;
-                    this.forms.entity.createUpdate.data.document_number        = "";
-                    this.forms.entity.createUpdate.data.name                   = "";
-                    this.forms.entity.createUpdate.data.email                  = "";
-                    this.forms.entity.createUpdate.data.phone_number           = "";
-                    this.forms.entity.createUpdate.data.gender                 = null;
-                    this.forms.entity.createUpdate.data.birthdate              = "";
-                    this.forms.entity.createUpdate.data.status                 = null;
-                    this.forms.entity.createUpdate.data.password               = "";
+                    formData.id                     = null;
+                    formData.role                   = null;
+                    formData.identity_document_type = null;
+                    formData.document_number        = "";
+                    formData.name                   = "";
+                    formData.email                  = "";
+                    formData.phone_number           = "";
+                    formData.gender                 = null;
+                    formData.birthdate              = "";
+                    formData.status                 = null;
+                    formData.password               = "";
                     break;
             }
 
@@ -537,123 +626,151 @@ export default {
 
             if(["modalCreateUpdateEntity", "createUpdateEntity"].includes(functionName)) {
 
-                this.forms.entity.createUpdate.errors = ["set"].includes(type) ? errors : [];
+                this.forms.entity.createUpdate.errors = type === "set" ? errors : [];
 
             }
 
         },
         validateForm({functionName, form = null, extras = null}) {
 
-            let result = {
-                bool: true
+            const result = {
+                bool: true,
+                role: [],
+                identity_document_type: [],
+                document_number: [],
+                status: [],
+                name: [],
+                email: [],
+                password: []
             };
 
-            if(["createUpdateEntity"].includes(functionName)) {
+            if(functionName !== "createUpdateEntity") {
 
-                result.role                   = [];
-                result.identity_document_type = [];
-                result.document_number        = [];
-                result.status                 = [];
-                result.name                   = [];
-                result.email                  = [];
-                result.password               = [];
+                return result;
 
-                const isDescriptive = ["descriptive"].includes(extras?.type);
+            }
 
-                if(!this.isDefined({value: form?.role})) {
+            const isDescriptive = extras?.type === "descriptive";
+            const getPrefix = (label) => isDescriptive ? `${label}: ` : "";
 
-                    result.role.push(`${isDescriptive ? "Rol:" : ""} ${this.config.forms.errors.labels.required}`);
-                    result.bool = false;
+            // Validate role
+            if(!this.isDefined({value: form?.role})) {
 
-                }
+                result.role.push(`${getPrefix("Rol")}${this.config.forms.errors.labels.required}`);
+                result.bool = false;
 
-                if(!this.isDefined({value: form?.identity_document_type})) {
+            }
 
-                    result.identity_document_type.push(`${isDescriptive ? "Tipo de documento:" : ""} ${this.config.forms.errors.labels.required}`);
-                    result.bool = false;
+            // Validate identity document type
+            if(!this.isDefined({value: form?.identity_document_type})) {
 
-                }
+                result.identity_document_type.push(`${getPrefix("Tipo de documento")}${this.config.forms.errors.labels.required}`);
+                result.bool = false;
 
-                if(!this.isDefined({value: form?.document_number})) {
+            }
 
-                    result.document_number.push(`${isDescriptive ? "Número de documento:" : ""} ${this.config.forms.errors.labels.required}`);
-                    result.bool = false;
+            // Validate document number
+            if(!this.isDefined({value: form?.document_number})) {
 
-                }
+                result.document_number.push(`${getPrefix("Número de documento")}${this.config.forms.errors.labels.required}`);
+                result.bool = false;
 
-                if(!this.isDefined({value: form?.status})) {
+            }
 
-                    result.status.push(`${isDescriptive ? "Estado:" : ""} ${this.config.forms.errors.labels.required}`);
-                    result.bool = false;
+            // Validate status
+            if(!this.isDefined({value: form?.status})) {
 
-                }
+                result.status.push(`${getPrefix("Estado")}${this.config.forms.errors.labels.required}`);
+                result.bool = false;
 
-                if(!this.isDefined({value: form?.name})) {
+            }
 
-                    result.name.push(`${isDescriptive ? "Nombre:" : ""} ${this.config.forms.errors.labels.required}`);
-                    result.bool = false;
+            // Validate name
+            if(!this.isDefined({value: form?.name})) {
 
-                }
+                result.name.push(`${getPrefix("Nombre")}${this.config.forms.errors.labels.required}`);
+                result.bool = false;
 
-                if(!this.isDefined({value: form?.email})) {
+            }
 
-                    result.email.push(`${isDescriptive ? "Correo electrónico:" : ""} ${this.config.forms.errors.labels.required}`);
-                    result.bool = false;
+            // Validate email
+            if(!this.isDefined({value: form?.email})) {
 
-                }
+                result.email.push(`${getPrefix("Correo electrónico")}${this.config.forms.errors.labels.required}`);
+                result.bool = false;
 
-                if(!this.isDefined({value: form?.id})) {
+            }
 
-                    if(!this.isDefined({value: form?.password})) {
+            // Validate password (only for new users)
+            if(!this.isDefined({value: form?.id}) && !this.isDefined({value: form?.password})) {
 
-                        result.password.push(`${isDescriptive ? "Contraseña:" : ""} ${this.config.forms.errors.labels.required}`);
-                        result.bool = false;
-
-                    }
-
-                }
+                result.password.push(`${getPrefix("Contraseña")}${this.config.forms.errors.labels.required}`);
+                result.bool = false;
 
             }
 
             return result;
 
         },
+
+        // ============================================
+        // Helper Methods
+        // ============================================
         async searchDocumentNumber({consult}) {
 
-            let route = Requests.config({entity: "helpers", type: "searchDocumentNumber"});
-            const formJson = {document_number: consult.data.document_number, type: consult.data.identity_document_type?.data.code};
+            const formJson = {
+                document_number: consult.data.document_number,
+                type: consult.data.identity_document_type?.data.code
+            };
 
             if(!this.isDefined({value: formJson.document_number})) {
 
-                Alerts.generateAlert({msgContent: `Debe ingresar el número de documento para realizar la búsqueda.`});
+                Alerts.generateAlert({
+                    msgContent: "Debe ingresar el número de documento para realizar la búsqueda."
+                });
+
                 return;
 
             }
 
             Alerts.swals({});
 
-            let searchDocumentNumber = await Requests.get({route: route, data: formJson});
+            try {
 
-            if(Requests.valid({result: searchDocumentNumber})) {
+                const route = Requests.config({entity: "helpers", type: "searchDocumentNumber"});
+                const response = await Requests.get({route, data: formJson});
 
-                const data = searchDocumentNumber.data.data;
+                if(Requests.valid({result: response})) {
 
-                this.forms.entity.createUpdate.data.name = `${data?.first_name} ${data?.last_name} ${data?.second_last_name}`;
+                    const data = response.data.data;
+                    this.forms.entity.createUpdate.data.name = `${data?.first_name} ${data?.last_name} ${data?.second_last_name}`.trim();
 
-                Alerts.toastrs({type: "success", subtitle: searchDocumentNumber?.data?.msg});
+                    Alerts.toastrs({
+                        type: "success",
+                        subtitle: response?.data?.msg
+                    });
+
+                }else {
+
+                    Alerts.toastrs({
+                        type: "error",
+                        subtitle: response?.data?.msg
+                    });
+
+                }
+
+            }finally {
+
                 Alerts.swals({show: false});
-
-            }else {
-
-                Alerts.toastrs({type: "error", subtitle: searchDocumentNumber?.data?.msg});
-                Alerts.swals({show: false});
+                Alerts.tooltips({show: false});
 
             }
 
-            Alerts.tooltips({show: false});
-
         },
-        // Others
+
+        // ============================================
+        // Utility Methods
+        // ============================================
         isDefined({value}) {
 
             return Utils.isDefined({value});

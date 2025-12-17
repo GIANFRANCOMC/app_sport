@@ -1,58 +1,55 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\System\Notifications;
 
-use App\Helpers\System\Utilities;
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\{Auth, DB};
-use stdClass;
+use App\Http\Controllers\{Controller};
+use App\Helpers\System\{Utilities};
+use Illuminate\Http\{Request};
+use Illuminate\Support\Facades\{Auth};
 
-// use App\Http\Requests\System\TrackingNotifications\{CancelTrackingNotificationRequest, StoreTrackingNotificationRequest, UpdateTrackingNotificationRequest};
+use App\Http\Controllers\System\Concerns\{HandlesApiResponses};
+use App\Services\System\Notifications\{TrackingNotificationConfigService, TrackingNotificationService};
 use App\Models\System\Customers\{SubscriptionEmail};
-use Illuminate\Pagination\LengthAwarePaginator;
 
 class TrackingNotificationController extends Controller {
 
+    use HandlesApiResponses;
+
+    /**
+     * Translation namespace for tracking notification module
+     */
+    private const TRANSLATION_NAMESPACE = "System.Notifications.tracking_notification";
+
+    /**
+     * Get initialization parameters for the module
+     *
+     * @param Request $request
+     * @return \stdClass
+     */
     public function initParams(Request $request) {
 
-        $initParams = new stdClass();
+        $userAuth = Auth::user();
+        $page     = $request->input("page", "");
 
-        $config = new stdClass();
-
-        $page = $request->page ?? "";
-
-        if(in_array($page, ["main"])) {
-
-            //
-
-        }
-
-        $initParams->config = $config;
-        $initParams->bool   = true;
-
-        return $initParams;
+        return TrackingNotificationConfigService::getInitParams($userAuth->company_id, $page);
 
     }
 
+    /**
+     * Get paginated list of tracking notifications with filters
+     *
+     * @param Request $request
+     * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator
+     */
     public function list(Request $request) {
 
         $userAuth = Auth::user();
+        $filters  = ["status" => $request->input("status")];
+        $perPage  = intval($request->input("per_page") ?? Utilities::$per_page_default);
 
-        $list = SubscriptionEmail::when(Utilities::isDefined($request->status), function($query) use($request) {
-
-                                    $query->where(function($query) use($request) {
-
-                                        $query->where("status", $request->status);
-
-                                    });
-
-                                 })
-                                 ->where("company_id", $userAuth->company_id)
-                                 ->orderBy("id", "DESC")
-                                 ->paginate($request->per_page ?? Utilities::$per_page_default);
-
-        return $list;
+        return TrackingNotificationService::getPaginatedList($userAuth->company_id, $filters, $perPage);
 
     }
 
@@ -95,6 +92,17 @@ class TrackingNotificationController extends Controller {
     public function destroy(SubscriptionEmail $email) {
 
         //
+
+    }
+
+    /**
+     * Get translation namespace for tracking notification module
+     *
+     * @return string
+     */
+    protected function getTranslationNamespace(): string {
+
+        return self::TRANSLATION_NAMESPACE;
 
     }
 

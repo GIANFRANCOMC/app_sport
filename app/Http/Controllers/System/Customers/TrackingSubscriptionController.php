@@ -1,104 +1,63 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\System\Customers;
 
-use App\Helpers\System\Utilities;
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\{Auth, DB};
-use stdClass;
+use Exception;
+use App\Http\Controllers\{Controller};
+use App\Helpers\System\{Utilities};
+use Illuminate\Http\{JsonResponse, Request};
+use Illuminate\Support\Facades\{Auth};
 
-use App\Http\Requests\System\Customers\TrackingSubscriptions\{CancelTrackingSubscriptionRequest, StoreTrackingSubscriptionRequest, UpdateTrackingSubscriptionRequest};
-use App\Models\System\Customers\{Customer, Subscription};
-use App\Models\System\Organizations\{Branch};
-use Illuminate\Pagination\LengthAwarePaginator;
+use App\Http\Controllers\System\Concerns\{HandlesApiResponses};
+use App\Http\Requests\System\Customers\TrackingSubscriptions\{CancelTrackingSubscriptionRequest};
+use App\Services\System\Customers\Tracking\{TrackingSubscriptionConfigService, TrackingSubscriptionService};
+use App\Models\System\Customers\Subscription;
 
 class TrackingSubscriptionController extends Controller {
 
+    use HandlesApiResponses;
+
+    /**
+     * Translation namespace for tracking subscription module
+     */
+    private const TRANSLATION_NAMESPACE = "System.Customers.tracking_subscription";
+
+    /**
+     * Get initialization parameters for the module
+     *
+     * @param Request $request
+     * @return \stdClass
+     */
     public function initParams(Request $request) {
 
         $userAuth = Auth::user();
+        $page     = $request->input("page", "");
 
-        $initParams = new stdClass();
-
-        $config = new stdClass();
-
-        $page = $request->page ?? "";
-
-        if(in_array($page, ["main"])) {
-
-            $config->branches = new stdClass();
-            $config->branches->records = Branch::getAll("tracking_subscription", $userAuth->company_id);
-
-            $config->customers = new stdClass();
-            $config->customers->records = Customer::getAll("tracking_subscription", $userAuth->company_id);
-
-        }
-
-        $initParams->config = $config;
-        $initParams->bool   = true;
-
-        return $initParams;
+        return TrackingSubscriptionConfigService::getInitParams($userAuth->company_id, $page);
 
     }
 
+    /**
+     * Get paginated list of subscriptions with filters
+     *
+     * @param Request $request
+     * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator
+     */
     public function list(Request $request) {
 
         $userAuth = Auth::user();
+        $filters  = [
+            "branch_id"   => $request->input("branch_id"),
+            "customer_id" => $request->input("customer_id"),
+            "start_date"  => $request->input("start_date"),
+            "end_date"    => $request->input("end_date"),
+            "status"      => $request->input("status")
+        ];
+        $perPage  = intval($request->input("per_page") ?? Utilities::$per_page_default);
 
-        $branch = Branch::where("id", $request->branch_id)
-                        ->where("company_id", $userAuth->company_id)
-                        ->first();
-
-        if(!Utilities::isDefined($branch)) {
-
-            return new LengthAwarePaginator([], 0, 1, 1, ["path" => ""]);
-
-        }
-
-        $list = Subscription::when(Utilities::isDefined($request->customer_id), function($query) use($request) {
-
-                                $query->where(function($query) use($request) {
-
-                                    $query->where("customer_id", $request->customer_id);
-
-                                });
-
-                            })
-                            ->when(Utilities::isDefined($request->start_date), function($query) use($request) {
-
-                                $query->where(function($query) use($request) {
-
-                                    $query->where("start_date", ">=", $request->start_date." 00:00:00");
-
-                                });
-
-                            })
-                            ->when(Utilities::isDefined($request->end_date), function($query) use($request) {
-
-                                $query->where(function($query) use($request) {
-
-                                    $query->where("end_date", "<=", $request->end_date." 23:59:59");
-
-                                });
-
-                            })
-                            ->when(Utilities::isDefined($request->status), function($query) use($request) {
-
-                                $query->where(function($query) use($request) {
-
-                                    $query->where("status", $request->status);
-
-                                });
-
-                            })
-                            ->where("company_id", $userAuth->company_id)
-                            ->where("branch_id", $branch->id)
-                            ->orderBy("id", "DESC")
-                            ->with(["branch", "saleHeader", "customer"])
-                            ->paginate($request->per_page ?? Utilities::$per_page_default);
-
-        return $list;
+        return TrackingSubscriptionService::getPaginatedList($userAuth->company_id, $filters, $perPage);
 
     }
 
@@ -138,32 +97,48 @@ class TrackingSubscriptionController extends Controller {
 
     }
 
-    public function cancel(CancelTrackingSubscriptionRequest $request, $id) {
+    /**
+     * Cancel the specified subscription
+     *
+     * @param CancelTrackingSubscriptionRequest $request
+     * @param int $id Subscription ID
+     * @return JsonResponse
+     */
+    public function cancel(CancelTrackingSubscriptionRequest $request, int $id): JsonResponse {
 
-        $userAuth = Auth::user();
+        try {
 
-        $subscription = Subscription::findOrFail($id);
+            $userAuth = Auth::user();
+            $subscription = Subscription::findOrFail($id);
 
-        if(Utilities::isDefined($subscription) && in_array($subscription->status, ["active"])) {
+            if(!Utilities::isDefined($subscription) || $subscription->company_id != $userAuth->company_id) {
 
-            if(Utilities::isDefined($subscription) && $subscription->company_id == $userAuth->company_id) {
-
-                $subscription->motive      = $request->motive ?? "N/A";
-                $subscription->status      = "canceled";
-                $subscription->updated_at  = now();
-                $subscription->updated_by  = $userAuth->id ?? null;
-                $subscription->canceled_at = now();
-                $subscription->canceled_by = $userAuth->id ?? null;
-                $subscription->save();
+                return $this->notFoundResponse();
 
             }
 
+            $subscription = TrackingSubscriptionService::cancel($subscription, $request->motive, $userAuth->id);
+
+            TrackingSubscriptionConfigService::clearAllCache($userAuth->company_id);
+
+            return $this->updatedResponse($subscription, "canceled", "subscription");
+
+        }catch(Exception $e) {
+
+            return response()->json(["bool" => false, "msg" => $e->getMessage()], 200);
+
         }
 
-        $bool = $subscription->wasChanged();
-        $msg  = $bool ? "Membresía anulada correctamente." : "No se ha podido anular la membresía.";
+    }
 
-        return response()->json(["bool" => $bool, "msg" => $msg, "subscription" => $subscription], 200);
+    /**
+     * Get translation namespace for tracking subscription module
+     *
+     * @return string
+     */
+    protected function getTranslationNamespace(): string {
+
+        return self::TRANSLATION_NAMESPACE;
 
     }
 

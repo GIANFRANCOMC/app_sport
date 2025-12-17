@@ -317,13 +317,23 @@ export default {
         };
     },
     methods: {
-        // Init
+        // ============================================
+        // Initialization Methods
+        // ============================================
         async initParams({}) {
 
-            let initParams = await Requests.get({route: this.config.entity.routes.initParams, data: {page: "main"}, showAlert: true});
+            const initParams = await Requests.get({
+                route: this.config.entity.routes.initParams,
+                data: {page: "main"},
+                showAlert: true
+            });
 
-            this.options.branches  = initParams.data?.config?.branches;
-            this.options.customers = initParams.data?.config?.customers;
+            if(initParams?.data?.config) {
+
+                this.options.branches  = initParams.data.config.branches;
+                this.options.customers = initParams.data.config.customers;
+
+            }
 
             return Requests.valid({result: initParams});
 
@@ -332,32 +342,57 @@ export default {
 
             return new Promise(resolve => {
 
-                this.lists.entity.filters.branch     = this.branches[0];
-                // this.lists.entity.filters.start_date = Utils.getCurrentDate("date");
-                // this.lists.entity.filters.end_date   = Utils.getCurrentDate("date");
-
+                this.lists.entity.filters.branch = this.branches[0];
                 resolve(true);
 
             });
 
         },
-        // Entity forms
+
+        // ============================================
+        // Entity List Methods
+        // ============================================
         async listEntity({url = null}) {
 
-            let filters = Utils.cloneJson(this.lists.entity.filters);
-            const filterJson = {branch_id: filters?.branch?.code, customer_id: filters?.customer?.code, start_date: filters?.start_date, end_date: filters?.end_date, status: filters?.status};
+            const filters = Utils.cloneJson(this.lists.entity.filters);
+            const filterJson = {
+                branch_id:   filters?.branch?.code,
+                customer_id: filters?.customer?.code,
+                start_date:  filters?.start_date,
+                end_date:    filters?.end_date,
+                status:      filters?.status
+            };
 
             this.lists.entity.extras.loading = true;
-            this.lists.entity.records        = (await Requests.get({route: url || this.lists.entity.extras.route, data: filterJson}))?.data;
-            this.lists.entity.extras.loading = false;
+
+            try {
+
+                const response = await Requests.get({
+                    route: url || this.lists.entity.extras.route,
+                    data: filterJson
+                });
+
+                this.lists.entity.records = response?.data;
+
+            }finally {
+
+                this.lists.entity.extras.loading = false;
+
+            }
 
         },
-        // Forms
+
+        // ============================================
+        // Form Methods
+        // ============================================
         modalActionsEntity({record = null}) {
 
             this.forms.entity.createUpdate.extras.modals.actions.data = record;
 
-            Alerts.modals({type: "show", id: this.forms.entity.createUpdate.extras.modals.actions.id});
+            Alerts.modals({
+                type: "show",
+                id: this.forms.entity.createUpdate.extras.modals.actions.id
+            });
 
         },
         cancelEntity({}) {
@@ -366,107 +401,129 @@ export default {
 
             this.formErrors({functionName, type: "clear"});
 
-            let form = Utils.cloneJson(this.forms.entity.createUpdate.extras.modals.actions.data);
-
+            const form = Utils.cloneJson(this.forms.entity.createUpdate.extras.modals.actions.data);
             const validateForm = this.validateForm({functionName, form});
 
-            Alerts.modals({type: "hide", id: this.forms.entity.createUpdate.extras.modals.actions.id});
+            Alerts.modals({
+                type: "hide",
+                id: this.forms.entity.createUpdate.extras.modals.actions.id
+            });
 
-            if(validateForm?.bool) {
+            if(!validateForm?.bool) {
 
-                let el = this;
+                Alerts.generateAlert({
+                    messages: Utils.getErrors({errors: validateForm}),
+                    msgContent: `<div class="fw-semibold mb-2">${this.config.messages.errorValidate}</div>`
+                });
 
-                Swal.fire({
-                    html: `<span class="d-block my-1">¿Desea anular la membresía del cliente <b>${form.customer?.name}</b>?</span>
-                           <div class="form-group text-start mt-2">
-                                <label class="form-label colon-at-end">Motivo</label>
-                                <div class="input-group">
-                                    <textarea type="text" class="form-control no-resize" maxlength="999" id="motiveId"></textarea>
-                                </div>
-                           </div>`,
-                    icon: "warning",
-                    allowOutsideClick: false,
-                    showCancelButton: true,
-                    confirmButtonText: "Sí, anular",
-                    cancelButtonText: "Cancelar",
-                    customClass: {
-                        confirmButton: "btn btn-danger waves-effect",
-                        cancelButton: "btn btn-secondary waves-effect ms-3"
-                    }
-                }).then(async function(result) {
+                Alerts.tooltips({show: false});
 
-                    if(result.isConfirmed) {
-
-                        const motive = Swal.getHtmlContainer().querySelector("#motiveId").value;
-
-                        Alerts.swals({});
-
-                        let cancel = await Requests.patch({route: el.config.entity.routes.cancel, data: {motive}, id: form.id});
-
-                        if(Requests.valid({result: cancel})) {
-
-                            Alerts.toastrs({type: "success", subtitle: cancel?.data?.msg});
-                            Alerts.swals({show: false});
-
-                            el.listEntity({})
-
-                        }else {
-
-                            Alerts.toastrs({type: "error", subtitle: cancel?.data?.msg});
-                            Alerts.swals({show: false});
-
-                        }
-
-                    }else if(result.isDismissed) {
-
-                        //
-
-                    }
-
-                })
-
-            }else {
-
-                Alerts.generateAlert({messages: Utils.getErrors({errors: validateForm}), msgContent: `<div class="fw-semibold mb-2">${this.config.messages.errorValidate}</div>`});
+                return;
 
             }
 
-            Alerts.tooltips({show: false});
+            this.showCancelConfirmation(form);
 
         },
-        // Forms utils
+        showCancelConfirmation(form) {
+
+            const self = this;
+
+            Swal.fire({
+                html: `<span class="d-block my-1">¿Desea anular la membresía del cliente <b>${form.customer?.name}</b>?</span>
+                       <div class="form-group text-start mt-2">
+                            <label class="form-label colon-at-end">Motivo</label>
+                            <div class="input-group">
+                                <textarea type="text" class="form-control no-resize" maxlength="999" id="motiveId"></textarea>
+                            </div>
+                       </div>`,
+                icon: "warning",
+                allowOutsideClick: false,
+                showCancelButton: true,
+                confirmButtonText: "Sí, anular",
+                cancelButtonText: "Cancelar",
+                customClass: {
+                    confirmButton: "btn btn-danger waves-effect",
+                    cancelButton: "btn btn-secondary waves-effect ms-3"
+                }
+            }).then(async function(result) {
+
+                if(result.isConfirmed) {
+
+                    await self.processCancelation(form);
+
+                }
+
+                Alerts.tooltips({show: false});
+
+            });
+
+        },
+        async processCancelation(form) {
+
+            const motive = Swal.getHtmlContainer().querySelector("#motiveId").value;
+
+            Alerts.swals({});
+
+            try {
+
+                const response = await Requests.patch({
+                    route: this.config.entity.routes.cancel,
+                    data: {motive},
+                    id: form.id
+                });
+
+                if(Requests.valid({result: response})) {
+
+                    Alerts.toastrs({
+                        type: "success",
+                        subtitle: response?.data?.msg
+                    });
+
+                    this.listEntity({});
+
+                }else {
+
+                    Alerts.toastrs({
+                        type: "error",
+                        subtitle: response?.data?.msg
+                    });
+
+                }
+
+            }finally {
+
+                Alerts.swals({show: false});
+
+            }
+
+        },
+
+        // ============================================
+        // Form Utility Methods
+        // ============================================
         clearForm({functionName}) {
 
-            switch(functionName) {
-                case "modalCreateUpdateEntity":
-                case "createUpdateEntity":
-                    //
-                    break;
-            }
+            // No form clearing needed for this module
 
         },
         formErrors({functionName, type = "clear", errors = []}) {
 
-            if(["modalCreateUpdateEntity", "createUpdateEntity"].includes(functionName)) {
+            if(functionName === "cancelEntity") {
 
-                this.forms.entity.createUpdate.errors = ["set"].includes(type) ? errors : [];
+                this.forms.entity.createUpdate.errors = type === "set" ? errors : [];
 
             }
 
         },
         validateForm({functionName, form = null, extras = null}) {
 
-            let result = {
-                bool: true
+            const result = {
+                bool: true,
+                msg: []
             };
 
-            if(["createUpdateEntity"].includes(functionName)) {
-
-                //
-
-            }else if(["cancelEntity"].includes(functionName)) {
-
-                result.msg = [];
+            if(functionName === "cancelEntity") {
 
                 if(!this.isDefined({value: form?.id})) {
 
@@ -480,7 +537,10 @@ export default {
             return result;
 
         },
-        // Others
+
+        // ============================================
+        // Utility Methods
+        // ============================================
         isDefined({value}) {
 
             return Utils.isDefined({value});

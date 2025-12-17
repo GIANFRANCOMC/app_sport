@@ -236,12 +236,22 @@ export default {
         };
     },
     methods: {
-        // Init
+        // ============================================
+        // Initialization Methods
+        // ============================================
         async initParams({}) {
 
-            let initParams = await Requests.get({route: this.config.entity.routes.initParams, data: {page: "main"}, showAlert: true});
+            const initParams = await Requests.get({
+                route: this.config.entity.routes.initParams,
+                data: {page: "main"},
+                showAlert: true
+            });
 
-            this.options.customers = initParams.data?.config?.customers;
+            if(initParams?.data?.config) {
+
+                this.options.customers = initParams.data.config.customers;
+
+            }
 
             return Requests.valid({result: initParams});
 
@@ -250,8 +260,10 @@ export default {
 
             return new Promise(resolve => {
 
-                this.forms.entity.createUpdate.data.periodType = this.periodTypes.length > 3 ? this.periodTypes[2] : null;
-                this.forms.entity.createUpdate.data.options.information = ["sales", "subscriptions"];
+                const formData = this.forms.entity.createUpdate.data;
+
+                formData.periodType = this.periodTypes.length > 3 ? this.periodTypes[2] : null;
+                formData.options.information = ["sales", "subscriptions"];
 
                 this.modalCreateUpdateEntity({});
 
@@ -260,27 +272,21 @@ export default {
             });
 
         },
-        // Forms
+
+        // ============================================
+        // Form Methods
+        // ============================================
         modalCreateUpdateEntity({record = null}) {
 
             const functionName = "modalCreateUpdateEntity";
 
-            // Alerts.swals({});
             this.clearForm({functionName});
             this.formErrors({functionName, type: "clear"});
 
-            if(this.isDefined({value: record})) {
-
-                //
-
-            }else {
-
-                //
-
-            }
-
-            // Alerts.swals({show: false});
-            Alerts.modals({type: "show", id: this.forms.entity.createUpdate.extras.modals.default.id});
+            Alerts.modals({
+                type: "show",
+                id: this.forms.entity.createUpdate.extras.modals.default.id
+            });
 
         },
         async getTrackingCustomers({refresh = false}) {
@@ -289,119 +295,159 @@ export default {
 
             if(refresh) {
 
-                let form = this.forms.entity.createUpdate.history;
-
-                Alerts.swals({});
-
-                const getSubscriptions = await Utils.getTrackingCustomers({customer: {id: form.customerCurrent.code}, period_type: form.periodTypeCurrent.code, options: form.optionsCurrent});
-
-                this.forms.entity.createUpdate.history.customers[form.customerCurrent.code] = Requests.valid({result: getSubscriptions}) ? getSubscriptions?.data?.tracking : {};
-
-                Alerts.swals({show: false});
-
+                await this.refreshTrackingData();
 
             }else {
 
-                let form = this.forms.entity.createUpdate.data;
-
-                const validateForm = this.validateForm({functionName, form});
-
-                if(validateForm?.bool) {
-
-                    Alerts.modals({type: "hide", id: this.forms.entity.createUpdate.extras.modals.default.id});
-                    Alerts.swals({});
-
-                    const getSubscriptions = await Utils.getTrackingCustomers({customer: {id: form.customer.code}, period_type: form.periodType.code, options: form.options});
-
-                    if(Requests.valid({result: getSubscriptions})) {
-
-                        this.forms.entity.createUpdate.history.customers[form.customer.code] = getSubscriptions?.data?.tracking;
-
-                        // Options history
-                        this.forms.entity.createUpdate.history.customerCurrent   = this.forms.entity.createUpdate.data.customer;
-                        this.forms.entity.createUpdate.history.periodTypeCurrent = this.forms.entity.createUpdate.data.periodType;
-                        this.forms.entity.createUpdate.history.optionsCurrent    = this.forms.entity.createUpdate.data.options;
-
-                    }else {
-
-                        this.forms.entity.createUpdate.history.customers[form.customer.code] = {};
-
-                    }
-
-                    Alerts.swals({show: false});
-
-                }else {
-
-                    Alerts.generateAlert({messages: Utils.getErrors({errors: validateForm}), msgContent: `<div class="fw-semibold mb-2">${this.config.messages.errorSearchValidate}</div>`});
-
-                }
+                await this.fetchTrackingData(functionName);
 
             }
 
         },
-        // Forms utils
+        async refreshTrackingData() {
+
+            const history = this.forms.entity.createUpdate.history;
+
+            Alerts.swals({});
+
+            try {
+
+                const response = await Utils.getTrackingCustomers({
+                    customer: {id: history.customerCurrent.code},
+                    period_type: history.periodTypeCurrent.code,
+                    options: history.optionsCurrent
+                });
+
+                const tracking = Requests.valid({result: response})
+                    ? response?.data?.tracking
+                    : {};
+
+                this.forms.entity.createUpdate.history.customers[history.customerCurrent.code] = tracking;
+
+            }finally {
+
+                Alerts.swals({show: false});
+
+            }
+
+        },
+        async fetchTrackingData(functionName) {
+
+            const form = this.forms.entity.createUpdate.data;
+            const validateForm = this.validateForm({functionName, form});
+
+            if(!validateForm?.bool) {
+
+                Alerts.generateAlert({
+                    messages: Utils.getErrors({errors: validateForm}),
+                    msgContent: `<div class="fw-semibold mb-2">${this.config.messages.errorSearchValidate}</div>`
+                });
+
+                return;
+
+            }
+
+            Alerts.modals({
+                type: "hide",
+                id: this.forms.entity.createUpdate.extras.modals.default.id
+            });
+
+            Alerts.swals({});
+
+            try {
+
+                const response = await Utils.getTrackingCustomers({
+                    customer: {id: form.customer.code},
+                    period_type: form.periodType.code,
+                    options: form.options
+                });
+
+                const history = this.forms.entity.createUpdate.history;
+
+                if(Requests.valid({result: response})) {
+
+                    history.customers[form.customer.code] = response?.data?.tracking;
+                    history.customerCurrent   = form.customer;
+                    history.periodTypeCurrent = form.periodType;
+                    history.optionsCurrent    = form.options;
+
+                }else {
+
+                    history.customers[form.customer.code] = {};
+
+                }
+
+            }finally {
+
+                Alerts.swals({show: false});
+
+            }
+
+        },
+
+        // ============================================
+        // Form Utility Methods
+        // ============================================
         clearForm({functionName}) {
 
-            switch(functionName) {
-                case "modalCreateUpdateEntity":
-                case "createUpdateEntity":
-                    // this.forms.entity.createUpdate.data.customer = null;
-                    break;
-            }
+            // No form clearing needed for this module
 
         },
         formErrors({functionName, type = "clear", errors = []}) {
 
-            if(["modalCreateUpdateEntity", "createUpdateEntity"].includes(functionName)) {
+            if(functionName === "modalCreateUpdateEntity") {
 
-                this.forms.entity.createUpdate.errors = ["set"].includes(type) ? errors : [];
+                this.forms.entity.createUpdate.errors = type === "set" ? errors : [];
 
             }
 
         },
         validateForm({functionName, form = null, extras = null}) {
 
-            let result = {
-                bool: true
+            const result = {
+                bool: true,
+                customer: [],
+                period_type: [],
+                options_information: []
             };
 
-            if(["createUpdateEntity"].includes(functionName)) {
+            if(functionName !== "getTrackingCustomers") {
 
-                //
+                return result;
 
-            }else if(["getTrackingCustomers"].includes(functionName)) {
+            }
 
-                result.customer    = [];
-                result.period_type = [];
-                result.options_information = [];
+            // Validate customer
+            if(!this.isDefined({value: form?.customer?.code})) {
 
-                if(!this.isDefined({value: form?.customer?.code})) {
+                result.customer.push("Debe seleccionar un cliente.");
+                result.bool = false;
 
-                    result.customer.push(`Debe seleccionar un cliente.`);
-                    result.bool = false;
+            }
 
-                }
+            // Validate period type
+            if(!this.isDefined({value: form?.periodType?.code})) {
 
-                if(!this.isDefined({value: form?.periodType?.code})) {
+                result.period_type.push("Debe seleccionar un periodo.");
+                result.bool = false;
 
-                    result.period_type.push(`Debe seleccionar un periodo.`);
-                    result.bool = false;
+            }
 
-                }
+            // Validate options information
+            if((form?.options?.information ?? []).length === 0) {
 
-                if((form?.options?.information ?? []).length === 0) {
-
-                    result.options_information.push(`Debe seleccionar al menos un tipo de información.`);
-                    result.bool = false;
-
-                }
+                result.options_information.push("Debe seleccionar al menos un tipo de información.");
+                result.bool = false;
 
             }
 
             return result;
 
         },
-        // Others
+
+        // ============================================
+        // Utility Methods
+        // ============================================
         isDefined({value}) {
 
             return Utils.isDefined({value});

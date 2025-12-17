@@ -1,130 +1,121 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\System\Warehouses;
 
-use App\Helpers\System\Utilities;
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\{Auth, DB};
-use stdClass;
+use Exception;
+use App\Http\Controllers\{Controller};
+use App\Helpers\System\{Utilities};
+use Illuminate\Http\{JsonResponse, Request};
+use Illuminate\Support\Facades\{Auth};
 
-use App\Models\System\Catalogs\{Item};
-use App\Models\System\Warehouses\{Warehouse, WarehouseItem};
+use App\Http\Controllers\System\Concerns\{HandlesApiResponses};
+use App\Services\System\Warehouses\{StockManagementConfigService, StockManagementService};
 
 class StockManagementController extends Controller {
 
+    use HandlesApiResponses;
+
+    /**
+     * Translation namespace for stock management module
+     */
+    private const TRANSLATION_NAMESPACE = "System.Warehouses.stock_management";
+
+    /**
+     * Get initialization parameters for the module
+     *
+     * @param Request $request
+     * @return \stdClass
+     */
     public function initParams(Request $request) {
 
         $userAuth = Auth::user();
+        $page     = $request->input("page", "");
 
-        $initParams = new stdClass();
-
-        $config = new stdClass();
-
-        $page = $request->page ?? "";
-
-        if(in_array($page, ["main"])) {
-
-            $config->warehouses = new stdClass();
-            $config->warehouses->records = Warehouse::getAll("stock_management", $userAuth->company_id);
-
-        }
-
-        $initParams->config = $config;
-        $initParams->bool   = true;
-
-        return $initParams;
+        return StockManagementConfigService::getInitParams($userAuth->company_id, $page);
 
     }
 
+    /**
+     * Get paginated list of items with stock information
+     *
+     * @param Request $request
+     * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator
+     */
     public function list(Request $request) {
 
-        $userAuth = Auth::user();
+        $userAuth   = Auth::user();
+        $warehouseId = intval($request->input("warehouse_id"));
+        $perPage    = intval($request->input("per_page") ?? Utilities::$per_page_max);
 
-        $list = Item::where("company_id", $userAuth->company_id)
-                    ->whereIn("type", ["product"])
-                    // ->whereIn("status", ["active"])
-                    ->withSum(["warehouseItems as stock_quantity" => function($query) use($request) {
-
-                        $query->where("warehouse_id", $request->warehouse_id);
-
-                    }], "quantity")
-                    ->orderBy("name", "ASC")
-                    ->paginate($request->per_page ?? Utilities::$per_page_max);
-
-        return $list;
+        return StockManagementService::getPaginatedList($userAuth->company_id, $warehouseId, $perPage);
 
     }
 
+    /**
+     * Display the stock management index page
+     *
+     * @return \Illuminate\Contracts\View\View
+     */
     public function index() {
 
         return view("System/general/Warehouses/stocks_management/main");
 
     }
 
-    public function create() {
+    /**
+     * Show the form for creating a new stock management
+     * (Not used in SPA, but kept for REST compliance)
+     *
+     * @return void
+     */
+    public function create(): void {
 
-        //
+        // Form is handled by frontend SPA
 
     }
 
-    public function store(Request $request) {
+    /**
+     * Store/Update stock for items in a warehouse
+     *
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function store(Request $request): JsonResponse {
 
-        $userAuth = Auth::user();
+        try {
 
-        $warehouseExists = Warehouse::where("id", $request->warehouse_id)
-                                    ->whereHas("branch", function($query) use($userAuth) {
+            $userAuth   = Auth::user();
+            $warehouseId = intval($request->input("warehouse_id"));
 
-                                        $query->where("company_id", $userAuth->company_id);
+            $warehouse = StockManagementService::validateWarehouse($warehouseId, $userAuth->company_id);
 
-                                    })
-                                    // ->whereIn("status", ["active"])
-                                    ->exists();
+            if(!Utilities::isDefined($warehouse)) {
 
-        if(!$warehouseExists) {
-
-            return response()->json(["bool" => false, "msg" => "El almacén seleccionado no se encuentra disponible."], 200);
-
-        }
-
-        DB::transaction(function() use($request, $userAuth) {
-
-            foreach($request->items as $item) {
-
-                $warehouseItem = WarehouseItem::where("warehouse_id", $request->warehouse_id)
-                                              ->where("item_id", $item["id"])
-                                              ->first();
-
-                if($warehouseItem) {
-
-                    $warehouseItem->update([
-                        "quantity"     => floatval($item["stock_quantity"]),
-                        "status"       => "active",
-                        "updated_at"   => now(),
-                        "updated_by"   => $userAuth->id
-                    ]);
-
-                }else {
-
-                    WarehouseItem::create([
-                        "warehouse_id" => $request->warehouse_id,
-                        "item_id"      => $item["id"],
-                        "quantity"     => floatval($item["stock_quantity"]),
-                        "status"       => "active",
-                        "created_at"   => now(),
-                        "created_by"   => $userAuth->id
-                    ]);
-
-                }
+                return $this->errorResponse("warehouse_not_available");
 
             }
 
-        });
+            $items = $request->input("items", []);
 
-        $bool = true;
-        $msg  = $bool ? "Stock actualizado correctamente." : "No se ha podido actualizar el stock.";
+            $success = StockManagementService::updateStock($warehouse->id, $items, $userAuth->id);
 
-        return response()->json(["bool" => $bool, "msg" => $msg], 200);
+            if(!$success) {
+
+                return $this->errorResponse("update_failed");
+
+            }
+
+            StockManagementConfigService::clearAllCache($userAuth->company_id);
+
+            return $this->successResponse(null, "stock_updated_successfully");
+
+        }catch(Exception $e) {
+
+            return $this->errorResponse("exception_update", ["message" => $e->getMessage()]);
+
+        }
 
     }
 
@@ -149,6 +140,17 @@ class StockManagementController extends Controller {
     public function destroy($record) {
 
         //
+
+    }
+
+    /**
+     * Get translation namespace for stock management module
+     *
+     * @return string
+     */
+    protected function getTranslationNamespace(): string {
+
+        return self::TRANSLATION_NAMESPACE;
 
     }
 

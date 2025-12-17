@@ -1,89 +1,64 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\System\Customers;
 
-use App\Helpers\System\Utilities;
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\{Auth, DB};
-use stdClass;
-
-use App\Http\Requests\System\Customers\TrackingAttendances\{CancelTrackingAttendanceRequest};
-use App\Models\System\Customers\{Attendance, Customer};
-use App\Models\System\Organizations\{Branch};
-use App\Services\AttendanceService;
+use Exception;
+use App\Http\Controllers\{Controller};
+use App\Helpers\System\{Utilities};
+use Illuminate\Http\{JsonResponse, Request};
+use Illuminate\Support\Facades\{Auth};
 use Carbon\Carbon;
-use Illuminate\Pagination\LengthAwarePaginator;
+
+use App\Http\Controllers\System\Concerns\{HandlesApiResponses};
+use App\Http\Requests\System\Customers\TrackingAttendances\{CancelTrackingAttendanceRequest};
+use App\Services\System\Customers\Tracking\{TrackingAttendanceConfigService, TrackingAttendanceService};
+use App\Services\AttendanceService;
+use App\Models\System\Customers\{Attendance};
 
 class TrackingAttendanceController extends Controller {
 
+    use HandlesApiResponses;
+
+    /**
+     * Translation namespace for tracking attendance module
+     */
+    private const TRANSLATION_NAMESPACE = "System.Customers.tracking_attendance";
+
+    /**
+     * Get initialization parameters for the module
+     *
+     * @param Request $request
+     * @return \stdClass
+     */
     public function initParams(Request $request) {
 
         $userAuth = Auth::user();
+        $page     = $request->input("page", "");
 
-        $initParams = new stdClass();
-
-        $config = new stdClass();
-
-        $page = $request->page ?? "";
-
-        if(in_array($page, ["main"])) {
-
-            $config->branches = new stdClass();
-            $config->branches->records = Branch::getAll("tracking_attendance", $userAuth->company_id);
-
-            $config->customers = new stdClass();
-            $config->customers->records = Customer::getAll("tracking_attendance", $userAuth->company_id);
-
-        }
-
-        $initParams->config = $config;
-        $initParams->bool   = true;
-
-        return $initParams;
+        return TrackingAttendanceConfigService::getInitParams($userAuth->company_id, $page);
 
     }
 
+    /**
+     * Get paginated list of attendances with filters
+     *
+     * @param Request $request
+     * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator
+     */
     public function list(Request $request) {
 
         $userAuth = Auth::user();
+        $filters  = [
+            "branch_id"   => $request->input("branch_id"),
+            "customer_id" => $request->input("customer_id"),
+            "status"      => $request->input("status"),
+            "start_date"  => $request->input("start_date")
+        ];
+        $perPage  = intval($request->input("per_page") ?? Utilities::$per_page_max);
 
-        $branch = Branch::where("id", $request->branch_id)
-                        ->where("company_id", $userAuth->company_id)
-                        ->first();
-
-        if(!Utilities::isDefined($branch)) {
-
-            return new LengthAwarePaginator([], 0, 1, 1, ["path" => ""]);
-
-        }
-
-        $list = Attendance::when(Utilities::isDefined($request->customer_id), function($query) use($request) {
-
-                            $query->where(function($query) use($request) {
-
-                                $query->where("customer_id", $request->customer_id);
-
-                            });
-
-                          })
-                          ->when(Utilities::isDefined($request->status), function($query) use($request) {
-
-                            $query->where(function($query) use($request) {
-
-                                $query->where("status", $request->status);
-
-                            });
-
-                          })
-                          ->where("company_id", $userAuth->company_id)
-                          ->where("branch_id", $branch->id)
-                          ->whereDate("created_at", $request->start_date ?? date("Y-m-d"))
-                          ->orderBy("id", "DESC")
-                          ->with(["branch", "customer"])
-                          ->paginate($request->per_page ?? Utilities::$per_page_max);
-
-        return $list;
+        return TrackingAttendanceService::getPaginatedList($userAuth->company_id, $filters, $perPage);
 
     }
 
@@ -169,32 +144,48 @@ class TrackingAttendanceController extends Controller {
 
     }
 
-    public function cancel(CancelTrackingAttendanceRequest $request, $id) {
+    /**
+     * Cancel the specified attendance
+     *
+     * @param CancelTrackingAttendanceRequest $request
+     * @param int $id Attendance ID
+     * @return JsonResponse
+     */
+    public function cancel(CancelTrackingAttendanceRequest $request, int $id): JsonResponse {
 
-        $userAuth = Auth::user();
+        try {
 
-        $attendance = Attendance::findOrFail($id);
+            $userAuth = Auth::user();
+            $attendance = Attendance::findOrFail($id);
 
-        if(Utilities::isDefined($attendance) && in_array($attendance->status, ["active", "finalized"])) {
+            if(!Utilities::isDefined($attendance) || $attendance->company_id != $userAuth->company_id) {
 
-            if(Utilities::isDefined($attendance) && $attendance->company_id == $userAuth->company_id) {
-
-                $attendance->motive      = $request->motive ?? "N/A";
-                $attendance->status      = "canceled";
-                $attendance->updated_at  = now();
-                $attendance->updated_by  = $userAuth->id ?? null;
-                $attendance->canceled_at = now();
-                $attendance->canceled_by = $userAuth->id ?? null;
-                $attendance->save();
+                return $this->notFoundResponse();
 
             }
 
+            $attendance = TrackingAttendanceService::cancel($attendance, $request->motive, $userAuth->id);
+
+            TrackingAttendanceConfigService::clearAllCache($userAuth->company_id);
+
+            return $this->updatedResponse($attendance, "canceled", "attendance");
+
+        }catch(Exception $e) {
+
+            return response()->json(["bool" => false, "msg" => $e->getMessage()], 200);
+
         }
 
-        $bool = $attendance->wasChanged();
-        $msg  = $bool ? "Asistencia anulada correctamente." : "No se ha podido anular la asistencia.";
+    }
 
-        return response()->json(["bool" => $bool, "msg" => $msg, "attendance" => $attendance], 200);
+    /**
+     * Get translation namespace for tracking attendance module
+     *
+     * @return string
+     */
+    protected function getTranslationNamespace(): string {
+
+        return self::TRANSLATION_NAMESPACE;
 
     }
 

@@ -1,19 +1,24 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\System\Essentials;
 
 use App\Exports\{BranchExport, CustomerExport, ItemExport, SaleExport, UserExport};
 use App\Helpers\System\Utilities;
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\{Controller};
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\{Auth, DB, Storage};
+use Illuminate\Support\Facades\{Auth};
 use stdClass;
 
+use App\Http\Controllers\System\Concerns\{HandlesApiResponses};
 use App\Models\System\Organizations\{User};
 use App\Models\System\Catalogs\{Item};
 use App\Models\System\Customers\{Customer};
 use App\Models\System\Organizations\{Branch, Company};
 use App\Models\System\Sales\{SaleHeader};
+
+use App\Services\System\Essentials\ReportConfigService;
 
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
@@ -23,24 +28,25 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class ReportController extends Controller {
 
+    use HandlesApiResponses;
+
+    /**
+     * Translation namespace for report module
+     */
+    private const TRANSLATION_NAMESPACE = "System.Essentials.report";
+
+    /**
+     * Get initialization parameters for the module
+     *
+     * @param Request $request
+     * @return \stdClass
+     */
     public function initParams(Request $request) {
 
-        $initParams = new stdClass();
+        $userAuth = Auth::user();
+        $page     = $request->input("page", "");
 
-        $config = new stdClass();
-
-        $page = $request->page ?? "";
-
-        if(in_array($page, ["main"])) {
-
-            //
-
-        }
-
-        $initParams->config = $config;
-        $initParams->bool   = true;
-
-        return $initParams;
+        return ReportConfigService::getInitParams($userAuth->company_id, $page);
 
     }
 
@@ -354,6 +360,17 @@ class ReportController extends Controller {
         }
 
         return Excel::download(new SaleExport($data), "Ventas.xlsx");
+
+    }
+
+    /**
+     * Get translation namespace for report module
+     *
+     * @return string
+     */
+    protected function getTranslationNamespace(): string {
+
+        return self::TRANSLATION_NAMESPACE;
 
     }
 

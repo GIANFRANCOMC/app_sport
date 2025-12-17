@@ -1,232 +1,241 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\System\Organizations;
 
-use App\Helpers\System\Utilities;
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\{Auth, DB};
-use stdClass;
+use Exception;
+use App\Http\Controllers\{Controller};
+use App\Helpers\System\{Utilities};
+use Illuminate\Http\{JsonResponse, Request};
+use Illuminate\Support\Facades\{Auth};
 
+use App\Http\Controllers\System\Concerns\{HandlesApiResponses};
 use App\Http\Requests\System\Organizations\Users\{StoreUserRequest, UpdateUserRequest};
-use App\Models\System\Organizations\{Role, User};
-use App\Models\System\General\{IdentityDocumentType};
+use App\Services\System\Organizations\Users\{UserConfigService, UserService};
+use App\Models\System\Organizations\{User};
 
 class UserController extends Controller {
 
+    use HandlesApiResponses;
+
+    /**
+     * Translation namespace for user module
+     */
+    private const TRANSLATION_NAMESPACE = "System.Organizations.user";
+
+    /**
+     * Get initialization parameters for the module
+     *
+     * @param Request $request
+     * @return \stdClass
+     */
     public function initParams(Request $request) {
 
         $userAuth = Auth::user();
+        $page     = $request->input("page", "");
 
-        $initParams = new stdClass();
-
-        $config = new stdClass();
-
-        $page = $request->page ?? "";
-
-        if(in_array($page, ["main"])) {
-
-            $config->identityDocumentTypes = new stdClass();
-            $config->identityDocumentTypes->records = IdentityDocumentType::getAll("user", $userAuth->company_id);
-
-            $config->roles = new stdClass();
-            $config->roles->records = Role::getAll("user", $userAuth->company_id);
-
-            $config->users = new stdClass();
-            $config->users->genders  = User::getGenders();
-            $config->users->statuses = User::getStatuses();
-
-        }
-
-        $initParams->config = $config;
-        $initParams->bool   = true;
-
-        return $initParams;
+        return UserConfigService::getInitParams($userAuth->company_id, $page);
 
     }
 
+    /**
+     * Get paginated list of users with filters
+     *
+     * @param Request $request
+     * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator
+     */
     public function list(Request $request) {
 
         $userAuth = Auth::user();
+        $filters  = ["filter_by" => $request->input("filter_by"), "word" => $request->input("word")];
+        $perPage  = intval($request->input("per_page") ?? Utilities::$per_page_default);
 
-        $list = User::when(Utilities::isDefined($request->filter_by), function($query) use($request) {
-
-                        $filter = Utilities::getWordSearch($request->word);
-
-                        if(in_array($request->filter_by, ["all"])) {
-
-                            $query->where(function($query) use($request, $filter) {
-
-                                $query->where("document_number", "like", $filter)
-                                      ->orWhere("name", "like", $filter)
-                                      ->orWhere("email", "like", $filter)
-                                      ->orWhere("phone_number", "like", $filter);
-
-                            });
-
-                        }else if(in_array($request->filter_by, ["document_number", "name", "email", "phone_number"])) {
-
-                            $query->where(function($query) use($request, $filter) {
-
-                                $query->where($request->filter_by, "like", $filter);
-
-                            });
-
-                        }
-
-                    })
-                    ->where("company_id", $userAuth->company_id)
-                    ->orderBy("name", "ASC")
-                    ->with(["identityDocumentType", "role"])
-                    ->paginate($request->per_page ?? Utilities::$per_page_default);
-
-        return $list;
+        return UserService::getPaginatedList($userAuth->company_id, $filters, $perPage);
 
     }
 
+    /**
+     * Display the users index page
+     *
+     * @return \Illuminate\Contracts\View\View
+     */
     public function index() {
 
         return view("System/general/Organizations/users/main");
 
     }
 
-    public function create() {
+    /**
+     * Show the form for creating a new user
+     * (Not used in SPA, but kept for REST compliance)
+     *
+     * @return void
+     */
+    public function create(): void {
 
-        //
-
-    }
-
-    public function store(StoreUserRequest $request) {
-
-        $userAuth = Auth::user();
-
-        $user = null;
-
-        $userExists = User::where("company_id", $userAuth->company_id)
-                          ->where("document_number", $request->document_number)
-                          ->exists();
-
-        if($userExists) {
-
-            return response()->json(["bool" => false, "msg" => "El número de documento ingresado ya ha sido registrado."], 200);
-
-        }
-
-        $emailExists = User::where("email", $request->email)
-                           ->exists();
-
-        if($emailExists) {
-
-            return response()->json(["bool" => false, "msg" => "El correo electrónico ingresado ya ha sido registrado."], 200);
-
-        }
-
-        DB::transaction(function() use($request, $userAuth, &$user) {
-
-            $user = new User();
-            $user->company_id                = $userAuth->company_id;
-            $user->role_id                   = $request->role_id;
-            $user->identity_document_type_id = $request->identity_document_type_id;
-            $user->document_number           = $request->document_number;
-            $user->name                      = $request->name;
-            $user->email                     = $request->email;
-            $user->password                  = $request->password;
-            $user->phone_number              = $request->phone_number;
-            $user->gender                    = $request->gender ?? "other";
-            $user->birthdate                 = $request->birthdate;
-            $user->status                    = $request->status;
-            $user->created_at                = now();
-            $user->created_by                = $userAuth->id ?? null;
-            $user->save();
-
-        });
-
-        $bool = Utilities::isDefined($user);
-        $msg  = $bool ? "Colaborador creado correctamente." : "No se ha podido crear el colaborador.";
-
-        return response()->json(["bool" => $bool, "msg" => $msg, "user" => $user], 200);
+        // Form is handled by frontend SPA
 
     }
 
-    public function show(User $record) {
+    /**
+     * Store a newly created user
+     *
+     * @param StoreUserRequest $request
+     * @return JsonResponse
+     */
+    public function store(StoreUserRequest $request): JsonResponse {
 
-        //
+        try {
 
-    }
+            $userAuth = Auth::user();
+            $data     = $this->prepareUserData($request, $userAuth);
+            $user     = UserService::create($data, $userAuth->id);
 
-    public function edit(User $record) {
+            if(!Utilities::isDefined($user)) {
 
-        //
-
-    }
-
-    public function update(UpdateUserRequest $request, $id) {
-
-        $userAuth = Auth::user();
-
-        $user = User::where("id", $id)
-                    ->where("company_id", $userAuth->company_id)
-                    ->first();
-
-        if(Utilities::isDefined($user)) {
-
-            $userExists = User::where("company_id", $userAuth->company_id)
-                              ->where("document_number", $request->document_number)
-                              ->whereNot("id", $user->id)
-                              ->exists();
-
-            if($userExists) {
-
-                return response()->json(["bool" => false, "msg" => "El número de documento ingresado ya ha sido registrado."], 200);
+                return $this->errorResponse("create_failed");
 
             }
 
-            $emailExists = User::where("email", $request->email)
-                               ->whereNot("id", $user->id)
-                               ->exists();
+            UserConfigService::clearAllCache($userAuth->company_id);
 
-            if($emailExists) {
+            return $this->createdResponse($user, "created", "user");
 
-                return response()->json(["bool" => false, "msg" => "El correo electrónico ingresado ya ha sido registrado."], 200);
+        }catch(Exception $e) {
 
-            }
-
-            DB::transaction(function() use($request, $userAuth, &$user) {
-
-                $user->role_id                   = $request->role_id;
-                $user->identity_document_type_id = $request->identity_document_type_id;
-                $user->document_number           = $request->document_number;
-                $user->name                      = $request->name;
-                $user->email                     = $request->email;
-                $user->phone_number              = $request->phone_number;
-                $user->gender                    = $request->gender ?? "other";
-                $user->birthdate                 = $request->birthdate;
-                $user->status                    = $request->status;
-                $user->updated_at                = now();
-                $user->updated_by                = $userAuth->id ?? null;
-
-                if(Utilities::isDefined($request->password)) {
-
-                    $user->password = $request->password;
-
-                }
-
-                $user->save();
-
-            });
+            return response()->json(["bool" => false, "msg" => $e->getMessage()], 200);
 
         }
 
-        $bool = Utilities::isDefined($user);
-        $msg  = $bool ? "Colaborador editado correctamente." : "No se ha podido editar el colaborador.";
+    }
 
-        return response()->json(["bool" => $bool, "msg" => $msg, "user" => $user], 200);
+    /**
+     * Display the specified user
+     * (Not used, but kept for REST compliance)
+     *
+     * @param User $record
+     * @return JsonResponse
+     */
+    public function show(User $record): JsonResponse {
+
+        return $this->errorResponse("not_implemented", [], 501);
 
     }
 
-    public function destroy(User $record) {
+    /**
+     * Show the form for editing the specified user
+     * (Not used in SPA, but kept for REST compliance)
+     *
+     * @param User $record
+     * @return void
+     */
+    public function edit(User $record): void {
 
-        //
+        // Form is handled by frontend SPA
+
+    }
+
+    /**
+     * Update the specified user
+     *
+     * @param UpdateUserRequest $request
+     * @param int $id User ID
+     * @return JsonResponse
+     */
+    public function update(UpdateUserRequest $request, int $id): JsonResponse {
+
+        try {
+
+            $userAuth = Auth::user();
+            $user     = UserService::findByIdAndCompany($id, $userAuth->company_id);
+
+            if(!Utilities::isDefined($user)) {
+
+                return $this->notFoundResponse();
+
+            }
+
+            $data = $this->prepareUserData($request, $userAuth);
+            $user = UserService::update($user, $data, $userAuth->id);
+
+            if(!Utilities::isDefined($user)) {
+
+                return $this->errorResponse("update_failed");
+
+            }
+
+            UserConfigService::clearAllCache($userAuth->company_id);
+
+            return $this->updatedResponse($user, "updated", "user");
+
+        }catch(Exception $e) {
+
+            return response()->json(["bool" => false, "msg" => $e->getMessage()], 200);
+
+        }
+
+    }
+
+    /**
+     * Remove the specified user
+     * (Not used, but kept for REST compliance)
+     *
+     * @param User $record
+     * @return JsonResponse
+     */
+    public function destroy(User $record): JsonResponse {
+
+        return $this->errorResponse("not_implemented", [], 501);
+
+    }
+
+    /**
+     * Prepare user data from request
+     *
+     * @param StoreUserRequest|UpdateUserRequest $request
+     * @param object|null $userAuth
+     * @return array
+     */
+    private function prepareUserData($request, ?object $userAuth = null): array {
+
+        $data = [
+            "role_id"                   => $request->role_id,
+            "identity_document_type_id" => $request->identity_document_type_id,
+            "document_number"           => $request->document_number,
+            "name"                      => $request->name,
+            "email"                     => $request->email,
+            "phone_number"              => $request->phone_number,
+            "gender"                    => $request->gender ?? "other",
+            "birthdate"                 => $request->birthdate,
+            "status"                    => $request->status
+        ];
+
+        if($userAuth) {
+
+            $data["company_id"] = $userAuth->company_id;
+
+        }
+
+        // Only include password if provided
+        if(Utilities::isDefined($request->password)) {
+
+            $data["password"] = $request->password;
+
+        }
+
+        return $data;
+
+    }
+
+    /**
+     * Get translation namespace for user module
+     *
+     * @return string
+     */
+    protected function getTranslationNamespace(): string {
+
+        return self::TRANSLATION_NAMESPACE;
 
     }
 

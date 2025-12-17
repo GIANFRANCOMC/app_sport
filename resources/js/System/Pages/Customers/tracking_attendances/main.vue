@@ -958,13 +958,23 @@ export default {
         };
     },
     methods: {
-        // Init
+        // ============================================
+        // Initialization Methods
+        // ============================================
         async initParams({}) {
 
-            let initParams = await Requests.get({route: this.config.entity.routes.initParams, data: {page: "main"}, showAlert: true});
+            const initParams = await Requests.get({
+                route: this.config.entity.routes.initParams,
+                data: {page: "main"},
+                showAlert: true
+            });
 
-            this.options.branches  = initParams.data?.config?.branches;
-            this.options.customers = initParams.data?.config?.customers;
+            if(initParams?.data?.config) {
+
+                this.options.branches  = initParams.data.config.branches;
+                this.options.customers = initParams.data.config.customers;
+
+            }
 
             return Requests.valid({result: initParams});
 
@@ -976,16 +986,20 @@ export default {
                 this.lists.entity.filters.branch     = this.branches[0];
                 this.lists.entity.filters.start_date = Utils.getCurrentDate("date");
 
-                // Ajust height
-                const chartList = document.querySelectorAll(".chartjs");
-
-                chartList.forEach(function(chartListItem) {
-
-                    chartListItem.height = chartListItem.dataset.height;
-
-                });
+                this.adjustChartHeights();
 
                 resolve(true);
+
+            });
+
+        },
+        adjustChartHeights() {
+
+            const chartList = document.querySelectorAll(".chartjs");
+
+            chartList.forEach(function(chartListItem) {
+
+                chartListItem.height = chartListItem.dataset.height;
 
             });
 
@@ -1211,21 +1225,44 @@ export default {
             }
 
         },
-        // Entity forms
+        // ============================================
+        // Entity List Methods
+        // ============================================
         async listEntity({url = null}) {
 
-            let filters = Utils.cloneJson(this.lists.entity.filters);
-            const filterJson = {branch_id: filters?.branch?.code, customer_id: filters?.customer?.code, start_date: filters?.start_date, status: filters?.status};
+            const filters = Utils.cloneJson(this.lists.entity.filters);
+            const filterJson = {
+                branch_id:   filters?.branch?.code,
+                customer_id: filters?.customer?.code,
+                start_date:  filters?.start_date,
+                status:      filters?.status
+            };
 
             this.lists.entity.extras.loading = true;
-            this.lists.entity.records        = (await Requests.get({route: url || this.lists.entity.extras.route, data: filterJson}))?.data;
-            this.lists.entity.extras.loading = false;
+
+            try {
+
+                const response = await Requests.get({
+                    route: url || this.lists.entity.extras.route,
+                    data: filterJson
+                });
+
+                this.lists.entity.records = response?.data;
+
+            }finally {
+
+                this.lists.entity.extras.loading = false;
+
+            }
 
             this.initChart("default");
             this.initChart("doughnut");
 
         },
-        // Forms
+
+        // ============================================
+        // Mode Management Methods
+        // ============================================
         rememberModeEntity(mode = "manual") {
 
             this.forms.entity.createUpdate.config.rememberMode = !this.forms.entity.createUpdate.config.rememberMode;

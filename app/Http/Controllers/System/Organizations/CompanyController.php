@@ -1,258 +1,233 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\System\Organizations;
 
-use App\Helpers\System\Utilities;
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\{Auth, DB};
-use stdClass;
+use Exception;
+use App\Http\Controllers\{Controller};
+use App\Helpers\System\{Utilities};
+use Illuminate\Http\{JsonResponse, Request};
+use Illuminate\Support\Facades\{Auth};
 
+use App\Http\Controllers\System\Concerns\{HandlesApiResponses};
 use App\Http\Requests\System\Organizations\Companies\{StoreCompanyRequest, UpdateCompanyRequest};
-use App\Models\System\General\{IdentityDocumentType};
-use App\Models\System\Organizations\{Company, CompanySocialMedia};
+use App\Services\System\Organizations\Companies\{CompanyConfigService, CompanyService};
+use App\Models\System\Organizations\{Company};
 
 class CompanyController extends Controller {
 
+    use HandlesApiResponses;
+
+    /**
+     * Translation namespace for company module
+     */
+    private const TRANSLATION_NAMESPACE = "System.Organizations.company";
+
+    /**
+     * Get initialization parameters for the module
+     *
+     * @param Request $request
+     * @return \stdClass
+     */
     public function initParams(Request $request) {
 
         $userAuth = Auth::user();
+        $page     = $request->input("page", "");
 
-        $initParams = new stdClass();
-
-        $config = new stdClass();
-
-        $page = $request->page ?? "";
-
-        if(in_array($page, ["main"])) {
-
-            $config->companies = new stdClass();
-            $config->companies->statuses = Company::getStatuses();
-
-            $company = $userAuth->company;
-            $socialsMedia = $company->socialsMedia;
-
-            $company->facebook  = optional($socialsMedia->where("type", "facebook")->first())->link;
-            $company->instagram = optional($socialsMedia->where("type", "instagram")->first())->link;
-            $company->whatsapp  = optional($socialsMedia->where("type", "whatsapp")->first())->link;
-
-            $config->company = new stdClass();
-            $config->company->records = [$company];
-
-            $config->identityDocumentTypes = new stdClass();
-            $config->identityDocumentTypes->records = IdentityDocumentType::getAll("company");
-
-        }
-
-        $initParams->config = $config;
-        $initParams->bool   = true;
-
-        return $initParams;
+        return CompanyConfigService::getInitParams($userAuth->company_id, $page);
 
     }
 
-    public function list(Request $request) {
+    /**
+     * Get paginated list of companies with filters
+     * (Not used for companies, but kept for REST compliance)
+     *
+     * @param Request $request
+     * @return void
+     */
+    public function list(Request $request): void {
 
-        //
+        // Not implemented - companies are managed individually
 
     }
 
+    /**
+     * Display the companies index page
+     *
+     * @return \Illuminate\Contracts\View\View
+     */
     public function index() {
 
         return view("System/general/Organizations/companies/main");
 
     }
 
-    public function create() {
+    /**
+     * Show the form for creating a new company
+     * (Not used in SPA, but kept for REST compliance)
+     *
+     * @return void
+     */
+    public function create(): void {
 
-        //
-
-    }
-
-    public function store(StoreCompanyRequest $request) {
-
-        //
-
-    }
-
-    public function show(Company $company) {
-
-        //
+        // Form is handled by frontend SPA
 
     }
 
-    public function edit(Company $company) {
+    /**
+     * Store a newly created company
+     * (Not used, but kept for REST compliance)
+     *
+     * @param StoreCompanyRequest $request
+     * @return JsonResponse
+     */
+    public function store(StoreCompanyRequest $request): JsonResponse {
 
-        //
+        return $this->errorResponse("not_implemented", [], 501);
 
     }
 
-    public function update(UpdateCompanyRequest $request, $id) {
+    /**
+     * Display the specified company
+     * (Not used, but kept for REST compliance)
+     *
+     * @param Company $company
+     * @return JsonResponse
+     */
+    public function show(Company $company): JsonResponse {
 
-        $userAuth = Auth::user();
+        return $this->errorResponse("not_implemented", [], 501);
 
-        $company = Company::where("id", $userAuth->company_id)
-                          ->whereIn("status", ["active"])
-                          ->first();
+    }
 
-        if(Utilities::isDefined($company)) {
+    /**
+     * Show the form for editing the specified company
+     * (Not used in SPA, but kept for REST compliance)
+     *
+     * @param Company $company
+     * @return void
+     */
+    public function edit(Company $company): void {
 
-            // Assets
-            $logotypeRoute = null;
-            $combinationmarkRoute = null;
-            $logomarkRoute = null;
-            $loginImageRoute = null;
+        // Form is handled by frontend SPA
 
-            if($request->hasFile("logotype") && $request->file("logotype")) {
+    }
 
-                $logotype = $request->file("logotype");
+    /**
+     * Update the specified company
+     *
+     * @param UpdateCompanyRequest $request
+     * @param int $id Company ID
+     * @return JsonResponse
+     */
+    public function update(UpdateCompanyRequest $request, int $id): JsonResponse {
 
-                $logotypeName  = "logotype.".$logotype->getClientOriginalExtension();
-                $logotypeRoute = $logotype->storeAs($company->internal_code, $logotypeName, "public");
+        try {
 
-                $company->logotype = $logotypeRoute;
+            $userAuth = Auth::user();
+            $company  = CompanyService::findByAuthUser();
 
-            }
+            if(!Utilities::isDefined($company) || $company->id != $id) {
 
-            if($request->hasFile("combinationmark") && $request->file("combinationmark")) {
-
-                $combinationmark = $request->file("combinationmark");
-
-                $combinationmarkName  = "combinationmark.".$combinationmark->getClientOriginalExtension();
-                $combinationmarkRoute = $combinationmark->storeAs($company->internal_code, $combinationmarkName, "public");
-
-                $company->combinationmark = $combinationmarkRoute;
-
-            }
-
-            if($request->hasFile("logomark") && $request->file("logomark")) {
-
-                $logomark = $request->file("logomark");
-
-                $logomarkName  = "logomark.".$logomark->getClientOriginalExtension();
-                $logomarkRoute = $logomark->storeAs($company->internal_code, $logomarkName, "public");
-
-                $company->logomark = $logomarkRoute;
+                return $this->notFoundResponse();
 
             }
 
-            if($request->hasFile("login_image") && $request->file("login_image")) {
+            $data  = $this->prepareCompanyData($request);
+            $files = $this->prepareCompanyFiles($request);
+            $company = CompanyService::update($company, $data, $files, $userAuth->id);
 
-                $loginImage = $request->file("login_image");
+            if(!Utilities::isDefined($company)) {
 
-                $loginImageName  = "login_image.".$loginImage->getClientOriginalExtension();
-                $loginImageRoute = $loginImage->storeAs($company->internal_code, $loginImageName, "public");
-
-                $company->login_image = $loginImageRoute;
+                return $this->errorResponse("update_failed");
 
             }
 
-            DB::transaction(function() use($request, $userAuth, &$company) {
+            CompanyConfigService::clearAllCache($userAuth->company_id);
 
-                $company->identity_document_type_id = $request->identity_document_type_id;
-                $company->document_number           = $request->document_number;
-                $company->legal_name                = $request->legal_name;
-                $company->commercial_name           = $request->commercial_name;
-                $company->tagline                   = $request->tagline;
-                $company->description               = $request->description;
-                $company->address                   = $request->address;
-                $company->telephone                 = $request->telephone;
-                $company->email                     = $request->email;
-                // $company->token_api_misc            = $request->token_api_misc;
-                // $company->status                    = $request->status;
-                $company->updated_at                = now();
-                $company->updated_by                = $userAuth->id ?? null;
-                $company->save();
+            return $this->updatedResponse($company, "updated", "company");
 
-                $facebook = CompanySocialMedia::where("company_id", $company->id)
-                                              ->where("type", "facebook")
-                                              ->first();
+        }catch(Exception $e) {
 
-                if(Utilities::isDefined($facebook)) {
-
-                    $facebook->link       = $request->facebook ?? "";
-                    $facebook->status     = "active";
-                    $facebook->updated_at = now();
-                    $facebook->updated_by = $userAuth->id ?? null;
-                    $facebook->save();
-
-                }else {
-
-                    $companySocialMedia = new CompanySocialMedia();
-                    $companySocialMedia->company_id = $company->id;
-                    $companySocialMedia->type       = "facebook";
-                    $companySocialMedia->link       = $request->facebook ?? "";
-                    $companySocialMedia->status     = "active";
-                    $companySocialMedia->created_at = now();
-                    $companySocialMedia->created_by = $userAuth->id ?? null;
-                    $companySocialMedia->save();
-
-                }
-
-                $instagram = CompanySocialMedia::where("company_id", $company->id)
-                                               ->where("type", "instagram")
-                                               ->first();
-
-                if(Utilities::isDefined($instagram)) {
-
-                    $instagram->link       = $request->instagram ?? "";
-                    $instagram->status     = "active";
-                    $instagram->updated_at = now();
-                    $instagram->updated_by = $userAuth->id ?? null;
-                    $instagram->save();
-
-                }else {
-
-                    $companySocialMedia = new CompanySocialMedia();
-                    $companySocialMedia->company_id = $company->id;
-                    $companySocialMedia->type       = "instagram";
-                    $companySocialMedia->link       = $request->instagram ?? "";
-                    $companySocialMedia->status     = "active";
-                    $companySocialMedia->created_at = now();
-                    $companySocialMedia->created_by = $userAuth->id ?? null;
-                    $companySocialMedia->save();
-
-                }
-
-                $whatsapp = CompanySocialMedia::where("company_id", $company->id)
-                                              ->where("type", "whatsapp")
-                                              ->first();
-
-                if(Utilities::isDefined($whatsapp)) {
-
-                    $whatsapp->link       = $request->whatsapp ?? "";
-                    $whatsapp->type       = "instagram";
-                    $whatsapp->updated_at = now();
-                    $whatsapp->updated_by = $userAuth->id ?? null;
-                    $whatsapp->save();
-
-                }else {
-
-                    $companySocialMedia = new CompanySocialMedia();
-                    $companySocialMedia->company_id = $company->id;
-                    $companySocialMedia->type       = "whatsapp";
-                    $companySocialMedia->link       = $request->whatsapp ?? "";
-                    $companySocialMedia->status     = "active";
-                    $companySocialMedia->created_at = now();
-                    $companySocialMedia->created_by = $userAuth->id ?? null;
-                    $companySocialMedia->save();
-
-                }
-
-            });
+            return response()->json(["bool" => false, "msg" => $e->getMessage()], 200);
 
         }
 
-        $bool = Utilities::isDefined($company);
-        $msg  = $bool ? "Empresa editada correctamente." : "No se ha podido editar la empresa.";
+    }
 
-        return response()->json(["bool" => $bool, "msg" => $msg, "company" => $company], 200);
+    /**
+     * Remove the specified company
+     * (Not used, but kept for REST compliance)
+     *
+     * @param Company $company
+     * @return JsonResponse
+     */
+    public function destroy(Company $company): JsonResponse {
+
+        return $this->errorResponse("not_implemented", [], 501);
 
     }
 
-    public function destroy(Company $company) {
+    /**
+     * Prepare company data from request
+     *
+     * @param UpdateCompanyRequest $request
+     * @return array
+     */
+    private function prepareCompanyData(UpdateCompanyRequest $request): array {
 
-        //
+        return [
+            "identity_document_type_id" => $request->identity_document_type_id,
+            "document_number"           => $request->document_number,
+            "legal_name"                => $request->legal_name,
+            "commercial_name"           => $request->commercial_name,
+            "tagline"                   => $request->tagline,
+            "description"               => $request->description,
+            "address"                   => $request->address,
+            "telephone"                 => $request->telephone,
+            "email"                     => $request->email,
+            "facebook"                  => $request->facebook,
+            "instagram"                 => $request->instagram,
+            "whatsapp"                  => $request->whatsapp
+        ];
+
+    }
+
+    /**
+     * Prepare company files from request
+     *
+     * @param UpdateCompanyRequest $request
+     * @return array
+     */
+    private function prepareCompanyFiles(UpdateCompanyRequest $request): array {
+
+        $files = [];
+
+        $imageFields = ["logotype", "combinationmark", "logomark", "login_image"];
+
+        foreach($imageFields as $field) {
+
+            if($request->hasFile($field) && $request->file($field)) {
+
+                $files[$field] = $request->file($field);
+
+            }
+
+        }
+
+        return $files;
+
+    }
+
+    /**
+     * Get translation namespace for company module
+     *
+     * @return string
+     */
+    protected function getTranslationNamespace(): string {
+
+        return self::TRANSLATION_NAMESPACE;
 
     }
 

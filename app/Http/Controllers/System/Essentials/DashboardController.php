@@ -1,95 +1,79 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\System\Essentials;
 
-use App\Helpers\System\Utilities;
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\{Auth, DB};
-use stdClass;
+use App\Http\Controllers\{Controller};
+use App\Helpers\System\{Utilities};
+use Illuminate\Http\{JsonResponse, Request};
+use Illuminate\Support\Facades\{Auth};
 
-use App\Models\System\Organizations\{Branch};
-use App\Models\System\Sales\{SaleHeader};
+use App\Http\Controllers\System\Concerns\{HandlesApiResponses};
+use App\Services\System\Essentials\{DashboardConfigService, DashboardService};
 
 class DashboardController extends Controller {
 
+    use HandlesApiResponses;
+
+    /**
+     * Translation namespace for dashboard module
+     */
+    private const TRANSLATION_NAMESPACE = "System.Essentials.dashboard";
+
+    /**
+     * Get initialization parameters for the module
+     *
+     * @param Request $request
+     * @return \stdClass
+     */
     public function initParams(Request $request) {
 
-        $initParams = new stdClass();
+        $userAuth = Auth::user();
+        $page     = $request->input("page", "");
 
-        $config = new stdClass();
-
-        $page = $request->page ?? "";
-
-        if(in_array($page, ["main"])) {
-
-            //
-
-        }
-
-        $initParams->config = $config;
-        $initParams->bool   = true;
-
-        return $initParams;
+        return DashboardConfigService::getInitParams($userAuth->company_id, $page);
 
     }
 
+    /**
+     * Display the dashboard index page
+     *
+     * @return \Illuminate\Contracts\View\View
+     */
     public function index() {
 
         return view("System/general/Essentials/dashboard/main");
 
     }
 
-    public function initData(Request $request) {
+    /**
+     * Get dashboard data for a specific date
+     *
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function initData(Request $request): JsonResponse {
 
         $userAuth = Auth::user();
+        $date     = Utilities::isDefined($request->date) && Utilities::isValidDateFormat($request->date) 
+                    ? $request->date 
+                    : date("Y-m-d");
 
-        $date = Utilities::isDefined($request->date) && Utilities::isValidDateFormat($request->date) ? $request->date : date("Y-m-d");
+        $data = DashboardService::getDashboardData($userAuth->company_id, $date);
 
-        $branches = Branch::where("company_id", $userAuth->company_id)
-                          ->with(["series"])
-                          ->get();
+        return $this->successResponse($data, "data_obtained");
 
-        $serieIds = $branches->pluck("series.*.id")->flatten();
+    }
 
-        $sales = SaleHeader::whereDate("created_at", $date)
-                           ->whereIn("serie_id", $serieIds)
-                           ->orderBy("created_at", "DESC")
-                           ->with(["serie.documentType", "holder", "currency"])
-                           ->get();
+    /**
+     * Get translation namespace for dashboard module
+     *
+     * @return string
+     */
+    protected function getTranslationNamespace(): string {
 
-        $canceledSales = $sales->whereIn("status", ["canceled"])
-                               ->values();
-
-        // $users = User::where("company_id", $userAuth->company_id)
-                      // ->whereIn("status", ["active"])
-                      // ->get();
-
-        $data = [
-            "sales" => [
-                "all" => [
-                    "total"   => $sales->sum("total"),
-                    "count"   => $sales->count(),
-                    "records" => $sales
-                ],
-                "canceled" => [
-                    "total" => $canceledSales->sum("total"),
-                    "count" => $canceledSales->count()
-                ]
-            ],
-            "branches" => [
-                "valid" => [
-                    "count" => $branches->whereIn("status", ["active"])->count()
-                ]
-            ],
-            "users" => [
-                "valid" => [
-                    "count" => 0 // $users->count()
-                ]
-            ]
-        ];
-
-        return response()->json(["bool" => true, "msg" => "Data obtenida", "data" => $data], 200);
+        return self::TRANSLATION_NAMESPACE;
 
     }
 
