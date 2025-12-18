@@ -191,65 +191,66 @@ export function valid({result}) {
 
 }
 
+// Configuración de rutas especiales por entidad
+const ENTITY_SPECIAL_ROUTES = {
+    dashboard: {
+        initData: "initData"
+    },
+    sales: {
+        cancel: "cancel"
+    },
+    tracking_subscriptions: {
+        cancel: "cancel"
+    },
+    tracking_attendances: {
+        cancel: "cancel",
+        qrCamera: "qrCamera",
+        qrScanner: "qrScanner"
+    },
+    tracking_customers: {
+        getTracking: "getTracking"
+    },
+    customers: {
+        getSubscriptions: "getSubscriptions"
+    },
+    assets_management: {
+        assignAssetToBranch: "assignAssetToBranch",
+        unassignAssetFromBranch: "unassignAssetFromBranch",
+        getAssetAssignments: "getAssetAssignments",
+        assetInBranch: "assetInBranch",
+        assignToUser: "assignToUser",
+        unassignToUser: "unassignToUser"
+    },
+    reports: {
+        sale: "sale"
+    },
+    helpers: {
+        searchDocumentNumber: "searchDocumentNumber",
+        sendEmail: "sendEmail"
+    }
+};
+
 export function generateRoutes({entity, requestRoute}) {
 
-    let routes = {
+    const baseRoutes = {
         consult: `${requestRoute}/${entity}`,
         list: `${requestRoute}/${entity}/list`,
         get: `${requestRoute}/${entity}/get`,
         create: `${requestRoute}/${entity}/create`,
         store: `${requestRoute}/${entity}`,
         update: `${requestRoute}/${entity}`,
-        initParams: `${requestRoute}/${entity}/initParams`,
+        initParams: `${requestRoute}/${entity}/initParams`
     };
 
-    if(["dashboard"].includes(entity)) {
-
-        routes.initData = `${requestRoute}/${entity}/initData`;
-
-    }else if(["sales"].includes(entity)) {
-
-        routes.cancel = `${requestRoute}/${entity}/cancel`;
-
-    }else if(["tracking_subscriptions"].includes(entity)) {
-
-        routes.cancel = `${requestRoute}/${entity}/cancel`;
-
-    }else if(["tracking_attendances"].includes(entity)) {
-
-        routes.cancel    = `${requestRoute}/${entity}/cancel`;
-        routes.qrCamera  = `${requestRoute}/${entity}/qrCamera`;
-        routes.qrScanner = `${requestRoute}/${entity}/qrScanner`;
-
-    }else if(["tracking_customers"].includes(entity)) {
-
-        routes.getTracking = `${requestRoute}/${entity}/getTracking`;
-
-    }else if(["customers"].includes(entity)) {
-
-        routes.getSubscriptions = `${requestRoute}/${entity}/getSubscriptions`;
-
-    }else if(["assets_management"].includes(entity)) {
-
-        routes.assignAssetToBranch     = `${requestRoute}/${entity}/assignAssetToBranch`;
-        routes.unassignAssetFromBranch = `${requestRoute}/${entity}/unassignAssetFromBranch`;
-        routes.getAssetAssignments     = `${requestRoute}/${entity}/getAssetAssignments`;
-        routes.assetInBranch           = `${requestRoute}/${entity}/assetInBranch`;
-        routes.assignToUser            = `${requestRoute}/${entity}/assignToUser`;
-        routes.unassignToUser          = `${requestRoute}/${entity}/unassignToUser`;
-
-    }else if(["reports"].includes(entity)) {
-
-        routes.sale = `${requestRoute}/${entity}/sale`;
-
-    }else if(["helpers"].includes(entity)) {
-
-        routes.searchDocumentNumber = `${requestRoute}/${entity}/searchDocumentNumber`;
-        routes.sendEmail = `${requestRoute}/${entity}/sendEmail`;
-
+    // Agregar rutas especiales si existen
+    const specialRoutes = ENTITY_SPECIAL_ROUTES[entity];
+    if (specialRoutes) {
+        Object.keys(specialRoutes).forEach(key => {
+            baseRoutes[key] = `${requestRoute}/${entity}/${specialRoutes[key]}`;
+        });
     }
 
-    return routes;
+    return baseRoutes;
 
 }
 

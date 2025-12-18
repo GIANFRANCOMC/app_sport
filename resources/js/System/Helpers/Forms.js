@@ -1,91 +1,139 @@
+/**
+ * Helpers para formularios
+ * Funciones reutilizables para manejo completo de formularios
+ */
+
 import * as Utils from "./Utils.js";
+import * as Alerts from "./Alerts.js";
+import * as Requests from "./Requests.js";
+import { validateField } from "./ValidationHelpers.js";
 
 /**
- * Initializes the data structure for a CRUD form
- * @param {Object} fields - Object with fields and their default values
- * @returns {Object} Form data structure
+ * Inicializa la estructura de datos de un formulario CRUD
+ * @param {Object} fields - Objeto con campos y sus valores por defecto
+ * @returns {Object} Estructura de datos del formulario
  */
 export function initFormData(fields = {}) {
-
-    const defaultFields = {
+    return {
         id: null,
         ...fields
     };
-
-    return defaultFields;
-
 }
 
 /**
- * Clears a form by setting default values
- * @param {Object} formData - Form object to clear
- * @param {Object} defaultValues - Default values for each field
+ * Crea estructura de datos de formulario estándar (alias de initFormData)
+ */
+export const createFormDataStructure = initFormData;
+
+/**
+ * Limpia un formulario estableciendo valores por defecto
+ * @param {Object} formData - Objeto del formulario a limpiar
+ * @param {Object} defaultValues - Valores por defecto para cada campo
  */
 export function clearFormData(formData, defaultValues = {}) {
-
     Object.keys(formData).forEach(key => {
-
-        const defaultValue = defaultValues[key] !== undefined ? defaultValues[key] : (typeof formData[key] === "number" ? null : "");
-
+        const defaultValue = defaultValues[key] !== undefined
+            ? defaultValues[key]
+            : (typeof formData[key] === "number" ? null : "");
         formData[key] = defaultValue;
-
     });
-
 }
 
 /**
- * Prepares form data before sending
- * @param {Object} formData - Form data
- * @param {Object} fieldConfig - Field configuration (trim, normalize, etc.)
- * @returns {Object} Prepared data
+ * Prepara datos del formulario antes de enviar
+ * @param {Object} formData - Datos del formulario
+ * @param {Object} config - Configuración por campo {trim, normalize, toNumber, getCode, removeIfEmpty}
+ * @returns {Object} Datos preparados
  */
-export function prepareFormData(formData, fieldConfig = {}) {
-
+export function prepareFormData(formData, config = {}) {
     const prepared = Utils.cloneJson(formData);
 
     Object.keys(prepared).forEach(key => {
+        const fieldConfig = config[key] || {};
 
-        const config = fieldConfig[key] || {};
-
-        if(config.trim !== false && typeof prepared[key] === "string") {
-
+        // Trim strings
+        if (fieldConfig.trim !== false && typeof prepared[key] === "string") {
             prepared[key] = String(prepared[key]).trim();
-
         }
 
-        if(config.normalize === true) {
-
+        // Normalize optional (convierte strings vacíos a null)
+        if (fieldConfig.normalize === true) {
             prepared[key] = Utils.normalizeOptional(prepared[key]);
-
         }
 
-        if(config.toNumber === true && Utils.isDefined({value: prepared[key]})) {
-
-            prepared[key] = Utils.isNumber({value: prepared[key], minValue: config.minValue ?? 0}) ? Number(prepared[key]) : null;
-
+        // Convert to number
+        if (fieldConfig.toNumber === true && Utils.isDefined({ value: prepared[key] })) {
+            prepared[key] = Utils.isNumber({ value: prepared[key], minValue: fieldConfig.minValue ?? 0 })
+                ? Number(prepared[key])
+                : null;
         }
 
-        if(config.getCode === true && prepared[key]?.code !== undefined) {
-
+        // Get code from object (para selects)
+        if (fieldConfig.getCode === true && prepared[key]?.code !== undefined) {
             prepared[key] = prepared[key].code;
-
         }
 
+        // Remove if empty
+        if (fieldConfig.removeIfEmpty === true && !Utils.isDefined({ value: prepared[key] })) {
+            delete prepared[key];
+        }
     });
 
     return prepared;
-
 }
 
 /**
- * Validates a generic form
- * @param {Object} formData - Form data
- * @param {Object} rules - Validation rules {field: {required, email, url, number, min, max, custom}}
- * @param {Object} config - Configuration {isDescriptive: boolean, errorLabels: Object}
+ * Maneja errores de formulario de forma centralizada
+ * @param {Object|Array} errors - Errores del servidor
+ * @param {Object} formErrorsObject - Objeto donde se almacenarán los errores
+ */
+export function handleFormErrors(errors, formErrorsObject) {
+    if (!formErrorsObject) return;
+
+    if (errors && Array.isArray(errors)) {
+        errors.forEach(error => {
+            const field = error.field || error.key;
+            if (field) {
+                if (!formErrorsObject[field]) {
+                    formErrorsObject[field] = [];
+                }
+                formErrorsObject[field].push(error.message || error);
+            }
+        });
+    } else if (typeof errors === "object" && errors !== null) {
+        Object.assign(formErrorsObject, errors);
+    }
+}
+
+/**
+ * Valida campos requeridos
+ * @param {Array} fields - Array de nombres de campos requeridos
+ * @param {Object} formData - Datos del formulario
+ * @param {Object} errorLabels - Etiquetas de error personalizadas
  * @returns {Object} {bool: boolean, errors: Object}
  */
-export function validateFormData(formData, rules = {}, config = {}) {
+export function validateRequired(fields, formData, errorLabels = {}) {
+    const errors = {};
+    let isValid = true;
 
+    fields.forEach(field => {
+        if (!Utils.isDefined({ value: formData[field] })) {
+            errors[field] = [`${errorLabels[field] || field}: Es obligatorio`];
+            isValid = false;
+        }
+    });
+
+    return { bool: isValid, errors };
+}
+
+/**
+ * Valida un formulario completo usando reglas de validación
+ * @param {Object} formData - Datos del formulario
+ * @param {Object} validationRules - Reglas de validación {field: {required, email, url, number, min, max, custom}}
+ * @param {Object} config - Configuración {isDescriptive: boolean, errorLabels: Object}
+ * @returns {Object} {bool: boolean, errors: Object}
+ */
+export function validateFormData(formData, validationRules = {}, config = {}) {
     const result = {
         bool: true,
         errors: {}
@@ -94,71 +142,72 @@ export function validateFormData(formData, rules = {}, config = {}) {
     const isDescriptive = config.isDescriptive === true;
     const errorLabels = config.errorLabels || {};
 
-    Object.keys(rules).forEach(field => {
-
-        const rule = rules[field];
+    Object.keys(validationRules).forEach(field => {
+        const rules = validationRules[field];
         const value = formData[field];
-        const fieldErrors = [];
+        const fieldName = isDescriptive ? (errorLabels[field] || field) : "";
+        const fieldErrors = validateField(value, rules, fieldName);
 
-        // Required
-        if(rule.required === true && !Utils.isDefined({value})) {
-
-            const label = errorLabels[field] || field;
-            fieldErrors.push(`${isDescriptive ? `${label}:` : ""} ${errorLabels.required || "Required"}`);
-            result.bool = false;
-
-        }
-
-        // Email
-        if(rule.email === true && Utils.isDefined({value}) && !Utils.isValidEmail(value)) {
-
-            const label = errorLabels[field] || field;
-            fieldErrors.push(`${isDescriptive ? `${label}:` : ""} Invalid format`);
-            result.bool = false;
-
-        }
-
-        // URL
-        if(rule.url === true && Utils.isDefined({value}) && !Utils.isValidUrl(value)) {
-
-            const label = errorLabels[field] || field;
-            fieldErrors.push(`${isDescriptive ? `${label}:` : ""} Invalid format`);
-            result.bool = false;
-
-        }
-
-        // Number
-        if(rule.number === true && Utils.isDefined({value}) && !Utils.isNumber({value, minValue: rule.min ?? 0})) {
-
-            const label = errorLabels[field] || field;
-            fieldErrors.push(`${isDescriptive ? `${label}:` : ""} Must be a valid number`);
-            result.bool = false;
-
-        }
-
-        // Custom validation
-        if(rule.custom && typeof rule.custom === "function") {
-
-            const customError = rule.custom(value, formData);
-
-            if(customError) {
-
-                fieldErrors.push(customError);
-                result.bool = false;
-
-            }
-
-        }
-
-        if(fieldErrors.length > 0) {
-
+        if (fieldErrors.length > 0) {
             result.errors[field] = fieldErrors;
-
+            result.bool = false;
         }
-
     });
 
     return result;
-
 }
 
+/**
+ * Maneja la respuesta de creación/actualización de forma centralizada
+ * @param {Object} response - Respuesta de la petición
+ * @param {Object} options - Opciones {onSuccess, onError, modalId, formErrorsObject, reloadList}
+ * @returns {Promise<boolean>} true si fue exitoso, false en caso contrario
+ */
+export async function handleCreateUpdateResponse(
+    response,
+    {
+        onSuccess = null,
+        onError = null,
+        modalId = null,
+        formErrorsObject = null,
+        reloadList = null
+    } = {}
+) {
+    if (Requests.valid({ result: response })) {
+        if (modalId) {
+            Alerts.modals({ type: "hide", id: modalId });
+        }
+
+        Alerts.generateAlert({
+            type: "success",
+            msgContent: response?.data?.msg
+        });
+
+        if (onSuccess) {
+            onSuccess(response);
+        }
+
+        if (reloadList) {
+            reloadList();
+        }
+
+        return true;
+    } else {
+        if (formErrorsObject) {
+            handleFormErrors(response?.errors, formErrorsObject);
+        }
+
+        Alerts.toastrs({
+            type: "error",
+            subtitle: response?.data?.msg
+        });
+
+        Alerts.swals({ show: false });
+
+        if (onError) {
+            onError(response);
+        }
+
+        return false;
+    }
+}
