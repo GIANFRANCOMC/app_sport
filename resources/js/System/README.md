@@ -29,15 +29,18 @@ Mixin Vue para funcionalidades CRUD comunes que puede ser usado en cualquier com
 
 #### `ModuleFactory.js`
 Factory para crear módulos fácilmente:
+- `initCrudModule()` - Crea estructura inicial de módulo CRUD (legacy)
 - `createModuleConfig()` - Crea configuración base
+- `createFilterByOptions()` - Crea opciones de filtrado
 - `initVueModule()` - Inicializa módulo Vue completo
-- `createTableComponent()` - Crea componente de tabla
 
-#### `FormHelpers.js`
-Helpers para formularios:
+#### `Forms.js`
+Helpers para formularios (consolidado):
+- `initFormData()` - Inicializa estructura de formulario
 - `clearFormData()` - Limpia formularios
 - `prepareFormData()` - Prepara datos antes de enviar
 - `handleFormErrors()` - Maneja errores
+- `validateFormData()` - Valida formulario completo
 - `handleCreateUpdateResponse()` - Maneja respuestas
 
 #### `ValidationHelpers.js`
@@ -48,7 +51,6 @@ Helpers de validación:
 
 #### `ComponentHelpers.js`
 Helpers para componentes:
-- `initCrudComponent()` - Inicializa componente CRUD
 - `createTableActions()` - Crea acciones de tabla
 - `confirmAction()` - Maneja confirmaciones
 

@@ -47,23 +47,4 @@ export function calculateTotal({item}) {
     return total;
 }
 
-/**
- * Formatea la capacidad de personas
- * @param {number|null} capacity - Capacidad numérica
- * @returns {string} Texto formateado
- */
-export function formatCapacity(capacity) {
-    if (!isDefined({value: capacity})) {
-        return "Capacidad no definida";
-    }
-
-    const numericCapacity = Number(capacity);
-
-    if (isNaN(numericCapacity) || numericCapacity <= 0) {
-        return "Capacidad no definida";
-    }
-
-    const label = numericCapacity === 1 ? "persona" : "personas";
-    return `${separatorNumber(numericCapacity)} ${label}`;
-}
 

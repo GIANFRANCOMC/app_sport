@@ -73,7 +73,7 @@
 import { CrudMixin } from "@System/Helpers/CrudMixin.js";
 import { createModuleConfig, createFilterByOptions } from "@System/Helpers/ModuleFactory.js";
 import { createTableActions } from "@System/Helpers/ComponentHelpers.js";
-import { handleCreateUpdateResponse } from "@System/Helpers/FormHelpers.js";
+import { handleCreateUpdateResponse } from "@System/Helpers/Forms.js";
 import { validateForm } from "@System/Helpers/ValidationHelpers.js";
 import { CommonValidationRules } from "@System/Helpers/ValidationHelpers.js";
 import * as Requests from "@System/Helpers/Requests.js";

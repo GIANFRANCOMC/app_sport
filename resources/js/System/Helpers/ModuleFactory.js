@@ -222,44 +222,4 @@ export function initVueModule(config = {}) {
     };
 }
 
-/**
- * Crea un componente de tabla genérico
- * @param {Object} config - Configuración de la tabla
- * @returns {Object} Configuración del componente
- */
-export function createTableComponent(config = {}) {
-    const {
-        columns = [],
-        actions = [],
-        loading = false,
-        records = []
-    } = config;
-
-    return {
-        props: {
-            columns: {
-                type: Array,
-                default: () => columns
-            },
-            records: {
-                type: Array,
-                default: () => records
-            },
-            loading: {
-                type: Boolean,
-                default: loading
-            },
-            showActions: {
-                type: Boolean,
-                default: true
-            }
-        },
-        emits: ["edit", "delete", "view", "action"],
-        methods: {
-            handleAction(action, record) {
-                this.$emit("action", { action, record });
-            }
-        }
-    };
-}
 

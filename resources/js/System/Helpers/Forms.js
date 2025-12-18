@@ -20,10 +20,6 @@ export function initFormData(fields = {}) {
     };
 }
 
-/**
- * Crea estructura de datos de formulario estándar (alias de initFormData)
- */
-export const createFormDataStructure = initFormData;
 
 /**
  * Limpia un formulario estableciendo valores por defecto
@@ -105,26 +101,6 @@ export function handleFormErrors(errors, formErrorsObject) {
     }
 }
 
-/**
- * Valida campos requeridos
- * @param {Array} fields - Array de nombres de campos requeridos
- * @param {Object} formData - Datos del formulario
- * @param {Object} errorLabels - Etiquetas de error personalizadas
- * @returns {Object} {bool: boolean, errors: Object}
- */
-export function validateRequired(fields, formData, errorLabels = {}) {
-    const errors = {};
-    let isValid = true;
-
-    fields.forEach(field => {
-        if (!Utils.isDefined({ value: formData[field] })) {
-            errors[field] = [`${errorLabels[field] || field}: Es obligatorio`];
-            isValid = false;
-        }
-    });
-
-    return { bool: isValid, errors };
-}
 
 /**
  * Valida un formulario completo usando reglas de validación

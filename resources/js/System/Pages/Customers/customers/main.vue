@@ -291,7 +291,7 @@
 
 <script>
 import * as Alerts from "@System/Helpers/Alerts.js";
-import * as Crud from "@System/Helpers/Crud.js";
+import { initCrudModule } from "@System/Helpers/ModuleFactory.js";
 import * as Forms from "@System/Helpers/Forms.js";
 import * as Requests from "@System/Helpers/Requests.js";
 import * as Utils from "@System/Helpers/Utils.js";
@@ -401,7 +401,7 @@ export default {
     name: "CustomersMain",
     data() {
 
-        const crudModule = Crud.initCrudModule({entity: MODULE.config.entity, menuId: MODULE.config.menuId, pageTitle: MODULE.config.pageTitle});
+        const crudModule = initCrudModule({entity: MODULE.config.entity, menuId: MODULE.config.menuId, pageTitle: MODULE.config.pageTitle});
 
         crudModule.lists[MODULE.config.entity].filters.filter_by = MODULE.filterOptions[0];
         crudModule.forms[MODULE.config.entity].createUpdate.data = Forms.initFormData(MODULE.formFields);

@@ -14,6 +14,7 @@ export function truncate({value, length = 40}) {
     return value.length > length ? value.slice(0, length) + "..." : value;
 }
 
+
 /**
  * Normaliza un valor opcional (convierte strings vacíos a null)
  * @param {*} value - Valor a normalizar

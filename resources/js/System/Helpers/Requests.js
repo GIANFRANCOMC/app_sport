@@ -3,18 +3,12 @@ import * as Alerts from "./Alerts.js";
 import * as Utils from "./Utils.js";
 import { requestRoute, generalConfig } from "./Constants.js";
 
-export function route() {
-
-    return `${requestRoute}`;
-
-}
-
 export function config({entity = "", type = "", extras = null}) {
 
-    let requestRoute = route({});
+    let baseRoute = `${requestRoute}`;
 
     let config = {
-        routes: generateRoutes({entity, requestRoute})
+        routes: generateRoutes({entity, requestRoute: baseRoute})
     };
 
     if(Utils.isDefined({value: type})) {
@@ -246,7 +240,7 @@ export function generateRoutes({entity, requestRoute}) {
     const specialRoutes = ENTITY_SPECIAL_ROUTES[entity];
     if (specialRoutes) {
         Object.keys(specialRoutes).forEach(key => {
-            baseRoutes[key] = `${requestRoute}/${entity}/${specialRoutes[key]}`;
+            baseRoutes[key] = `${baseRoute}/${entity}/${specialRoutes[key]}`;
         });
     }
 
