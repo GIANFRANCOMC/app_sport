@@ -6,12 +6,10 @@ namespace App\Http\Controllers\System\Essentials;
 
 use App\Exports\{BranchExport, CustomerExport, ItemExport, SaleExport, UserExport};
 use App\Helpers\System\Utilities;
-use App\Http\Controllers\{Controller};
+use App\Http\Controllers\System\Base\BaseController;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\{Auth};
 use stdClass;
 
-use App\Http\Controllers\System\Concerns\{HandlesApiResponses};
 use App\Models\System\Organizations\{User};
 use App\Models\System\Catalogs\{Item};
 use App\Models\System\Customers\{Customer};
@@ -26,9 +24,7 @@ use Carbon\Exceptions\InvalidFormatException;
 use Exception;
 use Maatwebsite\Excel\Facades\Excel;
 
-class ReportController extends Controller {
-
-    use HandlesApiResponses;
+class ReportController extends BaseController {
 
     /**
      * Translation namespace for report module
@@ -43,10 +39,8 @@ class ReportController extends Controller {
      */
     public function initParams(Request $request) {
 
-        $userAuth = Auth::user();
-        $page     = $request->input("page", "");
-
-        return ReportConfigService::getInitParams($userAuth->company_id, $page);
+        $page = $this->getPage($request);
+        return ReportConfigService::getInitParams($this->getCompanyId(), $page);
 
     }
 

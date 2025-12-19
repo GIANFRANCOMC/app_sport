@@ -5,19 +5,15 @@ declare(strict_types=1);
 namespace App\Http\Controllers\System\Organizations;
 
 use Exception;
-use App\Http\Controllers\{Controller};
+use App\Http\Controllers\System\Base\BaseController;
 use App\Helpers\System\{Utilities};
 use Illuminate\Http\{JsonResponse, Request};
-use Illuminate\Support\Facades\{Auth};
 
-use App\Http\Controllers\System\Concerns\{HandlesApiResponses};
 use App\Http\Requests\System\Organizations\Companies\{StoreCompanyRequest, UpdateCompanyRequest};
 use App\Services\System\Organizations\Companies\{CompanyConfigService, CompanyService};
 use App\Models\System\Organizations\{Company};
 
-class CompanyController extends Controller {
-
-    use HandlesApiResponses;
+class CompanyController extends BaseController {
 
     /**
      * Translation namespace for company module
@@ -32,10 +28,8 @@ class CompanyController extends Controller {
      */
     public function initParams(Request $request) {
 
-        $userAuth = Auth::user();
-        $page     = $request->input("page", "");
-
-        return CompanyConfigService::getInitParams($userAuth->company_id, $page);
+        $page = $this->getPage($request);
+        return CompanyConfigService::getInitParams($this->getCompanyId(), $page);
 
     }
 
@@ -125,10 +119,9 @@ class CompanyController extends Controller {
 
         try {
 
-            $userAuth = Auth::user();
-            $company  = CompanyService::findByAuthUser();
+            $company = CompanyService::findByAuthUser();
 
-            if(!Utilities::isDefined($company) || $company->id != $id) {
+            if(!Utilities::isDefined($company) || $company->id !== $id) {
 
                 return $this->notFoundResponse();
 
@@ -136,7 +129,7 @@ class CompanyController extends Controller {
 
             $data  = $this->prepareCompanyData($request);
             $files = $this->prepareCompanyFiles($request);
-            $company = CompanyService::update($company, $data, $files, $userAuth->id);
+            $company = CompanyService::update($company, $data, $files, $this->getUserId());
 
             if(!Utilities::isDefined($company)) {
 
@@ -144,13 +137,13 @@ class CompanyController extends Controller {
 
             }
 
-            CompanyConfigService::clearAllCache($userAuth->company_id);
+            CompanyConfigService::clearAllCache($this->getCompanyId());
 
             return $this->updatedResponse($company, "updated", "company");
 
         }catch(Exception $e) {
 
-            return $this->errorResponse("exception_update", ["message" => $e->getMessage()]);
+            return $this->handleException($e, "update");
 
         }
 

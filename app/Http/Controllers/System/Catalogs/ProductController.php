@@ -5,19 +5,15 @@ declare(strict_types=1);
 namespace App\Http\Controllers\System\Catalogs;
 
 use Exception;
-use App\Http\Controllers\{Controller};
+use App\Http\Controllers\System\Base\BaseController;
 use App\Helpers\System\{Utilities};
 use Illuminate\Http\{JsonResponse, Request};
-use Illuminate\Support\Facades\{Auth};
 
-use App\Http\Controllers\System\Concerns\{HandlesApiResponses};
 use App\Http\Requests\System\Catalogs\Products\{StoreProductRequest, UpdateProductRequest};
 use App\Services\System\Catalogs\Items\{ProductConfigService, ProductService};
 use App\Models\System\Catalogs\{Item};
 
-class ProductController extends Controller {
-
-    use HandlesApiResponses;
+class ProductController extends BaseController {
 
     /**
      * Translation namespace for product module
@@ -32,10 +28,8 @@ class ProductController extends Controller {
      */
     public function initParams(Request $request) {
 
-        $userAuth = Auth::user();
-        $page     = $request->input("page", "");
-
-        return ProductConfigService::getInitParams($userAuth->company_id, $page);
+        $page = $this->getPage($request);
+        return ProductConfigService::getInitParams($this->getCompanyId(), $page);
 
     }
 
@@ -47,11 +41,10 @@ class ProductController extends Controller {
      */
     public function list(Request $request) {
 
-        $userAuth = Auth::user();
-        $filters  = ["filter_by" => $request->input("filter_by"), "word" => $request->input("word")];
-        $perPage  = intval($request->input("per_page") ?? Utilities::$per_page_default);
+        $filters = $this->getFilters($request);
+        $perPage = $this->getPerPage($request, Utilities::$per_page_default);
 
-        return ProductService::getPaginatedList($userAuth->company_id, $filters, $perPage);
+        return ProductService::getPaginatedList($this->getCompanyId(), $filters, $perPage);
 
     }
 
@@ -88,9 +81,8 @@ class ProductController extends Controller {
 
         try {
 
-            $userAuth = Auth::user();
-            $data     = $this->prepareProductData($request, $userAuth);
-            $item     = ProductService::create($data, $userAuth->id);
+            $data = $this->prepareProductData($request);
+            $item = ProductService::create($data, $this->getUserId());
 
             if(!Utilities::isDefined($item)) {
 
@@ -98,13 +90,13 @@ class ProductController extends Controller {
 
             }
 
-            ProductConfigService::clearAllCache($userAuth->company_id);
+            ProductConfigService::clearAllCache($this->getCompanyId());
 
             return $this->createdResponse($item, "created", "item");
 
         }catch(Exception $e) {
 
-            return $this->errorResponse("exception_create", ["message" => $e->getMessage()]);
+            return $this->handleException($e, "create");
 
         }
 
@@ -147,8 +139,7 @@ class ProductController extends Controller {
 
         try {
 
-            $userAuth = Auth::user();
-            $item     = ProductService::findByIdAndCompany($id, $userAuth->company_id);
+            $item = ProductService::findByIdAndCompany($id, $this->getCompanyId());
 
             if(!Utilities::isDefined($item)) {
 
@@ -156,8 +147,8 @@ class ProductController extends Controller {
 
             }
 
-            $data = $this->prepareProductData($request, $userAuth);
-            $item = ProductService::update($item, $data, $userAuth->id);
+            $data = $this->prepareProductData($request);
+            $item = ProductService::update($item, $data, $this->getUserId());
 
             if(!Utilities::isDefined($item)) {
 
@@ -165,13 +156,13 @@ class ProductController extends Controller {
 
             }
 
-            ProductConfigService::clearAllCache($userAuth->company_id);
+            ProductConfigService::clearAllCache($this->getCompanyId());
 
             return $this->updatedResponse($item, "updated", "item");
 
         }catch(Exception $e) {
 
-            return $this->errorResponse("exception_update", ["message" => $e->getMessage()]);
+            return $this->handleException($e, "update");
 
         }
 
@@ -197,9 +188,10 @@ class ProductController extends Controller {
      * @param object|null $userAuth
      * @return array
      */
-    private function prepareProductData($request, ?object $userAuth = null): array {
+    private function prepareProductData($request): array {
 
-        $data = [
+        return [
+            "company_id"         => $this->getCompanyId(),
             "internal_code"      => $request->internal_code,
             "name"               => $request->name,
             "description"        => $request->description ?? "",
@@ -212,14 +204,6 @@ class ProductController extends Controller {
             "status"             => $request->status,
             "categories"          => $request->categories ?? []
         ];
-
-        if($userAuth) {
-
-            $data["company_id"] = $userAuth->company_id;
-
-        }
-
-        return $data;
 
     }
 

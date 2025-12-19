@@ -5,19 +5,15 @@ declare(strict_types=1);
 namespace App\Http\Controllers\System\Catalogs;
 
 use Exception;
-use App\Http\Controllers\{Controller};
+use App\Http\Controllers\System\Base\BaseController;
 use App\Helpers\System\{Utilities};
 use Illuminate\Http\{JsonResponse, Request};
-use Illuminate\Support\Facades\{Auth};
 
-use App\Http\Controllers\System\Concerns\{HandlesApiResponses};
 use App\Http\Requests\System\Catalogs\Categories\{StoreCategoryRequest, UpdateCategoryRequest};
 use App\Services\System\Catalogs\Categories\{CategoryConfigService, CategoryService};
 use App\Models\System\Catalogs\{Category};
 
-class CategoryController extends Controller {
-
-    use HandlesApiResponses;
+class CategoryController extends BaseController {
 
     /**
      * Translation namespace for category module
@@ -32,10 +28,8 @@ class CategoryController extends Controller {
      */
     public function initParams(Request $request) {
 
-        $userAuth = Auth::user();
-        $page     = $request->input("page", "");
-
-        return CategoryConfigService::getInitParams($userAuth->company_id, $page);
+        $page = $this->getPage($request);
+        return CategoryConfigService::getInitParams($this->getCompanyId(), $page);
 
     }
 
@@ -47,11 +41,10 @@ class CategoryController extends Controller {
      */
     public function list(Request $request) {
 
-        $userAuth = Auth::user();
-        $filters  = ["filter_by" => $request->input("filter_by"), "word" => $request->input("word")];
-        $perPage  = intval($request->input("per_page") ?? Utilities::$per_page_default);
+        $filters = $this->getFilters($request);
+        $perPage = $this->getPerPage($request, Utilities::$per_page_default);
 
-        return CategoryService::getPaginatedList($userAuth->company_id, $filters, $perPage);
+        return CategoryService::getPaginatedList($this->getCompanyId(), $filters, $perPage);
 
     }
 
@@ -88,9 +81,8 @@ class CategoryController extends Controller {
 
         try {
 
-            $userAuth = Auth::user();
-            $data     = $this->prepareCategoryData($request, $userAuth);
-            $category = CategoryService::create($data, $userAuth->id);
+            $data     = $this->prepareCategoryData($request);
+            $category = CategoryService::create($data, $this->getUserId());
 
             if(!Utilities::isDefined($category)) {
 
@@ -98,13 +90,13 @@ class CategoryController extends Controller {
 
             }
 
-            CategoryConfigService::clearAllCache($userAuth->company_id);
+            CategoryConfigService::clearAllCache($this->getCompanyId());
 
             return $this->createdResponse($category, "created", "category");
 
         }catch(Exception $e) {
 
-            return $this->errorResponse("exception_create", ["message" => $e->getMessage()]);
+            return $this->handleException($e, "create");
 
         }
 
@@ -147,8 +139,7 @@ class CategoryController extends Controller {
 
         try {
 
-            $userAuth = Auth::user();
-            $category = CategoryService::findByIdAndCompany($id, $userAuth->company_id);
+            $category = CategoryService::findByIdAndCompany($id, $this->getCompanyId());
 
             if(!Utilities::isDefined($category)) {
 
@@ -156,8 +147,8 @@ class CategoryController extends Controller {
 
             }
 
-            $data     = $this->prepareCategoryData($request, $userAuth);
-            $category = CategoryService::update($category, $data, $userAuth->id);
+            $data     = $this->prepareCategoryData($request);
+            $category = CategoryService::update($category, $data, $this->getUserId());
 
             if(!Utilities::isDefined($category)) {
 
@@ -165,13 +156,13 @@ class CategoryController extends Controller {
 
             }
 
-            CategoryConfigService::clearAllCache($userAuth->company_id);
+            CategoryConfigService::clearAllCache($this->getCompanyId());
 
             return $this->updatedResponse($category, "updated", "category");
 
         }catch(Exception $e) {
 
-            return $this->errorResponse("exception_update", ["message" => $e->getMessage()]);
+            return $this->handleException($e, "update");
 
         }
 
@@ -197,22 +188,15 @@ class CategoryController extends Controller {
      * @param object|null $userAuth
      * @return array
      */
-    private function prepareCategoryData($request, ?object $userAuth = null): array {
+    private function prepareCategoryData($request): array {
 
-        $data = [
+        return [
+            "company_id"  => $this->getCompanyId(),
             "internal_code" => $request->internal_code,
             "name"          => $request->name,
             "description"   => $request->description ?? "",
             "status"        => $request->status
         ];
-
-        if($userAuth) {
-
-            $data["company_id"] = $userAuth->company_id;
-
-        }
-
-        return $data;
 
     }
 

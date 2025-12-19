@@ -5,19 +5,15 @@ declare(strict_types=1);
 namespace App\Http\Controllers\System\Customers;
 
 use Exception;
-use App\Http\Controllers\{Controller};
+use App\Http\Controllers\System\Base\BaseController;
 use App\Helpers\System\{Utilities};
 use Illuminate\Http\{JsonResponse, Request};
-use Illuminate\Support\Facades\{Auth};
 
-use App\Http\Controllers\System\Concerns\{HandlesApiResponses};
 use App\Http\Requests\System\Customers\TrackingSubscriptions\{CancelTrackingSubscriptionRequest};
 use App\Services\System\Customers\Tracking\{TrackingSubscriptionConfigService, TrackingSubscriptionService};
 use App\Models\System\Customers\Subscription;
 
-class TrackingSubscriptionController extends Controller {
-
-    use HandlesApiResponses;
+class TrackingSubscriptionController extends BaseController {
 
     /**
      * Translation namespace for tracking subscription module
@@ -32,10 +28,8 @@ class TrackingSubscriptionController extends Controller {
      */
     public function initParams(Request $request) {
 
-        $userAuth = Auth::user();
-        $page     = $request->input("page", "");
-
-        return TrackingSubscriptionConfigService::getInitParams($userAuth->company_id, $page);
+        $page = $this->getPage($request);
+        return TrackingSubscriptionConfigService::getInitParams($this->getCompanyId(), $page);
 
     }
 
@@ -47,17 +41,16 @@ class TrackingSubscriptionController extends Controller {
      */
     public function list(Request $request) {
 
-        $userAuth = Auth::user();
-        $filters  = [
+        $filters = [
             "branch_id"   => $request->input("branch_id"),
             "customer_id" => $request->input("customer_id"),
             "start_date"  => $request->input("start_date"),
             "end_date"    => $request->input("end_date"),
             "status"      => $request->input("status")
         ];
-        $perPage  = intval($request->input("per_page") ?? Utilities::$per_page_default);
+        $perPage = $this->getPerPage($request, Utilities::$per_page_default);
 
-        return TrackingSubscriptionService::getPaginatedList($userAuth->company_id, $filters, $perPage);
+        return TrackingSubscriptionService::getPaginatedList($this->getCompanyId(), $filters, $perPage);
 
     }
 
@@ -108,24 +101,23 @@ class TrackingSubscriptionController extends Controller {
 
         try {
 
-            $userAuth = Auth::user();
             $subscription = Subscription::findOrFail($id);
 
-            if(!Utilities::isDefined($subscription) || $subscription->company_id != $userAuth->company_id) {
+            if(!Utilities::isDefined($subscription) || $subscription->company_id !== $this->getCompanyId()) {
 
                 return $this->notFoundResponse();
 
             }
 
-            $subscription = TrackingSubscriptionService::cancel($subscription, $request->motive, $userAuth->id);
+            $subscription = TrackingSubscriptionService::cancel($subscription, $request->motive, $this->getUserId());
 
-            TrackingSubscriptionConfigService::clearAllCache($userAuth->company_id);
+            TrackingSubscriptionConfigService::clearAllCache($this->getCompanyId());
 
             return $this->updatedResponse($subscription, "canceled", "subscription");
 
         }catch(Exception $e) {
 
-            return $this->errorResponse("exception_cancel", ["message" => $e->getMessage()]);
+            return $this->handleException($e, "cancel");
 
         }
 

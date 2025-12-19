@@ -4,17 +4,13 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\System\Essentials;
 
-use App\Http\Controllers\{Controller};
+use App\Http\Controllers\System\Base\BaseController;
 use App\Helpers\System\{Utilities};
 use Illuminate\Http\{JsonResponse, Request};
-use Illuminate\Support\Facades\{Auth};
 
-use App\Http\Controllers\System\Concerns\{HandlesApiResponses};
 use App\Services\System\Essentials\{DashboardConfigService, DashboardService};
 
-class DashboardController extends Controller {
-
-    use HandlesApiResponses;
+class DashboardController extends BaseController {
 
     /**
      * Translation namespace for dashboard module
@@ -29,10 +25,8 @@ class DashboardController extends Controller {
      */
     public function initParams(Request $request) {
 
-        $userAuth = Auth::user();
-        $page     = $request->input("page", "");
-
-        return DashboardConfigService::getInitParams($userAuth->company_id, $page);
+        $page = $this->getPage($request);
+        return DashboardConfigService::getInitParams($this->getCompanyId(), $page);
 
     }
 
@@ -55,12 +49,11 @@ class DashboardController extends Controller {
      */
     public function initData(Request $request): JsonResponse {
 
-        $userAuth = Auth::user();
-        $date     = Utilities::isDefined($request->date) && Utilities::isValidDateFormat($request->date) 
-                    ? $request->date 
-                    : date("Y-m-d");
+        $date = Utilities::isDefined($request->date) && Utilities::isValidDateFormat($request->date) 
+                ? $request->date 
+                : date("Y-m-d");
 
-        $data = DashboardService::getDashboardData($userAuth->company_id, $date);
+        $data = DashboardService::getDashboardData($this->getCompanyId(), $date);
 
         return $this->successResponse($data, "data_obtained");
 

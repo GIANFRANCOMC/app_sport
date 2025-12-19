@@ -31,11 +31,8 @@ class TrackingCustomerController extends BaseController {
 
     public function list(Request $request) {
 
-        $userAuth = Auth::user();
-
-        $list = [];
-
-        return $list;
+        // Not implemented - tracking is handled by getTracking method
+        return [];
 
     }
 

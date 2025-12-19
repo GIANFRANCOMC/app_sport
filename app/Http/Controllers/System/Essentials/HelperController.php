@@ -5,17 +5,14 @@ declare(strict_types=1);
 namespace App\Http\Controllers\System\Essentials;
 
 use App\Helpers\System\{ApiResponse, Utilities};
-use App\Http\Controllers\Controller;
-use App\Http\Controllers\System\Concerns\HandlesApiResponses;
+use App\Http\Controllers\System\Base\BaseController;
 use App\Mail\SaleMail;
 use Exception;
 use Illuminate\Http\{JsonResponse, Request};
-use Illuminate\Support\Facades\{Auth, DB, Mail};
+use Illuminate\Support\Facades\{DB, Mail};
 use stdClass;
 
-class HelperController extends Controller {
-
-    use HandlesApiResponses;
+class HelperController extends BaseController {
 
     /**
      * Translation namespace for helper module
@@ -24,7 +21,7 @@ class HelperController extends Controller {
 
     public function searchDocumentNumber(Request $request) {
 
-        $user    = Auth::user();
+        $user    = $this->getAuthUser();
         $company = $user->company;
 
         $bool = false;

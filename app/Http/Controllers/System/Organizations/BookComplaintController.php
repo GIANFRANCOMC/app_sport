@@ -5,19 +5,15 @@ declare(strict_types=1);
 namespace App\Http\Controllers\System\Organizations;
 
 use Exception;
-use App\Http\Controllers\{Controller};
+use App\Http\Controllers\System\Base\BaseController;
 use App\Helpers\System\{Utilities};
 use Illuminate\Http\{JsonResponse, Request};
-use Illuminate\Support\Facades\{Auth};
 
-use App\Http\Controllers\System\Concerns\{HandlesApiResponses};
 use App\Http\Requests\System\Organizations\BookComplaints\{UpdateBookComplaintRequest};
 use App\Services\System\Organizations\BookComplaints\{BookComplaintConfigService, BookComplaintService};
 use App\Models\System\Organizations\{BookComplaint};
 
-class BookComplaintController extends Controller {
-
-    use HandlesApiResponses;
+class BookComplaintController extends BaseController {
 
     /**
      * Translation namespace for book complaint module
@@ -32,10 +28,8 @@ class BookComplaintController extends Controller {
      */
     public function initParams(Request $request) {
 
-        $userAuth = Auth::user();
-        $page     = $request->input("page", "");
-
-        return BookComplaintConfigService::getInitParams($userAuth->company_id, $page);
+        $page = $this->getPage($request);
+        return BookComplaintConfigService::getInitParams($this->getCompanyId(), $page);
 
     }
 
@@ -47,11 +41,10 @@ class BookComplaintController extends Controller {
      */
     public function list(Request $request) {
 
-        $userAuth = Auth::user();
-        $filters  = ["filter_by" => $request->input("filter_by"), "word" => $request->input("word")];
-        $perPage  = intval($request->input("per_page") ?? Utilities::$per_page_default);
+        $filters = $this->getFilters($request);
+        $perPage = $this->getPerPage($request, Utilities::$per_page_default);
 
-        return BookComplaintService::getPaginatedList($userAuth->company_id, $filters, $perPage);
+        return BookComplaintService::getPaginatedList($this->getCompanyId(), $filters, $perPage);
 
     }
 
@@ -127,8 +120,7 @@ class BookComplaintController extends Controller {
 
         try {
 
-            $userAuth     = Auth::user();
-            $bookComplaint = BookComplaintService::findByIdAndCompany($id, $userAuth->company_id);
+            $bookComplaint = BookComplaintService::findByIdAndCompany($id, $this->getCompanyId());
 
             if(!Utilities::isDefined($bookComplaint)) {
 
@@ -137,7 +129,7 @@ class BookComplaintController extends Controller {
             }
 
             $data         = $this->prepareBookComplaintData($request);
-            $bookComplaint = BookComplaintService::update($bookComplaint, $data, $userAuth->id);
+            $bookComplaint = BookComplaintService::update($bookComplaint, $data, $this->getUserId());
 
             if(!Utilities::isDefined($bookComplaint)) {
 
@@ -145,13 +137,13 @@ class BookComplaintController extends Controller {
 
             }
 
-            BookComplaintConfigService::clearAllCache($userAuth->company_id);
+            BookComplaintConfigService::clearAllCache($this->getCompanyId());
 
             return $this->updatedResponse($bookComplaint, "updated", "bookComplaint");
 
         }catch(Exception $e) {
 
-            return $this->errorResponse("exception_update", ["message" => $e->getMessage()]);
+            return $this->handleException($e, "update");
 
         }
 

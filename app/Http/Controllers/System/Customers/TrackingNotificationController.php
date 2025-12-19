@@ -4,18 +4,14 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\System\Customers;
 
-use App\Http\Controllers\{Controller};
+use App\Http\Controllers\System\Base\BaseController;
 use App\Helpers\System\{Utilities};
 use Illuminate\Http\{Request, JsonResponse};
-use Illuminate\Support\Facades\{Auth};
 
-use App\Http\Controllers\System\Concerns\{HandlesApiResponses};
 use App\Services\System\Customers\Tracking\{TrackingNotificationConfigService, TrackingNotificationService};
 use App\Models\System\Customers\{SubscriptionEmail};
 
-class TrackingNotificationController extends Controller {
-
-    use HandlesApiResponses;
+class TrackingNotificationController extends BaseController {
 
     /**
      * Translation namespace for tracking notification module
@@ -30,10 +26,8 @@ class TrackingNotificationController extends Controller {
      */
     public function initParams(Request $request) {
 
-        $userAuth = Auth::user();
-        $page     = $request->input("page", "");
-
-        return TrackingNotificationConfigService::getInitParams($userAuth->company_id, $page);
+        $page = $this->getPage($request);
+        return TrackingNotificationConfigService::getInitParams($this->getCompanyId(), $page);
 
     }
 
@@ -45,11 +39,10 @@ class TrackingNotificationController extends Controller {
      */
     public function list(Request $request) {
 
-        $userAuth = Auth::user();
-        $filters  = ["status" => $request->input("status")];
-        $perPage  = intval($request->input("per_page") ?? Utilities::$per_page_default);
+        $filters = ["status" => $request->input("status")];
+        $perPage = $this->getPerPage($request, Utilities::$per_page_default);
 
-        return TrackingNotificationService::getPaginatedList($userAuth->company_id, $filters, $perPage);
+        return TrackingNotificationService::getPaginatedList($this->getCompanyId(), $filters, $perPage);
 
     }
 

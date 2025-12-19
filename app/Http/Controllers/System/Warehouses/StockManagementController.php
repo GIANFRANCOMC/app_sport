@@ -5,17 +5,13 @@ declare(strict_types=1);
 namespace App\Http\Controllers\System\Warehouses;
 
 use Exception;
-use App\Http\Controllers\{Controller};
+use App\Http\Controllers\System\Base\BaseController;
 use App\Helpers\System\{Utilities};
 use Illuminate\Http\{JsonResponse, Request};
-use Illuminate\Support\Facades\{Auth};
 
-use App\Http\Controllers\System\Concerns\{HandlesApiResponses};
 use App\Services\System\Warehouses\{StockManagementConfigService, StockManagementService};
 
-class StockManagementController extends Controller {
-
-    use HandlesApiResponses;
+class StockManagementController extends BaseController {
 
     /**
      * Translation namespace for stock management module
@@ -30,10 +26,8 @@ class StockManagementController extends Controller {
      */
     public function initParams(Request $request) {
 
-        $userAuth = Auth::user();
-        $page     = $request->input("page", "");
-
-        return StockManagementConfigService::getInitParams($userAuth->company_id, $page);
+        $page = $this->getPage($request);
+        return StockManagementConfigService::getInitParams($this->getCompanyId(), $page);
 
     }
 
@@ -45,11 +39,10 @@ class StockManagementController extends Controller {
      */
     public function list(Request $request) {
 
-        $userAuth   = Auth::user();
         $warehouseId = intval($request->input("warehouse_id"));
-        $perPage    = intval($request->input("per_page") ?? Utilities::$per_page_max);
+        $perPage     = $this->getPerPage($request, Utilities::$per_page_max);
 
-        return StockManagementService::getPaginatedList($userAuth->company_id, $warehouseId, $perPage);
+        return StockManagementService::getPaginatedList($this->getCompanyId(), $warehouseId, $perPage);
 
     }
 
@@ -86,10 +79,9 @@ class StockManagementController extends Controller {
 
         try {
 
-            $userAuth   = Auth::user();
             $warehouseId = intval($request->input("warehouse_id"));
 
-            $warehouse = StockManagementService::validateWarehouse($warehouseId, $userAuth->company_id);
+            $warehouse = StockManagementService::validateWarehouse($warehouseId, $this->getCompanyId());
 
             if(!Utilities::isDefined($warehouse)) {
 
@@ -99,7 +91,7 @@ class StockManagementController extends Controller {
 
             $items = $request->input("items", []);
 
-            $success = StockManagementService::updateStock($warehouse->id, $items, $userAuth->id);
+            $success = StockManagementService::updateStock($warehouse->id, $items, $this->getUserId());
 
             if(!$success) {
 
@@ -107,13 +99,13 @@ class StockManagementController extends Controller {
 
             }
 
-            StockManagementConfigService::clearAllCache($userAuth->company_id);
+            StockManagementConfigService::clearAllCache($this->getCompanyId());
 
             return $this->successResponse(null, "stock_updated_successfully");
 
         }catch(Exception $e) {
 
-            return $this->errorResponse("exception_update", ["message" => $e->getMessage()]);
+            return $this->handleException($e, "update");
 
         }
 

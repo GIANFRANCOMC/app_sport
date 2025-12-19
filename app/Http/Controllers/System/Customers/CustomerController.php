@@ -5,19 +5,15 @@ declare(strict_types=1);
 namespace App\Http\Controllers\System\Customers;
 
 use Exception;
-use App\Http\Controllers\{Controller};
+use App\Http\Controllers\System\Base\BaseController;
 use App\Helpers\System\{Utilities};
 use Illuminate\Http\{JsonResponse, Request};
-use Illuminate\Support\Facades\{Auth};
 
-use App\Http\Controllers\System\Concerns\{HandlesApiResponses};
 use App\Http\Requests\System\Customers\Customers\{StoreCustomerRequest, UpdateCustomerRequest};
 use App\Services\System\Customers\{CustomerConfigService, CustomerService};
 use App\Models\System\Customers\{Customer, Subscription};
 
-class CustomerController extends Controller {
-
-    use HandlesApiResponses;
+class CustomerController extends BaseController {
 
     /**
      * Translation namespace for customer module
@@ -32,10 +28,8 @@ class CustomerController extends Controller {
      */
     public function initParams(Request $request) {
 
-        $userAuth = Auth::user();
-        $page     = $request->input("page", "");
-
-        return CustomerConfigService::getInitParams($userAuth->company_id, $page);
+        $page = $this->getPage($request);
+        return CustomerConfigService::getInitParams($this->getCompanyId(), $page);
 
     }
 
@@ -47,11 +41,10 @@ class CustomerController extends Controller {
      */
     public function list(Request $request) {
 
-        $userAuth = Auth::user();
-        $filters  = ["filter_by" => $request->input("filter_by"), "word" => $request->input("word")];
-        $perPage  = intval($request->input("per_page") ?? Utilities::$per_page_default);
+        $filters = $this->getFilters($request);
+        $perPage = $this->getPerPage($request, Utilities::$per_page_default);
 
-        return CustomerService::getPaginatedList($userAuth->company_id, $filters, $perPage);
+        return CustomerService::getPaginatedList($this->getCompanyId(), $filters, $perPage);
 
     }
 
@@ -88,9 +81,8 @@ class CustomerController extends Controller {
 
         try {
 
-            $userAuth = Auth::user();
-            $data     = $this->prepareCustomerData($request, $userAuth);
-            $customer = CustomerService::create($data, $userAuth->id);
+            $data     = $this->prepareCustomerData($request);
+            $customer = CustomerService::create($data, $this->getUserId());
 
             if(!Utilities::isDefined($customer)) {
 
@@ -98,13 +90,13 @@ class CustomerController extends Controller {
 
             }
 
-            CustomerConfigService::clearAllCache($userAuth->company_id);
+            CustomerConfigService::clearAllCache($this->getCompanyId());
 
             return $this->createdResponse($customer, "created", "customer");
 
         }catch(Exception $e) {
 
-            return $this->errorResponse("exception_create", ["message" => $e->getMessage()]);
+            return $this->handleException($e, "create");
 
         }
 
@@ -147,8 +139,7 @@ class CustomerController extends Controller {
 
         try {
 
-            $userAuth = Auth::user();
-            $customer = CustomerService::findByIdAndCompany($id, $userAuth->company_id);
+            $customer = CustomerService::findByIdAndCompany($id, $this->getCompanyId());
 
             if(!Utilities::isDefined($customer)) {
 
@@ -156,8 +147,8 @@ class CustomerController extends Controller {
 
             }
 
-            $data     = $this->prepareCustomerData($request, $userAuth);
-            $customer = CustomerService::update($customer, $data, $userAuth->id);
+            $data     = $this->prepareCustomerData($request);
+            $customer = CustomerService::update($customer, $data, $this->getUserId());
 
             if(!Utilities::isDefined($customer)) {
 
@@ -165,13 +156,13 @@ class CustomerController extends Controller {
 
             }
 
-            CustomerConfigService::clearAllCache($userAuth->company_id);
+            CustomerConfigService::clearAllCache($this->getCompanyId());
 
             return $this->updatedResponse($customer, "updated", "customer");
 
         }catch(Exception $e) {
 
-            return $this->errorResponse("exception_update", ["message" => $e->getMessage()]);
+            return $this->handleException($e, "update");
 
         }
 
@@ -198,25 +189,28 @@ class CustomerController extends Controller {
      */
     public function getSubscriptions(int $id): JsonResponse {
 
-        $userAuth = Auth::user();
+        try {
 
-        $customer = CustomerService::findByIdAndCompany($id, $userAuth->company_id);
+            $customer = CustomerService::findByIdAndCompany($id, $this->getCompanyId());
 
-        $subscriptions = [];
+            if(!Utilities::isDefined($customer)) {
 
-        if(Utilities::isDefined($customer)) {
+                return $this->errorResponse("not_found", [], 404);
 
-            $subscriptions = Subscription::where("company_id", $userAuth->company_id)
+            }
+
+            $subscriptions = Subscription::where("company_id", $this->getCompanyId())
                                          ->where("customer_id", $customer->id)
                                          ->whereIn("status", ["active"])
                                          ->get();
 
+            return $this->successResponse(["subscriptions" => $subscriptions], "retrieved");
+
+        }catch(\Exception $e) {
+
+            return $this->handleException($e, "retrieve");
+
         }
-
-        $bool = Utilities::isDefined($customer);
-        $msg  = $bool ? "Membresías encontradas." : "No se ha podido identificar el cliente.";
-
-        return response()->json(["bool" => $bool, "msg" => $msg, "subscriptions" => $subscriptions], 200);
 
     }
 
@@ -227,9 +221,10 @@ class CustomerController extends Controller {
      * @param object|null $userAuth
      * @return array
      */
-    private function prepareCustomerData($request, ?object $userAuth = null): array {
+    private function prepareCustomerData($request): array {
 
-        $data = [
+        return [
+            "company_id"                => $this->getCompanyId(),
             "identity_document_type_id" => $request->identity_document_type_id,
             "document_number"           => $request->document_number,
             "name"                      => $request->name,
@@ -239,14 +234,6 @@ class CustomerController extends Controller {
             "birthdate"                 => $request->birthdate,
             "status"                    => $request->status
         ];
-
-        if($userAuth) {
-
-            $data["company_id"] = $userAuth->company_id;
-
-        }
-
-        return $data;
 
     }
 

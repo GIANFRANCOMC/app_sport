@@ -5,19 +5,15 @@ declare(strict_types=1);
 namespace App\Http\Controllers\System\Organizations;
 
 use Exception;
-use App\Http\Controllers\{Controller};
+use App\Http\Controllers\System\Base\BaseController;
 use App\Helpers\System\{Utilities};
 use Illuminate\Http\{JsonResponse, Request};
-use Illuminate\Support\Facades\{Auth};
 
-use App\Http\Controllers\System\Concerns\{HandlesApiResponses};
 use App\Http\Requests\System\Organizations\Users\{StoreUserRequest, UpdateUserRequest};
 use App\Services\System\Organizations\Users\{UserConfigService, UserService};
 use App\Models\System\Organizations\{User};
 
-class UserController extends Controller {
-
-    use HandlesApiResponses;
+class UserController extends BaseController {
 
     /**
      * Translation namespace for user module
@@ -32,10 +28,8 @@ class UserController extends Controller {
      */
     public function initParams(Request $request) {
 
-        $userAuth = Auth::user();
-        $page     = $request->input("page", "");
-
-        return UserConfigService::getInitParams($userAuth->company_id, $page);
+        $page = $this->getPage($request);
+        return UserConfigService::getInitParams($this->getCompanyId(), $page);
 
     }
 
@@ -47,11 +41,10 @@ class UserController extends Controller {
      */
     public function list(Request $request) {
 
-        $userAuth = Auth::user();
-        $filters  = ["filter_by" => $request->input("filter_by"), "word" => $request->input("word")];
-        $perPage  = intval($request->input("per_page") ?? Utilities::$per_page_default);
+        $filters = $this->getFilters($request);
+        $perPage = $this->getPerPage($request, Utilities::$per_page_default);
 
-        return UserService::getPaginatedList($userAuth->company_id, $filters, $perPage);
+        return UserService::getPaginatedList($this->getCompanyId(), $filters, $perPage);
 
     }
 
@@ -88,9 +81,8 @@ class UserController extends Controller {
 
         try {
 
-            $userAuth = Auth::user();
-            $data     = $this->prepareUserData($request, $userAuth);
-            $user     = UserService::create($data, $userAuth->id);
+            $data = $this->prepareUserData($request);
+            $user = UserService::create($data, $this->getUserId());
 
             if(!Utilities::isDefined($user)) {
 
@@ -98,13 +90,13 @@ class UserController extends Controller {
 
             }
 
-            UserConfigService::clearAllCache($userAuth->company_id);
+            UserConfigService::clearAllCache($this->getCompanyId());
 
             return $this->createdResponse($user, "created", "user");
 
         }catch(Exception $e) {
 
-            return $this->errorResponse("exception_create", ["message" => $e->getMessage()]);
+            return $this->handleException($e, "create");
 
         }
 
@@ -147,8 +139,7 @@ class UserController extends Controller {
 
         try {
 
-            $userAuth = Auth::user();
-            $user     = UserService::findByIdAndCompany($id, $userAuth->company_id);
+            $user = UserService::findByIdAndCompany($id, $this->getCompanyId());
 
             if(!Utilities::isDefined($user)) {
 
@@ -156,8 +147,8 @@ class UserController extends Controller {
 
             }
 
-            $data = $this->prepareUserData($request, $userAuth);
-            $user = UserService::update($user, $data, $userAuth->id);
+            $data = $this->prepareUserData($request);
+            $user = UserService::update($user, $data, $this->getUserId());
 
             if(!Utilities::isDefined($user)) {
 
@@ -165,13 +156,13 @@ class UserController extends Controller {
 
             }
 
-            UserConfigService::clearAllCache($userAuth->company_id);
+            UserConfigService::clearAllCache($this->getCompanyId());
 
             return $this->updatedResponse($user, "updated", "user");
 
         }catch(Exception $e) {
 
-            return $this->errorResponse("exception_update", ["message" => $e->getMessage()]);
+            return $this->handleException($e, "update");
 
         }
 
@@ -197,9 +188,10 @@ class UserController extends Controller {
      * @param object|null $userAuth
      * @return array
      */
-    private function prepareUserData($request, ?object $userAuth = null): array {
+    private function prepareUserData($request): array {
 
         $data = [
+            "company_id"                => $this->getCompanyId(),
             "role_id"                   => $request->role_id,
             "identity_document_type_id" => $request->identity_document_type_id,
             "document_number"           => $request->document_number,
@@ -210,12 +202,6 @@ class UserController extends Controller {
             "birthdate"                 => $request->birthdate,
             "status"                    => $request->status
         ];
-
-        if($userAuth) {
-
-            $data["company_id"] = $userAuth->company_id;
-
-        }
 
         // Only include password if provided
         if(Utilities::isDefined($request->password)) {

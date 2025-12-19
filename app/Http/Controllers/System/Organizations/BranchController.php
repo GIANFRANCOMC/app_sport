@@ -5,19 +5,15 @@ declare(strict_types=1);
 namespace App\Http\Controllers\System\Organizations;
 
 use Exception;
-use App\Http\Controllers\{Controller};
+use App\Http\Controllers\System\Base\BaseController;
 use App\Helpers\System\{Utilities};
 use Illuminate\Http\{JsonResponse, Request};
-use Illuminate\Support\Facades\{Auth};
 
-use App\Http\Controllers\System\Concerns\{HandlesApiResponses};
 use App\Http\Requests\System\Organizations\Branches\{StoreBranchRequest, UpdateBranchRequest};
 use App\Services\System\Organizations\Branches\{BranchConfigService, BranchService};
 use App\Models\System\Organizations\{Branch};
 
-class BranchController extends Controller {
-
-    use HandlesApiResponses;
+class BranchController extends BaseController {
 
     /**
      * Translation namespace for branch module
@@ -32,10 +28,8 @@ class BranchController extends Controller {
      */
     public function initParams(Request $request) {
 
-        $userAuth = Auth::user();
-        $page     = $request->input("page", "");
-
-        return BranchConfigService::getInitParams($userAuth->company_id, $page);
+        $page = $this->getPage($request);
+        return BranchConfigService::getInitParams($this->getCompanyId(), $page);
 
     }
 
@@ -47,11 +41,10 @@ class BranchController extends Controller {
      */
     public function list(Request $request) {
 
-        $userAuth = Auth::user();
-        $filters  = ["filter_by" => $request->input("filter_by"), "word" => $request->input("word")];
-        $perPage  = intval($request->input("per_page") ?? Utilities::$per_page_default);
+        $filters = $this->getFilters($request);
+        $perPage = $this->getPerPage($request, Utilities::$per_page_default);
 
-        return BranchService::getPaginatedList($userAuth->company_id, $filters, $perPage);
+        return BranchService::getPaginatedList($this->getCompanyId(), $filters, $perPage);
 
     }
 
@@ -88,9 +81,8 @@ class BranchController extends Controller {
 
         try {
 
-            $userAuth = Auth::user();
-            $data     = $this->prepareBranchData($request, $userAuth);
-            $branch   = BranchService::create($data, $userAuth->id);
+            $data   = $this->prepareBranchData($request);
+            $branch = BranchService::create($data, $this->getUserId());
 
             if(!Utilities::isDefined($branch)) {
 
@@ -98,13 +90,13 @@ class BranchController extends Controller {
 
             }
 
-            BranchConfigService::clearAllCache($userAuth->company_id);
+            BranchConfigService::clearAllCache($this->getCompanyId());
 
             return $this->createdResponse($branch, "created", "branch");
 
         }catch(Exception $e) {
 
-            return $this->errorResponse("exception_create", ["message" => $e->getMessage()]);
+            return $this->handleException($e, "create");
 
         }
 
@@ -147,8 +139,7 @@ class BranchController extends Controller {
 
         try {
 
-            $userAuth = Auth::user();
-            $branch   = BranchService::findByIdAndCompany($id, $userAuth->company_id);
+            $branch = BranchService::findByIdAndCompany($id, $this->getCompanyId());
 
             if(!Utilities::isDefined($branch)) {
 
@@ -156,8 +147,8 @@ class BranchController extends Controller {
 
             }
 
-            $data   = $this->prepareBranchData($request, $userAuth);
-            $branch = BranchService::update($branch, $data, $userAuth->id);
+            $data   = $this->prepareBranchData($request);
+            $branch = BranchService::update($branch, $data, $this->getUserId());
 
             if(!Utilities::isDefined($branch)) {
 
@@ -165,13 +156,13 @@ class BranchController extends Controller {
 
             }
 
-            BranchConfigService::clearAllCache($userAuth->company_id);
+            BranchConfigService::clearAllCache($this->getCompanyId());
 
             return $this->updatedResponse($branch, "updated", "branch");
 
         }catch(Exception $e) {
 
-            return $this->errorResponse("exception_update", ["message" => $e->getMessage()]);
+            return $this->handleException($e, "update");
 
         }
 
@@ -197,9 +188,10 @@ class BranchController extends Controller {
      * @param object|null $userAuth
      * @return array
      */
-    private function prepareBranchData($request, ?object $userAuth = null): array {
+    private function prepareBranchData($request): array {
 
-        $data = [
+        return [
+            "company_id"  => $this->getCompanyId(),
             "internal_code" => $request->internal_code,
             "name"          => $request->name,
             "address"       => $request->address,
@@ -210,14 +202,6 @@ class BranchController extends Controller {
             "map_url"       => $request->map_url,
             "status"        => $request->status
         ];
-
-        if($userAuth) {
-
-            $data["company_id"] = $userAuth->company_id;
-
-        }
-
-        return $data;
 
     }
 

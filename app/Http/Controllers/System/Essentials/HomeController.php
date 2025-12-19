@@ -5,17 +5,14 @@ declare(strict_types=1);
 namespace App\Http\Controllers\System\Essentials;
 
 use App\Helpers\System\{ApiResponse, Utilities};
-use App\Http\Controllers\Controller;
-use App\Http\Controllers\System\Concerns\HandlesApiResponses;
+use App\Http\Controllers\System\Base\BaseController;
 use Illuminate\Http\{JsonResponse, Request};
-use Illuminate\Support\Facades\{Auth, DB};
+use Illuminate\Support\Facades\{DB};
 use stdClass;
 
 use App\Models\System\Organizations\{UserPreference};
 
-class HomeController extends Controller {
-
-    use HandlesApiResponses;
+class HomeController extends BaseController {
 
     /**
      * Translation namespace for home module
@@ -51,7 +48,7 @@ class HomeController extends Controller {
 
     public function update(Request $request, $id) {
 
-        $userAuth = Auth::user();
+        $user = $this->getAuthUser();
 
         $data = [
             "show_actions" => $request["show_actions"],
@@ -65,11 +62,11 @@ class HomeController extends Controller {
             ]
         ];
 
-        $updateItems = UserPreference::updateItems($userAuth->id, "config_companies_sub_sections", $data);
+        $updateItems = UserPreference::updateItems($user->id, "config_companies_sub_sections", $data);
 
         if($updateItems["bool"]) {
 
-            return ApiResponse::success(["preferences" => $userAuth->formatted_preferences], "Cambio realizado.");
+            return ApiResponse::success(["preferences" => $user->formatted_preferences], "Cambio realizado.");
 
         }
 

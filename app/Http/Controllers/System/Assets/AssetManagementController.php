@@ -5,19 +5,15 @@ declare(strict_types=1);
 namespace App\Http\Controllers\System\Assets;
 
 use Exception;
-use App\Http\Controllers\{Controller};
+use App\Http\Controllers\System\Base\BaseController;
 use App\Helpers\System\{Utilities};
 use Illuminate\Http\{JsonResponse, Request};
-use Illuminate\Support\Facades\{Auth};
 use Illuminate\Pagination\LengthAwarePaginator;
 
-use App\Http\Controllers\System\Concerns\{HandlesApiResponses};
 use App\Http\Requests\System\Assets\AssetManagements\{AssignAssetToBranchRequest, UnassignAssetFromBranchRequest};
 use App\Services\System\Assets\{AssetManagementConfigService, AssetManagementService};
 
-class AssetManagementController extends Controller {
-
-    use HandlesApiResponses;
+class AssetManagementController extends BaseController {
 
     /**
      * Translation namespace for asset management module
@@ -32,10 +28,8 @@ class AssetManagementController extends Controller {
      */
     public function initParams(Request $request) {
 
-        $userAuth = Auth::user();
-        $page     = $request->input("page", "");
-
-        return AssetManagementConfigService::getInitParams($userAuth->company_id, $page);
+        $page = $this->getPage($request);
+        return AssetManagementConfigService::getInitParams($this->getCompanyId(), $page);
 
     }
 
@@ -47,10 +41,9 @@ class AssetManagementController extends Controller {
      */
     public function list(Request $request): LengthAwarePaginator {
 
-        $userAuth = Auth::user();
         $branchId = intval($request->input("branch_id"));
 
-        $branch = AssetManagementService::validateBranch($branchId, $userAuth->company_id);
+        $branch = AssetManagementService::validateBranch($branchId, $this->getCompanyId());
 
         if(!Utilities::isDefined($branch)) {
 
@@ -163,10 +156,9 @@ class AssetManagementController extends Controller {
 
         try {
 
-            $userAuth = Auth::user();
             $branchId = intval($request->branch_id);
 
-            $branch = AssetManagementService::validateBranch($branchId, $userAuth->company_id);
+            $branch = AssetManagementService::validateBranch($branchId, $this->getCompanyId());
 
             if(!Utilities::isDefined($branch)) {
 
@@ -177,8 +169,8 @@ class AssetManagementController extends Controller {
             $information = AssetManagementService::assignAssetsToBranch(
                 $branch->id,
                 $request->branch_assets ?? [],
-                $userAuth->company_id,
-                $userAuth->id
+                $this->getCompanyId(),
+                $this->getUserId()
             );
 
             $bool = $information["success"]["counter"] > 0;
@@ -189,13 +181,13 @@ class AssetManagementController extends Controller {
 
             }
 
-            AssetManagementConfigService::clearAllCache($userAuth->company_id);
+            AssetManagementConfigService::clearAllCache($this->getCompanyId());
 
             return $this->successResponse($information, "assigned_successfully");
 
         }catch(Exception $e) {
 
-            return $this->errorResponse("exception_assign", ["message" => $e->getMessage()]);
+            return $this->handleException($e, "assign");
 
         }
 
@@ -211,10 +203,9 @@ class AssetManagementController extends Controller {
 
         try {
 
-            $userAuth = Auth::user();
             $branchId = intval($request->branch_id);
 
-            $branch = AssetManagementService::validateBranch($branchId, $userAuth->company_id);
+            $branch = AssetManagementService::validateBranch($branchId, $this->getCompanyId());
 
             if(!Utilities::isDefined($branch)) {
 
@@ -225,7 +216,7 @@ class AssetManagementController extends Controller {
             $information = AssetManagementService::unassignAssetsFromBranch(
                 $branch->id,
                 $request->branch_assets ?? [],
-                $userAuth->id
+                $this->getUserId()
             );
 
             $bool = $information["success"]["counter"] > 0;
@@ -236,13 +227,13 @@ class AssetManagementController extends Controller {
 
             }
 
-            AssetManagementConfigService::clearAllCache($userAuth->company_id);
+            AssetManagementConfigService::clearAllCache($this->getCompanyId());
 
             return $this->successResponse($information, "unassigned_successfully");
 
         }catch(Exception $e) {
 
-            return $this->errorResponse("exception_unassign", ["message" => $e->getMessage()]);
+            return $this->handleException($e, "unassign");
 
         }
 
@@ -258,10 +249,9 @@ class AssetManagementController extends Controller {
 
         try {
 
-            $userAuth = Auth::user();
             $branchId = intval($request->input("branch_id"));
 
-            $branch = AssetManagementService::validateBranch($branchId, $userAuth->company_id);
+            $branch = AssetManagementService::validateBranch($branchId, $this->getCompanyId());
 
             if(!Utilities::isDefined($branch)) {
 
@@ -284,7 +274,7 @@ class AssetManagementController extends Controller {
                 $branchAssetId,
                 $assetId,
                 $data,
-                $userAuth->id
+                $this->getUserId()
             );
 
             if(!Utilities::isDefined($branchAsset)) {
@@ -293,13 +283,13 @@ class AssetManagementController extends Controller {
 
             }
 
-            AssetManagementConfigService::clearAllCache($userAuth->company_id);
+            AssetManagementConfigService::clearAllCache($this->getCompanyId());
 
             return $this->successResponse($branchAsset, "updated_successfully");
 
         }catch(Exception $e) {
 
-            return $this->errorResponse("exception_update", ["message" => $e->getMessage()]);
+            return $this->handleException($e, "update");
 
         }
 
@@ -315,10 +305,9 @@ class AssetManagementController extends Controller {
 
         try {
 
-            $userAuth = Auth::user();
             $branchId = intval($request->input("branch_id"));
 
-            $branch = AssetManagementService::validateBranch($branchId, $userAuth->company_id);
+            $branch = AssetManagementService::validateBranch($branchId, $this->getCompanyId());
 
             if(!Utilities::isDefined($branch)) {
 
@@ -334,7 +323,7 @@ class AssetManagementController extends Controller {
 
         }catch(Exception $e) {
 
-            return $this->errorResponse("exception_get_assignments", ["message" => $e->getMessage()]);
+            return $this->handleException($e, "get_assignments");
 
         }
 
@@ -350,10 +339,9 @@ class AssetManagementController extends Controller {
 
         try {
 
-            $userAuth = Auth::user();
             $branchId = intval($request->input("branch_id"));
 
-            $branch = AssetManagementService::validateBranch($branchId, $userAuth->company_id);
+            $branch = AssetManagementService::validateBranch($branchId, $this->getCompanyId());
 
             if(!Utilities::isDefined($branch)) {
 
@@ -390,7 +378,7 @@ class AssetManagementController extends Controller {
                 $branchAssetId,
                 $assetId,
                 $request->assignments ?? [],
-                $userAuth->id
+                $this->getUserId()
             );
 
             $bool = $information["success"]["counter"] > 0;
@@ -401,13 +389,13 @@ class AssetManagementController extends Controller {
 
             }
 
-            AssetManagementConfigService::clearAllCache($userAuth->company_id);
+            AssetManagementConfigService::clearAllCache($this->getCompanyId());
 
             return $this->successResponse($information, "assigned_to_users_successfully");
 
         }catch(Exception $e) {
 
-            return $this->errorResponse("exception_assign_to_users", ["message" => $e->getMessage()]);
+            return $this->handleException($e, "assign_to_users");
 
         }
 
@@ -423,10 +411,9 @@ class AssetManagementController extends Controller {
 
         try {
 
-            $userAuth = Auth::user();
             $branchId = intval($request->input("branch_id"));
 
-            $branch = AssetManagementService::validateBranch($branchId, $userAuth->company_id);
+            $branch = AssetManagementService::validateBranch($branchId, $this->getCompanyId());
 
             if(!Utilities::isDefined($branch)) {
 
@@ -450,7 +437,7 @@ class AssetManagementController extends Controller {
                 $branchAssetId,
                 $assetId,
                 $request->assignments ?? [],
-                $userAuth->id
+                $this->getUserId()
             );
 
             $bool = $information["success"]["counter"] > 0;
@@ -461,13 +448,13 @@ class AssetManagementController extends Controller {
 
             }
 
-            AssetManagementConfigService::clearAllCache($userAuth->company_id);
+            AssetManagementConfigService::clearAllCache($this->getCompanyId());
 
             return $this->successResponse($information, "unassigned_from_users_successfully");
 
         }catch(Exception $e) {
 
-            return $this->errorResponse("exception_unassign_from_users", ["message" => $e->getMessage()]);
+            return $this->handleException($e, "unassign_from_users");
 
         }
 

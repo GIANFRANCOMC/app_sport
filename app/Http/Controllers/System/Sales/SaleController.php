@@ -5,19 +5,15 @@ declare(strict_types=1);
 namespace App\Http\Controllers\System\Sales;
 
 use Exception;
-use App\Http\Controllers\{Controller};
+use App\Http\Controllers\System\Base\BaseController;
 use App\Helpers\System\{Utilities};
 use Illuminate\Http\{JsonResponse, Request};
-use Illuminate\Support\Facades\{Auth};
 
-use App\Http\Controllers\System\Concerns\{HandlesApiResponses};
 use App\Http\Requests\System\Sales\{CancelSaleRequest, StoreSaleRequest, UpdateSaleRequest};
 use App\Services\System\Sales\{SaleConfigService, SaleService};
 use App\Models\System\Sales\{SaleHeader};
 
-class SaleController extends Controller {
-
-    use HandlesApiResponses;
+class SaleController extends BaseController {
 
     /**
      * Translation namespace for sale module
@@ -32,10 +28,8 @@ class SaleController extends Controller {
      */
     public function initParams(Request $request) {
 
-        $userAuth = Auth::user();
-        $page     = $request->input("page", "");
-
-        return SaleConfigService::getInitParams($userAuth->company_id, $page);
+        $page = $this->getPage($request);
+        return SaleConfigService::getInitParams($this->getCompanyId(), $page);
 
     }
 
@@ -47,17 +41,16 @@ class SaleController extends Controller {
      */
     public function list(Request $request) {
 
-        $userAuth = Auth::user();
-        $filters  = [
+        $filters = [
             "serie_id"   => $request->input("serie_id"),
             "sequential" => $request->input("sequential"),
             "issue_date" => $request->input("issue_date"),
             "holder_id"  => $request->input("holder_id"),
             "status"     => $request->input("status")
         ];
-        $perPage  = intval($request->input("per_page") ?? Utilities::$per_page_default);
+        $perPage = $this->getPerPage($request, Utilities::$per_page_default);
 
-        return SaleService::getPaginatedList($userAuth->company_id, $filters, $perPage);
+        return SaleService::getPaginatedList($this->getCompanyId(), $filters, $perPage);
 
     }
 
@@ -83,9 +76,8 @@ class SaleController extends Controller {
 
         try {
 
-            $userAuth = Auth::user();
-            $data     = $this->prepareSaleData($request);
-            $sale     = SaleService::create($data, $userAuth->id);
+            $data = $this->prepareSaleData($request);
+            $sale = SaleService::create($data, $this->getUserId());
 
             if(!Utilities::isDefined($sale)) {
 
@@ -93,13 +85,13 @@ class SaleController extends Controller {
 
             }
 
-            SaleConfigService::clearAllCache($userAuth->company_id);
+            SaleConfigService::clearAllCache($this->getCompanyId());
 
             return $this->createdResponse($sale, "created", "sale");
 
         }catch(Exception $e) {
 
-            return $this->errorResponse("exception_create", ["message" => $e->getMessage()]);
+            return $this->handleException($e, "create");
 
         }
 
@@ -156,8 +148,7 @@ class SaleController extends Controller {
 
         try {
 
-            $userAuth = Auth::user();
-            $sale     = SaleService::findById($id);
+            $sale = SaleService::findById($id);
 
             if(!Utilities::isDefined($sale)) {
 
@@ -170,7 +161,7 @@ class SaleController extends Controller {
 
                 $branch = $serie->branch;
 
-                if(!Utilities::isDefined($branch) || $branch->company_id != $userAuth->company_id) {
+                if(!Utilities::isDefined($branch) || $branch->company_id !== $this->getCompanyId()) {
 
                     return $this->errorResponse("unauthorized", [], 403);
 
@@ -178,7 +169,7 @@ class SaleController extends Controller {
 
             }
 
-            $sale = SaleService::cancel($sale, $userAuth->id);
+            $sale = SaleService::cancel($sale, $this->getUserId());
 
             if(!Utilities::isDefined($sale)) {
 
@@ -186,13 +177,13 @@ class SaleController extends Controller {
 
             }
 
-            SaleConfigService::clearAllCache($userAuth->company_id);
+            SaleConfigService::clearAllCache($this->getCompanyId());
 
             return $this->updatedResponse($sale, "canceled", "sale");
 
         }catch(Exception $e) {
 
-            return $this->errorResponse("exception_cancel", ["message" => $e->getMessage()]);
+            return $this->handleException($e, "cancel");
 
         }
 

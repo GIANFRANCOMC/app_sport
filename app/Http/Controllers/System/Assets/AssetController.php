@@ -5,19 +5,15 @@ declare(strict_types=1);
 namespace App\Http\Controllers\System\Assets;
 
 use Exception;
-use App\Http\Controllers\{Controller};
+use App\Http\Controllers\System\Base\BaseController;
 use App\Helpers\System\{Utilities};
 use Illuminate\Http\{JsonResponse, Request};
-use Illuminate\Support\Facades\{Auth};
 
-use App\Http\Controllers\System\Concerns\{HandlesApiResponses};
 use App\Http\Requests\System\Assets\Assets\{StoreAssetRequest, UpdateAssetRequest};
 use App\Services\System\Assets\{AssetConfigService, AssetService};
 use App\Models\System\Assets\{Asset};
 
-class AssetController extends Controller {
-
-    use HandlesApiResponses;
+class AssetController extends BaseController {
 
     /**
      * Translation namespace for asset module
@@ -32,10 +28,8 @@ class AssetController extends Controller {
      */
     public function initParams(Request $request) {
 
-        $userAuth = Auth::user();
-        $page     = $request->input("page", "");
-
-        return AssetConfigService::getInitParams($userAuth->company_id, $page);
+        $page = $this->getPage($request);
+        return AssetConfigService::getInitParams($this->getCompanyId(), $page);
 
     }
 
@@ -47,11 +41,10 @@ class AssetController extends Controller {
      */
     public function list(Request $request) {
 
-        $userAuth = Auth::user();
-        $filters  = ["filter_by" => $request->input("filter_by"), "word" => $request->input("word")];
-        $perPage  = intval($request->input("per_page") ?? Utilities::$per_page_default);
+        $filters = $this->getFilters($request);
+        $perPage = $this->getPerPage($request, Utilities::$per_page_default);
 
-        return AssetService::getPaginatedList($userAuth->company_id, $filters, $perPage);
+        return AssetService::getPaginatedList($this->getCompanyId(), $filters, $perPage);
 
     }
 
@@ -88,16 +81,14 @@ class AssetController extends Controller {
 
         try {
 
-            $userAuth = Auth::user();
-
-            if(AssetService::internalCodeExists($request->internal_code, $userAuth->company_id)) {
+            if(AssetService::internalCodeExists($request->internal_code, $this->getCompanyId())) {
 
                 return $this->errorResponse("internal_code_exists");
 
             }
 
-            $data  = $this->prepareAssetData($request, $userAuth);
-            $asset = AssetService::create($data, $userAuth->id);
+            $data  = $this->prepareAssetData($request);
+            $asset = AssetService::create($data, $this->getUserId());
 
             if(!Utilities::isDefined($asset)) {
 
@@ -105,13 +96,13 @@ class AssetController extends Controller {
 
             }
 
-            AssetConfigService::clearAllCache($userAuth->company_id);
+            AssetConfigService::clearAllCache($this->getCompanyId());
 
             return $this->createdResponse($asset, "created", "asset");
 
         }catch(Exception $e) {
 
-            return $this->errorResponse("exception_create", ["message" => $e->getMessage()]);
+            return $this->handleException($e, "create");
 
         }
 
@@ -154,8 +145,7 @@ class AssetController extends Controller {
 
         try {
 
-            $userAuth = Auth::user();
-            $asset    = AssetService::findByIdAndCompany($id, $userAuth->company_id);
+            $asset = AssetService::findByIdAndCompany($id, $this->getCompanyId());
 
             if(!Utilities::isDefined($asset)) {
 
@@ -163,14 +153,14 @@ class AssetController extends Controller {
 
             }
 
-            if(AssetService::internalCodeExists($request->internal_code, $userAuth->company_id, $asset->id)) {
+            if(AssetService::internalCodeExists($request->internal_code, $this->getCompanyId(), $asset->id)) {
 
                 return $this->errorResponse("internal_code_exists");
 
             }
 
-            $data  = $this->prepareAssetData($request, $userAuth);
-            $asset = AssetService::update($asset, $data, $userAuth->id);
+            $data  = $this->prepareAssetData($request);
+            $asset = AssetService::update($asset, $data, $this->getUserId());
 
             if(!Utilities::isDefined($asset)) {
 
@@ -178,13 +168,13 @@ class AssetController extends Controller {
 
             }
 
-            AssetConfigService::clearAllCache($userAuth->company_id);
+            AssetConfigService::clearAllCache($this->getCompanyId());
 
             return $this->updatedResponse($asset, "updated", "asset");
 
         }catch(Exception $e) {
 
-            return $this->errorResponse("exception_update", ["message" => $e->getMessage()]);
+            return $this->handleException($e, "update");
 
         }
 
@@ -210,22 +200,15 @@ class AssetController extends Controller {
      * @param object|null $userAuth
      * @return array
      */
-    private function prepareAssetData($request, ?object $userAuth = null): array {
+    private function prepareAssetData($request): array {
 
-        $data = [
+        return [
+            "company_id"    => $this->getCompanyId(),
             "internal_code" => $request->internal_code,
             "name"          => $request->name,
             "description"   => $request->description ?? "",
             "status"        => $request->status
         ];
-
-        if($userAuth) {
-
-            $data["company_id"] = $userAuth->company_id;
-
-        }
-
-        return $data;
 
     }
 
