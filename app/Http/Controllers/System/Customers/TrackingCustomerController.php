@@ -59,31 +59,67 @@ class TrackingCustomerController extends BaseController {
 
     }
 
-    public function store(Request $request) { // StoreTrackingAttendanceRequest
+    /**
+     * Store a newly created tracking customer
+     * (Not implemented, but kept for REST compliance)
+     *
+     * @param Request $request
+     * @return void
+     */
+    public function store(Request $request): void {
 
-        //
+        // Not implemented
 
     }
 
-    public function show(Attendance $attendance): JsonResponse {
+    /**
+     * Display the specified tracking customer
+     * (Not used, but kept for REST compliance)
+     *
+     * @param mixed $attendance
+     * @return JsonResponse
+     */
+    public function show($attendance): JsonResponse {
 
         return $this->errorResponse("not_implemented", [], 501);
 
     }
 
-    public function edit(Attendance $attendance): void {
+    /**
+     * Show the form for editing the specified tracking customer
+     * (Not used in SPA, but kept for REST compliance)
+     *
+     * @param mixed $attendance
+     * @return void
+     */
+    public function edit($attendance): void {
 
         // Form is handled by frontend SPA
 
     }
 
-    public function update(Request $request, $id): JsonResponse { // UpdateTrackingAttendanceRequest
+    /**
+     * Update the specified tracking customer
+     * (Not implemented, but kept for REST compliance)
+     *
+     * @param Request $request
+     * @param mixed $id
+     * @return JsonResponse
+     */
+    public function update(Request $request, $id): JsonResponse {
 
         return $this->errorResponse("not_implemented", [], 501);
 
     }
 
-    public function destroy(Attendance $attendance): JsonResponse {
+    /**
+     * Remove the specified tracking customer
+     * (Not used, but kept for REST compliance)
+     *
+     * @param mixed $attendance
+     * @return JsonResponse
+     */
+    public function destroy($attendance): JsonResponse {
 
         return $this->errorResponse("not_implemented", [], 501);
 

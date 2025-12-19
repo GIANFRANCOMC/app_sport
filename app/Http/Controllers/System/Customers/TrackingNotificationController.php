@@ -69,30 +69,66 @@ class TrackingNotificationController extends BaseController {
 
     }
 
-    public function store(Request $request) { // StoreTrackingNotificationRequest
+    /**
+     * Store a newly created tracking notification
+     * (Not implemented, but kept for REST compliance)
+     *
+     * @param Request $request
+     * @return void
+     */
+    public function store(Request $request): void {
 
-        //
+        // Not implemented
 
     }
 
+    /**
+     * Display the specified tracking notification
+     * (Not used, but kept for REST compliance)
+     *
+     * @param SubscriptionEmail $email
+     * @return JsonResponse
+     */
     public function show(SubscriptionEmail $email): JsonResponse {
 
         return $this->errorResponse("not_implemented", [], 501);
 
     }
 
+    /**
+     * Show the form for editing the specified tracking notification
+     * (Not used in SPA, but kept for REST compliance)
+     *
+     * @param SubscriptionEmail $email
+     * @return void
+     */
     public function edit(SubscriptionEmail $email): void {
 
         // Form is handled by frontend SPA
 
     }
 
-    public function update(Request $request, $id): JsonResponse { // UpdateTrackingNotificationRequest
+    /**
+     * Update the specified tracking notification
+     * (Not implemented, but kept for REST compliance)
+     *
+     * @param Request $request
+     * @param mixed $id
+     * @return JsonResponse
+     */
+    public function update(Request $request, $id): JsonResponse {
 
         return $this->errorResponse("not_implemented", [], 501);
 
     }
 
+    /**
+     * Remove the specified tracking notification
+     * (Not used, but kept for REST compliance)
+     *
+     * @param SubscriptionEmail $email
+     * @return JsonResponse
+     */
     public function destroy(SubscriptionEmail $email): JsonResponse {
 
         return $this->errorResponse("not_implemented", [], 501);

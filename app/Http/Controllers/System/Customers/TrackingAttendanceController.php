@@ -118,12 +118,26 @@ class TrackingAttendanceController extends BaseController {
 
     }
 
+    /**
+     * Display the specified tracking attendance
+     * (Not used, but kept for REST compliance)
+     *
+     * @param Attendance $attendance
+     * @return JsonResponse
+     */
     public function show(Attendance $attendance): JsonResponse {
 
         return $this->errorResponse("not_implemented", [], 501);
 
     }
 
+    /**
+     * Show the form for editing the specified tracking attendance
+     * (Not used in SPA, but kept for REST compliance)
+     *
+     * @param Attendance $attendance
+     * @return void
+     */
     public function edit(Attendance $attendance): void {
 
         // Form is handled by frontend SPA

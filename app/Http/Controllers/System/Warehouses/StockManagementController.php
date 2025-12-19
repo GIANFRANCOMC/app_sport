@@ -110,24 +110,53 @@ class StockManagementController extends BaseController {
 
     }
 
+    /**
+     * Display the specified stock management record
+     * (Not used, but kept for REST compliance)
+     *
+     * @param mixed $record
+     * @return JsonResponse
+     */
     public function show($record): JsonResponse {
 
         return $this->errorResponse("not_implemented", [], 501);
 
     }
 
+    /**
+     * Show the form for editing the specified stock management
+     * (Not used in SPA, but kept for REST compliance)
+     *
+     * @param mixed $record
+     * @return void
+     */
     public function edit($record): void {
 
         // Form is handled by frontend SPA
 
     }
 
+    /**
+     * Update the specified stock management
+     * (Not used, but kept for REST compliance)
+     *
+     * @param Request $request
+     * @param mixed $id
+     * @return JsonResponse
+     */
     public function update(Request $request, $id): JsonResponse {
 
         return $this->errorResponse("not_implemented", [], 501);
 
     }
 
+    /**
+     * Remove the specified stock management
+     * (Not used, but kept for REST compliance)
+     *
+     * @param mixed $record
+     * @return JsonResponse
+     */
     public function destroy($record): JsonResponse {
 
         return $this->errorResponse("not_implemented", [], 501);
