@@ -103,7 +103,7 @@ class StockManagementController extends BaseController {
 
             return $this->successResponse(null, "stock_updated_successfully");
 
-        }catch(Exception $e) {
+        }catch(\Exception $e) {
 
             return $this->handleException($e, "update");
 

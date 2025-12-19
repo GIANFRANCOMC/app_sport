@@ -141,7 +141,7 @@ class BookComplaintController extends BaseController {
 
             return $this->updatedResponse($bookComplaint, "updated", "bookComplaint");
 
-        }catch(Exception $e) {
+        }catch(\Exception $e) {
 
             return $this->handleException($e, "update");
 

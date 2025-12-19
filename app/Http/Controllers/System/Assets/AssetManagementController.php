@@ -51,7 +51,7 @@ class AssetManagementController extends BaseController {
 
         }
 
-        $perPage = intval($request->input("per_page") ?? Utilities::$per_page_max);
+        $perPage = $this->getPerPage($request, Utilities::$per_page_max);
 
         return AssetManagementService::getBranchAssetsList($branch->id, $perPage);
 
@@ -185,7 +185,7 @@ class AssetManagementController extends BaseController {
 
             return $this->successResponse($information, "assigned_successfully");
 
-        }catch(Exception $e) {
+        }catch(\Exception $e) {
 
             return $this->handleException($e, "assign");
 
@@ -231,7 +231,7 @@ class AssetManagementController extends BaseController {
 
             return $this->successResponse($information, "unassigned_successfully");
 
-        }catch(Exception $e) {
+        }catch(\Exception $e) {
 
             return $this->handleException($e, "unassign");
 
@@ -287,7 +287,7 @@ class AssetManagementController extends BaseController {
 
             return $this->successResponse($branchAsset, "updated_successfully");
 
-        }catch(Exception $e) {
+        }catch(\Exception $e) {
 
             return $this->handleException($e, "update");
 
@@ -321,7 +321,7 @@ class AssetManagementController extends BaseController {
 
             return $this->successResponse($assignments, "assignments_found");
 
-        }catch(Exception $e) {
+        }catch(\Exception $e) {
 
             return $this->handleException($e, "get_assignments");
 
@@ -393,7 +393,7 @@ class AssetManagementController extends BaseController {
 
             return $this->successResponse($information, "assigned_to_users_successfully");
 
-        }catch(Exception $e) {
+        }catch(\Exception $e) {
 
             return $this->handleException($e, "assign_to_users");
 
@@ -452,7 +452,7 @@ class AssetManagementController extends BaseController {
 
             return $this->successResponse($information, "unassigned_from_users_successfully");
 
-        }catch(Exception $e) {
+        }catch(\Exception $e) {
 
             return $this->handleException($e, "unassign_from_users");
 

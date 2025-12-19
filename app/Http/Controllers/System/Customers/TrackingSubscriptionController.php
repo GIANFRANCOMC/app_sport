@@ -115,7 +115,7 @@ class TrackingSubscriptionController extends BaseController {
 
             return $this->updatedResponse($subscription, "canceled", "subscription");
 
-        }catch(Exception $e) {
+        }catch(\Exception $e) {
 
             return $this->handleException($e, "cancel");
 

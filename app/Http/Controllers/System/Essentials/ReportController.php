@@ -99,7 +99,7 @@ class ReportController extends BaseController {
                         $logotypeRoute = public_path("storage/".$company->logotype);
                         $logotypeImg   = "data:image/".pathinfo($logotypeRoute, PATHINFO_EXTENSION).";base64,".base64_encode(file_get_contents($logotypeRoute));
 
-                    }catch(Exception $e) {
+                    }catch(\Exception $e) {
 
                         $logotypeImg = null;
 
@@ -135,7 +135,7 @@ class ReportController extends BaseController {
 
                         }
 
-                    }catch(Exception $e) {
+                    }catch(\Exception $e) {
 
                         return response()->view("errors.500", ["msg" => $e->getMessage()], 500);
 

@@ -100,7 +100,7 @@ class AssetController extends BaseController {
 
             return $this->createdResponse($asset, "created", "asset");
 
-        }catch(Exception $e) {
+        }catch(\Exception $e) {
 
             return $this->handleException($e, "create");
 
@@ -172,7 +172,7 @@ class AssetController extends BaseController {
 
             return $this->updatedResponse($asset, "updated", "asset");
 
-        }catch(Exception $e) {
+        }catch(\Exception $e) {
 
             return $this->handleException($e, "update");
 
@@ -197,7 +197,6 @@ class AssetController extends BaseController {
      * Prepare asset data from request
      *
      * @param StoreAssetRequest|UpdateAssetRequest $request
-     * @param object|null $userAuth
      * @return array
      */
     private function prepareAssetData($request): array {

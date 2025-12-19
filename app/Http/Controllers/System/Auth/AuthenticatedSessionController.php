@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\System\Auth;
 
 use App\Helpers\System\Utilities;
@@ -34,16 +36,23 @@ class AuthenticatedSessionController extends Controller {
         }else {
 
             $base64Company = $request->company;
-            $companyId = base64_decode($base64Company);
 
-            if(Utilities::isDefined($base64Company) && Utilities::isDefined($companyId)) {
+            if(Utilities::isDefined($base64Company)) {
 
-                $data->company = Company::where("id", $companyId)
-                                        ->whereIn("status", ["active"])
-                                        ->with(["socialsMedia"])
-                                        ->first();
+                $companyId = base64_decode($base64Company);
 
-            }else {
+                if(Utilities::isDefined($companyId)) {
+
+                    $data->company = Company::where("id", $companyId)
+                                            ->whereIn("status", ["active"])
+                                            ->with(["socialsMedia"])
+                                            ->first();
+
+                }
+
+            }
+
+            if(!Utilities::isDefined($data->company)) {
 
                 $data->companies = Company::whereIn("status", ["active"])
                                           ->with(["socialsMedia"])
@@ -84,7 +93,7 @@ class AuthenticatedSessionController extends Controller {
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        $query = "?company=".base64_encode($company->id);
+        $query = "?company=".base64_encode((string) $company->id);
 
         return redirect("/".$query);
 

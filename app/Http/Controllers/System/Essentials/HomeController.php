@@ -4,10 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\System\Essentials;
 
-use App\Helpers\System\{ApiResponse, Utilities};
+use App\Helpers\System\{Utilities};
 use App\Http\Controllers\System\Base\BaseController;
 use Illuminate\Http\{JsonResponse, Request};
-use Illuminate\Support\Facades\{DB};
 use stdClass;
 
 use App\Models\System\Organizations\{UserPreference};
@@ -19,13 +18,17 @@ class HomeController extends BaseController {
      */
     private const TRANSLATION_NAMESPACE = "System.Essentials.home";
 
+    /**
+     * Get initialization parameters for the module
+     *
+     * @param Request $request
+     * @return \stdClass
+     */
     public function initParams(Request $request) {
 
         $initParams = new stdClass();
-
-        $config = new stdClass();
-
-        $page = $request->page ?? "";
+        $config     = new stdClass();
+        $page       = $this->getPage($request);
 
         if(in_array($page, ["main"])) {
 
@@ -46,31 +49,46 @@ class HomeController extends BaseController {
 
     }
 
-    public function update(Request $request, $id) {
+    /**
+     * Update user preferences
+     *
+     * @param Request $request
+     * @param int $id
+     * @return JsonResponse
+     */
+    public function update(Request $request, int $id): JsonResponse {
 
-        $user = $this->getAuthUser();
+        try {
 
-        $data = [
-            "show_actions" => $request["show_actions"],
-            "show_only_favorites" => $request["show_only_favorites"],
-            "records" => [
-                [
-                    "sub_section_id" => $id,
-                    "visible_in_menu" => $request["visible_in_menu"],
-                    "is_favorite" => $request["is_favorite"]
+            $user = $this->getAuthUser();
+
+            $data = [
+                "show_actions"      => $request["show_actions"],
+                "show_only_favorites" => $request["show_only_favorites"],
+                "records"           => [
+                    [
+                        "sub_section_id" => $id,
+                        "visible_in_menu" => $request["visible_in_menu"],
+                        "is_favorite"     => $request["is_favorite"]
+                    ]
                 ]
-            ]
-        ];
+            ];
 
-        $updateItems = UserPreference::updateItems($user->id, "config_companies_sub_sections", $data);
+            $updateItems = UserPreference::updateItems($user->id, "config_companies_sub_sections", $data);
 
-        if($updateItems["bool"]) {
+            if($updateItems["bool"]) {
 
-            return ApiResponse::success(["preferences" => $user->formatted_preferences], "Cambio realizado.");
+                return $this->successResponse(["preferences" => $user->formatted_preferences], "updated");
+
+            }
+
+            return $this->errorResponse("update_failed");
+
+        }catch(\Exception $e) {
+
+            return $this->handleException($e, "update");
 
         }
-
-        return ApiResponse::error("No se pudo actualizar las preferencias.", 500);
 
     }
 

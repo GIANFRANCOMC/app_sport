@@ -89,7 +89,7 @@ class SaleController extends BaseController {
 
             return $this->createdResponse($sale, "created", "sale");
 
-        }catch(Exception $e) {
+        }catch(\Exception $e) {
 
             return $this->handleException($e, "create");
 
@@ -181,7 +181,7 @@ class SaleController extends BaseController {
 
             return $this->updatedResponse($sale, "canceled", "sale");
 
-        }catch(Exception $e) {
+        }catch(\Exception $e) {
 
             return $this->handleException($e, "cancel");
 

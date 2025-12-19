@@ -94,7 +94,7 @@ class CategoryController extends BaseController {
 
             return $this->createdResponse($category, "created", "category");
 
-        }catch(Exception $e) {
+        }catch(\Exception $e) {
 
             return $this->handleException($e, "create");
 
@@ -160,7 +160,7 @@ class CategoryController extends BaseController {
 
             return $this->updatedResponse($category, "updated", "category");
 
-        }catch(Exception $e) {
+        }catch(\Exception $e) {
 
             return $this->handleException($e, "update");
 
@@ -185,7 +185,6 @@ class CategoryController extends BaseController {
      * Prepare category data from request
      *
      * @param StoreCategoryRequest|UpdateCategoryRequest $request
-     * @param object|null $userAuth
      * @return array
      */
     private function prepareCategoryData($request): array {

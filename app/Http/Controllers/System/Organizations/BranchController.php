@@ -94,7 +94,7 @@ class BranchController extends BaseController {
 
             return $this->createdResponse($branch, "created", "branch");
 
-        }catch(Exception $e) {
+        }catch(\Exception $e) {
 
             return $this->handleException($e, "create");
 
@@ -160,7 +160,7 @@ class BranchController extends BaseController {
 
             return $this->updatedResponse($branch, "updated", "branch");
 
-        }catch(Exception $e) {
+        }catch(\Exception $e) {
 
             return $this->handleException($e, "update");
 
@@ -185,7 +185,6 @@ class BranchController extends BaseController {
      * Prepare branch data from request
      *
      * @param StoreBranchRequest|UpdateBranchRequest $request
-     * @param object|null $userAuth
      * @return array
      */
     private function prepareBranchData($request): array {

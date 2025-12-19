@@ -94,7 +94,7 @@ class CustomerController extends BaseController {
 
             return $this->createdResponse($customer, "created", "customer");
 
-        }catch(Exception $e) {
+        }catch(\Exception $e) {
 
             return $this->handleException($e, "create");
 
@@ -160,7 +160,7 @@ class CustomerController extends BaseController {
 
             return $this->updatedResponse($customer, "updated", "customer");
 
-        }catch(Exception $e) {
+        }catch(\Exception $e) {
 
             return $this->handleException($e, "update");
 
@@ -218,7 +218,6 @@ class CustomerController extends BaseController {
      * Prepare customer data from request
      *
      * @param StoreCustomerRequest|UpdateCustomerRequest $request
-     * @param object|null $userAuth
      * @return array
      */
     private function prepareCustomerData($request): array {

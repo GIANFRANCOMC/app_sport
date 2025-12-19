@@ -4,12 +4,11 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\System\Essentials;
 
-use App\Helpers\System\{ApiResponse, Utilities};
+use App\Helpers\System\{Utilities};
 use App\Http\Controllers\System\Base\BaseController;
 use App\Mail\SaleMail;
-use Exception;
 use Illuminate\Http\{JsonResponse, Request};
-use Illuminate\Support\Facades\{DB, Mail};
+use Illuminate\Support\Facades\{Mail};
 use stdClass;
 
 class HelperController extends BaseController {
@@ -19,7 +18,13 @@ class HelperController extends BaseController {
      */
     private const TRANSLATION_NAMESPACE = "System.Essentials.helper";
 
-    public function searchDocumentNumber(Request $request) {
+    /**
+     * Search document number in external API
+     *
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function searchDocumentNumber(Request $request): JsonResponse {
 
         $user    = $this->getAuthUser();
         $company = $user->company;
@@ -114,49 +119,42 @@ class HelperController extends BaseController {
 
         }
 
-        return ApiResponse::success($data, $msg);
+        return $this->successResponse($data, $bool ? "search_success" : "search_failed");
 
     }
 
-    public function sendEmail(Request $request) {
-
-        $bool   = false;
-        $msg    = "No ha sido posible enviar el correo.";
-        $devMsg = "";
+    /**
+     * Send email notification
+     *
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function sendEmail(Request $request): JsonResponse {
 
         try {
 
-            $id               = $request->id;
-            $serie_sequential = $request->serie_sequential;
-            $email            = $request->email;
-            $message          = $request->message;
+            $email   = $request->email;
+            $message = $request->message;
 
-            if(Utilities::isDefined($email) && Utilities::isDefined($message)) {
+            if(!Utilities::isDefined($email) || !Utilities::isDefined($message)) {
 
-                $mail = new stdClass();
-                $mail->subject = "Venta creada en ".config("APP_NAME");
-                $mail->message = $message;
-
-                Mail::to($email)->send(new SaleMail($mail));
-
-                $bool = true;
-                $msg  = "Correo enviado con éxito.";
+                return $this->errorResponse("invalid_data", [], 422);
 
             }
 
-        }catch(Exception $e) {
+            $mail = new stdClass();
+            $mail->subject = "Venta creada en ".config("APP_NAME");
+            $mail->message = $message;
 
-            $devMsg = $e->getMessage();
+            Mail::to($email)->send(new SaleMail($mail));
+
+            return $this->successResponse(null, "email_sent");
+
+        }catch(\Exception $e) {
+
+            return $this->handleException($e, "send_email");
 
         }
-
-        if($bool) {
-
-            return ApiResponse::success(null, $msg);
-
-        }
-
-        return ApiResponse::error($msg, 500);
 
     }
 

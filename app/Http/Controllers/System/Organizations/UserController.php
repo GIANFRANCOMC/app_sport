@@ -94,7 +94,7 @@ class UserController extends BaseController {
 
             return $this->createdResponse($user, "created", "user");
 
-        }catch(Exception $e) {
+        }catch(\Exception $e) {
 
             return $this->handleException($e, "create");
 
@@ -160,7 +160,7 @@ class UserController extends BaseController {
 
             return $this->updatedResponse($user, "updated", "user");
 
-        }catch(Exception $e) {
+        }catch(\Exception $e) {
 
             return $this->handleException($e, "update");
 
@@ -185,7 +185,6 @@ class UserController extends BaseController {
      * Prepare user data from request
      *
      * @param StoreUserRequest|UpdateUserRequest $request
-     * @param object|null $userAuth
      * @return array
      */
     private function prepareUserData($request): array {

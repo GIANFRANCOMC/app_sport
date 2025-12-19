@@ -141,7 +141,7 @@ class CompanyController extends BaseController {
 
             return $this->updatedResponse($company, "updated", "company");
 
-        }catch(Exception $e) {
+        }catch(\Exception $e) {
 
             return $this->handleException($e, "update");
 

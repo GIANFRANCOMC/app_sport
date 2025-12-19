@@ -94,7 +94,7 @@ class ServiceController extends BaseController {
 
             return $this->createdResponse($item, "created", "item");
 
-        }catch(Exception $e) {
+        }catch(\Exception $e) {
 
             return $this->handleException($e, "create");
 
@@ -160,7 +160,7 @@ class ServiceController extends BaseController {
 
             return $this->updatedResponse($item, "updated", "item");
 
-        }catch(Exception $e) {
+        }catch(\Exception $e) {
 
             return $this->handleException($e, "update");
 
@@ -185,7 +185,6 @@ class ServiceController extends BaseController {
      * Prepare service data from request
      *
      * @param StoreServiceRequest|UpdateServiceRequest $request
-     * @param object|null $userAuth
      * @return array
      */
     private function prepareServiceData($request): array {
