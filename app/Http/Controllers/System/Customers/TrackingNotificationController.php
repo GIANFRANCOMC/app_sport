@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Controllers\System\Notifications;
+namespace App\Http\Controllers\System\Customers;
 
 use App\Http\Controllers\{Controller};
 use App\Helpers\System\{Utilities};
-use Illuminate\Http\{Request};
+use Illuminate\Http\{Request, JsonResponse};
 use Illuminate\Support\Facades\{Auth};
 
 use App\Http\Controllers\System\Concerns\{HandlesApiResponses};
-use App\Services\System\Notifications\{TrackingNotificationConfigService, TrackingNotificationService};
+use App\Services\System\Customers\Tracking\{TrackingNotificationConfigService, TrackingNotificationService};
 use App\Models\System\Customers\{SubscriptionEmail};
 
 class TrackingNotificationController extends Controller {
@@ -20,7 +20,7 @@ class TrackingNotificationController extends Controller {
     /**
      * Translation namespace for tracking notification module
      */
-    private const TRANSLATION_NAMESPACE = "System.Notifications.tracking_notification";
+    private const TRANSLATION_NAMESPACE = "System.Customers.tracking_notification";
 
     /**
      * Get initialization parameters for the module
@@ -55,7 +55,7 @@ class TrackingNotificationController extends Controller {
 
     public function index() {
 
-        return view("System/general/Notifications/tracking_notifications/main");
+        return view("System/general/Customers/tracking_notifications/main");
 
     }
 
@@ -107,3 +107,4 @@ class TrackingNotificationController extends Controller {
     }
 
 }
+

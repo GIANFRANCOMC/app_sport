@@ -60,8 +60,8 @@ Route::middleware(["web"])
             Route::prefix('/home')->group($systemRoute.'/Essentials/Home.php');
             Route::prefix('/reports')->group($systemRoute.'/Essentials/Report.php');
 
-            // Notifications
-            Route::prefix('/tracking_notifications')->group($systemRoute.'/Notifications/TrackingNotification.php');
+            // Customers (Tracking Notifications)
+            Route::prefix('/tracking_notifications')->group($systemRoute.'/Customers/TrackingNotification.php');
 
             // Organizations
             Route::prefix('/book_complaints')->group($systemRoute.'/Organizations/BookComplaint.php');

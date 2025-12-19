@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\System\Notifications\{TrackingNotificationController};
+use App\Http\Controllers\System\Customers\{TrackingNotificationController};
 use Illuminate\Support\Facades\Route;
 
 $entity = "tracking_notifications";

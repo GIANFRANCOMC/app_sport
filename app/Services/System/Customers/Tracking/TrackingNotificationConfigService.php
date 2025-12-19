@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Services\System\Notifications;
+namespace App\Services\System\Customers\Tracking;
 
 use Illuminate\Support\Facades\Cache;
 use stdClass;
