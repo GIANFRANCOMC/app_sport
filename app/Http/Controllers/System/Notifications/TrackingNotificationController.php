@@ -71,27 +71,27 @@ class TrackingNotificationController extends Controller {
 
     }
 
-    public function show(SubscriptionEmail $email) {
+    public function show(SubscriptionEmail $email): JsonResponse {
 
-        //
-
-    }
-
-    public function edit(SubscriptionEmail $email) {
-
-        //
+        return $this->errorResponse("not_implemented", [], 501);
 
     }
 
-    public function update(Request $request, $id) { // UpdateTrackingNotificationRequest
+    public function edit(SubscriptionEmail $email): void {
 
-        //
+        // Form is handled by frontend SPA
 
     }
 
-    public function destroy(SubscriptionEmail $email) {
+    public function update(Request $request, $id): JsonResponse { // UpdateTrackingNotificationRequest
 
-        //
+        return $this->errorResponse("not_implemented", [], 501);
+
+    }
+
+    public function destroy(SubscriptionEmail $email): JsonResponse {
+
+        return $this->errorResponse("not_implemented", [], 501);
 
     }
 

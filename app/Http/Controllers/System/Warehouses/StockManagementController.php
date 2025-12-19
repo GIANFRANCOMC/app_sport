@@ -119,27 +119,27 @@ class StockManagementController extends Controller {
 
     }
 
-    public function show($record) {
+    public function show($record): JsonResponse {
 
-        //
-
-    }
-
-    public function edit($record) {
-
-        //
+        return $this->errorResponse("not_implemented", [], 501);
 
     }
 
-    public function update(Request $request, $id) {
+    public function edit($record): void {
 
-        //
+        // Form is handled by frontend SPA
 
     }
 
-    public function destroy($record) {
+    public function update(Request $request, $id): JsonResponse {
 
-        //
+        return $this->errorResponse("not_implemented", [], 501);
+
+    }
+
+    public function destroy($record): JsonResponse {
+
+        return $this->errorResponse("not_implemented", [], 501);
 
     }
 

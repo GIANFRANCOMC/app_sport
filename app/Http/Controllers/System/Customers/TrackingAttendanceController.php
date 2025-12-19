@@ -104,15 +104,15 @@ class TrackingAttendanceController extends Controller {
 
     }
 
-    public function show(Attendance $attendance) {
+    public function show(Attendance $attendance): JsonResponse {
 
-        //
+        return $this->errorResponse("not_implemented", [], 501);
 
     }
 
-    public function edit(Attendance $attendance) {
+    public function edit(Attendance $attendance): void {
 
-        //
+        // Form is handled by frontend SPA
 
     }
 
@@ -172,7 +172,7 @@ class TrackingAttendanceController extends Controller {
 
         }catch(Exception $e) {
 
-            return response()->json(["bool" => false, "msg" => $e->getMessage()], 200);
+            return $this->errorResponse("exception_cancel", ["message" => $e->getMessage()]);
 
         }
 
@@ -189,9 +189,9 @@ class TrackingAttendanceController extends Controller {
 
     }
 
-    public function destroy(Attendance $attendance) {
+    public function destroy(Attendance $attendance): JsonResponse {
 
-        //
+        return $this->errorResponse("not_implemented", [], 501);
 
     }
 

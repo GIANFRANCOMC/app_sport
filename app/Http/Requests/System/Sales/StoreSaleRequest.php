@@ -1,22 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Requests\System\Sales;
 
-use App\Helpers\System\Utilities;
-use Illuminate\Foundation\Http\FormRequest;
+use App\Helpers\System\{ApiResponse, Utilities};
+use App\Http\Requests\System\Base\BaseFormRequest;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Http\Exceptions\HttpResponseException;
 
-class StoreSaleRequest extends FormRequest {
-
-    /**
-     * Determine if the user is authorized to make this request.
-     */
-    public function authorize(): bool {
-
-        return true;
-
-    }
+class StoreSaleRequest extends BaseFormRequest {
 
     /**
      * Get the validation rules that apply to the request.
@@ -49,40 +42,31 @@ class StoreSaleRequest extends FormRequest {
 
     }
 
-    protected function failedValidation(Validator $validator) {
+    protected function failedValidation(Validator $validator): void {
 
         $errors = $validator->errors()->toArray();
 
-        // Props rename
-        if(isset($errors["branch_id"])) {
+        // Props rename for frontend compatibility
+        $fieldMappings = [
+            "branch_id"   => "branch",
+            "serie_id"    => "serie",
+            "holder_id"   => "holder",
+            "currency_id" => "currency"
+        ];
 
-            $errors["branch"] = $errors["branch_id"];
-            unset($errors["branch_id"]);
+        $renamedErrors = [];
 
-        }
+        foreach($errors as $key => $value) {
 
-        if(isset($errors["serie_id"])) {
-
-            $errors["serie"] = $errors["serie_id"];
-            unset($errors["serie_id"]);
-
-        }
-
-        if(isset($errors["holder_id"])) {
-
-            $errors["holder"] = $errors["holder_id"];
-            unset($errors["holder_id"]);
+            $newKey = $fieldMappings[$key] ?? $key;
+            $renamedErrors[$newKey] = $value;
 
         }
 
-        if(isset($errors["currency_id"])) {
-
-            $errors["currency"] = $errors["currency_id"];
-            unset($errors["currency_id"]);
-
-        }
-
-        throw new HttpResponseException(response()->json(["errors" => $errors, "message" => Utilities::$messages["422"]], 422));
+        // Throw exception with renamed errors
+        throw new HttpResponseException(
+            ApiResponse::validationError($renamedErrors, Utilities::$messages["422"] ?? "Validation failed")
+        );
 
     }
 

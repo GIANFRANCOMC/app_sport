@@ -1,16 +1,26 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\System\Essentials;
 
-use App\Helpers\System\Utilities;
+use App\Helpers\System\{ApiResponse, Utilities};
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
+use App\Http\Controllers\System\Concerns\HandlesApiResponses;
+use Illuminate\Http\{JsonResponse, Request};
 use Illuminate\Support\Facades\{Auth, DB};
 use stdClass;
 
 use App\Models\System\Organizations\{UserPreference};
 
 class HomeController extends Controller {
+
+    use HandlesApiResponses;
+
+    /**
+     * Translation namespace for home module
+     */
+    private const TRANSLATION_NAMESPACE = "System.Essentials.home";
 
     public function initParams(Request $request) {
 
@@ -57,7 +67,24 @@ class HomeController extends Controller {
 
         $updateItems = UserPreference::updateItems($userAuth->id, "config_companies_sub_sections", $data);
 
-        return response()->json(["bool" => $updateItems["bool"], "msg" => "Cambio realizado.", "preferences" => $userAuth->formatted_preferences], 200);
+        if($updateItems["bool"]) {
+
+            return ApiResponse::success(["preferences" => $userAuth->formatted_preferences], "Cambio realizado.");
+
+        }
+
+        return ApiResponse::error("No se pudo actualizar las preferencias.", 500);
+
+    }
+
+    /**
+     * Get translation namespace for home module
+     *
+     * @return string
+     */
+    protected function getTranslationNamespace(): string {
+
+        return self::TRANSLATION_NAMESPACE;
 
     }
 

@@ -64,27 +64,27 @@ class TrackingCustomerController extends Controller {
 
     }
 
-    public function show(Attendance $attendance) {
+    public function show(Attendance $attendance): JsonResponse {
 
-        //
-
-    }
-
-    public function edit(Attendance $attendance) {
-
-        //
+        return $this->errorResponse("not_implemented", [], 501);
 
     }
 
-    public function update(Request $request, $id) { // UpdateTrackingAttendanceRequest
+    public function edit(Attendance $attendance): void {
 
-        //
+        // Form is handled by frontend SPA
 
     }
 
-    public function destroy(Attendance $attendance) {
+    public function update(Request $request, $id): JsonResponse { // UpdateTrackingAttendanceRequest
 
-        //
+        return $this->errorResponse("not_implemented", [], 501);
+
+    }
+
+    public function destroy(Attendance $attendance): JsonResponse {
+
+        return $this->errorResponse("not_implemented", [], 501);
 
     }
 

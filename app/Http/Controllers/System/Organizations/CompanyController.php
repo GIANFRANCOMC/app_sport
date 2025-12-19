@@ -150,7 +150,7 @@ class CompanyController extends Controller {
 
         }catch(Exception $e) {
 
-            return response()->json(["bool" => false, "msg" => $e->getMessage()], 200);
+            return $this->errorResponse("exception_update", ["message" => $e->getMessage()]);
 
         }
 

@@ -1,16 +1,26 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\System\Essentials;
 
-use App\Helpers\System\Utilities;
+use App\Helpers\System\{ApiResponse, Utilities};
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\System\Concerns\HandlesApiResponses;
 use App\Mail\SaleMail;
 use Exception;
-use Illuminate\Http\Request;
+use Illuminate\Http\{JsonResponse, Request};
 use Illuminate\Support\Facades\{Auth, DB, Mail};
 use stdClass;
 
 class HelperController extends Controller {
+
+    use HandlesApiResponses;
+
+    /**
+     * Translation namespace for helper module
+     */
+    private const TRANSLATION_NAMESPACE = "System.Essentials.helper";
 
     public function searchDocumentNumber(Request $request) {
 
@@ -107,7 +117,7 @@ class HelperController extends Controller {
 
         }
 
-        return response()->json(["bool" => $bool, "msg" => $msg, "data" => $data], 200);
+        return ApiResponse::success($data, $msg);
 
     }
 
@@ -143,7 +153,24 @@ class HelperController extends Controller {
 
         }
 
-        return response()->json(["bool" => $bool, "msg" => $msg, "devMsg" => $devMsg], 200);
+        if($bool) {
+
+            return ApiResponse::success(null, $msg);
+
+        }
+
+        return ApiResponse::error($msg, 500);
+
+    }
+
+    /**
+     * Get translation namespace for helper module
+     *
+     * @return string
+     */
+    protected function getTranslationNamespace(): string {
+
+        return self::TRANSLATION_NAMESPACE;
 
     }
 

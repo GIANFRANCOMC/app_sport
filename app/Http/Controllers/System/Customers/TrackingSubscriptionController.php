@@ -79,21 +79,21 @@ class TrackingSubscriptionController extends Controller {
 
     }
 
-    public function show(Subscription $subscription) {
+    public function show(Subscription $subscription): JsonResponse {
 
-        //
-
-    }
-
-    public function edit(Subscription $subscription) {
-
-        //
+        return $this->errorResponse("not_implemented", [], 501);
 
     }
 
-    public function update(Request $request, $id) { // UpdateTrackingSubscriptionRequest
+    public function edit(Subscription $subscription): void {
 
-        //
+        // Form is handled by frontend SPA
+
+    }
+
+    public function update(Request $request, $id): JsonResponse { // UpdateTrackingSubscriptionRequest
+
+        return $this->errorResponse("not_implemented", [], 501);
 
     }
 
@@ -125,7 +125,7 @@ class TrackingSubscriptionController extends Controller {
 
         }catch(Exception $e) {
 
-            return response()->json(["bool" => false, "msg" => $e->getMessage()], 200);
+            return $this->errorResponse("exception_cancel", ["message" => $e->getMessage()]);
 
         }
 
@@ -142,9 +142,9 @@ class TrackingSubscriptionController extends Controller {
 
     }
 
-    public function destroy(Subscription $subscription) {
+    public function destroy(Subscription $subscription): JsonResponse {
 
-        //
+        return $this->errorResponse("not_implemented", [], 501);
 
     }
 
