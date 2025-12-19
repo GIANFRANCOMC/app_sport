@@ -36,15 +36,26 @@ class TrackingCustomerController extends BaseController {
 
     }
 
+    /**
+     * Display the tracking customers index page
+     *
+     * @return \Illuminate\Contracts\View\View
+     */
     public function index() {
 
         return view("System/general/Customers/tracking_customers/main");
 
     }
 
-    public function create() {
+    /**
+     * Show the form for creating a new tracking customer
+     * (Not used in SPA, but kept for REST compliance)
+     *
+     * @return void
+     */
+    public function create(): void {
 
-        //
+        // Form is handled by frontend SPA
 
     }
 

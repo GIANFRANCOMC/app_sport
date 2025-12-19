@@ -53,15 +53,26 @@ class TrackingSubscriptionController extends BaseController {
 
     }
 
+    /**
+     * Display the tracking subscriptions index page
+     *
+     * @return \Illuminate\Contracts\View\View
+     */
     public function index() {
 
         return view("System/general/Customers/tracking_subscriptions/main");
 
     }
 
-    public function create() {
+    /**
+     * Show the form for creating a new tracking subscription
+     * (Not used in SPA, but kept for REST compliance)
+     *
+     * @return void
+     */
+    public function create(): void {
 
-        //
+        // Form is handled by frontend SPA
 
     }
 

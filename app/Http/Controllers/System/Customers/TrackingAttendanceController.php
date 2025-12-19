@@ -53,15 +53,26 @@ class TrackingAttendanceController extends BaseController {
 
     }
 
+    /**
+     * Display the tracking attendances index page
+     *
+     * @return \Illuminate\Contracts\View\View
+     */
     public function index() {
 
         return view("System/general/Customers/tracking_attendances/main");
 
     }
 
-    public function create() {
+    /**
+     * Show the form for creating a new tracking attendance
+     * (Not used in SPA, but kept for REST compliance)
+     *
+     * @return void
+     */
+    public function create(): void {
 
-        //
+        // Form is handled by frontend SPA
 
     }
 

@@ -53,12 +53,22 @@ class SaleController extends BaseController {
 
     }
 
+    /**
+     * Display the sales index page
+     *
+     * @return \Illuminate\Contracts\View\View
+     */
     public function index() {
 
         return view("System/general/Sales/sales/list");
 
     }
 
+    /**
+     * Show the form for creating a new sale
+     *
+     * @return \Illuminate\Contracts\View\View
+     */
     public function create() {
 
         return view("System/general/Sales/sales/main");

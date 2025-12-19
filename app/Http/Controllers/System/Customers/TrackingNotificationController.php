@@ -46,15 +46,26 @@ class TrackingNotificationController extends BaseController {
 
     }
 
+    /**
+     * Display the tracking notifications index page
+     *
+     * @return \Illuminate\Contracts\View\View
+     */
     public function index() {
 
         return view("System/general/Customers/tracking_notifications/main");
 
     }
 
-    public function create() {
+    /**
+     * Show the form for creating a new tracking notification
+     * (Not used in SPA, but kept for REST compliance)
+     *
+     * @return void
+     */
+    public function create(): void {
 
-        //
+        // Form is handled by frontend SPA
 
     }
 

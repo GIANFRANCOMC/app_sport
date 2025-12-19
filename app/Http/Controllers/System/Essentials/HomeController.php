@@ -43,6 +43,11 @@ class HomeController extends BaseController {
 
     }
 
+    /**
+     * Display the home index page
+     *
+     * @return \Illuminate\Contracts\View\View
+     */
     public function index() {
 
         return view("System/general/Essentials/home/main");
