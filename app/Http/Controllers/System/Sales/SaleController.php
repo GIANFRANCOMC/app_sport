@@ -137,6 +137,19 @@ class SaleController extends BaseController {
     }
 
     /**
+     * Remove the specified sale
+     * (Not used, but kept for REST compliance)
+     *
+     * @param SaleHeader $record
+     * @return JsonResponse
+     */
+    public function destroy(SaleHeader $record): JsonResponse {
+
+        return $this->errorResponse("not_implemented", [], 501);
+
+    }
+
+    /**
      * Cancel the specified sale
      *
      * @param CancelSaleRequest $request
@@ -216,19 +229,6 @@ class SaleController extends BaseController {
     protected function getTranslationNamespace(): string {
 
         return self::TRANSLATION_NAMESPACE;
-
-    }
-
-    /**
-     * Remove the specified sale
-     * (Not used, but kept for REST compliance)
-     *
-     * @param SaleHeader $record
-     * @return JsonResponse
-     */
-    public function destroy(SaleHeader $record): JsonResponse {
-
-        return $this->errorResponse("not_implemented", [], 501);
 
     }
 
