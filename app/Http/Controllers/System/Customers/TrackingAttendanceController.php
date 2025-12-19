@@ -5,21 +5,16 @@ declare(strict_types=1);
 namespace App\Http\Controllers\System\Customers;
 
 use Exception;
-use App\Http\Controllers\{Controller};
+use App\Http\Controllers\System\Base\BaseController;
 use App\Helpers\System\{Utilities};
 use Illuminate\Http\{JsonResponse, Request};
-use Illuminate\Support\Facades\{Auth};
 use Carbon\Carbon;
 
-use App\Http\Controllers\System\Concerns\{HandlesApiResponses};
 use App\Http\Requests\System\Customers\TrackingAttendances\{CancelTrackingAttendanceRequest};
-use App\Services\System\Customers\Tracking\{TrackingAttendanceConfigService, TrackingAttendanceService};
-use App\Services\AttendanceService;
+use App\Services\System\Customers\Tracking\{TrackingAttendanceConfigService, TrackingAttendanceService, TrackingAttendanceBusinessService};
 use App\Models\System\Customers\{Attendance};
 
-class TrackingAttendanceController extends Controller {
-
-    use HandlesApiResponses;
+class TrackingAttendanceController extends BaseController {
 
     /**
      * Translation namespace for tracking attendance module
@@ -34,10 +29,8 @@ class TrackingAttendanceController extends Controller {
      */
     public function initParams(Request $request) {
 
-        $userAuth = Auth::user();
-        $page     = $request->input("page", "");
-
-        return TrackingAttendanceConfigService::getInitParams($userAuth->company_id, $page);
+        $page = $this->getPage($request);
+        return TrackingAttendanceConfigService::getInitParams($this->getCompanyId(), $page);
 
     }
 
@@ -49,16 +42,15 @@ class TrackingAttendanceController extends Controller {
      */
     public function list(Request $request) {
 
-        $userAuth = Auth::user();
-        $filters  = [
+        $filters = [
             "branch_id"   => $request->input("branch_id"),
             "customer_id" => $request->input("customer_id"),
             "status"      => $request->input("status"),
             "start_date"  => $request->input("start_date")
         ];
-        $perPage  = intval($request->input("per_page") ?? Utilities::$per_page_max);
+        $perPage = $this->getPerPage($request, Utilities::$per_page_max);
 
-        return TrackingAttendanceService::getPaginatedList($userAuth->company_id, $filters, $perPage);
+        return TrackingAttendanceService::getPaginatedList($this->getCompanyId(), $filters, $perPage);
 
     }
 
@@ -74,33 +66,45 @@ class TrackingAttendanceController extends Controller {
 
     }
 
-    public function store(Request $request, AttendanceService $attendanceService) { // StoreTrackingAttendanceRequest
+    public function store(Request $request, TrackingAttendanceBusinessService $businessService): JsonResponse {
 
-        $userAuth = Auth::user();
+        try {
 
-        $startDate = Utilities::isDefined($request->start_date) ? Carbon::parse(str_replace("T", " ", $request->start_date)) : now();
-        $endDate   = Utilities::isDefined($request->end_date) ? Carbon::parse(str_replace("T", " ", $request->end_date)) : now();
+            $startDate = Utilities::isDefined($request->start_date)
+                ? Carbon::parse(str_replace("T", " ", $request->start_date))
+                : now();
+            $endDate = Utilities::isDefined($request->end_date)
+                ? Carbon::parse(str_replace("T", " ", $request->end_date))
+                : now();
 
-        $attendances = collect();
+            $result = $businessService->validateAndCreateAttendance([
+                "company_id"  => $this->getCompanyId(),
+                "branch_id"   => $request->branch_id,
+                "customer_id" => $request->customer_id,
+                "start_date"  => $startDate,
+                "end_date"    => $endDate,
+                "observation" => $request->observation,
+                "user_id"     => $this->getUserId(),
+                "type"        => "manual_form",
+                "action"      => "automatic"
+            ]);
 
-        $result = $attendanceService->validateAndCreateAttendance([
-            "company_id"  => $userAuth->company_id,
-            "branch_id"   => $request->branch_id,
-            "customer_id" => $request->customer_id,
-            "start_date"  => $startDate,
-            "end_date"    => $endDate,
-            "observation" => $request->observation,
-            "user_id"     => $userAuth->id,
-            "type"        => "manual_form",
-            "action"      => "automatic"
-        ]);
+            if($result["bool"]) {
 
-        $attendances->push($result);
+                return $this->successResponse(
+                    ["attendances" => [$result]],
+                    "created"
+                );
 
-        $bool = count($attendances->where("bool", true)) > 0;
-        $msg  = $bool ? "Asistencias creadas correctamente." : "No se han podido crear las asistencias.";
+            }
 
-        return response()->json(["bool" => $bool, "msg" => $msg, "attendances" => $attendances], 200);
+            return $this->errorResponse("create_failed", [], 422);
+
+        }catch(\Exception $e) {
+
+            return $this->handleException($e, "create");
+
+        }
 
     }
 
@@ -116,31 +120,41 @@ class TrackingAttendanceController extends Controller {
 
     }
 
-    public function update(Request $request, $id, AttendanceService $attendanceService) { // UpdateTrackingAttendanceRequest
+    public function update(Request $request, int $id, TrackingAttendanceBusinessService $businessService): JsonResponse {
 
-        $userAuth = Auth::user();
+        try {
 
-        $endDate = Utilities::isDefined($request->end_date) ? Carbon::parse(str_replace("T", " ", $request->end_date)) : now();
+            $endDate = Utilities::isDefined($request->end_date)
+                ? Carbon::parse(str_replace("T", " ", $request->end_date))
+                : now();
 
-        $attendances = collect();
+            $result = $businessService->validateAndCreateAttendance([
+                "company_id"  => $this->getCompanyId(),
+                "branch_id"   => $request->branch_id,
+                "customer_id" => $request->customer_id,
+                "start_date"  => null,
+                "end_date"    => $endDate,
+                "observation" => null,
+                "user_id"     => $this->getUserId(),
+                "action"      => "checkout"
+            ]);
 
-        $result = $attendanceService->validateAndCreateAttendance([
-            "company_id"  => $userAuth->company_id,
-            "branch_id"   => $request->branch_id,
-            "customer_id" => $request->customer_id,
-            "start_date"  => null,
-            "end_date"    => $endDate,
-            "observation" => null,
-            "user_id"     => $userAuth->id,
-            "action"      => "checkout"
-        ]);
+            if($result["bool"]) {
 
-        $attendances->push($result);
+                return $this->successResponse(
+                    ["attendances" => [$result]],
+                    "updated"
+                );
 
-        $bool = count($attendances->where("bool", true)) > 0;
-        $msg  = $bool ? "Asistencias concluidas correctamente." : "No se han podido concluir las asistencias.";
+            }
 
-        return response()->json(["bool" => $bool, "msg" => $msg, "attendances" => $attendances], 200);
+            return $this->errorResponse("update_failed", [], 422);
+
+        }catch(\Exception $e) {
+
+            return $this->handleException($e, "update");
+
+        }
 
     }
 
@@ -155,24 +169,23 @@ class TrackingAttendanceController extends Controller {
 
         try {
 
-            $userAuth = Auth::user();
             $attendance = Attendance::findOrFail($id);
 
-            if(!Utilities::isDefined($attendance) || $attendance->company_id != $userAuth->company_id) {
+            if(!Utilities::isDefined($attendance) || $attendance->company_id !== $this->getCompanyId()) {
 
                 return $this->notFoundResponse();
 
             }
 
-            $attendance = TrackingAttendanceService::cancel($attendance, $request->motive, $userAuth->id);
+            $attendance = TrackingAttendanceService::cancel($attendance, $request->motive, $this->getUserId());
 
-            TrackingAttendanceConfigService::clearAllCache($userAuth->company_id);
+            TrackingAttendanceConfigService::clearAllCache($this->getCompanyId());
 
             return $this->updatedResponse($attendance, "canceled", "attendance");
 
-        }catch(Exception $e) {
+        }catch(\Exception $e) {
 
-            return $this->errorResponse("exception_cancel", ["message" => $e->getMessage()]);
+            return $this->handleException($e, "cancel");
 
         }
 
@@ -195,73 +208,109 @@ class TrackingAttendanceController extends Controller {
 
     }
 
-    public function qrCamera(Request $request, AttendanceService $attendanceService) { // StoreTrackingAttendanceRequest
+    public function qrCamera(Request $request, TrackingAttendanceBusinessService $businessService): JsonResponse {
 
-        $userAuth = Auth::user();
+        try {
 
-        $startDate = Utilities::isDefined($request->start_date) ? Carbon::parse(str_replace("T", " ", $request->start_date)) : now();
-        $endDate   = Utilities::isDefined($request->end_date) ? Carbon::parse(str_replace("T", " ", $request->end_date)) : now();
+            $startDate = Utilities::isDefined($request->start_date)
+                ? Carbon::parse(str_replace("T", " ", $request->start_date))
+                : now();
+            $endDate = Utilities::isDefined($request->end_date)
+                ? Carbon::parse(str_replace("T", " ", $request->end_date))
+                : now();
 
-        $attendances = collect();
+            $attendances = collect();
 
-        foreach($request->customers as $customerRequest) {
+            foreach($request->customers as $customerRequest) {
 
-            $result = $attendanceService->validateAndCreateAttendance([
-                "company_id"  => $userAuth->company_id,
-                "branch_id"   => $request->branch_id,
-                "customer_id" => $customerRequest["customer_id"],
-                "start_date"  => $startDate,
-                "end_date"    => $endDate,
-                "observation" => $request->observation,
-                "user_id"     => $userAuth->id,
-                "type"        => "qr_camera",
-                "action"      => "automatic"
-            ]);
+                $result = $businessService->validateAndCreateAttendance([
+                    "company_id"  => $this->getCompanyId(),
+                    "branch_id"   => $request->branch_id,
+                    "customer_id" => $customerRequest["customer_id"],
+                    "start_date"  => $startDate,
+                    "end_date"    => $endDate,
+                    "observation" => $request->observation,
+                    "user_id"     => $this->getUserId(),
+                    "type"        => "qr_camera",
+                    "action"      => "automatic"
+                ]);
 
-            $attendances->push($result);
+                $attendances->push($result);
+
+            }
+
+            $successCount = $attendances->where("bool", true)->count();
+
+            if($successCount > 0) {
+
+                return $this->successResponse(
+                    ["attendances" => $attendances->all()],
+                    "created"
+                );
+
+            }
+
+            return $this->errorResponse("create_failed", [], 422);
+
+        }catch(\Exception $e) {
+
+            return $this->handleException($e, "create");
 
         }
-
-        $bool = count($attendances->where("bool", true)) > 0;
-        $msg  = $bool ? "Asistencias creadas correctamente." : "No se han podido crear las asistencias.";
-
-        return response()->json(["bool" => $bool, "msg" => $msg, "attendances" => $attendances], 200);
 
     }
 
-    public function qrScanner(Request $request, AttendanceService $attendanceService) { // StoreTrackingAttendanceRequest
+    public function qrScanner(Request $request, TrackingAttendanceBusinessService $businessService): JsonResponse {
 
-        $userAuth = Auth::user();
+        try {
 
-        $startDate = Utilities::isDefined($request->start_date) ? Carbon::parse(str_replace("T", " ", $request->start_date)) : now();
-        $endDate   = Utilities::isDefined($request->end_date) ? Carbon::parse(str_replace("T", " ", $request->end_date)) : now();
+            $startDate = Utilities::isDefined($request->start_date)
+                ? Carbon::parse(str_replace("T", " ", $request->start_date))
+                : now();
+            $endDate = Utilities::isDefined($request->end_date)
+                ? Carbon::parse(str_replace("T", " ", $request->end_date))
+                : now();
 
-        $attendances = collect();
+            $attendances = collect();
 
-        foreach($request->customers as $customerRequest) {
+            foreach($request->customers as $customerRequest) {
 
-            $result = $attendanceService->validateAndCreateAttendance([
-                "company_id"  => $userAuth->company_id,
-                "branch_id"   => $request->branch_id,
-                "customer_id" => $customerRequest["customer_id"] ?? "",
-                "customer_document_number" => $customerRequest["customer_document_number"] ?? "",
-                "customer_attendance_type" => $customerRequest["customer_attendance_type"] ?? "",
-                "start_date"  => $startDate,
-                "end_date"    => $endDate,
-                "observation" => $request->observation,
-                "user_id"     => $userAuth->id,
-                "type"        => "qr_scanner",
-                "action"      => "automatic"
-            ]);
+                $result = $businessService->validateAndCreateAttendance([
+                    "company_id"  => $this->getCompanyId(),
+                    "branch_id"   => $request->branch_id,
+                    "customer_id" => $customerRequest["customer_id"] ?? "",
+                    "customer_document_number" => $customerRequest["customer_document_number"] ?? "",
+                    "customer_attendance_type" => $customerRequest["customer_attendance_type"] ?? "",
+                    "start_date"  => $startDate,
+                    "end_date"    => $endDate,
+                    "observation" => $request->observation,
+                    "user_id"     => $this->getUserId(),
+                    "type"        => "qr_scanner",
+                    "action"      => "automatic"
+                ]);
 
-            $attendances->push($result);
+                $attendances->push($result);
+
+            }
+
+            $successCount = $attendances->where("bool", true)->count();
+
+            if($successCount > 0) {
+
+                return $this->successResponse(
+                    ["attendances" => $attendances->all()],
+                    "created"
+                );
+
+            }
+
+            return $this->errorResponse("create_failed", [], 422);
+
+        }catch(\Exception $e) {
+
+            return $this->handleException($e, "create");
 
         }
-
-        $bool = count($attendances->where("bool", true)) > 0;
-        $msg  = $bool ? "Asistencias creadas correctamente." : "No se han podido crear las asistencias.";
-
-        return response()->json(["bool" => $bool, "msg" => $msg, "attendances" => $attendances], 200);
 
     }
 

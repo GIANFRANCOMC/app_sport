@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\System\Base;
 
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\System\Concerns\HandlesApiResponses;
+use App\Http\Controllers\System\Concerns\{HandlesApiResponses, HandlesExceptions};
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\Auth;
  */
 abstract class BaseController extends Controller {
 
-    use HandlesApiResponses;
+    use HandlesApiResponses, HandlesExceptions;
 
     /**
      * Get authenticated user

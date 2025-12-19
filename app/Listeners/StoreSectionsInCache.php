@@ -4,7 +4,7 @@ namespace App\Listeners;
 
 use App\Helpers\System\Utilities;
 use Illuminate\Auth\Events\Authenticated;
-use App\Services\CompanySectionService;
+use App\Services\System\Organizations\Companies\CompanySectionService;
 
 class StoreSectionsInCache {
 

@@ -4,17 +4,12 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\System\Customers;
 
-use App\Http\Controllers\{Controller};
+use App\Http\Controllers\System\Base\BaseController;
 use Illuminate\Http\{JsonResponse, Request};
-use Illuminate\Support\Facades\{Auth};
 
-use App\Http\Controllers\System\Concerns\{HandlesApiResponses};
-use App\Services\System\Customers\Tracking\TrackingCustomerConfigService;
-use App\Services\TrackingCustomerService;
+use App\Services\System\Customers\Tracking\{TrackingCustomerConfigService, TrackingCustomerBusinessService};
 
-class TrackingCustomerController extends Controller {
-
-    use HandlesApiResponses;
+class TrackingCustomerController extends BaseController {
 
     /**
      * Translation namespace for tracking customer module
@@ -29,10 +24,8 @@ class TrackingCustomerController extends Controller {
      */
     public function initParams(Request $request) {
 
-        $userAuth = Auth::user();
-        $page     = $request->input("page", "");
-
-        return TrackingCustomerConfigService::getInitParams($userAuth->company_id, $page);
+        $page = $this->getPage($request);
+        return TrackingCustomerConfigService::getInitParams($this->getCompanyId(), $page);
 
     }
 
@@ -93,19 +86,33 @@ class TrackingCustomerController extends Controller {
      *
      * @param Request $request
      * @param int $id Customer ID
-     * @param TrackingCustomerService $trackingCustomer
-     * @return mixed
+     * @param TrackingCustomerBusinessService $businessService
+     * @return JsonResponse
      */
-    public function getTracking(Request $request, int $id, TrackingCustomerService $trackingCustomer) {
+    public function getTracking(Request $request, int $id, TrackingCustomerBusinessService $businessService): JsonResponse {
 
-        $userAuth = Auth::user();
+        try {
 
-        return $trackingCustomer->get([
-            "company_id"  => $userAuth->company_id,
-            "customer_id" => $id,
-            "period_type" => $request->input("period_type"),
-            "options"     => $request->input("options")
-        ]);
+            $result = $businessService->get([
+                "company_id"  => $this->getCompanyId(),
+                "customer_id" => $id,
+                "period_type" => $request->input("period_type"),
+                "options"     => $request->input("options")
+            ]);
+
+            if($result["bool"]) {
+
+                return $this->successResponse($result["tracking"], "retrieved");
+
+            }
+
+            return $this->errorResponse($result["msg"] ?? "retrieve_failed", [], 422);
+
+        }catch(\Exception $e) {
+
+            return $this->handleException($e, "retrieve");
+
+        }
 
     }
 

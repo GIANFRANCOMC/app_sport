@@ -7,8 +7,6 @@ namespace App\Services\System\Customers\Tracking;
 use App\Helpers\System\{TranslationHelper, Utilities};
 use App\Models\System\Customers\Attendance;
 use App\Models\System\Organizations\Branch;
-use App\Services\AttendanceService;
-use Carbon\Carbon;
 use Illuminate\Pagination\LengthAwarePaginator;
 
 /**
