@@ -10,7 +10,7 @@ use stdClass;
 
 // use App\Http\Requests\Guest\TrackingAttendances\{CancelTrackingAttendanceRequest};
 use App\Models\Guest\{Attendance, Branch, Customer, Subscription};
-use App\Services\AttendanceService;
+use App\Services\System\Customers\Tracking\TrackingAttendanceBusinessService;
 use Carbon\Carbon;
 use Illuminate\Pagination\LengthAwarePaginator;
 
@@ -90,7 +90,7 @@ class TrackingAttendanceController extends Controller {
 
     }
 
-    public function qrCamera(Request $request, AttendanceService $attendanceService) { // StoreTrackingAttendanceRequest
+    public function qrCamera(Request $request, TrackingAttendanceBusinessService $attendanceService) { // StoreTrackingAttendanceRequest
 
         $company = $request->get("company");
 
