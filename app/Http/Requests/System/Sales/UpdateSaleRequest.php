@@ -1,19 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Requests\System\Sales;
 
-use Illuminate\Foundation\Http\FormRequest;
+use App\Http\Requests\System\Base\BaseFormRequest;
 
-class UpdateSaleRequest extends FormRequest {
-
-    /**
-     * Determine if the user is authorized to make this request.
-     */
-    public function authorize(): bool {
-
-        return true;
-
-    }
+class UpdateSaleRequest extends BaseFormRequest {
 
     /**
      * Get the validation rules that apply to the request.
@@ -23,7 +16,7 @@ class UpdateSaleRequest extends FormRequest {
     public function rules(): array {
 
         return [
-            //
+            // Not implemented - sales updates are handled differently
         ];
 
     }

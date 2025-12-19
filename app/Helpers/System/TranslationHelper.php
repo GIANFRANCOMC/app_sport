@@ -34,7 +34,7 @@ class TranslationHelper {
     }
 
     /**
-     * Get translation with fallback to English if not found
+     * Get translation with fallback to English if not found, and finally to default messages
      *
      * @param string $entity Entity name (e.g., 'System.Organizations.branch')
      * @param string $key Translation key
@@ -53,14 +53,105 @@ class TranslationHelper {
         // Try current locale first
         $translation = trans($translationKey, $replace, $locale);
 
-        // If translation not found or same as key, try English fallback
-        if($translation === $translationKey && $locale !== "en") {
+        // Check if translation was found (Laravel returns the key if not found)
+        // Also check if it contains slashes (which means it's a path, not a translation)
+        $isTranslationFound = ($translation !== $translationKey) && (strpos($translation, "/") === false);
+
+        // If translation not found, try English fallback
+        if(!$isTranslationFound && $locale !== "en") {
 
             $translation = trans($translationKey, $replace, "en");
+            $isTranslationFound = ($translation !== $translationKey) && (strpos($translation, "/") === false);
+
+        }
+
+        // If still not found, use default messages
+        if(!$isTranslationFound) {
+
+            $translation = self::getDefaultMessage($entity, $key, $replace);
 
         }
 
         return $translation;
+
+    }
+
+    /**
+     * Get default message when translation is not found
+     *
+     * @param string $entity Entity name
+     * @param string $key Translation key
+     * @param array $replace Replacements
+     * @return string
+     */
+    private static function getDefaultMessage(string $entity, string $key, array $replace = []): string {
+
+        // Extract entity name from namespace (last part)
+        $entityParts = explode(".", $entity);
+        $entityName = end($entityParts);
+
+        // Map entity names to Spanish labels
+        $entityLabels = [
+            "user"                => "usuario",
+            "customer"            => "cliente",
+            "category"            => "categoría",
+            "product"             => "producto",
+            "service"             => "servicio",
+            "subscription"        => "suscripción",
+            "company"             => "empresa",
+            "branch"              => "sucursal",
+            "book_complaint"      => "queja",
+            "asset"               => "activo",
+            "asset_management"    => "asignación",
+            "sale"                => "venta",
+            "tracking_attendance" => "asistencia",
+            "tracking_subscription" => "suscripción",
+            "tracking_customer"   => "cliente",
+            "tracking_notification" => "notificación",
+            "stock_management"    => "stock",
+            "dashboard"           => "tablero",
+            "report"              => "reporte",
+            "home"                => "preferencias",
+            "helper"              => "ayuda"
+        ];
+
+        $entityLabel = $entityLabels[$entityName] ?? $entityName;
+
+        // Default messages in Spanish
+        $defaultMessages = [
+            "created"         => ucfirst($entityLabel) . " creado exitosamente",
+            "updated"         => ucfirst($entityLabel) . " actualizado exitosamente",
+            "deleted"         => ucfirst($entityLabel) . " eliminado exitosamente",
+            "canceled"        => ucfirst($entityLabel) . " cancelado exitosamente",
+            "not_found"       => ucfirst($entityLabel) . " no encontrado",
+            "create_failed"   => "No se pudo crear " . $entityLabel,
+            "update_failed"   => "No se pudo actualizar " . $entityLabel,
+            "delete_failed"   => "No se pudo eliminar " . $entityLabel,
+            "cancel_failed"   => "No se pudo cancelar " . $entityLabel,
+            "unauthorized"   => "No autorizado para realizar esta acción",
+            "exception_create" => "Error al crear " . $entityLabel,
+            "exception_update" => "Error al actualizar " . $entityLabel,
+            "exception_delete" => "Error al eliminar " . $entityLabel,
+            "exception_cancel" => "Error al cancelar " . $entityLabel,
+            "not_implemented" => "Funcionalidad no implementada"
+        ];
+
+        // Get message or use key as fallback
+        $message = $defaultMessages[$key] ?? ucfirst(str_replace("_", " ", $key));
+
+        // Apply replacements if any
+        if(!empty($replace)) {
+
+            foreach($replace as $search => $value) {
+
+                $message = str_replace(":" . $search, $value, $message);
+                $message = str_replace("{" . $search . "}", $value, $message);
+
+            }
+
+        }
+
+        return $message;
 
     }
 

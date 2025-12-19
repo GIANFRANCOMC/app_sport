@@ -104,7 +104,7 @@ class UserController extends Controller {
 
         }catch(Exception $e) {
 
-            return response()->json(["bool" => false, "msg" => $e->getMessage()], 200);
+            return $this->errorResponse("exception_create", ["message" => $e->getMessage()]);
 
         }
 
@@ -171,7 +171,7 @@ class UserController extends Controller {
 
         }catch(Exception $e) {
 
-            return response()->json(["bool" => false, "msg" => $e->getMessage()], 200);
+            return $this->errorResponse("exception_update", ["message" => $e->getMessage()]);
 
         }
 

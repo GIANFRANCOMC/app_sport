@@ -1,19 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Requests\System\Customers\TrackingAttendances;
 
-use Illuminate\Foundation\Http\FormRequest;
+use App\Http\Requests\System\Base\BaseFormRequest;
 
-class CancelTrackingAttendanceRequest extends FormRequest {
-
-    /**
-     * Determine if the user is authorized to make this request.
-     */
-    public function authorize(): bool {
-
-        return true;
-
-    }
+class CancelTrackingAttendanceRequest extends BaseFormRequest {
 
     /**
      * Get the validation rules that apply to the request.

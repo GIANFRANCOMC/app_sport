@@ -1,22 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Requests\System\Organizations\Companies;
 
 use App\Helpers\System\Utilities;
-use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Contracts\Validation\Validator;
-use Illuminate\Http\Exceptions\HttpResponseException;
+use App\Http\Requests\System\Base\BaseFormRequest;
 
-class UpdateCompanyRequest extends FormRequest {
-
-    /**
-     * Determine if the user is authorized to make this request.
-     */
-    public function authorize(): bool {
-
-        return true;
-
-    }
+class UpdateCompanyRequest extends BaseFormRequest {
 
     /**
      * Get the validation rules that apply to the request.
@@ -46,12 +37,5 @@ class UpdateCompanyRequest extends FormRequest {
 
     }
 
-    protected function failedValidation(Validator $validator) {
-
-        $errors = $validator->errors()->toArray();
-
-        throw new HttpResponseException(response()->json(["errors" => $errors, "message" => Utilities::$messages["422"]], 422));
-
-    }
 
 }

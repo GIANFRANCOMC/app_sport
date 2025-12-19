@@ -1,22 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Requests\System\Organizations\Users;
 
-use App\Helpers\System\Utilities;
-use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Contracts\Validation\Validator;
-use Illuminate\Http\Exceptions\HttpResponseException;
+use App\Http\Requests\System\Base\BaseFormRequest;
 
-class UpdateUserRequest extends FormRequest {
-
-    /**
-     * Determine if the user is authorized to make this request.
-     */
-    public function authorize(): bool {
-
-        return true;
-
-    }
+class UpdateUserRequest extends BaseFormRequest {
 
     /**
      * Get the validation rules that apply to the request.
@@ -40,12 +30,5 @@ class UpdateUserRequest extends FormRequest {
 
     }
 
-    protected function failedValidation(Validator $validator) {
-
-        $errors = $validator->errors()->toArray();
-
-        throw new HttpResponseException(response()->json(["errors" => $errors, "message" => Utilities::$messages["422"]], 422));
-
-    }
 
 }

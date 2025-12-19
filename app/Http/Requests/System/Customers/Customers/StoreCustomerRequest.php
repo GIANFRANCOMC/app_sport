@@ -1,22 +1,12 @@
 <?php
 
-namespace App\Http\Requests\System\Customers;
+declare(strict_types=1);
 
-use App\Helpers\System\Utilities;
-use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Contracts\Validation\Validator;
-use Illuminate\Http\Exceptions\HttpResponseException;
+namespace App\Http\Requests\System\Customers\Customers;
 
-class StoreCustomerRequest extends FormRequest {
+use App\Http\Requests\System\Base\BaseFormRequest;
 
-    /**
-     * Determine if the user is authorized to make this request.
-     */
-    public function authorize(): bool {
-
-        return true;
-
-    }
+class StoreCustomerRequest extends BaseFormRequest {
 
     /**
      * Get the validation rules that apply to the request.
@@ -35,14 +25,6 @@ class StoreCustomerRequest extends FormRequest {
             "gender"                    => "nullable|string",
             "birthdate"                 => "nullable|date"
         ];
-
-    }
-
-    protected function failedValidation(Validator $validator) {
-
-        $errors = $validator->errors()->toArray();
-
-        throw new HttpResponseException(response()->json(["errors" => $errors, "message" => Utilities::$messages["422"]], 422));
 
     }
 

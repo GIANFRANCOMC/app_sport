@@ -11,7 +11,7 @@ use Illuminate\Http\{JsonResponse, Request};
 use Illuminate\Support\Facades\{Auth};
 
 use App\Http\Controllers\System\Concerns\{HandlesApiResponses};
-use App\Http\Requests\System\Customers\{StoreCustomerRequest, UpdateCustomerRequest};
+use App\Http\Requests\System\Customers\Customers\{StoreCustomerRequest, UpdateCustomerRequest};
 use App\Services\System\Customers\{CustomerConfigService, CustomerService};
 use App\Models\System\Customers\{Customer, Subscription};
 
