@@ -21,7 +21,6 @@ use App\Services\System\Essentials\ReportConfigService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Carbon\Exceptions\InvalidFormatException;
-use Exception;
 use Maatwebsite\Excel\Facades\Excel;
 
 class ReportController extends BaseController {

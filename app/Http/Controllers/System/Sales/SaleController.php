@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\System\Sales;
 
-use Exception;
 use App\Http\Controllers\System\Base\BaseController;
 use App\Helpers\System\{Utilities};
 use Illuminate\Http\{JsonResponse, Request};
