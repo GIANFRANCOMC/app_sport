@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services\System\Warehouses;
 
 use App\Models\System\Organizations\Branch;
