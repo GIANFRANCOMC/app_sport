@@ -9,6 +9,7 @@ use App\Helpers\System\{TranslationHelper, Utilities};
 use Illuminate\Support\Facades\{Auth, DB};
 
 use App\Models\System\Organizations\User;
+use App\Repositories\System\Organizations\Users\UserRepository;
 
 /**
  * Service class for managing User operations
@@ -20,6 +21,28 @@ class UserService {
      * Translation namespace for user module
      */
     private const TRANSLATION_NAMESPACE = "System.Organizations.user";
+
+    /**
+     * @var UserRepository
+     */
+    private static $repository;
+
+    /**
+     * Get repository instance (lazy initialization)
+     *
+     * @return UserRepository
+     */
+    private static function getRepository(): UserRepository {
+
+        if(self::$repository === null) {
+
+            self::$repository = new UserRepository();
+
+        }
+
+        return self::$repository;
+
+    }
 
     /**
      * Allowed fields for user creation and update
@@ -135,21 +158,12 @@ class UserService {
      */
     private static function documentNumberExists(string $documentNumber, int $companyId, ?int $excludeUserId = null): bool {
 
-        $query = User::where("company_id", $companyId)
-                     ->where("document_number", $documentNumber);
-
-        if($excludeUserId) {
-
-            $query->where("id", "!=", $excludeUserId);
-
-        }
-
-        return $query->exists();
+        return self::getRepository()->fieldExists("document_number", $documentNumber, $companyId, $excludeUserId);
 
     }
 
     /**
-     * Check if email exists
+     * Check if email exists (global check, not per company)
      *
      * @param string $email Email address
      * @param int|null $excludeUserId User ID to exclude from check
@@ -281,13 +295,12 @@ class UserService {
      *
      * @param int $id User ID
      * @param int $companyId Company ID
+     * @param array $relations Relations to eager load
      * @return User|null
      */
-    public static function findByIdAndCompany(int $id, int $companyId): ?User {
+    public static function findByIdAndCompany(int $id, int $companyId, array $relations = ["identityDocumentType", "role"]): ?User {
 
-        return User::where("id", $id)
-                   ->where("company_id", $companyId)
-                   ->first();
+        return self::getRepository()->findByIdAndCompany($id, $companyId, $relations);
 
     }
 
@@ -301,59 +314,7 @@ class UserService {
      */
     public static function getPaginatedList(int $companyId, array $filters = [], int $perPage = 15) {
 
-        $query = User::where("company_id", $companyId)
-                     ->with(["identityDocumentType", "role"]);
-
-        // Apply search filters
-        self::applySearchFilters($query, $filters);
-
-        // Apply ordering
-        $query->orderBy("name", "ASC");
-
-        return $query->paginate($perPage);
-
-    }
-
-    /**
-     * Apply search filters to query
-     *
-     * @param \Illuminate\Database\Eloquent\Builder $query
-     * @param array $filters
-     * @return void
-     */
-    private static function applySearchFilters($query, array $filters): void {
-
-        $filterBy = $filters["filter_by"] ?? null;
-        $word     = $filters["word"] ?? null;
-
-        if(!Utilities::isDefined($filterBy) || !Utilities::isDefined($word)) {
-
-            return;
-
-        }
-
-        $searchTerm = Utilities::getWordSearch($word);
-        $searchableFields = ["document_number", "name", "email", "phone_number"];
-
-        if($filterBy === "all") {
-
-            // Search across all searchable fields
-            $query->where(function($q) use($searchTerm, $searchableFields) {
-
-                foreach($searchableFields as $field) {
-
-                    $q->orWhere($field, "like", $searchTerm);
-
-                }
-
-            });
-
-        }elseif(in_array($filterBy, $searchableFields, true)) {
-
-            // Search in specific field
-            $query->where($filterBy, "like", $searchTerm);
-
-        }
+        return self::getRepository()->getPaginatedList($companyId, $filters, $perPage);
 
     }
 

@@ -2,18 +2,17 @@
 
 declare(strict_types=1);
 
-namespace App\Repositories\System\Organizations;
+namespace App\Repositories\System\Catalogs\Categories;
 
-use App\Models\System\Organizations\Branch;
+use App\Models\System\Catalogs\Category;
 use App\Repositories\System\Base\BaseRepository;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
-use Illuminate\Database\Eloquent\Builder;
 
 /**
- * Repository class for Branch data access
+ * Repository class for Category data access
  * Implements Repository Pattern for centralized query logic
  */
-class BranchRepository extends BaseRepository {
+class CategoryRepository extends BaseRepository {
 
     /**
      * Get the model class name
@@ -22,7 +21,7 @@ class BranchRepository extends BaseRepository {
      */
     protected static function getModelClass(): string {
 
-        return Branch::class;
+        return Category::class;
 
     }
 
@@ -36,17 +35,14 @@ class BranchRepository extends BaseRepository {
         return [
             "internal_code",
             "name",
-            "address",
-            "reference",
-            "telephone",
-            "email"
+            "description"
         ];
 
     }
 
     /**
-     * Get paginated list of branches with filters
-     * Uses BaseRepository with branch-specific defaults
+     * Get paginated list of categories with filters
+     * Uses BaseRepository with category-specific defaults
      *
      * @param int $companyId Company ID
      * @param array $filters Filter parameters
@@ -60,7 +56,7 @@ class BranchRepository extends BaseRepository {
         int $companyId,
         array $filters = [],
         int $perPage = 15,
-        array $relations = ["series.documentType", "warehouses"],
+        array $relations = [],
         string $orderBy = "name",
         string $orderDirection = "ASC"
     ): LengthAwarePaginator {
@@ -70,38 +66,11 @@ class BranchRepository extends BaseRepository {
     }
 
     /**
-     * Apply type-based filters
-     *
-     * @param Builder $query
-     * @param string $type
-     * @return void
-     */
-    protected function applyTypeFilters(Builder $query, string $type): void {
-
-        $typeFilters = [
-            "sale" => ["active"],
-            // Add more type filters as needed
-        ];
-
-        if(isset($typeFilters[$type])) {
-
-            $query->whereIn("status", $typeFilters[$type]);
-
-        }else {
-
-            // Call parent for default behavior
-            parent::applyTypeFilters($query, $type);
-
-        }
-
-    }
-
-    /**
      * Check if internal code exists for company
      *
      * @param string $internalCode Internal code
      * @param int $companyId Company ID
-     * @param int|null $excludeId Branch ID to exclude (for updates)
+     * @param int|null $excludeId Category ID to exclude (for updates)
      * @return bool
      */
     public function internalCodeExists(string $internalCode, int $companyId, ?int $excludeId = null): bool {
@@ -111,3 +80,4 @@ class BranchRepository extends BaseRepository {
     }
 
 }
+

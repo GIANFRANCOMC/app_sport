@@ -9,6 +9,7 @@ use App\Helpers\System\{TranslationHelper, Utilities};
 use Illuminate\Support\Facades\{Auth, DB};
 
 use App\Models\System\Catalogs\Category;
+use App\Repositories\System\Catalogs\Categories\CategoryRepository;
 
 /**
  * Service class for managing Category operations
@@ -20,6 +21,28 @@ class CategoryService {
      * Translation namespace for category module
      */
     private const TRANSLATION_NAMESPACE = "System.Catalogs.category";
+
+    /**
+     * @var CategoryRepository
+     */
+    private static $repository;
+
+    /**
+     * Get repository instance (lazy initialization)
+     *
+     * @return CategoryRepository
+     */
+    private static function getRepository(): CategoryRepository {
+
+        if(self::$repository === null) {
+
+            self::$repository = new CategoryRepository();
+
+        }
+
+        return self::$repository;
+
+    }
 
     /**
      * Allowed fields for category creation and update
@@ -122,11 +145,7 @@ class CategoryService {
             $userId = $userId ?? $userAuth->id;
 
             // Check if internal code exists
-            $categoryExists = Category::where("company_id", $companyId)
-                                      ->where("internal_code", $data["internal_code"])
-                                      ->exists();
-
-            if($categoryExists) {
+            if(self::getRepository()->internalCodeExists($data["internal_code"], $companyId)) {
 
                 throw new Exception(self::trans("internal_code_exists"));
 
@@ -163,12 +182,7 @@ class CategoryService {
             // Check if internal code exists (excluding current category)
             if(isset($data["internal_code"])) {
 
-                $categoryExists = Category::where("company_id", $category->company_id)
-                                          ->where("internal_code", $data["internal_code"])
-                                          ->where("id", "!=", $category->id)
-                                          ->exists();
-
-                if($categoryExists) {
+                if(self::getRepository()->internalCodeExists($data["internal_code"], $category->company_id, $category->id)) {
 
                     throw new Exception(self::trans("internal_code_exists"));
 
@@ -199,13 +213,12 @@ class CategoryService {
      *
      * @param int $id Category ID
      * @param int $companyId Company ID
+     * @param array $relations Relations to eager load
      * @return Category|null
      */
-    public static function findByIdAndCompany(int $id, int $companyId): ?Category {
+    public static function findByIdAndCompany(int $id, int $companyId, array $relations = []): ?Category {
 
-        return Category::where("id", $id)
-                       ->where("company_id", $companyId)
-                       ->first();
+        return self::getRepository()->findByIdAndCompany($id, $companyId, $relations);
 
     }
 
@@ -219,58 +232,7 @@ class CategoryService {
      */
     public static function getPaginatedList(int $companyId, array $filters = [], int $perPage = 15) {
 
-        $query = Category::where("company_id", $companyId);
-
-        // Apply search filters
-        self::applySearchFilters($query, $filters);
-
-        // Apply ordering
-        $query->orderBy("name", "ASC");
-
-        return $query->paginate($perPage);
-
-    }
-
-    /**
-     * Apply search filters to query
-     *
-     * @param \Illuminate\Database\Eloquent\Builder $query
-     * @param array $filters
-     * @return void
-     */
-    private static function applySearchFilters($query, array $filters): void {
-
-        $filterBy = $filters["filter_by"] ?? null;
-        $word     = $filters["word"] ?? null;
-
-        if(!Utilities::isDefined($filterBy) || !Utilities::isDefined($word)) {
-
-            return;
-
-        }
-
-        $searchTerm = Utilities::getWordSearch($word);
-        $searchableFields = ["internal_code", "name", "description"];
-
-        if($filterBy === "all") {
-
-            // Search across all searchable fields
-            $query->where(function($q) use($searchTerm, $searchableFields) {
-
-                foreach($searchableFields as $field) {
-
-                    $q->orWhere($field, "like", $searchTerm);
-
-                }
-
-            });
-
-        }elseif(in_array($filterBy, $searchableFields, true)) {
-
-            // Search in specific field
-            $query->where($filterBy, "like", $searchTerm);
-
-        }
+        return self::getRepository()->getPaginatedList($companyId, $filters, $perPage);
 
     }
 
@@ -284,16 +246,7 @@ class CategoryService {
      */
     public static function internalCodeExists(string $internalCode, int $companyId, ?int $excludeId = null): bool {
 
-        $query = Category::where("company_id", $companyId)
-                        ->where("internal_code", $internalCode);
-
-        if($excludeId !== null) {
-
-            $query->where("id", "!=", $excludeId);
-
-        }
-
-        return $query->exists();
+        return self::getRepository()->internalCodeExists($internalCode, $companyId, $excludeId);
 
     }
 

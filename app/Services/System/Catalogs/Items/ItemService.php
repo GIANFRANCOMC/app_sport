@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\{Auth, DB};
 use App\Models\System\Catalogs\{CategoryItem, Item};
 use App\Models\System\Organizations\Branch;
 use App\Models\System\Warehouses\WarehouseItem;
+use App\Repositories\System\Catalogs\Items\ItemRepository;
 
 /**
  * Base service class for managing Item operations
@@ -22,6 +23,28 @@ class ItemService {
      * Translation namespace for item module
      */
     private const TRANSLATION_NAMESPACE = "System.Catalogs.item";
+
+    /**
+     * @var ItemRepository
+     */
+    private static $repository;
+
+    /**
+     * Get repository instance (lazy initialization)
+     *
+     * @return ItemRepository
+     */
+    private static function getRepository(): ItemRepository {
+
+        if(self::$repository === null) {
+
+            self::$repository = new ItemRepository();
+
+        }
+
+        return self::$repository;
+
+    }
 
     /**
      * Allowed fields for item creation and update
@@ -200,11 +223,7 @@ class ItemService {
             $userId = $userId ?? $userAuth->id;
 
             // Check if internal code exists
-            $itemExists = Item::where("company_id", $companyId)
-                              ->where("internal_code", $data["internal_code"])
-                              ->exists();
-
-            if($itemExists) {
+            if(self::getRepository()->internalCodeExists($data["internal_code"], $companyId)) {
 
                 throw new Exception(self::trans("internal_code_exists"));
 
@@ -255,12 +274,7 @@ class ItemService {
             // Check if internal code exists (excluding current item)
             if(isset($data["internal_code"])) {
 
-                $itemExists = Item::where("company_id", $item->company_id)
-                                  ->where("internal_code", $data["internal_code"])
-                                  ->where("id", "!=", $item->id)
-                                  ->exists();
-
-                if($itemExists) {
+                if(self::getRepository()->internalCodeExists($data["internal_code"], $item->company_id, $item->id)) {
 
                     throw new Exception(self::trans("internal_code_exists"));
 
@@ -321,14 +335,20 @@ class ItemService {
      * @param int $id Item ID
      * @param int $companyId Company ID
      * @param string $type Item type
+     * @param array $relations Relations to eager load
      * @return Item|null
      */
-    public static function findByIdAndCompany(int $id, int $companyId, string $type): ?Item {
+    public static function findByIdAndCompany(int $id, int $companyId, string $type, array $relations = []): ?Item {
 
-        return Item::where("id", $id)
-                   ->where("company_id", $companyId)
-                   ->where("type", $type)
-                   ->first();
+        $item = self::getRepository()->findByIdAndCompany($id, $companyId, $relations);
+
+        if($item && $item->type === $type) {
+
+            return $item;
+
+        }
+
+        return null;
 
     }
 
@@ -343,60 +363,21 @@ class ItemService {
      */
     public static function getPaginatedList(int $companyId, string $type, array $filters = [], int $perPage = 15) {
 
-        $query = Item::where("company_id", $companyId)
-                     ->where("type", $type)
-                     ->with(["currency", "categoryItems"]);
-
-        // Apply search filters
-        self::applySearchFilters($query, $filters);
-
-        // Apply ordering
-        $query->orderBy("name", "ASC");
-
-        return $query->paginate($perPage);
+        return self::getRepository()->getPaginatedListByType($companyId, $type, $filters, $perPage);
 
     }
 
     /**
-     * Apply search filters to query
+     * Check if internal code exists for company
      *
-     * @param \Illuminate\Database\Eloquent\Builder $query
-     * @param array $filters
-     * @return void
+     * @param string $internalCode Internal code
+     * @param int $companyId Company ID
+     * @param int|null $excludeId Item ID to exclude (for updates)
+     * @return bool
      */
-    private static function applySearchFilters($query, array $filters): void {
+    public static function internalCodeExists(string $internalCode, int $companyId, ?int $excludeId = null): bool {
 
-        $filterBy = $filters["filter_by"] ?? null;
-        $word     = $filters["word"] ?? null;
-
-        if(!Utilities::isDefined($filterBy) || !Utilities::isDefined($word)) {
-
-            return;
-
-        }
-
-        $searchTerm = Utilities::getWordSearch($word);
-        $searchableFields = ["internal_code", "name", "description", "price"];
-
-        if($filterBy === "all") {
-
-            // Search across all searchable fields
-            $query->where(function($q) use($searchTerm, $searchableFields) {
-
-                foreach($searchableFields as $field) {
-
-                    $q->orWhere($field, "like", $searchTerm);
-
-                }
-
-            });
-
-        }elseif(in_array($filterBy, $searchableFields, true)) {
-
-            // Search in specific field
-            $query->where($filterBy, "like", $searchTerm);
-
-        }
+        return self::getRepository()->internalCodeExists($internalCode, $companyId, $excludeId);
 
     }
 

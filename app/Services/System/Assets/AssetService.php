@@ -8,12 +8,35 @@ use App\Helpers\System\Utilities;
 use Illuminate\Support\Facades\DB;
 
 use App\Models\System\Assets\Asset;
+use App\Repositories\System\Assets\AssetRepository;
 
 /**
  * Service class for managing Asset operations
  * Handles business logic for creating and updating assets
  */
 class AssetService {
+
+    /**
+     * @var AssetRepository
+     */
+    private static $repository;
+
+    /**
+     * Get repository instance (lazy initialization)
+     *
+     * @return AssetRepository
+     */
+    private static function getRepository(): AssetRepository {
+
+        if(self::$repository === null) {
+
+            self::$repository = new AssetRepository();
+
+        }
+
+        return self::$repository;
+
+    }
 
     /**
      * Get paginated list of assets with filters
@@ -25,37 +48,7 @@ class AssetService {
      */
     public static function getPaginatedList(int $companyId, array $filters, int $perPage) {
 
-        $filterBy = $filters["filter_by"] ?? null;
-        $word     = $filters["word"] ?? null;
-
-        return Asset::when(Utilities::isDefined($filterBy), function($query) use($filterBy, $word) {
-
-                            $filter = Utilities::getWordSearch($word);
-
-                            if(in_array($filterBy, ["all"])) {
-
-                                $query->where(function($query) use($filter) {
-
-                                    $query->where("internal_code", "like", $filter)
-                                          ->orWhere("name", "like", $filter)
-                                          ->orWhere("description", "like", $filter);
-
-                                });
-
-                            }else if(in_array($filterBy, ["internal_code", "name", "description"])) {
-
-                                $query->where(function($query) use($filterBy, $filter) {
-
-                                    $query->where($filterBy, "like", $filter);
-
-                                });
-
-                            }
-
-                      })
-                      ->where("company_id", $companyId)
-                      ->orderBy("name", "ASC")
-                      ->paginate($perPage);
+        return self::getRepository()->getPaginatedList($companyId, $filters, $perPage);
 
     }
 
@@ -64,13 +57,12 @@ class AssetService {
      *
      * @param int $id Asset ID
      * @param int $companyId Company ID
+     * @param array $relations Relations to eager load
      * @return Asset|null
      */
-    public static function findByIdAndCompany(int $id, int $companyId): ?Asset {
+    public static function findByIdAndCompany(int $id, int $companyId, array $relations = []): ?Asset {
 
-        return Asset::where("id", $id)
-                    ->where("company_id", $companyId)
-                    ->first();
+        return self::getRepository()->findByIdAndCompany($id, $companyId, $relations);
 
     }
 
@@ -84,16 +76,7 @@ class AssetService {
      */
     public static function internalCodeExists(string $internalCode, int $companyId, ?int $excludeId = null): bool {
 
-        $query = Asset::where("company_id", $companyId)
-                      ->where("internal_code", $internalCode);
-
-        if($excludeId) {
-
-            $query->whereNot("id", $excludeId);
-
-        }
-
-        return $query->exists();
+        return self::getRepository()->internalCodeExists($internalCode, $companyId, $excludeId);
 
     }
 
