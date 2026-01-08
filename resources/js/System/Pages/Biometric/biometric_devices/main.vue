@@ -262,7 +262,7 @@ import * as Utils from "@System/Helpers/Utils.js";
 
 const MODULE_CONFIG = {
     entity: "biometric_devices",
-    menuId: "menu-infrastructure-biometric-devices",
+    menuId: "menu-infrastructure-biometric_devices",
     pageTitle: "Dispositivos biométricos",
     breadcrumbParent: "Infraestructura",
     perPage: 10
@@ -271,52 +271,52 @@ const MODULE_CONFIG = {
 const FORM_FIELDS = {
     branch: null,
     name: "",
+    description: "",
     brand: null,
     model: null,
     serial_number: "",
     ip_address: "",
     port: 4370,
     device_id: "",
-    description: "",
     status: null
 };
 
 const FORM_FIELD_CONFIG = {
     branch: {getCode: true},
     name: {trim: true},
+    description: {normalize: true},
     brand: {getCode: true},
     model: {getCode: true},
     serial_number: {trim: true},
     ip_address: {trim: true},
     port: {toNumber: true, minValue: 1, maxValue: 65535},
     device_id: {toNumber: true, allowEmpty: true},
-    description: {normalize: true},
     status: {getCode: true}
 };
 
 const VALIDATION_RULES = {
     branch: {required: true},
     name: {required: true},
+    description: {required: false},
     brand: {required: true},
     model: {required: true},
     serial_number: {required: false},
     ip_address: {required: true, ip: true},
     port: {required: true, number: true, min: 1, max: 65535},
     device_id: {required: false, number: true},
-    description: {required: false},
     status: {required: true}
 };
 
 const ERROR_LABELS = {
     branch: "Sucursal",
-    name: "Nombre del dispositivo",
+    name: "Nombre",
+    description: "Descripción",
     brand: "Marca",
     model: "Modelo",
     serial_number: "Número de serie",
     ip_address: "Dirección IP",
     port: "Puerto",
     device_id: "ID del dispositivo",
-    description: "Descripción",
     status: "Estado",
     required: "Es obligatorio"
 };
@@ -327,30 +327,25 @@ const FILTER_OPTIONS = [
 ];
 
 const TEXTS = {
-    loading: `Cargando ${MODULE_CONFIG.pageTitle}...`,
     filters: {
         filterBy: "Filtrar por",
         search: "Búsqueda"
     },
     actions: {
         search: "Buscar",
-        add: "Agregar dispositivo",
+        add: "Agregar",
         edit: "Editar"
-    },
-    list: {
-        totalItems: "registros",
-        noData: "No hay registros"
     },
     form: {
         branch: "Sucursal",
-        name: "Nombre del dispositivo",
+        name: "Nombre",
+        description: "Descripción",
         brand: "Marca",
         model: "Modelo",
         serialNumber: "Número de serie",
         ipAddress: "Dirección IP",
         port: "Puerto",
         deviceId: "ID del dispositivo",
-        description: "Descripción",
         status: "Estado"
     },
     modal: {
@@ -375,7 +370,6 @@ export default {
 
         const crudModule = initCrudModule({entity: MODULE.config.entity, menuId: MODULE.config.menuId, pageTitle: MODULE.config.pageTitle});
 
-        // Add filter_by
         crudModule.lists[MODULE.config.entity].filters.filter_by = MODULE.filterOptions[0];
         crudModule.forms[MODULE.config.entity].createUpdate.data = Forms.initFormData(MODULE.formFields);
 
@@ -407,6 +401,7 @@ export default {
 
     },
     methods: {
+        // !!!!!!! Hereeeeeeeeee
         async initParams() {
 
             const response = await Requests.get({route: this.routeActions.initParams, data: {page: "main"}, showAlert: true});
@@ -414,8 +409,8 @@ export default {
             if(response?.data?.config) {
 
                 this.options.branches = response.data.config.branches ?? {records: []};
-                this.options.brands = response.data.config.brands ?? [];
-                this.options.models = response.data.config.models ?? {};
+                this.options.brands   = response.data.config.brands ?? [];
+                this.options.models   = response.data.config.models ?? {};
                 this.options.statuses = response.data.config.statuses ?? [];
 
             }
@@ -429,11 +424,7 @@ export default {
             const entityList   = this.lists[this.entity];
             const emptyRecords = {total: 0, data: [], links: []};
             const filters      = Utils.cloneJson(entityList.filters);
-            const filterData   = {
-                per_page: this.MODULE.config.perPage,
-                filter_by: filters.filter_by?.code,
-                word: filters.word
-            };
+            const filterData   = {per_page: this.MODULE.config.perPage, filter_by: filters.filter_by?.code, word: filters.word};
 
             entityList.extras.loading = true;
 
@@ -464,11 +455,7 @@ export default {
 
                 const response = await Requests.get({route: requestUrl, data: requestData, showAlert: true});
 
-                entityList.records = {
-                    total: response?.data?.total ?? 0,
-                    data: response?.data?.data ?? [],
-                    links: response?.data?.links ?? []
-                };
+                entityList.records = response?.data ?? emptyRecords;
 
             }catch(error) {
 
@@ -502,12 +489,12 @@ export default {
                 const branchOption = this.branches.find(b => b.code === record?.branch?.id);
                 entityForms.data.branch = branchOption || null;
 
-                entityForms.data.name = record.name || "";
+                entityForms.data.name          = record.name || "";
+                entityForms.data.description   = record.description || "";
                 entityForms.data.serial_number = record.serial_number || "";
-                entityForms.data.ip_address = record.ip_address || "";
-                entityForms.data.port = record.port || 4370;
-                entityForms.data.device_id = record.device_id || "";
-                entityForms.data.description = record.description || "";
+                entityForms.data.ip_address    = record.ip_address || "";
+                entityForms.data.port          = record.port || 4370;
+                entityForms.data.device_id     = record.device_id || "";
 
                 // Set brand first
                 const brandOption = this.brands.find(b => b.code === record.brand);
