@@ -247,65 +247,67 @@ return new class extends Migration {
 
         DB::table("sub_sections")->insert([
             // Home
-            ["id" => 1, "section_id" => 1, "slug" => "sc_home", "name" => "home", "order" => 1, "dom_id" => "menu-home", "dom_label" => "Inicio", "dom_route" => "home.index"],
+            ["id" => 10, "section_id" => 1, "slug" => "sc_home", "name" => "home", "order" => 1, "dom_id" => "menu-home", "dom_label" => "Inicio", "dom_route" => "home.index"],
 
             // Dashboard
-            ["id" => 2, "section_id" => 2, "slug" => "sc_dashboard", "name" => "dashboard", "order" => 1, "dom_id" => "menu-dashboard", "dom_label" => "Dashboard", "dom_route" => "dashboard.index"],
+            ["id" => 20, "section_id" => 2, "slug" => "sc_dashboard", "name" => "dashboard", "order" => 1, "dom_id" => "menu-dashboard", "dom_label" => "Dashboard", "dom_route" => "dashboard.index"],
 
             // Sales
-            ["id" => 3, "section_id" => 3, "slug" => "sc_sales-list", "name" => "sales-list", "order" => 1, "dom_id" => "menu-sales-list", "dom_label" => "Listado", "dom_route" => "sales.index"],
-            ["id" => 4, "section_id" => 3, "slug" => "sc_sales-create", "name" => "sales-create", "order" => 2, "dom_id" => "menu-sales-create", "dom_label" => "Nuevo", "dom_route" => "sales.create"],
+            ["id" => 30, "section_id" => 3, "slug" => "sc_sales-list", "name" => "sales-list", "order" => 1, "dom_id" => "menu-sales-list", "dom_label" => "Listado", "dom_route" => "sales.index"],
+            ["id" => 31, "section_id" => 3, "slug" => "sc_sales-create", "name" => "sales-create", "order" => 2, "dom_id" => "menu-sales-create", "dom_label" => "Nuevo", "dom_route" => "sales.create"],
 
             // Customers
-            ["id" => 5, "section_id" => 4, "slug" => "sc_customers", "name" => "customers", "order" => 1, "dom_id" => "menu-customers", "dom_label" => "Clientes", "dom_route" => "customers.index"],
-            ["id" => 6, "section_id" => 4, "slug" => "sc_customers-history", "name" => "customers-history", "order" => 2, "dom_id" => "menu-customers-history", "dom_label" => "Historial", "dom_route" => "tracking_customers.index"],
-            ["id" => 7, "section_id" => 4, "slug" => "sc_customers-subscriptions", "name" => "customers-subscriptions", "order" => 3, "dom_id" => "menu-customers-subscriptions", "dom_label" => "Membresías", "dom_route" => "tracking_subscriptions.index"],
-            ["id" => 8, "section_id" => 4, "slug" => "sc_customers-attendances", "name" => "customers-attendances", "order" => 4, "dom_id" => "menu-customers-attendances", "dom_label" => "Asistencias", "dom_route" => "tracking_attendances.index"],
-            ["id" => 9, "section_id" => 4, "slug" => "sc_customers-notifications", "name" => "customers-notifications", "order" => 5, "dom_id" => "menu-customers-notifications", "dom_label" => "Notificaciones", "dom_route" => "tracking_notifications.index"],
-            ["id" => 10, "section_id" => 4, "slug" => "sc_customers-book_complaints", "name" => "customers-book_complaints", "order" => 6, "dom_id" => "menu-customers-book_complaints", "dom_label" => "Libro de reclamaciones y sugerencias", "dom_route" => "book_complaints.index"],
+            ["id" => 40, "section_id" => 4, "slug" => "sc_customers", "name" => "customers", "order" => 1, "dom_id" => "menu-customers", "dom_label" => "Clientes", "dom_route" => "customers.index"],
+            ["id" => 41, "section_id" => 4, "slug" => "sc_customers-history", "name" => "customers-history", "order" => 2, "dom_id" => "menu-customers-history", "dom_label" => "Historial", "dom_route" => "tracking_customers.index"],
+            ["id" => 42, "section_id" => 4, "slug" => "sc_customers-subscriptions", "name" => "customers-subscriptions", "order" => 3, "dom_id" => "menu-customers-subscriptions", "dom_label" => "Membresías", "dom_route" => "tracking_subscriptions.index"],
+            ["id" => 43, "section_id" => 4, "slug" => "sc_customers-attendances", "name" => "customers-attendances", "order" => 4, "dom_id" => "menu-customers-attendances", "dom_label" => "Asistencias", "dom_route" => "tracking_attendances.index"],
+            ["id" => 44, "section_id" => 4, "slug" => "sc_customers-notifications", "name" => "customers-notifications", "order" => 5, "dom_id" => "menu-customers-notifications", "dom_label" => "Notificaciones", "dom_route" => "tracking_notifications.index"],
+            ["id" => 45, "section_id" => 4, "slug" => "sc_customers-book_complaints", "name" => "customers-book_complaints", "order" => 6, "dom_id" => "menu-customers-book_complaints", "dom_label" => "Libro de reclamaciones y sugerencias", "dom_route" => "book_complaints.index"],
 
             // Items
-            ["id" => 11, "section_id" => 5, "slug" => "sc_items-products", "name" => "items-products", "order" => 1, "dom_id" => "menu-items-products", "dom_label" => "Productos", "dom_route" => "products.index"],
-            ["id" => 12, "section_id" => 5, "slug" => "sc_items-services", "name" => "items-services", "order" => 2, "dom_id" => "menu-items-services", "dom_label" => "Servicios", "dom_route" => "services.index"],
-            ["id" => 13, "section_id" => 5, "slug" => "sc_items-subscriptions", "name" => "items-subscriptions", "order" => 3, "dom_id" => "menu-items-subscriptions", "dom_label" => "Membresías", "dom_route" => "subscriptions.index"],
-            ["id" => 14, "section_id" => 5, "slug" => "sc_items-categories", "name" => "items-categories", "order" => 4, "dom_id" => "menu-items-categories", "dom_label" => "Categorías", "dom_route" => "categories.index"],
-            ["id" => 15, "section_id" => 5, "slug" => "sc_items-stocks_management", "name" => "items-stocks_management", "order" => 5, "dom_id" => "menu-items-stocks_management", "dom_label" => "Gestión de stock", "dom_route" => "stocks_management.index"],
+            ["id" => 50, "section_id" => 5, "slug" => "sc_items-products", "name" => "items-products", "order" => 1, "dom_id" => "menu-items-products", "dom_label" => "Productos", "dom_route" => "products.index"],
+            ["id" => 51, "section_id" => 5, "slug" => "sc_items-services", "name" => "items-services", "order" => 2, "dom_id" => "menu-items-services", "dom_label" => "Servicios", "dom_route" => "services.index"],
+            ["id" => 52, "section_id" => 5, "slug" => "sc_items-subscriptions", "name" => "items-subscriptions", "order" => 3, "dom_id" => "menu-items-subscriptions", "dom_label" => "Membresías", "dom_route" => "subscriptions.index"],
+            ["id" => 53, "section_id" => 5, "slug" => "sc_items-categories", "name" => "items-categories", "order" => 4, "dom_id" => "menu-items-categories", "dom_label" => "Categorías", "dom_route" => "categories.index"],
+            ["id" => 54, "section_id" => 5, "slug" => "sc_items-stocks_management", "name" => "items-stocks_management", "order" => 5, "dom_id" => "menu-items-stocks_management", "dom_label" => "Gestión de stock", "dom_route" => "stocks_management.index"],
 
             // Infrastructure
-            ["id" => 16, "section_id" => 6, "slug" => "sc_infrastructure-assets", "name" => "infrastructure-assets", "order" => 1, "dom_id" => "menu-infrastructure-assets", "dom_label" => "Activos", "dom_route" => "assets.index"],
-            ["id" => 17, "section_id" => 6, "slug" => "sc_infrastructure-assets_management", "name" => "infrastructure-assets_management", "order" => 2, "dom_id" => "menu-infrastructure-assets_management", "dom_label" => "Gestión de activos", "dom_route" => "assets_management.index"],
+            ["id" => 60, "section_id" => 6, "slug" => "sc_infrastructure-branches", "name" => "infrastructure-branches", "order" => 1, "dom_id" => "menu-infrastructure-branches", "dom_label" => "Sucursales", "dom_route" => "branches.index"],
+            ["id" => 61, "section_id" => 6, "slug" => "sc_infrastructure-assets", "name" => "infrastructure-assets", "order" => 2, "dom_id" => "menu-infrastructure-assets", "dom_label" => "Activos", "dom_route" => "assets.index"],
+            ["id" => 62, "section_id" => 6, "slug" => "sc_infrastructure-assets_management", "name" => "infrastructure-assets_management", "order" => 3, "dom_id" => "menu-infrastructure-assets_management", "dom_label" => "Gestión de activos", "dom_route" => "assets_management.index"],
+            ["id" => 63, "section_id" => 6, "slug" => "sc_infrastructure-biometric_devices", "name" => "infrastructure-biometric_devices", "order" => 4, "dom_id" => "menu-infrastructure-biometric_devices", "dom_label" => "Dispositivos biométricos", "dom_route" => "biometric_devices.index"],
 
             // Configuration
-            ["id" => 18, "section_id" => 7, "slug" => "sc_configuration-my_company", "name" => "configuration-my_company", "order" => 1, "dom_id" => "menu-configuration-my_company", "dom_label" => "Mi empresa", "dom_route" => "companies.index"],
-            ["id" => 19, "section_id" => 7, "slug" => "sc_configuration-branches", "name" => "configuration-branches", "order" => 2, "dom_id" => "menu-configuration-branches", "dom_label" => "Sucursales", "dom_route" => "branches.index"],
-            ["id" => 20, "section_id" => 7, "slug" => "sc_configuration-users", "name" => "configuration-users", "order" => 3, "dom_id" => "menu-configuration-users", "dom_label" => "Colaboradores", "dom_route" => "users.index"],
+            ["id" => 70, "section_id" => 7, "slug" => "sc_configuration-my_company", "name" => "configuration-my_company", "order" => 1, "dom_id" => "menu-configuration-my_company", "dom_label" => "Mi empresa", "dom_route" => "companies.index"],
+            ["id" => 71, "section_id" => 7, "slug" => "sc_configuration-users", "name" => "configuration-users", "order" => 2, "dom_id" => "menu-configuration-users", "dom_label" => "Colaboradores", "dom_route" => "users.index"],
 
             // Reports
-            ["id" => 21, "section_id" => 8, "slug" => "sc_reports", "name" => "reports", "order" => 1, "dom_id" => "menu-reports", "dom_label" => "Reportes", "dom_route" => "reports.index"],
+            ["id" => 80, "section_id" => 8, "slug" => "sc_reports", "name" => "reports", "order" => 1, "dom_id" => "menu-reports", "dom_label" => "Reportes", "dom_route" => "reports.index"],
         ]);
 
         DB::table("companies_sub_sections")->insert([
-            ["company_id" => 1, "sub_section_id" => 1],
-            ["company_id" => 1, "sub_section_id" => 2],
-            ["company_id" => 1, "sub_section_id" => 3],
-            ["company_id" => 1, "sub_section_id" => 4],
-            ["company_id" => 1, "sub_section_id" => 5],
-            ["company_id" => 1, "sub_section_id" => 6],
-            ["company_id" => 1, "sub_section_id" => 7],
-            ["company_id" => 1, "sub_section_id" => 8],
-            ["company_id" => 1, "sub_section_id" => 9],
             ["company_id" => 1, "sub_section_id" => 10],
-            ["company_id" => 1, "sub_section_id" => 11],
-            ["company_id" => 1, "sub_section_id" => 12],
-            ["company_id" => 1, "sub_section_id" => 13],
-            ["company_id" => 1, "sub_section_id" => 14],
-            ["company_id" => 1, "sub_section_id" => 15],
-            ["company_id" => 1, "sub_section_id" => 16],
-            ["company_id" => 1, "sub_section_id" => 17],
-            ["company_id" => 1, "sub_section_id" => 18],
-            ["company_id" => 1, "sub_section_id" => 19],
             ["company_id" => 1, "sub_section_id" => 20],
-            ["company_id" => 1, "sub_section_id" => 21],
+            ["company_id" => 1, "sub_section_id" => 30],
+            ["company_id" => 1, "sub_section_id" => 31],
+            ["company_id" => 1, "sub_section_id" => 40],
+            ["company_id" => 1, "sub_section_id" => 41],
+            ["company_id" => 1, "sub_section_id" => 42],
+            ["company_id" => 1, "sub_section_id" => 43],
+            ["company_id" => 1, "sub_section_id" => 44],
+            ["company_id" => 1, "sub_section_id" => 45],
+            ["company_id" => 1, "sub_section_id" => 50],
+            ["company_id" => 1, "sub_section_id" => 51],
+            ["company_id" => 1, "sub_section_id" => 52],
+            ["company_id" => 1, "sub_section_id" => 53],
+            ["company_id" => 1, "sub_section_id" => 54],
+            ["company_id" => 1, "sub_section_id" => 60],
+            ["company_id" => 1, "sub_section_id" => 61],
+            ["company_id" => 1, "sub_section_id" => 62],
+            ["company_id" => 1, "sub_section_id" => 63],
+            ["company_id" => 1, "sub_section_id" => 70],
+            ["company_id" => 1, "sub_section_id" => 71],
+            ["company_id" => 1, "sub_section_id" => 80]
         ]);
 
         DB::table("roles")->insert([
