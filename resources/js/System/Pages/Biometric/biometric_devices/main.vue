@@ -97,7 +97,7 @@
                             <InputSlot
                                 hasDiv
                                 :title="MODULE.texts.form.branch"
-                                :titleClass="[config.forms.classes.title, 'fw-semibold']"
+                                :titleClass="[config.forms.classes.title]"
                                 isRequired
                                 hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.errors?.branch_id"
@@ -116,22 +116,32 @@
                                 v-model="forms[entity].createUpdate.data.name"
                                 hasDiv
                                 :title="MODULE.texts.form.name"
-                                :titleClass="[config.forms.classes.title, 'fw-semibold']"
+                                :titleClass="[config.forms.classes.title]"
                                 isRequired
-                                maxlength="255"
+                                maxlength="100"
                                 hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.errors?.name"
-                                xl="12"
-                                lg="12"/>
+                                xl="6"
+                                lg="6"/>
+                            <InputText
+                                v-model="forms[entity].createUpdate.data.description"
+                                hasDiv
+                                :title="MODULE.texts.form.description"
+                                :titleClass="[config.forms.classes.title]"
+                                maxlength="100"
+                                hasTextBottom
+                                :textBottomInfo="forms[entity].createUpdate.errors?.description"
+                                xl="6"
+                                lg="6"/>
                             <InputSlot
                                 hasDiv
                                 :title="MODULE.texts.form.brand"
-                                :titleClass="[config.forms.classes.title, 'fw-semibold']"
+                                :titleClass="[config.forms.classes.title]"
                                 isRequired
                                 hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.errors?.brand"
-                                xl="6"
-                                lg="6">
+                                xl="4"
+                                lg="4">
                                 <template v-slot:input>
                                     <v-select
                                         v-model="forms[entity].createUpdate.data.brand"
@@ -144,12 +154,12 @@
                             <InputSlot
                                 hasDiv
                                 :title="MODULE.texts.form.model"
-                                :titleClass="[config.forms.classes.title, 'fw-semibold']"
+                                :titleClass="[config.forms.classes.title]"
                                 isRequired
                                 hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.errors?.model"
-                                xl="6"
-                                lg="6">
+                                xl="4"
+                                lg="4">
                                 <template v-slot:input>
                                     <v-select
                                         v-model="forms[entity].createUpdate.data.model"
@@ -163,21 +173,53 @@
                                 v-model="forms[entity].createUpdate.data.serial_number"
                                 hasDiv
                                 :title="MODULE.texts.form.serialNumber"
-                                :titleClass="[config.forms.classes.title, 'fw-semibold']"
+                                :titleClass="[config.forms.classes.title]"
                                 maxlength="100"
                                 hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.errors?.serial_number"
-                                xl="6"
-                                lg="6"/>
+                                xl="4"
+                                lg="4"/>
+                            <InputText
+                                v-model="forms[entity].createUpdate.data.ip_address"
+                                hasDiv
+                                :title="MODULE.texts.form.ipAddress"
+                                :titleClass="[config.forms.classes.title]"
+                                isRequired
+                                maxlength="15"
+                                hasTextBottom
+                                :textBottomInfo="forms[entity].createUpdate.errors?.ip_address"
+                                xl="4"
+                                lg="4"/>
+                            <InputNumber
+                                v-model="forms[entity].createUpdate.data.port"
+                                hasDiv
+                                :title="MODULE.texts.form.port"
+                                :titleClass="[config.forms.classes.title]"
+                                isRequired
+                                :minValue="1"
+                                :maxValue="65535"
+                                hasTextBottom
+                                :textBottomInfo="forms[entity].createUpdate.errors?.port"
+                                xl="4"
+                                lg="4"/>
+                            <InputText
+                                v-model="forms[entity].createUpdate.data.device_id"
+                                hasDiv
+                                :title="MODULE.texts.form.deviceId"
+                                :titleClass="[config.forms.classes.title]"
+                                hasTextBottom
+                                :textBottomInfo="forms[entity].createUpdate.errors?.device_id"
+                                xl="4"
+                                lg="4"/>
                             <InputSlot
                                 hasDiv
                                 :title="MODULE.texts.form.status"
-                                :titleClass="[config.forms.classes.title, 'fw-semibold']"
+                                :titleClass="[config.forms.classes.title]"
                                 isRequired
                                 hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.errors?.status"
-                                xl="6"
-                                lg="6">
+                                xl="4"
+                                lg="4">
                                 <template v-slot:input>
                                     <v-select
                                         v-model="forms[entity].createUpdate.data.status"
@@ -187,50 +229,6 @@
                                         :searchable="false"/>
                                 </template>
                             </InputSlot>
-                            <InputText
-                                v-model="forms[entity].createUpdate.data.ip_address"
-                                hasDiv
-                                :title="MODULE.texts.form.ipAddress"
-                                :titleClass="[config.forms.classes.title, 'fw-semibold']"
-                                isRequired
-                                maxlength="45"
-                                hasTextBottom
-                                :textBottomInfo="forms[entity].createUpdate.errors?.ip_address"
-                                xl="6"
-                                lg="6"/>
-                            <InputText
-                                v-model="forms[entity].createUpdate.data.port"
-                                hasDiv
-                                :title="MODULE.texts.form.port"
-                                :titleClass="[config.forms.classes.title, 'fw-semibold']"
-                                isRequired
-                                type="number"
-                                :minValue="1"
-                                :maxValue="65535"
-                                hasTextBottom
-                                :textBottomInfo="forms[entity].createUpdate.errors?.port"
-                                xl="6"
-                                lg="6"/>
-                            <InputText
-                                v-model="forms[entity].createUpdate.data.device_id"
-                                hasDiv
-                                :title="MODULE.texts.form.deviceId"
-                                :titleClass="[config.forms.classes.title, 'fw-semibold']"
-                                type="number"
-                                hasTextBottom
-                                :textBottomInfo="forms[entity].createUpdate.errors?.device_id"
-                                xl="6"
-                                lg="6"/>
-                            <InputText
-                                v-model="forms[entity].createUpdate.data.description"
-                                hasDiv
-                                :title="MODULE.texts.form.description"
-                                :titleClass="[config.forms.classes.title, 'fw-semibold']"
-                                type="textarea"
-                                hasTextBottom
-                                :textBottomInfo="forms[entity].createUpdate.errors?.description"
-                                xl="12"
-                                lg="12"/>
                         </div>
                     </form>
                 </div>
@@ -265,7 +263,7 @@ import * as Utils from "@System/Helpers/Utils.js";
 const MODULE_CONFIG = {
     entity: "biometric_devices",
     menuId: "menu-infrastructure-biometric-devices",
-    pageTitle: "Dispositivos Biométricos",
+    pageTitle: "Dispositivos biométricos",
     breadcrumbParent: "Infraestructura",
     perPage: 10
 };
@@ -351,7 +349,7 @@ const TEXTS = {
         serialNumber: "Número de serie",
         ipAddress: "Dirección IP",
         port: "Puerto",
-        deviceId: "ID del dispositivo (opcional)",
+        deviceId: "ID del dispositivo",
         description: "Descripción",
         status: "Estado"
     },
