@@ -69,7 +69,8 @@ class Attendance extends Model {
             ["code" => "manual_form", "label" => "Manual"],
             ["code" => "qr_camera", "label" => "Cámara interna"],
             ["code" => "qr_scanner", "label" => "Escáner externo"],
-            ["code" => "qr_public", "label" => "Público"]
+            ["code" => "qr_public", "label" => "Público"],
+            ["code" => "biometric", "label" => "Biométrico"]
         ];
 
         return Utilities::getValues($types, $type, $code);
