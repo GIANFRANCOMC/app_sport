@@ -263,6 +263,7 @@ const MODULE_CONFIG = {
     entity: "biometric_devices",
     menuId: "menu-infrastructure-biometric_devices",
     pageTitle: "Dispositivos biométricos",
+    pageTitleSingular: "Dispositivo biométrico",
     breadcrumbParent: "Infraestructura",
     perPage: 10
 };
@@ -367,7 +368,7 @@ export default {
     name: "BiometricDevicesMain",
     data() {
 
-        const crudModule = initCrudModule({entity: MODULE.config.entity, menuId: MODULE.config.menuId, pageTitle: MODULE.config.pageTitle});
+        const crudModule = initCrudModule({entity: MODULE.config.entity, menuId: MODULE.config.menuId, pageTitle: MODULE.config.pageTitle, pageTitleSingular: MODULE.config.pageTitleSingular});
 
         crudModule.lists[MODULE.config.entity].filters.filter_by = MODULE.filterOptions[0];
         crudModule.forms[MODULE.config.entity].createUpdate.data = Forms.initFormData(MODULE.formFields);
@@ -676,10 +677,7 @@ export default {
         },
         modalTitles() {
 
-            return this.forms[this.entity].createUpdate.extras.modals.default.titles || {
-                store: `AGREGAR ${this.MODULE.config.pageTitle.toUpperCase()}`,
-                update: `EDITAR ${this.MODULE.config.pageTitle.toUpperCase()}`
-            };
+            return this.forms[this.entity].createUpdate.extras.modals.default.titles;
 
         },
         filterByOptions() {
