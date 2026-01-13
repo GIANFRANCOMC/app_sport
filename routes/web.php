@@ -27,6 +27,7 @@ Route::middleware(["web"])
         Route::prefix('{company_slug}/book_complaints')->middleware('company.exists')->group($guestRoute.'/BookComplaint.php');
         Route::prefix('{company_slug}/home')->middleware('company.exists')->group($guestRoute.'/Home.php');
         Route::prefix('{company_slug}/tracking_attendances')->middleware('company.exists')->group($guestRoute.'/TrackingAttendance.php');
+        Route::prefix('{company_slug}/biometric_devices')->middleware('company.exists')->group($guestRoute.'/BiometricDevice.php');
 
         Route::middleware('guest')->group(function() use($guestRoute) {
 
@@ -74,6 +75,9 @@ Route::middleware(["web"])
 
             // Warehouses
             Route::prefix('/stocks_management')->group($systemRoute.'/Warehouses/StockManagement.php');
+
+            // Biometric Devices
+            Route::prefix('/biometric_devices')->group($systemRoute.'/Biometric/BiometricDevice.php');
 
             // Sessions
             Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
