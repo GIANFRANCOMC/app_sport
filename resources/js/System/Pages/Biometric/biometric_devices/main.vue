@@ -23,14 +23,14 @@
     <!-- Records -->
     <div class="list-section mb-1 mb-md-1 table-responsive">
         <table class="table table-hover">
-            <thead>
-                <tr class="text-center align-middle">
-                    <th class="bg-secondary text-white fw-semibold" style="width: 20%;">NOMBRE</th>
-                    <th class="bg-secondary text-white fw-semibold" style="width: 20%;">MARCA / MODELO</th>
-                    <th class="bg-secondary text-white fw-semibold" style="width: 20%;">IP / PUERTO</th>
-                    <th class="bg-secondary text-white fw-semibold" style="width: 15%;">SUCURSAL</th>
-                    <th class="bg-secondary text-white fw-semibold" style="width: 10%;">ESTADO</th>
-                    <th class="bg-secondary text-white fw-semibold" style="width: 15%;">ACCIONES</th>
+            <thead class="align-middle bg-secondary text-center">
+                <tr>
+                    <th class="text-white" style="width: 20%;">NOMBRE</th>
+                    <th class="text-white" style="width: 20%;">MARCA / MODELO</th>
+                    <th class="text-white" style="width: 20%;">IP / PUERTO</th>
+                    <th class="text-white" style="width: 15%;">SUCURSAL</th>
+                    <th class="text-white" style="width: 10%;">ESTADO</th>
+                    <th class="text-white" style="width: 15%;">ACCIONES</th>
                 </tr>
             </thead>
             <tbody class="table-border-bottom-0 bg-white">
@@ -42,7 +42,7 @@
                 <template v-else-if="entityList.records.total > 0">
                     <tr v-for="record in entityList.records.data" :key="record.id">
                         <td class="text-center">
-                            <span v-text="record.name" class="fw-bold d-block"></span>
+                            <span v-text="record.name" class="fw-semibold d-block"></span>
                             <small v-if="record.serial_number" v-text="`Serie: ${record.serial_number}`" class="text-muted"></small>
                         </td>
                         <td class="text-center">
@@ -54,15 +54,14 @@
                             <small v-text="`Puerto: ${record.port}`" class="text-muted"></small>
                         </td>
                         <td class="text-center">
-                            <span v-text="record.branch?.name" class="fw-semibold"></span>
+                            <span v-text="record.branch?.name"></span>
                         </td>
                         <td class="text-center">
                             <span :class="[getStatusBadgeClasses(record.status), 'flex-shrink-none']" v-text="record.formatted_status"></span>
                         </td>
                         <td class="text-center">
-                            <button type="button" class="btn btn-sm btn-warning waves-effect" @click="openModal(record)">
-                                <i class="fa fa-pencil"></i>
-                                <span class="ms-2" v-text="MODULE.texts.actions.edit"></span>
+                            <button type="button" class="btn btn-xs btn-warning waves-effect" @click="openModal(record)">
+                                <span v-text="MODULE.texts.actions.edit"></span>
                             </button>
                         </td>
                     </tr>
@@ -118,11 +117,11 @@
                                 :title="MODULE.texts.form.name"
                                 :titleClass="[config.forms.classes.title]"
                                 isRequired
-                                maxlength="100"
+                                maxlength="50"
                                 hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.errors?.name"
-                                xl="6"
-                                lg="6"/>
+                                xl="4"
+                                lg="4"/>
                             <InputText
                                 v-model="forms[entity].createUpdate.data.description"
                                 hasDiv
@@ -131,8 +130,8 @@
                                 maxlength="100"
                                 hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.errors?.description"
-                                xl="6"
-                                lg="6"/>
+                                xl="8"
+                                lg="8"/>
                             <InputSlot
                                 hasDiv
                                 :title="MODULE.texts.form.brand"
