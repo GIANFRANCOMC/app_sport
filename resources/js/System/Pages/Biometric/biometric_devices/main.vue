@@ -276,7 +276,7 @@ const FORM_FIELDS = {
     model: null,
     serial_number: "",
     ip_address: "",
-    port: 4370,
+    port: null,
     device_id: "",
     status: null
 };
@@ -290,7 +290,7 @@ const FORM_FIELD_CONFIG = {
     serial_number: {trim: true},
     ip_address: {trim: true},
     port: {toNumber: true, minValue: 1, maxValue: 65535},
-    device_id: {toNumber: true, allowEmpty: true},
+    device_id: {toNumber: true},
     status: {getCode: true}
 };
 
@@ -368,7 +368,12 @@ export default {
     name: "BiometricDevicesMain",
     data() {
 
-        const crudModule = initCrudModule({entity: MODULE.config.entity, menuId: MODULE.config.menuId, pageTitle: MODULE.config.pageTitle, pageTitleSingular: MODULE.config.pageTitleSingular});
+        const crudModule = initCrudModule({
+            entity: MODULE.config.entity,
+            menuId: MODULE.config.menuId,
+            pageTitle: MODULE.config.pageTitle,
+            pageTitleSingular: MODULE.config.pageTitleSingular
+        });
 
         crudModule.lists[MODULE.config.entity].filters.filter_by = MODULE.filterOptions[0];
         crudModule.forms[MODULE.config.entity].createUpdate.data = Forms.initFormData(MODULE.formFields);
@@ -401,17 +406,20 @@ export default {
 
     },
     methods: {
-        // !!!!!!! Hereeeeeeeeee
         async initParams() {
 
-            const response = await Requests.get({route: this.routeActions.initParams, data: {page: "main"}, showAlert: true});
+            const response = await Requests.get({
+                route: this.routeActions.initParams,
+                data: {page: "main"},
+                showAlert: true
+            });
 
             if(response?.data?.config) {
 
-                this.options.branches = response.data.config.branches ?? {records: []};
-                this.options.brands   = response.data.config.brands ?? [];
-                this.options.models   = response.data.config.models ?? {};
-                this.options.statuses = response.data.config.statuses ?? [];
+                this.options.branches = response.data.config.branches;
+                this.options.brands   = response.data.config.brands;
+                this.options.models   = response.data.config.models;
+                this.options.statuses = response.data.config.statuses;
 
             }
 
@@ -483,43 +491,31 @@ export default {
 
             if(this.isDefined(record)) {
 
-                entityForms.data.id = record?.id;
-
                 // Map record data to form
-                const branchOption = this.branches.find(b => b.code === record?.branch?.id);
-                entityForms.data.branch = branchOption || null;
+                const branchOption = this.branches.find(b => b.code === record?.branch?.id),
+                      brandOption  = this.brands.find(b => b.code === record.brand),
+                      modelOption  = this.modelsByBrand.find(m => m.code === record.model),
+                      statusOption = this.statuses.find(s => s.code === record.status);
 
-                entityForms.data.name          = record.name || "";
-                entityForms.data.description   = record.description || "";
-                entityForms.data.serial_number = record.serial_number || "";
-                entityForms.data.ip_address    = record.ip_address || "";
-                entityForms.data.port          = record.port || 4370;
-                entityForms.data.device_id     = record.device_id || "";
-
-                // Set brand first
-                const brandOption = this.brands.find(b => b.code === record.brand);
-                entityForms.data.brand = brandOption || this.brands[0] || null;
-
-                // Set model after brand (to ensure modelsByBrand is updated)
-                this.$nextTick(() => {
-                    const modelOption = this.modelsByBrand.find(m => m.code === record.model);
-                    entityForms.data.model = modelOption || (this.modelsByBrand.length > 0 ? this.modelsByBrand[0] : null);
-                });
-
-                // Set status
-                const statusOption = this.statuses.find(s => s.code === record.status);
-                entityForms.data.status = statusOption || this.statuses[0] || null;
+                entityForms.data.id            = record.id;
+                entityForms.data.branch        = branchOption;
+                entityForms.data.name          = record.name;
+                entityForms.data.description   = record.description;
+                entityForms.data.brand         = brandOption;
+                entityForms.data.model         = modelOption;
+                entityForms.data.serial_number = record.serial_number;
+                entityForms.data.ip_address    = record.ip_address;
+                entityForms.data.port          = record.port;
+                entityForms.data.device_id     = record.device_id;
+                entityForms.data.status        = statusOption;
 
             }else {
 
                 // Set defaults for new record
-                if(this.brands.length > 0) {
-                    entityForms.data.brand = this.brands[0];
-                }
-                if(this.statuses.length > 0) {
-                    entityForms.data.status = this.statuses[0];
-                }
-                entityForms.data.port = 4370;
+                entityForms.data.branch = this.branches.length > 0 ? this.branches[0] : null;
+                entityForms.data.brand  = this.brands.length > 0 ? this.brands[0] : null;
+                entityForms.data.status = this.statuses.length > 0 ? this.statuses[0] : null;
+                entityForms.data.port   = 4370;
 
             }
 
@@ -527,6 +523,11 @@ export default {
             Alerts.tooltips({show: true, time: 500});
 
         },
+
+
+
+
+        // Here !!!!!!!!!!!!!!!!!
         async saveEntity() {
 
             if(this.isSaving) return;
