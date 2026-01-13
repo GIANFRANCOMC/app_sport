@@ -631,19 +631,20 @@ export default {
         },
         brands() {
 
-            return (this.options?.brands ?? []).map(e => ({code: e.code, label: e.label}));
+            return (this.options?.brands ?? []).map(e => ({code: e.code, label: e.label, data: e}));
+
+        },
+        modelsByBrand() {
+
+            const brand  = this.forms[this.entity].createUpdate.data.brand?.code || "ZKTeco";
+            const models = this.options.models?.[brand] ?? [];
+
+            return models.map(m => ({code: m.code, label: m.label}));
 
         },
         statuses() {
 
             return (this.options?.statuses ?? []).map(e => ({code: e.code, label: e.label}));
-
-        },
-        modelsByBrand() {
-
-            const brand = this.forms[this.entity].createUpdate.data.brand?.code || "ZKTeco";
-            const models = this.options.models?.[brand] ?? [];
-            return models.map(m => ({code: m.code, label: m.label}));
 
         },
         isUpdate() {
@@ -702,12 +703,7 @@ export default {
                 // Reset model when brand changes
                 this.forms.biometric_devices.createUpdate.data.model = null;
 
-                // Set first model if available (use nextTick to ensure computed is updated)
-                this.$nextTick(() => {
-                    if(this.modelsByBrand.length > 0) {
-                        this.forms.biometric_devices.createUpdate.data.model = this.modelsByBrand[0];
-                    }
-                });
+                // Future implementation
 
             },
             immediate: false
