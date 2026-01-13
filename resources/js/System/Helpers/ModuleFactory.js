@@ -12,13 +12,15 @@ import { FILTER_BY_OPTIONS, TEXT, CSS_CLASSES } from "./ModuleConstants.js";
 
 /**
  * Crea la estructura inicial para un módulo CRUD (alias legacy)
- * @param {Object} config - Configuración {entity: string, menuId: string, pageTitle: string}
+ * @param {Object} config - Configuración {entity: string, menuId: string, pageTitle: string, pageTitleSingular: string}
  * @returns {Object} Estructura inicial del módulo
  */
 export function initCrudModule(config = {}) {
     const entity = config.entity || "entity";
     const menuId = config.menuId || `menu-item-${entity}`;
     const pageTitle = config.pageTitle || "Entidad";
+    const pageTitleSingular = config.pageTitleSingular || pageTitle;
+    const modalTitle = pageTitleSingular.toUpperCase();
 
     return {
         lists: {
@@ -48,8 +50,8 @@ export function initCrudModule(config = {}) {
                             default: {
                                 id: Utils.uuid(),
                                 titles: {
-                                    store: `AGREGAR ${pageTitle.toUpperCase()}`,
-                                    update: `EDITAR ${pageTitle.toUpperCase()}`
+                                    store: `AGREGAR ${modalTitle}`,
+                                    update: `EDITAR ${modalTitle}`
                                 }
                             }
                         }
@@ -93,7 +95,7 @@ export function createModuleConfig(config = {}) {
     } = config;
 
     const entityRoutes = Requests.config({ entity });
-    
+
     // Agregar rutas personalizadas
     if (Object.keys(customRoutes).length > 0) {
         Object.assign(entityRoutes.routes, customRoutes);
@@ -183,7 +185,7 @@ export function createFilterByOptions(customOptions = []) {
  */
 export function initVueModule(config = {}) {
     const moduleConfig = createModuleConfig(config);
-    
+
     return {
         mixins: [CrudMixin],
         data() {
@@ -191,11 +193,11 @@ export function initVueModule(config = {}) {
         },
         mounted: async function() {
             const { parentMenuId, menuId } = config;
-            
+
             if (parentMenuId) {
                 Utils.navbarItem(parentMenuId, { addClass: "open" });
             }
-            
+
             Utils.navbarItem(menuId || moduleConfig.config.entity.page.menu.id, {});
             Alerts.swals({ type: "initParams" });
 
@@ -204,7 +206,7 @@ export function initVueModule(config = {}) {
 
             if (initParams && initOthers) {
                 Alerts.swals({ show: false });
-                
+
                 if (config.autoLoadList !== false) {
                     this.listEntity({});
                 }
