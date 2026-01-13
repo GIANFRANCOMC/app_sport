@@ -134,6 +134,33 @@ export function validateFormData(formData, validationRules = {}, config = {}) {
 }
 
 /**
+ * Maneja errores de respuesta de formulario de forma centralizada
+ * @param {Object} options - {result: Object, formErrorsObject: Object, config: Object, setErrors: boolean, showAlert: boolean}
+ * @param {Object} options.result - Resultado de la petición con code, errors, data
+ * @param {Object} options.formErrorsObject - Objeto donde se almacenarán los errores (ej: entityForms.errors)
+ * @param {Object} options.config - Configuración con mensajes (ej: this.config.messages)
+ * @param {boolean} options.setErrors - Si se deben establecer los errores en el objeto (default: true)
+ * @param {boolean} options.showAlert - Si se debe mostrar una alerta (default: true)
+ */
+export function handleFormResponseErrors({result, formErrorsObject, config = {}, setErrors = true, showAlert = true}) {
+    const isValidationError = result?.code === 422;
+    const hasFieldErrors = result?.errors && Object.keys(result.errors).length > 0;
+    const errorMessage = result?.data?.msg || config.messages?.errorValidate || "Por favor, revisar el formulario para continuar.";
+
+    if(setErrors && formErrorsObject) {
+        Object.assign(formErrorsObject, result?.errors ?? {});
+    }
+
+    if(showAlert) {
+        const msgContent = (isValidationError && hasFieldErrors) 
+            ? (config.messages?.errorValidateFields || "El formulario contiene errores de validación. Por favor, revise los campos marcados en rojo y corrija la información según se indique.")
+            : errorMessage;
+
+        Alerts.generateAlert({type: "error", msgContent});
+    }
+}
+
+/**
  * Maneja la respuesta de creación/actualización de forma centralizada
  * @param {Object} response - Respuesta de la petición
  * @param {Object} options - Opciones {onSuccess, onError, modalId, formErrorsObject, reloadList}

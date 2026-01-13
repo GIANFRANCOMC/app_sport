@@ -513,7 +513,7 @@ export default {
 
                 }else {
 
-                    this.handleErrors({result, entityForms});
+                    Forms.handleFormResponseErrors({result, formErrorsObject: entityForms.errors, config: this.config});
 
                 }
 
@@ -538,23 +538,6 @@ export default {
                 {key: "email", icon: "fa fa-envelope text-primary", value: this.isDefined(record.email) ? record.email : null, placeholder: this.MODULE.texts.card.noEmail},
                 {key: "capacity", icon: "fa fa-users text-success", value: this.isDefined(record.capacity) ? record.capacity : null, placeholder: 0}
             ];
-
-        },
-        handleErrors({result, entityForms, setErrors = true, showAlert = true}) {
-
-            const isValidationError = result?.code === 422;
-            const hasFieldErrors    = result?.errors && Object.keys(result.errors).length > 0;
-            const errorMessage      = result?.data?.msg || this.config.messages.errorValidate;
-
-            if(setErrors) entityForms.errors = result?.errors ?? {};
-
-            if(showAlert) {
-
-                const msgContent = (isValidationError && hasFieldErrors) ? this.config.messages.errorValidateFields : errorMessage;
-
-                Alerts.generateAlert({type: "error", msgContent});
-
-            }
 
         },
         // Others

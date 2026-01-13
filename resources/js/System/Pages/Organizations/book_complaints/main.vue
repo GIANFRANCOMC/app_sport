@@ -564,7 +564,7 @@ export default {
 
                 }else {
 
-                    this.handleErrors({result, entityForms});
+                    Forms.handleFormResponseErrors({result, formErrorsObject: entityForms.errors, config: this.config});
 
                 }
 
@@ -594,23 +594,6 @@ export default {
         getType(record) {
 
             return (this.types ?? []).find(e => e.code === record?.type) ?? null;
-
-        },
-        handleErrors({result, entityForms, setErrors = true, showAlert = true}) {
-
-            const isValidationError = result?.code === 422;
-            const hasFieldErrors    = result?.errors && Object.keys(result.errors).length > 0;
-            const errorMessage      = result?.data?.msg || this.config.messages.errorValidate;
-
-            if(setErrors) entityForms.errors = result?.errors ?? {};
-
-            if(showAlert) {
-
-                const msgContent = (isValidationError && hasFieldErrors) ? this.config.messages.errorValidateFields : errorMessage;
-
-                Alerts.generateAlert({type: "error", msgContent});
-
-            }
 
         },
         // Others
