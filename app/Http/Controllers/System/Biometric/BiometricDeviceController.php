@@ -7,12 +7,12 @@ namespace App\Http\Controllers\System\Biometric;
 use App\Http\Controllers\System\Base\BaseController;
 use App\Helpers\System\{Utilities};
 use Illuminate\Http\{JsonResponse, Request};
+use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 
 use App\Http\Requests\System\Biometric\{StoreBiometricDeviceRequest, UpdateBiometricDeviceRequest};
 use App\Services\System\Biometric\{BiometricDeviceConfigService, BiometricDeviceService};
 use App\Services\System\Customers\Tracking\{TrackingAttendanceBusinessService};
-use App\Models\System\Biometric\{BiometricDevice};
 
 class BiometricDeviceController extends BaseController {
 
@@ -59,21 +59,14 @@ class BiometricDeviceController extends BaseController {
 
         try {
 
-            $device = BiometricDevice::create([
-                "company_id" => $this->getCompanyId(),
-                "branch_id" => $request->input("branch_id"),
-                "name" => $request->input("name"),
-                "brand" => $request->input("brand", "ZKTeco"),
-                "model" => $request->input("model"),
-                "serial_number" => $request->input("serial_number"),
-                "ip_address" => $request->input("ip_address"),
-                "port" => $request->input("port", 4370),
-                "device_id" => $request->input("device_id"),
-                "description" => $request->input("description"),
-                "status" => $request->input("status", "active"),
-                "created_at" => now(),
-                "created_by" => $this->getUserId()
-            ]);
+            $data = $this->prepareBiometricDeviceData($request);
+            $device = BiometricDeviceService::create($data, $this->getUserId());
+
+            if(!Utilities::isDefined($device)) {
+
+                return $this->errorResponse("create_failed");
+
+            }
 
             BiometricDeviceConfigService::clearAllCache($this->getCompanyId());
 
@@ -106,19 +99,14 @@ class BiometricDeviceController extends BaseController {
 
             }
 
-            $device->branch_id = $request->input("branch_id", $device->branch_id);
-            $device->name = $request->input("name", $device->name);
-            $device->brand = $request->input("brand", $device->brand);
-            $device->model = $request->input("model", $device->model);
-            $device->serial_number = $request->input("serial_number", $device->serial_number);
-            $device->ip_address = $request->input("ip_address", $device->ip_address);
-            $device->port = $request->input("port", $device->port);
-            $device->device_id = $request->input("device_id", $device->device_id);
-            $device->description = $request->input("description", $device->description);
-            $device->status = $request->input("status", $device->status);
-            $device->updated_at = now();
-            $device->updated_by = $this->getUserId();
-            $device->save();
+            $data = $this->prepareBiometricDeviceData($request);
+            $device = BiometricDeviceService::update($device, $data, $this->getUserId());
+
+            if(!Utilities::isDefined($device)) {
+
+                return $this->errorResponse("update_failed");
+
+            }
 
             BiometricDeviceConfigService::clearAllCache($this->getCompanyId());
 
@@ -129,6 +117,30 @@ class BiometricDeviceController extends BaseController {
             return $this->handleException($e, "update");
 
         }
+
+    }
+
+    /**
+     * Prepare biometric device data from request
+     *
+     * @param StoreBiometricDeviceRequest|UpdateBiometricDeviceRequest $request
+     * @return array
+     */
+    private function prepareBiometricDeviceData($request): array {
+
+        return [
+            "company_id" => $this->getCompanyId(),
+            "branch_id" => $request->input("branch_id"),
+            "name" => $request->input("name"),
+            "brand" => $request->input("brand"),
+            "model" => $request->input("model"),
+            "serial_number" => $request->input("serial_number"),
+            "ip_address" => $request->input("ip_address"),
+            "port" => $request->input("port"),
+            "device_id" => $request->input("device_id"),
+            "description" => $request->input("description"),
+            "status" => $request->input("status")
+        ];
 
     }
 
@@ -200,7 +212,7 @@ class BiometricDeviceController extends BaseController {
             $device = null;
             if(Utilities::isDefined($deviceId)) {
 
-                $device = BiometricDeviceService::findByIdAndCompany((int)$deviceId, $companyId, true);
+                $device = BiometricDeviceService::findByIdAndCompany((int)$deviceId, $companyId, true, ["branch"]);
 
             }
 
@@ -213,7 +225,7 @@ class BiometricDeviceController extends BaseController {
 
             if(!Utilities::isDefined($device)) {
 
-                \Log::warning("Biometric device not found", [
+                Log::warning("Biometric device not found", [
                     "company_id" => $companyId,
                     "device_id" => $deviceId,
                     "device_ip" => $deviceIp,
@@ -232,7 +244,7 @@ class BiometricDeviceController extends BaseController {
 
             if(!Utilities::isDefined($customer)) {
 
-                \Log::warning("Biometric customer not found", [
+                Log::warning("Biometric customer not found", [
                     "device_id" => $device->id,
                     "device_user_id" => $deviceUserId,
                     "company_id" => $companyId
@@ -252,7 +264,7 @@ class BiometricDeviceController extends BaseController {
 
             }catch (\Exception $e) {
 
-                \Log::warning("Invalid timestamp format in biometric event", [
+                Log::warning("Invalid timestamp format in biometric event", [
                     "timestamp" => $timestamp,
                     "device_id" => $device->id
                 ]);
@@ -297,7 +309,7 @@ class BiometricDeviceController extends BaseController {
 
         }catch(\Exception $e) {
 
-            \Log::error("Error processing biometric event: " . $e->getMessage(), [
+            Log::error("Error processing biometric event: " . $e->getMessage(), [
                 "request" => $request->all(),
                 "trace" => $e->getTraceAsString()
             ]);
