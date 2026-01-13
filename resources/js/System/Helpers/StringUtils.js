@@ -60,6 +60,16 @@ export function isValidUrl(value) {
 }
 
 /**
+ * Valida si un string es una dirección IP válida (IPv4)
+ * @param {*} value - Valor a validar
+ * @returns {boolean} true si es válido
+ */
+export function isValidIp(value) {
+    const ipRegex = /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+    return ipRegex.test(String(value ?? "").trim());
+}
+
+/**
  * Genera un código aleatorio
  * @param {Object} options - {length: number}
  * @returns {string} Código generado

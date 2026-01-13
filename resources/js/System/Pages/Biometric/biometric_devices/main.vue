@@ -523,11 +523,6 @@ export default {
             Alerts.tooltips({show: true, time: 500});
 
         },
-
-
-
-
-        // Here !!!!!!!!!!!!!!!!!
         async saveEntity() {
 
             if(this.isSaving) return;
@@ -554,11 +549,9 @@ export default {
 
                 const preparedData  = Forms.prepareFormData(formData, this.MODULE.formFieldConfig);
 
-                // Map branch to branch_id
-                if(preparedData.branch) {
-                    preparedData.branch_id = preparedData.branch;
-                    delete preparedData.branch;
-                }
+                // Map input data to request data
+                preparedData.branch_id = preparedData.branch;
+                delete preparedData.branch;
 
                 const id            = preparedData.id;
                 const isUpdate      = this.isDefined(id);

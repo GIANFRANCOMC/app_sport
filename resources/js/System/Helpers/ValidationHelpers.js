@@ -24,6 +24,10 @@ export function validateField(value, rules, fieldName = "") {
         errors.push(`${fieldName ? `${fieldName}: ` : ""}URL inválida`);
     }
 
+    if (rules.ip && Utils.isDefined({ value }) && !Utils.isValidIp(value)) {
+        errors.push(`${fieldName ? `${fieldName}: ` : ""}IP inválida`);
+    }
+
     if (rules.number && Utils.isDefined({ value }) && !Utils.isNumber({ value, minValue: rules.min ?? 0 })) {
         errors.push(`${fieldName ? `${fieldName}: ` : ""}Debe ser un número válido`);
     }

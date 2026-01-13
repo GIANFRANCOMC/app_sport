@@ -1,7 +1,7 @@
 <template>
     <Breadcrumb :list="breadcrumbTitles"/>
 
-    <!-- Filters Section -->
+    <!-- Filters -->
     <FiltersSection
         :filter-by-value="filterByValue"
         @update:filterByValue="filterByValue = $event"
