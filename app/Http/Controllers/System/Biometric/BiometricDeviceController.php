@@ -268,7 +268,7 @@ class BiometricDeviceController extends BaseController {
 
             if(Utilities::isDefined($deviceId)) {
 
-                $device = BiometricDeviceService::findByIdAndCompany((int)$deviceId, $companyId, true, ["branch"]);
+                $device = BiometricDeviceService::findByIdAndCompany((int) $deviceId, $companyId, true, ["branch"]);
 
             }
 
@@ -317,7 +317,7 @@ class BiometricDeviceController extends BaseController {
                 "branch_id" => $device->branch_id,
                 "customer_id" => $customer->id,
                 "device_id" => $device->id,
-                "device_user_id" => (int)$deviceUserId,
+                "device_user_id" => (int) $deviceUserId,
                 "start_date" => $attendanceDate,
                 "end_date" => $action === "checkout" ? $attendanceDate : null,
                 "observation" => "Registro biométrico - " . $device->name,
@@ -364,7 +364,7 @@ class BiometricDeviceController extends BaseController {
 
             $branchId = $request->input("branch_id");
 
-            $devices = BiometricDeviceService::getActiveDevices($this->getCompanyId(), Utilities::isDefined($branchId) ? (int)$branchId : null);
+            $devices = BiometricDeviceService::getActiveDevices($this->getCompanyId(), Utilities::isDefined($branchId) ? (int) $branchId : null);
 
             return response()->json([
                 "bool" => true,
