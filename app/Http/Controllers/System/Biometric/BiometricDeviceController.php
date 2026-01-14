@@ -84,7 +84,7 @@ class BiometricDeviceController extends BaseController {
 
         try {
 
-            $data = $this->prepareBiometricDeviceData($request);
+            $data   = $this->prepareBiometricDeviceData($request);
             $device = BiometricDeviceService::create($data, $this->getUserId());
 
             if(!Utilities::isDefined($device)) {
@@ -150,7 +150,7 @@ class BiometricDeviceController extends BaseController {
 
             }
 
-            $data = $this->prepareBiometricDeviceData($request);
+            $data   = $this->prepareBiometricDeviceData($request);
             $device = BiometricDeviceService::update($device, $data, $this->getUserId());
 
             if(!Utilities::isDefined($device)) {
@@ -163,11 +163,24 @@ class BiometricDeviceController extends BaseController {
 
             return $this->updatedResponse($device, "updated", "biometric_device");
 
-        }catch (\Exception $e) {
+        }catch(\Exception $e) {
 
             return $this->handleException($e, "update");
 
         }
+
+    }
+
+    /**
+     * Remove the specified biometric device
+     * (Not used, but kept for REST compliance)
+     *
+     * @param BiometricDevice $record
+     * @return JsonResponse
+     */
+    public function destroy(BiometricDevice $record): JsonResponse {
+
+        return $this->errorResponse("not_implemented", [], 501);
 
     }
 
@@ -180,23 +193,23 @@ class BiometricDeviceController extends BaseController {
     private function prepareBiometricDeviceData($request): array {
 
         return [
-            "company_id" => $this->getCompanyId(),
-            "branch_id" => $request->input("branch_id"),
-            "name" => $request->input("name"),
-            "brand" => $request->input("brand"),
-            "model" => $request->input("model"),
+            "company_id"    => $this->getCompanyId(),
+            "branch_id"     => $request->input("branch_id"),
+            "name"          => $request->input("name"),
+            "brand"         => $request->input("brand"),
+            "model"         => $request->input("model"),
             "serial_number" => $request->input("serial_number"),
-            "ip_address" => $request->input("ip_address"),
-            "port" => $request->input("port"),
-            "device_id" => $request->input("device_id"),
-            "description" => $request->input("description"),
-            "status" => $request->input("status")
+            "ip_address"    => $request->input("ip_address"),
+            "port"          => $request->input("port"),
+            "device_id"     => $request->input("device_id"),
+            "description"   => $request->input("description"),
+            "status"        => $request->input("status")
         ];
 
     }
 
     /**
-     * Get translation namespace
+     * Get translation namespace for biometric device module
      *
      * @return string
      */
@@ -205,9 +218,6 @@ class BiometricDeviceController extends BaseController {
         return self::TRANSLATION_NAMESPACE;
 
     }
-
-
-    //!!
 
     /**
      * Receive event from ZKTeco device
@@ -222,15 +232,12 @@ class BiometricDeviceController extends BaseController {
         try {
 
             // Get company from request (set by middleware for guest routes)
-            $company = $request->get("company");
+            $company   = $request->get("company");
             $companyId = $company ? $company->id : ($this->getCompanyId() ?? 0);
 
             if(!$companyId) {
 
-                return response()->json([
-                    "bool" => false,
-                    "msg" => "No se pudo identificar la empresa."
-                ], 400);
+                return response()->json(["bool" => false, "msg" => "No se pudo identificar la empresa."], 400);
 
             }
 
@@ -239,31 +246,26 @@ class BiometricDeviceController extends BaseController {
 
             if(!Utilities::isDefined($deviceUserId)) {
 
-                return response()->json([
-                    "bool" => false,
-                    "msg" => "El parámetro 'user_id' es requerido."
-                ], 400);
+                return response()->json(["bool" => false, "msg" => "El parámetro 'user_id' es requerido."], 400);
 
             }
 
             // Get device identifier (IP address or device_id)
-            $deviceIp = $request->ip();
-            $deviceId = $request->input("device_id");
+            $deviceIp  = $request->ip();
+            $deviceId  = $request->input("device_id");
             $timestamp = $request->input("timestamp", now());
-            $action = $request->input("action", "checkin"); // "checkin" or "checkout"
+            $action    = $request->input("action", "checkin"); // "checkin" or "checkout"
 
             // Validate action
             if(!in_array($action, ["checkin", "checkout"])) {
 
-                return response()->json([
-                    "bool" => false,
-                    "msg" => "El parámetro 'action' debe ser 'checkin' o 'checkout'."
-                ], 400);
+                return response()->json(["bool" => false, "msg" => "El parámetro 'action' debe ser 'checkin' o 'checkout'."], 400);
 
             }
 
             // Find device by ID first (if provided), then by IP
             $device = null;
+
             if(Utilities::isDefined($deviceId)) {
 
                 $device = BiometricDeviceService::findByIdAndCompany((int)$deviceId, $companyId, true, ["branch"]);
@@ -279,17 +281,9 @@ class BiometricDeviceController extends BaseController {
 
             if(!Utilities::isDefined($device)) {
 
-                Log::warning("Biometric device not found", [
-                    "company_id" => $companyId,
-                    "device_id" => $deviceId,
-                    "device_ip" => $deviceIp,
-                    "request_ip" => $request->ip()
-                ]);
+                Log::warning("Biometric device not found", ["company_id" => $companyId, "device_id" => $deviceId, "device_ip" => $deviceIp, "request_ip" => $request->ip()]);
 
-                return response()->json([
-                    "bool" => false,
-                    "msg" => "Dispositivo biométrico no encontrado o no autorizado. Verifique la configuración del dispositivo."
-                ], 404);
+                return response()->json(["bool" => false, "msg" => "Dispositivo biométrico no encontrado o no autorizado. Verifique la configuración del dispositivo."], 404);
 
             }
 
@@ -298,16 +292,9 @@ class BiometricDeviceController extends BaseController {
 
             if(!Utilities::isDefined($customer)) {
 
-                Log::warning("Biometric customer not found", [
-                    "device_id" => $device->id,
-                    "device_user_id" => $deviceUserId,
-                    "company_id" => $companyId
-                ]);
+                Log::warning("Biometric customer not found", ["device_id" => $device->id, "device_user_id" => $deviceUserId, "company_id" => $companyId]);
 
-                return response()->json([
-                    "bool" => false,
-                    "msg" => "Usuario no encontrado en el sistema. Verifique que la huella esté registrada correctamente."
-                ], 404);
+                return response()->json(["bool" => false, "msg" => "Usuario no encontrado en el sistema. Verifique que la huella esté registrada correctamente."], 404);
 
             }
 
@@ -316,12 +303,9 @@ class BiometricDeviceController extends BaseController {
 
                 $attendanceDate = Carbon::parse($timestamp);
 
-            }catch (\Exception $e) {
+            }catch(\Exception $e) {
 
-                Log::warning("Invalid timestamp format in biometric event", [
-                    "timestamp" => $timestamp,
-                    "device_id" => $device->id
-                ]);
+                Log::warning("Invalid timestamp format in biometric event", ["timestamp" => $timestamp, "device_id" => $device->id]);
 
                 $attendanceDate = now();
 
@@ -356,22 +340,13 @@ class BiometricDeviceController extends BaseController {
 
             }
 
-            return response()->json([
-                "bool" => false,
-                "msg" => $result["msg"]
-            ], 422);
+            return response()->json(["bool" => false, "msg" => $result["msg"]], 422);
 
         }catch(\Exception $e) {
 
-            Log::error("Error processing biometric event: " . $e->getMessage(), [
-                "request" => $request->all(),
-                "trace" => $e->getTraceAsString()
-            ]);
+            Log::error("Error processing biometric event: " . $e->getMessage(), ["request" => $request->all(), "trace" => $e->getTraceAsString()]);
 
-            return response()->json([
-                "bool" => false,
-                "msg" => "Error al procesar el evento biométrico."
-            ], 500);
+            return response()->json(["bool" => false, "msg" => "Error al procesar el evento biométrico."], 500);
 
         }
 
@@ -389,15 +364,12 @@ class BiometricDeviceController extends BaseController {
 
             $branchId = $request->input("branch_id");
 
-            $devices = BiometricDeviceService::getActiveDevices(
-                $this->getCompanyId(),
-                Utilities::isDefined($branchId) ? (int)$branchId : null
-            );
+            $devices = BiometricDeviceService::getActiveDevices($this->getCompanyId(), Utilities::isDefined($branchId) ? (int)$branchId : null);
 
             return response()->json([
                 "bool" => true,
                 "data" => [
-                    "devices" => $devices->map(function ($device) {
+                    "devices" => $devices->map(function($device) {
                         return [
                             "id" => $device->id,
                             "name" => $device->name,

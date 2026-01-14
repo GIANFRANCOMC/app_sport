@@ -28,6 +28,7 @@ class BranchController extends BaseController {
     public function initParams(Request $request) {
 
         $page = $this->getPage($request);
+
         return BranchConfigService::getInitParams($this->getCompanyId(), $page);
 
     }
@@ -189,16 +190,16 @@ class BranchController extends BaseController {
     private function prepareBranchData($request): array {
 
         return [
-            "company_id"  => $this->getCompanyId(),
-            "internal_code" => $request->internal_code,
-            "name"          => $request->name,
-            "address"       => $request->address,
-            "reference"     => $request->reference,
-            "telephone"     => $request->telephone,
-            "email"         => $request->email,
-            "capacity"      => $request->capacity,
-            "map_url"       => $request->map_url,
-            "status"        => $request->status
+            "company_id"    => $this->getCompanyId(),
+            "internal_code" => $request->input("internal_code"),
+            "name"          => $request->input("name"),
+            "address"       => $request->input("address"),
+            "reference"     => $request->input("reference"),
+            "telephone"     => $request->input("telephone"),
+            "email"         => $request->input("email"),
+            "capacity"      => $request->input("capacity"),
+            "map_url"       => $request->input("map_url"),
+            "status"        => $request->input("status")
         ];
 
     }
