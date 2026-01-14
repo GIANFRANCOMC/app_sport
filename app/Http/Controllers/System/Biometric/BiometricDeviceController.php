@@ -13,6 +13,7 @@ use Carbon\Carbon;
 use App\Http\Requests\System\Biometric\{StoreBiometricDeviceRequest, UpdateBiometricDeviceRequest};
 use App\Services\System\Biometric\{BiometricDeviceConfigService, BiometricDeviceService};
 use App\Services\System\Customers\Tracking\{TrackingAttendanceBusinessService};
+use App\Models\System\Biometric\{BiometricDevice};
 
 class BiometricDeviceController extends BaseController {
 
@@ -30,12 +31,13 @@ class BiometricDeviceController extends BaseController {
     public function initParams(Request $request) {
 
         $page = $this->getPage($request);
+
         return BiometricDeviceConfigService::getInitParams($this->getCompanyId(), $page);
 
     }
 
     /**
-     * Get paginated list of devices
+     * Get paginated list of biometric devices with filters
      *
      * @param Request $request
      * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator
@@ -50,7 +52,30 @@ class BiometricDeviceController extends BaseController {
     }
 
     /**
-     * Store a newly created device
+     * Display the biometric devices index page
+     *
+     * @return \Illuminate\Contracts\View\View
+     */
+    public function index() {
+
+        return view("System/general/Biometric/biometric_devices/main");
+
+    }
+
+    /**
+     * Show the form for creating a new biometric device
+     * (Not used in SPA, but kept for REST compliance)
+     *
+     * @return void
+     */
+    public function create(): void {
+
+        // Form is handled by frontend SPA
+
+    }
+
+    /**
+     * Store a newly created biometric device
      *
      * @param StoreBiometricDeviceRequest $request
      * @return JsonResponse
@@ -81,10 +106,36 @@ class BiometricDeviceController extends BaseController {
     }
 
     /**
-     * Update the specified device
+     * Display the specified biometric device
+     * (Not used, but kept for REST compliance)
+     *
+     * @param BiometricDevice $record
+     * @return JsonResponse
+     */
+    public function show(BiometricDevice $record): JsonResponse {
+
+        return $this->errorResponse("not_implemented", [], 501);
+
+    }
+
+    /**
+     * Show the form for editing the specified biometric device
+     * (Not used in SPA, but kept for REST compliance)
+     *
+     * @param BiometricDevice $record
+     * @return void
+     */
+    public function edit(BiometricDevice $record): void {
+
+        // Form is handled by frontend SPA
+
+    }
+
+    /**
+     * Update the specified biometric device
      *
      * @param UpdateBiometricDeviceRequest $request
-     * @param int $id Device ID
+     * @param int $id Biometric Device ID
      * @return JsonResponse
      */
     public function update(UpdateBiometricDeviceRequest $request, int $id): JsonResponse {
@@ -154,6 +205,9 @@ class BiometricDeviceController extends BaseController {
         return self::TRANSLATION_NAMESPACE;
 
     }
+
+
+    //!!
 
     /**
      * Receive event from ZKTeco device
@@ -320,17 +374,6 @@ class BiometricDeviceController extends BaseController {
             ], 500);
 
         }
-
-    }
-
-    /**
-     * Display the biometric devices index page
-     *
-     * @return \Illuminate\Contracts\View\View
-     */
-    public function index() {
-
-        return view("System/general/Biometric/biometric_devices/main");
 
     }
 
