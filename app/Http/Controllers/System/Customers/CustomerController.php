@@ -10,6 +10,7 @@ use Illuminate\Http\{JsonResponse, Request};
 
 use App\Http\Requests\System\Customers\Customers\{StoreCustomerRequest, UpdateCustomerRequest};
 use App\Services\System\Customers\{CustomerConfigService, CustomerService};
+use App\Services\System\Devices\Biometric\BiometricDeviceService;
 use App\Models\System\Customers\{Customer, Subscription};
 
 class CustomerController extends BaseController {
@@ -233,6 +234,79 @@ class CustomerController extends BaseController {
             "status"                    => $request->status
         ];
 
+    }
+
+    /**
+     * Register biometric fingerprint for customer
+     *
+     * @param Request $request
+     * @param int $id Customer ID
+     * @return JsonResponse
+     */
+    public function registerBiometricFingerprint(Request $request, int $id): JsonResponse
+    {
+        try {
+
+            $customer = CustomerService::findByIdAndCompany($id, $this->getCompanyId());
+
+            if(!Utilities::isDefined($customer)) {
+
+                return $this->notFoundResponse();
+
+            }
+
+            $biometricDeviceId = $request->input("biometric_device_id");
+            $deviceUserId = $request->input("device_user_id");
+            $fingerIndex = $request->input("finger_index", 0);
+
+            if (!Utilities::isDefined($biometricDeviceId)) {
+                
+                return $this->errorResponse("validation_error", ["msg" => "Se requiere dispositivo biométrico."], 422);
+                
+            }
+
+            // Check if device exists and belongs to company
+            $device = BiometricDeviceService::findByIdAndCompany((int)$biometricDeviceId, $this->getCompanyId());
+            
+            if (!Utilities::isDefined($device)) {
+                
+                return $this->errorResponse("not_found", ["msg" => "Dispositivo biométrico no encontrado."], 404);
+                
+            }
+
+            // Auto-assign device_user_id if not provided
+            if (!Utilities::isDefined($deviceUserId)) {
+                
+                $deviceUserId = BiometricDeviceService::getNextDeviceUserId((int)$biometricDeviceId);
+                
+            } else {
+                
+                // Check if device_user_id and finger_index combination already exists
+                if (BiometricDeviceService::deviceUserIdExists((int)$biometricDeviceId, (int)$deviceUserId, (int)$fingerIndex)) {
+                    
+                    return $this->errorResponse("validation_error", ["msg" => "Ya existe una huella registrada para este usuario y dedo en el dispositivo."], 422);
+                    
+                }
+                
+            }
+
+            // Register fingerprint
+            $fingerprint = BiometricDeviceService::registerFingerprint(
+                $customer->id,
+                (int)$biometricDeviceId,
+                (int)$deviceUserId,
+                (int)$fingerIndex,
+                $this->getUserId(),
+                $this->getCompanyId()
+            );
+
+            return $this->createdResponse($fingerprint, "fingerprint_registered", "biometric_fingerprint");
+
+        } catch(\Exception $e) {
+
+            return $this->handleException($e, "register_fingerprint");
+
+        }
     }
 
     /**

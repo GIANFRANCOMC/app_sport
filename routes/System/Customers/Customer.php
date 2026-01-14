@@ -14,3 +14,4 @@ Route::get('/{id}/edit',  [CustomerController::class, 'edit'])->name("$entity.ed
 Route::get('/{id}',       [CustomerController::class, 'show'])->name("$entity.show");
 Route::patch('/{id}',     [CustomerController::class, 'update'])->name("$entity.update");
 Route::get('/getSubscriptions/{id}', [CustomerController::class, 'getSubscriptions'])->name("$entity.getSubscriptions");
+Route::post('/registerBiometricFingerprint/{id}', [CustomerController::class, 'registerBiometricFingerprint'])->name("$entity.registerBiometricFingerprint");

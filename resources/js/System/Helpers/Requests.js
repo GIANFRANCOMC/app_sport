@@ -205,7 +205,8 @@ const ENTITY_SPECIAL_ROUTES = {
         getTracking: "getTracking"
     },
     customers: {
-        getSubscriptions: "getSubscriptions"
+        getSubscriptions: "getSubscriptions",
+        registerBiometricFingerprint: "registerBiometricFingerprint"
     },
     assets_management: {
         assignAssetToBranch: "assignAssetToBranch",

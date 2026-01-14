@@ -6,6 +6,7 @@ namespace App\Services\System\Customers;
 
 use App\Models\System\Customers\Customer;
 use App\Models\System\General\IdentityDocumentType;
+use App\Services\System\Devices\Biometric\BiometricDeviceService;
 use Illuminate\Support\Facades\Cache;
 use stdClass;
 
@@ -43,6 +44,9 @@ class CustomerConfigService {
                 $config->customers = new stdClass();
                 $config->customers->genders  = Customer::getGenders();
                 $config->customers->statuses = Customer::getStatuses();
+
+                $config->biometricDevices = new stdClass();
+                $config->biometricDevices->records = BiometricDeviceService::getActiveDevices($companyId);
 
             }
 

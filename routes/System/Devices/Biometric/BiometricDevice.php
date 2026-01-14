@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Http\Controllers\System\Biometric\{BiometricDeviceController};
+use App\Http\Controllers\System\Devices\Biometric\{BiometricDeviceController};
 use Illuminate\Support\Facades\Route;
 
 $entity = "biometric_devices";
@@ -16,3 +16,4 @@ Route::get('/{id}/edit',  [BiometricDeviceController::class, 'edit'])->name("$en
 Route::get('/{id}',       [BiometricDeviceController::class, 'show'])->name("$entity.show");
 Route::patch('/{id}',     [BiometricDeviceController::class, 'update'])->name("$entity.update");
 Route::get('/devices',    [BiometricDeviceController::class, 'getDevices'])->name("$entity.getDevices");
+

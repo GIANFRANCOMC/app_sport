@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Controllers\System\Biometric;
+namespace App\Http\Controllers\System\Devices\Biometric;
 
 use App\Http\Controllers\System\Base\BaseController;
 use App\Helpers\System\{Utilities};
@@ -10,10 +10,10 @@ use Illuminate\Http\{JsonResponse, Request};
 use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 
-use App\Http\Requests\System\Biometric\{StoreBiometricDeviceRequest, UpdateBiometricDeviceRequest};
-use App\Services\System\Biometric\{BiometricDeviceConfigService, BiometricDeviceService};
+use App\Http\Requests\System\Devices\Biometric\{StoreBiometricDeviceRequest, UpdateBiometricDeviceRequest};
+use App\Services\System\Devices\Biometric\{BiometricDeviceConfigService, BiometricDeviceService};
 use App\Services\System\Customers\Tracking\{TrackingAttendanceBusinessService};
-use App\Models\System\Biometric\{BiometricDevice};
+use App\Models\System\Devices\Biometric\{BiometricDevice};
 
 class BiometricDeviceController extends BaseController {
 

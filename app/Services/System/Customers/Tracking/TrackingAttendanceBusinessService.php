@@ -7,6 +7,7 @@ namespace App\Services\System\Customers\Tracking;
 use App\Helpers\System\Utilities;
 use Carbon\Carbon;
 use App\Models\System\Customers\{Attendance, Customer, Subscription};
+use App\Services\System\Devices\Biometric\BiometricDeviceService;
 
 /**
  * Business Service for Attendance Operations
@@ -142,8 +143,8 @@ class TrackingAttendanceBusinessService {
         $branchId    = $data["branch_id"];
         $customerId  = $data["customer_id"] ?? "";
         $customerDocumentNumber = $data["customer_document_number"] ?? "";
-        $customerAttendanceType = Utilities::isDefined($data["customer_attendance_type"] ?? "") 
-            ? $data["customer_attendance_type"] 
+        $customerAttendanceType = Utilities::isDefined($data["customer_attendance_type"] ?? "")
+            ? $data["customer_attendance_type"]
             : "carnet";
         $startDate   = $data["start_date"] ?? null;
         $endDate     = $data["end_date"] ?? null;
@@ -152,12 +153,29 @@ class TrackingAttendanceBusinessService {
         $type        = $data["type"] ?? "manual_form";
         $action      = $data["action"] ?? "automatic";
 
+        // For automatic checkin actions, use current time if start_date is not provided
+        if ($startDate === null && $action === "automatic" && in_array($type, ["biometric", "qr_camera", "qr_scanner", "qr_public"])) {
+            $startDate = now();
+        }
+
         // Get customer
-        if(in_array($customerAttendanceType, ["dni", "dnie"])) {
+        // Handle biometric attendance (by device_user_id)
+        $deviceId = $data["device_id"] ?? null;
+        $deviceUserId = $data["device_user_id"] ?? null;
+
+        if (Utilities::isDefined($deviceId) && Utilities::isDefined($deviceUserId) && $type === "biometric") {
+
+            $customer = BiometricDeviceService::findCustomerByDeviceUserId(
+                $deviceId,
+                $deviceUserId,
+                $companyId
+            );
+
+        } elseif (in_array($customerAttendanceType, ["dni", "dnie"])) {
 
             $customer = $this->getValidCustomer($customerDocumentNumber, $companyId, $customerAttendanceType);
 
-        }else {
+        } else {
 
             $customer = $this->getValidCustomer($customerId, $companyId, $customerAttendanceType);
 
