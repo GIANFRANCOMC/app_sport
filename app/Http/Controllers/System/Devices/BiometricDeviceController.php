@@ -237,7 +237,7 @@ class BiometricDeviceController extends BaseController {
 
             if(!$companyId) {
 
-                return response()->json(["bool" => false, "msg" => "No se pudo identificar la empresa."], 400);
+                return response()->json(["bool" => false, "msg" => $this->trans("company_not_identified")], 400);
 
             }
 
@@ -246,7 +246,7 @@ class BiometricDeviceController extends BaseController {
 
             if(!Utilities::isDefined($deviceUserId)) {
 
-                return response()->json(["bool" => false, "msg" => "El parámetro 'user_id' es requerido."], 400);
+                return response()->json(["bool" => false, "msg" => $this->trans("user_id_required")], 400);
 
             }
 
@@ -259,7 +259,7 @@ class BiometricDeviceController extends BaseController {
             // Validate action
             if(!in_array($action, ["checkin", "checkout"])) {
 
-                return response()->json(["bool" => false, "msg" => "El parámetro 'action' debe ser 'checkin' o 'checkout'."], 400);
+                return response()->json(["bool" => false, "msg" => $this->trans("action_invalid")], 400);
 
             }
 
@@ -283,7 +283,7 @@ class BiometricDeviceController extends BaseController {
 
                 Log::warning("Biometric device not found", ["company_id" => $companyId, "device_id" => $deviceId, "device_ip" => $deviceIp, "request_ip" => $request->ip()]);
 
-                return response()->json(["bool" => false, "msg" => "Dispositivo biométrico no encontrado o no autorizado. Verifique la configuración del dispositivo."], 404);
+                return response()->json(["bool" => false, "msg" => $this->trans("device_not_found_or_unauthorized")], 404);
 
             }
 
@@ -294,7 +294,7 @@ class BiometricDeviceController extends BaseController {
 
                 Log::warning("Biometric customer not found", ["device_id" => $device->id, "device_user_id" => $deviceUserId, "company_id" => $companyId]);
 
-                return response()->json(["bool" => false, "msg" => "Usuario no encontrado en el sistema. Verifique que la huella esté registrada correctamente."], 404);
+                return response()->json(["bool" => false, "msg" => $this->trans("user_not_found")], 404);
 
             }
 
@@ -320,7 +320,7 @@ class BiometricDeviceController extends BaseController {
                 "device_user_id" => (int) $deviceUserId,
                 "start_date" => $attendanceDate,
                 "end_date" => $action === "checkout" ? $attendanceDate : null,
-                "observation" => "Registro biométrico - " . $device->name,
+                "observation" => $this->trans("biometric_record_observation", ["device_name" => $device->name]),
                 "user_id" => 0, // System user
                 "type" => "biometric",
                 "action" => $action
@@ -346,7 +346,7 @@ class BiometricDeviceController extends BaseController {
 
             Log::error("Error processing biometric event: " . $e->getMessage(), ["request" => $request->all(), "trace" => $e->getTraceAsString()]);
 
-            return response()->json(["bool" => false, "msg" => "Error al procesar el evento biométrico."], 500);
+            return response()->json(["bool" => false, "msg" => $this->trans("event_processing_error")], 500);
 
         }
 

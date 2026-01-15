@@ -42,5 +42,14 @@ return [
     "exception_delete" => "Error al eliminar el dispositivo biométrico: :message",
     "exception_retrieve" => "Error al obtener el dispositivo biométrico: :message",
     "exception_list" => "Error al obtener la lista de dispositivos biométricos: :message",
+
+    // Mensajes de Eventos Biométricos
+    "company_not_identified" => "No se pudo identificar la empresa.",
+    "user_id_required" => "El parámetro 'user_id' es requerido.",
+    "action_invalid" => "El parámetro 'action' debe ser 'checkin' o 'checkout'.",
+    "device_not_found_or_unauthorized" => "Dispositivo biométrico no encontrado o no autorizado. Verifique la configuración del dispositivo.",
+    "user_not_found" => "Usuario no encontrado en el sistema. Verifique que la huella esté registrada correctamente.",
+    "event_processing_error" => "Error al procesar el evento biométrico.",
+    "biometric_record_observation" => "Registro biométrico - :device_name",
 ];
 
