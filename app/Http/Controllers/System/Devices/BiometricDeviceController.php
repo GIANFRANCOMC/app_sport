@@ -135,7 +135,7 @@ class BiometricDeviceController extends BaseController {
      * Update the specified record
      *
      * @param UpdateBiometricDeviceRequest $request
-     * @param int $id Biometric Device ID
+     * @param int $id Biometric Device
      * @return JsonResponse
      */
     public function update(UpdateBiometricDeviceRequest $request, int $id): JsonResponse {
