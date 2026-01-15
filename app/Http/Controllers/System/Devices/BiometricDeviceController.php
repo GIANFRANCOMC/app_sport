@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Controllers\System\Devices\Biometric;
+namespace App\Http\Controllers\System\Devices;
 
 use App\Http\Controllers\System\Base\BaseController;
 use App\Helpers\System\{Utilities};
