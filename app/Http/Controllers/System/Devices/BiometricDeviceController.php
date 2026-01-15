@@ -20,7 +20,7 @@ class BiometricDeviceController extends BaseController {
     /**
      * Translation namespace for module
      */
-    private const TRANSLATION_NAMESPACE = "System.Biometric.biometric_device"; // Revisar
+    private const TRANSLATION_NAMESPACE = "System.Devices.biometric_device";
 
     /**
      * Get initialization parameters for the module
