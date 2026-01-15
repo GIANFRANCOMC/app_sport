@@ -7,26 +7,25 @@ namespace App\Services\System\Devices\BiometricDevices;
 use Exception;
 use App\Helpers\System\{TranslationHelper, Utilities};
 use Illuminate\Support\Facades\{Auth, DB};
-
-use App\Models\System\Devices\BiometricDevice;
-use App\Models\System\Devices\CustomerBiometricFingerprint;
-use App\Models\System\Customers\Customer;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 
+use App\Models\System\Devices\{BiometricDevice, CustomerBiometricFingerprint};
+use App\Models\System\Customers\{Customer};
+
 /**
- * Service class for managing Biometric Device operations
- * Handles business logic for creating and updating biometric devices
+ * Service class for managing module operations
+ * Handles business logic for creating and updating records
  */
 class BiometricDeviceService {
 
     /**
-     * Translation namespace for biometric device module
+     * Translation namespace for module
      */
-    private const TRANSLATION_NAMESPACE = "System.Biometric.biometric_device";
+    private const TRANSLATION_NAMESPACE = "System.Devices.biometric_device";
 
     /**
-     * Allowed fields for biometric device creation and update
+     * Allowed fields for record creation and update
      */
     private const ALLOWED_FIELDS = [
         "branch_id",
@@ -55,11 +54,11 @@ class BiometricDeviceService {
     }
 
     /**
-     * Prepare biometric device data for creation
+     * Prepare record data for creation
      *
      * @param array $data Input data
-     * @param int $companyId Company ID
-     * @param int $userId User ID
+     * @param int $companyId Company
+     * @param int $userId User
      * @return array
      */
     private static function prepareBiometricDeviceDataForCreate(array $data, int $companyId, int $userId): array {
@@ -88,7 +87,7 @@ class BiometricDeviceService {
     }
 
     /**
-     * Prepare biometric device data for update (only changed fields)
+     * Prepare record data for update (only changed fields)
      *
      * @param BiometricDevice $device Device instance
      * @param array $data Input data
@@ -113,11 +112,11 @@ class BiometricDeviceService {
     }
 
     /**
-     * Create a new biometric device
+     * Create a new record
      *
      * @param array $data Device data from request
-     * @param int|null $userId User ID creating the device
-     * @return BiometricDevice|null Created device instance or null on failure
+     * @param int|null $userId User creating the record
+     * @return BiometricDevice|null Created record instance or null on failure
      * @throws Exception
      */
     public static function create(array $data, ?int $userId = null): ?BiometricDevice {
@@ -131,17 +130,16 @@ class BiometricDeviceService {
 
             if(!$companyId) {
 
-
                 throw new Exception(self::trans("company_id_required"));
 
             }
 
             $userId = $userId ?? $userAuth->id;
 
-            // Prepare device data with only allowed fields
+            // Prepare record data with only allowed fields
             $deviceData = self::prepareBiometricDeviceDataForCreate($data, $companyId, $userId);
 
-            // Create the device
+            // Create the record
             $device = BiometricDevice::create($deviceData);
 
         });
@@ -151,12 +149,12 @@ class BiometricDeviceService {
     }
 
     /**
-     * Update an existing biometric device
+     * Update an existing record
      *
      * @param BiometricDevice $device Device instance to update
-     * @param array $data Updated device data
-     * @param int|null $userId User ID updating the device
-     * @return BiometricDevice Updated device instance
+     * @param array $data Updated record data
+     * @param int|null $userId User updating the record
+     * @return BiometricDevice Updated record instance
      */
     public static function update(BiometricDevice $device, array $data, ?int $userId = null): BiometricDevice {
 
@@ -184,11 +182,11 @@ class BiometricDeviceService {
     }
 
     /**
-     * Find biometric device by ID and company ID
+     * Find record by ID and company ID
      *
-     * @param int $id Device ID
-     * @param int $companyId Company ID
-     * @param bool $activeOnly Only search active devices
+     * @param int $id Device
+     * @param int $companyId Company
+     * @param bool $activeOnly Only search active records
      * @param array $relations Relations to eager load
      * @return BiometricDevice|null
      */
@@ -214,9 +212,9 @@ class BiometricDeviceService {
     }
 
     /**
-     * Get paginated list of biometric devices with filters
+     * Get paginated list of records with filters
      *
-     * @param int $companyId Company ID
+     * @param int $companyId Company
      * @param array $filters Filter parameters (filter_by, word)
      * @param int $perPage Items per page
      * @return LengthAwarePaginator
@@ -256,10 +254,10 @@ class BiometricDeviceService {
     }
 
     /**
-     * Find biometric device by IP and company
+     * Find record by IP and company
      *
      * @param string $ipAddress IP address
-     * @param int $companyId Company ID
+     * @param int $companyId Company
      * @return BiometricDevice|null
      */
     public static function findByIpAndCompany(string $ipAddress, int $companyId): ?BiometricDevice {
@@ -272,10 +270,10 @@ class BiometricDeviceService {
     }
 
     /**
-     * Get all active devices for a company
+     * Get all active records for a company
      *
-     * @param int $companyId Company ID
-     * @param int|null $branchId Branch ID (optional)
+     * @param int $companyId Company
+     * @param int|null $branchId Branch (optional)
      * @return \Illuminate\Database\Eloquent\Collection
      */
     public static function getActiveDevices(int $companyId, ?int $branchId = null) {
@@ -296,22 +294,15 @@ class BiometricDeviceService {
     /**
      * Register customer fingerprint in device
      *
-     * @param int $customerId Customer ID
-     * @param int $biometricDeviceId Device ID
-     * @param int $deviceUserId User ID in the device
+     * @param int $customerId Customer
+     * @param int $biometricDeviceId Device
+     * @param int $deviceUserId User in the device
      * @param int $fingerIndex Finger index (0-9)
-     * @param int $userId User ID who creates the record
-     * @param int $companyId Company ID
+     * @param int $userId User who creates the record
+     * @param int $companyId Company
      * @return CustomerBiometricFingerprint
      */
-    public static function registerFingerprint(
-        int $customerId,
-        int $biometricDeviceId,
-        int $deviceUserId,
-        int $fingerIndex = 0,
-        int $userId = 0,
-        int $companyId = 0
-    ): CustomerBiometricFingerprint {
+    public static function registerFingerprint(int $customerId, int $biometricDeviceId, int $deviceUserId, int $fingerIndex = 0, int $userId = 0, int $companyId = 0): CustomerBiometricFingerprint {
 
         return CustomerBiometricFingerprint::create([
             "company_id" => $companyId,
@@ -327,11 +318,11 @@ class BiometricDeviceService {
     }
 
     /**
-     * Find customer by device user ID
+     * Find customer by device user
      *
-     * @param int $deviceId Device ID
-     * @param int $deviceUserId User ID in device
-     * @param int $companyId Company ID
+     * @param int $deviceId Device
+     * @param int $deviceUserId User in device
+     * @param int $companyId Company
      * @return Customer|null
      */
     public static function findCustomerByDeviceUserId(int $deviceId, int $deviceUserId, int $companyId): ?Customer {
@@ -348,9 +339,9 @@ class BiometricDeviceService {
     }
 
     /**
-     * Get next available device user ID for a device
+     * Get next available device user for a device
      *
-     * @param int $deviceId Device ID
+     * @param int $deviceId Device
      * @return int
      */
     public static function getNextDeviceUserId(int $deviceId): int {
@@ -363,10 +354,10 @@ class BiometricDeviceService {
     }
 
     /**
-     * Check if device user ID and finger index combination already exists
+     * Check if device user and finger index combination already exists
      *
-     * @param int $deviceId Device ID
-     * @param int $deviceUserId User ID in device
+     * @param int $deviceId Device
+     * @param int $deviceUserId User in device
      * @param int $fingerIndex Finger index (optional, to check specific finger)
      * @return bool
      */
