@@ -10,8 +10,8 @@ use Illuminate\Support\Facades\{Auth, DB};
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 
-use App\Models\System\Devices\{BiometricDevice, CustomerBiometricFingerprint};
 use App\Models\System\Customers\{Customer};
+use App\Models\System\Devices\{BiometricDevice, CustomerBiometricFingerprint};
 
 /**
  * Service class for managing module operations
@@ -54,7 +54,7 @@ class BiometricDeviceService {
     }
 
     /**
-     * Prepare record data for creation
+     * Prepare data for creation
      *
      * @param array $data Input data
      * @param int $companyId Company
@@ -66,8 +66,6 @@ class BiometricDeviceService {
         $deviceData = [
             "company_id" => $companyId,
             "status"     => $data["status"] ?? "active",
-            "port"       => $data["port"] ?? 4370,
-            "brand"      => $data["brand"] ?? "ZKTeco",
             "created_at" => now(),
             "created_by" => $userId
         ];
@@ -87,9 +85,9 @@ class BiometricDeviceService {
     }
 
     /**
-     * Prepare record data for update (only changed fields)
+     * Prepare data for update (only changed fields)
      *
-     * @param BiometricDevice $device Device instance
+     * @param BiometricDevice $device Record instance
      * @param array $data Input data
      * @return array
      */
@@ -114,7 +112,7 @@ class BiometricDeviceService {
     /**
      * Create a new record
      *
-     * @param array $data Device data from request
+     * @param array $data Input data
      * @param int|null $userId User creating the record
      * @return BiometricDevice|null Created record instance or null on failure
      * @throws Exception
@@ -125,7 +123,7 @@ class BiometricDeviceService {
 
         DB::transaction(function() use($data, $userId, &$device) {
 
-            $userAuth = Auth::user();
+            $userAuth  = Auth::user();
             $companyId = $data["company_id"] ?? $userAuth->company_id ?? null;
 
             if(!$companyId) {
@@ -136,7 +134,7 @@ class BiometricDeviceService {
 
             $userId = $userId ?? $userAuth->id;
 
-            // Prepare record data with only allowed fields
+            // Prepare data with only allowed fields
             $deviceData = self::prepareBiometricDeviceDataForCreate($data, $companyId, $userId);
 
             // Create the record
@@ -151,8 +149,8 @@ class BiometricDeviceService {
     /**
      * Update an existing record
      *
-     * @param BiometricDevice $device Device instance to update
-     * @param array $data Updated record data
+     * @param BiometricDevice $device Record instance to update
+     * @param array $data Input data
      * @param int|null $userId User updating the record
      * @return BiometricDevice Updated record instance
      */
