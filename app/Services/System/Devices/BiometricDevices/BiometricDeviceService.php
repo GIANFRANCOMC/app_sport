@@ -132,7 +132,7 @@ class BiometricDeviceService {
 
             }
 
-            $userId = $userId ?? $userAuth->id;
+            $userId = $userId ?? $userAuth->id ?? null;
 
             // Prepare data with only allowed fields
             $deviceData = self::prepareBiometricDeviceDataForCreate($data, $companyId, $userId);
@@ -159,7 +159,7 @@ class BiometricDeviceService {
         DB::transaction(function() use($device, $data, $userId) {
 
             $userAuth = Auth::user();
-            $userId = $userId ?? $userAuth->id;
+            $userId   = $userId ?? $userAuth->id ?? null;
 
             // Prepare update data with only changed fields
             $updateData = self::prepareBiometricDeviceDataForUpdate($device, $data);
@@ -182,7 +182,7 @@ class BiometricDeviceService {
     /**
      * Find record by ID and company ID
      *
-     * @param int $id Device
+     * @param int $id Record
      * @param int $companyId Company
      * @param bool $activeOnly Only search active records
      * @param array $relations Relations to eager load
@@ -191,7 +191,7 @@ class BiometricDeviceService {
     public static function findByIdAndCompany(int $id, int $companyId, bool $activeOnly = false, array $relations = ["branch"]): ?BiometricDevice {
 
         $query = BiometricDevice::where("id", $id)
-                               ->where("company_id", $companyId);
+                                ->where("company_id", $companyId);
 
         if($activeOnly) {
 
@@ -224,7 +224,7 @@ class BiometricDeviceService {
 
         // Apply filters
         $filterBy = $filters["filter_by"] ?? null;
-        $word = $filters["word"] ?? null;
+        $word     = $filters["word"] ?? null;
 
         if(Utilities::isDefined($word) && Utilities::isDefined($filterBy)) {
 
@@ -232,7 +232,7 @@ class BiometricDeviceService {
 
                 $query->where("name", "like", "%{$word}%");
 
-            } elseif($filterBy === "ip_port") {
+            }else if($filterBy === "ip_port") {
 
                 // Search in both IP address and port
                 $query->where(function(Builder $q) use($word) {
@@ -254,7 +254,7 @@ class BiometricDeviceService {
     /**
      * Find record by IP and company
      *
-     * @param string $ipAddress IP address
+     * @param string $ipAddress IP
      * @param int $companyId Company
      * @return BiometricDevice|null
      */
@@ -277,7 +277,7 @@ class BiometricDeviceService {
     public static function getActiveDevices(int $companyId, ?int $branchId = null) {
 
         $query = BiometricDevice::where("company_id", $companyId)
-                               ->where("status", "active");
+                                ->where("status", "active");
 
         if(Utilities::isDefined($branchId)) {
 
@@ -303,14 +303,14 @@ class BiometricDeviceService {
     public static function registerFingerprint(int $customerId, int $biometricDeviceId, int $deviceUserId, int $fingerIndex = 0, int $userId = 0, int $companyId = 0): CustomerBiometricFingerprint {
 
         return CustomerBiometricFingerprint::create([
-            "company_id" => $companyId,
-            "customer_id" => $customerId,
+            "company_id"          => $companyId,
+            "customer_id"         => $customerId,
             "biometric_device_id" => $biometricDeviceId,
-            "device_user_id" => $deviceUserId,
-            "finger_index" => $fingerIndex,
-            "status" => "active",
-            "created_at" => now(),
-            "created_by" => $userId
+            "device_user_id"      => $deviceUserId,
+            "finger_index"        => $fingerIndex,
+            "status"              => "active",
+            "created_at"          => now(),
+            "created_by"          => $userId
         ]);
 
     }
