@@ -7,20 +7,20 @@ namespace App\Http\Controllers\System\Devices;
 use App\Http\Controllers\System\Base\BaseController;
 use App\Helpers\System\{Utilities};
 use Illuminate\Http\{JsonResponse, Request};
-use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
 
-use App\Http\Requests\System\Devices\Biometric\{StoreBiometricDeviceRequest, UpdateBiometricDeviceRequest};
-use App\Services\System\Devices\Biometric\{BiometricDeviceConfigService, BiometricDeviceService};
+use App\Http\Requests\System\Devices\BiometricDevices\{StoreBiometricDeviceRequest, UpdateBiometricDeviceRequest};
+use App\Services\System\Devices\BiometricDevices\{BiometricDeviceConfigService, BiometricDeviceService};
 use App\Services\System\Customers\Tracking\{TrackingAttendanceBusinessService};
-use App\Models\System\Devices\Biometric\{BiometricDevice};
+use App\Models\System\Devices\{BiometricDevice};
 
 class BiometricDeviceController extends BaseController {
 
     /**
-     * Translation namespace for biometric device module
+     * Translation namespace for module
      */
-    private const TRANSLATION_NAMESPACE = "System.Biometric.biometric_device";
+    private const TRANSLATION_NAMESPACE = "System.Biometric.biometric_device"; // Revisar
 
     /**
      * Get initialization parameters for the module
@@ -37,7 +37,7 @@ class BiometricDeviceController extends BaseController {
     }
 
     /**
-     * Get paginated list of biometric devices with filters
+     * Get paginated list with filters
      *
      * @param Request $request
      * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator
@@ -52,13 +52,13 @@ class BiometricDeviceController extends BaseController {
     }
 
     /**
-     * Display the biometric devices index page
+     * Display the module index page
      *
      * @return \Illuminate\Contracts\View\View
      */
     public function index() {
 
-        return view("System/general/Biometric/biometric_devices/main");
+        return view("System/general/Devices/biometric_devices/main");
 
     }
 

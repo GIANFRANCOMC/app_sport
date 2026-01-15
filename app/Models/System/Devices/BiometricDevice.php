@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace App\Models\System\Devices\Biometric;
+namespace App\Models\System\Devices;
 
 use Illuminate\Database\Eloquent\Model;
-use App\Models\System\Organizations\Company;
+use App\Models\System\Organizations\{Company, Branch};
 use App\Models\System\Customers\Customer;
 
-class CustomerBiometricFingerprint extends Model
+class BiometricDevice extends Model
 {
-    protected $table               = "customer_biometric_fingerprints";
+    protected $table               = "biometric_devices";
     protected $primaryKey          = "id";
     public $incrementing           = true;
     public $timestamps             = true;
@@ -18,11 +18,14 @@ class CustomerBiometricFingerprint extends Model
 
     protected $fillable = [
         "company_id",
-        "customer_id",
-        "biometric_device_id",
-        "device_user_id",
-        "finger_index",
-        "fingerprint_template",
+        "branch_id",
+        "name",
+        "brand",
+        "model",
+        "serial_number",
+        "ip_address",
+        "port",
+        "device_id",
         "description",
         "status",
         "created_at",
@@ -56,20 +59,46 @@ class CustomerBiometricFingerprint extends Model
         return \App\Helpers\System\Utilities::getValues($statuses, $type, $code);
     }
 
+    /**
+     * Get brands list
+     */
+    public static function getBrands(string $type = "all", ?string $code = ""): array
+    {
+        $brands = [
+            ["code" => "ZKTeco", "label" => "ZKTeco"]
+        ];
+
+        return \App\Helpers\System\Utilities::getValues($brands, $type, $code);
+    }
+
+    /**
+     * Get models by brand
+     */
+    public static function getModelsByBrand(?string $brand = "ZKTeco"): array
+    {
+        $models = [
+            "ZKTeco" => [
+                ["code" => "K20 Pro", "label" => "K20 Pro"]
+            ]
+        ];
+
+        return $models[$brand] ?? [];
+    }
+
     // Relationships
     public function company()
     {
         return $this->belongsTo(Company::class, "company_id", "id");
     }
 
-    public function customer()
+    public function branch()
     {
-        return $this->belongsTo(Customer::class, "customer_id", "id");
+        return $this->belongsTo(Branch::class, "branch_id", "id");
     }
 
-    public function biometricDevice()
+    public function customerFingerprints()
     {
-        return $this->belongsTo(BiometricDevice::class, "biometric_device_id", "id");
+        return $this->hasMany(CustomerBiometricFingerprint::class, "biometric_device_id", "id");
     }
 }
 

@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Requests\System\Devices\Biometric;
+namespace App\Http\Requests\System\Devices\BiometricDevices;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class StoreBiometricDeviceRequest extends FormRequest
+class UpdateBiometricDeviceRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -24,16 +24,16 @@ class StoreBiometricDeviceRequest extends FormRequest
     public function rules(): array
     {
         return [
-            "branch_id" => "required|exists:branches,id",
-            "name" => "required|string|max:50",
-            "description" => "nullable|string|max:100",
-            "brand" => "required|in:ZKTeco",
-            "model" => "required|in:K20 Pro",
+            "branch_id" => "sometimes|required|exists:branches,id",
+            "name" => "sometimes|required|string|max:255",
+            "brand" => "sometimes|nullable|in:ZKTeco",
+            "model" => "sometimes|nullable|in:K20 Pro",
             "serial_number" => "nullable|string|max:100",
-            "ip_address" => "required|ip",
-            "port" => "nullable|integer|min:1|max:65535",
+            "ip_address" => "sometimes|required|ip",
+            "port" => "sometimes|nullable|integer|min:1|max:65535",
             "device_id" => "nullable|integer",
-            "status" => "required|in:active,inactive"
+            "description" => "nullable|string",
+            "status" => "sometimes|required|in:active,inactive"
         ];
     }
 

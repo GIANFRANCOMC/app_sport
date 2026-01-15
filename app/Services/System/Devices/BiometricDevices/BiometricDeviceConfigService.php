@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace App\Services\System\Devices\Biometric;
+namespace App\Services\System\Devices\BiometricDevices;
 
 use Illuminate\Support\Facades\Cache;
 use stdClass;
 
-use App\Models\System\Devices\Biometric\{BiometricDevice};
+use App\Models\System\Devices\{BiometricDevice};
 use App\Models\System\Organizations\{Branch};
 
 /**

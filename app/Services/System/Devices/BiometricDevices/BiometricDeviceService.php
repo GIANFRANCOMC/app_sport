@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace App\Services\System\Devices\Biometric;
+namespace App\Services\System\Devices\BiometricDevices;
 
 use Exception;
 use App\Helpers\System\{TranslationHelper, Utilities};
 use Illuminate\Support\Facades\{Auth, DB};
 
-use App\Models\System\Devices\Biometric\BiometricDevice;
-use App\Models\System\Devices\Biometric\CustomerBiometricFingerprint;
+use App\Models\System\Devices\BiometricDevice;
+use App\Models\System\Devices\CustomerBiometricFingerprint;
 use App\Models\System\Customers\Customer;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
