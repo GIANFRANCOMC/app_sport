@@ -76,8 +76,8 @@ Route::middleware(["web"])
             // Warehouses
             Route::prefix('/stocks_management')->group($systemRoute.'/Warehouses/StockManagement.php');
 
-            // Biometric Devices
-            Route::prefix('/biometric_devices')->group($systemRoute.'/Devices/Biometric/BiometricDevice.php');
+            // Devices
+            Route::prefix('/biometric_devices')->group($systemRoute.'/Devices/BiometricDevice.php');
 
             // Sessions
             Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
