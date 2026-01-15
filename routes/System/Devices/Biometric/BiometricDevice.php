@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Http\Controllers\System\Devices\Biometric\{BiometricDeviceController};
+use App\Http\Controllers\System\Devices\{BiometricDeviceController};
 use Illuminate\Support\Facades\Route;
 
 $entity = "biometric_devices";

@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\{DB};
 use App\Models\System\General\{IdentityDocumentType};
 use App\Models\System\Organizations\{Branch, Company};
 use App\Models\System\Sales\{SaleHeader};
+use App\Models\System\Devices\Biometric\{CustomerBiometricFingerprint};
 
 class Customer extends Model {
 
@@ -152,6 +153,12 @@ class Customer extends Model {
 
         return $this->hasMany(SaleHeader::class, "holder_id", "id")
                     ->whereIn("status", ["active"]);
+
+    }
+
+    public function biometricFingerprints() {
+
+        return $this->hasMany(CustomerBiometricFingerprint::class, "customer_id", "id");
 
     }
 
