@@ -22,8 +22,8 @@ class BiometricDeviceConfigService {
     /**
      * Get initialization parameters for module
      *
-     * @param int $companyId Company Identifier
-     * @param string $page Page Identifier (only used to determine what data to return, not for cache key)
+     * @param int $companyId Company
+     * @param string $page Page (only used to determine what data to return, not for cache key)
      * @return stdClass
      */
     public static function getInitParams(int $companyId, string $page = ""): stdClass {
@@ -59,7 +59,7 @@ class BiometricDeviceConfigService {
     /**
      * Build cache key for module configuration
      *
-     * @param int $companyId Company Identifier
+     * @param int $companyId Company
      * @return string
      */
     private static function buildCacheKey(int $companyId): string {
@@ -71,7 +71,7 @@ class BiometricDeviceConfigService {
     /**
      * Clear cache for module configuration
      *
-     * @param int $companyId Company Identifier
+     * @param int $companyId Company
      * @return void
      */
     public static function clearCache(int $companyId): void {
@@ -85,7 +85,7 @@ class BiometricDeviceConfigService {
     /**
      * Clear all module configuration cache for a company
      *
-     * @param int $companyId Company Identifier
+     * @param int $companyId Company
      * @return void
      */
     public static function clearAllCache(int $companyId): void {
