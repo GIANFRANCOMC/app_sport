@@ -63,7 +63,7 @@ class BiometricDeviceController extends BaseController {
     }
 
     /**
-     * Show the form for creating a new biometric device
+     * Show the form for creating a new record
      * (Not used in SPA, but kept for REST compliance)
      *
      * @return void
@@ -75,7 +75,7 @@ class BiometricDeviceController extends BaseController {
     }
 
     /**
-     * Store a newly created biometric device
+     * Store a newly created record
      *
      * @param StoreBiometricDeviceRequest $request
      * @return JsonResponse
@@ -106,7 +106,7 @@ class BiometricDeviceController extends BaseController {
     }
 
     /**
-     * Display the specified biometric device
+     * Display the specified record
      * (Not used, but kept for REST compliance)
      *
      * @param BiometricDevice $record
@@ -119,7 +119,7 @@ class BiometricDeviceController extends BaseController {
     }
 
     /**
-     * Show the form for editing the specified biometric device
+     * Show the form for editing the specified record
      * (Not used in SPA, but kept for REST compliance)
      *
      * @param BiometricDevice $record
@@ -132,7 +132,7 @@ class BiometricDeviceController extends BaseController {
     }
 
     /**
-     * Update the specified biometric device
+     * Update the specified record
      *
      * @param UpdateBiometricDeviceRequest $request
      * @param int $id Biometric Device ID
@@ -172,7 +172,7 @@ class BiometricDeviceController extends BaseController {
     }
 
     /**
-     * Remove the specified biometric device
+     * Remove the specified record
      * (Not used, but kept for REST compliance)
      *
      * @param BiometricDevice $record
@@ -185,7 +185,7 @@ class BiometricDeviceController extends BaseController {
     }
 
     /**
-     * Prepare biometric device data from request
+     * Prepare record data from request
      *
      * @param StoreBiometricDeviceRequest|UpdateBiometricDeviceRequest $request
      * @return array
@@ -209,7 +209,7 @@ class BiometricDeviceController extends BaseController {
     }
 
     /**
-     * Get translation namespace for biometric device module
+     * Get translation namespace for module
      *
      * @return string
      */
@@ -221,7 +221,7 @@ class BiometricDeviceController extends BaseController {
 
     /**
      * Receive event from ZKTeco device
-     * This endpoint is called by the biometric device when a fingerprint is scanned
+     * This endpoint is called by the ZKTeco device when a fingerprint is scanned
      *
      * @param Request $request
      * @param TrackingAttendanceBusinessService $businessService

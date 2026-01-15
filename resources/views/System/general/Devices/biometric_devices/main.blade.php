@@ -2,6 +2,6 @@
 
 @section("content")
     <div id="app"></div>
-    @vite('resources/js/System/Pages/Biometric/biometric_devices/main.js')
+    @vite('resources/js/System/Pages/Devices/biometric_devices/main.js')
 @endsection
 
