@@ -118,6 +118,7 @@
                                 :titleClass="[config.forms.classes.title]"
                                 isRequired
                                 maxlength="50"
+                                showCharCounter
                                 hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.errors?.name"
                                 xl="4"
@@ -128,6 +129,7 @@
                                 :title="MODULE.texts.form.description"
                                 :titleClass="[config.forms.classes.title]"
                                 maxlength="100"
+                                showCharCounter
                                 hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.errors?.description"
                                 xl="8"
@@ -173,7 +175,8 @@
                                 hasDiv
                                 :title="MODULE.texts.form.serialNumber"
                                 :titleClass="[config.forms.classes.title]"
-                                maxlength="100"
+                                maxlength="50"
+                                showCharCounter
                                 hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.errors?.serial_number"
                                 xl="4"
@@ -185,6 +188,7 @@
                                 :titleClass="[config.forms.classes.title]"
                                 isRequired
                                 maxlength="15"
+                                showCharCounter
                                 hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.errors?.ip_address"
                                 xl="4"
@@ -206,6 +210,8 @@
                                 hasDiv
                                 :title="MODULE.texts.form.deviceId"
                                 :titleClass="[config.forms.classes.title]"
+                                maxlength="50"
+                                showCharCounter
                                 hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.errors?.device_id"
                                 xl="4"
@@ -303,7 +309,7 @@ const VALIDATION_RULES = {
     serial_number: {required: false},
     ip_address: {required: true, ip: true},
     port: {required: true, number: true, min: 1, max: 65535},
-    device_id: {required: false, number: true},
+    device_id: {required: false},
     status: {required: true}
 };
 

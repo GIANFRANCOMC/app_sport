@@ -149,6 +149,7 @@
                                 :titleClass="[config.forms.classes.title, 'fw-semibold']"
                                 isRequired
                                 maxlength="15"
+                                showCharCounter
                                 hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.errors?.document_number"
                                 xl="4"
@@ -186,6 +187,7 @@
                                 :titleClass="[config.forms.classes.title, 'fw-semibold']"
                                 isRequired
                                 maxlength="100"
+                                showCharCounter
                                 hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.errors?.name"
                                 xl="6"
@@ -196,6 +198,7 @@
                                 :title="MODULE.texts.form.email"
                                 :titleClass="[config.forms.classes.title, 'fw-semibold']"
                                 maxlength="100"
+                                showCharCounter
                                 hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.errors?.email"
                                 xl="6"
@@ -206,6 +209,7 @@
                                 :title="MODULE.texts.form.phoneNumber"
                                 :titleClass="[config.forms.classes.title, 'fw-semibold']"
                                 maxlength="15"
+                                showCharCounter
                                 hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.errors?.phone_number"
                                 xl="3"

@@ -119,6 +119,7 @@
                             title="Código interno"
                             isRequired
                             maxlength="15"
+                            showCharCounter
                             hasTextBottom
                             :textBottomInfo="forms.entity.createUpdate.errors?.internal_code"
                             xl="5"
@@ -135,6 +136,7 @@
                             title="Nombre"
                             isRequired
                             maxlength="100"
+                            showCharCounter
                             hasTextBottom
                             :textBottomInfo="forms.entity.createUpdate.errors?.name"
                             xl="7"
@@ -144,6 +146,7 @@
                             hasDiv
                             title="Descripción"
                             maxlength="200"
+                            showCharCounter
                             hasTextBottom
                             :textBottomInfo="forms.entity.createUpdate.errors?.description"
                             xl="12"

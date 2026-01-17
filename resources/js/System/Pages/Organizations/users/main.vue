@@ -190,6 +190,7 @@
                             title="Número de documento"
                             isRequired
                             maxlength="15"
+                            showCharCounter
                             hasTextBottom
                             :textBottomInfo="forms.entity.createUpdate.errors?.document_number"
                             xl="4"
@@ -224,6 +225,7 @@
                             title="Nombre"
                             isRequired
                             maxlength="100"
+                            showCharCounter
                             hasTextBottom
                             :textBottomInfo="forms.entity.createUpdate.errors?.name"
                             xl="6"
@@ -234,6 +236,7 @@
                             title="📧 Correo electrónico"
                             isRequired
                             maxlength="100"
+                            showCharCounter
                             hasTextBottom
                             :textBottomInfo="forms.entity.createUpdate.errors?.email"
                             xl="6"
@@ -243,6 +246,7 @@
                             hasDiv
                             title="📞 Celular"
                             maxlength="15"
+                            showCharCounter
                             hasTextBottom
                             :textBottomInfo="forms.entity.createUpdate.errors?.phone_number"
                             xl="3"
@@ -276,6 +280,7 @@
                             :title="isUpdate ? '🔒 Cambiar contraseña' : '🔒 Contraseña'"
                             :isRequired="!isUpdate"
                             maxlength="100"
+                            showCharCounter
                             hasTextBottom
                             :textBottomInfo="forms.entity.createUpdate.errors?.password"
                             xl="3"

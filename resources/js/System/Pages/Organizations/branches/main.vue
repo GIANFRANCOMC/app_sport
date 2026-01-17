@@ -85,6 +85,7 @@
                                 :titleClass="[config.forms.classes.title]"
                                 isRequired
                                 maxlength="50"
+                                showCharCounter
                                 hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.errors?.internal_code"
                                 xl="4"
@@ -96,6 +97,7 @@
                                 :titleClass="[config.forms.classes.title]"
                                 isRequired
                                 maxlength="100"
+                                showCharCounter
                                 hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.errors?.name"
                                 xl="8"
@@ -106,6 +108,7 @@
                                 :title="MODULE.texts.form.address"
                                 :titleClass="[config.forms.classes.title]"
                                 maxlength="100"
+                                showCharCounter
                                 hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.errors?.address"
                                 xl="12"
@@ -116,6 +119,7 @@
                                 :title="MODULE.texts.form.reference"
                                 :titleClass="[config.forms.classes.title]"
                                 maxlength="100"
+                                showCharCounter
                                 hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.errors?.reference"
                                 xl="12"
@@ -126,6 +130,7 @@
                                 :title="MODULE.texts.form.telephone"
                                 :titleClass="[config.forms.classes.title]"
                                 maxlength="15"
+                                showCharCounter
                                 hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.errors?.telephone"
                                 xl="4"
@@ -136,6 +141,7 @@
                                 :title="MODULE.texts.form.email"
                                 :titleClass="[config.forms.classes.title]"
                                 maxlength="100"
+                                showCharCounter
                                 hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.errors?.email"
                                 xl="8"
@@ -161,6 +167,7 @@
                                 :title="MODULE.texts.form.mapUrl"
                                 :titleClass="[config.forms.classes.title]"
                                 maxlength="500"
+                                showCharCounter
                                 hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.errors?.map_url"
                                 xl="8"

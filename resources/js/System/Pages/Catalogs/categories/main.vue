@@ -94,6 +94,7 @@
                                 :titleClass="[config.forms.classes.title, 'fw-semibold']"
                                 isRequired
                                 maxlength="50"
+                                showCharCounter
                                 hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.errors?.internal_code"
                                 xl="5"
@@ -111,6 +112,7 @@
                                 :titleClass="[config.forms.classes.title, 'fw-semibold']"
                                 isRequired
                                 maxlength="100"
+                                showCharCounter
                                 hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.errors?.name"
                                 xl="7"
@@ -121,6 +123,7 @@
                                 :title="MODULE.texts.form.description"
                                 :titleClass="[config.forms.classes.title, 'fw-semibold']"
                                 maxlength="255"
+                                showCharCounter
                                 hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.errors?.description"
                                 xl="12"

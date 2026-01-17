@@ -31,10 +31,10 @@ class UpdateBiometricDeviceRequest extends FormRequest {
             "description"   => "nullable|string|max:100",
             "brand"         => "required|in:ZKTeco",
             "model"         => "required|in:K20 Pro",
-            "serial_number" => "nullable|string|max:100",
+            "serial_number" => "nullable|string|max:50",
             "ip_address"    => "required|ip",
             "port"          => "nullable|integer|min:1|max:65535",
-            "device_id"     => "nullable|integer",
+            "device_id"     => "nullable|string|max:50",
             "status"        => "required|in:active,inactive"
         ];
 

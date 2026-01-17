@@ -71,6 +71,7 @@
                         title="Número de documento"
                         isRequired
                         maxlength="15"
+                        showCharCounter
                         hasTextBottom
                         :textBottomInfo="forms.entity.createUpdate.errors?.document_number"
                         xl="4"
@@ -89,6 +90,7 @@
                         title="Nombre legal"
                         isRequired
                         maxlength="100"
+                        showCharCounter
                         hasTextBottom
                         :textBottomInfo="forms.entity.createUpdate.errors?.legal_name"
                         xl="4"
@@ -99,6 +101,7 @@
                         title="Nombre comercial"
                         isRequired
                         maxlength="100"
+                        showCharCounter
                         hasTextBottom
                         :textBottomInfo="forms.entity.createUpdate.errors?.commercial_name"
                         xl="4"
@@ -108,6 +111,7 @@
                         hasDiv
                         title="Dirección"
                         maxlength="100"
+                        showCharCounter
                         hasTextBottom
                         :textBottomInfo="forms.entity.createUpdate.errors?.address"
                         xl="8"
@@ -121,6 +125,7 @@
                         hasDiv
                         title="Teléfono"
                         maxlength="40"
+                        showCharCounter
                         hasTextBottom
                         :textBottomInfo="forms.entity.createUpdate.errors?.telephone"
                         xl="6"
@@ -130,6 +135,7 @@
                         hasDiv
                         title="Correo electrónico"
                         maxlength="100"
+                        showCharCounter
                         hasTextBottom
                         :textBottomInfo="forms.entity.createUpdate.errors?.email"
                         xl="6"
@@ -188,6 +194,7 @@
                         hasDiv
                         title="Slogan"
                         maxlength="200"
+                        showCharCounter
                         hasTextBottom
                         :textBottomInfo="forms.entity.createUpdate.errors?.tagline"
                         xl="12"
@@ -197,6 +204,7 @@
                         hasDiv
                         title="Descripción general"
                         maxlength="300"
+                        showCharCounter
                         hasTextBottom
                         :textBottomInfo="forms.entity.createUpdate.errors?.description"
                         xl="12"
