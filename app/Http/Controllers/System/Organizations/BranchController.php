@@ -7,6 +7,8 @@ namespace App\Http\Controllers\System\Organizations;
 use App\Http\Controllers\System\Base\BaseController;
 use App\Helpers\System\{Utilities};
 use Illuminate\Http\{JsonResponse, Request};
+use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
 
 use App\Http\Requests\System\Organizations\Branches\{StoreBranchRequest, UpdateBranchRequest};
 use App\Services\System\Organizations\Branches\{BranchConfigService, BranchService};
@@ -15,7 +17,7 @@ use App\Models\System\Organizations\{Branch};
 class BranchController extends BaseController {
 
     /**
-     * Translation namespace for branch module
+     * Translation namespace for module
      */
     private const TRANSLATION_NAMESPACE = "System.Organizations.branch";
 
@@ -34,7 +36,7 @@ class BranchController extends BaseController {
     }
 
     /**
-     * Get paginated list of branches with filters
+     * Get paginated list with filters
      *
      * @param Request $request
      * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator
@@ -49,7 +51,7 @@ class BranchController extends BaseController {
     }
 
     /**
-     * Display the branches index page
+     * Display the module index page
      *
      * @return \Illuminate\Contracts\View\View
      */
@@ -60,7 +62,7 @@ class BranchController extends BaseController {
     }
 
     /**
-     * Show the form for creating a new branch
+     * Show the form for creating a new record
      * (Not used in SPA, but kept for REST compliance)
      *
      * @return void
@@ -72,7 +74,7 @@ class BranchController extends BaseController {
     }
 
     /**
-     * Store a newly created branch
+     * Store a newly created record
      *
      * @param StoreBranchRequest $request
      * @return JsonResponse
@@ -103,7 +105,7 @@ class BranchController extends BaseController {
     }
 
     /**
-     * Display the specified branch
+     * Display the specified record
      * (Not used, but kept for REST compliance)
      *
      * @param Branch $record
@@ -116,7 +118,7 @@ class BranchController extends BaseController {
     }
 
     /**
-     * Show the form for editing the specified branch
+     * Show the form for editing the specified record
      * (Not used in SPA, but kept for REST compliance)
      *
      * @param Branch $record
@@ -129,10 +131,10 @@ class BranchController extends BaseController {
     }
 
     /**
-     * Update the specified branch
+     * Update the specified record
      *
      * @param UpdateBranchRequest $request
-     * @param int $id Branch ID
+     * @param int $id Branch
      * @return JsonResponse
      */
     public function update(UpdateBranchRequest $request, int $id): JsonResponse {
@@ -169,7 +171,7 @@ class BranchController extends BaseController {
     }
 
     /**
-     * Remove the specified branch
+     * Remove the specified record
      * (Not used, but kept for REST compliance)
      *
      * @param Branch $record
@@ -182,7 +184,7 @@ class BranchController extends BaseController {
     }
 
     /**
-     * Prepare branch data from request
+     * Prepare record data from request
      *
      * @param StoreBranchRequest|UpdateBranchRequest $request
      * @return array
@@ -205,7 +207,7 @@ class BranchController extends BaseController {
     }
 
     /**
-     * Get translation namespace for branch module
+     * Get translation namespace for module
      *
      * @return string
      */
