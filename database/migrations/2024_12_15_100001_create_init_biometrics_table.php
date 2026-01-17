@@ -21,7 +21,7 @@ return new class extends Migration {
             $table->string("serial_number")->nullable();
             $table->string("ip_address");
             $table->integer("port")->default(4370);
-            $table->integer("device_id")->nullable();
+            $table->string("device_id")->nullable();
             $table->text("description")->nullable();
             $table->enum("status", ["active", "inactive"])->default("active");
 
@@ -53,7 +53,7 @@ return new class extends Migration {
             $table->foreign("company_id")->references("id")->on("companies")->onDelete("cascade");
             $table->foreign("customer_id")->references("id")->on("customers")->onDelete("cascade");
             $table->foreign("biometric_device_id")->references("id")->on("biometric_devices")->onDelete("cascade");
-            $table->unique(["biometric_device_id", "device_user_id", "finger_index"]);
+            $table->unique(["biometric_device_id", "device_user_id", "finger_index"], "cbf_device_user_finger_unique");
         });
 
     }

@@ -12,8 +12,8 @@
             <slot :name="slot" v-bind="scope || {}"></slot>
         </template>
         <template v-if="shouldShowCharCounter" #inputGroupAppend>
-            <span class="input-group-text character-counter" :class="{'text-danger': isNearLimit, 'text-secondary': !isNearLimit}">
-                {{ currentLength }}/{{ maxlengthValue }}
+            <span class="input-group-text character-counter" :class="isNearLimit ? 'character-counter-warning' : 'character-counter-normal'">
+                <span class="counter-number" :class="{ 'counter-update': isUpdating }" :style="{ minWidth: `${maxlengthDigits}ch` }">{{ currentLength }}</span>/{{ maxlengthValue }}
             </span>
         </template>
     </InputBase>
@@ -41,12 +41,32 @@ export default {
             default: false
         }
     },
+    data() {
+        return {
+            isUpdating: false
+        };
+    },
+    watch: {
+        currentLength(newValue, oldValue) {
+
+            if(newValue !== oldValue && this.shouldShowCharCounter) {
+
+                this.isUpdating = true;
+
+                setTimeout(() => {
+
+                    this.isUpdating = false;
+
+                }, 150);
+
+            }
+
+        }
+    },
     computed: {
         currentLength() {
 
-            const value = this.modelValue?.toString() || "";
-
-            return value.length;
+            return (this.modelValue?.toString() || "").length;
 
         },
         maxlengthValue() {
@@ -75,9 +95,12 @@ export default {
 
             if(!this.hasMaxlength) return false;
 
-            const percentage = (this.currentLength / this.maxlengthValue) * 100;
+            return (this.currentLength / this.maxlengthValue) * 100 >= 90;
 
-            return percentage >= 90;
+        },
+        maxlengthDigits() {
+
+            return this.maxlengthValue?.toString().length || 0;
 
         }
     },
@@ -99,19 +122,69 @@ export default {
 
 <style scoped>
 .character-counter {
-    font-size: 0.65rem;
-    padding: 0.25rem 0.35rem;
-    border-left: none;
-    background-color: rgba(0, 0, 0, 0.02);
-    min-width: 38px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-end;
+    font-size: 0.7rem;
+    padding: 0.375rem 0.5rem;
+    min-width: 7ch;
+    white-space: nowrap;
     text-align: right;
-    opacity: 0.85;
-    font-weight: 500;
+    font-weight: 600;
     line-height: 1.2;
+    cursor: default;
+    user-select: none;
+    border-left: 1px solid #dee2e6;
+    background-color: #f8f9fa;
+    letter-spacing: 0.02em;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+    margin: 0;
+    box-sizing: border-box;
 }
 
-.character-counter:hover {
-    opacity: 1;
-    background-color: rgba(0, 0, 0, 0.04);
+.character-counter-normal {
+    color: #8e9ba7;
+    border-color: #dee2e6;
+    background-color: #f8f9fa;
+}
+
+.character-counter-warning {
+    color: #ff9800;
+    font-weight: 700;
+    border-color: rgba(255, 152, 0, 0.3);
+    background-color: rgba(255, 152, 0, 0.05);
+    animation: pulse-subtle 2s ease-in-out infinite;
+}
+
+.counter-number {
+    display: inline-block;
+    font-weight: 600;
+    transition: opacity 0.15s ease;
+    text-align: right;
+}
+
+.counter-update {
+    animation: counter-highlight 0.15s ease;
+}
+
+@keyframes counter-highlight {
+    0% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.6;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+@keyframes pulse-subtle {
+    0%, 100% {
+        opacity: 0.95;
+    }
+    50% {
+        opacity: 1;
+    }
 }
 </style>

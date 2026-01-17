@@ -296,7 +296,7 @@ const FORM_FIELD_CONFIG = {
     serial_number: {trim: true},
     ip_address: {trim: true},
     port: {toNumber: true, minValue: 1, maxValue: 65535},
-    device_id: {toNumber: true},
+    device_id: {trim: true},
     status: {getCode: true}
 };
 
