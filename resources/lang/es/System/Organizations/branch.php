@@ -9,8 +9,8 @@ return [
     |--------------------------------------------------------------------------
     |
     | Las siguientes líneas de idioma se utilizan para los mensajes y
-    | respuestas del módulo de Sucursales. Estas pueden personalizarse
-    | para adaptarse a los requisitos de su aplicación.
+    | respuestas del módulo de Sucursales. Estas pueden
+    | personalizarse para adaptarse a los requisitos de su aplicación.
     |
     */
 
@@ -42,5 +42,6 @@ return [
     "exception_update" => "Error al editar la sucursal: :message",
     "exception_delete" => "Error al eliminar la sucursal: :message",
     "exception_retrieve" => "Error al obtener la sucursal: :message",
+    "exception_list" => "Error al obtener la lista de sucursales: :message",
 ];
 
