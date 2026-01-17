@@ -7,26 +7,26 @@ namespace App\Services\System\Organizations\Branches;
 use Exception;
 use App\Helpers\System\{TranslationHelper, Utilities};
 use Illuminate\Support\Facades\{Auth, DB};
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
 
-use App\Services\System\Organizations\Branches\SerieService;
-use App\Services\System\Warehouses\WarehouseService;
-use App\Repositories\System\Organizations\BranchRepository;
-use App\Models\System\Organizations\Branch;
-
+use App\Services\System\Organizations\Branches\{SerieService};
+use App\Services\System\Warehouses\{WarehouseService};
+use App\Models\System\Organizations\{Branch};
 
 /**
- * Service class for managing Branch operations
- * Handles business logic for creating and updating branches
+ * Service class for managing module operations
+ * Handles business logic for creating and updating records
  */
 class BranchService {
 
     /**
-     * Translation namespace for branch module
+     * Translation namespace for module
      */
     private const TRANSLATION_NAMESPACE = "System.Organizations.branch";
 
     /**
-     * Allowed fields for branch creation and update
+     * Allowed fields for record creation and update
      */
     private const ALLOWED_FIELDS = [
         "internal_code",
@@ -41,26 +41,16 @@ class BranchService {
     ];
 
     /**
-     * @var BranchRepository
+     * Searchable fields for filtering
      */
-    private static $repository;
-
-    /**
-     * Get repository instance (lazy initialization)
-     *
-     * @return BranchRepository
-     */
-    private static function getRepository(): BranchRepository {
-
-        if(self::$repository === null) {
-
-            self::$repository = new BranchRepository();
-
-        }
-
-        return self::$repository;
-
-    }
+    private const SEARCHABLE_FIELDS = [
+        "internal_code",
+        "name",
+        "address",
+        "reference",
+        "telephone",
+        "email"
+    ];
 
     /**
      * Get translation with fallback
@@ -76,11 +66,11 @@ class BranchService {
     }
 
     /**
-     * Prepare branch data for creation
+     * Prepare data for creation
      *
      * @param array $data Input data
-     * @param int $companyId Company ID
-     * @param int $userId User ID
+     * @param int $companyId Company
+     * @param int $userId User
      * @return array
      */
     private static function prepareBranchDataForCreate(array $data, int $companyId, int $userId): array {
@@ -103,9 +93,9 @@ class BranchService {
     }
 
     /**
-     * Prepare branch data for update (only changed fields)
+     * Prepare data for update (only changed fields)
      *
-     * @param Branch $branch Branch instance
+     * @param Branch $branch Record instance
      * @param array $data Input data
      * @return array
      */
@@ -128,12 +118,12 @@ class BranchService {
     }
 
     /**
-     * Create a new branch with related series and warehouse
+     * Create a new record
      *
-     * @param array $data Branch data from request
-     * @param int|null $userId User ID creating the branch
-     * @return Branch|null Created branch instance or null on failure
-     * @throws \Exception
+     * @param array $data Input data
+     * @param int|null $userId User creating the record
+     * @return Branch|null Created record instance or null on failure
+     * @throws Exception
      */
     public static function create(array $data, ?int $userId = null): ?Branch {
 
@@ -150,12 +140,12 @@ class BranchService {
 
             }
 
-            $userId = $userId ?? $userAuth->id;
+            $userId = $userId ?? $userAuth->id ?? null;
 
-            // Prepare branch data with only allowed fields
+            // Prepare data with only allowed fields
             $branchData = self::prepareBranchDataForCreate($data, $companyId, $userId);
 
-            // Create the branch
+            // Create the record
             $branch = Branch::create($branchData);
 
             // Create related series for document types
@@ -171,19 +161,19 @@ class BranchService {
     }
 
     /**
-     * Update an existing branch and related warehouses
+     * Update an existing record
      *
-     * @param Branch $branch Branch instance to update
-     * @param array $data Updated branch data
-     * @param int|null $userId User ID updating the branch
-     * @return Branch Updated branch instance
+     * @param Branch $branch Record instance to update
+     * @param array $data Input data
+     * @param int|null $userId User updating the record
+     * @return Branch Updated record instance
      */
     public static function update(Branch $branch, array $data, ?int $userId = null): Branch {
 
         DB::transaction(function() use($branch, $data, $userId) {
 
             $userAuth = Auth::user();
-            $userId = $userId ?? $userAuth->id;
+            $userId   = $userId ?? $userAuth->id ?? null;
 
             // Prepare update data with only changed fields
             $updateData = self::prepareBranchDataForUpdate($branch, $data);
@@ -199,7 +189,7 @@ class BranchService {
                 // Update related warehouses names if branch name changed
                 if($nameChanged) {
 
-                    WarehouseService::updateNamesForBranch($branch->fresh(), $userId);
+                    WarehouseService::updateNamesForBranch($branch->fresh(["warehousesAll"]), $userId);
 
                 }
 
@@ -207,35 +197,87 @@ class BranchService {
 
         });
 
-        return $branch->fresh(['warehousesAll']);
+        return $branch->fresh();
 
     }
 
     /**
-     * Find branch by ID and company ID
+     * Find record by ID and company ID
      *
-     * @param int $id Branch ID
-     * @param int $companyId Company ID
+     * @param int $id Record
+     * @param int $companyId Company
      * @param array $relations Relations to eager load
      * @return Branch|null
      */
-    public static function findByIdAndCompany(int $id, int $companyId, array $relations = ["warehousesAll"]): ?Branch {
+    public static function findByIdAndCompany(int $id, int $companyId, array $relations = ["series.documentType", "warehouses"]): ?Branch {
 
-        return self::getRepository()->findByIdAndCompany($id, $companyId, $relations);
+        $query = Branch::where("id", $id)
+                       ->where("company_id", $companyId);
+
+        if(!empty($relations)) {
+
+            $query->with($relations);
+
+        }
+
+        return $query->first();
 
     }
 
     /**
-     * Get paginated list of branches
+     * Get paginated list of records with filters
      *
-     * @param int $companyId Company ID
-     * @param array $filters Filter parameters
+     * @param int $companyId Company
+     * @param array $filters Filter parameters (filter_by, word)
      * @param int $perPage Items per page
-     * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator
+     * @return LengthAwarePaginator
      */
-    public static function getPaginatedList(int $companyId, array $filters = [], int $perPage = 15) {
+    public static function getPaginatedList(int $companyId, array $filters = [], int $perPage = 15): LengthAwarePaginator {
 
-        return self::getRepository()->getPaginatedList($companyId, $filters, $perPage);
+        $query = Branch::where("company_id", $companyId)
+                       ->with(["series.documentType", "warehouses"]);
+
+        // Apply filters
+        $filterBy = $filters["filter_by"] ?? null;
+        $word     = $filters["word"] ?? null;
+
+        if(Utilities::isDefined($word) && Utilities::isDefined($filterBy)) {
+
+            $searchTerm = Utilities::getWordSearch($word);
+
+            if($filterBy === "all") {
+
+                // Search across all searchable fields
+                $query->where(function(Builder $q) use($searchTerm) {
+
+                    $searchableFields = self::SEARCHABLE_FIELDS;
+                    $firstField       = array_shift($searchableFields);
+
+                    if($firstField) {
+
+                        $q->where($firstField, "like", $searchTerm);
+
+                    }
+
+                    foreach($searchableFields as $field) {
+
+                        $q->orWhere($field, "like", $searchTerm);
+
+                    }
+
+                });
+
+            }elseif(in_array($filterBy, self::SEARCHABLE_FIELDS, true)) {
+
+                // Search in specific field
+                $query->where($filterBy, "like", $searchTerm);
+
+            }
+
+        }
+
+        return $query->orderBy("name", "ASC")
+                     ->paginate($perPage);
 
     }
 
@@ -243,13 +285,22 @@ class BranchService {
      * Check if internal code exists
      *
      * @param string $internalCode Internal code
-     * @param int $companyId Company ID
-     * @param int|null $excludeId Branch ID to exclude
+     * @param int $companyId Company
+     * @param int|null $excludeId Record ID to exclude
      * @return bool
      */
     public static function internalCodeExists(string $internalCode, int $companyId, ?int $excludeId = null): bool {
 
-        return self::getRepository()->internalCodeExists($internalCode, $companyId, $excludeId);
+        $query = Branch::where("internal_code", $internalCode)
+                       ->where("company_id", $companyId);
+
+        if(Utilities::isDefined($excludeId)) {
+
+            $query->where("id", "!=", $excludeId);
+
+        }
+
+        return $query->exists();
 
     }
 
