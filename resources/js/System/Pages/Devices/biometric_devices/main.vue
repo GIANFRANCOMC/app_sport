@@ -322,8 +322,13 @@ const ERROR_LABELS = {
 };
 
 const FILTER_OPTIONS = [
+    {code: "all", label: "Todos los filtros"},
     {code: "name", label: "Nombre"},
-    {code: "ip_port", label: "IP/Puerto"}
+    {code: "serial_number", label: "Serie"},
+    {code: "brand", label: "Marca"},
+    {code: "model", label: "Modelo"},
+    {code: "ip_address", label: "IP"},
+    {code: "port", label: "Puerto"}
 ];
 
 const TEXTS = {
@@ -514,6 +519,7 @@ export default {
                 // Set defaults for new record
                 entityForms.data.branch = this.branches.length > 0 ? this.branches[0] : null;
                 entityForms.data.brand  = this.brands.length > 0 ? this.brands[0] : null;
+                entityForms.data.model  = this.modelsByBrand.length > 0 ? this.modelsByBrand[0] : null;
                 entityForms.data.status = this.statuses.length > 0 ? this.statuses[0] : null;
                 entityForms.data.port   = 4370;
 
@@ -701,7 +707,7 @@ export default {
             handler(newBrand) {
 
                 // Reset model when brand changes
-                this.forms.biometric_devices.createUpdate.data.model = null;
+                // this.forms.biometric_devices.createUpdate.data.model = null;
 
                 // Future implementation
 
