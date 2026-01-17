@@ -31,11 +31,11 @@ class UpdateBranchRequest extends BaseFormRequest {
             "internal_code" => ["required", "string", "max:50", new UniqueInCompany("branches", "internal_code", (int) $branchId, "Código interno")],
             "name"          => "required|string|max:100",
             "address"       => "nullable|string|max:100",
-            "reference"     => "nullable|string|max:150",
-            "telephone"     => "nullable|string|max:25",
-            "email"         => "nullable|email|max:120",
+            "reference"     => "nullable|string|max:100",
+            "telephone"     => "nullable|string|max:15",
+            "email"         => "nullable|email|max:100",
             "capacity"      => "nullable|integer|min:0",
-            "map_url"       => "nullable|url|max:255",
+            "map_url"       => "nullable|url|max:500",
             "status"        => "required|in:active,inactive"
         ];
 
