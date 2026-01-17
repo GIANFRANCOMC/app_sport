@@ -317,8 +317,7 @@ const ERROR_LABELS = {
     ip_address: "Dirección IP",
     port: "Puerto",
     device_id: "ID del dispositivo",
-    status: "Estado",
-    required: "Es obligatorio"
+    status: "Estado"
 };
 
 const FILTER_OPTIONS = [

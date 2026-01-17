@@ -37,8 +37,7 @@ class BranchConfigService {
 
             if($page === "main") {
 
-                $config->branches = new stdClass();
-                $config->branches->statuses = Branch::getStatuses();
+                $config->statuses = Branch::getStatuses();
 
             }
 

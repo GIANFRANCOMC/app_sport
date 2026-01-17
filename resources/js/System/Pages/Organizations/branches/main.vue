@@ -20,8 +20,8 @@
         @search="handleSearch"
         @add="openModal()"/>
 
-    <!-- List Section -->
-    <section class="list-section mb-3 mb-md-3">
+    <!-- Records -->
+    <div class="list-section mb-1 mb-md-1">
         <Loader v-if="entityList.extras.loading"/>
         <WithoutData v-else-if="entityList.records.total === 0" type="image"/>
         <div v-else-if="entityList.records.total > 0" class="row g-3 g-lg-4">
@@ -30,7 +30,7 @@
                     <div class="card-header">
                         <div class="d-flex align-items-start justify-content-between gap-3">
                             <div class="d-flex flex-column flex-grow-1 flex-min-w-0">
-                                <span class="text-muted small fw-semibold" v-text="record.internal_code"></span>
+                                <span class="text-muted small fw-semibold mb-1" v-text="record.internal_code"></span>
                                 <span class="fs-5 fw-bold text-dark text-truncate" v-text="record.name"></span>
                             </div>
                             <span :class="[getStatusBadgeClasses(record.status), 'flex-shrink-none']" v-text="record.formatted_status"></span>
@@ -47,20 +47,18 @@
                     </div>
                     <div class="card-footer">
                         <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 pt-3 border-top">
-                            <a v-if="isDefined(record.map_url)" :href="record.map_url" class="btn btn-sm btn-outline-success waves-effect" target="_blank" rel="noopener noreferrer">
-                                <i class="fa fa-map-location-dot"></i>
-                                <span class="ms-2" v-text="MODULE.texts.actions.viewMap"></span>
+                            <a v-if="isDefined(record.map_url)" :href="record.map_url" class="btn btn-xs btn-outline-success waves-effect" target="_blank" rel="noopener noreferrer">
+                                <span v-text="MODULE.texts.actions.viewMap"></span>
                             </a>
-                            <button type="button" class="btn btn-sm btn-warning waves-effect" :class="isDefined(record.map_url) ? '' : 'ms-auto'" @click="openModal(record)">
-                                <i class="fa fa-pencil"></i>
-                                <span class="ms-2" v-text="MODULE.texts.actions.edit"></span>
+                            <button type="button" class="btn btn-xs btn-warning waves-effect" :class="isDefined(record.map_url) ? '' : 'ms-auto'" @click="openModal(record)">
+                                <span v-text="MODULE.texts.actions.edit"></span>
                             </button>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    </section>
+    </div>
 
     <!-- Pagination -->
     <nav v-if="!entityList.extras.loading && entityList.records.total > 0" class="d-flex justify-content-center">
@@ -84,7 +82,7 @@
                                 v-model="forms[entity].createUpdate.data.internal_code"
                                 hasDiv
                                 :title="MODULE.texts.form.internalCode"
-                                :titleClass="[config.forms.classes.title, 'fw-semibold']"
+                                :titleClass="[config.forms.classes.title]"
                                 isRequired
                                 maxlength="50"
                                 hasTextBottom
@@ -95,7 +93,7 @@
                                 v-model="forms[entity].createUpdate.data.name"
                                 hasDiv
                                 :title="MODULE.texts.form.name"
-                                :titleClass="[config.forms.classes.title, 'fw-semibold']"
+                                :titleClass="[config.forms.classes.title]"
                                 isRequired
                                 maxlength="100"
                                 hasTextBottom
@@ -106,7 +104,7 @@
                                 v-model="forms[entity].createUpdate.data.address"
                                 hasDiv
                                 :title="MODULE.texts.form.address"
-                                :titleClass="[config.forms.classes.title, 'fw-semibold']"
+                                :titleClass="[config.forms.classes.title]"
                                 maxlength="100"
                                 hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.errors?.address"
@@ -116,8 +114,8 @@
                                 v-model="forms[entity].createUpdate.data.reference"
                                 hasDiv
                                 :title="MODULE.texts.form.reference"
-                                :titleClass="[config.forms.classes.title, 'fw-semibold']"
-                                maxlength="150"
+                                :titleClass="[config.forms.classes.title]"
+                                maxlength="100"
                                 hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.errors?.reference"
                                 xl="12"
@@ -126,8 +124,8 @@
                                 v-model="forms[entity].createUpdate.data.telephone"
                                 hasDiv
                                 :title="MODULE.texts.form.telephone"
-                                :titleClass="[config.forms.classes.title, 'fw-semibold']"
-                                maxlength="25"
+                                :titleClass="[config.forms.classes.title]"
+                                maxlength="15"
                                 hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.errors?.telephone"
                                 xl="4"
@@ -136,8 +134,8 @@
                                 v-model="forms[entity].createUpdate.data.email"
                                 hasDiv
                                 :title="MODULE.texts.form.email"
-                                :titleClass="[config.forms.classes.title, 'fw-semibold']"
-                                maxlength="120"
+                                :titleClass="[config.forms.classes.title]"
+                                maxlength="100"
                                 hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.errors?.email"
                                 xl="8"
@@ -146,7 +144,7 @@
                                 v-model="forms[entity].createUpdate.data.capacity"
                                 hasDiv
                                 :title="MODULE.texts.form.capacity"
-                                :titleClass="[config.forms.classes.title, 'fw-semibold']"
+                                :titleClass="[config.forms.classes.title]"
                                 :decimals="0"
                                 :minValue="0"
                                 hasTextBottom
@@ -161,8 +159,8 @@
                                 v-model="forms[entity].createUpdate.data.map_url"
                                 hasDiv
                                 :title="MODULE.texts.form.mapUrl"
-                                :titleClass="[config.forms.classes.title, 'fw-semibold']"
-                                maxlength="255"
+                                :titleClass="[config.forms.classes.title]"
+                                maxlength="500"
                                 hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.errors?.map_url"
                                 xl="8"
@@ -170,7 +168,7 @@
                             <InputSlot
                                 hasDiv
                                 :title="MODULE.texts.form.status"
-                                :titleClass="[config.forms.classes.title, 'fw-semibold']"
+                                :titleClass="[config.forms.classes.title]"
                                 isRequired
                                 hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.errors?.status"
@@ -218,9 +216,10 @@ import * as Utils from "@System/Helpers/Utils.js";
 
 const MODULE_CONFIG = {
     entity: "branches",
-    menuId: "menu-configuration-branches",
+    menuId: "menu-infrastructure-branches",
     pageTitle: "Sucursales",
-    breadcrumbParent: "Configuración",
+    pageTitleSingular: "Sucursal",
+    breadcrumbParent: "Infraestructura",
     perPage: 6
 };
 
@@ -263,15 +262,26 @@ const VALIDATION_RULES = {
 const ERROR_LABELS = {
     internal_code: "Código interno",
     name: "Nombre",
+    address: "Dirección",
+    reference: "Referencia",
+    telephone: "Teléfono",
     email: "Correo electrónico",
     capacity: "Capacidad",
     map_url: "URL del mapa",
-    status: "Estado",
-    required: "Es obligatorio"
+    status: "Estado"
 };
 
+const FILTER_OPTIONS = [
+    {code: "all", label: "Todos los filtros"},
+    {code: "internal_code", label: "Código interno"},
+    {code: "name", label: "Nombre"},
+    {code: "address", label: "Dirección"},
+    {code: "reference", label: "Referencia"},
+    {code: "telephone", label: "Teléfono"},
+    {code: "email", label: "Correo electrónico"}
+];
+
 const TEXTS = {
-    loading: `Cargando ${MODULE_CONFIG.pageTitle}...`,
     filters: {
         filterBy: "Filtrar por",
         search: "Búsqueda"
@@ -283,14 +293,10 @@ const TEXTS = {
         viewMap: "Ver mapa"
     },
     card: {
-        noAddress: "Sin dirección registrada",
-        noReference: "Sin referencia registrada",
-        noTelephone: "Sin teléfono registrado",
-        noEmail: "Sin correo registrado"
-    },
-    list: {
-        totalItems: "registros",
-        noData: "No hay registros"
+        noAddress: "Sin dirección",
+        noReference: "Sin referencia",
+        noTelephone: "Sin teléfono",
+        noEmail: "Sin correo electrónico"
     },
     form: {
         internalCode: "Código interno",
@@ -310,16 +316,6 @@ const TEXTS = {
     }
 };
 
-const FILTER_OPTIONS = [
-    {code: "all", label: "Todos los filtros"},
-    {code: "internal_code", label: "Código interno"},
-    {code: "name", label: "Nombre"},
-    {code: "address", label: "Dirección"},
-    {code: "reference", label: "Referencia"},
-    {code: "telephone", label: "Teléfono"},
-    {code: "email", label: "Correo electrónico"}
-];
-
 const MODULE = {
     config: MODULE_CONFIG,
     formFields: FORM_FIELDS,
@@ -334,7 +330,12 @@ export default {
     name: "BranchesMain",
     data() {
 
-        const crudModule = initCrudModule({entity: MODULE.config.entity, menuId: MODULE.config.menuId, pageTitle: MODULE.config.pageTitle});
+        const crudModule = initCrudModule({
+            entity: MODULE.config.entity,
+            menuId: MODULE.config.menuId,
+            pageTitle: MODULE.config.pageTitle,
+            pageTitleSingular: MODULE.config.pageTitleSingular
+        });
 
         crudModule.lists[MODULE.config.entity].filters.filter_by = MODULE.filterOptions[0];
         crudModule.forms[MODULE.config.entity].createUpdate.data = Forms.initFormData(MODULE.formFields);
@@ -349,7 +350,7 @@ export default {
     },
     mounted: async function() {
 
-        Utils.navbarItem("menu-parent-configuration", {addClass: "open"});
+        Utils.navbarItem("menu-parent-infrastructure", {addClass: "open"});
         Utils.navbarItem(this.config.entity.page.menu.id, {});
 
         Alerts.swals({type: "initParams"});
@@ -369,9 +370,17 @@ export default {
     methods: {
         async initParams() {
 
-            const response = await Requests.get({route: this.routeActions.initParams, data: {page: "main"}, showAlert: true});
+            const response = await Requests.get({
+                route: this.routeActions.initParams,
+                data: {page: "main"},
+                showAlert: true
+            });
 
-            this.options[this.entity] = response?.data?.config?.[this.entity] ?? {};
+            if(response?.data?.config) {
+
+                this.options.statuses = response.data.config.statuses;
+
+            }
 
             return Requests.valid({result: response});
 
@@ -380,7 +389,7 @@ export default {
         async listEntity(params = null) {
 
             const entityList   = this.lists[this.entity];
-            const emptyRecords = {total: 0, data: []};
+            const emptyRecords = {total: 0, data: [], links: []};
             const filters      = Utils.cloneJson(entityList.filters);
             const filterData   = {per_page: this.MODULE.config.perPage, filter_by: filters.filter_by?.code, word: filters.word};
 
@@ -441,26 +450,25 @@ export default {
 
             if(this.isDefined(record)) {
 
-                entityForms.data.id = record?.id;
+                // Map record data to form
+                const statusOption = this.statuses.find(s => s.code === record.status);
 
-                Object.keys(this.MODULE.formFields).forEach(key => {
-
-                    if(key === "status") {
-
-                        entityForms.data.status = this.statuses.find(e => e.code === record?.status) || null;
-
-                    }else {
-
-                        entityForms.data[key] = record?.[key] ?? this.MODULE.formFields[key];
-
-                    }
-
-                });
+                entityForms.data.id            = record.id;
+                entityForms.data.internal_code = record.internal_code;
+                entityForms.data.name          = record.name;
+                entityForms.data.address       = record.address;
+                entityForms.data.reference     = record.reference;
+                entityForms.data.telephone     = record.telephone;
+                entityForms.data.email         = record.email;
+                entityForms.data.capacity      = record.capacity;
+                entityForms.data.map_url       = record.map_url;
+                entityForms.data.status        = statusOption;
 
             }else {
 
+                // Set defaults for new record
                 entityForms.data.internal_code = this.generateCode({length: 7});
-                entityForms.data.status        = this.statuses[0];
+                entityForms.data.status        = this.statuses.length > 0 ? this.statuses[0] : null;
 
             }
 
@@ -493,11 +501,12 @@ export default {
                 }
 
                 const preparedData  = Forms.prepareFormData(formData, this.MODULE.formFieldConfig);
+
                 const id            = preparedData.id;
                 const isUpdate      = this.isDefined(id);
                 const requestMethod = isUpdate ? "patch" : "post";
                 const route         = this.routeActions[isUpdate ? "update" : "store"];
-                const result        = await Requests[requestMethod]({route, data: preparedData, id});
+                const result          = await Requests[requestMethod]({route, data: preparedData, id});
 
                 if(Requests.valid({result})) {
 
@@ -528,7 +537,7 @@ export default {
             }
 
         },
-        // Utils
+        // Helpers
         getCardFields(record) {
 
             return [
@@ -581,14 +590,9 @@ export default {
             ];
 
         },
-        filterByOptions() {
-
-            return this.MODULE.filterOptions;
-
-        },
         statuses() {
 
-            return (this.options?.[this.entity]?.statuses ?? []).map(e => ({code: e.code, label: e.label}));
+            return (this.options?.statuses ?? []).map(e => ({code: e.code, label: e.label}));
 
         },
         isUpdate() {
@@ -598,10 +602,12 @@ export default {
         },
         modalTitles() {
 
-            return this.forms[this.entity].createUpdate.extras.modals.default.titles || {
-                store: `AGREGAR ${this.MODULE.config.pageTitle.toUpperCase()}`,
-                update: `EDITAR ${this.MODULE.config.pageTitle.toUpperCase()}`
-            };
+            return this.forms[this.entity].createUpdate.extras.modals.default.titles;
+
+        },
+        filterByOptions() {
+
+            return this.MODULE.filterOptions;
 
         },
         filterByValue: {
