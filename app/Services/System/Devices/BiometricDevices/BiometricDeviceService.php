@@ -41,6 +41,18 @@ class BiometricDeviceService {
     ];
 
     /**
+     * Searchable fields for filtering
+     */
+    private const SEARCHABLE_FIELDS = [
+        "name",
+        "serial_number",
+        "brand",
+        "model",
+        "ip_address",
+        "port"
+    ];
+
+    /**
      * Get translation with fallback
      *
      * @param string $key Translation key
@@ -228,19 +240,34 @@ class BiometricDeviceService {
 
         if(Utilities::isDefined($word) && Utilities::isDefined($filterBy)) {
 
-            if($filterBy === "name") {
+            $searchTerm = "%{$word}%";
 
-                $query->where("name", "like", "%{$word}%");
+            if($filterBy === "all") {
 
-            }else if($filterBy === "ip_port") {
+                // Search across all searchable fields
+                $query->where(function(Builder $q) use($searchTerm) {
 
-                // Search in both IP address and port
-                $query->where(function(Builder $q) use($word) {
+                    $searchableFields = self::SEARCHABLE_FIELDS;
+                    $firstField       = array_shift($searchableFields);
 
-                    $q->where("ip_address", "like", "%{$word}%")
-                      ->orWhere("port", "like", "%{$word}%");
+                    if($firstField) {
+
+                        $q->where($firstField, "like", $searchTerm);
+
+                    }
+
+                    foreach($searchableFields as $field) {
+
+                        $q->orWhere($field, "like", $searchTerm);
+
+                    }
 
                 });
+
+            }elseif(in_array($filterBy, self::SEARCHABLE_FIELDS, true)) {
+
+                // Search in specific field
+                $query->where($filterBy, "like", $searchTerm);
 
             }
 
