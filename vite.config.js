@@ -59,6 +59,9 @@ export default defineConfig({
                 // System Pages - Warehouses
                 'resources/js/System/Pages/Warehouses/stocks_management/main.js',
 
+                // System Pages - Devices
+                'resources/js/System/Pages/Devices/biometric_devices/main.js',
+
                 // System Helpers
                 'resources/js/System/Helpers/Alerts.js',
                 'resources/js/System/Helpers/Constants.js',
