@@ -142,7 +142,7 @@ return [
     'unique' => 'Ya ha sido registrado.',
     'uploaded' => 'The :attribute failed to upload.',
     'uppercase' => 'The :attribute must be uppercase.',
-    'url' => 'The :attribute must be a valid URL.',
+    'url' => 'Debe ser una URL válida.',
     'ulid' => 'The :attribute must be a valid ULID.',
     'uuid' => 'The :attribute must be a valid UUID.',
 

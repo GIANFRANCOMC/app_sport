@@ -46,7 +46,7 @@
                         </div>
                     </div>
                     <div class="card-footer">
-                        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 pt-3 border-top">
+                        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 pt-2 border-top">
                             <a v-if="isDefined(record.map_url)" :href="record.map_url" class="btn btn-xs btn-outline-success waves-effect" target="_blank" rel="noopener noreferrer">
                                 <span v-text="MODULE.texts.actions.viewMap"></span>
                             </a>
