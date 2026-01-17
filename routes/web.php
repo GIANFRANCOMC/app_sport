@@ -55,6 +55,9 @@ Route::middleware(["web"])
             Route::prefix('/tracking_customers')->group($systemRoute.'/Customers/TrackingCustomer.php');
             Route::prefix('/tracking_subscriptions')->group($systemRoute.'/Customers/TrackingSubscription.php');
 
+            // Devices
+            Route::prefix('/biometric_devices')->group($systemRoute.'/Devices/BiometricDevice.php');
+
             // Essentials
             Route::prefix('/dashboard')->group($systemRoute.'/Essentials/Dashboard.php');
             Route::prefix('/helpers')->group($systemRoute.'/Essentials/Helper.php');
@@ -75,9 +78,6 @@ Route::middleware(["web"])
 
             // Warehouses
             Route::prefix('/stocks_management')->group($systemRoute.'/Warehouses/StockManagement.php');
-
-            // Devices
-            Route::prefix('/biometric_devices')->group($systemRoute.'/Devices/BiometricDevice.php');
 
             // Sessions
             Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
