@@ -4,24 +4,25 @@ declare(strict_types=1);
 
 namespace App\Services\System\Organizations\Branches;
 
-use App\Models\System\Organizations\Branch;
 use Illuminate\Support\Facades\Cache;
 use stdClass;
 
+use App\Models\System\Organizations\{Branch};
+
 /**
- * Service for managing Branch configuration and initialization parameters
+ * Service for managing module configuration and initialization parameters
  * Implements caching for better performance
  */
 class BranchConfigService {
 
     private const CACHE_PREFIX = "branch_config";
-    private const CACHE_TTL = 3600; // 1 hour
+    private const CACHE_TTL    = 3600; // 1 hour
 
     /**
-     * Get initialization parameters for branch module
+     * Get initialization parameters for module
      *
-     * @param int $companyId Company ID
-     * @param string $page Page identifier (only used to determine what data to return, not for cache key)
+     * @param int $companyId Company
+     * @param string $page Page (only used to determine what data to return, not for cache key)
      * @return stdClass
      */
     public static function getInitParams(int $companyId, string $page = ""): stdClass {
@@ -51,9 +52,9 @@ class BranchConfigService {
     }
 
     /**
-     * Build cache key for branch configuration
+     * Build cache key for module configuration
      *
-     * @param int $companyId Company ID
+     * @param int $companyId Company
      * @return string
      */
     private static function buildCacheKey(int $companyId): string {
@@ -63,22 +64,23 @@ class BranchConfigService {
     }
 
     /**
-     * Clear cache for branch configuration
+     * Clear cache for module configuration
      *
-     * @param int $companyId Company ID
+     * @param int $companyId Company
      * @return void
      */
     public static function clearCache(int $companyId): void {
 
         $cacheKey = self::buildCacheKey($companyId);
+
         Cache::forget($cacheKey);
 
     }
 
     /**
-     * Clear all branch configuration cache for a company
+     * Clear all module configuration cache for a company
      *
-     * @param int $companyId Company ID
+     * @param int $companyId Company
      * @return void
      */
     public static function clearAllCache(int $companyId): void {
