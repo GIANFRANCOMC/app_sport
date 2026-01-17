@@ -67,7 +67,7 @@
 
     <!-- Modal: Create/Update -->
     <div class="modal fade" :id="forms[entity].createUpdate.extras.modals.default.id" data-bs-backdrop="static" tabindex="-1" role="dialog">
-        <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title text-uppercase fw-bold" v-text="modalTitles[isUpdate ? 'update' : 'store']"></h5>
@@ -88,8 +88,8 @@
                                 showCharCounter
                                 hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.errors?.internal_code"
-                                xl="4"
-                                lg="4"/>
+                                xl="3"
+                                lg="3"/>
                             <InputText
                                 v-model="forms[entity].createUpdate.data.name"
                                 hasDiv
@@ -100,8 +100,8 @@
                                 showCharCounter
                                 hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.errors?.name"
-                                xl="8"
-                                lg="8"/>
+                                xl="9"
+                                lg="9"/>
                             <InputText
                                 v-model="forms[entity].createUpdate.data.address"
                                 hasDiv
@@ -133,8 +133,8 @@
                                 showCharCounter
                                 hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.errors?.telephone"
-                                xl="4"
-                                lg="4"/>
+                                xl="3"
+                                lg="3"/>
                             <InputText
                                 v-model="forms[entity].createUpdate.data.email"
                                 hasDiv
@@ -144,8 +144,8 @@
                                 showCharCounter
                                 hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.errors?.email"
-                                xl="8"
-                                lg="8"/>
+                                xl="6"
+                                lg="6"/>
                             <InputNumber
                                 v-model="forms[entity].createUpdate.data.capacity"
                                 hasDiv
@@ -155,8 +155,8 @@
                                 :minValue="0"
                                 hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.errors?.capacity"
-                                xl="4"
-                                lg="4">
+                                xl="3"
+                                lg="3">
                                 <template v-slot:default>
                                     <i class="fa fa-info-circle cursor-pointer text-i-help me-1" data-bs-toggle="tooltip" data-bs-placement="top" :title="MODULE.texts.form.capacityTooltip"></i>
                                 </template>
@@ -170,8 +170,8 @@
                                 showCharCounter
                                 hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.errors?.map_url"
-                                xl="8"
-                                lg="8"/>
+                                xl="9"
+                                lg="9"/>
                             <InputSlot
                                 hasDiv
                                 :title="MODULE.texts.form.status"
@@ -179,8 +179,8 @@
                                 isRequired
                                 hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.errors?.status"
-                                xl="4"
-                                lg="4">
+                                xl="3"
+                                lg="3">
                                 <template v-slot:input>
                                     <v-select
                                         v-model="forms[entity].createUpdate.data.status"
