@@ -34,7 +34,7 @@ class UpdateCustomerRequest extends BaseFormRequest {
             "name"                      => "required|string|max:100",
             "email"                     => "nullable|email|max:100",
             "phone_number"              => "nullable|string|max:15",
-            "gender"                    => "nullable|in:male,female,other",
+            "gender"                    => "required|in:male,female,other",
             "birthdate"                 => "nullable|date",
             "status"                    => "required|in:active,inactive"
         ];
