@@ -33,7 +33,6 @@ class Customer extends Model {
         "email",
         "phone_number",
         "gender",
-        "gender_description",
         "birthdate",
         "status",
         "created_at",

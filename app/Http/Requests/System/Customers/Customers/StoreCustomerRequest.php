@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Requests\System\Customers\Customers;
 
 use App\Http\Requests\System\Base\BaseFormRequest;
+use App\Rules\System\Defaults\{DocumentNumberLength};
 
 class StoreCustomerRequest extends BaseFormRequest {
 
@@ -17,7 +18,7 @@ class StoreCustomerRequest extends BaseFormRequest {
 
         return [
             "identity_document_type_id" => "required|integer",
-            "document_number"           => "required|string|max:25",
+            "document_number"           => ["required", "string", new DocumentNumberLength()],
             "status"                    => "required|string",
             "name"                      => "required|string|max:200",
             "email"                     => "nullable|email|max:200",
