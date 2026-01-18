@@ -6,8 +6,18 @@ namespace App\Http\Requests\System\Customers\Customers;
 
 use App\Http\Requests\System\Base\BaseFormRequest;
 use App\Rules\System\Defaults\{DocumentNumberLength};
+use App\Rules\System\Customers\{UniqueDocumentNumberInCompany};
 
 class StoreCustomerRequest extends BaseFormRequest {
+
+    /**
+     * Determine if the user is authorized to make this request.
+     */
+    public function authorize(): bool {
+
+        return true;
+
+    }
 
     /**
      * Get the validation rules that apply to the request.
@@ -18,13 +28,13 @@ class StoreCustomerRequest extends BaseFormRequest {
 
         return [
             "identity_document_type_id" => "required|integer",
-            "document_number"           => ["required", "string", new DocumentNumberLength()],
-            "status"                    => "required|string",
-            "name"                      => "required|string|max:200",
-            "email"                     => "nullable|email|max:200",
-            "phone_number"              => "nullable|integer",
-            "gender"                    => "nullable|string",
-            "birthdate"                 => "nullable|date"
+            "document_number"           => ["required", "string", new DocumentNumberLength(), new UniqueDocumentNumberInCompany()],
+            "name"                      => "required|string|max:100",
+            "email"                     => "nullable|email|max:100",
+            "phone_number"              => "nullable|string|max:15",
+            "gender"                    => "nullable|in:male,female,other",
+            "birthdate"                 => "nullable|date",
+            "status"                    => "required|in:active,inactive"
         ];
 
     }

@@ -11,7 +11,6 @@ use App\Services\System\Devices\BiometricDevices\{BiometricDeviceService};
 use App\Models\System\Customers\{Customer};
 use App\Models\System\General\{IdentityDocumentType};
 
-
 /**
  * Service for managing module configuration and initialization parameters
  * Implements caching for better performance
