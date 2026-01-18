@@ -71,7 +71,7 @@
         <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title text-uppercase fw-bold" v-text="modalTitles[isUpdate ? 'update' : 'store']"></h5>
+                    <h5 class="modal-title text-uppercase fw-bold" v-text="modalTitles.createUpdate[isUpdate ? 'update' : 'store']"></h5>
                     <button type="button" class="btn-header-modal" data-bs-dismiss="modal">
                         <i class="fa fa-times icon-close-modal"></i>
                     </button>
@@ -225,7 +225,7 @@
         <div class="modal-dialog modal-dialog-centered" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title text-uppercase fw-bold" v-text="modalTitles[isUpdate ? 'update' : 'store']"></h5>
+                    <h5 class="modal-title text-uppercase fw-bold" v-text="modalTitles.carnet.default"></h5>
                     <button type="button" class="btn-header-modal" data-bs-dismiss="modal">
                         <i class="fa fa-times icon-close-modal"></i>
                     </button>
@@ -432,8 +432,8 @@ export default {
 
                 this.options.biometricDevices      = response.data.config.biometricDevices;
                 this.options.identityDocumentTypes = response.data.config.identityDocumentTypes;
-                this.options.genders               = response.data.config.genders;
-                this.options.statuses              = response.data.config.statuses;
+                this.options.genders               = response.data.config.customers.genders;
+                this.options.statuses              = response.data.config.customers.statuses;
 
             }
 
@@ -605,15 +605,20 @@ export default {
 
             if(this.isDefined(record)) {
 
-                carnetForm.data.id = record?.id;
-                carnetForm.data.document_number = record?.document_number;
-                carnetForm.data.name = record?.name;
+                // Map record data to form
+                const identityDocumentTypeOption = this.identityDocumentTypes.find(e => e.code === record?.identity_document_type_id),
+                      genderOption               = this.genders.find(g => g.code === record.gender),
+                      statusOption               = this.statuses.find(s => s.code === record.status);
 
-            }else {
-
-                carnetForm.data.id = null;
-                carnetForm.data.document_number = "";
-                carnetForm.data.name = "";
+                carnetForm.data.id                     = record.id;
+                carnetForm.data.identity_document_type = identityDocumentTypeOption;
+                carnetForm.data.document_number        = record.document_number;
+                carnetForm.data.name                   = record.name;
+                carnetForm.data.email                  = record.email;
+                carnetForm.data.phone_number           = record.phone_number;
+                carnetForm.data.gender                 = genderOption;
+                carnetForm.data.birthdate              = record.birthdate;
+                carnetForm.data.status                 = statusOption;
 
             }
 
@@ -634,8 +639,8 @@ export default {
         },
         async searchDocumentNumber() {
 
-            const entityForms = this.forms[this.entity].createUpdate;
-            const documentNumber = entityForms.data.document_number;
+            const entityForms          = this.forms[this.entity].createUpdate;
+            const documentNumber       = entityForms.data.document_number;
             const identityDocumentType = entityForms.data.identity_document_type;
 
             if(!this.isDefined(documentNumber)) {
@@ -654,12 +659,8 @@ export default {
 
             Alerts.swals({});
 
-            const route = Requests.config({entity: "helpers", type: "searchDocumentNumber"});
-            const formJson = {
-                document_number: documentNumber,
-                type: identityDocumentType.data?.code
-            };
-
+            const route    = Requests.config({entity: "helpers", type: "searchDocumentNumber"});
+            const formJson = {document_number: documentNumber, type: identityDocumentType.data?.code};
             const response = await Requests.get({route, data: formJson});
 
             if(Requests.valid({result: response})) {
@@ -729,15 +730,10 @@ export default {
         },
         breadcrumbTitles() {
 
-            return this.MODULE.config.breadcrumbParent ? [
+            return [
                 {title: this.MODULE.config.breadcrumbParent},
                 this.config.entity.page
-            ] : [this.config.entity.page];
-
-        },
-        filterByOptions() {
-
-            return this.MODULE.filterOptions;
+            ];
 
         },
         identityDocumentTypes() {
@@ -747,12 +743,12 @@ export default {
         },
         genders() {
 
-            return (this.options?.[this.entity]?.genders ?? []).map(e => ({code: e.code, label: e.label}));
+            return (this.options?.genders ?? []).map(e => ({code: e.code, label: e.label, data: e}));
 
         },
         statuses() {
 
-            return (this.options?.[this.entity]?.statuses ?? []).map(e => ({code: e.code, label: e.label}));
+            return (this.options?.statuses ?? []).map(e => ({code: e.code, label: e.label, data: e}));
 
         },
         isUpdate() {
@@ -762,7 +758,15 @@ export default {
         },
         modalTitles() {
 
-            return this.forms[this.entity].createUpdate.extras.modals.default.titles;
+            return {
+                createUpdate: this.forms[this.entity].createUpdate.extras.modals.default.titles,
+                carnet: this.forms[this.entity].carnet.extras.modals.default.titles
+            };
+
+        },
+        filterByOptions() {
+
+            return this.MODULE.filterOptions;
 
         },
         filterByValue: {
@@ -803,11 +807,17 @@ export default {
             const documentTypeCode = this.forms[this.entity].createUpdate.data.identity_document_type?.data?.code;
 
             if(documentTypeCode === "dni") {
+
                 return 8;
+
             }else if(documentTypeCode === "ruc") {
+
                 return 11;
+
             }else if(documentTypeCode === "doc.trib.no.dom.sin.ruc") {
+
                 return 15;
+
             }
 
             return 15;
@@ -817,13 +827,20 @@ export default {
     watch: {
         "forms.customers.createUpdate.data.identity_document_type": {
             handler(newValue) {
-                if(newValue) {
+
+                if(this.isDefined(newValue)) {
+
                     const maxLength = this.documentNumberMaxLength;
                     const currentValue = this.forms[this.entity].createUpdate.data.document_number?.toString() || "";
+
                     if(currentValue.length > maxLength) {
+
                         this.forms[this.entity].createUpdate.data.document_number = currentValue.substring(0, maxLength);
+
                     }
+
                 }
+
             },
             immediate: false
         }
