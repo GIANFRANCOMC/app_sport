@@ -159,7 +159,6 @@
                                 hasDiv
                                 :title="MODULE.texts.form.gender"
                                 :titleClass="[config.forms.classes.title]"
-                                isRequired
                                 hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.errors?.gender"
                                 xl="4"
@@ -397,7 +396,7 @@ const VALIDATION_RULES = {
     name: {required: true},
     email: {required: false, email: true},
     phone_number: {required: false},
-    gender: {required: true},
+    gender: {required: false},
     birthdate: {required: false},
     status: {required: true}
 };
@@ -842,7 +841,7 @@ export default {
                 };
 
                 const route       = Requests.config({entity: "customers", type: "registerBiometricFingerprint"});
-                const routeWithId = route.replace("{id}", registerBiometricForm.data.customer_id);
+                const routeWithId = `${route}/${registerBiometricForm.data.customer_id}`;
                 const result      = await Requests.post({route: routeWithId, data});
 
                 if(Requests.valid({result})) {
