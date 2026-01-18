@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\{Auth, DB};
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 
-use App\Models\System\Customers\Customer;
+use App\Models\System\Customers\{Customer};
 
 /**
  * Service class for managing module operations
@@ -141,13 +141,6 @@ class CustomerService {
 
             $userId = $userId ?? $userAuth->id ?? null;
 
-            // Check if document number exists
-            if(self::documentNumberExists($data["document_number"], $companyId)) {
-
-                throw new Exception(self::trans("document_number_exists"));
-
-            }
-
             // Prepare data with only allowed fields
             $customerData = self::prepareCustomerDataForCreate($data, $companyId, $userId);
 
@@ -174,17 +167,6 @@ class CustomerService {
 
             $userAuth = Auth::user();
             $userId   = $userId ?? $userAuth->id ?? null;
-
-            // Check if document number exists (excluding current customer)
-            if(isset($data["document_number"])) {
-
-                if(self::documentNumberExists($data["document_number"], $customer->company_id, $customer->id)) {
-
-                    throw new Exception(self::trans("document_number_exists"));
-
-                }
-
-            }
 
             // Prepare update data with only changed fields
             $updateData = self::prepareCustomerDataForUpdate($customer, $data);
@@ -216,7 +198,7 @@ class CustomerService {
     public static function findByIdAndCompany(int $id, int $companyId, bool $activeOnly = false, array $relations = ["identityDocumentType"]): ?Customer {
 
         $query = Customer::where("id", $id)
-                        ->where("company_id", $companyId);
+                         ->where("company_id", $companyId);
 
         if($activeOnly) {
 
@@ -288,29 +270,6 @@ class CustomerService {
 
         return $query->orderBy("name", "ASC")
                      ->paginate($perPage);
-
-    }
-
-    /**
-     * Check if document number exists in company
-     *
-     * @param string $documentNumber Document number
-     * @param int $companyId Company
-     * @param int|null $excludeId ID to exclude from check (useful for update)
-     * @return bool
-     */
-    private static function documentNumberExists(string $documentNumber, int $companyId, ?int $excludeId = null): bool {
-
-        $query = Customer::where("document_number", $documentNumber)
-                        ->where("company_id", $companyId);
-
-        if(Utilities::isDefined($excludeId)) {
-
-            $query->where("id", "!=", $excludeId);
-
-        }
-
-        return $query->exists();
 
     }
 
