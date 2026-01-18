@@ -108,29 +108,45 @@ export default {
                     name: this.customer?.name ?? ""
                 };
 
-                const qr = new QRCodeStyling({
+                const logotype = window.company?.logotype;
+
+                const qrConfig = {
                     width: 2000,
                     height: 2000,
                     data: JSON.stringify(dataJson),
-                    image: "/storage/"+window.company.logotype,
                     dotsOptions: {
                         color: "#000000",
                         type: "rounded"
                     },
                     backgroundOptions: {
                         color: "#ffffff"
-                    },
-                    imageOptions: {
+                    }
+                };
+
+                // Solo agregar imagen si existe el logotipo
+                if(logotype) {
+
+                    qrConfig.image = "/storage/" + logotype;
+                    qrConfig.imageOptions = {
                         crossOrigin: "anonymous",
                         imageSize: 0.30
-                    },
-                });
+                    };
+
+                }
+
+                const qr = new QRCodeStyling(qrConfig);
 
                 qr.getRawData("png")
                 .then((blob) => {
 
                     this.qrImage = URL.createObjectURL(blob);
 
+                    this.isLoading = false;
+
+                })
+                .catch((error) => {
+
+                    console.error("Error al generar QR:", error);
                     this.isLoading = false;
 
                 });
