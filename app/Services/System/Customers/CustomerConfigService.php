@@ -4,26 +4,28 @@ declare(strict_types=1);
 
 namespace App\Services\System\Customers;
 
-use App\Models\System\Customers\Customer;
-use App\Models\System\General\IdentityDocumentType;
-use App\Services\System\Devices\BiometricDevices\BiometricDeviceService;
 use Illuminate\Support\Facades\Cache;
 use stdClass;
 
+use App\Services\System\Devices\BiometricDevices\{BiometricDeviceService};
+use App\Models\System\Customers\{Customer};
+use App\Models\System\General\{IdentityDocumentType};
+
+
 /**
- * Service for managing Customer configuration and initialization parameters
+ * Service for managing module configuration and initialization parameters
  * Implements caching for better performance
  */
 class CustomerConfigService {
 
     private const CACHE_PREFIX = "customer_config";
-    private const CACHE_TTL = 3600; // 1 hour
+    private const CACHE_TTL    = 3600; // 1 hour
 
     /**
-     * Get initialization parameters for customer module
+     * Get initialization parameters for module
      *
-     * @param int $companyId Company ID
-     * @param string $page Page identifier
+     * @param int $companyId Company
+     * @param string $page Page (only used to determine what data to return, not for cache key)
      * @return stdClass
      */
     public static function getInitParams(int $companyId, string $page = ""): stdClass {
@@ -38,15 +40,14 @@ class CustomerConfigService {
 
             if($page === "main") {
 
+                $config->biometricDevices = new stdClass();
+                $config->biometricDevices->records = BiometricDeviceService::getActiveDevices($companyId);
+
                 $config->identityDocumentTypes = new stdClass();
                 $config->identityDocumentTypes->records = IdentityDocumentType::getAll("customer", $companyId);
 
-                $config->customers = new stdClass();
-                $config->customers->genders  = Customer::getGenders();
-                $config->customers->statuses = Customer::getStatuses();
-
-                $config->biometricDevices = new stdClass();
-                $config->biometricDevices->records = BiometricDeviceService::getActiveDevices($companyId);
+                $config->genders  = Customer::getGenders();
+                $config->statuses = Customer::getStatuses();
 
             }
 
@@ -60,9 +61,9 @@ class CustomerConfigService {
     }
 
     /**
-     * Build cache key for customer configuration
+     * Build cache key for module configuration
      *
-     * @param int $companyId Company ID
+     * @param int $companyId Company
      * @return string
      */
     private static function buildCacheKey(int $companyId): string {
@@ -72,22 +73,23 @@ class CustomerConfigService {
     }
 
     /**
-     * Clear cache for customer configuration
+     * Clear cache for module configuration
      *
-     * @param int $companyId Company ID
+     * @param int $companyId Company
      * @return void
      */
     public static function clearCache(int $companyId): void {
 
         $cacheKey = self::buildCacheKey($companyId);
+
         Cache::forget($cacheKey);
 
     }
 
     /**
-     * Clear all customer configuration cache for a company
+     * Clear all module configuration cache for a company
      *
-     * @param int $companyId Company ID
+     * @param int $companyId Company
      * @return void
      */
     public static function clearAllCache(int $companyId): void {

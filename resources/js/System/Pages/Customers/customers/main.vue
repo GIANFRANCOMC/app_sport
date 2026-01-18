@@ -433,8 +433,8 @@ export default {
 
                 this.options.biometricDevices      = response.data.config.biometricDevices;
                 this.options.identityDocumentTypes = response.data.config.identityDocumentTypes;
-                this.options.genders               = response.data.config.customers.genders;
-                this.options.statuses              = response.data.config.customers.statuses;
+                this.options.genders               = response.data.config.genders;
+                this.options.statuses              = response.data.config.statuses;
 
             }
 
