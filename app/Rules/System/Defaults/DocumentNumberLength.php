@@ -80,9 +80,19 @@ class DocumentNumberLength implements ValidationRule {
         }
 
         $documentNumber = (string) $value;
-        $length         = strlen($documentNumber);
-        $minLength      = (int) ($identityDocumentType->min_length ?? 1);
-        $maxLength      = (int) ($identityDocumentType->max_length ?? 1);
+
+        // Validate that document_number contains only numbers
+        if(!ctype_digit($documentNumber)) {
+
+            $fieldName = $this->attributeName ?? $attribute;
+            $fail("El campo {$fieldName} debe contener solo números.");
+            return;
+
+        }
+
+        $length    = strlen($documentNumber);
+        $minLength = (int) ($identityDocumentType->min_length ?? 1);
+        $maxLength = (int) ($identityDocumentType->max_length ?? 1);
 
         if($length < $minLength) {
 

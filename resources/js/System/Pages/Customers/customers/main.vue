@@ -256,6 +256,7 @@ import { initCrudModule } from "@System/Helpers/ModuleFactory.js";
 import * as Forms from "@System/Helpers/Forms.js";
 import * as Requests from "@System/Helpers/Requests.js";
 import * as Utils from "@System/Helpers/Utils.js";
+import { validateOnlyDigits } from "@System/Helpers/ValidationHelpers.js";
 
 const MODULE_CONFIG = {
     entity: "customers",
@@ -842,7 +843,8 @@ export default {
             rules.document_number = {
                 ...rules.document_number,
                 minLength: this.documentNumberMinLength,
-                maxLength: this.documentNumberMaxLength
+                maxLength: this.documentNumberMaxLength,
+                custom: (value) => validateOnlyDigits(value, this.MODULE.errorLabels.document_number)
             };
 
             return rules;

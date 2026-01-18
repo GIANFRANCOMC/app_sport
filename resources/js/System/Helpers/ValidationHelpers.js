@@ -32,14 +32,6 @@ export function validateField(value, rules, fieldName = "") {
         errors.push(`${fieldName ? `${fieldName}: ` : ""}Debe ser un número válido`);
     }
 
-    if (rules.minLength && Utils.isDefined({ value }) && String(value).length < rules.minLength) {
-        errors.push(`${fieldName ? `${fieldName}: ` : ""}Debe tener al menos ${rules.minLength} caracteres`);
-    }
-
-    if (rules.maxLength && Utils.isDefined({ value }) && String(value).length > rules.maxLength) {
-        errors.push(`${fieldName ? `${fieldName}: ` : ""}No debe exceder ${rules.maxLength} caracteres`);
-    }
-
     if (rules.min && Utils.isDefined({ value }) && Number(value) < rules.min) {
         errors.push(`${fieldName ? `${fieldName}: ` : ""}Debe ser al menos ${rules.min}`);
     }
@@ -48,14 +40,28 @@ export function validateField(value, rules, fieldName = "") {
         errors.push(`${fieldName ? `${fieldName}: ` : ""}No debe ser mayor que ${rules.max}`);
     }
 
+    // Ejecutar validación custom primero, ya que si falla el formato básico,
+    // no tiene sentido validar longitud u otras reglas
     if (rules.custom && typeof rules.custom === "function") {
         const customError = rules.custom(value);
         if (customError) {
             errors.push(customError);
+            // Si hay error custom, retornar solo ese error (es el más importante)
+            return errors;
         }
     }
 
-    return errors;
+    // Solo validar longitud si no hay error custom (formato básico correcto)
+    if (rules.minLength && Utils.isDefined({ value }) && String(value).length < rules.minLength) {
+        errors.push(`${fieldName ? `${fieldName}: ` : ""}Debe tener al menos ${rules.minLength} caracteres`);
+    }
+
+    if (rules.maxLength && Utils.isDefined({ value }) && String(value).length > rules.maxLength) {
+        errors.push(`${fieldName ? `${fieldName}: ` : ""}No debe exceder ${rules.maxLength} caracteres`);
+    }
+
+    // Retornar solo el primer error si hay múltiples
+    return errors.length > 0 ? [errors[0]] : errors;
 }
 
 /**
@@ -86,6 +92,21 @@ export function validateForm(formData, validationRules, config = {}) {
 }
 
 /**
+ * Valida que un valor contenga solo dígitos (0-9)
+ * @param {*} value - Valor a validar
+ * @param {string} fieldName - Nombre del campo para el mensaje de error (opcional)
+ * @returns {string|null} Mensaje de error o null si es válido
+ */
+export function validateOnlyDigits(value, fieldName = "") {
+    if(!value) return null;
+    const stringValue = String(value);
+    if(!/^\d+$/.test(stringValue)) {
+        return fieldName ? `${fieldName}: Debe contener solo números.` : "Debe contener solo números.";
+    }
+    return null;
+}
+
+/**
  * Reglas de validación comunes
  */
 export const CommonValidationRules = {
@@ -98,6 +119,8 @@ export const CommonValidationRules = {
     optionalNumber: { number: true },
     textMaxLength: (maxLength) => ({ maxLength }),
     textMinLength: (minLength) => ({ required: true, minLength }),
-    numberRange: (min, max) => ({ required: true, number: true, min, max })
+    numberRange: (min, max) => ({ required: true, number: true, min, max }),
+    onlyDigits: (fieldName = "") => ({ custom: (value) => validateOnlyDigits(value, fieldName) })
 };
+
 
