@@ -298,6 +298,7 @@
                             hasDiv
                             :title="MODULE.texts.form.deviceUserId"
                             :titleClass="[config.forms.classes.title]"
+                            isRequired
                             hasTextBottom
                             :textBottomInfo="forms[entity].registerBiometric.errors?.device_user_id"
                             xl="6"
@@ -314,6 +315,7 @@
                             hasDiv
                             :title="MODULE.texts.form.fingerIndex"
                             :titleClass="[config.forms.classes.title]"
+                            isRequired
                             hasTextBottom
                             :textBottomInfo="forms[entity].registerBiometric.errors?.finger_index"
                             xl="6"
@@ -409,6 +411,30 @@ const ERROR_LABELS = {
     gender: "Género",
     birthdate: "Fecha de nacimiento",
     status: "Estado"
+};
+
+const FORM_FIELDS_REGISTER_BIOMETRIC = {
+    biometric_device: null,
+    device_user_id: "",
+    finger_index: null
+};
+
+const FORM_FIELD_CONFIG_REGISTER_BIOMETRIC = {
+    biometric_device: {getCode: true},
+    device_user_id: {trim: true},
+    finger_index: {getCode: true}
+};
+
+const VALIDATION_RULES_REGISTER_BIOMETRIC = {
+    biometric_device: {required: true},
+    device_user_id: {required: true},
+    finger_index: {required: true}
+};
+
+const ERROR_LABELS_REGISTER_BIOMETRIC = {
+    biometric_device: "Dispositivo biométrico",
+    device_user_id: "ID de usuario en el dispositivo",
+    finger_index: "Índice del dedo"
 };
 
 const FILTER_OPTIONS = [
@@ -762,24 +788,24 @@ export default {
             const registerBiometricForm = this.forms[this.entity].registerBiometric;
 
             registerBiometricForm.errors = {};
+            Forms.clearFormData(registerBiometricForm.data, FORM_FIELDS_REGISTER_BIOMETRIC);
 
             if(this.isDefined(record)) {
 
                 registerBiometricForm.data.customer_id      = record.id;
                 registerBiometricForm.data.customer_name    = record.name;
-                registerBiometricForm.data.device_user_id   = "";
                 registerBiometricForm.data.biometric_device = this.biometricDevicesOptions.length > 0 ? this.biometricDevicesOptions[0] : null;
                 registerBiometricForm.data.finger_index     = this.fingerIndexes.length > 0 ? this.fingerIndexes[0] : null;
 
-                Alerts.modals({type: "show", id: registerBiometricForm.extras.modals.default.id});
-                Alerts.tooltips({show: true, time: 500});
-
             }else {
 
-                Alerts.modals({type: "hide", id: registerBiometricForm.extras.modals.default.id});
-                Alerts.tooltips({show: true, time: 500});
+                registerBiometricForm.data.customer_id   = null;
+                registerBiometricForm.data.customer_name = "";
 
             }
+
+            Alerts.modals({type: "show", id: registerBiometricForm.extras.modals.default.id});
+            Alerts.tooltips({show: true, time: 500});
 
         },
         async registerBiometricFingerprint() {
@@ -795,40 +821,36 @@ export default {
 
             try {
 
-                const formData = Utils.cloneJson(registerBiometricForm.data);
+                const formData   = Utils.cloneJson(registerBiometricForm.data);
+                const validation = Forms.validateFormData(formData, VALIDATION_RULES_REGISTER_BIOMETRIC, {isDescriptive: true, errorLabels: ERROR_LABELS_REGISTER_BIOMETRIC});
 
-                // Validation
-                if(!this.isDefined(formData.biometric_device)) {
+                if(!validation.bool) {
 
-                    registerBiometricForm.errors.biometric_device_id = ["El dispositivo biométrico es requerido."];
-                    Alerts.generateAlert({msgContent: "Debe seleccionar un dispositivo biométrico."});
+                    Alerts.generateAlert({messages: Utils.getErrors({errors: validation.errors}), msgContent: this.config.messages.errorValidate});
                     this.isSavingBiometric = false;
                     return;
 
                 }
 
+                const preparedData = Forms.prepareFormData(formData, FORM_FIELD_CONFIG_REGISTER_BIOMETRIC);
+
+                // Map input data to request data
                 const data = {
-                    biometric_device_id: formData.biometric_device.code,
-                    device_user_id: formData.device_user_id || null,
-                    finger_index: formData.finger_index?.code || 0
+                    biometric_device_id: preparedData.biometric_device,
+                    device_user_id: preparedData.device_user_id || null,
+                    finger_index: preparedData.finger_index || 0
                 };
 
-                const route = Requests.config({entity: "customers", type: "registerBiometricFingerprint"});
-                const routeWithId = route.replace("{id}", formData.customer_id);
-
-                const result = await Requests.post({route: routeWithId, data});
+                const route       = Requests.config({entity: "customers", type: "registerBiometricFingerprint"});
+                const routeWithId = route.replace("{id}", registerBiometricForm.data.customer_id);
+                const result      = await Requests.post({route: routeWithId, data});
 
                 if(Requests.valid({result})) {
 
                     Alerts.modals({type: "hide", id: registerBiometricForm.extras.modals.default.id});
-                    Alerts.generateAlert({type: "success", msgContent: result.data.msg || "Huella registrada exitosamente"});
+                    Alerts.generateAlert({type: "success", msgContent: result.data.msg});
 
-                    // Clear form
-                    registerBiometricForm.data.customer_id = null;
-                    registerBiometricForm.data.customer_name = "";
-                    registerBiometricForm.data.device_user_id = "";
-                    registerBiometricForm.data.biometric_device = null;
-                    registerBiometricForm.data.finger_index = null;
+                    Forms.clearFormData(registerBiometricForm.data, FORM_FIELDS_REGISTER_BIOMETRIC);
 
                 }else {
 
