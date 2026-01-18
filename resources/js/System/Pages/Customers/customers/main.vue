@@ -756,6 +756,97 @@ export default {
             Alerts.tooltips({show: true, time: 500});
 
         },
+        // Register Biometric
+        openRegisterBiometricModal(record = null) {
+
+            const registerBiometricForm = this.forms[this.entity].registerBiometric;
+
+            registerBiometricForm.errors = {};
+
+            if(this.isDefined(record)) {
+
+                registerBiometricForm.data.customer_id      = record.id;
+                registerBiometricForm.data.customer_name    = record.name;
+                registerBiometricForm.data.device_user_id   = "";
+                registerBiometricForm.data.biometric_device = this.biometricDevicesOptions.length > 0 ? this.biometricDevicesOptions[0] : null;
+                registerBiometricForm.data.finger_index     = this.fingerIndexes.length > 0 ? this.fingerIndexes[0] : null;
+
+                Alerts.modals({type: "show", id: registerBiometricForm.extras.modals.default.id});
+                Alerts.tooltips({show: true, time: 500});
+
+            }else {
+
+                Alerts.modals({type: "hide", id: registerBiometricForm.extras.modals.default.id});
+                Alerts.tooltips({show: true, time: 500});
+
+            }
+
+        },
+        async registerBiometricFingerprint() {
+
+            if(this.isSavingBiometric) return;
+
+            const registerBiometricForm = this.forms[this.entity].registerBiometric;
+
+            Alerts.swals({});
+
+            registerBiometricForm.errors = {};
+            this.isSavingBiometric = true;
+
+            try {
+
+                const formData = Utils.cloneJson(registerBiometricForm.data);
+
+                // Validation
+                if(!this.isDefined(formData.biometric_device)) {
+
+                    registerBiometricForm.errors.biometric_device_id = ["El dispositivo biométrico es requerido."];
+                    Alerts.generateAlert({msgContent: "Debe seleccionar un dispositivo biométrico."});
+                    this.isSavingBiometric = false;
+                    return;
+
+                }
+
+                const data = {
+                    biometric_device_id: formData.biometric_device.code,
+                    device_user_id: formData.device_user_id || null,
+                    finger_index: formData.finger_index?.code || 0
+                };
+
+                const route = Requests.config({entity: "customers", type: "registerBiometricFingerprint"});
+                const routeWithId = route.replace("{id}", formData.customer_id);
+
+                const result = await Requests.post({route: routeWithId, data});
+
+                if(Requests.valid({result})) {
+
+                    Alerts.modals({type: "hide", id: registerBiometricForm.extras.modals.default.id});
+                    Alerts.generateAlert({type: "success", msgContent: result.data.msg || "Huella registrada exitosamente"});
+
+                    // Clear form
+                    registerBiometricForm.data.customer_id = null;
+                    registerBiometricForm.data.customer_name = "";
+                    registerBiometricForm.data.device_user_id = "";
+                    registerBiometricForm.data.biometric_device = null;
+                    registerBiometricForm.data.finger_index = null;
+
+                }else {
+
+                    Forms.handleFormResponseErrors({result, formErrorsObject: registerBiometricForm.errors, config: this.config});
+
+                }
+
+            }catch(error) {
+
+                Alerts.generateAlert({type: "error", messages: [error], msgContent: this.config.messages.catchError});
+
+            }finally {
+
+                this.isSavingBiometric = false;
+
+            }
+
+        },
         // Helpers
         getCardFields(record) {
 
