@@ -324,7 +324,7 @@
                                     :options="fingerIndexes"
                                     :class="config.forms.classes.select2"
                                     :clearable="false"
-                                    :searchable="false"/>
+                                    :searchable="true"/>
                             </template>
                         </InputSlot>
                     </div>
@@ -499,11 +499,34 @@ export default {
             errors: {}
         };
 
+        // Add registerBiometric form
+        crudModule.forms[MODULE.config.entity].registerBiometric = {
+            extras: {
+                modals: {
+                    default: {
+                        id: Utils.uuid(),
+                        titles: {
+                            default: "Registrar huella biométrica"
+                        }
+                    }
+                }
+            },
+            data: {
+                customer_id: null,
+                customer_name: "",
+                biometric_device: null,
+                device_user_id: "",
+                finger_index: null
+            },
+            errors: {}
+        };
+
         return {
             ...crudModule,
             MODULE: MODULE,
             isInitialized: false,
-            isSaving: false
+            isSaving: false,
+            isSavingBiometric: false
         };
 
     },
@@ -867,8 +890,34 @@ export default {
 
             return {
                 createUpdate: this.forms[this.entity].createUpdate.extras.modals.default.titles,
-                carnet: this.forms[this.entity].carnet.extras.modals.default.titles
+                carnet: this.forms[this.entity].carnet.extras.modals.default.titles,
+                registerBiometric: this.forms[this.entity].registerBiometric.extras.modals.default.titles
             };
+
+        },
+        biometricDevicesOptions() {
+
+            return (this.options?.biometricDevices?.records ?? []).map(e => ({
+                code: e.id,
+                label: `${e.name} (${e.branch?.name ?? ""}) - ${e.ip_address}`,
+                data: e
+            }));
+
+        },
+        fingerIndexes() {
+
+            return [
+                {code: 0, label: "Pulgar derecho"},
+                {code: 1, label: "Índice derecho"},
+                {code: 2, label: "Medio derecho"},
+                {code: 3, label: "Anular derecho"},
+                {code: 4, label: "Meñique derecho"},
+                {code: 5, label: "Pulgar izquierdo"},
+                {code: 6, label: "Índice izquierdo"},
+                {code: 7, label: "Medio izquierdo"},
+                {code: 8, label: "Anular izquierdo"},
+                {code: 9, label: "Meñique izquierdo"}
+            ];
 
         },
         filterByOptions() {
