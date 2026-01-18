@@ -7,45 +7,24 @@ namespace App\Services\System\Customers;
 use Exception;
 use App\Helpers\System\{TranslationHelper, Utilities};
 use Illuminate\Support\Facades\{Auth, DB};
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
 
 use App\Models\System\Customers\Customer;
-use App\Repositories\System\Customers\CustomerRepository;
 
 /**
- * Service class for managing Customer operations
- * Handles business logic for creating and updating customers
+ * Service class for managing module operations
+ * Handles business logic for creating and updating records
  */
 class CustomerService {
 
     /**
-     * Translation namespace for customer module
+     * Translation namespace for module
      */
     private const TRANSLATION_NAMESPACE = "System.Customers.customer";
 
     /**
-     * @var CustomerRepository
-     */
-    private static $repository;
-
-    /**
-     * Get repository instance (lazy initialization)
-     *
-     * @return CustomerRepository
-     */
-    private static function getRepository(): CustomerRepository {
-
-        if(self::$repository === null) {
-
-            self::$repository = new CustomerRepository();
-
-        }
-
-        return self::$repository;
-
-    }
-
-    /**
-     * Allowed fields for customer creation and update
+     * Allowed fields for record creation and update
      */
     private const ALLOWED_FIELDS = [
         "identity_document_type_id",
@@ -56,6 +35,16 @@ class CustomerService {
         "gender",
         "birthdate",
         "status"
+    ];
+
+    /**
+     * Searchable fields for filtering
+     */
+    private const SEARCHABLE_FIELDS = [
+        "document_number",
+        "name",
+        "email",
+        "phone_number"
     ];
 
     /**
@@ -72,11 +61,11 @@ class CustomerService {
     }
 
     /**
-     * Prepare customer data for creation
+     * Prepare data for creation
      *
      * @param array $data Input data
-     * @param int $companyId Company ID
-     * @param int $userId User ID
+     * @param int $companyId Company
+     * @param int $userId User
      * @return array
      */
     private static function prepareCustomerDataForCreate(array $data, int $companyId, int $userId): array {
@@ -84,16 +73,17 @@ class CustomerService {
         $customerData = [
             "company_id" => $companyId,
             "status"     => $data["status"] ?? "active",
-            "gender"     => $data["gender"] ?? "other",
             "created_at" => now(),
             "created_by" => $userId
         ];
 
         foreach(self::ALLOWED_FIELDS as $field) {
 
-            if($field === "status" || $field === "gender") continue; // Already set
+            if(isset($data[$field])) {
 
-            $customerData[$field] = $data[$field] ?? null;
+                $customerData[$field] = $data[$field];
+
+            }
 
         }
 
@@ -102,9 +92,9 @@ class CustomerService {
     }
 
     /**
-     * Prepare customer data for update (only changed fields)
+     * Prepare data for update (only changed fields)
      *
-     * @param Customer $customer Customer instance
+     * @param Customer $customer Record instance
      * @param array $data Input data
      * @return array
      */
@@ -122,24 +112,17 @@ class CustomerService {
 
         }
 
-        // Handle gender default
-        if(isset($data["gender"])) {
-
-            $updateData["gender"] = $data["gender"] ?? "other";
-
-        }
-
         return $updateData;
 
     }
 
     /**
-     * Create a new customer
+     * Create a new record
      *
-     * @param array $data Customer data from request
-     * @param int|null $userId User ID creating the customer
-     * @return Customer|null Created customer instance or null on failure
-     * @throws \Exception
+     * @param array $data Input data
+     * @param int|null $userId User creating the record
+     * @return Customer|null Created record instance or null on failure
+     * @throws Exception
      */
     public static function create(array $data, ?int $userId = null): ?Customer {
 
@@ -156,19 +139,19 @@ class CustomerService {
 
             }
 
-            $userId = $userId ?? $userAuth->id;
+            $userId = $userId ?? $userAuth->id ?? null;
 
             // Check if document number exists
-            if(self::getRepository()->fieldExists("document_number", $data["document_number"], $companyId)) {
+            if(self::documentNumberExists($data["document_number"], $companyId)) {
 
                 throw new Exception(self::trans("document_number_exists"));
 
             }
 
-            // Prepare customer data with only allowed fields
+            // Prepare data with only allowed fields
             $customerData = self::prepareCustomerDataForCreate($data, $companyId, $userId);
 
-            // Create the customer
+            // Create the record
             $customer = Customer::create($customerData);
 
         });
@@ -178,25 +161,24 @@ class CustomerService {
     }
 
     /**
-     * Update an existing customer
+     * Update an existing record
      *
-     * @param Customer $customer Customer instance to update
-     * @param array $data Updated customer data
-     * @param int|null $userId User ID updating the customer
-     * @return Customer Updated customer instance
-     * @throws \Exception
+     * @param Customer $customer Record instance to update
+     * @param array $data Input data
+     * @param int|null $userId User updating the record
+     * @return Customer Updated record instance
      */
     public static function update(Customer $customer, array $data, ?int $userId = null): Customer {
 
         DB::transaction(function() use($customer, $data, $userId) {
 
             $userAuth = Auth::user();
-            $userId   = $userId ?? $userAuth->id;
+            $userId   = $userId ?? $userAuth->id ?? null;
 
             // Check if document number exists (excluding current customer)
             if(isset($data["document_number"])) {
 
-                if(self::getRepository()->fieldExists("document_number", $data["document_number"], $customer->company_id, $customer->id)) {
+                if(self::documentNumberExists($data["document_number"], $customer->company_id, $customer->id)) {
 
                     throw new Exception(self::trans("document_number_exists"));
 
@@ -223,32 +205,113 @@ class CustomerService {
     }
 
     /**
-     * Find customer by ID and company ID
+     * Find record by ID and company ID
      *
-     * @param int $id Customer ID
-     * @param int $companyId Company ID
+     * @param int $id Record
+     * @param int $companyId Company
+     * @param bool $activeOnly Only search active records
      * @param array $relations Relations to eager load
      * @return Customer|null
      */
-    public static function findByIdAndCompany(int $id, int $companyId, array $relations = ["identityDocumentType"]): ?Customer {
+    public static function findByIdAndCompany(int $id, int $companyId, bool $activeOnly = false, array $relations = ["identityDocumentType"]): ?Customer {
 
-        return self::getRepository()->findByIdAndCompany($id, $companyId, $relations);
+        $query = Customer::where("id", $id)
+                        ->where("company_id", $companyId);
+
+        if($activeOnly) {
+
+            $query->where("status", "active");
+
+        }
+
+        if(!empty($relations)) {
+
+            $query->with($relations);
+
+        }
+
+        return $query->first();
 
     }
 
     /**
-     * Get paginated list of customers
+     * Get paginated list of records with filters
      *
-     * @param int $companyId Company ID
-     * @param array $filters Filter parameters
+     * @param int $companyId Company
+     * @param array $filters Filter parameters (filter_by, word)
      * @param int $perPage Items per page
-     * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator
+     * @return LengthAwarePaginator
      */
-    public static function getPaginatedList(int $companyId, array $filters = [], int $perPage = 15) {
+    public static function getPaginatedList(int $companyId, array $filters = [], int $perPage = 15): LengthAwarePaginator {
 
-        return self::getRepository()->getPaginatedList($companyId, $filters, $perPage);
+        $query = Customer::where("company_id", $companyId)
+                         ->with(["identityDocumentType"]);
+
+        // Apply filters
+        $filterBy = $filters["filter_by"] ?? null;
+        $word     = $filters["word"] ?? null;
+
+        if(Utilities::isDefined($word) && Utilities::isDefined($filterBy)) {
+
+            $searchTerm = Utilities::getWordSearch($word);
+
+            if($filterBy === "all") {
+
+                // Search across all searchable fields
+                $query->where(function(Builder $q) use($searchTerm) {
+
+                    $searchableFields = self::SEARCHABLE_FIELDS;
+                    $firstField       = array_shift($searchableFields);
+
+                    if($firstField) {
+
+                        $q->where($firstField, "like", $searchTerm);
+
+                    }
+
+                    foreach($searchableFields as $field) {
+
+                        $q->orWhere($field, "like", $searchTerm);
+
+                    }
+
+                });
+
+            }elseif(in_array($filterBy, self::SEARCHABLE_FIELDS, true)) {
+
+                // Search in specific field
+                $query->where($filterBy, "like", $searchTerm);
+
+            }
+
+        }
+
+        return $query->orderBy("name", "ASC")
+                     ->paginate($perPage);
+
+    }
+
+    /**
+     * Check if document number exists in company
+     *
+     * @param string $documentNumber Document number
+     * @param int $companyId Company
+     * @param int|null $excludeId ID to exclude from check (useful for update)
+     * @return bool
+     */
+    private static function documentNumberExists(string $documentNumber, int $companyId, ?int $excludeId = null): bool {
+
+        $query = Customer::where("document_number", $documentNumber)
+                        ->where("company_id", $companyId);
+
+        if(Utilities::isDefined($excludeId)) {
+
+            $query->where("id", "!=", $excludeId);
+
+        }
+
+        return $query->exists();
 
     }
 
 }
-
