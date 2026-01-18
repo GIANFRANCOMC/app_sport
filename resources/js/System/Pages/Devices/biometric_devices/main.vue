@@ -85,7 +85,7 @@
         <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title text-uppercase fw-bold" v-text="modalTitles[isUpdate ? 'update' : 'store']"></h5>
+                    <h5 class="modal-title text-uppercase fw-bold" v-text="modalTitles.createUpdate[isUpdate ? 'update' : 'store']"></h5>
                     <button type="button" class="btn-header-modal" data-bs-dismiss="modal">
                         <i class="fa fa-times icon-close-modal"></i>
                     </button>
@@ -558,7 +558,7 @@ export default {
 
                 }
 
-                const preparedData  = Forms.prepareFormData(formData, this.MODULE.formFieldConfig);
+                const preparedData = Forms.prepareFormData(formData, this.MODULE.formFieldConfig);
 
                 // Map input data to request data
                 preparedData.branch_id = preparedData.branch;
@@ -665,7 +665,9 @@ export default {
         },
         modalTitles() {
 
-            return this.forms[this.entity].createUpdate.extras.modals.default.titles;
+            return {
+                createUpdate: this.forms[this.entity].createUpdate.extras.modals.default.titles
+            };
 
         },
         filterByOptions() {
