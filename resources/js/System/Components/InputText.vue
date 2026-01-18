@@ -8,13 +8,20 @@
         @enterKeyPressed="$emit('enterKeyPressed')"
         @input="$emit('input', $event)"
         @change="$emit('change', $event)">
-        <template v-for="(_, slot) in $slots" #[slot]="scope">
+        <template v-for="(_, slot) in filteredSlots" #[slot]="scope">
             <slot :name="slot" v-bind="scope || {}"></slot>
         </template>
-        <template v-if="shouldShowCharCounter" #inputGroupAppend>
-            <span class="input-group-text character-counter" :class="isNearLimit ? 'character-counter-warning' : 'character-counter-normal'">
+        <template #inputGroupPrepend>
+            <slot name="inputGroupPrepend"></slot>
+            <span v-if="shouldShowCharCounter && charCounterPosition === 'left'" class="input-group-text character-counter" :class="[isNearLimit ? 'character-counter-warning' : 'character-counter-normal', 'character-counter-left']">
                 <span class="counter-number" :class="{ 'counter-update': isUpdating }" :style="{ minWidth: `${maxlengthDigits}ch` }">{{ currentLength }}</span>/{{ maxlengthValue }}
             </span>
+        </template>
+        <template #inputGroupAppend>
+            <span v-if="shouldShowCharCounter && charCounterPosition === 'right'" class="input-group-text character-counter" :class="[isNearLimit ? 'character-counter-warning' : 'character-counter-normal', 'character-counter-right']">
+                <span class="counter-number" :class="{ 'counter-update': isUpdating }" :style="{ minWidth: `${maxlengthDigits}ch` }">{{ currentLength }}</span>/{{ maxlengthValue }}
+            </span>
+            <slot name="inputGroupAppend"></slot>
         </template>
     </InputBase>
 </template>
@@ -39,6 +46,13 @@ export default {
         showCharCounter: {
             type: Boolean,
             default: false
+        },
+        charCounterPosition: {
+            type: String,
+            default: "right",
+            validator(value) {
+                return ["left", "right"].includes(value);
+            }
         }
     },
     data() {
@@ -102,6 +116,26 @@ export default {
 
             return this.maxlengthValue?.toString().length || 0;
 
+        },
+        filteredSlots() {
+
+            const slots = {};
+
+            if(this.$slots) {
+
+                Object.keys(this.$slots).forEach(slotName => {
+
+                    if(slotName !== "inputGroupAppend" && slotName !== "inputGroupPrepend") {
+
+                        slots[slotName] = this.$slots[slotName];
+
+                    }
+
+                });
+
+            }
+            return slots;
+
         }
     },
     methods: {
@@ -134,12 +168,17 @@ export default {
     line-height: 1.2;
     cursor: default;
     user-select: none;
-    border-left: 1px solid #dee2e6;
     background-color: #f8f9fa;
     letter-spacing: 0.02em;
     transition: background-color 0.2s ease, border-color 0.2s ease;
     margin: 0;
     box-sizing: border-box;
+}
+.character-counter-left {
+    border-right: 1px solid #dee2e6;
+}
+.character-counter-right {
+    border-left: 1px solid #dee2e6;
 }
 
 .character-counter-normal {

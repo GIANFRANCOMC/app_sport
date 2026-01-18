@@ -44,7 +44,6 @@ class User extends Authenticatable {
         "password",
         "phone_number",
         "gender",
-        "gender_description",
         "birthdate",
         "status",
         "created_at",

@@ -110,8 +110,8 @@
                                 :textBottomInfo="forms[entity].createUpdate.errors?.document_number"
                                 xl="6"
                                 lg="6">
-                                <template v-slot:inputGroupAppend>
-                                    <template v-if="['dni', 'ruc'].includes(forms[entity].createUpdate.data.identity_document_type?.data?.code)">
+                                <template v-slot:inputGroupPrepend>
+                                    <template v-if="isDocumentTypeSearchable">
                                         <button :class="['btn waves-effect', isUpdate ? 'btn-warning' : 'btn-primary']" type="button" @click="searchDocumentNumber" data-bs-toggle="tooltip" data-bs-placement="top" :title="MODULE.texts.form.searchDocumentTooltip">
                                             <i class="fa fa-search"></i>
                                         </button>
@@ -804,23 +804,22 @@ export default {
         },
         documentNumberMaxLength() {
 
-            const documentTypeCode = this.forms[this.entity].createUpdate.data.identity_document_type?.data?.code;
+            const documentType = this.forms[this.entity].createUpdate.data.identity_document_type?.data;
 
-            if(documentTypeCode === "dni") {
+            if(documentType?.max_length) {
 
-                return 8;
-
-            }else if(documentTypeCode === "ruc") {
-
-                return 11;
-
-            }else if(documentTypeCode === "doc.trib.no.dom.sin.ruc") {
-
-                return 15;
+                return parseInt(documentType.max_length);
 
             }
 
-            return 15;
+            return 0;
+
+        },
+        isDocumentTypeSearchable() {
+
+            const documentType = this.forms[this.entity].createUpdate.data.identity_document_type?.data;
+
+            return documentType?.is_searchable === true || documentType?.is_searchable === 1;
 
         }
     },
@@ -830,7 +829,7 @@ export default {
 
                 if(this.isDefined(newValue)) {
 
-                    const maxLength = this.documentNumberMaxLength;
+                    const maxLength    = this.documentNumberMaxLength;
                     const currentValue = this.forms[this.entity].createUpdate.data.document_number?.toString() || "";
 
                     if(currentValue.length > maxLength) {
