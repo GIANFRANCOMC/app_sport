@@ -547,7 +547,7 @@ export default {
             try {
 
                 const formData   = Utils.cloneJson(entityForms.data);
-                const validation = Forms.validateFormData(formData, this.MODULE.validationRules, {isDescriptive: true, errorLabels: this.MODULE.errorLabels});
+                const validation = Forms.validateFormData(formData, this.validationRules, {isDescriptive: true, errorLabels: this.MODULE.errorLabels});
 
                 if(!validation.bool) {
 
@@ -802,6 +802,26 @@ export default {
             return `Buscar por ${(filterBy.label || "...").toLowerCase()}`;
 
         },
+        isDocumentTypeSearchable() {
+
+            const documentType = this.forms[this.entity].createUpdate.data.identity_document_type?.data;
+
+            return documentType?.is_searchable === true || documentType?.is_searchable === 1;
+
+        },
+        documentNumberMinLength() {
+
+            const documentType = this.forms[this.entity].createUpdate.data.identity_document_type?.data;
+
+            if(documentType?.min_length) {
+
+                return parseInt(documentType.min_length);
+
+            }
+
+            return 1;
+
+        },
         documentNumberMaxLength() {
 
             const documentType = this.forms[this.entity].createUpdate.data.identity_document_type?.data;
@@ -812,14 +832,20 @@ export default {
 
             }
 
-            return 0;
+            return 1;
 
         },
-        isDocumentTypeSearchable() {
+        validationRules() {
 
-            const documentType = this.forms[this.entity].createUpdate.data.identity_document_type?.data;
+            const rules = Utils.cloneJson(this.MODULE.validationRules);
 
-            return documentType?.is_searchable === true || documentType?.is_searchable === 1;
+            rules.document_number = {
+                ...rules.document_number,
+                minLength: this.documentNumberMinLength,
+                maxLength: this.documentNumberMaxLength
+            };
+
+            return rules;
 
         }
     },
