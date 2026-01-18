@@ -54,6 +54,9 @@
                             <button type="button" class="btn btn-xs btn-success waves-effect" @click="openCarnetModal(record)">
                                 <span v-text="MODULE.texts.actions.carnet"></span>
                             </button>
+                            <button type="button" class="btn btn-xs btn-info waves-effect" @click="openRegisterBiometricModal(record)">
+                                <span v-text="MODULE.texts.actions.registerBiometric"></span>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -248,6 +251,113 @@
             </div>
         </div>
     </div>
+
+    <!-- Modal: Register Biometric Fingerprint -->
+    <div class="modal fade" :id="forms[entity].registerBiometric.extras.modals.default.id" data-bs-backdrop="static" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title text-uppercase fw-bold" v-text="modalTitles.registerBiometric.default"></h5>
+                    <button type="button" class="btn-header-modal" data-bs-dismiss="modal">
+                        <i class="fa fa-times icon-close-modal"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-info mb-3">
+                        <i class="fa fa-info-circle me-2"></i>
+                        <span>Para registrar la huella, primero debe registrar la huella en el dispositivo biométrico físico. El sistema asociará el ID del usuario del dispositivo con el cliente.</span>
+                    </div>
+                    <div class="row g-3">
+                        <InputSlot
+                            hasDiv
+                            :title="MODULE.texts.form.customer"
+                            :titleClass="[config.forms.classes.title]"
+                            :isInputGroup="false"
+                            xl="12"
+                            lg="12">
+                            <template v-slot:input>
+                                <span v-text="forms[entity].registerBiometric.data.customerName" class="fw-semibold"></span>
+                            </template>
+                        </InputSlot>
+                        <InputSlot
+                            hasDiv
+                            :title="MODULE.texts.form.biometricDevice"
+                            :titleClass="[config.forms.classes.title]"
+                            isRequired
+                            hasTextBottom
+                            :textBottomInfo="forms[entity].registerBiometric.errors?.biometric_device_id"
+                            xl="12"
+                            lg="12">
+                            <template v-slot:input>
+                                <v-select
+                                    v-model="forms[entity].registerBiometric.data.biometric_device"
+                                    :options="biometricDevicesOptions"
+                                    :class="config.forms.classes.select2"
+                                    :clearable="false"
+                                    :searchable="true"
+                                    placeholder="Seleccione un dispositivo ..."
+                                    label="label"
+                                    @close="tooltips({show: true, time: 500})"/>
+                            </template>
+                        </InputSlot>
+                        <InputSlot
+                            hasDiv
+                            :title="MODULE.texts.form.deviceUserId"
+                            :titleClass="[config.forms.classes.title]"
+                            hasTextBottom
+                            :textBottomInfo="forms[entity].registerBiometric.errors?.device_user_id"
+                            xl="6"
+                            lg="6">
+                            <template v-slot:input>
+                                <input
+                                    v-model="forms[entity].registerBiometric.data.device_user_id"
+                                    type="number"
+                                    class="form-control"
+                                    placeholder="Ingrese el ID del usuario"
+                                    min="1"/>
+                            </template>
+                            <template v-slot:defaultAppend>
+                                <small class="mt-1 text-muted fw-semibold ms-2">Se asignará automáticamente si está vacío</small>
+                            </template>
+                        </InputSlot>
+                        <InputSlot
+                            hasDiv
+                            :title="MODULE.texts.form.fingerIndex"
+                            :titleClass="[config.forms.classes.title]"
+                            hasTextBottom
+                            :textBottomInfo="forms[entity].registerBiometric.errors?.finger_index"
+                            xl="6"
+                            lg="6">
+                            <template v-slot:input>
+                                <v-select
+                                    v-model="forms[entity].registerBiometric.data.finger_index"
+                                    :options="fingerIndexes"
+                                    :class="config.forms.classes.select2"
+                                    :clearable="false"
+                                    :searchable="false"/>
+                            </template>
+                        </InputSlot>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button
+                        type="button"
+                        class="btn btn-secondary waves-effect"
+                        data-bs-dismiss="modal"
+                        v-text="MODULE.texts.modal.close">
+                    </button>
+                    <button
+                        type="button"
+                        class="btn btn-primary waves-effect"
+                        @click="registerBiometricFingerprint"
+                        :disabled="isSavingBiometric">
+                        <i class="fa fa-fingerprint"></i>
+                        <span class="ms-2" v-text="MODULE.texts.modal.registerFingerprint"></span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 </template>
 
 <script>
@@ -328,7 +438,8 @@ const TEXTS = {
         search: "Buscar",
         add: "Agregar",
         edit: "Editar",
-        carnet: "Carnet"
+        carnet: "Carnet",
+        registerBiometric: "Registrar huella"
     },
     card: {
         noEmail: "Sin correo electrónico",
@@ -345,11 +456,16 @@ const TEXTS = {
         gender: "Género",
         birthdate: "Fecha de nacimiento",
         status: "Estado",
-        searchDocumentTooltip: "Buscar N° documento"
+        searchDocumentTooltip: "Buscar N° documento",
+        customer: "Cliente",
+        biometricDevice: "Dispositivo biométrico",
+        deviceUserId: "ID de usuario en el dispositivo",
+        fingerIndex: "Índice del dedo"
     },
     modal: {
         close: "Cerrar",
-        save: "Guardar"
+        save: "Guardar",
+        registerFingerprint: "Registrar huella"
     }
 };
 
