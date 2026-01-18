@@ -46,11 +46,11 @@
                         </div>
                     </div>
                     <div class="card-footer">
-                        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 pt-2 border-top">
+                        <div class="d-flex flex-wrap justify-content-center align-items-center gap-2 pt-2 border-top">
                             <a v-if="isDefined(record.map_url)" :href="record.map_url" class="btn btn-xs btn-outline-success waves-effect" target="_blank" rel="noopener noreferrer">
                                 <span v-text="MODULE.texts.actions.viewMap"></span>
                             </a>
-                            <button type="button" class="btn btn-xs btn-warning waves-effect" :class="isDefined(record.map_url) ? '' : 'ms-auto'" @click="openModal(record)">
+                            <button type="button" class="btn btn-xs btn-warning waves-effect" @click="openModal(record)">
                                 <span v-text="MODULE.texts.actions.edit"></span>
                             </button>
                         </div>
@@ -70,7 +70,7 @@
         <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title text-uppercase fw-bold" v-text="modalTitles[isUpdate ? 'update' : 'store']"></h5>
+                    <h5 class="modal-title text-uppercase fw-bold" v-text="modalTitles.createUpdate[isUpdate ? 'update' : 'store']"></h5>
                     <button type="button" class="btn-header-modal" data-bs-dismiss="modal">
                         <i class="fa fa-times icon-close-modal"></i>
                     </button>
@@ -507,13 +507,13 @@ export default {
 
                 }
 
-                const preparedData  = Forms.prepareFormData(formData, this.MODULE.formFieldConfig);
+                const preparedData = Forms.prepareFormData(formData, this.MODULE.formFieldConfig);
 
                 const id            = preparedData.id;
                 const isUpdate      = this.isDefined(id);
                 const requestMethod = isUpdate ? "patch" : "post";
                 const route         = this.routeActions[isUpdate ? "update" : "store"];
-                const result          = await Requests[requestMethod]({route, data: preparedData, id});
+                const result        = await Requests[requestMethod]({route, data: preparedData, id});
 
                 if(Requests.valid({result})) {
 
@@ -609,7 +609,9 @@ export default {
         },
         modalTitles() {
 
-            return this.forms[this.entity].createUpdate.extras.modals.default.titles;
+            return {
+                createUpdate: this.forms[this.entity].createUpdate.extras.modals.default.titles
+            };
 
         },
         filterByOptions() {
