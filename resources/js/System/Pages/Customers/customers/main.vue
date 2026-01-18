@@ -263,10 +263,6 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    <div class="alert alert-info mb-3">
-                        <i class="fa fa-info-circle me-2"></i>
-                        <span>Para registrar la huella, primero debe registrar la huella en el dispositivo biométrico físico. El sistema asociará el ID del usuario del dispositivo con el cliente.</span>
-                    </div>
                     <div class="row g-3">
                         <InputSlot
                             hasDiv
@@ -276,7 +272,7 @@
                             xl="12"
                             lg="12">
                             <template v-slot:input>
-                                <span v-text="forms[entity].registerBiometric.data.customerName" class="fw-semibold"></span>
+                                <span v-text="forms[entity].registerBiometric.data.customer_name"></span>
                             </template>
                         </InputSlot>
                         <InputSlot
@@ -293,11 +289,9 @@
                                     v-model="forms[entity].registerBiometric.data.biometric_device"
                                     :options="biometricDevicesOptions"
                                     :class="config.forms.classes.select2"
+                                    @close="tooltips({show: true, time: 500})"
                                     :clearable="false"
-                                    :searchable="true"
-                                    placeholder="Seleccione un dispositivo ..."
-                                    label="label"
-                                    @close="tooltips({show: true, time: 500})"/>
+                                    :searchable="true"/>
                             </template>
                         </InputSlot>
                         <InputSlot
@@ -313,11 +307,7 @@
                                     v-model="forms[entity].registerBiometric.data.device_user_id"
                                     type="number"
                                     class="form-control"
-                                    placeholder="Ingrese el ID del usuario"
                                     min="1"/>
-                            </template>
-                            <template v-slot:defaultAppend>
-                                <small class="mt-1 text-muted fw-semibold ms-2">Se asignará automáticamente si está vacío</small>
                             </template>
                         </InputSlot>
                         <InputSlot
