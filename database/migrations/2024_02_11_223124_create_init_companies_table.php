@@ -160,7 +160,6 @@ return new class extends Migration {
             $table->string("email")->nullable();
             $table->string("phone_number")->nullable();
             $table->enum("gender", ["male", "female", "other"])->nullable();
-            $table->string("gender_description")->nullable();
             $table->date("birthdate")->nullable();
             $table->enum("status", ["active", "inactive"])->default("active");
 

@@ -17,6 +17,10 @@ return new class extends Migration {
             $table->id();
             $table->string("code");
             $table->string("name");
+            $table->boolean("is_searchable")->default(true);
+            $table->integer("min_length")->default(1);
+            $table->integer("max_length")->default(50);
+
             $table->enum("status", ["active", "inactive"])->default("active");
 
             $table->timestamp("created_at")->useCurrent()->nullable();
@@ -169,7 +173,6 @@ return new class extends Migration {
             $table->rememberToken();
             $table->string("phone_number")->nullable();
             $table->enum("gender", ["male", "female", "other"])->nullable();
-            $table->string("gender_description")->nullable();
             $table->date("birthdate")->nullable();
             $table->enum("status", ["active", "inactive"])->default("active");
 
@@ -202,11 +205,11 @@ return new class extends Migration {
 
         // Inserts
         DB::table("identity_document_types")->insert([
-            ["id" => 1, "code" => "doc.trib.no.dom.sin.ruc", "name" => "Doc.trib.no.dom.sin.ruc"],
-            ["id" => 2, "code" => "dni", "name" => "DNI"],
-            ["id" => 3, "code" => "ce", "name" => "CE"],
-            ["id" => 4, "code" => "ruc", "name" => "RUC"],
-            ["id" => 5, "code" => "pasaporte", "name" => "Pasaporte"]
+            ["id" => 1, "code" => "doc.trib.no.dom.sin.ruc", "name" => "Doc.trib.no.dom.sin.ruc", "is_searchable" => false, "min_length" => 15, "max_length" => 15],
+            ["id" => 2, "code" => "dni", "name" => "DNI", "is_searchable" => true, "min_length" => 8, "max_length" => 8],
+            ["id" => 3, "code" => "ce", "name" => "CE", "is_searchable" => false, "min_length" => 12, "max_length" => 12],
+            ["id" => 4, "code" => "ruc", "name" => "RUC", "is_searchable" => true, "min_length" => 11, "max_length" => 11],
+            ["id" => 5, "code" => "pasaporte", "name" => "Pasaporte", "is_searchable" => false, "min_length" => 8, "max_length" => 8]
         ]);
 
         DB::table("document_types")->insert([

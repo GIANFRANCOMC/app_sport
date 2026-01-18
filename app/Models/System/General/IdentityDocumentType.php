@@ -24,6 +24,9 @@ class IdentityDocumentType extends Model {
     protected $fillable = [
         "code",
         "name",
+        "is_searchable",
+        "min_length",
+        "max_length",
         "status",
         "created_at",
         "created_by",
