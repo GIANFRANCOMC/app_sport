@@ -265,7 +265,7 @@ class ProductService {
 
         }
 
-        if(!empty($relations)) {
+        if($relations !== null && !empty($relations)) {
 
             $query->with($relations);
 
