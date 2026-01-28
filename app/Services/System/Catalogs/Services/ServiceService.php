@@ -10,7 +10,8 @@ use Illuminate\Support\Facades\{Auth, DB};
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 
-use App\Models\System\Catalogs\{CategoryItem, Item};
+use App\Models\System\Catalogs\{Item};
+use App\Services\System\Catalogs\Categories\CategoryItemService;
 
 /**
  * Service class for managing module operations
@@ -150,44 +151,6 @@ class ServiceService {
     }
 
     /**
-     * Sync categories for an item
-     *
-     * @param Item $item Item instance
-     * @param array $categories Categories data
-     * @param int $userId User
-     * @return void
-     */
-    private static function syncCategories(Item $item, array $categories, int $userId): void {
-
-        // Deactivate existing categories
-        CategoryItem::where("item_id", $item->id)
-                    ->where("status", "active")
-                    ->update([
-                        "status"     => "inactive",
-                        "updated_at" => now(),
-                        "updated_by" => $userId
-                    ]);
-
-        // Create/update new categories
-        foreach($categories as $category) {
-
-            CategoryItem::updateOrInsert(
-                [
-                    "category_id" => $category["category_id"],
-                    "item_id"     => $item->id
-                ],
-                [
-                    "status"      => "active",
-                    "updated_at"  => now(),
-                    "updated_by"  => $userId
-                ]
-            );
-
-        }
-
-    }
-
-    /**
      * Check if internal code exists
      *
      * @param string $internalCode Internal code
@@ -252,7 +215,7 @@ class ServiceService {
             // Sync categories
             if(isset($data["categories"]) && is_array($data["categories"])) {
 
-                self::syncCategories($item, $data["categories"], $userId);
+                CategoryItemService::sync($item, $data["categories"], $userId);
 
             }
 
@@ -303,7 +266,7 @@ class ServiceService {
             // Sync categories
             if(isset($data["categories"]) && is_array($data["categories"])) {
 
-                self::syncCategories($item, $data["categories"], $userId);
+                CategoryItemService::sync($item, $data["categories"], $userId);
 
             }
 

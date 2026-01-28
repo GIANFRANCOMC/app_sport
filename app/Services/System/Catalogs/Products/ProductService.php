@@ -10,9 +10,9 @@ use Illuminate\Support\Facades\{Auth, DB};
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 
-use App\Models\System\Catalogs\{CategoryItem, Item};
-use App\Models\System\Organizations\Branch;
-use App\Models\System\Warehouses\WarehouseItem;
+use App\Models\System\Catalogs\{Item};
+use App\Services\System\Catalogs\Categories\CategoryItemService;
+use App\Services\System\Warehouses\WarehouseItemService;
 
 /**
  * Service class for managing module operations
@@ -152,99 +152,6 @@ class ProductService {
     }
 
     /**
-     * Create warehouse items for a product
-     *
-     * @param Item $item Item instance
-     * @param int $companyId Company
-     * @param int $userId User
-     * @return void
-     */
-    private static function createWarehouseItems(Item $item, int $companyId, int $userId): void {
-
-        $branches = Branch::getAll("default", $companyId);
-
-        foreach($branches as $branch) {
-
-            foreach($branch->warehouses as $warehouse) {
-
-                $warehouseItem = new WarehouseItem();
-                $warehouseItem->warehouse_id = $warehouse->id;
-                $warehouseItem->item_id      = $item->id;
-                $warehouseItem->quantity     = 0;
-                $warehouseItem->status       = $item->status;
-                $warehouseItem->created_at   = now();
-                $warehouseItem->created_by   = $userId;
-                $warehouseItem->save();
-
-            }
-
-        }
-
-    }
-
-    /**
-     * Sync categories for an item
-     *
-     * @param Item $item Item instance
-     * @param array $categories Categories data
-     * @param int $userId User
-     * @return void
-     */
-    private static function syncCategories(Item $item, array $categories, int $userId): void {
-
-        // Deactivate existing categories
-        CategoryItem::where("item_id", $item->id)
-                    ->where("status", "active")
-                    ->update([
-                        "status"     => "inactive",
-                        "updated_at" => now(),
-                        "updated_by" => $userId
-                    ]);
-
-        // Create/update new categories
-        foreach($categories as $category) {
-
-            CategoryItem::updateOrInsert(
-                [
-                    "category_id" => $category["category_id"],
-                    "item_id"     => $item->id
-                ],
-                [
-                    "status"      => "active",
-                    "updated_at"  => now(),
-                    "updated_by"  => $userId
-                ]
-            );
-
-        }
-
-    }
-
-    /**
-     * Check if internal code exists
-     *
-     * @param string $internalCode Internal code
-     * @param int $companyId Company
-     * @param int|null $excludeId Item ID to exclude
-     * @return bool
-     */
-    private static function internalCodeExists(string $internalCode, int $companyId, ?int $excludeId = null): bool {
-
-        $query = Item::where("internal_code", $internalCode)
-                     ->where("company_id", $companyId)
-                     ->where("type", "product");
-
-        if(Utilities::isDefined($excludeId)) {
-
-            $query->where("id", "!=", $excludeId);
-
-        }
-
-        return $query->exists();
-
-    }
-
-    /**
      * Create a new record
      *
      * @param array $data Input data
@@ -269,13 +176,6 @@ class ProductService {
 
             $userId = $userId ?? $userAuth->id ?? null;
 
-            // Check if internal code exists
-            if(self::internalCodeExists($data["internal_code"], $companyId)) {
-
-                throw new Exception(self::trans("internal_code_exists"));
-
-            }
-
             // Prepare data with only allowed fields
             $itemData = self::prepareProductDataForCreate($data, $companyId, $userId);
 
@@ -283,12 +183,12 @@ class ProductService {
             $item = Item::create($itemData);
 
             // Create warehouse items for products
-            self::createWarehouseItems($item, $companyId, $userId);
+            WarehouseItemService::createForProductInAllWarehouses($item, $companyId, $userId);
 
             // Sync categories
             if(isset($data["categories"]) && is_array($data["categories"])) {
 
-                self::syncCategories($item, $data["categories"], $userId);
+                CategoryItemService::sync($item, $data["categories"], $userId);
 
             }
 
@@ -313,17 +213,6 @@ class ProductService {
             $userAuth = Auth::user();
             $userId   = $userId ?? $userAuth->id ?? null;
 
-            // Check if internal code exists (excluding current item)
-            if(isset($data["internal_code"])) {
-
-                if(self::internalCodeExists($data["internal_code"], $item->company_id, $item->id)) {
-
-                    throw new Exception(self::trans("internal_code_exists"));
-
-                }
-
-            }
-
             // Prepare update data with only changed fields
             $updateData = self::prepareProductDataForUpdate($item, $data);
 
@@ -339,7 +228,7 @@ class ProductService {
             // Sync categories
             if(isset($data["categories"]) && is_array($data["categories"])) {
 
-                self::syncCategories($item, $data["categories"], $userId);
+                CategoryItemService::sync($item, $data["categories"], $userId);
 
             }
 
