@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Services\System\Catalogs\Items;
+namespace App\Services\System\Catalogs\Services;
 
 use App\Models\System\Catalogs\Item;
 

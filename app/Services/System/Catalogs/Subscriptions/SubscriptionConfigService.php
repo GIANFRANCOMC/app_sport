@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace App\Services\System\Catalogs\Items;
+namespace App\Services\System\Catalogs\Subscriptions;
 
 /**
- * Service for managing Service configuration
+ * Service for managing Subscription configuration
  */
-class ServiceConfigService {
+class SubscriptionConfigService {
 
     /**
-     * Get initialization parameters for service module
+     * Get initialization parameters for subscription module
      *
      * @param int $companyId Company ID
      * @param string $page Page identifier
@@ -18,24 +18,24 @@ class ServiceConfigService {
      */
     public static function getInitParams(int $companyId, string $page = ""): \stdClass {
 
-        return ItemConfigService::getInitParams($companyId, $page, "service");
+        return ItemConfigService::getInitParams($companyId, $page, "subscription");
 
     }
 
     /**
-     * Clear cache for service configuration
+     * Clear cache for subscription configuration
      *
      * @param int $companyId Company ID
      * @return void
      */
     public static function clearCache(int $companyId): void {
 
-        ItemConfigService::clearCache($companyId, "service");
+        ItemConfigService::clearCache($companyId, "subscription");
 
     }
 
     /**
-     * Clear all service configuration cache
+     * Clear all subscription configuration cache
      *
      * @param int $companyId Company ID
      * @return void
