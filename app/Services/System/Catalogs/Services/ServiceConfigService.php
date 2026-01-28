@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Cache;
 use stdClass;
 
 use App\Models\System\Catalogs\{Category, Item};
-use App\Models\System\General\Currency;
+use App\Models\System\General\{Currency};
 
 /**
  * Service for managing module configuration and initialization parameters
@@ -38,14 +38,13 @@ class ServiceConfigService {
 
             if($page === "main") {
 
-                $config->services = new stdClass();
-                $config->services->statuses = Item::getStatuses();
-
                 $config->categories = new stdClass();
-                $config->categories->records = Category::getAll("service", $companyId);
+                $config->categories->records = Category::getAll("default", $companyId);
 
                 $config->currencies = new stdClass();
-                $config->currencies->records = Currency::get();
+                $config->currencies->records = Currency::getAll("default", $companyId);
+
+                $config->statuses = Item::getStatuses();
 
             }
 
