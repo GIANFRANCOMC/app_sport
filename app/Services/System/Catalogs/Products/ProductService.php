@@ -10,9 +10,9 @@ use Illuminate\Support\Facades\{Auth, DB};
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 
-use App\Models\System\Catalogs\{Item};
 use App\Services\System\Catalogs\Categories\{CategoryItemService};
 use App\Services\System\Warehouses\Warehouses\{WarehouseItemService};
+use App\Models\System\Catalogs\{Item};
 
 /**
  * Service class for managing module operations
@@ -189,12 +189,12 @@ class ProductService {
             $item = Item::create($itemData);
 
             // Create warehouse items for products
-            WarehouseItemService::createForProductInAllWarehouses($item, $companyId, $userId);
+            WarehouseItemService::createForProductInAllWarehouses($item->id, $companyId, $userId);
 
             // Sync categories
             if(isset($data["categories"]) && is_array($data["categories"])) {
 
-                CategoryItemService::sync($item, $data["categories"], $userId);
+                CategoryItemService::sync($item->id, $data["categories"], $userId);
 
             }
 
@@ -234,7 +234,7 @@ class ProductService {
             // Sync categories
             if(isset($data["categories"]) && is_array($data["categories"])) {
 
-                CategoryItemService::sync($item, $data["categories"], $userId);
+                CategoryItemService::sync($item->id, $data["categories"], $userId);
 
             }
 
@@ -249,19 +249,19 @@ class ProductService {
      *
      * @param int $id Record
      * @param int $companyId Company
-     * @param bool $activeOnly Only search active records
+     * @param array|null $statuses Filter by statuses (e.g. ["active"], ["active", "inactive"])
      * @param array $relations Relations to eager load
      * @return Item|null
      */
-    public static function findByIdAndCompany(int $id, int $companyId, bool $activeOnly = false, array $relations = ["currency", "categoryItems"]): ?Item {
+    public static function findByIdAndCompany(int $id, int $companyId, ?array $statuses = ["active"], array $relations = ["currency", "categoryItems"]): ?Item {
 
         $query = Item::where("id", $id)
                      ->where("company_id", $companyId)
                      ->where("type", "product");
 
-        if($activeOnly) {
+        if($statuses !== null && !empty($statuses)) {
 
-            $query->where("status", "active");
+            $query->whereIn("status", $statuses);
 
         }
 
@@ -295,7 +295,7 @@ class ProductService {
 
         if(Utilities::isDefined($word) && Utilities::isDefined($filterBy)) {
 
-            $searchTerm = "%{$word}%";
+            $searchTerm = Utilities::getWordSearch($word);
 
             if($filterBy === "all") {
 
