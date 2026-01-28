@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Services\System\Catalogs\Categories;
 
-use App\Models\System\Catalogs\{CategoryItem, Item};
+use App\Models\System\Catalogs\{CategoryItem};
 
 class CategoryItemService {
 
-    public static function sync(Item $item, array $categories, int $userId): void {
+    public static function sync(int $itemId, array $categories, int $userId): void {
 
-        CategoryItem::where("item_id", $item->id)
+        CategoryItem::where("item_id", $itemId)
                     ->where("status", "active")
                     ->update([
                         "status"     => "inactive",
@@ -29,7 +29,7 @@ class CategoryItemService {
             CategoryItem::updateOrInsert(
                 [
                     "category_id" => $category["category_id"],
-                    "item_id"     => $item->id
+                    "item_id"     => $itemId
                 ],
                 [
                     "status"      => "active",
