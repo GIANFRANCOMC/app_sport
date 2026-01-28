@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Services\System\Warehouses;
+namespace App\Services\System\Warehouses\StockManagement;
 
 use App\Models\System\Warehouses\Warehouse;
 use Illuminate\Support\Facades\Cache;
