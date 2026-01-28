@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Services\System\Customers;
+namespace App\Services\System\Customers\Customers;
 
 use Illuminate\Support\Facades\Cache;
 use stdClass;
