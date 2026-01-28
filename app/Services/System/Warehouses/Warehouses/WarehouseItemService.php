@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Services\System\Warehouses\Warehouses;
 
-use App\Models\System\Catalogs\Item;
-use App\Models\System\Settings\Branch;
-use App\Models\System\Warehouses\WarehouseItem;
+use App\Models\System\Catalogs\{Item};
+use App\Models\System\Organizations\{Branch};
+use App\Models\System\Warehouses\{WarehouseItem};
 
 class WarehouseItemService {
 

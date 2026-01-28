@@ -8,15 +8,6 @@ use App\Models\System\Catalogs\{CategoryItem, Item};
 
 class CategoryItemService {
 
-    /**
-     * Sincroniza categorías para un item.
-     *
-     * Formato esperado:
-     * - $categories = [
-     *   ["category_id" => 1],
-     *   ["category_id" => 2],
-     * ]
-     */
     public static function sync(Item $item, array $categories, int $userId): void {
 
         CategoryItem::where("item_id", $item->id)

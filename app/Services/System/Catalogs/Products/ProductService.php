@@ -11,8 +11,8 @@ use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 
 use App\Models\System\Catalogs\{Item};
-use App\Services\System\Catalogs\Categories\CategoryItemService;
-use App\Services\System\Warehouses\WarehouseItemService;
+use App\Services\System\Catalogs\Categories\{CategoryItemService};
+use App\Services\System\Warehouses\Warehouses\{WarehouseItemService};
 
 /**
  * Service class for managing module operations
@@ -75,11 +75,11 @@ class ProductService {
     private static function prepareProductDataForCreate(array $data, int $companyId, int $userId): array {
 
         $itemData = [
-            "company_id"     => $companyId,
-            "type"           => "product",
-            "status"         => $data["status"] ?? "active",
-            "created_at"     => now(),
-            "created_by"     => $userId
+            "company_id" => $companyId,
+            "type"       => "product",
+            "status"     => $data["status"] ?? "active",
+            "created_at" => now(),
+            "created_by" => $userId
         ];
 
         foreach(self::ALLOWED_FIELDS as $field) {
@@ -126,15 +126,21 @@ class ProductService {
                 if(in_array($field, ["min_price", "max_price"])) {
 
                     $value = floatval($data[$field]) <= 0 ? null : $data[$field];
+
                     if($value !== $item->$field) {
+
                         $updateData[$field] = $value;
+
                     }
 
                 }elseif($field === "see_my_web_price") {
 
                     $value = ($data["see_my_web"] ?? $item->see_my_web) ? ($data[$field] ?? false) : false;
+
                     if($value !== $item->$field) {
+
                         $updateData[$field] = $value;
+
                     }
 
                 }elseif($data[$field] !== $item->$field) {
