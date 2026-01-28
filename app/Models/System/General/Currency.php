@@ -52,6 +52,17 @@ class Currency extends Model {
 
     }
 
+    public static function getAll(string $type = "default", ?int $company_id = null) {
+
+        return Currency::when(in_array($type, ["default"]), function($query) {
+
+                            $query->whereIn("status", ["active"]);
+
+                       })
+                       ->get();
+
+    }
+
     // Relationships
     public function branchAssetsAll() {
 
