@@ -7,15 +7,17 @@ namespace App\Http\Controllers\System\Catalogs;
 use App\Http\Controllers\System\Base\BaseController;
 use App\Helpers\System\{Utilities};
 use Illuminate\Http\{JsonResponse, Request};
+use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
 
 use App\Http\Requests\System\Catalogs\Subscriptions\{StoreSubscriptionRequest, UpdateSubscriptionRequest};
-use App\Services\System\Catalogs\Items\{SubscriptionConfigService, SubscriptionService};
+use App\Services\System\Catalogs\Subscriptions\{SubscriptionConfigService, SubscriptionService};
 use App\Models\System\Catalogs\{Item};
 
 class SubscriptionController extends BaseController {
 
     /**
-     * Translation namespace for subscription module
+     * Translation namespace for module
      */
     private const TRANSLATION_NAMESPACE = "System.Catalogs.subscription";
 
@@ -28,12 +30,13 @@ class SubscriptionController extends BaseController {
     public function initParams(Request $request) {
 
         $page = $this->getPage($request);
+
         return SubscriptionConfigService::getInitParams($this->getCompanyId(), $page);
 
     }
 
     /**
-     * Get paginated list of subscriptions with filters
+     * Get paginated list with filters
      *
      * @param Request $request
      * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator
@@ -48,7 +51,7 @@ class SubscriptionController extends BaseController {
     }
 
     /**
-     * Display the subscriptions index page
+     * Display the module index page
      *
      * @return \Illuminate\Contracts\View\View
      */
@@ -59,7 +62,7 @@ class SubscriptionController extends BaseController {
     }
 
     /**
-     * Show the form for creating a new subscription
+     * Show the form for creating a new record
      * (Not used in SPA, but kept for REST compliance)
      *
      * @return void
@@ -71,7 +74,7 @@ class SubscriptionController extends BaseController {
     }
 
     /**
-     * Store a newly created subscription
+     * Store a newly created record
      *
      * @param StoreSubscriptionRequest $request
      * @return JsonResponse
@@ -102,7 +105,7 @@ class SubscriptionController extends BaseController {
     }
 
     /**
-     * Display the specified subscription
+     * Display the specified record
      * (Not used, but kept for REST compliance)
      *
      * @param Item $record
@@ -115,7 +118,7 @@ class SubscriptionController extends BaseController {
     }
 
     /**
-     * Show the form for editing the specified subscription
+     * Show the form for editing the specified record
      * (Not used in SPA, but kept for REST compliance)
      *
      * @param Item $record
@@ -128,7 +131,7 @@ class SubscriptionController extends BaseController {
     }
 
     /**
-     * Update the specified subscription
+     * Update the specified record
      *
      * @param UpdateSubscriptionRequest $request
      * @param int $id Subscription ID
@@ -168,7 +171,7 @@ class SubscriptionController extends BaseController {
     }
 
     /**
-     * Remove the specified subscription
+     * Remove the specified record
      * (Not used, but kept for REST compliance)
      *
      * @param Item $record
@@ -181,7 +184,7 @@ class SubscriptionController extends BaseController {
     }
 
     /**
-     * Prepare subscription data from request
+     * Prepare record data from request
      *
      * @param StoreSubscriptionRequest|UpdateSubscriptionRequest $request
      * @return array
@@ -190,25 +193,25 @@ class SubscriptionController extends BaseController {
 
         return [
             "company_id"         => $this->getCompanyId(),
-            "internal_code"      => $request->internal_code,
-            "name"               => $request->name,
-            "description"        => $request->description ?? "",
-            "price"              => $request->price,
-            "min_price"          => $request->min_price,
-            "max_price"          => $request->max_price,
-            "currency_id"        => $request->currency_id,
-            "duration_type"      => $request->duration_type,
-            "duration_value"     => $request->duration_value,
-            "see_my_web"         => $request->see_my_web ?? false,
-            "see_my_web_price"   => $request->see_my_web_price ?? false,
-            "status"             => $request->status,
-            "categories"          => $request->categories ?? []
+            "internal_code"      => $request->input("internal_code"),
+            "name"               => $request->input("name"),
+            "description"        => $request->input("description"),
+            "price"              => $request->input("price"),
+            "min_price"          => $request->input("min_price"),
+            "max_price"          => $request->input("max_price"),
+            "currency_id"        => $request->input("currency_id"),
+            "duration_type"      => $request->input("duration_type"),
+            "duration_value"     => $request->input("duration_value"),
+            "see_my_web"         => $request->input("see_my_web"),
+            "see_my_web_price"   => $request->input("see_my_web_price"),
+            "status"             => $request->input("status"),
+            "categories"         => $request->input("categories")
         ];
 
     }
 
     /**
-     * Get translation namespace for subscription module
+     * Get translation namespace for module
      *
      * @return string
      */
