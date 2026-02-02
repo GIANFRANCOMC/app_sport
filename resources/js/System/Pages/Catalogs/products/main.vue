@@ -323,8 +323,8 @@ const FORM_FIELD_CONFIG = {
     price: {toNumber: true, minValue: 0},
     min_price: {toNumber: true, minValue: 0},
     max_price: {toNumber: true, minValue: 0},
-    currency: {getCode: true},
-    categories: {getArray: true},
+    currency: {mapToField: "currency_id"},
+    categories: {getArray: {mapTo: "category_id"}},
     see_my_web: {toBoolean: true},
     see_my_web_price: {toBoolean: true},
     status: {getCode: true}
@@ -595,7 +595,7 @@ export default {
 
                 }
 
-                const preparedData  = this.prepareFormData(formData);
+                const preparedData  = Forms.prepareFormData(formData, this.MODULE.formFieldConfig);
                 const id            = preparedData.id;
                 const isUpdate      = this.isDefined(id);
                 const requestMethod = isUpdate ? "patch" : "post";
@@ -631,37 +631,6 @@ export default {
             }
 
         },
-        prepareFormData(formData) {
-
-            const prepared = Utils.cloneJson(formData);
-
-            // Prepare currency
-            if(prepared.currency?.code) {
-
-                prepared.currency_id = prepared.currency.code;
-                delete prepared.currency;
-
-            }
-
-            // Prepare categories
-            if(Array.isArray(prepared.categories)) {
-
-                prepared.categories = prepared.categories.map(category => ({
-                    category_id: category.code
-                }));
-
-            }
-
-            // Prepare status
-            if(prepared.status?.code) {
-
-                prepared.status = prepared.status.code;
-
-            }
-
-            return Forms.prepareFormData(prepared, this.MODULE.formFieldConfig);
-
-        },
         validateFormData(formData) {
 
             const result = Forms.validateFormData(formData, this.MODULE.validationRules, {isDescriptive: true, errorLabels: this.MODULE.errorLabels});
@@ -669,7 +638,7 @@ export default {
             // Custom validation for price ranges
             const minPrice = parseFloat(formData.min_price) || 0;
             const maxPrice = parseFloat(formData.max_price) || 0;
-            const price = parseFloat(formData.price) || 0;
+            const price    = parseFloat(formData.price) || 0;
 
             if(minPrice > 0 && maxPrice > 0) {
 

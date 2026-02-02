@@ -38,7 +38,16 @@ export function clearFormData(formData, defaultValues = {}) {
 /**
  * Prepara datos del formulario antes de enviar
  * @param {Object} formData - Datos del formulario
- * @param {Object} config - Configuración por campo {trim, normalize, toNumber, getCode, removeIfEmpty}
+ * @param {Object} config - Configuración por campo {
+ *   trim: boolean,
+ *   normalize: boolean,
+ *   toNumber: boolean,
+ *   toBoolean: boolean,
+ *   getCode: boolean,
+ *   mapToField: string,
+ *   getArray: boolean|{mapTo: string},
+ *   removeIfEmpty: boolean
+ * }
  * @returns {Object} Datos preparados
  */
 export function prepareFormData(formData, config = {}) {
@@ -64,9 +73,34 @@ export function prepareFormData(formData, config = {}) {
                 : null;
         }
 
+        // Convert to boolean
+        if (fieldConfig.toBoolean === true && Utils.isDefined({ value: prepared[key] })) {
+            prepared[key] = Boolean(prepared[key]);
+        }
+
         // Get code from object (para selects)
         if (fieldConfig.getCode === true && prepared[key]?.code !== undefined) {
             prepared[key] = prepared[key].code;
+        }
+
+        // Map to another field (ej: currency -> currency_id)
+        if (fieldConfig.mapToField && typeof fieldConfig.mapToField === "string") {
+            if (prepared[key]?.code !== undefined) {
+                prepared[fieldConfig.mapToField] = prepared[key].code;
+                delete prepared[key];
+            }
+        }
+
+        // Transform array of objects (ej: categories)
+        if (fieldConfig.getArray && Array.isArray(prepared[key])) {
+            if (typeof fieldConfig.getArray === "object" && fieldConfig.getArray.mapTo) {
+                // Transform array: [{code: 1}, {code: 2}] -> [{category_id: 1}, {category_id: 2}]
+                prepared[key] = prepared[key].map(item => {
+                    const mappedObj = {};
+                    mappedObj[fieldConfig.getArray.mapTo] = item?.code ?? item;
+                    return mappedObj;
+                });
+            }
         }
 
         // Remove if empty
@@ -152,7 +186,7 @@ export function handleFormResponseErrors({result, formErrorsObject, config = {},
     }
 
     if(showAlert) {
-        const msgContent = (isValidationError && hasFieldErrors) 
+        const msgContent = (isValidationError && hasFieldErrors)
             ? (config.messages?.errorValidateFields || "El formulario contiene errores de validación. Por favor, revise los campos marcados en rojo y corrija la información según se indique.")
             : errorMessage;
 
