@@ -339,6 +339,8 @@ const VALIDATION_RULES = {
     max_price: {required: false, number: true, min: 0},
     currency: {required: true},
     categories: {required: false},
+    see_my_web: {required: false},
+    see_my_web_price: {required: false},
     status: {required: true}
 };
 
@@ -351,6 +353,8 @@ const ERROR_LABELS = {
     max_price: "Precio máximo",
     currency: "Moneda",
     categories: "Categorías",
+    see_my_web: "Visualizar en mi página",
+    see_my_web_price: "Visualizar precio",
     status: "Estado"
 };
 
@@ -562,6 +566,7 @@ export default {
         generateCodeAction() {
 
             this.forms[this.entity].createUpdate.data.internal_code = this.generateCode({length: 7});
+
             Alerts.toastrs({type: "success", subtitle: "Código interno generado correctamente."});
             Alerts.tooltips({show: false});
 
@@ -671,12 +676,14 @@ export default {
                 if(maxPrice < minPrice) {
 
                     if(!result.errors.max_price) result.errors.max_price = [];
+
                     result.errors.max_price.push(`${this.MODULE.errorLabels.max_price}: Debe ser mayor o igual al precio mínimo`);
                     result.bool = false;
 
                 }else if(price < minPrice || price > maxPrice) {
 
                     if(!result.errors.price) result.errors.price = [];
+
                     result.errors.price.push(`${this.MODULE.errorLabels.price}: Debe estar entre ${minPrice} y ${maxPrice}`);
                     result.bool = false;
 
@@ -685,12 +692,14 @@ export default {
             }else if(minPrice > 0 && price < minPrice) {
 
                 if(!result.errors.price) result.errors.price = [];
+
                 result.errors.price.push(`${this.MODULE.errorLabels.price}: Debe ser mayor o igual al precio mínimo`);
                 result.bool = false;
 
             }else if(maxPrice > 0 && price > maxPrice) {
 
                 if(!result.errors.price) result.errors.price = [];
+
                 result.errors.price.push(`${this.MODULE.errorLabels.price}: Debe ser menor o igual al precio máximo`);
                 result.bool = false;
 
