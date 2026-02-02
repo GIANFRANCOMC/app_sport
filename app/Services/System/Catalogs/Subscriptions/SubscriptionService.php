@@ -10,8 +10,8 @@ use Illuminate\Support\Facades\{Auth, DB};
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 
+use App\Services\System\Catalogs\Categories\{CategoryItemService};
 use App\Models\System\Catalogs\{Item};
-use App\Services\System\Catalogs\Categories\CategoryItemService;
 
 /**
  * Service class for managing module operations
@@ -76,11 +76,11 @@ class SubscriptionService {
     private static function prepareSubscriptionDataForCreate(array $data, int $companyId, int $userId): array {
 
         $itemData = [
-            "company_id"     => $companyId,
-            "type"           => "subscription",
-            "status"         => $data["status"] ?? "active",
-            "created_at"     => now(),
-            "created_by"     => $userId
+            "company_id" => $companyId,
+            "type"       => "subscription",
+            "status"     => $data["status"] ?? "active",
+            "created_at" => now(),
+            "created_by" => $userId
         ];
 
         foreach(self::ALLOWED_FIELDS as $field) {
@@ -127,15 +127,21 @@ class SubscriptionService {
                 if(in_array($field, ["min_price", "max_price"])) {
 
                     $value = floatval($data[$field]) <= 0 ? null : $data[$field];
+
                     if($value !== $item->$field) {
+
                         $updateData[$field] = $value;
+
                     }
 
                 }elseif($field === "see_my_web_price") {
 
                     $value = ($data["see_my_web"] ?? $item->see_my_web) ? ($data[$field] ?? false) : false;
+
                     if($value !== $item->$field) {
+
                         $updateData[$field] = $value;
+
                     }
 
                 }elseif($data[$field] !== $item->$field) {
@@ -149,30 +155,6 @@ class SubscriptionService {
         }
 
         return $updateData;
-
-    }
-
-    /**
-     * Check if internal code exists
-     *
-     * @param string $internalCode Internal code
-     * @param int $companyId Company
-     * @param int|null $excludeId Item ID to exclude
-     * @return bool
-     */
-    private static function internalCodeExists(string $internalCode, int $companyId, ?int $excludeId = null): bool {
-
-        $query = Item::where("internal_code", $internalCode)
-                     ->where("company_id", $companyId)
-                     ->where("type", "subscription");
-
-        if(Utilities::isDefined($excludeId)) {
-
-            $query->where("id", "!=", $excludeId);
-
-        }
-
-        return $query->exists();
 
     }
 
@@ -201,13 +183,6 @@ class SubscriptionService {
 
             $userId = $userId ?? $userAuth->id ?? null;
 
-            // Check if internal code exists
-            if(self::internalCodeExists($data["internal_code"], $companyId)) {
-
-                throw new Exception(self::trans("internal_code_exists"));
-
-            }
-
             // Prepare data with only allowed fields
             $itemData = self::prepareSubscriptionDataForCreate($data, $companyId, $userId);
 
@@ -217,7 +192,7 @@ class SubscriptionService {
             // Sync categories
             if(isset($data["categories"]) && is_array($data["categories"])) {
 
-                CategoryItemService::sync($item, $data["categories"], $userId);
+                CategoryItemService::sync($item->id, $data["categories"], $userId);
 
             }
 
@@ -242,17 +217,6 @@ class SubscriptionService {
             $userAuth = Auth::user();
             $userId   = $userId ?? $userAuth->id ?? null;
 
-            // Check if internal code exists (excluding current item)
-            if(isset($data["internal_code"])) {
-
-                if(self::internalCodeExists($data["internal_code"], $item->company_id, $item->id)) {
-
-                    throw new Exception(self::trans("internal_code_exists"));
-
-                }
-
-            }
-
             // Prepare update data with only changed fields
             $updateData = self::prepareSubscriptionDataForUpdate($item, $data);
 
@@ -268,7 +232,7 @@ class SubscriptionService {
             // Sync categories
             if(isset($data["categories"]) && is_array($data["categories"])) {
 
-                CategoryItemService::sync($item, $data["categories"], $userId);
+                CategoryItemService::sync($item->id, $data["categories"], $userId);
 
             }
 
@@ -283,23 +247,23 @@ class SubscriptionService {
      *
      * @param int $id Record
      * @param int $companyId Company
-     * @param bool $activeOnly Only search active records
+     * @param array|null $statuses Filter by statuses (e.g. ["active"], ["active", "inactive"])
      * @param array $relations Relations to eager load
      * @return Item|null
      */
-    public static function findByIdAndCompany(int $id, int $companyId, bool $activeOnly = false, array $relations = ["currency", "categoryItems"]): ?Item {
+    public static function findByIdAndCompany(int $id, int $companyId, ?array $statuses = ["active"], array $relations = ["currency", "categoryItems"]): ?Item {
 
         $query = Item::where("id", $id)
                      ->where("company_id", $companyId)
                      ->where("type", "subscription");
 
-        if($activeOnly) {
+        if($statuses !== null && !empty($statuses)) {
 
-            $query->where("status", "active");
+            $query->whereIn("status", $statuses);
 
         }
 
-        if(!empty($relations)) {
+        if($relations !== null && !empty($relations)) {
 
             $query->with($relations);
 
@@ -329,7 +293,7 @@ class SubscriptionService {
 
         if(Utilities::isDefined($word) && Utilities::isDefined($filterBy)) {
 
-            $searchTerm = "%{$word}%";
+            $searchTerm = Utilities::getWordSearch($word);
 
             if($filterBy === "all") {
 
