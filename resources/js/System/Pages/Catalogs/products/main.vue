@@ -40,26 +40,35 @@
                     </td>
                 </tr>
                 <template v-else-if="entityList.records.total > 0">
-                    <tr v-for="record in entityList.records.data" :key="record.id" class="text-center">
-                        <td v-text="record.internal_code" class="fw-semibold"></td>
-                        <td v-text="record.name" class="text-start"></td>
-                        <td>
-                            <span v-text="record.currency?.sign"></span>
-                            <span v-text="separatorNumber(record.price)" class="ms-2"></span>
+                    <tr v-for="record in entityList.records.data" :key="record.id">
+                        <td class="text-center">
+                            <span v-text="record.internal_code" class="fw-semibold d-block"></span>
                         </td>
                         <td>
-                            <div class="d-flex justify-content-center align-items-center gap-3 border border-light rounded px-2 py-1">
-                                <i :class="['fa fa-globe cursor-pointer', record.see_my_web ? 'text-success' : 'text-light']" data-bs-toggle="tooltip" data-bs-placement="top" :title="record.see_my_web ? 'Visible en mi página' : 'No visible en mi página'"></i>
-                                <i v-if="record.see_my_web && record.see_my_web_price" :class="['fa-solid fa-dollar-sign cursor-pointer', record.see_my_web_price ? 'text-success' : 'text-light']" data-bs-toggle="tooltip" data-bs-placement="top" :title="record.see_my_web_price ? 'Precio visible' : 'Precio no visible'"></i>
+                            <span v-text="record.name" class="fw-semibold d-block"></span>
+                            <small v-if="record.description" v-text="record.description" class="text-muted"></small>
+                        </td>
+                        <td class="text-center">
+                            <span class="fw-semibold d-block">
+                                <span v-text="`${record.currency?.sign} ${separatorNumber(record.price)}`"></span>
+                            </span>
+                            <div v-if="record.min_price || record.max_price" class="d-flex flex-column mt-1">
+                                <small v-if="record.min_price" class="text-muted" v-text="`Min: ${record.currency?.sign} ${separatorNumber(record.min_price)}`"></small>
+                                <small v-if="record.max_price" class="text-muted" v-text="`Max: ${record.currency?.sign} ${separatorNumber(record.max_price)}`"></small>
                             </div>
                         </td>
-                        <td>
-                            <span :class="[getStatusBadgeClasses(record.status), 'badge', 'fw-semibold', 'text-capitalize']" v-text="record.formatted_status"></span>
+                        <td class="text-center">
+                            <div class="d-flex justify-content-center align-items-center gap-2">
+                                <i :class="['fa fa-globe cursor-pointer', record.see_my_web ? 'text-success' : 'text-light']" data-bs-toggle="tooltip" data-bs-placement="top" :title="record.see_my_web ? 'Visible en mi página' : 'No visible en mi página'"></i>
+                                <i :class="['fa-solid fa-dollar-sign cursor-pointer', record.see_my_web_price ? 'text-success' : 'text-light']" data-bs-toggle="tooltip" data-bs-placement="top" :title="record.see_my_web_price ? 'Precio visible' : 'Precio no visible'"></i>
+                            </div>
                         </td>
-                        <td>
-                            <button type="button" class="btn btn-sm btn-warning waves-effect" @click="openModal(record)">
-                                <i class="fa fa-pencil"></i>
-                                <span class="ms-2" v-text="MODULE.texts.actions.edit"></span>
+                        <td class="text-center">
+                            <span :class="[getStatusBadgeClasses(record.status), 'flex-shrink-none']" v-text="record.formatted_status"></span>
+                        </td>
+                        <td class="text-center">
+                            <button type="button" class="btn btn-xs btn-warning waves-effect" @click="openModal(record)">
+                                <span v-text="MODULE.texts.actions.edit"></span>
                             </button>
                         </td>
                     </tr>
@@ -221,7 +230,7 @@
                             <InputSlot
                                 hasDiv
                                 :isInputGroup="false"
-                                :divInputClass="['d-flex flex-wrap justify-content-end align-items-end h-100 gap-3']"
+                                :divInputClass="['d-flex flex-wrap justify-content-center align-items-end h-100 gap-3']"
                                 xl="8"
                                 lg="8">
                                 <template v-slot:input>
