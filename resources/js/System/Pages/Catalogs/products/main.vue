@@ -1,7 +1,7 @@
 <template>
     <Breadcrumb :list="breadcrumbTitles"/>
 
-    <!-- Filters Section -->
+    <!-- Filters -->
     <FiltersSection
         :filter-by-value="filterByValue"
         @update:filterByValue="filterByValue = $event"
@@ -20,61 +20,55 @@
         @search="handleSearch"
         @add="openModal()"/>
 
-    <!-- List Section -->
-    <div class="table-responsive">
+    <!-- Records -->
+    <div class="list-section mb-1 mb-md-1 table-responsive">
         <table class="table table-hover">
-            <thead>
-                <tr class="text-center align-middle">
-                    <th class="bg-secondary text-white fw-semibold" style="width: 20%;">CÓDIGO INTERNO</th>
-                    <th class="bg-secondary text-white fw-semibold" style="width: 30%;">NOMBRE</th>
-                    <th class="bg-secondary text-white fw-semibold" style="width: 20%;">PRECIO DE VENTA</th>
-                    <th class="bg-secondary text-white fw-semibold" style="width: 5%;"></th>
-                    <th class="bg-secondary text-white fw-semibold" style="width: 10%;">ESTADO</th>
-                    <th class="bg-secondary text-white fw-semibold" style="width: 15%;">ACCIONES</th>
+            <thead class="align-middle bg-secondary text-center">
+                <tr>
+                    <th class="text-white" style="width: 20%;">CÓDIGO INTERNO</th>
+                    <th class="text-white" style="width: 30%;">NOMBRE</th>
+                    <th class="text-white" style="width: 20%;">PRECIO DE VENTA</th>
+                    <th class="text-white" style="width: 5%;"></th>
+                    <th class="text-white" style="width: 10%;">ESTADO</th>
+                    <th class="text-white" style="width: 15%;">ACCIONES</th>
                 </tr>
             </thead>
             <tbody class="table-border-bottom-0 bg-white">
-                <template v-if="entityList.extras.loading">
-                    <tr class="text-center">
-                        <td colspan="99" class="py-4">
-                            <Loader/>
+                <tr v-if="entityList.extras.loading">
+                    <td colspan="99">
+                        <Loader/>
+                    </td>
+                </tr>
+                <template v-else-if="entityList.records.total > 0">
+                    <tr v-for="record in entityList.records.data" :key="record.id" class="text-center">
+                        <td v-text="record.internal_code" class="fw-semibold"></td>
+                        <td v-text="record.name" class="text-start"></td>
+                        <td>
+                            <span v-text="record.currency?.sign"></span>
+                            <span v-text="separatorNumber(record.price)" class="ms-2"></span>
+                        </td>
+                        <td>
+                            <div class="d-flex justify-content-center align-items-center gap-3 border border-light rounded px-2 py-1">
+                                <i :class="['fa fa-globe cursor-pointer', record.see_my_web ? 'text-success' : 'text-light']" data-bs-toggle="tooltip" data-bs-placement="top" :title="record.see_my_web ? 'Visible en mi página' : 'No visible en mi página'"></i>
+                                <i v-if="record.see_my_web && record.see_my_web_price" :class="['fa-solid fa-dollar-sign cursor-pointer', record.see_my_web_price ? 'text-success' : 'text-light']" data-bs-toggle="tooltip" data-bs-placement="top" :title="record.see_my_web_price ? 'Precio visible' : 'Precio no visible'"></i>
+                            </div>
+                        </td>
+                        <td>
+                            <span :class="[getStatusBadgeClasses(record.status), 'badge', 'fw-semibold', 'text-capitalize']" v-text="record.formatted_status"></span>
+                        </td>
+                        <td>
+                            <button type="button" class="btn btn-sm btn-warning waves-effect" @click="openModal(record)">
+                                <i class="fa fa-pencil"></i>
+                                <span class="ms-2" v-text="MODULE.texts.actions.edit"></span>
+                            </button>
                         </td>
                     </tr>
                 </template>
-                <template v-else>
-                    <template v-if="entityList.records.total > 0">
-                        <tr v-for="record in entityList.records.data" :key="record.id" class="text-center">
-                            <td v-text="record.internal_code" class="fw-bold"></td>
-                            <td v-text="record.name" class="text-start"></td>
-                            <td>
-                                <span v-text="record.currency?.sign"></span>
-                                <span v-text="separatorNumber(record.price)" class="ms-2"></span>
-                            </td>
-                            <td>
-                                <div class="d-flex justify-content-center align-items-center gap-3 border border-light rounded px-2 py-1">
-                                    <i :class="['fa fa-globe cursor-pointer', record.see_my_web ? 'text-success' : 'text-light']" data-bs-toggle="tooltip" data-bs-placement="top" :title="record.see_my_web ? 'Visible en mi página' : 'No visible en mi página'"></i>
-                                    <i v-if="record.see_my_web && record.see_my_web_price" :class="['fa-solid fa-dollar-sign cursor-pointer', record.see_my_web_price ? 'text-success' : 'text-light']" data-bs-toggle="tooltip" data-bs-placement="top" :title="record.see_my_web_price ? 'Precio visible' : 'Precio no visible'"></i>
-                                </div>
-                            </td>
-                            <td>
-                                <span :class="[getStatusBadgeClasses(record.status), 'badge', 'fw-semibold', 'text-capitalize']" v-text="record.formatted_status"></span>
-                            </td>
-                            <td>
-                                <button type="button" class="btn btn-sm btn-warning waves-effect" @click="openModal(record)">
-                                    <i class="fa fa-pencil"></i>
-                                    <span class="ms-2" v-text="MODULE.texts.actions.edit"></span>
-                                </button>
-                            </td>
-                        </tr>
-                    </template>
-                    <template v-else>
-                        <tr>
-                            <td class="text-center" colspan="99">
-                                <WithoutData type="image"/>
-                            </td>
-                        </tr>
-                    </template>
-                </template>
+                <tr v-else>
+                    <td colspan="99">
+                        <WithoutData type="image"/>
+                    </td>
+                </tr>
             </tbody>
         </table>
     </div>
@@ -89,7 +83,7 @@
         <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title text-uppercase fw-bold" v-text="modalTitles[isUpdate ? 'update' : 'store']"></h5>
+                    <h5 class="modal-title text-uppercase fw-bold" v-text="modalTitles.createUpdate[isUpdate ? 'update' : 'store']"></h5>
                     <button type="button" class="btn-header-modal" data-bs-dismiss="modal">
                         <i class="fa fa-times icon-close-modal"></i>
                     </button>
@@ -101,14 +95,14 @@
                                 v-model="forms[entity].createUpdate.data.internal_code"
                                 hasDiv
                                 :title="MODULE.texts.form.internalCode"
-                                :titleClass="[config.forms.classes.title, 'fw-semibold']"
+                                :titleClass="[config.forms.classes.title]"
                                 isRequired
                                 maxlength="50"
                                 showCharCounter
                                 hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.errors?.internal_code"
-                                xl="5"
-                                lg="5">
+                                xl="4"
+                                lg="4">
                                 <template v-slot:inputGroupAppend>
                                     <button type="button" :class="['btn waves-effect', isUpdate ? 'btn-warning' : 'btn-primary']" @click="generateCodeAction" data-bs-toggle="tooltip" data-bs-placement="top" :title="MODULE.texts.form.generateCodeTooltip">
                                         <i class="fa fa-rotate"></i>
@@ -119,20 +113,20 @@
                                 v-model="forms[entity].createUpdate.data.name"
                                 hasDiv
                                 :title="MODULE.texts.form.name"
-                                :titleClass="[config.forms.classes.title, 'fw-semibold']"
+                                :titleClass="[config.forms.classes.title]"
                                 isRequired
-                                maxlength="100"
+                                maxlength="50"
                                 showCharCounter
                                 hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.errors?.name"
-                                xl="7"
-                                lg="7"/>
+                                xl="8"
+                                lg="8"/>
                             <InputText
                                 v-model="forms[entity].createUpdate.data.description"
                                 hasDiv
                                 :title="MODULE.texts.form.description"
-                                :titleClass="[config.forms.classes.title, 'fw-semibold']"
-                                maxlength="255"
+                                :titleClass="[config.forms.classes.title]"
+                                maxlength="100"
                                 showCharCounter
                                 hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.errors?.description"
@@ -142,7 +136,7 @@
                                 v-model="forms[entity].createUpdate.data.price"
                                 hasDiv
                                 :title="MODULE.texts.form.price"
-                                :titleClass="[config.forms.classes.title, 'fw-semibold']"
+                                :titleClass="[config.forms.classes.title]"
                                 isRequired
                                 hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.errors?.price"
@@ -152,7 +146,7 @@
                                 v-model="forms[entity].createUpdate.data.min_price"
                                 hasDiv
                                 :title="MODULE.texts.form.minPrice"
-                                :titleClass="[config.forms.classes.title, 'fw-semibold']"
+                                :titleClass="[config.forms.classes.title]"
                                 hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.errors?.min_price"
                                 xl="4"
@@ -163,7 +157,7 @@
                                 v-model="forms[entity].createUpdate.data.max_price"
                                 hasDiv
                                 :title="MODULE.texts.form.maxPrice"
-                                :titleClass="[config.forms.classes.title, 'fw-semibold']"
+                                :titleClass="[config.forms.classes.title]"
                                 hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.errors?.max_price"
                                 xl="4"
@@ -173,12 +167,12 @@
                             <InputSlot
                                 hasDiv
                                 :title="MODULE.texts.form.currency"
-                                :titleClass="[config.forms.classes.title, 'fw-semibold']"
+                                :titleClass="[config.forms.classes.title]"
                                 isRequired
                                 hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.errors?.currency_id"
-                                xl="6"
-                                lg="6">
+                                xl="4"
+                                lg="4">
                                 <template v-slot:input>
                                     <v-select
                                         v-model="forms[entity].createUpdate.data.currency"
@@ -191,11 +185,11 @@
                             <InputSlot
                                 hasDiv
                                 :title="MODULE.texts.form.categories"
-                                :titleClass="[config.forms.classes.title, 'fw-semibold']"
+                                :titleClass="[config.forms.classes.title]"
                                 hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.errors?.categories"
-                                xl="6"
-                                lg="6">
+                                xl="8"
+                                lg="8">
                                 <template v-slot:input>
                                     <v-select
                                         v-model="forms[entity].createUpdate.data.categories"
@@ -209,12 +203,12 @@
                             <InputSlot
                                 hasDiv
                                 :title="MODULE.texts.form.status"
-                                :titleClass="[config.forms.classes.title, 'fw-semibold']"
+                                :titleClass="[config.forms.classes.title]"
                                 isRequired
                                 hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.errors?.status"
-                                xl="6"
-                                lg="6">
+                                xl="4"
+                                lg="4">
                                 <template v-slot:input>
                                     <v-select
                                         v-model="forms[entity].createUpdate.data.status"
@@ -227,9 +221,9 @@
                             <InputSlot
                                 hasDiv
                                 :isInputGroup="false"
-                                :divInputClass="['d-flex flex-wrap justify-content-end align-items-end h-100']"
-                                xl="6"
-                                lg="6">
+                                :divInputClass="['d-flex flex-wrap justify-content-end align-items-end h-100 gap-3']"
+                                xl="8"
+                                lg="8">
                                 <template v-slot:input>
                                     <label class="form-check-label">
                                         <input class="form-check-input" type="checkbox" v-model="forms[entity].createUpdate.data.see_my_web"/>
@@ -276,8 +270,9 @@ const MODULE_CONFIG = {
     entity: "products",
     menuId: "menu-items-products",
     pageTitle: "Productos",
+    pageTitleSingular: "Producto",
     breadcrumbParent: "Catálogo comercial",
-    perPage: 15
+    perPage: 10
 };
 
 const FORM_FIELDS = {
@@ -329,12 +324,18 @@ const ERROR_LABELS = {
     max_price: "Precio máximo",
     currency: "Moneda",
     categories: "Categorías",
-    status: "Estado",
-    required: "Es obligatorio"
+    status: "Estado"
 };
 
+const FILTER_OPTIONS = [
+    {code: "all", label: "Todos los filtros"},
+    {code: "internal_code", label: "Código interno"},
+    {code: "name", label: "Nombre"},
+    {code: "description", label: "Descripción"},
+    {code: "price", label: "Precio de venta"}
+];
+
 const TEXTS = {
-    loading: `Cargando ${MODULE_CONFIG.pageTitle}...`,
     filters: {
         filterBy: "Filtrar por",
         search: "Búsqueda"
@@ -364,14 +365,6 @@ const TEXTS = {
     }
 };
 
-const FILTER_OPTIONS = [
-    {code: "all", label: "Todos los filtros"},
-    {code: "internal_code", label: "Código interno"},
-    {code: "name", label: "Nombre"},
-    {code: "description", label: "Descripción"},
-    {code: "price", label: "Precio de venta"}
-];
-
 const MODULE = {
     config: MODULE_CONFIG,
     formFields: FORM_FIELDS,
@@ -386,7 +379,12 @@ export default {
     name: "ProductsMain",
     data() {
 
-        const crudModule = initCrudModule({entity: MODULE.config.entity, menuId: MODULE.config.menuId, pageTitle: MODULE.config.pageTitle});
+        const crudModule = initCrudModule({
+            entity: MODULE.config.entity,
+            menuId: MODULE.config.menuId,
+            pageTitle: MODULE.config.pageTitle,
+            pageTitleSingular: MODULE.config.pageTitleSingular
+        });
 
         crudModule.lists[MODULE.config.entity].filters.filter_by = MODULE.filterOptions[0];
         crudModule.forms[MODULE.config.entity].createUpdate.data = Forms.initFormData(MODULE.formFields);
@@ -421,11 +419,19 @@ export default {
     methods: {
         async initParams() {
 
-            const response = await Requests.get({route: this.routeActions.initParams, data: {page: "main"}, showAlert: true});
+            const response = await Requests.get({
+                route: this.routeActions.initParams,
+                data: {page: "main"},
+                showAlert: true
+            });
 
-            this.options.categories = response?.data?.config?.categories ?? {};
-            this.options.currencies = response?.data?.config?.currencies ?? {};
-            this.options[this.entity] = response?.data?.config?.[this.entity] ?? {};
+            if(response?.data?.config) {
+
+                this.options.categories = response.data.config.categories;
+                this.options.currencies = response.data.config.currencies;
+                this.options.statuses   = response.data.config.statuses;
+
+            }
 
             return Requests.valid({result: response});
 
@@ -434,7 +440,7 @@ export default {
         async listEntity(params = null) {
 
             const entityList   = this.lists[this.entity];
-            const emptyRecords = {total: 0, data: []};
+            const emptyRecords = {total: 0, data: [], links: []};
             const filters      = Utils.cloneJson(entityList.filters);
             const filterData   = {per_page: this.MODULE.config.perPage, filter_by: filters.filter_by?.code, word: filters.word};
 
@@ -495,41 +501,30 @@ export default {
 
             if(this.isDefined(record)) {
 
-                entityForms.data.id = record?.id;
+                // Map record data to form
+                const currencyOption = this.currencies.find(e => e.code === record?.currency_id),
+                      categoryItems  = (record?.category_items ?? []).map(e => e?.category_id),
+                      statusOption   = this.statuses.find(e => e.code === record?.status);
 
-                const categoryItems = (record?.category_items ?? []).map(e => e?.category_id);
-
-                Object.keys(this.MODULE.formFields).forEach(key => {
-
-                    if(key === "status") {
-
-                        entityForms.data.status = this.statuses.find(e => e.code === record?.status) || null;
-
-                    }else if(key === "currency") {
-
-                        entityForms.data.currency = this.currencies.find(e => e.code === record?.currency_id) || null;
-
-                    }else if(key === "categories") {
-
-                        entityForms.data.categories = this.categories.filter(e => categoryItems.includes(e.code));
-
-                    }else if(key === "see_my_web" || key === "see_my_web_price") {
-
-                        entityForms.data[key] = Boolean(record?.[key] ?? false);
-
-                    }else {
-
-                        entityForms.data[key] = record?.[key] ?? this.MODULE.formFields[key];
-
-                    }
-
-                });
+                entityForms.data.id               = record.id;
+                entityForms.data.internal_code    = record.internal_code;
+                entityForms.data.name             = record.name;
+                entityForms.data.description      = record.description;
+                entityForms.data.price            = record.price;
+                entityForms.data.min_price        = record.min_price;
+                entityForms.data.max_price        = record.max_price;
+                entityForms.data.currency         = currencyOption;
+                entityForms.data.categories       = this.categories.filter(e => categoryItems.includes(e.code));
+                entityForms.data.see_my_web       = Boolean(record.see_my_web ?? false);
+                entityForms.data.see_my_web_price = Boolean(record.see_my_web_price ?? false);
+                entityForms.data.status           = statusOption;
 
             }else {
 
+                // Set defaults for new record
                 entityForms.data.internal_code = this.generateCode({length: 7});
-                entityForms.data.currency = this.currencies[0] || null;
-                entityForms.data.status   = this.statuses[0] || null;
+                entityForms.data.currency      = this.currencies.length > 0 ? this.currencies[0] : null;
+                entityForms.data.status        = this.statuses.length > 0 ? this.statuses[0] : null;
 
             }
 
@@ -677,7 +672,6 @@ export default {
             return result;
 
         },
-        // Utils
         // Others
         isDefined(value) {
 
@@ -724,24 +718,19 @@ export default {
             ];
 
         },
-        filterByOptions() {
-
-            return this.MODULE.filterOptions;
-
-        },
         categories() {
 
-            return (this.options?.categories?.records ?? []).map(e => ({code: e.id, label: e.name}));
+            return (this.options?.categories?.records ?? []).map(e => ({code: e.id, label: e.name, data: e}));
 
         },
         currencies() {
 
-            return (this.options?.currencies?.records ?? []).map(e => ({code: e.id, label: e.plural_name}));
+            return (this.options?.currencies?.records ?? []).map(e => ({code: e.id, label: e.plural_name, data: e}));
 
         },
         statuses() {
 
-            return (this.options?.[this.entity]?.statuses ?? []).map(e => ({code: e.code, label: e.label}));
+            return (this.options?.statuses ?? []).map(e => ({code: e.code, label: e.label}));
 
         },
         isUpdate() {
@@ -751,10 +740,14 @@ export default {
         },
         modalTitles() {
 
-            return this.forms[this.entity].createUpdate.extras.modals.default.titles || {
-                store: `AGREGAR ${this.MODULE.config.pageTitle.toUpperCase()}`,
-                update: `EDITAR ${this.MODULE.config.pageTitle.toUpperCase()}`
+            return {
+                createUpdate: this.forms[this.entity].createUpdate.extras.modals.default.titles
             };
+
+        },
+        filterByOptions() {
+
+            return this.MODULE.filterOptions;
 
         },
         filterByValue: {
