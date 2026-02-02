@@ -6,7 +6,7 @@ namespace App\Http\Requests\System\Catalogs\Products;
 
 use App\Helpers\System\Utilities;
 use Illuminate\Foundation\Http\FormRequest;
-use App\Rules\System\Defaults\UniqueInCompany;
+use App\Rules\System\Defaults\{UniqueInCompany};
 
 class UpdateProductRequest extends FormRequest {
 
@@ -26,25 +26,18 @@ class UpdateProductRequest extends FormRequest {
      */
     public function rules(): array {
 
-        $id = $this->route("id");
-        $excludeId = is_numeric($id) ? (int)$id : null;
-
+        $itemId   = $this->route("id");
         $round    = Utilities::$inputs["round"];
         $minValue = Utilities::isDefined($this->min_price) && floatval($this->min_price) > 0 ? floatval($this->min_price) : "0.1";
         $maxValue = Utilities::isDefined($this->max_price) && floatval($this->max_price) > 0 ? floatval($this->max_price) : Utilities::$inputs["maxValue"];
 
         $validations = [
-            "internal_code" => [
-                "required",
-                "string",
-                "max:100",
-                new UniqueInCompany("items", "internal_code", $excludeId, ["type" => "product"], "código interno")
-            ],
-            "name"          => "required|string|max:100",
-            "description"   => "nullable|string|max:300",
+            "internal_code" => ["required", "string", "max:50", new UniqueInCompany("items", "internal_code", $itemId, ["type" => "product"], "código interno")],
+            "name"          => "required|string|max:50",
+            "description"   => "nullable|string|max:100",
             "price"         => "required|numeric|min:$minValue|max:$maxValue|decimal:0,$round",
             "currency_id"   => "required|integer",
-            "status"        => "required|string"
+            "status"        => "required|in:active,inactive"
         ];
 
         if(Utilities::isDefined($this->min_price) && floatval($this->min_price) > 0) {
