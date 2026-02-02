@@ -150,7 +150,13 @@
                                 hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.errors?.price"
                                 xl="4"
-                                lg="4"/>
+                                lg="4">
+                                <template v-slot:inputGroupPrepend>
+                                    <span class="input-group-text text-muted">
+                                        <span v-text="forms[entity].createUpdate.data.currency?.data?.sign"></span>
+                                    </span>
+                                </template>
+                            </InputNumber>
                             <InputNumber
                                 v-model="forms[entity].createUpdate.data.min_price"
                                 hasDiv
@@ -161,7 +167,13 @@
                                 xl="4"
                                 lg="4"
                                 md="6"
-                                sm="6"/>
+                                sm="6">
+                                <template v-slot:inputGroupPrepend>
+                                    <span class="input-group-text text-muted">
+                                        <span v-text="forms[entity].createUpdate.data.currency?.data?.sign"></span>
+                                    </span>
+                                </template>
+                            </InputNumber>
                             <InputNumber
                                 v-model="forms[entity].createUpdate.data.max_price"
                                 hasDiv
@@ -172,7 +184,13 @@
                                 xl="4"
                                 lg="4"
                                 md="6"
-                                sm="6"/>
+                                sm="6">
+                                <template v-slot:inputGroupPrepend>
+                                    <span class="input-group-text text-muted">
+                                        <span v-text="forms[entity].createUpdate.data.currency?.data?.sign"></span>
+                                    </span>
+                                </template>
+                            </InputNumber>
                             <InputSlot
                                 hasDiv
                                 :title="MODULE.texts.form.currency"
