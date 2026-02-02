@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\System\Customers\Customers;
 
-use App\Http\Requests\System\Base\BaseFormRequest;
+use Illuminate\Foundation\Http\FormRequest;
 use App\Rules\System\Defaults\{DocumentNumberLength};
 use App\Rules\System\Customers\{UniqueDocumentNumberInCompany};
 
-class StoreCustomerRequest extends BaseFormRequest {
+class StoreCustomerRequest extends FormRequest {
 
     /**
      * Determine if the user is authorized to make this request.

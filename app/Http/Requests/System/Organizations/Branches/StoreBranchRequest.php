@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\System\Organizations\Branches;
 
-use App\Http\Requests\System\Base\BaseFormRequest;
+use Illuminate\Foundation\Http\FormRequest;
 use App\Rules\System\Defaults\{UniqueInCompany};
 
-class StoreBranchRequest extends BaseFormRequest {
+class StoreBranchRequest extends FormRequest {
 
     /**
      * Determine if the user is authorized to make this request.

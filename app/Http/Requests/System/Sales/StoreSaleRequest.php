@@ -5,11 +5,20 @@ declare(strict_types=1);
 namespace App\Http\Requests\System\Sales;
 
 use App\Helpers\System\{ApiResponse, Utilities};
-use App\Http\Requests\System\Base\BaseFormRequest;
+use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Http\Exceptions\HttpResponseException;
 
-class StoreSaleRequest extends BaseFormRequest {
+class StoreSaleRequest extends FormRequest {
+
+    /**
+     * Determine if the user is authorized to make this request.
+     */
+    public function authorize(): bool {
+
+        return true;
+
+    }
 
     /**
      * Get the validation rules that apply to the request.

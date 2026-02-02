@@ -4,10 +4,19 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\System\Organizations\Branches;
 
-use App\Http\Requests\System\Base\BaseFormRequest;
+use Illuminate\Foundation\Http\FormRequest;
 use App\Rules\System\Defaults\{UniqueInCompany};
 
-class UpdateBranchRequest extends BaseFormRequest {
+class UpdateBranchRequest extends FormRequest {
+
+    /**
+     * Determine if the user is authorized to make this request.
+     */
+    public function authorize(): bool {
+
+        return true;
+
+    }
 
     /**
      * Determine if the user is authorized to make this request.

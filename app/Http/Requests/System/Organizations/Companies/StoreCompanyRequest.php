@@ -5,9 +5,18 @@ declare(strict_types=1);
 namespace App\Http\Requests\System\Organizations\Companies;
 
 use App\Helpers\System\Utilities;
-use App\Http\Requests\System\Base\BaseFormRequest;
+use Illuminate\Foundation\Http\FormRequest;
 
-class StoreCompanyRequest extends BaseFormRequest {
+class StoreCompanyRequest extends FormRequest {
+
+    /**
+     * Determine if the user is authorized to make this request.
+     */
+    public function authorize(): bool {
+
+        return true;
+
+    }
 
     /**
      * Get the validation rules that apply to the request.
