@@ -192,18 +192,18 @@ class ServiceController extends BaseController {
     private function prepareServiceData($request): array {
 
         return [
-            "company_id"         => $this->getCompanyId(),
-            "internal_code"      => $request->input("internal_code"),
-            "name"               => $request->input("name"),
-            "description"        => $request->input("description"),
-            "price"              => $request->input("price"),
-            "min_price"          => $request->input("min_price"),
-            "max_price"          => $request->input("max_price"),
-            "currency_id"        => $request->input("currency_id"),
-            "see_my_web"         => $request->input("see_my_web"),
-            "see_my_web_price"   => $request->input("see_my_web_price"),
-            "status"             => $request->input("status"),
-            "categories"         => $request->input("categories")
+            "company_id"       => $this->getCompanyId(),
+            "internal_code"    => $request->input("internal_code"),
+            "name"             => $request->input("name"),
+            "description"      => $request->input("description"),
+            "price"            => $request->input("price"),
+            "min_price"        => $request->input("min_price"),
+            "max_price"        => $request->input("max_price"),
+            "currency_id"      => $request->input("currency_id"),
+            "see_my_web"       => $request->input("see_my_web"),
+            "see_my_web_price" => $request->input("see_my_web_price"),
+            "status"           => $request->input("status"),
+            "categories"       => $request->input("categories")
         ];
 
     }
