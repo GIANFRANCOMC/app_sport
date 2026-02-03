@@ -7,51 +7,39 @@ namespace App\Services\System\Catalogs\Categories;
 use Exception;
 use App\Helpers\System\{TranslationHelper, Utilities};
 use Illuminate\Support\Facades\{Auth, DB};
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
 
-use App\Models\System\Catalogs\Category;
-use App\Repositories\System\Catalogs\Categories\CategoryRepository;
+use App\Models\System\Catalogs\{Category};
 
 /**
- * Service class for managing Category operations
- * Handles business logic for creating and updating categories
+ * Service class for managing module operations
+ * Handles business logic for creating and updating records
  */
 class CategoryService {
 
     /**
-     * Translation namespace for category module
+     * Translation namespace for module
      */
     private const TRANSLATION_NAMESPACE = "System.Catalogs.category";
 
     /**
-     * @var CategoryRepository
-     */
-    private static $repository;
-
-    /**
-     * Get repository instance (lazy initialization)
-     *
-     * @return CategoryRepository
-     */
-    private static function getRepository(): CategoryRepository {
-
-        if(self::$repository === null) {
-
-            self::$repository = new CategoryRepository();
-
-        }
-
-        return self::$repository;
-
-    }
-
-    /**
-     * Allowed fields for category creation and update
+     * Allowed fields for record creation and update
      */
     private const ALLOWED_FIELDS = [
         "internal_code",
         "name",
         "description",
         "status"
+    ];
+
+    /**
+     * Searchable fields for filtering
+     */
+    private const SEARCHABLE_FIELDS = [
+        "internal_code",
+        "name",
+        "description"
     ];
 
     /**
@@ -68,11 +56,11 @@ class CategoryService {
     }
 
     /**
-     * Prepare category data for creation
+     * Prepare data for creation
      *
      * @param array $data Input data
-     * @param int $companyId Company ID
-     * @param int $userId User ID
+     * @param int $companyId Company
+     * @param int $userId User
      * @return array
      */
     private static function prepareCategoryDataForCreate(array $data, int $companyId, int $userId): array {
@@ -86,7 +74,11 @@ class CategoryService {
 
         foreach(self::ALLOWED_FIELDS as $field) {
 
-            $categoryData[$field] = $data[$field] ?? null;
+            if(isset($data[$field])) {
+
+                $categoryData[$field] = $data[$field];
+
+            }
 
         }
 
@@ -95,9 +87,9 @@ class CategoryService {
     }
 
     /**
-     * Prepare category data for update (only changed fields)
+     * Prepare data for update (only changed fields)
      *
-     * @param Category $category Category instance
+     * @param Category $category Record instance
      * @param array $data Input data
      * @return array
      */
@@ -107,9 +99,13 @@ class CategoryService {
 
         foreach(self::ALLOWED_FIELDS as $field) {
 
-            if(isset($data[$field]) && $data[$field] !== $category->$field) {
+            if(isset($data[$field])) {
 
-                $updateData[$field] = $data[$field];
+                if($data[$field] !== $category->$field) {
+
+                    $updateData[$field] = $data[$field];
+
+                }
 
             }
 
@@ -120,12 +116,12 @@ class CategoryService {
     }
 
     /**
-     * Create a new category
+     * Create a new record
      *
-     * @param array $data Category data from request
-     * @param int|null $userId User ID creating the category
-     * @return Category|null Created category instance or null on failure
-     * @throws \Exception
+     * @param array $data Input data
+     * @param int|null $userId User creating the record
+     * @return Category|null Created record instance or null on failure
+     * @throws Exception
      */
     public static function create(array $data, ?int $userId = null): ?Category {
 
@@ -142,19 +138,12 @@ class CategoryService {
 
             }
 
-            $userId = $userId ?? $userAuth->id;
+            $userId = $userId ?? $userAuth->id ?? null;
 
-            // Check if internal code exists
-            if(self::getRepository()->internalCodeExists($data["internal_code"], $companyId)) {
-
-                throw new Exception(self::trans("internal_code_exists"));
-
-            }
-
-            // Prepare category data with only allowed fields
+            // Prepare data with only allowed fields
             $categoryData = self::prepareCategoryDataForCreate($data, $companyId, $userId);
 
-            // Create the category
+            // Create the record
             $category = Category::create($categoryData);
 
         });
@@ -164,31 +153,19 @@ class CategoryService {
     }
 
     /**
-     * Update an existing category
+     * Update an existing record
      *
-     * @param Category $category Category instance to update
-     * @param array $data Updated category data
-     * @param int|null $userId User ID updating the category
-     * @return Category Updated category instance
-     * @throws \Exception
+     * @param Category $category Record instance to update
+     * @param array $data Input data
+     * @param int|null $userId User updating the record
+     * @return Category Updated record instance
      */
     public static function update(Category $category, array $data, ?int $userId = null): Category {
 
         DB::transaction(function() use($category, $data, $userId) {
 
             $userAuth = Auth::user();
-            $userId   = $userId ?? $userAuth->id;
-
-            // Check if internal code exists (excluding current category)
-            if(isset($data["internal_code"])) {
-
-                if(self::getRepository()->internalCodeExists($data["internal_code"], $category->company_id, $category->id)) {
-
-                    throw new Exception(self::trans("internal_code_exists"));
-
-                }
-
-            }
+            $userId   = $userId ?? $userAuth->id ?? null;
 
             // Prepare update data with only changed fields
             $updateData = self::prepareCategoryDataForUpdate($category, $data);
@@ -209,44 +186,88 @@ class CategoryService {
     }
 
     /**
-     * Find category by ID and company ID
+     * Find record by ID and company ID
      *
-     * @param int $id Category ID
-     * @param int $companyId Company ID
+     * @param int $id Record
+     * @param int $companyId Company
+     * @param array|null $statuses Filter by statuses (e.g. ["active"], ["active", "inactive"])
      * @param array $relations Relations to eager load
      * @return Category|null
      */
-    public static function findByIdAndCompany(int $id, int $companyId, array $relations = []): ?Category {
+    public static function findByIdAndCompany(int $id, int $companyId, ?array $statuses = ["active"], array $relations = []): ?Category {
 
-        return self::getRepository()->findByIdAndCompany($id, $companyId, $relations);
+        $query = Category::where("id", $id)
+                        ->where("company_id", $companyId);
+
+        if($statuses !== null && !empty($statuses)) {
+
+            $query->whereIn("status", $statuses);
+
+        }
+
+        if($relations !== null && !empty($relations)) {
+
+            $query->with($relations);
+
+        }
+
+        return $query->first();
 
     }
 
     /**
-     * Get paginated list of categories
+     * Get paginated list of records with filters
      *
-     * @param int $companyId Company ID
-     * @param array $filters Filter parameters
+     * @param int $companyId Company
+     * @param array $filters Filter parameters (filter_by, word)
      * @param int $perPage Items per page
-     * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator
+     * @return LengthAwarePaginator
      */
-    public static function getPaginatedList(int $companyId, array $filters = [], int $perPage = 15) {
+    public static function getPaginatedList(int $companyId, array $filters = [], int $perPage = 15): LengthAwarePaginator {
 
-        return self::getRepository()->getPaginatedList($companyId, $filters, $perPage);
+        $query = Category::where("company_id", $companyId);
 
-    }
+        // Apply filters
+        $filterBy = $filters["filter_by"] ?? null;
+        $word     = $filters["word"] ?? null;
 
-    /**
-     * Check if internal code exists
-     *
-     * @param string $internalCode Internal code
-     * @param int $companyId Company ID
-     * @param int|null $excludeId Category ID to exclude
-     * @return bool
-     */
-    public static function internalCodeExists(string $internalCode, int $companyId, ?int $excludeId = null): bool {
+        if(Utilities::isDefined($word) && Utilities::isDefined($filterBy)) {
 
-        return self::getRepository()->internalCodeExists($internalCode, $companyId, $excludeId);
+            $searchTerm = Utilities::getWordSearch($word);
+
+            if($filterBy === "all") {
+
+                // Search across all searchable fields
+                $query->where(function(Builder $q) use($searchTerm) {
+
+                    $searchableFields = self::SEARCHABLE_FIELDS;
+                    $firstField       = array_shift($searchableFields);
+
+                    if($firstField) {
+
+                        $q->where($firstField, "like", $searchTerm);
+
+                    }
+
+                    foreach($searchableFields as $field) {
+
+                        $q->orWhere($field, "like", $searchTerm);
+
+                    }
+
+                });
+
+            }elseif(in_array($filterBy, self::SEARCHABLE_FIELDS, true)) {
+
+                // Search in specific field
+                $query->where($filterBy, "like", $searchTerm);
+
+            }
+
+        }
+
+        return $query->orderBy("name", "ASC")
+                     ->paginate($perPage);
 
     }
 
