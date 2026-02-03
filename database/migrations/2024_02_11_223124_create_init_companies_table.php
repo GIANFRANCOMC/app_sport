@@ -295,8 +295,8 @@ return new class extends Migration {
             ["company_id" => 1, "internal_code" => Utilities::generateCode(7), "name" => "Proteina", "description" => "", "price" => 120, "currency_id" => 1, "type" => "product", "duration_type" => null, "duration_value" => null],
             ["company_id" => 1, "internal_code" => Utilities::generateCode(7), "name" => "Tomatodo", "description" => "", "price" => 20, "currency_id" => 1, "type" => "product", "duration_type" => null, "duration_value" => null],
             ["company_id" => 1, "internal_code" => Utilities::generateCode(7), "name" => "Una hora", "description" => "", "price" => 2, "currency_id" => 1, "type" => "subscription", "duration_type" => "hour", "duration_value" => 1],
-            ["company_id" => 1, "internal_code" => Utilities::generateCode(7), "name" => "Un dia", "description" => "", "price" => 10, "currency_id" => 1, "type" => "subscription", "duration_type" => "day", "duration_value" => 1],
-            ["company_id" => 1, "internal_code" => Utilities::generateCode(7), "name" => "Solamente hoy", "description" => "", "price" => 5, "currency_id" => 1, "type" => "subscription", "duration_type" => "today", "duration_value" => 1],
+            ["company_id" => 1, "internal_code" => Utilities::generateCode(7), "name" => "Un día", "description" => "", "price" => 10, "currency_id" => 1, "type" => "subscription", "duration_type" => "day", "duration_value" => 1],
+            ["company_id" => 1, "internal_code" => Utilities::generateCode(7), "name" => "Rutina / Día", "description" => "", "price" => 5, "currency_id" => 1, "type" => "subscription", "duration_type" => "today", "duration_value" => 1],
             ["company_id" => 1, "internal_code" => Utilities::generateCode(7), "name" => "Mes", "description" => "", "price" => 60, "currency_id" => 1, "type" => "subscription", "duration_type" => "month", "duration_value" => 1],
             ["company_id" => 1, "internal_code" => Utilities::generateCode(7), "name" => "Año", "description" => "", "price" => 400, "currency_id" => 1, "type" => "subscription", "duration_type" => "year", "duration_value" => 1]
         ]);
