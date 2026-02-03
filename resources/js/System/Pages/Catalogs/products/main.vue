@@ -149,8 +149,8 @@
                                 isRequired
                                 hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.errors?.price"
-                                xl="4"
-                                lg="4">
+                                xl="3"
+                                lg="3">
                                 <template v-slot:inputGroupPrepend>
                                     <span class="input-group-text text-muted">
                                         <span v-text="forms[entity].createUpdate.data.currency?.data?.sign"></span>
@@ -164,8 +164,8 @@
                                 :titleClass="[config.forms.classes.title]"
                                 hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.errors?.min_price"
-                                xl="4"
-                                lg="4"
+                                xl="3"
+                                lg="3"
                                 md="6"
                                 sm="6">
                                 <template v-slot:inputGroupPrepend>
@@ -181,8 +181,8 @@
                                 :titleClass="[config.forms.classes.title]"
                                 hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.errors?.max_price"
-                                xl="4"
-                                lg="4"
+                                xl="3"
+                                lg="3"
                                 md="6"
                                 sm="6">
                                 <template v-slot:inputGroupPrepend>
@@ -198,8 +198,8 @@
                                 isRequired
                                 hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.errors?.currency_id"
-                                xl="4"
-                                lg="4">
+                                xl="3"
+                                lg="3">
                                 <template v-slot:input>
                                     <v-select
                                         v-model="forms[entity].createUpdate.data.currency"
@@ -215,8 +215,8 @@
                                 :titleClass="[config.forms.classes.title]"
                                 hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.errors?.categories"
-                                xl="8"
-                                lg="8">
+                                xl="12"
+                                lg="12">
                                 <template v-slot:input>
                                     <v-select
                                         v-model="forms[entity].createUpdate.data.categories"
@@ -234,8 +234,8 @@
                                 isRequired
                                 hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.errors?.status"
-                                xl="4"
-                                lg="4">
+                                xl="3"
+                                lg="3">
                                 <template v-slot:input>
                                     <v-select
                                         v-model="forms[entity].createUpdate.data.status"
@@ -249,8 +249,8 @@
                                 hasDiv
                                 :isInputGroup="false"
                                 :divInputClass="['d-flex flex-wrap justify-content-center align-items-end h-100 gap-3']"
-                                xl="8"
-                                lg="8">
+                                xl="9"
+                                lg="9">
                                 <template v-slot:input>
                                     <label class="form-check-label">
                                         <input class="form-check-input" type="checkbox" v-model="forms[entity].createUpdate.data.see_my_web"/>
