@@ -35,6 +35,13 @@ class UniqueInCompany implements ValidationRule {
     private ?int $excludeId;
 
     /**
+     * Extra where clauses (e.g. ["type" => "product"])
+     *
+     * @var array<string, mixed>
+     */
+    private array $extraWhere;
+
+    /**
      * Custom attribute name for error messages
      *
      * @var string|null
@@ -47,13 +54,15 @@ class UniqueInCompany implements ValidationRule {
      * @param string $table Table name
      * @param string $field Field name to check uniqueness
      * @param int|null $excludeId ID to exclude from validation
+     * @param array<string, mixed> $extraWhere Extra where clauses to apply
      * @param string|null $attributeName Custom attribute name for error messages
      */
-    public function __construct(string $table, string $field, ?int $excludeId = null, ?string $attributeName = null) {
+    public function __construct(string $table, string $field, ?int $excludeId = null, array $extraWhere = [], ?string $attributeName = null) {
 
         $this->table         = $table;
         $this->field         = $field;
         $this->excludeId     = $excludeId;
+        $this->extraWhere    = $extraWhere;
         $this->attributeName = $attributeName;
 
     }
@@ -81,7 +90,13 @@ class UniqueInCompany implements ValidationRule {
                    ->where($this->field, $value)
                    ->where("company_id", $user->company_id);
 
-        if($this->excludeId) {
+        foreach($this->extraWhere as $field => $extraValue) {
+
+            $query->where((string)$field, $extraValue);
+
+        }
+
+        if($this->excludeId !== null) {
 
             $query->where("id", "!=", $this->excludeId);
 

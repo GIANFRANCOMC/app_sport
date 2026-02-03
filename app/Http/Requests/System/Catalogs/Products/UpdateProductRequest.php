@@ -26,7 +26,7 @@ class UpdateProductRequest extends FormRequest {
      */
     public function rules(): array {
 
-        $itemId   = $this->route("id");
+        $itemId   = (int) $this->route("id");
         $round    = Utilities::$inputs["round"];
         $minValue = Utilities::isDefined($this->min_price) && floatval($this->min_price) > 0 ? floatval($this->min_price) : "0.1";
         $maxValue = Utilities::isDefined($this->max_price) && floatval($this->max_price) > 0 ? floatval($this->max_price) : Utilities::$inputs["maxValue"];
