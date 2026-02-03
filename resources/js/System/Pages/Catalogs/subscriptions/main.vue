@@ -111,7 +111,7 @@
                                 :titleClass="[config.forms.classes.title]"
                                 isRequired
                                 maxlength="50"
-                                showCharCounter
+                                :showCharCounter="false"
                                 hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.errors?.internal_code"
                                 xl="4"
@@ -143,8 +143,8 @@
                                 showCharCounter
                                 hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.errors?.description"
-                                xl="4"
-                                lg="4"/>
+                                xl="6"
+                                lg="6"/>
                             <InputNumber
                                 v-model="forms[entity].createUpdate.data.duration_value"
                                 hasDiv
@@ -154,8 +154,8 @@
                                 :decimals="0"
                                 hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.errors?.duration_value"
-                                xl="4"
-                                lg="4"/>
+                                xl="3"
+                                lg="3"/>
                             <InputSlot
                                 hasDiv
                                 :title="MODULE.texts.form.durationType"
@@ -163,8 +163,8 @@
                                 isRequired
                                 hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.errors?.duration_type"
-                                xl="4"
-                                lg="4">
+                                xl="3"
+                                lg="3">
                                 <template v-slot:input>
                                     <v-select
                                         v-model="forms[entity].createUpdate.data.duration_type"
@@ -182,8 +182,8 @@
                                 isRequired
                                 hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.errors?.price"
-                                xl="4"
-                                lg="4">
+                                xl="3"
+                                lg="3">
                                 <template v-slot:inputGroupPrepend>
                                     <span class="input-group-text text-muted">
                                         <span v-text="forms[entity].createUpdate.data.currency?.data?.sign"></span>
@@ -197,8 +197,8 @@
                                 :titleClass="[config.forms.classes.title]"
                                 hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.errors?.min_price"
-                                xl="4"
-                                lg="4"
+                                xl="3"
+                                lg="3"
                                 md="6"
                                 sm="6">
                                 <template v-slot:inputGroupPrepend>
@@ -214,8 +214,8 @@
                                 :titleClass="[config.forms.classes.title]"
                                 hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.errors?.max_price"
-                                xl="4"
-                                lg="4"
+                                xl="3"
+                                lg="3"
                                 md="6"
                                 sm="6">
                                 <template v-slot:inputGroupPrepend>
@@ -231,8 +231,8 @@
                                 isRequired
                                 hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.errors?.currency_id"
-                                xl="4"
-                                lg="4">
+                                xl="3"
+                                lg="3">
                                 <template v-slot:input>
                                     <v-select
                                         v-model="forms[entity].createUpdate.data.currency"
@@ -248,8 +248,8 @@
                                 :titleClass="[config.forms.classes.title]"
                                 hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.errors?.categories"
-                                xl="8"
-                                lg="8">
+                                xl="12"
+                                lg="12">
                                 <template v-slot:input>
                                     <v-select
                                         v-model="forms[entity].createUpdate.data.categories"
@@ -267,8 +267,8 @@
                                 isRequired
                                 hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.errors?.status"
-                                xl="4"
-                                lg="4">
+                                xl="3"
+                                lg="3">
                                 <template v-slot:input>
                                     <v-select
                                         v-model="forms[entity].createUpdate.data.status"
@@ -282,8 +282,8 @@
                                 hasDiv
                                 :isInputGroup="false"
                                 :divInputClass="['d-flex flex-wrap justify-content-center align-items-end h-100 gap-3']"
-                                xl="8"
-                                lg="8">
+                                xl="9"
+                                lg="9">
                                 <template v-slot:input>
                                     <label class="form-check-label">
                                         <input class="form-check-input" type="checkbox" v-model="forms[entity].createUpdate.data.see_my_web"/>
@@ -339,8 +339,8 @@ const FORM_FIELDS = {
     internal_code: "",
     name: "",
     description: "",
-    duration_type: null,
     duration_value: "",
+    duration_type: null,
     price: "",
     min_price: "",
     max_price: "",
@@ -355,8 +355,8 @@ const FORM_FIELD_CONFIG = {
     internal_code: {trim: true},
     name: {trim: true},
     description: {normalize: true},
-    duration_type: {getCode: true},
     duration_value: {toNumber: true, minValue: 1},
+    duration_type: {getCode: true},
     price: {toNumber: true, minValue: 0},
     min_price: {toNumber: true, minValue: 0},
     max_price: {toNumber: true, minValue: 0},
@@ -371,8 +371,8 @@ const VALIDATION_RULES = {
     internal_code: {required: true},
     name: {required: true},
     description: {required: false},
-    duration_type: {required: true},
     duration_value: {required: true, number: true, min: 1},
+    duration_type: {required: true},
     price: {required: true, number: true, min: 0},
     min_price: {required: false, number: true, min: 0},
     max_price: {required: false, number: true, min: 0},
@@ -387,8 +387,8 @@ const ERROR_LABELS = {
     internal_code: "Código interno",
     name: "Nombre",
     description: "Descripción",
-    duration_type: "Tipo de duración",
-    duration_value: "Duración",
+    duration_value: "Duración (valor)",
+    duration_type: "Duración (tipo)",
     price: "Precio de venta",
     min_price: "Precio mínimo",
     max_price: "Precio máximo",
@@ -421,8 +421,8 @@ const TEXTS = {
         internalCode: "Código interno",
         name: "Nombre",
         description: "Descripción",
-        durationType: "Tipo",
-        durationValue: "Duración",
+        durationValue: "Duración (valor)",
+        durationType: "Duración (tipo)",
         price: "Precio de venta",
         minPrice: "Precio mínimo",
         maxPrice: "Precio máximo",
@@ -577,17 +577,17 @@ export default {
             if(this.isDefined(record)) {
 
                 // Map record data to form
-                const currencyOption = this.currencies.find(e => e.code === record?.currency_id),
-                      categoryItems  = (record?.category_items ?? []).map(e => e?.category_id),
+                const currencyOption     = this.currencies.find(e => e.code === record?.currency_id),
+                      categoryItems      = (record?.category_items ?? []).map(e => e?.category_id),
                       durationTypeOption = this.durationTypes.find(e => e.code === record?.duration_type),
-                      statusOption   = this.statuses.find(e => e.code === record?.status);
+                      statusOption       = this.statuses.find(e => e.code === record?.status);
 
                 entityForms.data.id               = record.id;
                 entityForms.data.internal_code    = record.internal_code;
                 entityForms.data.name             = record.name;
                 entityForms.data.description      = record.description;
-                entityForms.data.duration_type    = durationTypeOption;
                 entityForms.data.duration_value   = record.duration_value;
+                entityForms.data.duration_type    = durationTypeOption;
                 entityForms.data.price            = record.price;
                 entityForms.data.min_price        = record.min_price;
                 entityForms.data.max_price        = record.max_price;
@@ -601,9 +601,10 @@ export default {
 
                 // Set defaults for new record
                 entityForms.data.internal_code = this.generateCode({length: 7});
-                entityForms.data.currency      = this.currencies.length > 0 ? this.currencies[0] : null;
-                entityForms.data.duration_type = this.durationTypes.length > 0 ? this.durationTypes[0] : null;
-                entityForms.data.status        = this.statuses.length > 0 ? this.statuses[0] : null;
+                entityForms.data.duration_value = 1;
+                entityForms.data.duration_type  = this.durationTypes.length > 0 ? this.durationTypes[0] : null;
+                entityForms.data.currency       = this.currencies.length > 0 ? this.currencies[0] : null;
+                entityForms.data.status         = this.statuses.length > 0 ? this.statuses[0] : null;
 
             }
 
@@ -686,7 +687,7 @@ export default {
             // Custom validation for price ranges
             const minPrice = parseFloat(formData.min_price) || 0;
             const maxPrice = parseFloat(formData.max_price) || 0;
-            const price = parseFloat(formData.price) || 0;
+            const price    = parseFloat(formData.price) || 0;
 
             if(minPrice > 0 && maxPrice > 0) {
 

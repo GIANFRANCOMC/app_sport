@@ -107,7 +107,7 @@
                                 :titleClass="[config.forms.classes.title]"
                                 isRequired
                                 maxlength="50"
-                                showCharCounter
+                                :showCharCounter="false"
                                 hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.errors?.internal_code"
                                 xl="4"
