@@ -27,10 +27,10 @@
                 <tr>
                     <th class="text-white" style="width: 20%;">CÓDIGO INTERNO</th>
                     <th class="text-white" style="width: 30%;">NOMBRE</th>
-                    <th class="text-white" style="width: 20%;">PRECIO DE VENTA</th>
+                    <th class="text-white" style="width: 25%;">PRECIO DE VENTA</th>
                     <th class="text-white" style="width: 5%;"></th>
                     <th class="text-white" style="width: 10%;">ESTADO</th>
-                    <th class="text-white" style="width: 15%;">ACCIONES</th>
+                    <th class="text-white" style="width: 10%;">ACCIONES</th>
                 </tr>
             </thead>
             <tbody class="table-border-bottom-0 bg-white">
@@ -638,7 +638,7 @@ export default {
             // Custom validation for price ranges
             const minPrice = parseFloat(formData.min_price) || 0;
             const maxPrice = parseFloat(formData.max_price) || 0;
-            const price = parseFloat(formData.price) || 0;
+            const price    = parseFloat(formData.price) || 0;
 
             if(minPrice > 0 && maxPrice > 0) {
 
