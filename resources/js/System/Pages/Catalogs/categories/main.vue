@@ -1,7 +1,7 @@
 <template>
     <Breadcrumb :list="breadcrumbTitles"/>
 
-    <!-- Filters Section -->
+    <!-- Filters -->
     <FiltersSection
         :filter-by-value="filterByValue"
         @update:filterByValue="filterByValue = $event"
@@ -20,51 +20,47 @@
         @search="handleSearch"
         @add="openModal()"/>
 
-    <!-- List Section -->
-    <div class="table-responsive">
+    <!-- Records -->
+    <div class="list-section mb-1 mb-md-1 table-responsive">
         <table class="table table-hover">
-            <thead>
-                <tr class="text-center align-middle">
-                    <th class="bg-secondary text-white fw-semibold" style="width: 20%;">CÓDIGO INTERNO</th>
-                    <th class="bg-secondary text-white fw-semibold" style="width: 30%;">NOMBRE</th>
-                    <th class="bg-secondary text-white fw-semibold" style="width: 25%;">DESCRIPCIÓN</th>
-                    <th class="bg-secondary text-white fw-semibold" style="width: 10%;">ESTADO</th>
-                    <th class="bg-secondary text-white fw-semibold" style="width: 15%;">ACCIONES</th>
+            <thead class="align-middle bg-secondary text-center">
+                <tr>
+                    <th class="text-white" style="width: 20%;">CÓDIGO INTERNO</th>
+                    <th class="text-white" style="width: 60%;">NOMBRE</th>
+                    <th class="text-white" style="width: 10%;">ESTADO</th>
+                    <th class="text-white" style="width: 10%;">ACCIONES</th>
                 </tr>
             </thead>
             <tbody class="table-border-bottom-0 bg-white">
-                <template v-if="entityList.extras.loading">
-                    <tr class="text-center">
-                        <td colspan="99" class="py-4">
-                            <Loader/>
+                <tr v-if="entityList.extras.loading">
+                    <td colspan="99">
+                        <Loader/>
+                    </td>
+                </tr>
+                <template v-else-if="entityList.records.total > 0">
+                    <tr v-for="record in entityList.records.data" :key="record.id">
+                        <td class="text-center">
+                            <span v-text="record.internal_code" class="fw-semibold d-block"></span>
+                        </td>
+                        <td>
+                            <span v-text="record.name" class="fw-semibold d-block"></span>
+                            <small v-if="record.description" v-text="record.description" class="text-muted"></small>
+                        </td>
+                        <td class="text-center">
+                            <span :class="[getStatusBadgeClasses(record.status), 'flex-shrink-none']" v-text="record.formatted_status"></span>
+                        </td>
+                        <td class="text-center">
+                            <button type="button" class="btn btn-xs btn-warning waves-effect" @click="openModal(record)">
+                                <span v-text="MODULE.texts.actions.edit"></span>
+                            </button>
                         </td>
                     </tr>
                 </template>
-                <template v-else>
-                    <template v-if="entityList.records.total > 0">
-                        <tr v-for="record in entityList.records.data" :key="record.id" class="text-center">
-                            <td v-text="record.internal_code" class="fw-bold"></td>
-                            <td v-text="record.name" class="text-start"></td>
-                            <td v-text="record.description" class="text-start"></td>
-                            <td>
-                                <span :class="[getStatusBadgeClasses(record.status), 'badge', 'fw-semibold', 'text-capitalize']" v-text="record.formatted_status"></span>
-                            </td>
-                            <td>
-                                <button type="button" class="btn btn-sm btn-warning waves-effect" @click="openModal(record)">
-                                    <i class="fa fa-pencil"></i>
-                                    <span class="ms-2" v-text="MODULE.texts.actions.edit"></span>
-                                </button>
-                            </td>
-                        </tr>
-                    </template>
-                    <template v-else>
-                        <tr>
-                            <td class="text-center" colspan="99">
-                                <WithoutData type="image"/>
-                            </td>
-                        </tr>
-                    </template>
-                </template>
+                <tr v-else>
+                    <td colspan="99">
+                        <WithoutData type="image"/>
+                    </td>
+                </tr>
             </tbody>
         </table>
     </div>
@@ -76,10 +72,10 @@
 
     <!-- Modal: Create/Update -->
     <div class="modal fade" :id="forms[entity].createUpdate.extras.modals.default.id" data-bs-backdrop="static" tabindex="-1" role="dialog">
-        <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title text-uppercase fw-bold" v-text="modalTitles[isUpdate ? 'update' : 'store']"></h5>
+                    <h5 class="modal-title text-uppercase fw-bold" v-text="modalTitles.createUpdate[isUpdate ? 'update' : 'store']"></h5>
                     <button type="button" class="btn-header-modal" data-bs-dismiss="modal">
                         <i class="fa fa-times icon-close-modal"></i>
                     </button>
@@ -91,14 +87,14 @@
                                 v-model="forms[entity].createUpdate.data.internal_code"
                                 hasDiv
                                 :title="MODULE.texts.form.internalCode"
-                                :titleClass="[config.forms.classes.title, 'fw-semibold']"
+                                :titleClass="[config.forms.classes.title]"
                                 isRequired
                                 maxlength="50"
-                                showCharCounter
+                                :showCharCounter="false"
                                 hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.errors?.internal_code"
-                                xl="5"
-                                lg="5">
+                                xl="4"
+                                lg="4">
                                 <template v-slot:inputGroupAppend>
                                     <button type="button" :class="['btn waves-effect', isUpdate ? 'btn-warning' : 'btn-primary']" @click="generateCodeAction" data-bs-toggle="tooltip" data-bs-placement="top" :title="MODULE.texts.form.generateCodeTooltip">
                                         <i class="fa fa-rotate"></i>
@@ -109,20 +105,20 @@
                                 v-model="forms[entity].createUpdate.data.name"
                                 hasDiv
                                 :title="MODULE.texts.form.name"
-                                :titleClass="[config.forms.classes.title, 'fw-semibold']"
+                                :titleClass="[config.forms.classes.title]"
                                 isRequired
-                                maxlength="100"
+                                maxlength="50"
                                 showCharCounter
                                 hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.errors?.name"
-                                xl="7"
-                                lg="7"/>
+                                xl="8"
+                                lg="8"/>
                             <InputText
                                 v-model="forms[entity].createUpdate.data.description"
                                 hasDiv
                                 :title="MODULE.texts.form.description"
-                                :titleClass="[config.forms.classes.title, 'fw-semibold']"
-                                maxlength="255"
+                                :titleClass="[config.forms.classes.title]"
+                                maxlength="100"
                                 showCharCounter
                                 hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.errors?.description"
@@ -131,12 +127,12 @@
                             <InputSlot
                                 hasDiv
                                 :title="MODULE.texts.form.status"
-                                :titleClass="[config.forms.classes.title, 'fw-semibold']"
+                                :titleClass="[config.forms.classes.title]"
                                 isRequired
                                 hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.errors?.status"
-                                xl="6"
-                                lg="6">
+                                xl="3"
+                                lg="3">
                                 <template v-slot:input>
                                     <v-select
                                         v-model="forms[entity].createUpdate.data.status"
@@ -181,8 +177,9 @@ const MODULE_CONFIG = {
     entity: "categories",
     menuId: "menu-items-categories",
     pageTitle: "Categorías",
+    pageTitleSingular: "Categoría",
     breadcrumbParent: "Catálogo comercial",
-    perPage: 15
+    perPage: 10
 };
 
 const FORM_FIELDS = {
@@ -210,12 +207,17 @@ const ERROR_LABELS = {
     internal_code: "Código interno",
     name: "Nombre",
     description: "Descripción",
-    status: "Estado",
-    required: "Es obligatorio"
+    status: "Estado"
 };
 
+const FILTER_OPTIONS = [
+    {code: "all", label: "Todos los filtros"},
+    {code: "internal_code", label: "Código interno"},
+    {code: "name", label: "Nombre"},
+    {code: "description", label: "Descripción"}
+];
+
 const TEXTS = {
-    loading: `Cargando ${MODULE_CONFIG.pageTitle}...`,
     filters: {
         filterBy: "Filtrar por",
         search: "Búsqueda"
@@ -238,13 +240,6 @@ const TEXTS = {
     }
 };
 
-const FILTER_OPTIONS = [
-    {code: "all", label: "Todos los filtros"},
-    {code: "internal_code", label: "Código interno"},
-    {code: "name", label: "Nombre"},
-    {code: "description", label: "Descripción"}
-];
-
 const MODULE = {
     config: MODULE_CONFIG,
     formFields: FORM_FIELDS,
@@ -259,7 +254,12 @@ export default {
     name: "CategoriesMain",
     data() {
 
-        const crudModule = initCrudModule({entity: MODULE.config.entity, menuId: MODULE.config.menuId, pageTitle: MODULE.config.pageTitle});
+        const crudModule = initCrudModule({
+            entity: MODULE.config.entity,
+            menuId: MODULE.config.menuId,
+            pageTitle: MODULE.config.pageTitle,
+            pageTitleSingular: MODULE.config.pageTitleSingular
+        });
 
         crudModule.lists[MODULE.config.entity].filters.filter_by = MODULE.filterOptions[0];
         crudModule.forms[MODULE.config.entity].createUpdate.data = Forms.initFormData(MODULE.formFields);
@@ -294,9 +294,17 @@ export default {
     methods: {
         async initParams() {
 
-            const response = await Requests.get({route: this.routeActions.initParams, data: {page: "main"}, showAlert: true});
+            const response = await Requests.get({
+                route: this.routeActions.initParams,
+                data: {page: "main"},
+                showAlert: true
+            });
 
-            this.options[this.entity] = response?.data?.config?.[this.entity] ?? {};
+            if(response?.data?.config) {
+
+                this.options.statuses = response.data.config.statuses;
+
+            }
 
             return Requests.valid({result: response});
 
@@ -305,7 +313,7 @@ export default {
         async listEntity(params = null) {
 
             const entityList   = this.lists[this.entity];
-            const emptyRecords = {total: 0, data: []};
+            const emptyRecords = {total: 0, data: [], links: []};
             const filters      = Utils.cloneJson(entityList.filters);
             const filterData   = {per_page: this.MODULE.config.perPage, filter_by: filters.filter_by?.code, word: filters.word};
 
@@ -366,26 +374,20 @@ export default {
 
             if(this.isDefined(record)) {
 
-                entityForms.data.id = record?.id;
+                // Map record data to form
+                const statusOption = this.statuses.find(e => e.code === record?.status);
 
-                Object.keys(this.MODULE.formFields).forEach(key => {
-
-                    if(key === "status") {
-
-                        entityForms.data.status = this.statuses.find(e => e.code === record?.status) || null;
-
-                    }else {
-
-                        entityForms.data[key] = record?.[key] ?? this.MODULE.formFields[key];
-
-                    }
-
-                });
+                entityForms.data.id            = record.id;
+                entityForms.data.internal_code = record.internal_code;
+                entityForms.data.name          = record.name;
+                entityForms.data.description   = record.description;
+                entityForms.data.status        = statusOption;
 
             }else {
 
+                // Set defaults for new record
                 entityForms.data.internal_code = this.generateCode({length: 7});
-                entityForms.data.status        = this.statuses[0];
+                entityForms.data.status         = this.statuses.length > 0 ? this.statuses[0] : null;
 
             }
 
@@ -396,6 +398,7 @@ export default {
         generateCodeAction() {
 
             this.forms[this.entity].createUpdate.data.internal_code = this.generateCode({length: 7});
+
             Alerts.toastrs({type: "success", subtitle: "Código interno generado correctamente."});
             Alerts.tooltips({show: false});
 
@@ -414,7 +417,7 @@ export default {
             try {
 
                 const formData   = Utils.cloneJson(entityForms.data);
-                const validation = Forms.validateFormData(formData, this.MODULE.validationRules, {isDescriptive: true, errorLabels: this.MODULE.errorLabels});
+                const validation = this.validateFormData(formData);
 
                 if(!validation.bool) {
 
@@ -460,7 +463,11 @@ export default {
             }
 
         },
-        // Utils
+        validateFormData(formData) {
+
+            return Forms.validateFormData(formData, this.MODULE.validationRules, {isDescriptive: true, errorLabels: this.MODULE.errorLabels});
+
+        },
         // Others
         isDefined(value) {
 
@@ -502,14 +509,9 @@ export default {
             ];
 
         },
-        filterByOptions() {
-
-            return this.MODULE.filterOptions;
-
-        },
         statuses() {
 
-            return (this.options?.[this.entity]?.statuses ?? []).map(e => ({code: e.code, label: e.label}));
+            return (this.options?.statuses ?? []).map(e => ({code: e.code, label: e.label}));
 
         },
         isUpdate() {
@@ -519,10 +521,14 @@ export default {
         },
         modalTitles() {
 
-            return this.forms[this.entity].createUpdate.extras.modals.default.titles || {
-                store: `AGREGAR ${this.MODULE.config.pageTitle.toUpperCase()}`,
-                update: `EDITAR ${this.MODULE.config.pageTitle.toUpperCase()}`
+            return {
+                createUpdate: this.forms[this.entity].createUpdate.extras.modals.default.titles
             };
+
+        },
+        filterByOptions() {
+
+            return this.MODULE.filterOptions;
 
         },
         filterByValue: {
