@@ -693,42 +693,46 @@ export default {
 
             const result = Forms.validateFormData(formData, this.MODULE.validationRules, {isDescriptive: true, errorLabels: this.MODULE.errorLabels});
 
-            // Custom validation for price ranges
-            const minPrice = parseFloat(formData.min_price) || 0;
-            const maxPrice = parseFloat(formData.max_price) || 0;
-            const price    = parseFloat(formData.price) || 0;
+            // Custom validation for price ranges (only if price is valid)
+            if(!result.errors.price) {
 
-            if(minPrice > 0 && maxPrice > 0) {
+                const minPrice = parseFloat(formData.min_price) || 0;
+                const maxPrice = parseFloat(formData.max_price) || 0;
+                const price    = parseFloat(formData.price) || 0;
 
-                if(maxPrice < minPrice) {
+                if(minPrice > 0 && maxPrice > 0) {
 
-                    if(!result.errors.max_price) result.errors.max_price = [];
+                    if(maxPrice < minPrice) {
 
-                    result.errors.max_price.push(`${this.MODULE.errorLabels.max_price}: Debe ser mayor o igual al precio mínimo`);
-                    result.bool = false;
+                        if(!result.errors.max_price) result.errors.max_price = [];
 
-                }else if(price < minPrice || price > maxPrice) {
+                        result.errors.max_price.push(`${this.MODULE.errorLabels.max_price}: Debe ser mayor o igual al precio mínimo`);
+                        result.bool = false;
+
+                    }else if(price < minPrice || price > maxPrice) {
+
+                        if(!result.errors.price) result.errors.price = [];
+
+                        result.errors.price.push(`${this.MODULE.errorLabels.price}: Debe estar entre ${minPrice} y ${maxPrice}`);
+                        result.bool = false;
+
+                    }
+
+                }else if(minPrice > 0 && price < minPrice) {
 
                     if(!result.errors.price) result.errors.price = [];
 
-                    result.errors.price.push(`${this.MODULE.errorLabels.price}: Debe estar entre ${minPrice} y ${maxPrice}`);
+                    result.errors.price.push(`${this.MODULE.errorLabels.price}: Debe ser mayor o igual al precio mínimo`);
+                    result.bool = false;
+
+                }else if(maxPrice > 0 && price > maxPrice) {
+
+                    if(!result.errors.price) result.errors.price = [];
+
+                    result.errors.price.push(`${this.MODULE.errorLabels.price}: Debe ser menor o igual al precio máximo`);
                     result.bool = false;
 
                 }
-
-            }else if(minPrice > 0 && price < minPrice) {
-
-                if(!result.errors.price) result.errors.price = [];
-
-                result.errors.price.push(`${this.MODULE.errorLabels.price}: Debe ser mayor o igual al precio mínimo`);
-                result.bool = false;
-
-            }else if(maxPrice > 0 && price > maxPrice) {
-
-                if(!result.errors.price) result.errors.price = [];
-
-                result.errors.price.push(`${this.MODULE.errorLabels.price}: Debe ser menor o igual al precio máximo`);
-                result.bool = false;
 
             }
 
