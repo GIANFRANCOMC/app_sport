@@ -34,10 +34,10 @@ class StoreSubscriptionRequest extends FormRequest {
             "internal_code"  => ["required", "string", "max:50", new UniqueInCompany("items", "internal_code", null, ["type" => "subscription"], "código interno")],
             "name"           => "required|string|max:50",
             "description"    => "nullable|string|max:100",
+            "duration_value" => "required|integer|min:1|max:$maxValue|decimal:0",
+            "duration_type"  => "required|in:hour,day,today,month,year",
             "price"          => "required|numeric|min:$minValue|max:$maxValue|decimal:0,$round",
             "currency_id"    => "required|integer",
-            "duration_type"  => "required|in:hour,day,today,month,year",
-            "duration_value" => "required|integer|min:1|max:$maxValue|decimal:0",
             "status"         => "required|in:active,inactive"
         ];
 
