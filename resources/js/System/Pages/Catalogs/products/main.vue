@@ -247,19 +247,27 @@
                             </InputSlot>
                             <InputSlot
                                 hasDiv
+                                :title="MODULE.texts.form.visibility"
+                                :titleClass="[config.forms.classes.title]"
                                 :isInputGroup="false"
-                                :divInputClass="['d-flex flex-wrap justify-content-center align-items-end h-100 gap-3']"
+                                :divInputClass="['d-flex flex-wrap justify-content-center align-items-end gap-4 pt-2']"
                                 xl="9"
                                 lg="9">
                                 <template v-slot:input>
-                                    <label class="form-check-label">
-                                        <input class="form-check-input" type="checkbox" v-model="forms[entity].createUpdate.data.see_my_web"/>
-                                        <span class="ms-2" v-text="MODULE.texts.form.seeMyWeb"></span>
-                                    </label>
-                                    <label class="form-check-label" v-if="forms[entity].createUpdate.data.see_my_web">
-                                        <input class="form-check-input" type="checkbox" v-model="forms[entity].createUpdate.data.see_my_web_price"/>
-                                        <span class="ms-2" v-text="MODULE.texts.form.seeMyWebPrice"></span>
-                                    </label>
+                                    <div class="form-check form-switch d-flex align-items-start">
+                                        <input class="form-check-input" type="checkbox" role="switch" id="see_my_web" v-model="forms[entity].createUpdate.data.see_my_web"/>
+                                        <label class="form-check-label d-flex align-items-center gap-1 ms-2 cursor-pointer mb-0" for="see_my_web">
+                                            <i :class="['fa', forms[entity].createUpdate.data.see_my_web ? 'fa-globe text-success' : 'fa-globe text-muted']"></i>
+                                            <span v-text="MODULE.texts.form.seeMyWeb"></span>
+                                        </label>
+                                    </div>
+                                    <div class="form-check form-switch d-flex align-items-start" :class="{'opacity-50': !forms[entity].createUpdate.data.see_my_web}">
+                                        <input class="form-check-input" type="checkbox" role="switch" id="see_my_web_price" v-model="forms[entity].createUpdate.data.see_my_web_price" :disabled="!forms[entity].createUpdate.data.see_my_web"/>
+                                        <label class="form-check-label d-flex align-items-center gap-1 ms-2 mb-0" :class="[forms[entity].createUpdate.data.see_my_web ? 'cursor-pointer' : 'cursor-not-allowed']" for="see_my_web_price">
+                                            <i :class="['fa-solid', forms[entity].createUpdate.data.see_my_web_price && forms[entity].createUpdate.data.see_my_web ? 'fa-dollar-sign text-success' : 'fa-dollar-sign text-muted']"></i>
+                                            <span v-text="MODULE.texts.form.seeMyWebPrice"></span>
+                                        </label>
+                                    </div>
                                 </template>
                             </InputSlot>
                         </div>
@@ -386,6 +394,7 @@ const TEXTS = {
         currency: "Moneda",
         categories: "Categorías",
         status: "Estado",
+        visibility: "Visibilidad web",
         seeMyWeb: "Visualizar en mi página",
         seeMyWebPrice: "Visualizar precio",
         generateCodeTooltip: "Generar aleatoriamente"
