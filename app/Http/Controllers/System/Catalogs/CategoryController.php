@@ -7,6 +7,8 @@ namespace App\Http\Controllers\System\Catalogs;
 use App\Http\Controllers\System\Base\BaseController;
 use App\Helpers\System\{Utilities};
 use Illuminate\Http\{JsonResponse, Request};
+use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
 
 use App\Http\Requests\System\Catalogs\Categories\{StoreCategoryRequest, UpdateCategoryRequest};
 use App\Services\System\Catalogs\Categories\{CategoryConfigService, CategoryService};
@@ -15,7 +17,7 @@ use App\Models\System\Catalogs\{Category};
 class CategoryController extends BaseController {
 
     /**
-     * Translation namespace for category module
+     * Translation namespace for module
      */
     private const TRANSLATION_NAMESPACE = "System.Catalogs.category";
 
@@ -28,12 +30,13 @@ class CategoryController extends BaseController {
     public function initParams(Request $request) {
 
         $page = $this->getPage($request);
+
         return CategoryConfigService::getInitParams($this->getCompanyId(), $page);
 
     }
 
     /**
-     * Get paginated list of categories with filters
+     * Get paginated list with filters
      *
      * @param Request $request
      * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator
@@ -48,7 +51,7 @@ class CategoryController extends BaseController {
     }
 
     /**
-     * Display the categories index page
+     * Display the module index page
      *
      * @return \Illuminate\Contracts\View\View
      */
@@ -59,7 +62,7 @@ class CategoryController extends BaseController {
     }
 
     /**
-     * Show the form for creating a new category
+     * Show the form for creating a new record
      * (Not used in SPA, but kept for REST compliance)
      *
      * @return void
@@ -71,7 +74,7 @@ class CategoryController extends BaseController {
     }
 
     /**
-     * Store a newly created category
+     * Store a newly created record
      *
      * @param StoreCategoryRequest $request
      * @return JsonResponse
@@ -102,7 +105,7 @@ class CategoryController extends BaseController {
     }
 
     /**
-     * Display the specified category
+     * Display the specified record
      * (Not used, but kept for REST compliance)
      *
      * @param Category $record
@@ -115,7 +118,7 @@ class CategoryController extends BaseController {
     }
 
     /**
-     * Show the form for editing the specified category
+     * Show the form for editing the specified record
      * (Not used in SPA, but kept for REST compliance)
      *
      * @param Category $record
@@ -128,7 +131,7 @@ class CategoryController extends BaseController {
     }
 
     /**
-     * Update the specified category
+     * Update the specified record
      *
      * @param UpdateCategoryRequest $request
      * @param int $id Category ID
@@ -168,7 +171,7 @@ class CategoryController extends BaseController {
     }
 
     /**
-     * Remove the specified category
+     * Remove the specified record
      * (Not used, but kept for REST compliance)
      *
      * @param Category $record
@@ -181,7 +184,7 @@ class CategoryController extends BaseController {
     }
 
     /**
-     * Prepare category data from request
+     * Prepare record data from request
      *
      * @param StoreCategoryRequest|UpdateCategoryRequest $request
      * @return array
@@ -189,17 +192,17 @@ class CategoryController extends BaseController {
     private function prepareCategoryData($request): array {
 
         return [
-            "company_id"  => $this->getCompanyId(),
-            "internal_code" => $request->internal_code,
-            "name"          => $request->name,
-            "description"   => $request->description ?? "",
-            "status"        => $request->status
+            "company_id"    => $this->getCompanyId(),
+            "internal_code" => $request->input("internal_code"),
+            "name"          => $request->input("name"),
+            "description"   => $request->input("description"),
+            "status"        => $request->input("status")
         ];
 
     }
 
     /**
-     * Get translation namespace for category module
+     * Get translation namespace for module
      *
      * @return string
      */
