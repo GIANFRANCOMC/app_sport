@@ -43,21 +43,25 @@ export function get({route = "", data = {}, showAlert = false}) {
 		})
 		.catch(error => {
 
+            const status = error?.response?.status;
+            const errorData = error?.response?.data;
+            const errorMessage = errorData?.msg || errorData?.message || error?.message || error;
+
             if(showAlert) {
 
-                if([500].includes(error?.response?.status)) {
+                if([500].includes(status)) {
 
-                    Alerts.toastrs({type: "error", subtitle: error?.response?.data?.message});
+                    Alerts.toastrs({type: "error", subtitle: errorData?.message || errorMessage});
 
                 }else {
 
-                    Alerts.toastrs({type: "error", subtitle: error});
+                    Alerts.toastrs({type: "error", subtitle: errorMessage});
 
                 }
 
             }
 
-			resolve({data: {data: [], msg: error}, bool: false});
+			resolve({data: errorData || {data: [], msg: errorMessage}, bool: false, code: status});
 
 		})
 		.finally(() => {
@@ -92,17 +96,25 @@ export function post({route = "", data = {}, id = "", formData = null}) {
 		})
 		.catch(error => {
 
-            if([405].includes(error?.response?.status)) {
+            const status = error?.response?.status;
+            const errorData = error?.response?.data;
+            const errorMessage = errorData?.msg || errorData?.message || error?.message || error;
 
-                resolve({data: {msg: `${error?.response?.data?.message} (Code ${error?.response?.status})`}, bool: false, code: error?.response?.status});
+            if([405].includes(status)) {
 
-            }else if([422].includes(error?.response?.status)) {
+                resolve({data: {msg: `${errorData?.message || errorMessage} (Code ${status})`}, bool: false, code: status});
 
-                resolve({data: {msg: `${error?.response?.data?.message} (Code ${error?.response?.status})`}, errors: error?.response?.data?.errors, bool: false, code: error?.response?.status});
+            }else if([422].includes(status)) {
+
+                resolve({data: {msg: `${errorData?.message || errorMessage} (Code ${status})`}, errors: errorData?.errors, bool: false, code: status});
+
+            }else if([404].includes(status)) {
+
+                resolve({data: errorData || {msg: errorMessage}, bool: false, code: status});
 
             }else {
 
-                resolve({data: {msg: error}, bool: false, code: error?.response?.status});
+                resolve({data: errorData || {msg: errorMessage}, bool: false, code: status});
 
             }
 
@@ -154,17 +166,25 @@ export function patch({route = "", data = {}, id = "", formData = null}) {
 		})
 		.catch(error => {
 
-            if([405].includes(error?.response?.status)) {
+            const status = error?.response?.status;
+            const errorData = error?.response?.data;
+            const errorMessage = errorData?.msg || errorData?.message || error?.message || error;
 
-                resolve({data: {msg: `${error?.response?.data?.message} (Code ${error?.response?.status})`}, bool: false, code: error?.response?.status});
+            if([405].includes(status)) {
 
-            }else if([422].includes(error?.response?.status)) {
+                resolve({data: {msg: `${errorData?.message || errorMessage} (Code ${status})`}, bool: false, code: status});
 
-                resolve({data: {msg: `${error?.response?.data?.message} (Code ${error?.response?.status})`}, errors: error?.response?.data?.errors, bool: false, code: error?.response?.status});
+            }else if([422].includes(status)) {
+
+                resolve({data: {msg: `${errorData?.message || errorMessage} (Code ${status})`}, errors: errorData?.errors, bool: false, code: status});
+
+            }else if([404].includes(status)) {
+
+                resolve({data: errorData || {msg: errorMessage}, bool: false, code: status});
 
             }else {
 
-                resolve({data: {msg: error}, bool: false, code: error?.response?.status});
+                resolve({data: errorData || {msg: errorMessage}, bool: false, code: status});
 
             }
 
