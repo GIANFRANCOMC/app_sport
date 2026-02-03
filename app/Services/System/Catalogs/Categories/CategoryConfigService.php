@@ -4,24 +4,25 @@ declare(strict_types=1);
 
 namespace App\Services\System\Catalogs\Categories;
 
-use App\Models\System\Catalogs\Category;
 use Illuminate\Support\Facades\Cache;
 use stdClass;
 
+use App\Models\System\Catalogs\{Category};
+
 /**
- * Service for managing Category configuration and initialization parameters
+ * Service for managing module configuration and initialization parameters
  * Implements caching for better performance
  */
 class CategoryConfigService {
 
     private const CACHE_PREFIX = "category_config";
-    private const CACHE_TTL = 3600; // 1 hour
+    private const CACHE_TTL    = 3600; // 1 hour
 
     /**
-     * Get initialization parameters for category module
+     * Get initialization parameters for module
      *
-     * @param int $companyId Company ID
-     * @param string $page Page identifier
+     * @param int $companyId Company
+     * @param string $page Page (only used to determine what data to return, not for cache key)
      * @return stdClass
      */
     public static function getInitParams(int $companyId, string $page = ""): stdClass {
@@ -36,8 +37,7 @@ class CategoryConfigService {
 
             if($page === "main") {
 
-                $config->categories = new stdClass();
-                $config->categories->statuses = Category::getStatuses();
+                $config->statuses = Category::getStatuses();
 
             }
 
@@ -51,9 +51,9 @@ class CategoryConfigService {
     }
 
     /**
-     * Build cache key for category configuration
+     * Build cache key for module configuration
      *
-     * @param int $companyId Company ID
+     * @param int $companyId Company
      * @return string
      */
     private static function buildCacheKey(int $companyId): string {
@@ -63,22 +63,23 @@ class CategoryConfigService {
     }
 
     /**
-     * Clear cache for category configuration
+     * Clear cache for module configuration
      *
-     * @param int $companyId Company ID
+     * @param int $companyId Company
      * @return void
      */
     public static function clearCache(int $companyId): void {
 
         $cacheKey = self::buildCacheKey($companyId);
+
         Cache::forget($cacheKey);
 
     }
 
     /**
-     * Clear all category configuration cache for a company
+     * Clear all module configuration cache for a company
      *
-     * @param int $companyId Company ID
+     * @param int $companyId Company
      * @return void
      */
     public static function clearAllCache(int $companyId): void {
