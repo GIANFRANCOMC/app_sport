@@ -26,12 +26,12 @@
             <thead class="align-middle bg-secondary text-center">
                 <tr>
                     <th class="text-white" style="width: 20%;">CÓDIGO INTERNO</th>
-                    <th class="text-white" style="width: 20%;">NOMBRE</th>
-                    <th class="text-white" style="width: 15%;">DURACIÓN</th>
-                    <th class="text-white" style="width: 15%;">PRECIO DE VENTA</th>
+                    <th class="text-white" style="width: 25%;">NOMBRE</th>
+                    <th class="text-white" style="width: 10%;">DURACIÓN</th>
+                    <th class="text-white" style="width: 20%;">PRECIO DE VENTA</th>
                     <th class="text-white" style="width: 5%;"></th>
                     <th class="text-white" style="width: 10%;">ESTADO</th>
-                    <th class="text-white" style="width: 15%;">ACCIONES</th>
+                    <th class="text-white" style="width: 10%;">ACCIONES</th>
                 </tr>
             </thead>
             <tbody class="table-border-bottom-0 bg-white">
@@ -50,7 +50,7 @@
                             <small v-if="record.description" v-text="record.description" class="text-muted"></small>
                         </td>
                         <td class="text-center">
-                            <span v-text="record.formatted_duration" class="badge bg-label-primary fw-bold"></span>
+                            <span v-text="record.formatted_duration" class="fw-semibold text-lowercase"></span>
                         </td>
                         <td class="text-center">
                             <span class="fw-semibold d-block">
@@ -143,26 +143,8 @@
                                 showCharCounter
                                 hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.errors?.description"
-                                xl="12"
-                                lg="12"/>
-                            <InputSlot
-                                hasDiv
-                                :title="MODULE.texts.form.durationType"
-                                :titleClass="[config.forms.classes.title]"
-                                isRequired
-                                hasTextBottom
-                                :textBottomInfo="forms[entity].createUpdate.errors?.duration_type"
-                                xl="6"
-                                lg="6">
-                                <template v-slot:input>
-                                    <v-select
-                                        v-model="forms[entity].createUpdate.data.duration_type"
-                                        :options="durationTypes"
-                                        :class="config.forms.classes.select2"
-                                        :clearable="false"
-                                        :searchable="false"/>
-                                </template>
-                            </InputSlot>
+                                xl="4"
+                                lg="4"/>
                             <InputNumber
                                 v-model="forms[entity].createUpdate.data.duration_value"
                                 hasDiv
@@ -172,14 +154,26 @@
                                 :decimals="0"
                                 hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.errors?.duration_value"
-                                xl="6"
-                                lg="6">
-                                <template v-slot:inputGroupAppend>
-                                    <button v-if="isDefined(getLabelDurationType())" type="button" :class="['btn waves-effect', isUpdate ? 'btn-warning' : 'btn-primary']">
-                                        <span v-text="getLabelDurationType()"></span>
-                                    </button>
+                                xl="4"
+                                lg="4"/>
+                            <InputSlot
+                                hasDiv
+                                :title="MODULE.texts.form.durationType"
+                                :titleClass="[config.forms.classes.title]"
+                                isRequired
+                                hasTextBottom
+                                :textBottomInfo="forms[entity].createUpdate.errors?.duration_type"
+                                xl="4"
+                                lg="4">
+                                <template v-slot:input>
+                                    <v-select
+                                        v-model="forms[entity].createUpdate.data.duration_type"
+                                        :options="durationTypes"
+                                        :class="config.forms.classes.select2"
+                                        :clearable="false"
+                                        :searchable="false"/>
                                 </template>
-                            </InputNumber>
+                            </InputSlot>
                             <InputNumber
                                 v-model="forms[entity].createUpdate.data.price"
                                 hasDiv
@@ -507,10 +501,10 @@ export default {
 
             if(response?.data?.config) {
 
-                this.options.categories = response.data.config.categories;
-                this.options.currencies = response.data.config.currencies;
-                this.options.statuses   = response.data.config.statuses;
-                this.options[this.entity] = response.data.config[this.entity];
+                this.options.categories    = response.data.config.categories;
+                this.options.currencies    = response.data.config.currencies;
+                this.options.durationTypes = response.data.config.durationTypes;
+                this.options.statuses      = response.data.config.statuses;
 
             }
 
@@ -608,6 +602,7 @@ export default {
                 // Set defaults for new record
                 entityForms.data.internal_code = this.generateCode({length: 7});
                 entityForms.data.currency      = this.currencies.length > 0 ? this.currencies[0] : null;
+                entityForms.data.duration_type = this.durationTypes.length > 0 ? this.durationTypes[0] : null;
                 entityForms.data.status        = this.statuses.length > 0 ? this.statuses[0] : null;
 
             }
@@ -622,26 +617,6 @@ export default {
 
             Alerts.toastrs({type: "success", subtitle: "Código interno generado correctamente."});
             Alerts.tooltips({show: false});
-
-        },
-        getLabelDurationType() {
-
-            const record = this.forms[this.entity].createUpdate.data;
-            const durationTypes = this.options?.[this.entity]?.durationTypes ?? [];
-
-            if(this.isDefined(durationTypes) && this.isDefined(record?.duration_type) && this.isDefined(record?.duration_value)) {
-
-                const durationType = durationTypes.find(e => e.code === record.duration_type?.code);
-
-                if(durationType) {
-
-                    return parseFloat(record.duration_value) > 1 ? durationType.plural : durationType.label;
-
-                }
-
-            }
-
-            return null;
 
         },
         async saveEntity() {
@@ -808,7 +783,7 @@ export default {
         },
         durationTypes() {
 
-            return (this.options?.[this.entity]?.durationTypes ?? []).map(e => ({code: e.code, label: e.label, plural: e.plural}));
+            return (this.options?.durationTypes ?? []).map(e => ({code: e.code, label: e.label, plural: e.plural}));
 
         },
         statuses() {
