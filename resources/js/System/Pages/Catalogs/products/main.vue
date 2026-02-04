@@ -52,9 +52,9 @@
                             <span class="fw-semibold d-block">
                                 <span v-text="`${record.currency?.sign} ${separatorNumber(record.price)}`"></span>
                             </span>
-                            <div v-if="record.min_price || record.max_price" class="d-flex flex-column mt-1">
-                                <small v-if="record.min_price" class="text-muted" v-text="`Min: ${record.currency?.sign} ${separatorNumber(record.min_price)}`"></small>
-                                <small v-if="record.max_price" class="text-muted" v-text="`Max: ${record.currency?.sign} ${separatorNumber(record.max_price)}`"></small>
+                            <div v-if="isDefined(record.min_price) || isDefined(record.max_price)" class="d-flex flex-column mt-1">
+                                <small v-if="isDefined(record.min_price)" class="text-muted" v-text="`Min: ${record.currency?.sign} ${separatorNumber(record.min_price)}`"></small>
+                                <small v-if="isDefined(record.max_price)" class="text-muted" v-text="`Max: ${record.currency?.sign} ${separatorNumber(record.max_price)}`"></small>
                             </div>
                         </td>
                         <td class="text-center">
