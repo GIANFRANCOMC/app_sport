@@ -7,45 +7,24 @@ namespace App\Services\System\Organizations\Users;
 use Exception;
 use App\Helpers\System\{TranslationHelper, Utilities};
 use Illuminate\Support\Facades\{Auth, DB};
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
 
-use App\Models\System\Organizations\User;
-use App\Repositories\System\Organizations\Users\UserRepository;
+use App\Models\System\Organizations\{User};
 
 /**
- * Service class for managing User operations
- * Handles business logic for creating and updating users
+ * Service class for managing module operations
+ * Handles business logic for creating and updating records
  */
 class UserService {
 
     /**
-     * Translation namespace for user module
+     * Translation namespace for module
      */
     private const TRANSLATION_NAMESPACE = "System.Organizations.user";
 
     /**
-     * @var UserRepository
-     */
-    private static $repository;
-
-    /**
-     * Get repository instance (lazy initialization)
-     *
-     * @return UserRepository
-     */
-    private static function getRepository(): UserRepository {
-
-        if(self::$repository === null) {
-
-            self::$repository = new UserRepository();
-
-        }
-
-        return self::$repository;
-
-    }
-
-    /**
-     * Allowed fields for user creation and update
+     * Allowed fields for record creation and update
      */
     private const ALLOWED_FIELDS = [
         "role_id",
@@ -57,6 +36,16 @@ class UserService {
         "gender",
         "birthdate",
         "status"
+    ];
+
+    /**
+     * Searchable fields for filtering
+     */
+    private const SEARCHABLE_FIELDS = [
+        "document_number",
+        "name",
+        "email",
+        "phone_number"
     ];
 
     /**
@@ -73,28 +62,30 @@ class UserService {
     }
 
     /**
-     * Prepare user data for creation
+     * Prepare data for creation
      *
      * @param array $data Input data
-     * @param int $companyId Company ID
-     * @param int $userId User ID
+     * @param int $companyId Company
+     * @param int $userId User
      * @return array
      */
     private static function prepareUserDataForCreate(array $data, int $companyId, int $userId): array {
 
         $userData = [
             "company_id" => $companyId,
-            "status"     => $data["status"] ?? "active",
             "gender"     => $data["gender"] ?? "other",
+            "status"     => $data["status"] ?? "active",
             "created_at" => now(),
             "created_by" => $userId
         ];
 
         foreach(self::ALLOWED_FIELDS as $field) {
 
-            if($field === "status" || $field === "gender") continue; // Already set
+            if(isset($data[$field])) {
 
-            $userData[$field] = $data[$field] ?? null;
+                $userData[$field] = $data[$field];
+
+            }
 
         }
 
@@ -110,9 +101,9 @@ class UserService {
     }
 
     /**
-     * Prepare user data for update (only changed fields)
+     * Prepare data for update (only changed fields)
      *
-     * @param User $user User instance
+     * @param User $user Record instance
      * @param array $data Input data
      * @return array
      */
@@ -122,18 +113,14 @@ class UserService {
 
         foreach(self::ALLOWED_FIELDS as $field) {
 
-            if(isset($data[$field]) && $data[$field] !== $user->$field) {
+            if(isset($data[$field])) {
 
-                $updateData[$field] = $data[$field];
+                if($data[$field] !== $user->$field) {
 
+                    $updateData[$field] = $data[$field];
+
+                }
             }
-
-        }
-
-        // Handle gender default
-        if(isset($data["gender"])) {
-
-            $updateData["gender"] = $data["gender"] ?? "other";
 
         }
 
@@ -149,46 +136,11 @@ class UserService {
     }
 
     /**
-     * Check if document number exists
+     * Create a new record
      *
-     * @param string $documentNumber Document number
-     * @param int $companyId Company ID
-     * @param int|null $excludeUserId User ID to exclude from check
-     * @return bool
-     */
-    private static function documentNumberExists(string $documentNumber, int $companyId, ?int $excludeUserId = null): bool {
-
-        return self::getRepository()->fieldExists("document_number", $documentNumber, $companyId, $excludeUserId);
-
-    }
-
-    /**
-     * Check if email exists (global check, not per company)
-     *
-     * @param string $email Email address
-     * @param int|null $excludeUserId User ID to exclude from check
-     * @return bool
-     */
-    private static function emailExists(string $email, ?int $excludeUserId = null): bool {
-
-        $query = User::where("email", $email);
-
-        if($excludeUserId) {
-
-            $query->where("id", "!=", $excludeUserId);
-
-        }
-
-        return $query->exists();
-
-    }
-
-    /**
-     * Create a new user
-     *
-     * @param array $data User data from request
-     * @param int|null $userId User ID creating the user
-     * @return User|null Created user instance or null on failure
+     * @param array $data Input data
+     * @param int|null $userId User creating the record
+     * @return User|null Created record instance or null on failure
      * @throws Exception
      */
     public static function create(array $data, ?int $userId = null): ?User {
@@ -206,26 +158,12 @@ class UserService {
 
             }
 
-            $userId = $userId ?? $userAuth->id;
+            $userId = $userId ?? $userAuth->id ?? null;
 
-            // Check if document number exists
-            if(self::documentNumberExists($data["document_number"], $companyId)) {
-
-                throw new Exception("El número de documento ingresado ya ha sido registrado.");
-
-            }
-
-            // Check if email exists
-            if(self::emailExists($data["email"])) {
-
-                throw new Exception("El correo electrónico ingresado ya ha sido registrado.");
-
-            }
-
-            // Prepare user data with only allowed fields
+            // Prepare data with only allowed fields
             $userData = self::prepareUserDataForCreate($data, $companyId, $userId);
 
-            // Create the user
+            // Create the record
             $user = User::create($userData);
 
         });
@@ -235,42 +173,19 @@ class UserService {
     }
 
     /**
-     * Update an existing user
+     * Update an existing record
      *
-     * @param User $user User instance to update
-     * @param array $data Updated user data
-     * @param int|null $userId User ID updating the user
-     * @return User Updated user instance
-     * @throws Exception
+     * @param User $user Record instance to update
+     * @param array $data Input data
+     * @param int|null $userId User updating the record
+     * @return User Updated record instance
      */
     public static function update(User $user, array $data, ?int $userId = null): User {
 
         DB::transaction(function() use($user, $data, $userId) {
 
             $userAuth = Auth::user();
-            $userId   = $userId ?? $userAuth->id;
-
-            // Check if document number exists (excluding current user)
-            if(isset($data["document_number"])) {
-
-                if(self::documentNumberExists($data["document_number"], $user->company_id, $user->id)) {
-
-                    throw new Exception("El número de documento ingresado ya ha sido registrado.");
-
-                }
-
-            }
-
-            // Check if email exists (excluding current user)
-            if(isset($data["email"])) {
-
-                if(self::emailExists($data["email"], $user->id)) {
-
-                    throw new Exception("El correo electrónico ingresado ya ha sido registrado.");
-
-                }
-
-            }
+            $userId   = $userId ?? $userAuth->id ?? null;
 
             // Prepare update data with only changed fields
             $updateData = self::prepareUserDataForUpdate($user, $data);
@@ -291,32 +206,90 @@ class UserService {
     }
 
     /**
-     * Find user by ID and company ID
+     * Find record by ID and company ID
      *
-     * @param int $id User ID
-     * @param int $companyId Company ID
+     * @param int $id Record
+     * @param int $companyId Company
+     * @param array|null $statuses Filter by statuses (e.g. ["active"], ["active", "inactive"])
      * @param array $relations Relations to eager load
      * @return User|null
      */
-    public static function findByIdAndCompany(int $id, int $companyId, array $relations = ["identityDocumentType", "role"]): ?User {
+    public static function findByIdAndCompany(int $id, int $companyId, ?array $statuses = ["active"], array $relations = ["identityDocumentType", "role"]): ?User {
 
-        return self::getRepository()->findByIdAndCompany($id, $companyId, $relations);
+        $query = User::where("id", $id)
+                     ->where("company_id", $companyId);
+
+        if($statuses !== null && !empty($statuses)) {
+
+            $query->whereIn("status", $statuses);
+
+        }
+
+        if($relations !== null && !empty($relations)) {
+
+            $query->with($relations);
+
+        }
+
+        return $query->first();
 
     }
 
     /**
-     * Get paginated list of users
+     * Get paginated list of records with filters
      *
-     * @param int $companyId Company ID
-     * @param array $filters Filter parameters
+     * @param int $companyId Company
+     * @param array $filters Filter parameters (filter_by, word)
      * @param int $perPage Items per page
-     * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator
+     * @return LengthAwarePaginator
      */
-    public static function getPaginatedList(int $companyId, array $filters = [], int $perPage = 15) {
+    public static function getPaginatedList(int $companyId, array $filters = [], int $perPage = 15): LengthAwarePaginator {
 
-        return self::getRepository()->getPaginatedList($companyId, $filters, $perPage);
+        $query = User::where("company_id", $companyId)
+                     ->with(["identityDocumentType", "role"]);
+
+        // Apply filters
+        $filterBy = $filters["filter_by"] ?? null;
+        $word     = $filters["word"] ?? null;
+
+        if(Utilities::isDefined($word) && Utilities::isDefined($filterBy)) {
+
+            $searchTerm = Utilities::getWordSearch($word);
+
+            if($filterBy === "all") {
+
+                // Search across all searchable fields
+                $query->where(function(Builder $q) use($searchTerm) {
+
+                    $searchableFields = self::SEARCHABLE_FIELDS;
+                    $firstField       = array_shift($searchableFields);
+
+                    if($firstField) {
+
+                        $q->where($firstField, "like", $searchTerm);
+
+                    }
+
+                    foreach($searchableFields as $field) {
+
+                        $q->orWhere($field, "like", $searchTerm);
+
+                    }
+
+                });
+
+            }elseif(in_array($filterBy, self::SEARCHABLE_FIELDS, true)) {
+
+                // Search in specific field
+                $query->where($filterBy, "like", $searchTerm);
+
+            }
+
+        }
+
+        return $query->orderBy("name", "ASC")
+                     ->paginate($perPage);
 
     }
 
 }
-

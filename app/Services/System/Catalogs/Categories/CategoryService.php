@@ -197,7 +197,7 @@ class CategoryService {
     public static function findByIdAndCompany(int $id, int $companyId, ?array $statuses = ["active"], array $relations = []): ?Category {
 
         $query = Category::where("id", $id)
-                        ->where("company_id", $companyId);
+                         ->where("company_id", $companyId);
 
         if($statuses !== null && !empty($statuses)) {
 
