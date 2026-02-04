@@ -1,167 +1,117 @@
 <template>
     <Breadcrumb :list="breadcrumbTitles"/>
 
-    <!-- Content -->
-    <div class="row align-items-end g-3 mb-3 mb-md-4">
-        <InputSlot
-            hasDiv
-            title="Filtrar por"
-            :titleClass="[config.forms.classes.title]"
-            xl="3"
-            lg="4">
-            <template v-slot:input>
-                <v-select
-                    v-model="lists.entity.filters.filter_by"
-                    :options="filterByOptions"
-                    :class="config.forms.classes.select2"
-                    :clearable="false"
-                    :searchable="false"/>
-            </template>
-        </InputSlot>
-        <InputText
-            v-model="lists.entity.filters.word"
-            @enterKeyPressed="listEntity({})"
-            hasDiv
-            title="Búsqueda"
-            :titleClass="[config.forms.classes.title]"
-            :placeholder="'Buscar por ' + (lists.entity.filters.filter_by?.label || '...').toLowerCase()"
-            xl="4"
-            lg="4"/>
-        <InputSlot
-            hasDiv
-            :isInputGroup="false"
-            :divInputClass="['d-flex flex-wrap justify-content-start gap-2 gap-md-3']"
-            xl="5"
-            lg="4">
-            <template v-slot:input>
-                <button type="button" class="btn btn-info-1 waves-effect" @click="listEntity({})" :disabled="lists.entity.extras.loading">
-                    <i class="fa fa-search"></i>
-                    <span class="ms-2">Buscar</span>
-                </button>
-                <button type="button" class="btn btn-primary waves-effect" @click="modalCreateUpdateEntity({})" :disabled="lists.entity.extras.loading">
-                    <i class="fa fa-plus"></i>
-                    <span class="ms-2">Agregar</span>
-                </button>
-            </template>
-        </InputSlot>
-    </div>
-    <div class="table-responsive">
+    <!-- Filters -->
+    <FiltersSection
+        :filter-by-value="filterByValue"
+        @update:filterByValue="filterByValue = $event"
+        :filter-word-value="filterWordValue"
+        @update:filterWordValue="filterWordValue = $event"
+        :filter-by-options="filterByOptions"
+        :search-placeholder="searchPlaceholder"
+        :loading="entityList.extras.loading"
+        :filter-by-title="MODULE.texts.filters.filterBy"
+        :search-title="MODULE.texts.filters.search"
+        :search-button-text="MODULE.texts.actions.search"
+        :add-button-text="MODULE.texts.actions.add"
+        :show-add-button="true"
+        :title-class="[config.forms.classes.title]"
+        :select-class="config.forms.classes.select2"
+        @search="handleSearch"
+        @add="openModal()"/>
+
+    <!-- Records -->
+    <div class="list-section mb-1 mb-md-1 table-responsive">
         <table class="table table-hover">
-            <colgroup>
-                <col style="width: 20%;">
-                <col style="width: 40%;">
-                <col style="width: 20%;">
-                <col style="width: 20%;">
-            </colgroup>
-            <thead>
-                <tr class="text-center align-middle">
-                    <th class="bg-secondary text-white fw-semibold" colspan="2">COLABORADOR</th>
-                    <th class="bg-secondary text-white fw-semibold">ESTADO</th>
-                    <th class="bg-secondary text-white fw-semibold">ACCIONES</th>
+            <thead class="align-middle bg-secondary text-center">
+                <tr>
+                    <th class="text-white" style="width: 15%;">ROL</th>
+                    <th class="text-white" style="width: 35%;">COLABORADOR</th>
+                    <th class="text-white" style="width: 30%;">CONTACTO</th>
+                    <th class="text-white" style="width: 10%;">ESTADO</th>
+                    <th class="text-white" style="width: 10%;">ACCIONES</th>
                 </tr>
             </thead>
             <tbody class="table-border-bottom-0 bg-white">
-                <template v-if="lists.entity.extras.loading">
-                    <tr class="text-center">
-                        <td colspan="99" class="py-4">
-                            <Loader/>
+                <tr v-if="entityList.extras.loading">
+                    <td colspan="99">
+                        <Loader/>
+                    </td>
+                </tr>
+                <template v-else-if="entityList.records.total > 0">
+                    <tr v-for="record in entityList.records.data" :key="record.id">
+                        <td class="text-center">
+                            <span v-text="record?.role?.name" class="fw-semibold d-block"></span>
+                        </td>
+                        <td>
+                            <div class="mb-1">
+                                <span v-text="record.identity_document_type?.name" class="small text-muted"></span>
+                                <span v-text="record.document_number" class="fw-semibold ms-1"></span>
+                            </div>
+                            <span v-text="record.name" class="fw-semibold d-block"></span>
+                        </td>
+                        <td>
+                            <div class="d-flex flex-column">
+                                <a :href="'mailto:'+record.email" class="text-decoration-none mb-1" v-if="isDefined(record.email)">
+                                    <span v-text="record.email"></span>
+                                </a>
+                                <a :href="'tel:'+record.phone_number" class="text-decoration-none" v-if="isDefined(record.phone_number)">
+                                    <span v-text="record.phone_number"></span>
+                                </a>
+                            </div>
+                        </td>
+                        <td class="text-center">
+                            <span :class="[getStatusBadgeClasses(record.status), 'flex-shrink-none']" v-text="record.formatted_status"></span>
+                        </td>
+                        <td class="text-center">
+                            <button type="button" class="btn btn-xs btn-warning waves-effect" @click="openModal(record)">
+                                <span v-text="MODULE.texts.actions.edit"></span>
+                            </button>
                         </td>
                     </tr>
                 </template>
-                <template v-else>
-                    <template v-if="lists.entity.records.total > 0">
-                        <tr v-for="record in lists.entity.records.data" :key="record.id" class="text-center">
-                            <td class="text-start">
-                                <div class="d-flex justify-content-start flex-wrap mb-1">
-                                    <span v-text="record?.role?.name" class="small text-muted fst-italic fw-bold text-uppercase"></span>
-                                </div>
-                                <span v-text="record.document_number" class="text-dark d-block"></span>
-                                <span v-text="record.identity_document_type?.name" class="fst-italic d-block text-muted small"></span>
-                            </td>
-                            <td class="text-start">
-                                <span v-text="record.name" class="fw-bold d-block"></span>
-                                <a :href="'mailto:'+record.email" class="d-flex align-items-center small" v-if="isDefined({value: record.email})">
-                                    <span>📧</span>
-                                    <span v-text="record.email" class="fst-italic ms-1"></span>
-                                </a>
-                                <a :href="'tel:'+record.phone_number" class="d-inline-flex align-items-center small" v-if="isDefined({value: record.phone_number})">
-                                    <span>📞</span>
-                                    <span v-text="record.phone_number" class="fst-italic ms-1"></span>
-                                </a>
-                                <div class="d-flex flex-wrap">
-                                    <template v-if="isDefined({value: record.birthdate})">
-                                        <div class="badge bg-light text-dark rounded-pill me-2 my-1 d-flex align-items-center">
-                                            <span>🎂</span>
-                                            <span v-text="legibleFormatDate({dateString: record.birthdate, type: 'date'})" class="fst-italic ms-1"></span>
-                                        </div>
-                                    </template>
-                                    <template v-if="isDefined({value: record.gender})">
-                                        <div :class="['badge text-dark rounded-pill me-2 my-1 d-flex align-items-center', {'bg-label-info': ['male'].includes(record.gender), 'bg-label-danger': ['female'].includes(record.gender), 'bg-light': ['other'].includes(record.gender)}]">
-                                            <span>🚻</span>
-                                            <span v-text="record.formatted_gender" class="fst-italic ms-1"></span>
-                                        </div>
-                                    </template>
-                                </div>
-                            </td>
-                            <td>
-                                <span :class="['badge', 'fw-semibold', 'text-capitalize', { 'bg-label-success': ['active'].includes(record.status), 'bg-label-danger': ['inactive'].includes(record.status) }]" v-text="record.formatted_status"></span>
-                            </td>
-                            <td>
-                                <InputSlot
-                                    hasDiv
-                                    :isInputGroup="false"
-                                    :divInputClass="['d-flex flex-wrap justify-content-center gap-2 gap-md-1']"
-                                    xl="12"
-                                    lg="12">
-                                    <template v-slot:input>
-                                        <button type="button" class="btn btn-sm btn-warning waves-effect" @click="modalCreateUpdateEntity({record})">
-                                            <i class="fa fa-pencil"></i>
-                                            <span class="ms-2">Editar</span>
-                                        </button>
-                                    </template>
-                                </InputSlot>
-                            </td>
-                        </tr>
-                    </template>
-                    <template v-else>
-                        <tr>
-                            <td class="text-center" colspan="99">
-                                <WithoutData type="image"/>
-                            </td>
-                        </tr>
-                    </template>
-                </template>
+                <tr v-else>
+                    <td colspan="99">
+                        <WithoutData type="image"/>
+                    </td>
+                </tr>
             </tbody>
         </table>
     </div>
-    <div class="d-flex justify-content-center" v-if="!lists.entity.extras.loading && lists.entity.records?.total > 0">
-        <Paginator :links="lists.entity.records.links" @clickPage="listEntity"/>
-    </div>
 
-    <!-- Modals -->
-    <div class="modal fade" :id="forms.entity.createUpdate.extras.modals.default.id" data-bs-backdrop="static" tabindex="-1" aria-hidden="true">
+    <!-- Pagination -->
+    <nav v-if="!entityList.extras.loading && entityList.records.total > 0" class="d-flex justify-content-center">
+        <Paginator :links="entityList.records.links" @clickPage="listEntity"/>
+    </nav>
+
+    <!-- Modal: Create/Update -->
+    <div class="modal fade" :id="forms[entity].createUpdate.extras.modals.default.id" data-bs-backdrop="static" tabindex="-1" role="dialog">
         <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title text-uppercase fw-bold" v-text="forms.entity.createUpdate.extras.modals.default.titles[isUpdate ? 'update' : 'store']"></h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <h5 class="modal-title text-uppercase fw-bold" v-text="modalTitles.createUpdate[isUpdate ? 'update' : 'store']"></h5>
+                    <button type="button" class="btn-header-modal" data-bs-dismiss="modal">
+                        <i class="fa fa-times icon-close-modal"></i>
+                    </button>
                 </div>
                 <div class="modal-body">
+                    <form @submit.prevent="saveEntity">
                     <div class="row g-3">
                         <InputSlot
                             hasDiv
-                            title="Rol"
+                                :title="MODULE.texts.form.role"
+                                :titleClass="[config.forms.classes.title]"
                             isRequired
                             :isInputGroup="false"
                             :divInputClass="['d-flex flex-wrap justify-content-start align-items-end gap-2 gap-md-3']"
                             hasTextBottom
-                            :textBottomInfo="forms.entity.createUpdate.errors?.role"
+                                :textBottomInfo="forms[entity].createUpdate.errors?.role_id"
                             xl="12"
                             lg="12">
                             <template v-slot:input>
-                                <div v-for="option in roles" :key="option.value" class="form-check">
+                                    <div v-for="option in roles" :key="option.code" class="form-check">
                                     <label class="cursor-pointer">
-                                        <input class="form-check-input" type="radio" :value="option" v-model="forms.entity.createUpdate.data.role"/>
+                                            <input class="form-check-input" type="radio" :value="option" v-model="forms[entity].createUpdate.data.role"/>
                                         <span class="fw-bold" v-text="option.label"></span>
                                     </label>
                                 </div>
@@ -169,35 +119,38 @@
                         </InputSlot>
                         <InputSlot
                             hasDiv
-                            title="Tipo de documento"
+                                :title="MODULE.texts.form.identityDocumentType"
+                                :titleClass="[config.forms.classes.title]"
                             isRequired
                             hasTextBottom
-                            :textBottomInfo="forms.entity.createUpdate.errors?.identity_document_type"
+                                :textBottomInfo="forms[entity].createUpdate.errors?.identity_document_type_id"
                             xl="4"
                             lg="4">
                             <template v-slot:input>
                                 <v-select
-                                    v-model="forms.entity.createUpdate.data.identity_document_type"
+                                        v-model="forms[entity].createUpdate.data.identity_document_type"
                                     :options="identityDocumentTypes"
+                                        :class="config.forms.classes.select2"
                                     @close="tooltips({show: true, time: 500})"
                                     :clearable="false"
                                     :searchable="false"/>
                             </template>
                         </InputSlot>
                         <InputText
-                            v-model="forms.entity.createUpdate.data.document_number"
+                                v-model="forms[entity].createUpdate.data.document_number"
                             hasDiv
-                            title="Número de documento"
+                                :title="MODULE.texts.form.documentNumber"
+                                :titleClass="[config.forms.classes.title]"
                             isRequired
-                            maxlength="15"
+                                maxlength="20"
                             showCharCounter
                             hasTextBottom
-                            :textBottomInfo="forms.entity.createUpdate.errors?.document_number"
+                                :textBottomInfo="forms[entity].createUpdate.errors?.document_number"
                             xl="4"
                             lg="4">
                             <template v-slot:inputGroupAppend>
-                                <template v-if="['dni'].includes(forms.entity.createUpdate.data.identity_document_type?.data.code)">
-                                    <button :class="['btn waves-effect', isUpdate ? 'btn-warning' : 'btn-primary']" type="button" @click="searchDocumentNumber({consult: forms.entity.createUpdate})" data-bs-toggle="tooltip" data-bs-placement="top" title="Buscar N° documento">
+                                    <template v-if="['dni'].includes(forms[entity].createUpdate.data.identity_document_type?.data?.code)">
+                                        <button :class="['btn waves-effect', isUpdate ? 'btn-warning' : 'btn-primary']" type="button" @click="searchDocumentNumber()" data-bs-toggle="tooltip" data-bs-placement="top" :title="MODULE.texts.form.searchDocumentTooltip">
                                         <i class="fa fa-search"></i>
                                     </button>
                                 </template>
@@ -205,93 +158,112 @@
                         </InputText>
                         <InputSlot
                             hasDiv
-                            title="Estado"
+                                :title="MODULE.texts.form.status"
+                                :titleClass="[config.forms.classes.title]"
                             isRequired
                             hasTextBottom
-                            :textBottomInfo="forms.entity.createUpdate.errors?.status"
+                                :textBottomInfo="forms[entity].createUpdate.errors?.status"
                             xl="4"
                             lg="4">
                             <template v-slot:input>
                                 <v-select
-                                    v-model="forms.entity.createUpdate.data.status"
+                                        v-model="forms[entity].createUpdate.data.status"
                                     :options="statuses"
+                                        :class="config.forms.classes.select2"
                                     :clearable="false"
                                     :searchable="false"/>
                             </template>
                         </InputSlot>
                         <InputText
-                            v-model="forms.entity.createUpdate.data.name"
+                                v-model="forms[entity].createUpdate.data.name"
                             hasDiv
-                            title="Nombre"
+                                :title="MODULE.texts.form.name"
+                                :titleClass="[config.forms.classes.title]"
                             isRequired
                             maxlength="100"
                             showCharCounter
                             hasTextBottom
-                            :textBottomInfo="forms.entity.createUpdate.errors?.name"
+                                :textBottomInfo="forms[entity].createUpdate.errors?.name"
                             xl="6"
                             lg="6"/>
                         <InputText
-                            v-model="forms.entity.createUpdate.data.email"
+                                v-model="forms[entity].createUpdate.data.email"
                             hasDiv
-                            title="📧 Correo electrónico"
+                                :title="MODULE.texts.form.email"
+                                :titleClass="[config.forms.classes.title]"
                             isRequired
                             maxlength="100"
                             showCharCounter
                             hasTextBottom
-                            :textBottomInfo="forms.entity.createUpdate.errors?.email"
+                                :textBottomInfo="forms[entity].createUpdate.errors?.email"
                             xl="6"
                             lg="6"/>
                         <InputText
-                            v-model="forms.entity.createUpdate.data.phone_number"
+                                v-model="forms[entity].createUpdate.data.phone_number"
                             hasDiv
-                            title="📞 Celular"
+                                :title="MODULE.texts.form.phoneNumber"
+                                :titleClass="[config.forms.classes.title]"
                             maxlength="15"
                             showCharCounter
                             hasTextBottom
-                            :textBottomInfo="forms.entity.createUpdate.errors?.phone_number"
+                                :textBottomInfo="forms[entity].createUpdate.errors?.phone_number"
                             xl="3"
                             lg="3"/>
                         <InputSlot
                             hasDiv
-                            title="Género"
+                                :title="MODULE.texts.form.gender"
+                                :titleClass="[config.forms.classes.title]"
                             hasTextBottom
-                            :textBottomInfo="forms.entity.createUpdate.errors?.gender"
+                                :textBottomInfo="forms[entity].createUpdate.errors?.gender"
                             xl="3"
                             lg="3">
                             <template v-slot:input>
                                 <v-select
-                                    v-model="forms.entity.createUpdate.data.gender"
+                                        v-model="forms[entity].createUpdate.data.gender"
                                     :options="genders"
+                                        :class="config.forms.classes.select2"
                                     :clearable="false"
                                     :searchable="false"/>
                             </template>
                         </InputSlot>
                         <InputDate
-                            v-model="forms.entity.createUpdate.data.birthdate"
+                                v-model="forms[entity].createUpdate.data.birthdate"
                             hasDiv
-                            title="Fecha de nacimiento"
+                                :title="MODULE.texts.form.birthdate"
+                                :titleClass="[config.forms.classes.title]"
                             hasTextBottom
-                            :textBottomInfo="forms.entity.createUpdate.errors?.birthdate"
+                                :textBottomInfo="forms[entity].createUpdate.errors?.birthdate"
                             xl="3"
                             lg="3"/>
                         <InputText
-                            v-model="forms.entity.createUpdate.data.password"
+                                v-model="forms[entity].createUpdate.data.password"
                             hasDiv
-                            :title="isUpdate ? '🔒 Cambiar contraseña' : '🔒 Contraseña'"
+                                :title="isUpdate ? MODULE.texts.form.changePassword : MODULE.texts.form.password"
+                                :titleClass="[config.forms.classes.title]"
                             :isRequired="!isUpdate"
                             maxlength="100"
                             showCharCounter
                             hasTextBottom
-                            :textBottomInfo="forms.entity.createUpdate.errors?.password"
+                                :textBottomInfo="forms[entity].createUpdate.errors?.password"
                             xl="3"
                             lg="3"/>
                     </div>
+                    </form>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary waves-effect" data-bs-dismiss="modal">Cerrar</button>
-                    <button type="button" :class="['btn waves-effect', isUpdate ? 'btn-warning' : 'btn-primary']" @click="createUpdateEntity()">
+                    <button
+                        type="button"
+                        class="btn btn-secondary waves-effect"
+                        data-bs-dismiss="modal"
+                        v-text="MODULE.texts.modal.close">
+                    </button>
+                    <button
+                        type="button"
+                        :class="['btn waves-effect', isUpdate ? 'btn-warning' : 'btn-primary']"
+                        @click="saveEntity"
+                        :disabled="isSaving">
                         <i class="fa fa-save"></i>
-                        <span class="ms-2">Guardar</span>
+                        <span class="ms-2" v-text="MODULE.texts.modal.save"></span>
                     </button>
                 </div>
             </div>
@@ -300,25 +272,157 @@
 </template>
 
 <script>
-import * as Alerts    from "@System/Helpers/Alerts.js";
-import * as Constants from "@System/Helpers/Constants.js";
-import * as Requests  from "@System/Helpers/Requests.js";
-import * as Utils     from "@System/Helpers/Utils.js";
+import * as Alerts from "@System/Helpers/Alerts.js";
+import { initCrudModule } from "@System/Helpers/ModuleFactory.js";
+import * as Forms from "@System/Helpers/Forms.js";
+import * as Requests from "@System/Helpers/Requests.js";
+import * as Utils from "@System/Helpers/Utils.js";
+
+const MODULE_CONFIG = {
+    entity: "users",
+    menuId: "menu-configuration-users",
+    pageTitle: "Colaboradores",
+    pageTitleSingular: "Colaborador",
+    breadcrumbParent: "Configuración",
+    perPage: 15
+};
+
+const FORM_FIELDS = {
+    role: null,
+    identity_document_type: null,
+    document_number: "",
+    name: "",
+    email: "",
+    phone_number: "",
+    gender: null,
+    birthdate: "",
+    status: null,
+    password: ""
+};
+
+const FORM_FIELD_CONFIG = {
+    role: {mapToField: "role_id"},
+    identity_document_type: {mapToField: "identity_document_type_id"},
+    document_number: {trim: true},
+    name: {trim: true},
+    email: {trim: true},
+    phone_number: {trim: true, normalize: true},
+    gender: {getCode: true, removeIfEmpty: true},
+    birthdate: {normalize: true},
+    status: {getCode: true},
+    password: {trim: true, removeIfEmpty: true}
+};
+
+const VALIDATION_RULES = {
+    role: {required: true},
+    identity_document_type: {required: true},
+    document_number: {required: true},
+    name: {required: true},
+    email: {required: true, email: true},
+    phone_number: {required: false},
+    gender: {required: false},
+    birthdate: {required: false},
+    status: {required: true},
+    password: {required: false}
+};
+
+const ERROR_LABELS = {
+    role: "Rol",
+    role_id: "Rol",
+    identity_document_type: "Tipo de documento",
+    identity_document_type_id: "Tipo de documento",
+    document_number: "Número de documento",
+    name: "Nombre",
+    email: "Correo electrónico",
+    phone_number: "Celular",
+    gender: "Género",
+    birthdate: "Fecha de nacimiento",
+    status: "Estado",
+    password: "Contraseña"
+};
+
+const FILTER_OPTIONS = [
+    {code: "all", label: "Todos los filtros"},
+    {code: "document_number", label: "Número de documento"},
+    {code: "name", label: "Nombre"},
+    {code: "email", label: "Correo electrónico"},
+    {code: "phone_number", label: "Celular"}
+];
+
+const TEXTS = {
+    filters: {
+        filterBy: "Filtrar por",
+        search: "Búsqueda"
+    },
+    actions: {
+        search: "Buscar",
+        add: "Agregar",
+        edit: "Editar"
+    },
+    form: {
+        role: "Rol",
+        identityDocumentType: "Tipo de documento",
+        documentNumber: "Número de documento",
+        name: "Nombre",
+        email: "Correo electrónico",
+        phoneNumber: "Celular",
+        gender: "Género",
+        birthdate: "Fecha de nacimiento",
+        password: "Contraseña",
+        changePassword: "Cambiar contraseña",
+        status: "Estado",
+        searchDocumentTooltip: "Buscar N° documento"
+    },
+    modal: {
+        close: "Cerrar",
+        save: "Guardar"
+    }
+};
+
+const MODULE = {
+    config: MODULE_CONFIG,
+    formFields: FORM_FIELDS,
+    formFieldConfig: FORM_FIELD_CONFIG,
+    validationRules: VALIDATION_RULES,
+    errorLabels: ERROR_LABELS,
+    texts: TEXTS,
+    filterOptions: FILTER_OPTIONS
+};
 
 export default {
-    components: {
-        //
+    name: "UsersMain",
+    data() {
+
+        const crudModule = initCrudModule({
+            entity: MODULE.config.entity,
+            menuId: MODULE.config.menuId,
+            pageTitle: MODULE.config.pageTitle,
+            pageTitleSingular: MODULE.config.pageTitleSingular
+        });
+
+        crudModule.lists[MODULE.config.entity].filters.filter_by = MODULE.filterOptions[0];
+        crudModule.forms[MODULE.config.entity].createUpdate.data = Forms.initFormData(MODULE.formFields);
+
+        return {
+            ...crudModule,
+            MODULE: MODULE,
+            isInitialized: false,
+            isSaving: false
+        };
+
     },
     mounted: async function() {
 
         Utils.navbarItem("menu-parent-configuration", {addClass: "open"});
         Utils.navbarItem(this.config.entity.page.menu.id, {});
+
         Alerts.swals({type: "initParams"});
 
-        let initParams = await this.initParams({}),
-            initOthers = await this.initOthers({});
+        const initParams = await this.initParams();
 
-        if(initParams && initOthers) {
+        this.isInitialized = true;
+
+        if(initParams) {
 
             Alerts.swals({show: false});
             this.listEntity({});
@@ -326,390 +430,192 @@ export default {
         }
 
     },
-    data() {
-        return {
-            lists: {
-                entity: {
-                    extras: {
-                        loading: false,
-                        route: Requests.config({entity: "users", type: "list"})
-                    },
-                    filters: {
-                        filter_by: null,
-                        word: ""
-                    },
-                    records: {
-                        total: 0
-                    }
-                }
-            },
-            forms: {
-                entity: {
-                    createUpdate: {
-                        extras: {
-                            modals: {
-                                default: {
-                                    id: Utils.uuid(),
-                                    titles: {
-                                        store: "Agregar",
-                                        update: "Editar"
-                                    }
-                                }
-                            }
-                        },
-                        data: {
-                            id: null,
-                            role: null,
-                            identity_document_type: null,
-                            document_number: "",
-                            name: "",
-                            email: "",
-                            phone_number: "",
-                            gender: "",
-                            birthdate: "",
-                            status: null,
-                            password: ""
-                        },
-                        errors: {}
-                    }
-                }
-            },
-            options: {},
-            config: {
-                ...Constants.generalConfig,
-                entity: {
-                    ...Requests.config({entity: "users"}),
-                    page: {
-                        title: "Colaboradores",
-                        active: true,
-                        menu: {
-                            id: "menu-configuration-users"
-                        }
-                    }
-                }
-            }
-        };
-    },
     methods: {
-        // ============================================
-        // Initialization Methods
-        // ============================================
-        async initParams({}) {
+        async initParams() {
 
-            const initParams = await Requests.get({
-                route: this.config.entity.routes.initParams,
+            const response = await Requests.get({
+                route: this.routeActions.initParams,
                 data: {page: "main"},
                 showAlert: true
             });
 
-            if(initParams?.data?.config) {
+            if(response?.data?.config) {
 
-                this.options.roles                 = initParams.data.config.roles;
-                this.options.identityDocumentTypes = initParams.data.config.identityDocumentTypes;
-                this.options.users                 = initParams.data.config.users;
+                this.options.roles                 = response.data.config.roles;
+                this.options.identityDocumentTypes = response.data.config.identityDocumentTypes;
+                this.options.genders               = response.data.config.genders;
+                this.options.statuses             = response.data.config.statuses;
 
             }
 
-            return Requests.valid({result: initParams});
+            return Requests.valid({result: response});
 
         },
-        async initOthers({}) {
+        // List
+        async listEntity(params = null) {
 
-            return new Promise(resolve => {
+            const entityList   = this.lists[this.entity];
+            const emptyRecords = {total: 0, data: [], links: []};
+            const filters      = Utils.cloneJson(entityList.filters);
+            const filterData   = {per_page: this.MODULE.config.perPage, filter_by: filters.filter_by?.code, word: filters.word};
 
-                this.lists.entity.filters.filter_by = this.filterByOptions[0];
-                resolve(true);
-
-            });
-
-        },
-
-        // ============================================
-        // Entity List Methods
-        // ============================================
-        async listEntity({url = null}) {
-
-            const filters = Utils.cloneJson(this.lists.entity.filters);
-            const filterJson = {
-                filter_by: filters?.filter_by?.code,
-                word: filters.word
-            };
-
-            this.lists.entity.extras.loading = true;
+            entityList.extras.loading = true;
 
             try {
 
-                const response = await Requests.get({
-                    route: url || this.lists.entity.extras.route,
-                    data: filterJson
-                });
+                const url = this.isDefined(params) && typeof params === "object" ? params.url : params;
 
-                this.lists.entity.records = response?.data;
+                let requestUrl  = url || entityList.extras.route;
+                let requestData = {};
+
+                if(this.isDefined(url)) {
+
+                    const urlObj = new URL(url, window.location.origin);
+
+                    Object.entries(filterData).forEach(([key, value]) => {
+
+                        if(this.isDefined(value) && !urlObj.searchParams.has(key)) urlObj.searchParams.set(key, value);
+
+                    });
+
+                    requestUrl = `${urlObj.pathname}${urlObj.search}`;
+
+                }else {
+
+                    requestData = filterData;
+
+                }
+
+                const response = await Requests.get({route: requestUrl, data: requestData, showAlert: true});
+
+                entityList.records = response?.data ?? emptyRecords;
+
+            }catch(error) {
+
+                entityList.records = emptyRecords;
 
             }finally {
 
-                this.lists.entity.extras.loading = false;
+                entityList.extras.loading = false;
 
             }
 
         },
+        handleSearch() {
 
-        // ============================================
-        // Form Methods
-        // ============================================
-        modalCreateUpdateEntity({record = null}) {
+            this.listEntity({});
 
-            const functionName = "modalCreateUpdateEntity";
+        },
+        // Forms
+        openModal(record = null) {
 
-            this.clearForm({functionName});
-            this.formErrors({functionName, type: "clear"});
+            const entityForms = this.forms[this.entity].createUpdate;
 
-            if(this.isDefined({value: record})) {
+            entityForms.errors = {};
+            Forms.clearFormData(entityForms.data, this.MODULE.formFields);
 
-                this.populateFormForUpdate(record);
+            if(this.isDefined(record)) {
+
+                // Map record data to form
+                const roleOption                = this.roles.find(e => e.code === record?.role_id);
+                const identityDocumentTypeOption = this.identityDocumentTypes.find(e => e.code === record?.identity_document_type_id);
+                const genderOption              = this.genders.find(e => e.code === record?.gender);
+                const statusOption              = this.statuses.find(e => e.code === record?.status);
+
+                entityForms.data.id                     = record.id;
+                entityForms.data.role                   = roleOption;
+                entityForms.data.identity_document_type = identityDocumentTypeOption;
+                entityForms.data.document_number        = record.document_number;
+                entityForms.data.name                   = record.name;
+                entityForms.data.email                  = record.email;
+                entityForms.data.phone_number           = record.phone_number;
+                entityForms.data.gender                 = genderOption;
+                entityForms.data.birthdate              = record.birthdate;
+                entityForms.data.status                 = statusOption;
+                entityForms.data.password               = "";
 
             }else {
 
-                this.setFormDefaults();
+                // Set defaults for new record
+                entityForms.data.identity_document_type = this.identityDocumentTypes.length > 1 ? this.identityDocumentTypes[1] : null;
+                entityForms.data.status                 = this.statuses.length > 0 ? this.statuses[0] : null;
 
             }
 
-            Alerts.modals({
-                type: "show",
-                id: this.forms.entity.createUpdate.extras.modals.default.id
-            });
-
-            this.tooltips({show: true, time: 500});
+            Alerts.modals({type: "show", id: entityForms.extras.modals.default.id});
+            Alerts.tooltips({show: true, time: 500});
 
         },
-        populateFormForUpdate(record) {
+        async saveEntity() {
 
-            const role                 = this.roles.find(e => e.code === record?.role_id);
-            const identityDocumentType = this.identityDocumentTypes.find(e => e.code === record?.identity_document_type_id);
-            const gender               = this.genders.find(e => e.code === record?.gender);
-            const status               = this.statuses.find(e => e.code === record?.status);
+            if(this.isSaving) return;
 
-            const formData = this.forms.entity.createUpdate.data;
-
-            formData.id                     = record?.id;
-            formData.role                   = role;
-            formData.identity_document_type = identityDocumentType;
-            formData.document_number        = record?.document_number;
-            formData.name                   = record?.name;
-            formData.email                  = record?.email;
-            formData.phone_number           = record?.phone_number;
-            formData.gender                 = gender;
-            formData.birthdate              = record?.birthdate;
-            formData.password               = "";
-            formData.status                 = status;
-
-        },
-        setFormDefaults() {
-
-            const formData = this.forms.entity.createUpdate.data;
-
-            formData.identity_document_type = this.identityDocumentTypes[1];
-            formData.status                 = this.statuses[0];
-
-        },
-        async createUpdateEntity() {
-
-            const functionName = "createUpdateEntity";
+            const entityForms = this.forms[this.entity].createUpdate;
 
             Alerts.swals({});
-            this.formErrors({functionName, type: "clear"});
 
-            const form = Utils.cloneJson(this.forms.entity.createUpdate.data);
-            const validateForm = this.validateForm({
-                functionName,
-                form,
-                extras: {type: "descriptive"}
-            });
+            entityForms.errors = {};
+            this.isSaving = true;
 
-            if(!validateForm?.bool) {
+            try {
 
-                Alerts.generateAlert({
-                    messages: Utils.getErrors({errors: validateForm}),
-                    msgContent: `<div class="fw-semibold mb-2">${this.config.messages.errorValidate}</div>`
-                });
+                const formData   = Utils.cloneJson(entityForms.data);
+                const validation = this.validateFormData(formData);
 
+                if(!validation.bool) {
+
+                    Alerts.generateAlert({messages: Utils.getErrors({errors: validation.errors}), msgContent: this.config.messages.errorValidate});
+                    this.isSaving = false;
                 return;
 
             }
 
-            const preparedForm = this.prepareFormData(form);
-            const isUpdate     = this.isDefined({value: form.id});
+                const preparedData  = Forms.prepareFormData(formData, this.MODULE.formFieldConfig);
+                const id            = preparedData.id;
+                const isUpdate      = this.isDefined(id);
+                const requestMethod = isUpdate ? "patch" : "post";
+                const route         = this.routeActions[isUpdate ? "update" : "store"];
+                const result        = await Requests[requestMethod]({route, data: preparedData, id});
 
-            const createUpdate = await (isUpdate
-                ? Requests.patch({
-                    route: this.config.entity.routes.update,
-                    data: preparedForm,
-                    id: form.id
-                })
-                : Requests.post({
-                    route: this.config.entity.routes.store,
-                    data: preparedForm
-                }));
+                if(Requests.valid({result})) {
 
-            if(Requests.valid({result: createUpdate})) {
+                    Alerts.modals({type: "hide", id: entityForms.extras.modals.default.id});
+                    Alerts.generateAlert({type: "success", msgContent: result.data.msg});
 
-                Alerts.modals({
-                    type: "hide",
-                    id: this.forms.entity.createUpdate.extras.modals.default.id
-                });
+                    Forms.clearFormData(entityForms.data, this.MODULE.formFields);
 
-                Alerts.generateAlert({
-                    type: "success",
-                    msgContent: createUpdate?.data?.msg
-                });
+                    const entityList  = this.entityList;
+                    const currentPage = entityList?.records?.current_page ?? 1;
 
-                this.clearForm({functionName});
-                this.listEntity({
-                    url: `${this.lists.entity.extras.route}?page=${this.lists.entity.records?.current_page ?? 1}`
-                });
+                    this.listEntity({url: `${entityList?.extras?.route || ""}?page=${currentPage}`});
 
             }else {
 
-                this.formErrors({
-                    functionName,
-                    type: "set",
-                    errors: createUpdate?.errors ?? []
-                });
+                    Forms.handleFormResponseErrors({result, formErrorsObject: entityForms.errors, config: this.config});
 
-                Alerts.toastrs({
-                    type: "error",
-                    subtitle: createUpdate?.data?.msg
-                });
+                }
 
-                Alerts.swals({show: false});
+            }catch(error) {
 
-            }
+                Alerts.generateAlert({type: "error", messages: [error], msgContent: this.config.messages.catchError});
 
-        },
-        prepareFormData(form) {
+            }finally {
 
-            const preparedForm = {...form};
-
-            preparedForm.role_id                   = form?.role?.code;
-            preparedForm.identity_document_type_id = form?.identity_document_type?.code;
-            preparedForm.gender                    = form?.gender?.code;
-            preparedForm.status                    = form?.status?.code;
-
-            delete preparedForm.role;
-            delete preparedForm.identity_document_type;
-
-            return preparedForm;
-
-        },
-
-        // ============================================
-        // Form Utility Methods
-        // ============================================
-        clearForm({functionName}) {
-
-            const formData = this.forms.entity.createUpdate.data;
-
-            switch(functionName) {
-                case "modalCreateUpdateEntity":
-                case "createUpdateEntity":
-                    formData.id                     = null;
-                    formData.role                   = null;
-                    formData.identity_document_type = null;
-                    formData.document_number        = "";
-                    formData.name                   = "";
-                    formData.email                  = "";
-                    formData.phone_number           = "";
-                    formData.gender                 = null;
-                    formData.birthdate              = "";
-                    formData.status                 = null;
-                    formData.password               = "";
-                    break;
-            }
-
-        },
-        formErrors({functionName, type = "clear", errors = []}) {
-
-            if(["modalCreateUpdateEntity", "createUpdateEntity"].includes(functionName)) {
-
-                this.forms.entity.createUpdate.errors = type === "set" ? errors : [];
+                this.isSaving = false;
 
             }
 
         },
-        validateForm({functionName, form = null, extras = null}) {
+        validateFormData(formData) {
 
-            const result = {
-                bool: true,
-                role: [],
-                identity_document_type: [],
-                document_number: [],
-                status: [],
-                name: [],
-                email: [],
-                password: []
-            };
+            const result = Forms.validateFormData(formData, this.MODULE.validationRules, {isDescriptive: true, errorLabels: this.MODULE.errorLabels});
 
-            if(functionName !== "createUpdateEntity") {
+            // Custom validation for password (only for new users)
+            if(!this.isDefined(formData.id) && !this.isDefined(formData.password)) {
 
-                return result;
+                if(!result.errors.password) result.errors.password = [];
 
-            }
-
-            const isDescriptive = extras?.type === "descriptive";
-            const getPrefix = (label) => isDescriptive ? `${label}: ` : "";
-
-            // Validate role
-            if(!this.isDefined({value: form?.role})) {
-
-                result.role.push(`${getPrefix("Rol")}${this.config.forms.errors.labels.required}`);
-                result.bool = false;
-
-            }
-
-            // Validate identity document type
-            if(!this.isDefined({value: form?.identity_document_type})) {
-
-                result.identity_document_type.push(`${getPrefix("Tipo de documento")}${this.config.forms.errors.labels.required}`);
-                result.bool = false;
-
-            }
-
-            // Validate document number
-            if(!this.isDefined({value: form?.document_number})) {
-
-                result.document_number.push(`${getPrefix("Número de documento")}${this.config.forms.errors.labels.required}`);
-                result.bool = false;
-
-            }
-
-            // Validate status
-            if(!this.isDefined({value: form?.status})) {
-
-                result.status.push(`${getPrefix("Estado")}${this.config.forms.errors.labels.required}`);
-                result.bool = false;
-
-            }
-
-            // Validate name
-            if(!this.isDefined({value: form?.name})) {
-
-                result.name.push(`${getPrefix("Nombre")}${this.config.forms.errors.labels.required}`);
-                result.bool = false;
-
-            }
-
-            // Validate email
-            if(!this.isDefined({value: form?.email})) {
-
-                result.email.push(`${getPrefix("Correo electrónico")}${this.config.forms.errors.labels.required}`);
-                result.bool = false;
-
-            }
-
-            // Validate password (only for new users)
-            if(!this.isDefined({value: form?.id}) && !this.isDefined({value: form?.password})) {
-
-                result.password.push(`${getPrefix("Contraseña")}${this.config.forms.errors.labels.required}`);
+                result.errors.password.push(`${this.MODULE.errorLabels.password}: ${this.config.forms.errors.labels.required}`);
                 result.bool = false;
 
             }
@@ -717,18 +623,16 @@ export default {
             return result;
 
         },
+        // Others
+        async searchDocumentNumber() {
 
-        // ============================================
-        // Helper Methods
-        // ============================================
-        async searchDocumentNumber({consult}) {
-
-            const formJson = {
-                document_number: consult.data.document_number,
-                type: consult.data.identity_document_type?.data.code
+            const entityForms = this.forms[this.entity].createUpdate;
+            const formJson    = {
+                document_number: entityForms.data.document_number,
+                type: entityForms.data.identity_document_type?.data?.code
             };
 
-            if(!this.isDefined({value: formJson.document_number})) {
+            if(!this.isDefined(formJson.document_number)) {
 
                 Alerts.generateAlert({
                     msgContent: "Debe ingresar el número de documento para realizar la búsqueda."
@@ -748,7 +652,7 @@ export default {
                 if(Requests.valid({result: response})) {
 
                     const data = response.data.data;
-                    this.forms.entity.createUpdate.data.name = `${data?.first_name} ${data?.last_name} ${data?.second_last_name}`.trim();
+                    entityForms.data.name = `${data?.first_name} ${data?.last_name} ${data?.second_last_name}`.trim();
 
                     Alerts.toastrs({
                         type: "success",
@@ -772,11 +676,7 @@ export default {
             }
 
         },
-
-        // ============================================
-        // Utility Methods
-        // ============================================
-        isDefined({value}) {
+        isDefined(value) {
 
             return Utils.isDefined({value});
 
@@ -790,57 +690,110 @@ export default {
 
             Alerts.tooltips({show, time});
 
+        },
+        getStatusBadgeClasses(status) {
+
+            return Utils.getStatusBadgeClasses(status);
+
         }
     },
     computed: {
-        breadcrumbTitles: function() {
+        entity() {
 
-            return [{title: "Configuración"}, this.config.entity.page];
+            return this.MODULE.config.entity;
 
         },
-        filterByOptions: function() {
+        routeActions() {
+
+            return this.config.entity.routes;
+
+        },
+        entityList() {
+
+            return this.lists[this.entity];
+
+        },
+        breadcrumbTitles() {
 
             return [
-                {code: "all", label: "Todos"},
-                {code: "document_number", label: "Número de documento"},
-                {code: "name", label: "Nombre"},
-                {code: "email", label: "Correo electrónico"},
-                {code: "phone_number", label: "Celular"}
+                {title: this.MODULE.config.breadcrumbParent},
+                this.config.entity.page
             ];
 
         },
-        roles: function() {
+        roles() {
 
-            return this.options?.roles?.records.map(e => ({code: e.id, label: e.name, data: e}));
-
-        },
-        identityDocumentTypes: function() {
-
-            return this.options?.identityDocumentTypes?.records.map(e => ({code: e.id, label: e.name, data: e}));
+            return (this.options?.roles?.records ?? []).map(e => ({code: e.id, label: e.name, data: e}));
 
         },
-        genders: function() {
+        identityDocumentTypes() {
 
-            return this.options?.users?.genders.map(e => ({code: e.code, label: e.label}));
-
-        },
-        statuses: function() {
-
-            return this.options?.users?.statuses.map(e => ({code: e.code, label: e.label}));
+            return (this.options?.identityDocumentTypes?.records ?? []).map(e => ({code: e.id, label: e.name, data: e}));
 
         },
-        isUpdate: function() {
+        genders() {
 
-            return this.isDefined({value: this.forms.entity.createUpdate.data?.id});
+            return (this.options?.genders ?? []).map(e => ({code: e.code, label: e.label}));
 
-        }
-    },
-    watch: {
-        "lists.entity.filters.filter_by": function(newValue, oldValue) {
+        },
+        statuses() {
 
-            // this.listEntity({});
+            return (this.options?.statuses ?? []).map(e => ({code: e.code, label: e.label}));
+
+        },
+        isUpdate() {
+
+            return this.isDefined(this.forms[this.entity].createUpdate.data.id);
+
+        },
+        modalTitles() {
+
+            return {
+                createUpdate: this.forms[this.entity].createUpdate.extras.modals.default.titles
+            };
+
+        },
+        filterByOptions() {
+
+            return this.MODULE.filterOptions;
+
+        },
+        filterByValue: {
+            get() {
+
+                return this.entityList.filters?.filter_by || this.MODULE.filterOptions[0];
+
+            },
+            set(value) {
+
+                this.entityList.filters.filter_by = value;
+
+            }
+        },
+        filterWordValue: {
+            get() {
+
+                return this.entityList.filters.word || "";
+
+            },
+            set(value) {
+
+                this.entityList.filters.word = value;
+
+            }
+        },
+        searchPlaceholder() {
+
+            const filterBy = this.entityList.filters.filter_by;
+
+            if(!filterBy) return "Buscar...";
+
+            return `Buscar por ${(filterBy.label || "...").toLowerCase()}`;
 
         }
     }
 };
 </script>
+
+<style scoped>
+</style>
