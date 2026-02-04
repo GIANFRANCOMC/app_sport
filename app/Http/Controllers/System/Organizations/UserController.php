@@ -7,6 +7,8 @@ namespace App\Http\Controllers\System\Organizations;
 use App\Http\Controllers\System\Base\BaseController;
 use App\Helpers\System\{Utilities};
 use Illuminate\Http\{JsonResponse, Request};
+use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
 
 use App\Http\Requests\System\Organizations\Users\{StoreUserRequest, UpdateUserRequest};
 use App\Services\System\Organizations\Users\{UserConfigService, UserService};
@@ -15,7 +17,7 @@ use App\Models\System\Organizations\{User};
 class UserController extends BaseController {
 
     /**
-     * Translation namespace for user module
+     * Translation namespace for module
      */
     private const TRANSLATION_NAMESPACE = "System.Organizations.user";
 
@@ -28,12 +30,13 @@ class UserController extends BaseController {
     public function initParams(Request $request) {
 
         $page = $this->getPage($request);
+
         return UserConfigService::getInitParams($this->getCompanyId(), $page);
 
     }
 
     /**
-     * Get paginated list of users with filters
+     * Get paginated list with filters
      *
      * @param Request $request
      * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator
@@ -48,7 +51,7 @@ class UserController extends BaseController {
     }
 
     /**
-     * Display the users index page
+     * Display the module index page
      *
      * @return \Illuminate\Contracts\View\View
      */
@@ -59,7 +62,7 @@ class UserController extends BaseController {
     }
 
     /**
-     * Show the form for creating a new user
+     * Show the form for creating a new record
      * (Not used in SPA, but kept for REST compliance)
      *
      * @return void
@@ -71,7 +74,7 @@ class UserController extends BaseController {
     }
 
     /**
-     * Store a newly created user
+     * Store a newly created record
      *
      * @param StoreUserRequest $request
      * @return JsonResponse
@@ -102,7 +105,7 @@ class UserController extends BaseController {
     }
 
     /**
-     * Display the specified user
+     * Display the specified record
      * (Not used, but kept for REST compliance)
      *
      * @param User $record
@@ -115,7 +118,7 @@ class UserController extends BaseController {
     }
 
     /**
-     * Show the form for editing the specified user
+     * Show the form for editing the specified record
      * (Not used in SPA, but kept for REST compliance)
      *
      * @param User $record
@@ -128,7 +131,7 @@ class UserController extends BaseController {
     }
 
     /**
-     * Update the specified user
+     * Update the specified record
      *
      * @param UpdateUserRequest $request
      * @param int $id User ID
@@ -168,7 +171,7 @@ class UserController extends BaseController {
     }
 
     /**
-     * Remove the specified user
+     * Remove the specified record
      * (Not used, but kept for REST compliance)
      *
      * @param User $record
@@ -181,7 +184,7 @@ class UserController extends BaseController {
     }
 
     /**
-     * Prepare user data from request
+     * Prepare record data from request
      *
      * @param StoreUserRequest|UpdateUserRequest $request
      * @return array
@@ -190,21 +193,21 @@ class UserController extends BaseController {
 
         $data = [
             "company_id"                => $this->getCompanyId(),
-            "role_id"                   => $request->role_id,
-            "identity_document_type_id" => $request->identity_document_type_id,
-            "document_number"           => $request->document_number,
-            "name"                      => $request->name,
-            "email"                     => $request->email,
-            "phone_number"              => $request->phone_number,
-            "gender"                    => $request->gender ?? "other",
-            "birthdate"                 => $request->birthdate,
-            "status"                    => $request->status
+            "role_id"                   => $request->input("role_id"),
+            "identity_document_type_id" => $request->input("identity_document_type_id"),
+            "document_number"           => $request->input("document_number"),
+            "name"                      => $request->input("name"),
+            "email"                     => $request->input("email"),
+            "phone_number"              => $request->input("phone_number"),
+            "gender"                    => $request->input("gender"),
+            "birthdate"                 => $request->input("birthdate"),
+            "status"                    => $request->input("status")
         ];
 
         // Only include password if provided
-        if(Utilities::isDefined($request->password)) {
+        if(Utilities::isDefined($request->input("password"))) {
 
-            $data["password"] = $request->password;
+            $data["password"] = $request->input("password");
 
         }
 
@@ -213,7 +216,7 @@ class UserController extends BaseController {
     }
 
     /**
-     * Get translation namespace for user module
+     * Get translation namespace for module
      *
      * @return string
      */
