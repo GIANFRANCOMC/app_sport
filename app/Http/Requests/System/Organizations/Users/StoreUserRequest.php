@@ -6,7 +6,7 @@ namespace App\Http\Requests\System\Organizations\Users;
 
 use App\Helpers\System\Utilities;
 use Illuminate\Foundation\Http\FormRequest;
-use App\Rules\System\Defaults\{UniqueInCompany};
+use App\Rules\System\Defaults\{BelongsToCompany, UniqueInCompany};
 use App\Rules\System\Organizations\{UniqueEmailGlobal};
 
 class StoreUserRequest extends FormRequest {
@@ -28,7 +28,7 @@ class StoreUserRequest extends FormRequest {
     public function rules(): array {
 
         $validations = [
-            "role_id"                   => "required|integer",
+            "role_id"                   => ["required", "integer", new BelongsToCompany("roles", [], null)],
             "identity_document_type_id" => "required|integer",
             "document_number"           => ["required", "string", "max:20", new UniqueInCompany("users", "document_number", null, [], "número de documento")],
             "name"                      => "required|string|max:100",
