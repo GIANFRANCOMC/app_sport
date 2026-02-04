@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace App\Services\System\Organizations\Users;
 
-use App\Models\System\Organizations\{Role, User};
-use App\Models\System\General\IdentityDocumentType;
 use Illuminate\Support\Facades\Cache;
 use stdClass;
+
+use App\Models\System\General\{IdentityDocumentType};
+use App\Models\System\Organizations\{Role, User};
 
 /**
  * Service for managing User configuration and initialization parameters
@@ -16,13 +17,13 @@ use stdClass;
 class UserConfigService {
 
     private const CACHE_PREFIX = "user_config";
-    private const CACHE_TTL = 3600; // 1 hour
+    private const CACHE_TTL    = 3600; // 1 hour
 
     /**
-     * Get initialization parameters for user module
+     * Get initialization parameters for module
      *
-     * @param int $companyId Company ID
-     * @param string $page Page identifier
+     * @param int $companyId Company
+     * @param string $page Page (only used to determine what data to return, not for cache key)
      * @return stdClass
      */
     public static function getInitParams(int $companyId, string $page = ""): stdClass {
@@ -38,14 +39,13 @@ class UserConfigService {
             if($page === "main") {
 
                 $config->identityDocumentTypes = new stdClass();
-                $config->identityDocumentTypes->records = IdentityDocumentType::getAll("user", $companyId);
+                $config->identityDocumentTypes->records = IdentityDocumentType::getAll("default", $companyId);
 
                 $config->roles = new stdClass();
-                $config->roles->records = Role::getAll("user", $companyId);
+                $config->roles->records = Role::getAll("default", $companyId);
 
-                $config->users = new stdClass();
-                $config->users->genders  = User::getGenders();
-                $config->users->statuses = User::getStatuses();
+                $config->genders  = User::getGenders();
+                $config->statuses = User::getStatuses();
 
             }
 
@@ -59,9 +59,9 @@ class UserConfigService {
     }
 
     /**
-     * Build cache key for user configuration
+     * Build cache key for module configuration
      *
-     * @param int $companyId Company ID
+     * @param int $companyId Company
      * @return string
      */
     private static function buildCacheKey(int $companyId): string {
@@ -71,22 +71,23 @@ class UserConfigService {
     }
 
     /**
-     * Clear cache for user configuration
+     * Clear cache for module configuration
      *
-     * @param int $companyId Company ID
+     * @param int $companyId Company
      * @return void
      */
     public static function clearCache(int $companyId): void {
 
         $cacheKey = self::buildCacheKey($companyId);
+
         Cache::forget($cacheKey);
 
     }
 
     /**
-     * Clear all user configuration cache for a company
+     * Clear all module configuration cache for a company
      *
-     * @param int $companyId Company ID
+     * @param int $companyId Company
      * @return void
      */
     public static function clearAllCache(int $companyId): void {
@@ -96,4 +97,3 @@ class UserConfigService {
     }
 
 }
-

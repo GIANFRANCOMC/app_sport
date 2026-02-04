@@ -61,25 +61,13 @@ class IdentityDocumentType extends Model {
                                               ->whereIn("status", ["active"]);
 
                                    })
-                                   ->when(in_array($type, ["user"]), function($query) {
+                                   ->when(in_array($type, ["default"]), function($query) {
 
                                         $query->whereIn("code", ["doc.trib.no.dom.sin.ruc", "dni"])
                                               ->whereIn("status", ["active"]);
 
                                    })
-                                   ->when(in_array($type, ["customer"]), function($query) {
-
-                                        $query->whereIn("code", ["doc.trib.no.dom.sin.ruc", "dni", "ruc"])
-                                              ->whereIn("status", ["active"]);
-
-                                   })
-                                   ->when(in_array($type, ["book_complaint"]), function($query) {
-
-                                        $query->whereIn("code", ["doc.trib.no.dom.sin.ruc", "dni", "ruc"])
-                                              ->whereIn("status", ["active"]);
-
-                                   })
-                                   ->when(in_array($type, ["sale"]), function($query) {
+                                   ->when(in_array($type, ["customer", "book_complaint", "sale"]), function($query) {
 
                                         $query->whereIn("code", ["doc.trib.no.dom.sin.ruc", "dni", "ruc"])
                                               ->whereIn("status", ["active"]);

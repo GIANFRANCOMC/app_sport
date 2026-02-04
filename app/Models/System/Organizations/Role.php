@@ -52,7 +52,7 @@ class Role extends Model {
     public static function getAll(string $type = "default", ?int $company_id = null) {
 
         return Role::where("company_id", $company_id)
-                   ->when(in_array($type, ["user"]), function($query) {
+                   ->when(in_array($type, ["default"]), function($query) {
 
                         $query->whereIn("status", ["active"]);
 
