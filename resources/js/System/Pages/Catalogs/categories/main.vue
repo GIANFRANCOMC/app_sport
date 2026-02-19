@@ -465,7 +465,9 @@ export default {
         },
         validateFormData(formData) {
 
-            return Forms.validateFormData(formData, this.MODULE.validationRules, {isDescriptive: true, errorLabels: this.MODULE.errorLabels});
+            const result = Forms.validateFormData(formData, this.validationRules, {isDescriptive: true, errorLabels: this.MODULE.errorLabels});
+
+            return result;
 
         },
         // Others
@@ -562,6 +564,13 @@ export default {
             if(!filterBy) return "Buscar...";
 
             return `Buscar por ${(filterBy.label || "...").toLowerCase()}`;
+
+        },
+        validationRules() {
+
+            const rules = Utils.cloneJson(this.MODULE.validationRules);
+
+            return rules;
 
         }
     }

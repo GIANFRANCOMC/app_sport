@@ -691,7 +691,7 @@ export default {
         },
         validateFormData(formData) {
 
-            const result = Forms.validateFormData(formData, this.MODULE.validationRules, {isDescriptive: true, errorLabels: this.MODULE.errorLabels});
+            const result = Forms.validateFormData(formData, this.validationRules, {isDescriptive: true, errorLabels: this.MODULE.errorLabels});
 
             // Custom validation for price ranges (only if price is valid)
             if(!result.errors.price) {
@@ -853,6 +853,13 @@ export default {
             if(!filterBy) return "Buscar...";
 
             return `Buscar por ${(filterBy.label || "...").toLowerCase()}`;
+
+        },
+        validationRules() {
+
+            const rules = Utils.cloneJson(this.MODULE.validationRules);
+
+            return rules;
 
         }
     }
