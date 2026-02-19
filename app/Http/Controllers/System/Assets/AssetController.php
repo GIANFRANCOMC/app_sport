@@ -7,15 +7,17 @@ namespace App\Http\Controllers\System\Assets;
 use App\Http\Controllers\System\Base\BaseController;
 use App\Helpers\System\{Utilities};
 use Illuminate\Http\{JsonResponse, Request};
+use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
 
 use App\Http\Requests\System\Assets\Assets\{StoreAssetRequest, UpdateAssetRequest};
-use App\Services\System\Assets\{AssetConfigService, AssetService};
+use App\Services\System\Assets\Assets\{AssetConfigService, AssetService};
 use App\Models\System\Assets\{Asset};
 
 class AssetController extends BaseController {
 
     /**
-     * Translation namespace for asset module
+     * Translation namespace for module
      */
     private const TRANSLATION_NAMESPACE = "System.Assets.asset";
 
@@ -28,12 +30,13 @@ class AssetController extends BaseController {
     public function initParams(Request $request) {
 
         $page = $this->getPage($request);
+
         return AssetConfigService::getInitParams($this->getCompanyId(), $page);
 
     }
 
     /**
-     * Get paginated list of assets with filters
+     * Get paginated list with filters
      *
      * @param Request $request
      * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator
@@ -48,7 +51,7 @@ class AssetController extends BaseController {
     }
 
     /**
-     * Display the assets index page
+     * Display the module index page
      *
      * @return \Illuminate\Contracts\View\View
      */
@@ -59,7 +62,7 @@ class AssetController extends BaseController {
     }
 
     /**
-     * Show the form for creating a new asset
+     * Show the form for creating a new record
      * (Not used in SPA, but kept for REST compliance)
      *
      * @return void
@@ -71,7 +74,7 @@ class AssetController extends BaseController {
     }
 
     /**
-     * Store a newly created asset
+     * Store a newly created record
      *
      * @param StoreAssetRequest $request
      * @return JsonResponse
@@ -79,12 +82,6 @@ class AssetController extends BaseController {
     public function store(StoreAssetRequest $request): JsonResponse {
 
         try {
-
-            if(AssetService::internalCodeExists($request->internal_code, $this->getCompanyId())) {
-
-                return $this->errorResponse("internal_code_exists");
-
-            }
 
             $data  = $this->prepareAssetData($request);
             $asset = AssetService::create($data, $this->getUserId());
@@ -108,7 +105,7 @@ class AssetController extends BaseController {
     }
 
     /**
-     * Display the specified asset
+     * Display the specified record
      * (Not used, but kept for REST compliance)
      *
      * @param Asset $record
@@ -121,7 +118,7 @@ class AssetController extends BaseController {
     }
 
     /**
-     * Show the form for editing the specified asset
+     * Show the form for editing the specified record
      * (Not used in SPA, but kept for REST compliance)
      *
      * @param Asset $record
@@ -134,7 +131,7 @@ class AssetController extends BaseController {
     }
 
     /**
-     * Update the specified asset
+     * Update the specified record
      *
      * @param UpdateAssetRequest $request
      * @param int $id Asset ID
@@ -149,12 +146,6 @@ class AssetController extends BaseController {
             if(!Utilities::isDefined($asset)) {
 
                 return $this->notFoundResponse();
-
-            }
-
-            if(AssetService::internalCodeExists($request->internal_code, $this->getCompanyId(), $asset->id)) {
-
-                return $this->errorResponse("internal_code_exists");
 
             }
 
@@ -180,7 +171,7 @@ class AssetController extends BaseController {
     }
 
     /**
-     * Remove the specified asset
+     * Remove the specified record
      * (Not used, but kept for REST compliance)
      *
      * @param Asset $record
@@ -193,7 +184,7 @@ class AssetController extends BaseController {
     }
 
     /**
-     * Prepare asset data from request
+     * Prepare record data from request
      *
      * @param StoreAssetRequest|UpdateAssetRequest $request
      * @return array
@@ -202,16 +193,16 @@ class AssetController extends BaseController {
 
         return [
             "company_id"    => $this->getCompanyId(),
-            "internal_code" => $request->internal_code,
-            "name"          => $request->name,
-            "description"   => $request->description ?? "",
-            "status"        => $request->status
+            "internal_code" => $request->input("internal_code"),
+            "name"          => $request->input("name"),
+            "description"   => $request->input("description"),
+            "status"        => $request->input("status")
         ];
 
     }
 
     /**
-     * Get translation namespace for asset module
+     * Get translation namespace for module
      *
      * @return string
      */
