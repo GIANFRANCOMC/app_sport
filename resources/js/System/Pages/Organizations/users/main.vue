@@ -542,6 +542,7 @@ export default {
                 entityForms.data.identity_document_type = this.identityDocumentTypes.length > 1 ? this.identityDocumentTypes[1] : null;
                 entityForms.data.gender                 = this.genders.length > 0 ? this.genders[0] : null;
                 entityForms.data.status                 = this.statuses.length > 0 ? this.statuses[0] : null;
+                entityForms.data.password               = this.generatePassword({length: 10});
 
             }
 
@@ -683,6 +684,11 @@ export default {
         isDefined(value) {
 
             return Utils.isDefined({value});
+
+        },
+        generatePassword({length}) {
+
+            return Utils.generatePassword({length});
 
         },
         legibleFormatDate({dateString = null, type = "datetime"}) {

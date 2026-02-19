@@ -87,6 +87,23 @@ export function generateCode({length = 12}) {
 }
 
 /**
+ * Genera una contraseña aleatoria
+ * @param {Object} options - {length: number}
+ * @returns {string} Contraseña generada
+ */
+export function generatePassword({length = 10}) {
+    const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()";
+    let randomString = "";
+
+    for (let i = 0; i < length; i++) {
+        const randomIndex = Math.floor(Math.random() * characters.length);
+        randomString += characters[randomIndex];
+    }
+
+    return randomString;
+}
+
+/**
  * Codifica texto a Base64 UTF-8
  * @param {string} text - Texto a codificar
  * @returns {string} Texto codificado
