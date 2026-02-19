@@ -41,7 +41,7 @@
                 <template v-else-if="entityList.records.total > 0">
                     <tr v-for="record in entityList.records.data" :key="record.id">
                         <td class="text-center">
-                            <span v-text="record?.role?.name" class="fw-semibold d-block"></span>
+                            <span v-text="record?.role?.name" class="d-block"></span>
                         </td>
                         <td>
                             <div class="mb-1">
@@ -51,8 +51,8 @@
                             <span v-text="record.name" class="fw-semibold d-block"></span>
                         </td>
                         <td>
-                            <div class="d-flex flex-column">
-                                <a :href="'mailto:'+record.email" class="text-decoration-none mb-1" v-if="isDefined(record.email)">
+                            <div class="d-flex flex-column gap-1">
+                                <a :href="'mailto:'+record.email" class="text-decoration-none" v-if="isDefined(record.email)">
                                     <span v-text="record.email"></span>
                                 </a>
                                 <a :href="'tel:'+record.phone_number" class="text-decoration-none" v-if="isDefined(record.phone_number)">
@@ -99,25 +99,24 @@
                         <div class="row g-3">
                             <InputSlot
                                 hasDiv
-                                    :title="MODULE.texts.form.role"
-                                    :titleClass="[config.forms.classes.title]"
+                                :title="MODULE.texts.form.role"
+                                :titleClass="[config.forms.classes.title]"
                                 isRequired
                                 :isInputGroup="false"
                                 :divInputClass="['d-flex flex-wrap justify-content-start align-items-end gap-2 gap-md-3']"
                                 hasTextBottom
-                                    :textBottomInfo="forms[entity].createUpdate.errors?.role_id"
+                                :textBottomInfo="forms[entity].createUpdate.errors?.role_id"
                                 xl="12"
                                 lg="12">
                                 <template v-slot:input>
-                                        <div v-for="option in roles" :key="option.code" class="form-check">
+                                    <div v-for="option in roles" :key="option.code" class="form-check">
                                         <label class="cursor-pointer">
-                                                <input class="form-check-input" type="radio" :value="option" v-model="forms[entity].createUpdate.data.role"/>
-                                            <span class="fw-bold" v-text="option.label"></span>
+                                            <input class="form-check-input" type="radio" :value="option" v-model="forms[entity].createUpdate.data.role"/>
+                                            <span  v-text="option.label"></span>
                                         </label>
                                     </div>
                                 </template>
                             </InputSlot>
-
                             <InputSlot
                                 hasDiv
                                 :title="MODULE.texts.form.identityDocumentType"
@@ -174,6 +173,7 @@
                                 hasDiv
                                 :title="MODULE.texts.form.email"
                                 :titleClass="[config.forms.classes.title]"
+                                isRequired
                                 maxlength="100"
                                 showCharCounter
                                 hasTextBottom
@@ -241,7 +241,7 @@
                                 :title="isUpdate ? MODULE.texts.form.changePassword : MODULE.texts.form.password"
                                 :titleClass="[config.forms.classes.title]"
                                 :isRequired="!isUpdate"
-                                maxlength="100"
+                                maxlength="20"
                                 showCharCounter
                                 hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.errors?.password"
