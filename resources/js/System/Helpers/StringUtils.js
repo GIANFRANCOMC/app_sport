@@ -35,8 +35,9 @@ export function normalizeOptional(value) {
  * @returns {boolean} true si es válido
  */
 export function isValidEmail(value) {
+    const email = String(value ?? "").trim();
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(String(value ?? "").trim());
+    return emailRegex.test(email) && !/[A-Z]/.test(email);
 }
 
 /**
@@ -92,7 +93,7 @@ export function generateCode({length = 12}) {
  * @returns {string} Contraseña generada
  */
 export function generatePassword({length = 10}) {
-    const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()";
+    const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%&*()_";
     let randomString = "";
 
     for (let i = 0; i < length; i++) {

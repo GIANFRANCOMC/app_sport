@@ -9,6 +9,7 @@ use App\Helpers\System\{TranslationHelper, Utilities};
 use Illuminate\Support\Facades\{Auth, DB};
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Str;
 
 use App\Models\System\Organizations\{User};
 
@@ -83,7 +84,7 @@ class UserService {
 
             if(isset($data[$field])) {
 
-                $userData[$field] = $data[$field];
+                $userData[$field] = $field === "email" ? Str::lower($data[$field]) : $data[$field];
 
             }
 
@@ -115,9 +116,11 @@ class UserService {
 
             if(isset($data[$field])) {
 
-                if($data[$field] !== $user->$field) {
+                $value = $field === "email" ? Str::lower($data[$field]) : $data[$field];
 
-                    $updateData[$field] = $data[$field];
+                if($value !== $user->$field) {
+
+                    $updateData[$field] = $value;
 
                 }
             }
