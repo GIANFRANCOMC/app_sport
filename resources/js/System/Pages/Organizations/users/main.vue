@@ -45,7 +45,7 @@
                         </td>
                         <td>
                             <div class="mb-1">
-                                <span v-text="record.identity_document_type?.name" class="small text-muted"></span>
+                                <span v-text="record.identity_document_type?.name" class="text-muted"></span>
                                 <span v-text="record.document_number" class="fw-semibold ms-1"></span>
                             </div>
                             <span v-text="record.name" class="fw-semibold d-block"></span>
@@ -96,158 +96,158 @@
                 </div>
                 <div class="modal-body">
                     <form @submit.prevent="saveEntity">
-                    <div class="row g-3">
-                        <InputSlot
-                            hasDiv
-                                :title="MODULE.texts.form.role"
-                                :titleClass="[config.forms.classes.title]"
-                            isRequired
-                            :isInputGroup="false"
-                            :divInputClass="['d-flex flex-wrap justify-content-start align-items-end gap-2 gap-md-3']"
-                            hasTextBottom
-                                :textBottomInfo="forms[entity].createUpdate.errors?.role_id"
-                            xl="12"
-                            lg="12">
-                            <template v-slot:input>
-                                    <div v-for="option in roles" :key="option.code" class="form-check">
-                                    <label class="cursor-pointer">
-                                            <input class="form-check-input" type="radio" :value="option" v-model="forms[entity].createUpdate.data.role"/>
-                                        <span class="fw-bold" v-text="option.label"></span>
-                                    </label>
-                                </div>
-                            </template>
-                        </InputSlot>
-                        <InputSlot
-                            hasDiv
+                        <div class="row g-3">
+                            <InputSlot
+                                hasDiv
+                                    :title="MODULE.texts.form.role"
+                                    :titleClass="[config.forms.classes.title]"
+                                isRequired
+                                :isInputGroup="false"
+                                :divInputClass="['d-flex flex-wrap justify-content-start align-items-end gap-2 gap-md-3']"
+                                hasTextBottom
+                                    :textBottomInfo="forms[entity].createUpdate.errors?.role_id"
+                                xl="12"
+                                lg="12">
+                                <template v-slot:input>
+                                        <div v-for="option in roles" :key="option.code" class="form-check">
+                                        <label class="cursor-pointer">
+                                                <input class="form-check-input" type="radio" :value="option" v-model="forms[entity].createUpdate.data.role"/>
+                                            <span class="fw-bold" v-text="option.label"></span>
+                                        </label>
+                                    </div>
+                                </template>
+                            </InputSlot>
+
+                            <InputSlot
+                                hasDiv
                                 :title="MODULE.texts.form.identityDocumentType"
                                 :titleClass="[config.forms.classes.title]"
-                            isRequired
-                            hasTextBottom
+                                isRequired
+                                hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.errors?.identity_document_type_id"
-                            xl="4"
-                            lg="4">
-                            <template v-slot:input>
-                                <v-select
+                                xl="6"
+                                lg="6">
+                                <template v-slot:input>
+                                    <v-select
                                         v-model="forms[entity].createUpdate.data.identity_document_type"
-                                    :options="identityDocumentTypes"
+                                        :options="identityDocumentTypes"
                                         :class="config.forms.classes.select2"
-                                    @close="tooltips({show: true, time: 500})"
-                                    :clearable="false"
-                                    :searchable="false"/>
-                            </template>
-                        </InputSlot>
-                        <InputText
+                                        @close="tooltips({show: true, time: 500})"
+                                        :clearable="false"
+                                        :searchable="false"/>
+                                </template>
+                            </InputSlot>
+                            <InputText
                                 v-model="forms[entity].createUpdate.data.document_number"
-                            hasDiv
+                                hasDiv
                                 :title="MODULE.texts.form.documentNumber"
                                 :titleClass="[config.forms.classes.title]"
-                            isRequired
-                                maxlength="20"
-                            showCharCounter
-                            hasTextBottom
+                                isRequired
+                                :maxlength="documentNumberMaxLength"
+                                showCharCounter
+                                hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.errors?.document_number"
-                            xl="4"
-                            lg="4">
-                            <template v-slot:inputGroupAppend>
-                                    <template v-if="['dni'].includes(forms[entity].createUpdate.data.identity_document_type?.data?.code)">
-                                        <button :class="['btn waves-effect', isUpdate ? 'btn-warning' : 'btn-primary']" type="button" @click="searchDocumentNumber()" data-bs-toggle="tooltip" data-bs-placement="top" :title="MODULE.texts.form.searchDocumentTooltip">
-                                        <i class="fa fa-search"></i>
-                                    </button>
+                                xl="6"
+                                lg="6">
+                                <template v-slot:inputGroupPrepend>
+                                    <template v-if="isDocumentTypeSearchable">
+                                        <button :class="['btn waves-effect', isUpdate ? 'btn-warning' : 'btn-primary']" type="button" @click="searchDocumentNumber" data-bs-toggle="tooltip" data-bs-placement="top" :title="MODULE.texts.form.searchDocumentTooltip">
+                                            <i class="fa fa-search"></i>
+                                        </button>
+                                    </template>
                                 </template>
-                            </template>
-                        </InputText>
-                        <InputSlot
-                            hasDiv
-                                :title="MODULE.texts.form.status"
-                                :titleClass="[config.forms.classes.title]"
-                            isRequired
-                            hasTextBottom
-                                :textBottomInfo="forms[entity].createUpdate.errors?.status"
-                            xl="4"
-                            lg="4">
-                            <template v-slot:input>
-                                <v-select
-                                        v-model="forms[entity].createUpdate.data.status"
-                                    :options="statuses"
-                                        :class="config.forms.classes.select2"
-                                    :clearable="false"
-                                    :searchable="false"/>
-                            </template>
-                        </InputSlot>
-                        <InputText
+                            </InputText>
+                            <InputText
                                 v-model="forms[entity].createUpdate.data.name"
-                            hasDiv
+                                hasDiv
                                 :title="MODULE.texts.form.name"
                                 :titleClass="[config.forms.classes.title]"
-                            isRequired
-                            maxlength="100"
-                            showCharCounter
-                            hasTextBottom
+                                isRequired
+                                maxlength="100"
+                                showCharCounter
+                                hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.errors?.name"
-                            xl="6"
-                            lg="6"/>
-                        <InputText
+                                xl="6"
+                                lg="6"/>
+                            <InputText
                                 v-model="forms[entity].createUpdate.data.email"
-                            hasDiv
+                                hasDiv
                                 :title="MODULE.texts.form.email"
                                 :titleClass="[config.forms.classes.title]"
-                            isRequired
-                            maxlength="100"
-                            showCharCounter
-                            hasTextBottom
+                                maxlength="100"
+                                showCharCounter
+                                hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.errors?.email"
-                            xl="6"
-                            lg="6"/>
-                        <InputText
+                                xl="6"
+                                lg="6"/>
+                            <InputText
                                 v-model="forms[entity].createUpdate.data.phone_number"
-                            hasDiv
+                                hasDiv
                                 :title="MODULE.texts.form.phoneNumber"
                                 :titleClass="[config.forms.classes.title]"
-                            maxlength="15"
-                            showCharCounter
-                            hasTextBottom
+                                maxlength="15"
+                                showCharCounter
+                                hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.errors?.phone_number"
-                            xl="3"
-                            lg="3"/>
-                        <InputSlot
-                            hasDiv
+                                xl="4"
+                                lg="4"/>
+                            <InputSlot
+                                hasDiv
                                 :title="MODULE.texts.form.gender"
                                 :titleClass="[config.forms.classes.title]"
-                            hasTextBottom
+                                hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.errors?.gender"
-                            xl="3"
-                            lg="3">
-                            <template v-slot:input>
-                                <v-select
+                                xl="4"
+                                lg="4">
+                                <template v-slot:input>
+                                    <v-select
                                         v-model="forms[entity].createUpdate.data.gender"
-                                    :options="genders"
+                                        :options="genders"
                                         :class="config.forms.classes.select2"
-                                    :clearable="false"
-                                    :searchable="false"/>
-                            </template>
-                        </InputSlot>
-                        <InputDate
+                                        :clearable="false"
+                                        :searchable="false"/>
+                                </template>
+                            </InputSlot>
+                            <InputDate
                                 v-model="forms[entity].createUpdate.data.birthdate"
-                            hasDiv
+                                hasDiv
                                 :title="MODULE.texts.form.birthdate"
                                 :titleClass="[config.forms.classes.title]"
-                            hasTextBottom
+                                hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.errors?.birthdate"
-                            xl="3"
-                            lg="3"/>
-                        <InputText
+                                xl="4"
+                                lg="4"/>
+                            <InputSlot
+                                hasDiv
+                                :title="MODULE.texts.form.status"
+                                :titleClass="[config.forms.classes.title]"
+                                isRequired
+                                hasTextBottom
+                                :textBottomInfo="forms[entity].createUpdate.errors?.status"
+                                xl="4"
+                                lg="4">
+                                <template v-slot:input>
+                                    <v-select
+                                        v-model="forms[entity].createUpdate.data.status"
+                                        :options="statuses"
+                                        :class="config.forms.classes.select2"
+                                        :clearable="false"
+                                        :searchable="false"/>
+                                </template>
+                            </InputSlot>
+                            <InputText
                                 v-model="forms[entity].createUpdate.data.password"
-                            hasDiv
+                                hasDiv
                                 :title="isUpdate ? MODULE.texts.form.changePassword : MODULE.texts.form.password"
                                 :titleClass="[config.forms.classes.title]"
-                            :isRequired="!isUpdate"
-                            maxlength="100"
-                            showCharCounter
-                            hasTextBottom
+                                :isRequired="!isUpdate"
+                                maxlength="100"
+                                showCharCounter
+                                hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.errors?.password"
-                            xl="3"
-                            lg="3"/>
-                    </div>
+                                xl="4"
+                                lg="4"/>
+                        </div>
                     </form>
                 </div>
                 <div class="modal-footer">
@@ -277,6 +277,7 @@ import { initCrudModule } from "@System/Helpers/ModuleFactory.js";
 import * as Forms from "@System/Helpers/Forms.js";
 import * as Requests from "@System/Helpers/Requests.js";
 import * as Utils from "@System/Helpers/Utils.js";
+import { validateOnlyDigits } from "@System/Helpers/ValidationHelpers.js";
 
 const MODULE_CONFIG = {
     entity: "users",
@@ -368,9 +369,9 @@ const TEXTS = {
         phoneNumber: "Celular",
         gender: "Género",
         birthdate: "Fecha de nacimiento",
+        status: "Estado",
         password: "Contraseña",
         changePassword: "Cambiar contraseña",
-        status: "Estado",
         searchDocumentTooltip: "Buscar N° documento"
     },
     modal: {
@@ -441,10 +442,10 @@ export default {
 
             if(response?.data?.config) {
 
-                this.options.roles                 = response.data.config.roles;
-                this.options.identityDocumentTypes = response.data.config.identityDocumentTypes;
                 this.options.genders               = response.data.config.genders;
-                this.options.statuses             = response.data.config.statuses;
+                this.options.identityDocumentTypes = response.data.config.identityDocumentTypes;
+                this.options.roles                 = response.data.config.roles;
+                this.options.statuses              = response.data.config.statuses;
 
             }
 
@@ -517,10 +518,10 @@ export default {
             if(this.isDefined(record)) {
 
                 // Map record data to form
-                const roleOption                = this.roles.find(e => e.code === record?.role_id);
-                const identityDocumentTypeOption = this.identityDocumentTypes.find(e => e.code === record?.identity_document_type_id);
-                const genderOption              = this.genders.find(e => e.code === record?.gender);
-                const statusOption              = this.statuses.find(e => e.code === record?.status);
+                const genderOption               = this.genders.find(g => g.code === record?.gender),
+                      identityDocumentTypeOption = this.identityDocumentTypes.find(e => e.code === record?.identity_document_type_id),
+                      roleOption                 = this.roles.find(e => e.code === record?.role_id),
+                      statusOption               = this.statuses.find(s => s.code === record?.status);
 
                 entityForms.data.id                     = record.id;
                 entityForms.data.role                   = roleOption;
@@ -537,7 +538,9 @@ export default {
             }else {
 
                 // Set defaults for new record
+                entityForms.data.role                   = this.roles.length > 1 ? this.roles[0] : null;
                 entityForms.data.identity_document_type = this.identityDocumentTypes.length > 1 ? this.identityDocumentTypes[1] : null;
+                entityForms.data.gender                 = this.genders.length > 0 ? this.genders[0] : null;
                 entityForms.data.status                 = this.statuses.length > 0 ? this.statuses[0] : null;
 
             }
@@ -566,9 +569,9 @@ export default {
 
                     Alerts.generateAlert({messages: Utils.getErrors({errors: validation.errors}), msgContent: this.config.messages.errorValidate});
                     this.isSaving = false;
-                return;
+                    return;
 
-            }
+                }
 
                 const preparedData  = Forms.prepareFormData(formData, this.MODULE.formFieldConfig);
                 const id            = preparedData.id;
@@ -589,7 +592,7 @@ export default {
 
                     this.listEntity({url: `${entityList?.extras?.route || ""}?page=${currentPage}`});
 
-            }else {
+                }else {
 
                     Forms.handleFormResponseErrors({result, formErrorsObject: entityForms.errors, config: this.config});
 
@@ -608,7 +611,7 @@ export default {
         },
         validateFormData(formData) {
 
-            const result = Forms.validateFormData(formData, this.MODULE.validationRules, {isDescriptive: true, errorLabels: this.MODULE.errorLabels});
+            const result = Forms.validateFormData(formData, this.validationRules, {isDescriptive: true, errorLabels: this.MODULE.errorLabels});
 
             // Custom validation for password (only for new users)
             if(!this.isDefined(formData.id) && !this.isDefined(formData.password)) {
@@ -626,54 +629,55 @@ export default {
         // Others
         async searchDocumentNumber() {
 
-            const entityForms = this.forms[this.entity].createUpdate;
-            const formJson    = {
-                document_number: entityForms.data.document_number,
-                type: entityForms.data.identity_document_type?.data?.code
-            };
+            const entityForms          = this.forms[this.entity].createUpdate;
+            const documentNumber       = entityForms.data.document_number;
+            const identityDocumentType = entityForms.data.identity_document_type;
 
-            if(!this.isDefined(formJson.document_number)) {
+            if(!this.isDefined(documentNumber)) {
 
-                Alerts.generateAlert({
-                    msgContent: "Debe ingresar el número de documento para realizar la búsqueda."
-                });
+                Alerts.generateAlert({msgContent: "Debe ingresar el número de documento para realizar la búsqueda."});
+                return;
 
+            }
+
+            if(!this.isDefined(identityDocumentType)) {
+
+                Alerts.generateAlert({msgContent: "Debe seleccionar el tipo de documento."});
                 return;
 
             }
 
             Alerts.swals({});
 
-            try {
+            const route    = Requests.config({entity: "helpers", type: "searchDocumentNumber"});
+            const formJson = {document_number: documentNumber, type: identityDocumentType.data?.code};
+            const response = await Requests.get({route, data: formJson});
 
-                const route = Requests.config({entity: "helpers", type: "searchDocumentNumber"});
-                const response = await Requests.get({route, data: formJson});
+            if(Requests.valid({result: response})) {
 
-                if(Requests.valid({result: response})) {
+                const data = response.data.data;
 
-                    const data = response.data.data;
-                    entityForms.data.name = `${data?.first_name} ${data?.last_name} ${data?.second_last_name}`.trim();
+                if(identityDocumentType.data?.code === "dni") {
 
-                    Alerts.toastrs({
-                        type: "success",
-                        subtitle: response?.data?.msg
-                    });
+                    entityForms.data.name = `${data?.first_name || ""} ${data?.last_name || ""} ${data?.second_last_name || ""}`.trim();
 
-                }else {
+                }else if(identityDocumentType.data?.code === "ruc") {
 
-                    Alerts.toastrs({
-                        type: "error",
-                        subtitle: response?.data?.msg
-                    });
+                    entityForms.data.name = data?.legal_name || "";
 
                 }
 
-            }finally {
-
+                Alerts.toastrs({type: "success", subtitle: response?.data?.msg});
                 Alerts.swals({show: false});
-                Alerts.tooltips({show: false});
+
+            }else {
+
+                Alerts.toastrs({type: "error", subtitle: response?.data?.msg});
+                Alerts.swals({show: false});
 
             }
+
+            Alerts.tooltips({show: false});
 
         },
         isDefined(value) {
@@ -686,14 +690,14 @@ export default {
             return Utils.legibleFormatDate({dateString, type});
 
         },
-        tooltips({show = true, time = 10}) {
-
-            Alerts.tooltips({show, time});
-
-        },
         getStatusBadgeClasses(status) {
 
             return Utils.getStatusBadgeClasses(status);
+
+        },
+        tooltips({show = true, time = 10}) {
+
+            Alerts.tooltips({show, time});
 
         }
     },
@@ -733,12 +737,12 @@ export default {
         },
         genders() {
 
-            return (this.options?.genders ?? []).map(e => ({code: e.code, label: e.label}));
+            return (this.options?.genders ?? []).map(e => ({code: e.code, label: e.label, data: e}));
 
         },
         statuses() {
 
-            return (this.options?.statuses ?? []).map(e => ({code: e.code, label: e.label}));
+            return (this.options?.statuses ?? []).map(e => ({code: e.code, label: e.label, data: e}));
 
         },
         isUpdate() {
@@ -790,6 +794,75 @@ export default {
 
             return `Buscar por ${(filterBy.label || "...").toLowerCase()}`;
 
+        },
+        // Identity document type
+        isDocumentTypeSearchable() {
+
+            const documentType = this.forms[this.entity].createUpdate.data.identity_document_type?.data;
+
+            return documentType?.is_searchable === true || documentType?.is_searchable === 1;
+
+        },
+        documentNumberMinLength() {
+
+            const documentType = this.forms[this.entity].createUpdate.data.identity_document_type?.data;
+
+            if(documentType?.min_length) {
+
+                return parseInt(documentType.min_length);
+
+            }
+
+            return 1;
+
+        },
+        documentNumberMaxLength() {
+
+            const documentType = this.forms[this.entity].createUpdate.data.identity_document_type?.data;
+
+            if(documentType?.max_length) {
+
+                return parseInt(documentType.max_length);
+
+            }
+
+            return 1;
+
+        },
+        validationRules() {
+
+            const rules = Utils.cloneJson(this.MODULE.validationRules);
+
+            rules.document_number = {
+                ...rules.document_number,
+                minLength: this.documentNumberMinLength,
+                maxLength: this.documentNumberMaxLength,
+                custom: (value) => validateOnlyDigits(value, this.MODULE.errorLabels.document_number)
+            };
+
+            return rules;
+
+        }
+    },
+    watch: {
+        "forms.users.createUpdate.data.identity_document_type": {
+            handler(newValue) {
+
+                if(this.isDefined(newValue)) {
+
+                    const maxLength    = this.documentNumberMaxLength;
+                    const currentValue = this.forms[this.entity].createUpdate.data.document_number?.toString() || "";
+
+                    if(currentValue.length > maxLength) {
+
+                        this.forms[this.entity].createUpdate.data.document_number = currentValue.substring(0, maxLength);
+
+                    }
+
+                }
+
+            },
+            immediate: false
         }
     }
 };
