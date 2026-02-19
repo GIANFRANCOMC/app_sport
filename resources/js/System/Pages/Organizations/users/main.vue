@@ -170,6 +170,7 @@
                                 lg="6"/>
                             <InputText
                                 v-model="forms[entity].createUpdate.data.email"
+                                @input="onEmailInput"
                                 hasDiv
                                 :title="MODULE.texts.form.email"
                                 :titleClass="[config.forms.classes.title]"
@@ -505,6 +506,11 @@ export default {
         handleSearch() {
 
             this.listEntity({});
+
+        },
+        onEmailInput(value) {
+
+            this.forms[this.entity].createUpdate.data.email = (value ?? "").toString().toLowerCase();
 
         },
         // Forms
