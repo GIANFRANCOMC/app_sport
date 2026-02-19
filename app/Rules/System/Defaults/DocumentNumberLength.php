@@ -54,13 +54,6 @@ class DocumentNumberLength implements ValidationRule {
 
         $identityDocumentTypeId = $this->identityDocumentTypeId;
 
-        // If identity_document_type_id was not provided in constructor, try to get it from request
-        if(!$identityDocumentTypeId && request()->has("identity_document_type_id")) {
-
-            $identityDocumentTypeId = (int) request()->input("identity_document_type_id");
-
-        }
-
         if(!$identityDocumentTypeId) {
 
             $fieldName = $this->attributeName ?? $attribute;

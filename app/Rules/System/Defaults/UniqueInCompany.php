@@ -105,7 +105,7 @@ class UniqueInCompany implements ValidationRule {
         if($query->exists()) {
 
             $fieldName = $this->attributeName ?? $attribute;
-            $fail("El campo {$fieldName} ya está en uso para esta empresa.");
+            $fail("El campo {$fieldName} ya está en uso.");
 
         }
 
