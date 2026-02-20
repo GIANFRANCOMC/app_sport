@@ -134,7 +134,7 @@ class BranchController extends BaseController {
      * Update the specified record
      *
      * @param UpdateBranchRequest $request
-     * @param int $id Branch
+     * @param int $id Branch ID
      * @return JsonResponse
      */
     public function update(UpdateBranchRequest $request, int $id): JsonResponse {
