@@ -121,9 +121,9 @@ class CompanyController extends BaseController {
 
         try {
 
-            $company = CompanyService::findByAuthUser();
+            $company = CompanyService::findByIdAndCompany($id, $this->getCompanyId());
 
-            if(!Utilities::isDefined($company) || $company->id !== $id) {
+            if(!Utilities::isDefined($company)) {
 
                 return $this->notFoundResponse();
 

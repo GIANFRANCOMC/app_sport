@@ -134,6 +134,41 @@ class CompanyService {
     }
 
     /**
+     * Find company by ID and company ID (verifies user can access the company)
+     *
+     * @param int $id Record
+     * @param int $companyId Company (must match id for Company model)
+     * @param array|null $statuses Filter by statuses (e.g. ["active"], ["active", "inactive"])
+     * @param array $relations Relations to eager load
+     * @return Company|null
+     */
+    public static function findByIdAndCompany(int $id, int $companyId, ?array $statuses = ["active"], array $relations = ["identityDocumentType"]): ?Company {
+
+        if($id !== $companyId) {
+
+            return null;
+
+        }
+
+        $query = Company::where("id", $id);
+
+        if($statuses !== null && !empty($statuses)) {
+
+            $query->whereIn("status", $statuses);
+
+        }
+
+        if($relations !== null && !empty($relations)) {
+
+            $query->with($relations);
+
+        }
+
+        return $query->first();
+
+    }
+
+    /**
      * Prepare company data for update
      *
      * @param Company $company Company instance
