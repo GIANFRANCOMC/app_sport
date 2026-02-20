@@ -59,6 +59,9 @@ input.input-number-no-range[type=number] {
     align-items: center;
 }
 
+.vs__dropdown-toggle {
+    border-color: #dbdade !important;
+}
 
 /* BACKGROUND */
 .bg-info-1 {
