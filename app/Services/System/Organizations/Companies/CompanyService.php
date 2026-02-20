@@ -7,23 +7,25 @@ namespace App\Services\System\Organizations\Companies;
 use Exception;
 use App\Helpers\System\{TranslationHelper, Utilities};
 use Illuminate\Support\Facades\{Auth, DB, Storage};
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\UploadedFile;
 
 use App\Models\System\Organizations\{Company, CompanySocialMedia};
 
 /**
- * Service class for managing Company operations
- * Handles business logic for updating companies
+ * Service class for managing module operations
+ * Handles business logic for updating records
  */
 class CompanyService {
 
     /**
-     * Translation namespace for company module
+     * Translation namespace for module
      */
     private const TRANSLATION_NAMESPACE = "System.Organizations.company";
 
     /**
-     * Allowed fields for company update
+     * Allowed fields for record update
      */
     private const ALLOWED_FIELDS = [
         "identity_document_type_id",
@@ -70,9 +72,9 @@ class CompanyService {
     }
 
     /**
-     * Handle file upload for company images
+     * Handle file upload for images
      *
-     * @param Company $company Company instance
+     * @param Company $company Record instance
      * @param string $fieldName Field name (logotype, combinationmark, etc.)
      * @param UploadedFile|null $file Uploaded file
      * @return string|null File path or null
@@ -96,10 +98,10 @@ class CompanyService {
     /**
      * Update or create social media link
      *
-     * @param Company $company Company instance
+     * @param Company $company Record instance
      * @param string $type Social media type (facebook, instagram, whatsapp)
      * @param string|null $link Social media link
-     * @param int|null $userId User ID
+     * @param int|null $userId User
      * @return CompanySocialMedia
      */
     private static function updateOrCreateSocialMedia(Company $company, string $type, ?string $link, ?int $userId): CompanySocialMedia {
@@ -134,7 +136,36 @@ class CompanyService {
     }
 
     /**
-     * Find company by ID and company ID (verifies user can access the company)
+     * Prepare data for update (only changed fields)
+     *
+     * @param Company $company Record instance
+     * @param array $data Input data
+     * @return array
+     */
+    private static function prepareCompanyDataForUpdate(Company $company, array $data): array {
+
+        $updateData = [];
+
+        foreach(self::ALLOWED_FIELDS as $field) {
+
+            if(isset($data[$field])) {
+
+                if($data[$field] !== $company->$field) {
+
+                    $updateData[$field] = $data[$field];
+
+                }
+
+            }
+
+        }
+
+        return $updateData;
+
+    }
+
+    /**
+     * Find record by ID and company ID
      *
      * @param int $id Record
      * @param int $companyId Company (must match id for Company model)
@@ -169,38 +200,13 @@ class CompanyService {
     }
 
     /**
-     * Prepare company data for update
+     * Update an existing record
      *
-     * @param Company $company Company instance
+     * @param Company $company Record instance to update
      * @param array $data Input data
-     * @return array
-     */
-    private static function prepareCompanyDataForUpdate(Company $company, array $data): array {
-
-        $updateData = [];
-
-        foreach(self::ALLOWED_FIELDS as $field) {
-
-            if(isset($data[$field]) && $data[$field] !== $company->$field) {
-
-                $updateData[$field] = $data[$field];
-
-            }
-
-        }
-
-        return $updateData;
-
-    }
-
-    /**
-     * Update an existing company
-     *
-     * @param Company $company Company instance to update
-     * @param array $data Updated company data
      * @param array $files Uploaded files array
-     * @param int|null $userId User ID updating the company
-     * @return Company Updated company instance
+     * @param int|null $userId User updating the record
+     * @return Company Updated record instance
      * @throws Exception
      */
     public static function update(Company $company, array $data, array $files = [], ?int $userId = null): Company {
@@ -208,7 +214,7 @@ class CompanyService {
         DB::transaction(function() use($company, $data, $files, $userId) {
 
             $userAuth = Auth::user();
-            $userId   = $userId ?? $userAuth->id;
+            $userId   = $userId ?? $userAuth->id ?? null;
 
             // Prepare update data with only changed fields
             $updateData = self::prepareCompanyDataForUpdate($company, $data);
@@ -230,7 +236,7 @@ class CompanyService {
 
             }
 
-            // Update company
+            // Update record
             if(!empty($updateData)) {
 
                 $updateData["updated_at"] = now();
