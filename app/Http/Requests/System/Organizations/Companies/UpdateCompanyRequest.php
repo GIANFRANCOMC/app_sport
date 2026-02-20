@@ -26,15 +26,16 @@ class UpdateCompanyRequest extends FormRequest {
      */
     public function rules(): array {
 
-        $maxSize = Utilities::$inputs["maxSize"];
+        $companyId = (int) $this->route("id");
+        $maxSize   = Utilities::$inputs["maxSize"];
 
         $validations = [
             "identity_document_type_id" => "required|integer",
             "document_number"           => ["required", "string", new DocumentNumberLength($this->identity_document_type_id)],
-            "legal_name"                => "required|string|max:50",
-            "commercial_name"           => "required|string|max:50",
-            "tagline"                   => "nullable|string|max:100",
-            "description"               => "nullable|string|max:100",
+            "legal_name"                => "required|string|max:100",
+            "commercial_name"           => "required|string|max:100",
+            "tagline"                   => "nullable|string|max:200",
+            "description"               => "nullable|string|max:200",
             "address"                   => "nullable|string|max:100",
             "telephone"                 => "nullable|string|max:15",
             "email"                     => "nullable|email|max:100",
