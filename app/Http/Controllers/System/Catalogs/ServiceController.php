@@ -141,7 +141,7 @@ class ServiceController extends BaseController {
 
         try {
 
-            $item = ServiceService::findByIdAndCompany($id, $this->getCompanyId());
+            $item = ServiceService::findByIdAndCompany($id, $this->getCompanyId(), null);
 
             if(!Utilities::isDefined($item)) {
 

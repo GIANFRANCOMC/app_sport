@@ -141,7 +141,7 @@ class CategoryController extends BaseController {
 
         try {
 
-            $category = CategoryService::findByIdAndCompany($id, $this->getCompanyId());
+            $category = CategoryService::findByIdAndCompany($id, $this->getCompanyId(), null);
 
             if(!Utilities::isDefined($category)) {
 

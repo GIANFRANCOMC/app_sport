@@ -121,7 +121,7 @@ class CompanyController extends BaseController {
 
         try {
 
-            $company = CompanyService::findByIdAndCompany($id, $this->getCompanyId());
+            $company = CompanyService::findByIdAndCompany($id, $this->getCompanyId(), null);
 
             if(!Utilities::isDefined($company)) {
 

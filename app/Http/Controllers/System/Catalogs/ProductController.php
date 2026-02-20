@@ -141,7 +141,7 @@ class ProductController extends BaseController {
 
         try {
 
-            $item = ProductService::findByIdAndCompany($id, $this->getCompanyId());
+            $item = ProductService::findByIdAndCompany($id, $this->getCompanyId(), null);
 
             if(!Utilities::isDefined($item)) {
 

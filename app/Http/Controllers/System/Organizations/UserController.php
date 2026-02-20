@@ -141,7 +141,7 @@ class UserController extends BaseController {
 
         try {
 
-            $user = UserService::findByIdAndCompany($id, $this->getCompanyId());
+            $user = UserService::findByIdAndCompany($id, $this->getCompanyId(), null);
 
             if(!Utilities::isDefined($user)) {
 

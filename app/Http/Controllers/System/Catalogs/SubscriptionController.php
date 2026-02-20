@@ -141,7 +141,7 @@ class SubscriptionController extends BaseController {
 
         try {
 
-            $item = SubscriptionService::findByIdAndCompany($id, $this->getCompanyId());
+            $item = SubscriptionService::findByIdAndCompany($id, $this->getCompanyId(), null);
 
             if(!Utilities::isDefined($item)) {
 

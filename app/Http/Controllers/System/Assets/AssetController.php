@@ -141,7 +141,7 @@ class AssetController extends BaseController {
 
         try {
 
-            $asset = AssetService::findByIdAndCompany($id, $this->getCompanyId());
+            $asset = AssetService::findByIdAndCompany($id, $this->getCompanyId(), null);
 
             if(!Utilities::isDefined($asset)) {
 

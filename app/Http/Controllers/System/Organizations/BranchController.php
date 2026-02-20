@@ -141,7 +141,7 @@ class BranchController extends BaseController {
 
         try {
 
-            $branch = BranchService::findByIdAndCompany($id, $this->getCompanyId());
+            $branch = BranchService::findByIdAndCompany($id, $this->getCompanyId(), null);
 
             if(!Utilities::isDefined($branch)) {
 
