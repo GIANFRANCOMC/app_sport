@@ -55,15 +55,15 @@ class IdentityDocumentType extends Model {
 
     public static function getAll(string $type = "default", ?int $company_id = null) {
 
-        return IdentityDocumentType::when(in_array($type, ["company"]), function($query) {
+        return IdentityDocumentType::when(in_array($type, ["default"]), function($query) {
 
-                                        $query->whereIn("code", ["doc.trib.no.dom.sin.ruc", "ruc"])
+                                        $query->whereIn("code", ["doc.trib.no.dom.sin.ruc", "dni"])
                                               ->whereIn("status", ["active"]);
 
                                    })
-                                   ->when(in_array($type, ["default"]), function($query) {
+                                   ->when(in_array($type, ["company"]), function($query) {
 
-                                        $query->whereIn("code", ["doc.trib.no.dom.sin.ruc", "dni"])
+                                        $query->whereIn("code", ["doc.trib.no.dom.sin.ruc", "ruc"])
                                               ->whereIn("status", ["active"]);
 
                                    })

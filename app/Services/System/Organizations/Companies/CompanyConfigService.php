@@ -4,25 +4,26 @@ declare(strict_types=1);
 
 namespace App\Services\System\Organizations\Companies;
 
-use App\Models\System\Organizations\{Company};
-use App\Models\System\General\IdentityDocumentType;
 use Illuminate\Support\Facades\Cache;
 use stdClass;
 
+use App\Models\System\General\IdentityDocumentType;
+use App\Models\System\Organizations\{Company};
+
 /**
- * Service for managing Company configuration and initialization parameters
+ * Service for managing module configuration and initialization parameters
  * Implements caching for better performance
  */
 class CompanyConfigService {
 
     private const CACHE_PREFIX = "company_config";
-    private const CACHE_TTL = 3600; // 1 hour
+    private const CACHE_TTL    = 3600; // 1 hour
 
     /**
-     * Get initialization parameters for company module
+     * Get initialization parameters for module
      *
-     * @param int $companyId Company ID
-     * @param string $page Page identifier
+     * @param int $companyId Company
+     * @param string $page Page (only used to determine what data to return, not for cache key)
      * @return stdClass
      */
     public static function getInitParams(int $companyId, string $page = ""): stdClass {
@@ -40,7 +41,9 @@ class CompanyConfigService {
                 $config->companies = new stdClass();
                 $config->companies->statuses = Company::getStatuses();
 
-                $company = Company::where("id", $companyId)->first();
+                $company = Company::where("id", $companyId)
+                                  ->with(["socialsMedia"])
+                                  ->first();
 
                 if($company) {
 
@@ -71,9 +74,9 @@ class CompanyConfigService {
     }
 
     /**
-     * Build cache key for company configuration
+     * Build cache key for module configuration
      *
-     * @param int $companyId Company ID
+     * @param int $companyId Company
      * @return string
      */
     private static function buildCacheKey(int $companyId): string {
@@ -83,22 +86,23 @@ class CompanyConfigService {
     }
 
     /**
-     * Clear cache for company configuration
+     * Clear cache for module configuration
      *
-     * @param int $companyId Company ID
+     * @param int $companyId Company
      * @return void
      */
     public static function clearCache(int $companyId): void {
 
         $cacheKey = self::buildCacheKey($companyId);
+
         Cache::forget($cacheKey);
 
     }
 
     /**
-     * Clear all company configuration cache for a company
+     * Clear all module configuration cache for a company
      *
-     * @param int $companyId Company ID
+     * @param int $companyId Company
      * @return void
      */
     public static function clearAllCache(int $companyId): void {
