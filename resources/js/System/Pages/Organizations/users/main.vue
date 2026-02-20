@@ -148,7 +148,7 @@
                                 :textBottomInfo="forms[entity].createUpdate.errors?.document_number"
                                 xl="6"
                                 lg="6">
-                                <template v-slot:inputGroupPrepend>
+                                <template v-slot:inputGroupPrepend v-if="!isUpdate">
                                     <template v-if="isDocumentTypeSearchable">
                                         <button :class="['btn waves-effect', isUpdate ? 'btn-warning' : 'btn-primary']" type="button" @click="searchDocumentNumber" data-bs-toggle="tooltip" data-bs-placement="top" :title="MODULE.texts.form.searchDocumentTooltip">
                                             <i class="fa fa-search"></i>
