@@ -149,8 +149,8 @@
                                 isRequired
                                 hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.errors?.price"
-                                xl="3"
-                                lg="3">
+                                xl="4"
+                                lg="4">
                                 <template v-slot:inputGroupPrepend>
                                     <span class="input-group-text text-muted">
                                         <span v-text="forms[entity].createUpdate.data.currency?.data?.sign"></span>
@@ -164,8 +164,8 @@
                                 :titleClass="[config.forms.classes.title]"
                                 hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.errors?.min_price"
-                                xl="3"
-                                lg="3"
+                                xl="4"
+                                lg="4"
                                 md="6"
                                 sm="6">
                                 <template v-slot:inputGroupPrepend>
@@ -181,8 +181,8 @@
                                 :titleClass="[config.forms.classes.title]"
                                 hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.errors?.max_price"
-                                xl="3"
-                                lg="3"
+                                xl="4"
+                                lg="4"
                                 md="6"
                                 sm="6">
                                 <template v-slot:inputGroupPrepend>
@@ -192,6 +192,7 @@
                                 </template>
                             </InputNumber>
                             <InputSlot
+                                v-if="false"
                                 hasDiv
                                 :title="MODULE.texts.form.currency"
                                 :titleClass="[config.forms.classes.title]"
@@ -234,8 +235,8 @@
                                 isRequired
                                 hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.errors?.status"
-                                xl="3"
-                                lg="3">
+                                xl="4"
+                                lg="4">
                                 <template v-slot:input>
                                     <v-select
                                         v-model="forms[entity].createUpdate.data.status"
@@ -246,13 +247,14 @@
                                 </template>
                             </InputSlot>
                             <InputSlot
+                                v-if="false"
                                 hasDiv
                                 :title="MODULE.texts.form.visibility"
                                 :titleClass="[config.forms.classes.title]"
                                 :isInputGroup="false"
                                 :divInputClass="['d-flex flex-wrap justify-content-center align-items-end gap-4 pt-2']"
-                                xl="9"
-                                lg="9">
+                                xl="8"
+                                lg="8">
                                 <template v-slot:input>
                                     <div class="form-check form-switch d-flex align-items-start">
                                         <input class="form-check-input" type="checkbox" role="switch" id="see_my_web" v-model="forms[entity].createUpdate.data.see_my_web"/>
