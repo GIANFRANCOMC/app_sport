@@ -6,6 +6,7 @@ namespace App\Http\Requests\System\Organizations\Companies;
 
 use App\Helpers\System\Utilities;
 use Illuminate\Foundation\Http\FormRequest;
+use App\Rules\System\Defaults\{DocumentNumberLength};
 
 class UpdateCompanyRequest extends FormRequest {
 
@@ -27,24 +28,25 @@ class UpdateCompanyRequest extends FormRequest {
 
         $maxSize = Utilities::$inputs["maxSize"];
 
-        return [
+        $validations = [
             "identity_document_type_id" => "required|integer",
-            "document_number"           => "required|string|max:25",
-            "legal_name"                => "required|string|max:200",
-            "commercial_name"           => "required|string|max:200",
-            "tagline"                   => "nullable|string|max:500",
-            "description"               => "nullable|string|max:500",
-            "address"                   => "nullable|string|max:200",
-            "telephone"                 => "nullable|string|max:50",
-            "email"                     => "nullable|email|max:200",
-            "status"                    => "required|string",
+            "document_number"           => ["required", "string", new DocumentNumberLength($this->identity_document_type_id)],
+            "legal_name"                => "required|string|max:50",
+            "commercial_name"           => "required|string|max:50",
+            "tagline"                   => "nullable|string|max:100",
+            "description"               => "nullable|string|max:100",
+            "address"                   => "nullable|string|max:100",
+            "telephone"                 => "nullable|string|max:15",
+            "email"                     => "nullable|email|max:100",
+            "status"                    => "required|in:active,inactive",
             "logotype"                  => "nullable|file|image|mimes:jpeg,png,jpg|max:$maxSize",
             "combinationmark"           => "nullable|file|image|mimes:jpeg,png,jpg|max:$maxSize",
             "logomark"                  => "nullable|file|image|mimes:jpeg,png,jpg|max:$maxSize",
             "login_image"               => "nullable|file|image|mimes:jpeg,png,jpg|max:$maxSize"
         ];
 
-    }
+        return $validations;
 
+    }
 
 }
