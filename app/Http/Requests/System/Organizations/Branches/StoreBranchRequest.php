@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\System\Organizations\Branches;
 
+use App\Helpers\System\Utilities;
 use Illuminate\Foundation\Http\FormRequest;
 use App\Rules\System\Defaults\{UniqueInCompany};
 
@@ -25,8 +26,8 @@ class StoreBranchRequest extends FormRequest {
      */
     public function rules(): array {
 
-        return [
-            "internal_code" => ["required", "string", "max:50", new UniqueInCompany("branches", "internal_code", null, "Código interno")],
+        $validations = [
+            "internal_code" => ["required", "string", "max:50", new UniqueInCompany("branches", "internal_code", null, [], "código interno")],
             "name"          => "required|string|max:100",
             "address"       => "nullable|string|max:100",
             "reference"     => "nullable|string|max:100",
@@ -36,6 +37,8 @@ class StoreBranchRequest extends FormRequest {
             "map_url"       => "nullable|url|max:500",
             "status"        => "required|in:active,inactive"
         ];
+
+        return $validations;
 
     }
 
