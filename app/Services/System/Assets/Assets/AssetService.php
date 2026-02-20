@@ -66,10 +66,11 @@ class AssetService {
     private static function prepareAssetDataForCreate(array $data, int $companyId, int $userId): array {
 
         $assetData = [
-            "company_id" => $companyId,
-            "status"     => $data["status"] ?? "active",
-            "created_at" => now(),
-            "created_by" => $userId
+            "company_id"      => $companyId,
+            "management_type" => "stock",
+            "status"          => $data["status"] ?? "active",
+            "created_at"      => now(),
+            "created_by"      => $userId
         ];
 
         foreach(self::ALLOWED_FIELDS as $field) {
