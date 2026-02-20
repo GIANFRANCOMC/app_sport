@@ -85,11 +85,17 @@
                                 :titleClass="[config.forms.classes.title]"
                                 isRequired
                                 maxlength="50"
-                                showCharCounter
+                                :showCharCounter="false"
                                 hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.errors?.internal_code"
                                 xl="3"
-                                lg="3"/>
+                                lg="3">
+                                <template v-slot:inputGroupAppend v-if="!isUpdate">
+                                    <button type="button" :class="['btn waves-effect', isUpdate ? 'btn-warning' : 'btn-primary']" @click="generateCodeAction" data-bs-toggle="tooltip" data-bs-placement="top" :title="MODULE.texts.form.generateCodeTooltip">
+                                        <i class="fa fa-rotate"></i>
+                                    </button>
+                                </template>
+                            </InputText>
                             <InputText
                                 v-model="forms[entity].createUpdate.data.name"
                                 hasDiv
@@ -315,7 +321,8 @@ const TEXTS = {
         capacity: "Capacidad",
         capacityTooltip: "Cantidad de personas",
         mapUrl: "URL del mapa",
-        status: "Estado"
+        status: "Estado",
+        generateCodeTooltip: "Generar aleatoriamente"
     },
     modal: {
         close: "Cerrar",
@@ -483,6 +490,14 @@ export default {
             Alerts.tooltips({show: true, time: 500});
 
         },
+        generateCodeAction() {
+
+            this.forms[this.entity].createUpdate.data.internal_code = this.generateCode({length: 7});
+
+            Alerts.toastrs({type: "success", subtitle: "Código interno generado correctamente."});
+            Alerts.tooltips({show: false});
+
+        },
         async saveEntity() {
 
             if(this.isSaving) return;
@@ -497,7 +512,7 @@ export default {
             try {
 
                 const formData   = Utils.cloneJson(entityForms.data);
-                const validation = Forms.validateFormData(formData, this.MODULE.validationRules, {isDescriptive: true, errorLabels: this.MODULE.errorLabels});
+                const validation = this.validateFormData(formData);
 
                 if(!validation.bool) {
 
@@ -507,8 +522,7 @@ export default {
 
                 }
 
-                const preparedData = Forms.prepareFormData(formData, this.MODULE.formFieldConfig);
-
+                const preparedData  = Forms.prepareFormData(formData, this.MODULE.formFieldConfig);
                 const id            = preparedData.id;
                 const isUpdate      = this.isDefined(id);
                 const requestMethod = isUpdate ? "patch" : "post";
@@ -542,6 +556,13 @@ export default {
                 this.isSaving = false;
 
             }
+
+        },
+        validateFormData(formData) {
+
+            const result = Forms.validateFormData(formData, this.validationRules, {isDescriptive: true, errorLabels: this.MODULE.errorLabels});
+
+            return result;
 
         },
         // Helpers
@@ -651,8 +672,14 @@ export default {
 
             return `Buscar por ${(filterBy.label || "...").toLowerCase()}`;
 
-        }
+        },
+        validationRules() {
 
+            const rules = Utils.cloneJson(this.MODULE.validationRules);
+
+            return rules;
+
+        }
     }
 };
 </script>
