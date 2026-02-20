@@ -11,7 +11,7 @@ use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 
 use App\Services\System\Organizations\Branches\{SerieService};
-use App\Services\System\Warehouses\{WarehouseService};
+use App\Services\System\Warehouses\Warehouses\{WarehouseService};
 use App\Models\System\Organizations\{Branch};
 
 /**
@@ -77,14 +77,18 @@ class BranchService {
 
         $branchData = [
             "company_id" => $companyId,
-            "status"      => $data["status"] ?? "active",
-            "created_at"  => now(),
-            "created_by"  => $userId
+            "status"     => $data["status"] ?? "active",
+            "created_at" => now(),
+            "created_by" => $userId
         ];
 
         foreach(self::ALLOWED_FIELDS as $field) {
 
-            $branchData[$field] = $data[$field] ?? null;
+            if(isset($data[$field])) {
+
+                $branchData[$field] = $data[$field];
+
+            }
 
         }
 
@@ -105,9 +109,13 @@ class BranchService {
 
         foreach(self::ALLOWED_FIELDS as $field) {
 
-            if(isset($data[$field]) && $data[$field] !== $branch->$field) {
+            if(isset($data[$field])) {
 
-                $updateData[$field] = $data[$field];
+                if($data[$field] !== $branch->$field) {
+
+                    $updateData[$field] = $data[$field];
+
+                }
 
             }
 
@@ -206,15 +214,22 @@ class BranchService {
      *
      * @param int $id Record
      * @param int $companyId Company
+     * @param array|null $statuses Filter by statuses (e.g. ["active"], ["active", "inactive"])
      * @param array $relations Relations to eager load
      * @return Branch|null
      */
-    public static function findByIdAndCompany(int $id, int $companyId, array $relations = ["series.documentType", "warehouses"]): ?Branch {
+    public static function findByIdAndCompany(int $id, int $companyId, ?array $statuses = ["active"], array $relations = ["series.documentType", "warehouses"]): ?Branch {
 
         $query = Branch::where("id", $id)
                        ->where("company_id", $companyId);
 
-        if(!empty($relations)) {
+        if($statuses !== null && !empty($statuses)) {
+
+            $query->whereIn("status", $statuses);
+
+        }
+
+        if($relations !== null && !empty($relations)) {
 
             $query->with($relations);
 
@@ -278,29 +293,6 @@ class BranchService {
 
         return $query->orderBy("name", "ASC")
                      ->paginate($perPage);
-
-    }
-
-    /**
-     * Check if internal code exists
-     *
-     * @param string $internalCode Internal code
-     * @param int $companyId Company
-     * @param int|null $excludeId Record ID to exclude
-     * @return bool
-     */
-    public static function internalCodeExists(string $internalCode, int $companyId, ?int $excludeId = null): bool {
-
-        $query = Branch::where("internal_code", $internalCode)
-                       ->where("company_id", $companyId);
-
-        if(Utilities::isDefined($excludeId)) {
-
-            $query->where("id", "!=", $excludeId);
-
-        }
-
-        return $query->exists();
 
     }
 
