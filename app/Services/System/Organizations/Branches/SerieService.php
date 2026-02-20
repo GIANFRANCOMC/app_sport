@@ -4,14 +4,44 @@ declare(strict_types=1);
 
 namespace App\Services\System\Organizations\Branches;
 
-use App\Models\System\General\DocumentType;
-use App\Models\System\Organizations\Serie;
+use Exception;
+
+use App\Models\System\General\{DocumentType};
+use App\Models\System\Organizations\{Branch, Serie};
 
 /**
  * Service class for managing Serie operations
  * Handles business logic for creating document series for branches
  */
 class SerieService {
+
+    /**
+     * Get new sequential number for branch (based on company branch count)
+     *
+     * @param int $companyId Company ID
+     * @return int
+     */
+    public static function getNewSequential(int $companyId, int $branchId): int {
+
+        $newSequential = 0;
+
+        try {
+
+            $maxSequential = Branch::where("company_id", $companyId)
+                                   ->where("id", "!=", $branchId)
+                                   ->count();
+
+            $newSequential = intval($maxSequential) + 1;
+
+        }catch(Exception $e) {
+
+            $newSequential = 0;
+
+        }
+
+        return $newSequential;
+
+    }
 
     /**
      * Create series for all active document types for a given branch
@@ -25,7 +55,7 @@ class SerieService {
     public static function createForBranch(int $branchId, int $companyId, ?int $userId = null): array {
 
         // Get new sequential number for the branch
-        $newSequential = Serie::getNewSequential($companyId);
+        $newSequential = self::getNewSequential($companyId, $branchId);
 
         // Get all active document types (only needed fields)
         $documentTypes = DocumentType::whereIn("status", ["active"])
@@ -33,7 +63,9 @@ class SerieService {
                                      ->get();
 
         if($documentTypes->isEmpty()) {
+
             return [];
+
         }
 
         // Prepare bulk insert data
@@ -59,6 +91,7 @@ class SerieService {
 
         // Return count instead of fetching (more efficient)
         return $seriesData;
+
     }
 
     /**

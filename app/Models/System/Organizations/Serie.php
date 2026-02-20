@@ -4,7 +4,6 @@ namespace App\Models\System\Organizations;
 
 use App\Helpers\System\Utilities;
 use Illuminate\Database\Eloquent\Model;
-use Exception;
 
 use App\Models\System\General\{DocumentType};
 
@@ -56,27 +55,6 @@ class Serie extends Model {
         ];
 
         return Utilities::getValues($statuses, $type, $code);
-
-    }
-
-    public static function getNewSequential($company_id) {
-
-        $newSequential = 0;
-
-        try {
-
-            $maxSequential = Branch::where("company_id", $company_id)
-                                   ->count();
-
-            $newSequential = intval($maxSequential) + 1;
-
-        }catch(Exception $e) {
-
-            $newSequential = 0;
-
-        }
-
-        return $newSequential;
 
     }
 
