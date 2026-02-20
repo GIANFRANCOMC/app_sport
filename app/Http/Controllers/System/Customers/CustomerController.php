@@ -142,7 +142,7 @@ class CustomerController extends BaseController {
 
         try {
 
-            $customer = CustomerService::findByIdAndCompany($id, $this->getCompanyId());
+            $customer = CustomerService::findByIdAndCompany($id, $this->getCompanyId(), null);
 
             if(!Utilities::isDefined($customer)) {
 
@@ -227,7 +227,7 @@ class CustomerController extends BaseController {
 
         try {
 
-            $customer = CustomerService::findByIdAndCompany($id, $this->getCompanyId());
+            $customer = CustomerService::findByIdAndCompany($id, $this->getCompanyId(), null);
 
             if(!Utilities::isDefined($customer)) {
 
@@ -261,7 +261,7 @@ class CustomerController extends BaseController {
 
         try {
 
-            $customer = CustomerService::findByIdAndCompany($id, $this->getCompanyId());
+            $customer = CustomerService::findByIdAndCompany($id, $this->getCompanyId(), null);
 
             if(!Utilities::isDefined($customer)) {
 
@@ -280,7 +280,7 @@ class CustomerController extends BaseController {
             }
 
             // Check if device exists and belongs to company
-            $device = BiometricDeviceService::findByIdAndCompany((int)$biometricDeviceId, $this->getCompanyId());
+            $device = BiometricDeviceService::findByIdAndCompany((int)$biometricDeviceId, $this->getCompanyId(), null);
 
             if(!Utilities::isDefined($device)) {
 

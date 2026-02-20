@@ -196,18 +196,18 @@ class BiometricDeviceService {
      *
      * @param int $id Record
      * @param int $companyId Company
-     * @param bool $activeOnly Only search active records
+     * @param array|null $statuses Filter by statuses (e.g. ["active"], ["active", "inactive"])
      * @param array $relations Relations to eager load
      * @return BiometricDevice|null
      */
-    public static function findByIdAndCompany(int $id, int $companyId, bool $activeOnly = false, array $relations = ["branch"]): ?BiometricDevice {
+    public static function findByIdAndCompany(int $id, int $companyId, ?array $statuses = ["active"], array $relations = ["branch"]): ?BiometricDevice {
 
         $query = BiometricDevice::where("id", $id)
                                 ->where("company_id", $companyId);
 
-        if($activeOnly) {
+        if($statuses !== null && !empty($statuses)) {
 
-            $query->where("status", "active");
+            $query->whereIn("status", $statuses);
 
         }
 

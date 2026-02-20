@@ -119,7 +119,7 @@ class BookComplaintController extends BaseController {
 
         try {
 
-            $bookComplaint = BookComplaintService::findByIdAndCompany($id, $this->getCompanyId());
+            $bookComplaint = BookComplaintService::findByIdAndCompany($id, $this->getCompanyId(), null);
 
             if(!Utilities::isDefined($bookComplaint)) {
 

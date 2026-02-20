@@ -142,7 +142,7 @@ class BiometricDeviceController extends BaseController {
 
         try {
 
-            $device = BiometricDeviceService::findByIdAndCompany($id, $this->getCompanyId());
+            $device = BiometricDeviceService::findByIdAndCompany($id, $this->getCompanyId(), null);
 
             if(!Utilities::isDefined($device)) {
 
@@ -216,139 +216,6 @@ class BiometricDeviceController extends BaseController {
     protected function getTranslationNamespace(): string {
 
         return self::TRANSLATION_NAMESPACE;
-
-    }
-
-    /**
-     * Receive event from ZKTeco device
-     * This endpoint is called by the ZKTeco device when a fingerprint is scanned
-     *
-     * @param Request $request
-     * @param TrackingAttendanceBusinessService $businessService
-     * @return JsonResponse
-     */
-    public function receiveEvent(Request $request, TrackingAttendanceBusinessService $businessService): JsonResponse {
-
-        try {
-
-            // Get company from request (set by middleware for guest routes)
-            $company   = $request->get("company");
-            $companyId = $company ? $company->id : ($this->getCompanyId() ?? 0);
-
-            if(!$companyId) {
-
-                return response()->json(["bool" => false, "msg" => $this->trans("company_not_identified")], 400);
-
-            }
-
-            // Validate required parameters
-            $deviceUserId = $request->input("user_id"); // User ID from the device
-
-            if(!Utilities::isDefined($deviceUserId)) {
-
-                return response()->json(["bool" => false, "msg" => $this->trans("user_id_required")], 400);
-
-            }
-
-            // Get device identifier (IP address or device_id)
-            $deviceIp  = $request->ip();
-            $deviceId  = $request->input("device_id");
-            $timestamp = $request->input("timestamp", now());
-            $action    = $request->input("action", "checkin"); // "checkin" or "checkout"
-
-            // Validate action
-            if(!in_array($action, ["checkin", "checkout"])) {
-
-                return response()->json(["bool" => false, "msg" => $this->trans("action_invalid")], 400);
-
-            }
-
-            // Find device by ID first (if provided), then by IP
-            $device = null;
-
-            if(Utilities::isDefined($deviceId)) {
-
-                $device = BiometricDeviceService::findByIdAndCompany((int) $deviceId, $companyId, true, ["branch"]);
-
-            }
-
-            // If device not found by ID, try to find by IP
-            if(!Utilities::isDefined($device)) {
-
-                $device = BiometricDeviceService::findByIpAndCompany($deviceIp, $companyId);
-
-            }
-
-            if(!Utilities::isDefined($device)) {
-
-                Log::warning("Biometric device not found", ["company_id" => $companyId, "device_id" => $deviceId, "device_ip" => $deviceIp, "request_ip" => $request->ip()]);
-
-                return response()->json(["bool" => false, "msg" => $this->trans("device_not_found_or_unauthorized")], 404);
-
-            }
-
-            // Get customer by device user ID
-            $customer = BiometricDeviceService::findCustomerByDeviceUserId($device->id, (int) $deviceUserId, $device->company_id);
-
-            if(!Utilities::isDefined($customer)) {
-
-                Log::warning("Biometric customer not found", ["device_id" => $device->id, "device_user_id" => $deviceUserId, "company_id" => $companyId]);
-
-                return response()->json(["bool" => false, "msg" => $this->trans("user_not_found")], 404);
-
-            }
-
-            // Parse timestamp
-            try {
-
-                $attendanceDate = Carbon::parse($timestamp);
-
-            }catch(\Exception $e) {
-
-                Log::warning("Invalid timestamp format in biometric event", ["timestamp" => $timestamp, "device_id" => $device->id]);
-
-                $attendanceDate = now();
-
-            }
-
-            // Process attendance
-            $result = $businessService->validateAndCreateAttendance([
-                "company_id" => $device->company_id,
-                "branch_id" => $device->branch_id,
-                "customer_id" => $customer->id,
-                "device_id" => $device->id,
-                "device_user_id" => (int) $deviceUserId,
-                "start_date" => $attendanceDate,
-                "end_date" => $action === "checkout" ? $attendanceDate : null,
-                "observation" => $this->trans("biometric_record_observation", ["device_name" => $device->name]),
-                "user_id" => 0, // System user
-                "type" => "biometric",
-                "action" => $action
-            ]);
-
-            if($result["bool"]) {
-
-                return response()->json([
-                    "bool" => true,
-                    "msg" => $result["msg"],
-                    "action" => $result["action"] ?? $action,
-                    "customer" => [
-                        "id" => $customer->id,
-                        "name" => $customer->name
-                    ]
-                ], 200);
-
-            }
-
-            return response()->json(["bool" => false, "msg" => $result["msg"]], 422);
-
-        }catch(\Exception $e) {
-
-            Log::error("Error processing biometric event: " . $e->getMessage(), ["request" => $request->all(), "trace" => $e->getTraceAsString()]);
-
-            return response()->json(["bool" => false, "msg" => $this->trans("event_processing_error")], 500);
-
-        }
 
     }
 
