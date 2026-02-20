@@ -352,47 +352,5 @@ class BiometricDeviceController extends BaseController {
 
     }
 
-    /**
-     * Get active biometric devices for the company
-     *
-     * @param Request $request
-     * @return JsonResponse
-     */
-    public function getDevices(Request $request): JsonResponse {
-
-        try {
-
-            $branchId = $request->input("branch_id");
-
-            $devices = BiometricDeviceService::getActiveDevices($this->getCompanyId(), Utilities::isDefined($branchId) ? (int) $branchId : null);
-
-            return response()->json([
-                "bool" => true,
-                "data" => [
-                    "devices" => $devices->map(function($device) {
-                        return [
-                            "id" => $device->id,
-                            "name" => $device->name,
-                            "brand" => $device->brand,
-                            "model" => $device->model,
-                            "ip_address" => $device->ip_address,
-                            "port" => $device->port,
-                            "branch" => [
-                                "id" => $device->branch->id,
-                                "name" => $device->branch->name
-                            ]
-                        ];
-                    })
-                ]
-            ]);
-
-        }catch(\Exception $e) {
-
-            return $this->handleException($e, "list");
-
-        }
-
-    }
-
 }
 

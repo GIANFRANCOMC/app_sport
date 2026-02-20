@@ -16,4 +16,3 @@ Route::get("/{id}/edit",  [BiometricDeviceController::class, "edit"])->name("$en
 Route::get("/{id}",       [BiometricDeviceController::class, "show"])->name("$entity.show");
 Route::patch("/{id}",     [BiometricDeviceController::class, "update"])->name("$entity.update");
 Route::delete("/{id}",    [BiometricDeviceController::class, "destroy"])->name("{$entity}.destroy");
-Route::get("/devices",    [BiometricDeviceController::class, "getDevices"])->name("$entity.getDevices");
