@@ -569,11 +569,11 @@ export default {
         getCardFields(record) {
 
             return [
-                {key: "address", icon: "fa fa-map-marker-alt text-danger", value: this.isDefined(record.address) ? record.address : null, placeholder: this.MODULE.texts.card.noAddress},
-                {key: "reference", icon: "fa fa-comment-dots text-info", value: this.isDefined(record.reference) ? record.reference : null, placeholder: this.MODULE.texts.card.noReference},
-                {key: "telephone", icon: "fa fa-phone text-primary", value: this.isDefined(record.telephone) ? record.telephone : null, placeholder: this.MODULE.texts.card.noTelephone},
-                {key: "email", icon: "fa fa-envelope text-primary", value: this.isDefined(record.email) ? record.email : null, placeholder: this.MODULE.texts.card.noEmail},
-                {key: "capacity", icon: "fa fa-users text-success", value: this.isDefined(record.capacity) ? record.capacity : null, placeholder: 0}
+                {key: "address", icon: `fa fa-map-marker-alt ${this.isDefined(record.address) ? "text-success" : "text-muted"}`, value: this.isDefined(record.address) ? record.address : null, placeholder: this.MODULE.texts.card.noAddress},
+                {key: "reference", icon: `fa fa-comment-dots ${this.isDefined(record.reference) ? "text-success" : "text-muted"}`, value: this.isDefined(record.reference) ? record.reference : null, placeholder: this.MODULE.texts.card.noReference},
+                {key: "telephone", icon: `fa fa-phone ${this.isDefined(record.telephone) ? "text-success" : "text-muted"}`, value: this.isDefined(record.telephone) ? record.telephone : null, placeholder: this.MODULE.texts.card.noTelephone},
+                {key: "email", icon: `fa fa-envelope ${this.isDefined(record.email) ? "text-success" : "text-muted"}`, value: this.isDefined(record.email) ? record.email : null, placeholder: this.MODULE.texts.card.noEmail},
+                {key: "capacity", icon: `fa fa-users ${this.isDefined(record.capacity) ? "text-success" : "text-muted"}`, value: this.isDefined(record.capacity) ? record.capacity : null, placeholder: 0}
             ];
 
         },
