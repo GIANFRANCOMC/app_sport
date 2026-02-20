@@ -94,26 +94,5 @@ class SerieService {
 
     }
 
-    /**
-     * Get all series for a branch
-     *
-     * @param int $branchId Branch ID
-     * @param bool $activeOnly Only return active series
-     * @return \Illuminate\Database\Eloquent\Collection
-     */
-    public static function getByBranch(int $branchId, bool $activeOnly = true) {
-
-        $query = Serie::where("branch_id", $branchId);
-
-        if($activeOnly) {
-
-            $query->whereIn("status", ["active"]);
-
-        }
-
-        return $query->with("documentType")->get();
-
-    }
-
 }
 

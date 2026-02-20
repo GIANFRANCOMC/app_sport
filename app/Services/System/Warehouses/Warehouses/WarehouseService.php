@@ -83,26 +83,5 @@ class WarehouseService {
 
     }
 
-    /**
-     * Get all warehouses for a branch
-     *
-     * @param int $branchId Branch ID
-     * @param bool $activeOnly Only return active warehouses
-     * @return \Illuminate\Database\Eloquent\Collection
-     */
-    public static function getByBranch(int $branchId, bool $activeOnly = true) {
-
-        $query = Warehouse::where("branch_id", $branchId);
-
-        if($activeOnly) {
-
-            $query->whereIn("status", ["active"]);
-
-        }
-
-        return $query->get();
-
-    }
-
 }
 
