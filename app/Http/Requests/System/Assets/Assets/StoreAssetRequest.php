@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\System\Assets\Assets;
 
+use App\Helpers\System\Utilities;
 use Illuminate\Foundation\Http\FormRequest;
+use App\Rules\System\Defaults\{UniqueInCompany};
 
 class StoreAssetRequest extends FormRequest {
 
@@ -24,12 +26,14 @@ class StoreAssetRequest extends FormRequest {
      */
     public function rules(): array {
 
-        return [
-            "internal_code" => "required|string|max:100",
-            "name"          => "required|string|max:200",
-            "description"   => "nullable|string|max:500",
-            "status"        => "required|string"
+        $validations = [
+            "internal_code" => ["required", "string", "max:50", new UniqueInCompany("assets", "internal_code", null, [], "código interno")],
+            "name"          => "required|string|max:50",
+            "description"   => "nullable|string|max:100",
+            "status"        => "required|in:active,inactive"
         ];
+
+        return $validations;
 
     }
 
