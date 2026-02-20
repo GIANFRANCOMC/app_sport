@@ -26,7 +26,7 @@
             <thead class="align-middle bg-secondary text-center">
                 <tr>
                     <th class="text-white" style="width: 15%;">ROL</th>
-                    <th class="text-white" style="width: 35%;">COLABORADOR</th>
+                    <th class="text-white" style="width: 35%;" v-text="MODULE.config.pageTitleSingular"></th>
                     <th class="text-white" style="width: 30%;">CONTACTO</th>
                     <th class="text-white" style="width: 10%;">ESTADO</th>
                     <th class="text-white" style="width: 10%;">ACCIONES</th>

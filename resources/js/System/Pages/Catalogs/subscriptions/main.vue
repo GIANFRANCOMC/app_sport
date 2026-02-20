@@ -26,7 +26,7 @@
             <thead class="align-middle bg-secondary text-center">
                 <tr>
                     <th class="text-white" style="width: 20%;">CÓDIGO INTERNO</th>
-                    <th class="text-white" style="width: 25%;">NOMBRE</th>
+                    <th class="text-white" style="width: 25%;" v-text="MODULE.config.pageTitleSingular"></th>
                     <th class="text-white" style="width: 10%;">DURACIÓN</th>
                     <th class="text-white" style="width: 20%;">PRECIO DE VENTA</th>
                     <th class="text-white" style="width: 5%;"></th>
