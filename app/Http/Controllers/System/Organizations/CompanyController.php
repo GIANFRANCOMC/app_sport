@@ -7,6 +7,8 @@ namespace App\Http\Controllers\System\Organizations;
 use App\Http\Controllers\System\Base\BaseController;
 use App\Helpers\System\{Utilities};
 use Illuminate\Http\{JsonResponse, Request};
+use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
 
 use App\Http\Requests\System\Organizations\Companies\{StoreCompanyRequest, UpdateCompanyRequest};
 use App\Services\System\Organizations\Companies\{CompanyConfigService, CompanyService};
@@ -15,7 +17,7 @@ use App\Models\System\Organizations\{Company};
 class CompanyController extends BaseController {
 
     /**
-     * Translation namespace for company module
+     * Translation namespace for module
      */
     private const TRANSLATION_NAMESPACE = "System.Organizations.company";
 
@@ -28,6 +30,7 @@ class CompanyController extends BaseController {
     public function initParams(Request $request) {
 
         $page = $this->getPage($request);
+
         return CompanyConfigService::getInitParams($this->getCompanyId(), $page);
 
     }
@@ -46,7 +49,7 @@ class CompanyController extends BaseController {
     }
 
     /**
-     * Display the companies index page
+     * Display the module index page
      *
      * @return \Illuminate\Contracts\View\View
      */
@@ -57,7 +60,7 @@ class CompanyController extends BaseController {
     }
 
     /**
-     * Show the form for creating a new company
+     * Show the form for creating a new record
      * (Not used in SPA, but kept for REST compliance)
      *
      * @return void
@@ -69,7 +72,7 @@ class CompanyController extends BaseController {
     }
 
     /**
-     * Store a newly created company
+     * Store a newly created record
      * (Not used, but kept for REST compliance)
      *
      * @param StoreCompanyRequest $request
@@ -82,7 +85,7 @@ class CompanyController extends BaseController {
     }
 
     /**
-     * Display the specified company
+     * Display the specified record
      * (Not used, but kept for REST compliance)
      *
      * @param Company $company
@@ -95,7 +98,7 @@ class CompanyController extends BaseController {
     }
 
     /**
-     * Show the form for editing the specified company
+     * Show the form for editing the specified record
      * (Not used in SPA, but kept for REST compliance)
      *
      * @param Company $company
@@ -126,8 +129,8 @@ class CompanyController extends BaseController {
 
             }
 
-            $data  = $this->prepareCompanyData($request);
-            $files = $this->prepareCompanyFiles($request);
+            $data    = $this->prepareCompanyData($request);
+            $files   = $this->prepareCompanyFiles($request);
             $company = CompanyService::update($company, $data, $files, $this->getUserId());
 
             if(!Utilities::isDefined($company)) {
@@ -149,7 +152,7 @@ class CompanyController extends BaseController {
     }
 
     /**
-     * Remove the specified company
+     * Remove the specified record
      * (Not used, but kept for REST compliance)
      *
      * @param Company $company
@@ -170,18 +173,18 @@ class CompanyController extends BaseController {
     private function prepareCompanyData(UpdateCompanyRequest $request): array {
 
         return [
-            "identity_document_type_id" => $request->identity_document_type_id,
-            "document_number"           => $request->document_number,
-            "legal_name"                => $request->legal_name,
-            "commercial_name"           => $request->commercial_name,
-            "tagline"                   => $request->tagline,
-            "description"               => $request->description,
-            "address"                   => $request->address,
-            "telephone"                 => $request->telephone,
-            "email"                     => $request->email,
-            "facebook"                  => $request->facebook,
-            "instagram"                 => $request->instagram,
-            "whatsapp"                  => $request->whatsapp
+            "identity_document_type_id" => $request->input("identity_document_type_id"),
+            "document_number"           => $request->input("document_number"),
+            "legal_name"                => $request->input("legal_name"),
+            "commercial_name"           => $request->input("commercial_name"),
+            "tagline"                   => $request->input("tagline"),
+            "description"               => $request->input("description"),
+            "address"                   => $request->input("address"),
+            "telephone"                 => $request->input("telephone"),
+            "email"                     => $request->input("email"),
+            "facebook"                  => $request->input("facebook"),
+            "instagram"                 => $request->input("instagram"),
+            "whatsapp"                  => $request->input("whatsapp")
         ];
 
     }
@@ -213,7 +216,7 @@ class CompanyController extends BaseController {
     }
 
     /**
-     * Get translation namespace for company module
+     * Get translation namespace for module
      *
      * @return string
      */

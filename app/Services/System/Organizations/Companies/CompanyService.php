@@ -159,33 +159,6 @@ class CompanyService {
     }
 
     /**
-     * Find company by ID
-     *
-     * @param int $id Company ID
-     * @return Company|null
-     */
-    public static function findById(int $id): ?Company {
-
-        return Company::where("id", $id)
-                     ->whereIn("status", ["active"])
-                     ->first();
-
-    }
-
-    /**
-     * Find company by authenticated user's company_id
-     *
-     * @return Company|null
-     */
-    public static function findByAuthUser(): ?Company {
-
-        $userAuth = Auth::user();
-
-        return self::findById($userAuth->company_id);
-
-    }
-
-    /**
      * Update an existing company
      *
      * @param Company $company Company instance to update
