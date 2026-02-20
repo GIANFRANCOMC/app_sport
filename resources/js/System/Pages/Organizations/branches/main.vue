@@ -88,8 +88,8 @@
                                 :showCharCounter="false"
                                 hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.errors?.internal_code"
-                                xl="3"
-                                lg="3">
+                                xl="4"
+                                lg="4">
                                 <template v-slot:inputGroupAppend v-if="!isUpdate">
                                     <button type="button" :class="['btn waves-effect', isUpdate ? 'btn-warning' : 'btn-primary']" @click="generateCodeAction" data-bs-toggle="tooltip" data-bs-placement="top" :title="MODULE.texts.form.generateCodeTooltip">
                                         <i class="fa fa-rotate"></i>
@@ -102,12 +102,12 @@
                                 :title="MODULE.texts.form.name"
                                 :titleClass="[config.forms.classes.title]"
                                 isRequired
-                                maxlength="100"
+                                maxlength="50"
                                 showCharCounter
                                 hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.errors?.name"
-                                xl="9"
-                                lg="9"/>
+                                xl="8"
+                                lg="8"/>
                             <InputText
                                 v-model="forms[entity].createUpdate.data.address"
                                 hasDiv
@@ -117,8 +117,8 @@
                                 showCharCounter
                                 hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.errors?.address"
-                                xl="12"
-                                lg="12"/>
+                                xl="6"
+                                lg="6"/>
                             <InputText
                                 v-model="forms[entity].createUpdate.data.reference"
                                 hasDiv
@@ -128,8 +128,8 @@
                                 showCharCounter
                                 hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.errors?.reference"
-                                xl="12"
-                                lg="12"/>
+                                xl="6"
+                                lg="6"/>
                             <InputText
                                 v-model="forms[entity].createUpdate.data.telephone"
                                 hasDiv
@@ -139,8 +139,8 @@
                                 showCharCounter
                                 hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.errors?.telephone"
-                                xl="3"
-                                lg="3"/>
+                                xl="4"
+                                lg="4"/>
                             <InputText
                                 v-model="forms[entity].createUpdate.data.email"
                                 hasDiv
@@ -150,8 +150,8 @@
                                 showCharCounter
                                 hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.errors?.email"
-                                xl="6"
-                                lg="6"/>
+                                xl="8"
+                                lg="8"/>
                             <InputNumber
                                 v-model="forms[entity].createUpdate.data.capacity"
                                 hasDiv
@@ -161,8 +161,8 @@
                                 :minValue="0"
                                 hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.errors?.capacity"
-                                xl="3"
-                                lg="3">
+                                xl="4"
+                                lg="4">
                                 <template v-slot:default>
                                     <i class="fa fa-info-circle cursor-pointer text-i-help me-1" data-bs-toggle="tooltip" data-bs-placement="top" :title="MODULE.texts.form.capacityTooltip"></i>
                                 </template>
@@ -176,8 +176,8 @@
                                 showCharCounter
                                 hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.errors?.map_url"
-                                xl="9"
-                                lg="9"/>
+                                xl="8"
+                                lg="8"/>
                             <InputSlot
                                 hasDiv
                                 :title="MODULE.texts.form.status"
@@ -185,8 +185,8 @@
                                 isRequired
                                 hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.errors?.status"
-                                xl="3"
-                                lg="3">
+                                xl="4"
+                                lg="4">
                                 <template v-slot:input>
                                     <v-select
                                         v-model="forms[entity].createUpdate.data.status"

@@ -28,7 +28,7 @@ class StoreBranchRequest extends FormRequest {
 
         $validations = [
             "internal_code" => ["required", "string", "max:50", new UniqueInCompany("branches", "internal_code", null, [], "código interno")],
-            "name"          => "required|string|max:100",
+            "name"          => "required|string|max:50",
             "address"       => "nullable|string|max:100",
             "reference"     => "nullable|string|max:100",
             "telephone"     => "nullable|string|max:15",
