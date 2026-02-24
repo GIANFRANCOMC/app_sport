@@ -22,12 +22,12 @@
                         :titleClass="[config.forms.classes.title]"
                         isRequired
                         hasTextBottom
-                        :textBottomInfo="entityForms.errors?.identity_document_type_id"
+                        :textBottomInfo="forms[entity].createUpdate.errors?.identity_document_type_id"
                         xl="4"
                         lg="4">
                         <template v-slot:input>
                             <v-select
-                                v-model="entityForms.data.identity_document_type"
+                                v-model="forms[entity].createUpdate.data.identity_document_type"
                                 :options="identityDocumentTypes"
                                 :class="config.forms.classes.select2"
                                 @close="tooltips({show: true, time: 500})"
@@ -36,7 +36,7 @@
                         </template>
                     </InputSlot>
                     <InputText
-                        v-model="entityForms.data.document_number"
+                        v-model="forms[entity].createUpdate.data.document_number"
                         hasDiv
                         :title="MODULE.texts.form.documentNumber"
                         :titleClass="[config.forms.classes.title]"
@@ -44,7 +44,7 @@
                         :maxlength="documentNumberMaxLength"
                         showCharCounter
                         hasTextBottom
-                        :textBottomInfo="entityForms.errors?.document_number"
+                        :textBottomInfo="forms[entity].createUpdate.errors?.document_number"
                         xl="4"
                         lg="4">
                         <template v-slot:inputGroupAppend>
@@ -56,7 +56,7 @@
                         </template>
                     </InputText>
                     <InputText
-                        v-model="entityForms.data.legal_name"
+                        v-model="forms[entity].createUpdate.data.legal_name"
                         hasDiv
                         :title="MODULE.texts.form.legalName"
                         :titleClass="[config.forms.classes.title]"
@@ -64,11 +64,11 @@
                         maxlength="100"
                         showCharCounter
                         hasTextBottom
-                        :textBottomInfo="entityForms.errors?.legal_name"
+                        :textBottomInfo="forms[entity].createUpdate.errors?.legal_name"
                         xl="4"
                         lg="4"/>
                     <InputText
-                        v-model="entityForms.data.commercial_name"
+                        v-model="forms[entity].createUpdate.data.commercial_name"
                         hasDiv
                         :title="MODULE.texts.form.commercialName"
                         :titleClass="[config.forms.classes.title]"
@@ -76,89 +76,112 @@
                         maxlength="100"
                         showCharCounter
                         hasTextBottom
-                        :textBottomInfo="entityForms.errors?.commercial_name"
+                        :textBottomInfo="forms[entity].createUpdate.errors?.commercial_name"
                         xl="4"
                         lg="4"/>
                     <InputText
-                        v-model="entityForms.data.address"
+                        v-model="forms[entity].createUpdate.data.address"
                         hasDiv
                         :title="MODULE.texts.form.address"
                         :titleClass="[config.forms.classes.title]"
                         maxlength="100"
                         showCharCounter
                         hasTextBottom
-                        :textBottomInfo="entityForms.errors?.address"
+                        :textBottomInfo="forms[entity].createUpdate.errors?.address"
                         xl="8"
                         lg="8"/>
+                    <InputText
+                        v-model="forms[entity].createUpdate.data.tagline"
+                        hasDiv
+                        :title="MODULE.texts.form.tagline"
+                        :titleClass="[config.forms.classes.title]"
+                        maxlength="200"
+                        showCharCounter
+                        hasTextBottom
+                        :textBottomInfo="forms[entity].createUpdate.errors?.tagline"
+                        xl="12"
+                        lg="12"/>
+                    <InputText
+                        v-if="false"
+                        v-model="forms[entity].createUpdate.data.description"
+                        hasDiv
+                        :title="MODULE.texts.form.description"
+                        :titleClass="[config.forms.classes.title]"
+                        maxlength="300"
+                        showCharCounter
+                        hasTextBottom
+                        :textBottomInfo="forms[entity].createUpdate.errors?.description"
+                        xl="12"
+                        lg="12"/>
                 </div>
             </div>
             <div class="tab-pane fade" id="navs-pills-contacts" role="tabpanel">
                 <div class="row g-3">
                     <InputText
-                        v-model="entityForms.data.telephone"
+                        v-model="forms[entity].createUpdate.data.telephone"
                         hasDiv
                         :title="MODULE.texts.form.telephone"
                         :titleClass="[config.forms.classes.title]"
                         maxlength="40"
                         showCharCounter
                         hasTextBottom
-                        :textBottomInfo="entityForms.errors?.telephone"
+                        :textBottomInfo="forms[entity].createUpdate.errors?.telephone"
                         xl="6"
                         lg="6"/>
                     <InputText
-                        v-model="entityForms.data.email"
+                        v-model="forms[entity].createUpdate.data.email"
                         hasDiv
                         :title="MODULE.texts.form.email"
                         :titleClass="[config.forms.classes.title]"
                         maxlength="100"
                         showCharCounter
                         hasTextBottom
-                        :textBottomInfo="entityForms.errors?.email"
+                        :textBottomInfo="forms[entity].createUpdate.errors?.email"
                         xl="6"
                         lg="6"/>
                     <InputText
-                        v-model="entityForms.data.facebook"
+                        v-model="forms[entity].createUpdate.data.facebook"
                         hasDiv
                         :title="MODULE.texts.form.facebook"
                         :titleClass="[config.forms.classes.title]"
                         hasTextBottom
-                        :textBottomInfo="entityForms.errors?.facebook"
+                        :textBottomInfo="forms[entity].createUpdate.errors?.facebook"
                         xl="6"
                         lg="6">
                         <template v-slot:inputGroupAppend>
-                            <a :href="entityForms.data.facebook" target="_blank" class="btn btn-label-info waves-effect" v-if="isValidUrl({url: entityForms.data.facebook})">
+                            <a :href="forms[entity].createUpdate.data.facebook" target="_blank" class="btn btn-label-info waves-effect" v-if="isValidUrl({url: forms[entity].createUpdate.data.facebook})">
                                 <i class="fa fa-globe"></i>
                                 <span class="ms-2">Visitar</span>
                             </a>
                         </template>
                     </InputText>
                     <InputText
-                        v-model="entityForms.data.instagram"
+                        v-model="forms[entity].createUpdate.data.instagram"
                         hasDiv
                         :title="MODULE.texts.form.instagram"
                         :titleClass="[config.forms.classes.title]"
                         hasTextBottom
-                        :textBottomInfo="entityForms.errors?.instagram"
+                        :textBottomInfo="forms[entity].createUpdate.errors?.instagram"
                         xl="6"
                         lg="6">
                         <template v-slot:inputGroupAppend>
-                            <a :href="entityForms.data.instagram" target="_blank" class="btn btn-label-danger waves-effect" v-if="isValidUrl({url: entityForms.data.instagram})">
+                            <a :href="forms[entity].createUpdate.data.instagram" target="_blank" class="btn btn-label-danger waves-effect" v-if="isValidUrl({url: forms[entity].createUpdate.data.instagram})">
                                 <i class="fa fa-globe"></i>
                                 <span class="ms-2">Visitar</span>
                             </a>
                         </template>
                     </InputText>
                     <InputText
-                        v-model="entityForms.data.whatsapp"
+                        v-model="forms[entity].createUpdate.data.whatsapp"
                         hasDiv
                         :title="MODULE.texts.form.whatsapp"
                         :titleClass="[config.forms.classes.title]"
                         hasTextBottom
-                        :textBottomInfo="entityForms.errors?.whatsapp"
+                        :textBottomInfo="forms[entity].createUpdate.errors?.whatsapp"
                         xl="6"
                         lg="6">
                         <template v-slot:inputGroupAppend>
-                            <a :href="entityForms.data.whatsapp" target="_blank" class="btn btn-label-success waves-effect" v-if="isValidUrl({url: entityForms.data.whatsapp})">
+                            <a :href="forms[entity].createUpdate.data.whatsapp" target="_blank" class="btn btn-label-success waves-effect" v-if="isValidUrl({url: forms[entity].createUpdate.data.whatsapp})">
                                 <i class="fa fa-globe"></i>
                                 <span class="ms-2">Visitar</span>
                             </a>
@@ -167,30 +190,6 @@
                 </div>
             </div>
             <div class="tab-pane fade" id="navs-pills-branding" role="tabpanel">
-                <div class="row g-3">
-                    <InputText
-                        v-model="entityForms.data.tagline"
-                        hasDiv
-                        :title="MODULE.texts.form.tagline"
-                        :titleClass="[config.forms.classes.title]"
-                        maxlength="200"
-                        showCharCounter
-                        hasTextBottom
-                        :textBottomInfo="entityForms.errors?.tagline"
-                        xl="12"
-                        lg="12"/>
-                    <InputText
-                        v-model="entityForms.data.description"
-                        hasDiv
-                        :title="MODULE.texts.form.description"
-                        :titleClass="[config.forms.classes.title]"
-                        maxlength="300"
-                        showCharCounter
-                        hasTextBottom
-                        :textBottomInfo="entityForms.errors?.description"
-                        xl="12"
-                        lg="12"/>
-                </div>
                 <div class="table-responsive mt-3">
                     <table class="table table-hover">
                         <thead>
@@ -202,7 +201,7 @@
                         <tbody class="table-border-bottom-0 bg-white">
                             <tr class="text-center">
                                 <td>
-                                    <img v-if="isDefined(entityForms.data.logomark)" :src="getAsset(entityForms.data.logomark, {type: 'storage'})" width="150px" height="150px" class="img-fluid"/>
+                                    <img v-if="isDefined(forms[entity].createUpdate.data.logomark)" :src="getAsset(forms[entity].createUpdate.data.logomark, {type: 'storage'})" width="150px" height="150px" class="img-fluid"/>
                                     <template v-else>
                                         <img :src="getAsset(config.essential.ownerApp.assets.img.logomark, {type: 'none', back: 1})" width="150px" height="150px" class="img-fluid"/>
                                         <div class="alert alert-warning w-100 py-1 mb-0 text-nowrap">Es referencial</div>
@@ -229,7 +228,7 @@
                             </tr>
                             <tr class="text-center">
                                 <td>
-                                    <img v-if="isDefined(entityForms.data.logotype)" :src="getAsset(entityForms.data.logotype, {type: 'storage'})" width="150px" height="150px" class="img-fluid"/>
+                                    <img v-if="isDefined(forms[entity].createUpdate.data.logotype)" :src="getAsset(forms[entity].createUpdate.data.logotype, {type: 'storage'})" width="150px" height="150px" class="img-fluid"/>
                                     <template v-else>
                                         <img :src="getAsset(config.essential.ownerApp.assets.img.logotype, {type: 'none', back: 1})" width="150px" height="150px" class="img-fluid"/>
                                         <div class="alert alert-warning w-100 py-1 mb-0 text-nowrap">Es referencial</div>
@@ -256,7 +255,7 @@
                             </tr>
                             <tr class="text-center">
                                 <td>
-                                    <img v-if="isDefined(entityForms.data.combinationmark)" :src="getAsset(entityForms.data.combinationmark, {type: 'storage'})" width="150px" height="150px" class="img-fluid"/>
+                                    <img v-if="isDefined(forms[entity].createUpdate.data.combinationmark)" :src="getAsset(forms[entity].createUpdate.data.combinationmark, {type: 'storage'})" width="150px" height="150px" class="img-fluid"/>
                                     <template v-else>
                                         <img :src="getAsset(config.essential.ownerApp.assets.img.combinationmark, {type: 'none', back: 1})" width="150px" height="150px" class="img-fluid"/>
                                         <div class="alert alert-warning w-100 py-1 mb-0 text-nowrap">Es referencial</div>
@@ -283,7 +282,7 @@
                             </tr>
                             <tr class="text-center">
                                 <td>
-                                    <img v-if="isDefined(entityForms.data.login_image)" :src="getAsset(entityForms.data.login_image, {type: 'storage'})" width="150px" height="150px" class="img-fluid"/>
+                                    <img v-if="isDefined(forms[entity].createUpdate.data.login_image)" :src="getAsset(forms[entity].createUpdate.data.login_image, {type: 'storage'})" width="150px" height="150px" class="img-fluid"/>
                                     <template v-else>
                                         <img :src="getAsset(config.essential.ownerApp.assets.img.login_image, {type: 'none', back: 1})" width="150px" height="150px" class="img-fluid"/>
                                         <div class="alert alert-warning w-100 py-1 mb-0 text-nowrap">Es referencial</div>
@@ -318,13 +317,14 @@
                         hasDiv
                         :isInputGroup="false"
                         :divInputClass="['d-flex justify-content-center']"
-                        xl="6"
-                        lg="6">
+                        xl="12"
+                        lg="12">
                         <template v-slot:input>
                             <MyDashboardCompany/>
                         </template>
                     </InputSlot>
                     <InputSlot
+                        v-if="false"
                         hasDiv
                         :isInputGroup="false"
                         :divInputClass="['d-flex justify-content-center']"
@@ -339,33 +339,33 @@
             <div class="tab-pane fade" id="navs-pills-configuration" role="tabpanel" v-if="false">
                 <div class="row g-3">
                     <InputText
-                        v-model="entityForms.data.slug"
+                        v-model="forms[entity].createUpdate.data.slug"
                         hasDiv
                         :title="MODULE.texts.form.slug"
                         :titleClass="[config.forms.classes.title]"
                         isRequired
                         :disabled="true"
                         hasTextBottom
-                        :textBottomInfo="entityForms.errors?.slug"
+                        :textBottomInfo="forms[entity].createUpdate.errors?.slug"
                         xl="6"
                         lg="6"/>
                     <InputText
-                        v-model="entityForms.data.token_api_misc"
+                        v-model="forms[entity].createUpdate.data.token_api_misc"
                         hasDiv
                         :title="MODULE.texts.form.tokenApiMisc"
                         :titleClass="[config.forms.classes.title]"
                         hasTextBottom
-                        :textBottomInfo="entityForms.errors?.token_api_misc"
+                        :textBottomInfo="forms[entity].createUpdate.errors?.token_api_misc"
                         xl="6"
                         lg="6"/>
                 </div>
             </div>
         </div>
     </div>
-    <div class="mt-3" v-if="isUpdate">
+    <div class="mt-3" v-if="hasRecord">
         <div class="row g-3">
             <div class="d-flex flex-row-reverse">
-                <button type="button" class="btn waves-effect btn-primary" @click="createUpdateEntity" :disabled="isSaving">
+                <button type="button" class="btn waves-effect btn-primary" @click="saveEntity" :disabled="isSaving">
                     <i class="fa fa-save"></i>
                     <span class="ms-2" v-text="MODULE.texts.actions.save"></span>
                 </button>
@@ -376,7 +376,7 @@
 
 <script>
 import * as Alerts from "@System/Helpers/Alerts.js";
-import * as Constants from "@System/Helpers/Constants.js";
+import { initCrudModule } from "@System/Helpers/ModuleFactory.js";
 import * as Forms from "@System/Helpers/Forms.js";
 import * as Requests from "@System/Helpers/Requests.js";
 import * as Utils from "@System/Helpers/Utils.js";
@@ -474,64 +474,56 @@ const MODULE = {
     config: MODULE_CONFIG,
     formFields: FORM_FIELDS,
     formFieldConfig: FORM_FIELD_CONFIG,
-    texts: TEXTS
+    texts: TEXTS,
+    tabItems: TAB_ITEMS
 };
 
 export default {
     name: "CompaniesMain",
-    components: {
-        //
+    data() {
+
+        const crudModule = initCrudModule({
+            entity: MODULE.config.entity,
+            menuId: MODULE.config.menuId,
+            pageTitle: MODULE.config.pageTitle,
+            pageTitleSingular: MODULE.config.pageTitleSingular
+        });
+
+        crudModule.forms[MODULE.config.entity].createUpdate.data = Forms.initFormData(MODULE.formFields);
+
+        return {
+            ...crudModule,
+            MODULE: MODULE,
+            isInitialized: false,
+            isSaving: false
+        };
+
     },
     mounted: async function() {
 
         Utils.navbarItem("menu-parent-configuration", {addClass: "open"});
         Utils.navbarItem(this.config.entity.page.menu.id, {});
+
         Alerts.swals({type: "initParams"});
 
-        const initParams = await this.initParams(),
-              initOthers = await this.initOthers();
+        const initParams = await this.initParams();
 
-        if(initParams && initOthers) {
+        this.isInitialized = true;
 
-            Alerts.swals({show: false});
+        if(initParams) {
+
+            const initOthers = await this.initOthers();
+
+            if(initOthers) {
+
+                Alerts.swals({show: false});
+
+            }
 
         }
 
     },
-    data() {
-
-        const entity = MODULE.config.entity;
-
-        return {
-            MODULE,
-            forms: {
-                [entity]: {
-                    createUpdate: {
-                        data: Forms.initFormData(MODULE.formFields),
-                        errors: {}
-                    }
-                }
-            },
-            options: {},
-            config: {
-                ...Constants.generalConfig,
-                entity: {
-                    ...Requests.config({entity}),
-                    page: {
-                        title: MODULE.config.pageTitle,
-                        active: true,
-                        menu: {
-                            id: MODULE.config.menuId
-                        }
-                    }
-                }
-            },
-            isSaving: false
-        };
-
-    },
     methods: {
-        // Init
         async initParams() {
 
             const response = await Requests.get({
@@ -542,9 +534,9 @@ export default {
 
             if(response?.data?.config) {
 
-                this.options.companies              = response.data.config.companies;
-                this.options.company                = response.data.config.company;
-                this.options.identityDocumentTypes  = response.data.config.identityDocumentTypes;
+                this.options.company               = response.data.config.company;
+                this.options.identityDocumentTypes = response.data.config.identityDocumentTypes;
+                this.options.statuses              = response.data.config.statuses;
 
             }
 
@@ -555,9 +547,7 @@ export default {
 
             return new Promise(resolve => {
 
-                const company = (this.options.company?.records ?? []).length > 0
-                    ? this.options.company.records[0]
-                    : null;
+                const company = (this.options.company?.records ?? []).length > 0 ? this.options.company.records[0] : null;
 
                 if(company) {
 
@@ -577,7 +567,7 @@ export default {
 
             const identityDocumentType = this.identityDocumentTypes.find(e => e.code === company?.identity_document_type_id);
             const status               = this.statuses.find(e => e.code === company?.status);
-            const formData             = this.entityForms.data;
+            const formData             = this.forms[this.entity].createUpdate.data;
 
             formData.id                     = company?.id;
             formData.slug                   = company?.slug;
@@ -614,58 +604,53 @@ export default {
 
         },
         // Form
-        async createUpdateEntity() {
+        async saveEntity() {
 
             if(this.isSaving) return;
 
-            const entityForms = this.entityForms;
+            const entityForms = this.forms[this.entity].createUpdate;
 
             Alerts.swals({});
+
             entityForms.errors = {};
             this.isSaving = true;
 
             try {
 
-            const form = Utils.cloneJson(entityForms.data);
-            const validateForm = this.validateForm({form, extras: {type: "descriptive"}});
+                const formData   = Utils.cloneJson(entityForms.data);
+                const validation = this.validateFormData(formData);
 
-            if(!validateForm?.bool) {
+                if(!validation.bool) {
 
-                Alerts.generateAlert({
-                    messages: Utils.getErrors({errors: validateForm}),
-                    keys: [
-                        {column: "section", label: "Sección"},
-                        {column: "msg", label: "Mensaje"}
-                    ],
-                    msgContent: `<div class="fw-semibold mb-2">${this.config.messages.errorValidate}</div>`,
-                    width: 800
-                });
-                this.isSaving = false;
-                return;
+                    Alerts.generateAlert({
+                        messages: Utils.getErrors({errors: validation}),
+                        keys: [{column: "section", label: "Sección"}, {column: "msg", label: "Mensaje"}],
+                        msgContent: `<div class="fw-semibold mb-2">${this.config.messages.errorValidate}</div>`,
+                        width: 800
+                    });
 
-            }
+                    this.isSaving = false;
+                    return;
 
-            const formData = this.prepareFormData(form);
-            const response = await Requests.patch({
-                route: this.routeActions.update,
-                formData: formData,
-                id: form.id
-            });
+                }
 
-            if(Requests.valid({result: response})) {
+                const preparedData  = Forms.prepareFormData(formData, this.MODULE.formFieldConfig);
+                const id            = preparedData.id;
+                const isUpdate      = this.isDefined(id);
+                const requestMethod = isUpdate ? "patch" : "post";
+                const result        = await Requests[requestMethod]({route, data: preparedData, id});
 
-                this.updateFormImages(response.data.company);
-                Alerts.generateAlert({
-                    type: "success",
-                    msgContent: response?.data?.msg
-                });
-                this.clearForm();
+                if(Requests.valid({result: response})) {
 
-            }else {
+                    this.updateFormImages(response.data.company);
+                    Alerts.generateAlert({type: "success", msgContent: response?.data?.msg});
+                    this.clearForm();
 
-                Forms.handleFormResponseErrors({result: response, formErrorsObject: entityForms.errors, config: this.config});
+                }else {
 
-            }
+                    Forms.handleFormResponseErrors({result: response, formErrorsObject: entityForms.errors, config: this.config});
+
+                }
 
             }catch(error) {
 
@@ -716,7 +701,7 @@ export default {
         },
         updateFormImages(company) {
 
-            const formData = this.entityForms.data;
+            const formData = this.forms[this.entity].createUpdate.data;
 
             formData.logomark        = company?.logomark;
             formData.logotype        = company?.logotype;
@@ -726,27 +711,22 @@ export default {
         },
         clearForm() {
 
-            const fileInputIds = [
-                    "logomarkFileId",
-                    "logotypeFileId",
-                    "combinationmarkFileId",
-                    "loginImageFileId"
-                ];
+            const fileInputIds = ["logomarkFileId", "logotypeFileId", "combinationmarkFileId", "loginImageFileId"];
 
-                fileInputIds.forEach(id => {
+            fileInputIds.forEach(id => {
 
-                    const element = document.getElementById(id);
+                const element = document.getElementById(id);
 
-                    if(element) {
+                if(element) {
 
-                        element.value = "";
+                    element.value = "";
 
-                    }
+                }
 
-                });
+            });
 
         },
-        validateForm({form = null, extras = null}) {
+        validateFormData(formData) {
 
             const result = {
                 bool: true,
@@ -760,11 +740,6 @@ export default {
                 login_image: []
             };
 
-            if(!form) return result;
-
-            const isDescriptive = extras?.type === "descriptive";
-            const getPrefix = (label) => isDescriptive ? `${label}: ` : "";
-
             const sections = {
                 general: {label: "Información general"},
                 contacts: {label: "Información de contacto y redes"},
@@ -772,10 +747,10 @@ export default {
             };
 
             // Validate required fields
-            this.validateRequiredField(result, form?.identity_document_type, "identity_document_type", sections.general.label, getPrefix("Tipo de documento"));
-            this.validateRequiredField(result, form?.document_number, "document_number", sections.general.label, getPrefix("Número de documento"));
-            this.validateRequiredField(result, form?.legal_name, "legal_name", sections.general.label, getPrefix("Nombre legal"));
-            this.validateRequiredField(result, form?.commercial_name, "commercial_name", sections.general.label, getPrefix("Nombre comercial"));
+            this.validateRequiredField(result, formData?.identity_document_type, "identity_document_type", sections.general.label, getPrefix("Tipo de documento"));
+            this.validateRequiredField(result, formData?.document_number, "document_number", sections.general.label, getPrefix("Número de documento"));
+            this.validateRequiredField(result, formData?.legal_name, "legal_name", sections.general.label, getPrefix("Nombre legal"));
+            this.validateRequiredField(result, formData?.commercial_name, "commercial_name", sections.general.label, getPrefix("Nombre comercial"));
 
             // Validate image files
             this.validateImageFile(result, "logomarkFileId", "logomark", sections.branding.label, getPrefix("Isotipo"));
@@ -790,10 +765,7 @@ export default {
 
             if(!this.isDefined(value)) {
 
-                result[fieldName].push({
-                    section: section,
-                    msg: `${prefix}${this.config.forms.errors.labels.required}`
-                });
+                result[fieldName].push({section: section, msg: `${prefix}${this.config.forms.errors.labels.required}`});
 
                 result.bool = false;
 
@@ -838,7 +810,7 @@ export default {
         },
         async searchDocumentNumber() {
 
-            const entityForms          = this.entityForms;
+            const entityForms          = this.forms[this.entity].createUpdate;
             const documentNumber      = entityForms.data.document_number;
             const identityDocumentType = entityForms.data.identity_document_type;
 
@@ -915,11 +887,6 @@ export default {
             return this.config.entity.routes;
 
         },
-        entityForms() {
-
-            return this.forms[this.entity].createUpdate;
-
-        },
         breadcrumbTitles() {
 
             return [
@@ -935,24 +902,24 @@ export default {
         },
         statuses() {
 
-            return (this.options?.companies?.statuses ?? []).map(e => ({code: e.code, label: e.label}));
+            return (this.options?.statuses ?? []).map(e => ({code: e.code, label: e.label}));
 
         },
-        isUpdate() {
+        hasRecord() {
 
-            return this.isDefined(this.entityForms.data?.id);
+            return this.isDefined(this.forms[this.entity].createUpdate.data?.id);
 
         },
         isDocumentTypeSearchable() {
 
-            const documentType = this.entityForms.data.identity_document_type?.data;
+            const documentType = this.forms[this.entity].createUpdate.data.identity_document_type?.data;
 
             return documentType?.is_searchable === true || documentType?.is_searchable === 1;
 
         },
         documentNumberMinLength() {
 
-            const documentType = this.entityForms.data.identity_document_type?.data;
+            const documentType = this.forms[this.entity].createUpdate.data.identity_document_type?.data;
 
             if(documentType?.min_length) {
 
@@ -965,7 +932,7 @@ export default {
         },
         documentNumberMaxLength() {
 
-            const documentType = this.entityForms.data.identity_document_type?.data;
+            const documentType = this.forms[this.entity].createUpdate.data.identity_document_type?.data;
 
             if(documentType?.max_length) {
 
@@ -983,7 +950,7 @@ export default {
         },
         tabItems() {
 
-            return TAB_ITEMS.filter(tab => tab.visible);
+            return MODULE.tabItems.filter(tab => tab.visible);
 
         }
     },
@@ -994,11 +961,11 @@ export default {
                 if(this.isDefined(newValue)) {
 
                     const maxLength    = this.documentNumberMaxLength;
-                    const currentValue = this.entityForms.data.document_number?.toString() || "";
+                    const currentValue = this.forms[this.entity].createUpdate.data.document_number?.toString() || "";
 
                     if(currentValue.length > maxLength) {
 
-                        this.entityForms.data.document_number = currentValue.substring(0, maxLength);
+                        this.forms[this.entity].createUpdate.data.document_number = currentValue.substring(0, maxLength);
 
                     }
 

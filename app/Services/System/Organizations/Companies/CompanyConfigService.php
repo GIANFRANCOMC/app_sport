@@ -38,8 +38,7 @@ class CompanyConfigService {
 
             if($page === "main") {
 
-                $config->companies = new stdClass();
-                $config->companies->statuses = Company::getStatuses();
+                $config->statuses = Company::getStatuses();
 
                 $company = Company::where("id", $companyId)
                                   ->with(["socialsMedia"])
