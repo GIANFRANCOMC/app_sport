@@ -603,7 +603,7 @@ export default {
             }
 
         },
-        // Form
+        // Forms
         async saveEntity() {
 
             if(this.isSaving) return;
@@ -638,17 +638,19 @@ export default {
                 const id            = preparedData.id;
                 const isUpdate      = this.isDefined(id);
                 const requestMethod = isUpdate ? "patch" : "post";
+                const route         = this.routeActions[isUpdate ? "update" : "store"];
                 const result        = await Requests[requestMethod]({route, data: preparedData, id});
 
-                if(Requests.valid({result: response})) {
+                if(Requests.valid({result})) {
 
-                    this.updateFormImages(response.data.company);
-                    Alerts.generateAlert({type: "success", msgContent: response?.data?.msg});
-                    this.clearForm();
+                    this.updateFormImages(result.data.company);
+                    Alerts.generateAlert({type: "success", msgContent: result.data.msg});
+
+                    Forms.clearFormData(entityForms.data, this.MODULE.formFields);
 
                 }else {
 
-                    Forms.handleFormResponseErrors({result: response, formErrorsObject: entityForms.errors, config: this.config});
+                    Forms.handleFormResponseErrors({result, formErrorsObject: entityForms.errors, config: this.config});
 
                 }
 
@@ -663,40 +665,17 @@ export default {
             }
 
         },
-        prepareFormData(form) {
+        prepareFormData(formData, formFieldConfig) {
 
-            const prepared  = Forms.prepareFormData(Utils.cloneJson(form), this.MODULE.formFieldConfig);
-            const formData  = new FormData();
-            const imageKeys = ["logomark", "logotype", "combinationmark", "login_image"];
-
-            for(const key in prepared) {
-
-                if(!Object.prototype.hasOwnProperty.call(prepared, key)) continue;
-
-                if(imageKeys.includes(key) && !(prepared[key] instanceof File)) continue;
-
-                formData.append(key, prepared[key] ?? "");
-
-            }
+            const preparedData  = Forms.prepareFormData(formData, formFieldConfig);
 
             // Append file inputs
-            this.appendFileToFormData(formData, "logomarkFileId", "logomark");
-            this.appendFileToFormData(formData, "logotypeFileId", "logotype");
-            this.appendFileToFormData(formData, "combinationmarkFileId", "combinationmark");
-            this.appendFileToFormData(formData, "loginImageFileId", "login_image");
+            this.appendFileToFormData(preparedData, "logomarkFileId", "logomark");
+            this.appendFileToFormData(preparedData, "logotypeFileId", "logotype");
+            this.appendFileToFormData(preparedData, "combinationmarkFileId", "combinationmark");
+            this.appendFileToFormData(preparedData, "loginImageFileId", "login_image");
 
-            return formData;
-
-        },
-        appendFileToFormData(formData, elementId, fieldName) {
-
-            const fileElement = document.getElementById(elementId);
-
-            if(fileElement?.files?.length > 0) {
-
-                formData.append(fieldName, fileElement.files[0]);
-
-            }
+            return preparedData;
 
         },
         updateFormImages(company) {
