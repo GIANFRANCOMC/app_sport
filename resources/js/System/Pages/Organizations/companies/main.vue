@@ -4,11 +4,11 @@
     <!-- Content -->
     <div class="nav-align-top" ref="navTabs">
         <ul class="nav nav-tabs nav-fill" role="tablist">
-            <li v-for="tab in tabItems" :key="tab.id" class="nav-item" role="presentation">
+            <li v-for="(tab, index) in tabItems" :key="tab.id" class="nav-item" role="presentation">
                 <button type="button" class="nav-link waves-effect justify-content-center" role="tab" data-bs-toggle="tab" :data-bs-target="`#navs-pills-${tab.id}`" :aria-controls="`navs-pills-${tab.id}`" aria-selected="false" tabindex="-1">
                     <span class="d-flex align-items-center fw-semibold" :class="{ 'text-muted': activeTabId !== tab.id }">
                         <i :class="['fa', tab.icon, 'me-2']"></i>
-                        <span v-text="MODULE.texts.tabs[tab.textKey]"></span>
+                        <span v-text="`${index + 1}. ${tab.label}`"></span>
                     </span>
                 </button>
             </li>
@@ -352,11 +352,11 @@ const FORM_FIELD_CONFIG = {
 };
 
 const TAB_ITEMS = [
-    {id: "general", icon: "fa-building", textKey: "general", visible: true},
-    {id: "contacts", icon: "fa-phone", textKey: "contacts", visible: true},
-    {id: "branding", icon: "fa-palette", textKey: "branding", visible: true},
-    {id: "share", icon: "fa-link", textKey: "share", visible: true},
-    {id: "configuration", icon: "fa-cog", textKey: "configuration", visible: true}
+    {id: "general", icon: "fa-building", label: "Información general", visible: true},
+    {id: "contacts", icon: "fa-phone", label: "Información de contacto y redes", visible: true},
+    {id: "branding", icon: "fa-palette", label: "Identidad visual", visible: true},
+    {id: "share", icon: "fa-link", label: "Accesos compartidos", visible: true},
+    {id: "configuration", icon: "fa-cog", label: "Parámetros", visible: true}
 ];
 
 const BRANDING_ITEMS = [
@@ -393,13 +393,6 @@ const TEXTS = {
         slug: "Acceso MI WEB",
         tokenApiMisc: "Token API - Misc",
         searchDocumentTooltip: "Buscar N° documento"
-    },
-    tabs: {
-        general: "1. Información general",
-        contacts: "2. Información de contacto y redes",
-        branding: "3. Identidad visual",
-        share: "4. Accesos compartidos",
-        configuration: "5. Parámetros"
     },
     actions: {
         save: "Guardar información"
@@ -450,11 +443,7 @@ export default {
 
         const navEl = this.$refs.navTabs;
 
-        if(navEl) {
-
-            navEl.addEventListener("shown.bs.tab", this.onTabShown);
-
-        }
+        if(navEl) navEl.addEventListener("shown.bs.tab", this.onTabShown);
 
         if(initParams) {
 
@@ -473,25 +462,10 @@ export default {
 
         const navEl = this.$refs.navTabs;
 
-        if(navEl) {
-
-            navEl.removeEventListener("shown.bs.tab", this.onTabShown);
-
-        }
+        if(navEl) navEl.removeEventListener("shown.bs.tab", this.onTabShown);
 
     },
     methods: {
-        onTabShown(event) {
-
-            const target = event.target?.getAttribute("data-bs-target");
-
-            if(target) {
-
-                this.activeTabId = target.replace("#navs-pills-", "");
-
-            }
-
-        },
         async initParams() {
 
             const response = await Requests.get({
@@ -531,37 +505,49 @@ export default {
             });
 
         },
+        onTabShown(event) {
+
+            const target = event.target?.getAttribute("data-bs-target");
+
+            if(target) {
+
+                this.activeTabId = target.replace("#navs-pills-", "");
+
+            }
+
+        },
         populateFormFromCompany(company) {
 
-            const identityDocumentType = this.identityDocumentTypes.find(e => e.code === company?.identity_document_type_id);
-            const status               = this.statuses.find(e => e.code === company?.status);
-            const formData             = this.forms[this.entity].createUpdate.data;
+            // Map record data to form
+            const identityDocumentType = this.identityDocumentTypes.find(e => e.code === company?.identity_document_type_id),
+                  status               = this.statuses.find(s => s.code === company?.status),
+                  formData             = this.forms[this.entity].createUpdate.data;
 
             formData.id                     = company?.id;
-            formData.slug                   = company?.slug;
             formData.identity_document_type = identityDocumentType;
             formData.document_number        = company?.document_number;
             formData.legal_name             = company?.legal_name;
             formData.commercial_name        = company?.commercial_name;
+            formData.address                = company?.address;
             formData.tagline                = company?.tagline;
             formData.description            = company?.description;
-            formData.address                = company?.address;
             formData.telephone              = company?.telephone;
             formData.email                  = company?.email;
-            formData.token_api_misc         = company?.token_api_misc;
+            formData.facebook               = company?.facebook;
+            formData.instagram              = company?.instagram;
+            formData.whatsapp               = company?.whatsapp;
             formData.logomark               = company?.logomark;
             formData.logotype               = company?.logotype;
             formData.combinationmark        = company?.combinationmark;
             formData.login_image            = company?.login_image;
-            formData.facebook               = company?.facebook;
-            formData.instagram              = company?.instagram;
-            formData.whatsapp               = company?.whatsapp;
+            formData.slug                   = company?.slug;
+            formData.token_api_misc         = company?.token_api_misc;
             formData.status                 = status;
 
         },
         showFirstTab() {
 
-            const tabTrigger = document.querySelector(`[data-bs-target="#navs-pills-general"]`);
+            const tabTrigger = document.querySelector(`[data-bs-target="#navs-pills-${this.activeTabId}"]`);
 
             if(tabTrigger) {
 
