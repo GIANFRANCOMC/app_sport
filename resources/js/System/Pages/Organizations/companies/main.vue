@@ -2,11 +2,11 @@
     <Breadcrumb :list="breadcrumbTitles"/>
 
     <!-- Content -->
-    <div class="nav-align-top">
+    <div class="nav-align-top" ref="navTabs">
         <ul class="nav nav-tabs nav-fill" role="tablist">
             <li v-for="tab in tabItems" :key="tab.id" class="nav-item" role="presentation">
-                <button type="button" class="nav-link waves-effect justify-content-start" role="tab" data-bs-toggle="tab" :data-bs-target="`#navs-pills-${tab.id}`" :aria-controls="`navs-pills-${tab.id}`" aria-selected="false" tabindex="-1">
-                    <span class="d-flex align-items-center fw-semibold">
+                <button type="button" class="nav-link waves-effect justify-content-center" role="tab" data-bs-toggle="tab" :data-bs-target="`#navs-pills-${tab.id}`" :aria-controls="`navs-pills-${tab.id}`" aria-selected="false" tabindex="-1">
+                    <span class="d-flex align-items-center fw-semibold" :class="{ 'text-muted': activeTabId !== tab.id }">
                         <i :class="['fa', tab.icon, 'me-2']"></i>
                         <span v-text="MODULE.texts.tabs[tab.textKey]"></span>
                     </span>
@@ -23,8 +23,8 @@
                         isRequired
                         hasTextBottom
                         :textBottomInfo="forms[entity].createUpdate.errors?.identity_document_type_id"
-                        xl="4"
-                        lg="4">
+                        xl="6"
+                        lg="6">
                         <template v-slot:input>
                             <v-select
                                 v-model="forms[entity].createUpdate.data.identity_document_type"
@@ -45,8 +45,8 @@
                         showCharCounter
                         hasTextBottom
                         :textBottomInfo="forms[entity].createUpdate.errors?.document_number"
-                        xl="4"
-                        lg="4">
+                        xl="6"
+                        lg="6">
                         <template v-slot:inputGroupAppend>
                             <template v-if="isDocumentTypeSearchable">
                                 <button :class="['btn waves-effect btn-primary']" type="button" @click="searchDocumentNumber" data-bs-toggle="tooltip" data-bs-placement="top" :title="MODULE.texts.form.searchDocumentTooltip">
@@ -65,8 +65,8 @@
                         showCharCounter
                         hasTextBottom
                         :textBottomInfo="forms[entity].createUpdate.errors?.legal_name"
-                        xl="4"
-                        lg="4"/>
+                        xl="6"
+                        lg="6"/>
                     <InputText
                         v-model="forms[entity].createUpdate.data.commercial_name"
                         hasDiv
@@ -77,8 +77,8 @@
                         showCharCounter
                         hasTextBottom
                         :textBottomInfo="forms[entity].createUpdate.errors?.commercial_name"
-                        xl="4"
-                        lg="4"/>
+                        xl="6"
+                        lg="6"/>
                     <InputText
                         v-model="forms[entity].createUpdate.data.address"
                         hasDiv
@@ -88,8 +88,8 @@
                         showCharCounter
                         hasTextBottom
                         :textBottomInfo="forms[entity].createUpdate.errors?.address"
-                        xl="8"
-                        lg="8"/>
+                        xl="12"
+                        lg="12"/>
                     <InputText
                         v-model="forms[entity].createUpdate.data.tagline"
                         hasDiv
@@ -107,7 +107,7 @@
                         hasDiv
                         :title="MODULE.texts.form.description"
                         :titleClass="[config.forms.classes.title]"
-                        maxlength="300"
+                        maxlength="200"
                         showCharCounter
                         hasTextBottom
                         :textBottomInfo="forms[entity].createUpdate.errors?.description"
@@ -122,7 +122,7 @@
                         hasDiv
                         :title="MODULE.texts.form.telephone"
                         :titleClass="[config.forms.classes.title]"
-                        maxlength="40"
+                        maxlength="15"
                         showCharCounter
                         hasTextBottom
                         :textBottomInfo="forms[entity].createUpdate.errors?.telephone"
@@ -130,6 +130,7 @@
                         lg="6"/>
                     <InputText
                         v-model="forms[entity].createUpdate.data.email"
+                        @input="onEmailInput"
                         hasDiv
                         :title="MODULE.texts.form.email"
                         :titleClass="[config.forms.classes.title]"
@@ -149,7 +150,7 @@
                         xl="6"
                         lg="6">
                         <template v-slot:inputGroupAppend>
-                            <a :href="forms[entity].createUpdate.data.facebook" target="_blank" class="btn btn-label-info waves-effect" v-if="isValidUrl({url: forms[entity].createUpdate.data.facebook})">
+                            <a :href="forms[entity].createUpdate.data.facebook" target="_blank" class="btn btn-info-1 waves-effect" v-if="isValidUrl({url: forms[entity].createUpdate.data.facebook})">
                                 <i class="fa fa-globe"></i>
                                 <span class="ms-2">Visitar</span>
                             </a>
@@ -165,7 +166,7 @@
                         xl="6"
                         lg="6">
                         <template v-slot:inputGroupAppend>
-                            <a :href="forms[entity].createUpdate.data.instagram" target="_blank" class="btn btn-label-danger waves-effect" v-if="isValidUrl({url: forms[entity].createUpdate.data.instagram})">
+                            <a :href="forms[entity].createUpdate.data.instagram" target="_blank" class="btn btn-info-1 waves-effect" v-if="isValidUrl({url: forms[entity].createUpdate.data.instagram})">
                                 <i class="fa fa-globe"></i>
                                 <span class="ms-2">Visitar</span>
                             </a>
@@ -181,7 +182,7 @@
                         xl="6"
                         lg="6">
                         <template v-slot:inputGroupAppend>
-                            <a :href="forms[entity].createUpdate.data.whatsapp" target="_blank" class="btn btn-label-success waves-effect" v-if="isValidUrl({url: forms[entity].createUpdate.data.whatsapp})">
+                            <a :href="forms[entity].createUpdate.data.whatsapp" target="_blank" class="btn btn-info-1 waves-effect" v-if="isValidUrl({url: forms[entity].createUpdate.data.whatsapp})">
                                 <i class="fa fa-globe"></i>
                                 <span class="ms-2">Visitar</span>
                             </a>
@@ -336,7 +337,7 @@
                     </InputSlot>
                 </div>
             </div>
-            <div class="tab-pane fade" id="navs-pills-configuration" role="tabpanel" v-if="false">
+            <div class="tab-pane fade" id="navs-pills-configuration" role="tabpanel">
                 <div class="row g-3">
                     <InputText
                         v-model="forms[entity].createUpdate.data.slug"
@@ -432,7 +433,7 @@ const TAB_ITEMS = [
     {id: "general", icon: "fa-building", textKey: "general", visible: true},
     {id: "contacts", icon: "fa-phone", textKey: "contacts", visible: true},
     {id: "branding", icon: "fa-palette", textKey: "branding", visible: true},
-    {id: "share", icon: "fa-link", textKey: "share", visible: true},
+    {id: "share", icon: "fa-link", textKey: "share", visible: false},
     {id: "configuration", icon: "fa-cog", textKey: "configuration", visible: false}
 ];
 
@@ -495,7 +496,8 @@ export default {
             ...crudModule,
             MODULE: MODULE,
             isInitialized: false,
-            isSaving: false
+            isSaving: false,
+            activeTabId: "general"
         };
 
     },
@@ -510,6 +512,14 @@ export default {
 
         this.isInitialized = true;
 
+        const navEl = this.$refs.navTabs;
+
+        if(navEl) {
+
+            navEl.addEventListener("shown.bs.tab", this.onTabShown);
+
+        }
+
         if(initParams) {
 
             const initOthers = await this.initOthers();
@@ -523,7 +533,29 @@ export default {
         }
 
     },
+    beforeUnmount() {
+
+        const navEl = this.$refs.navTabs;
+
+        if(navEl) {
+
+            navEl.removeEventListener("shown.bs.tab", this.onTabShown);
+
+        }
+
+    },
     methods: {
+        onTabShown(event) {
+
+            const target = event.target?.getAttribute("data-bs-target");
+
+            if(target) {
+
+                this.activeTabId = target.replace("#navs-pills-", "");
+
+            }
+
+        },
         async initParams() {
 
             const response = await Requests.get({
