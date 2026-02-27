@@ -191,17 +191,17 @@
                 </div>
             </div>
             <div class="tab-pane fade" id="navs-pills-branding" role="tabpanel">
-                <div class="table-responsive mt-3">
+                <div class="table-responsive mt-1">
                     <table class="table table-hover">
-                        <thead>
-                            <tr class="text-center align-middle">
-                                <th class="bg-secondary text-white fw-semibold" style="width: 40%;">IMAGEN</th>
-                                <th class="bg-secondary text-white fw-semibold" style="width: 60%;">NOMBRE DEL RECURSO</th>
+                        <thead class="align-middle bg-secondary text-center">
+                            <tr>
+                                <th class="text-white" style="width: 40%;">IMAGEN</th>
+                                <th class="text-white" style="width: 60%;">NOMBRE DEL RECURSO</th>
                             </tr>
                         </thead>
                         <tbody class="table-border-bottom-0 bg-white">
-                            <tr class="text-center">
-                                <td>
+                            <tr>
+                                <td class="text-center">
                                     <img v-if="isDefined(forms[entity].createUpdate.data.logomark)" :src="getAsset(forms[entity].createUpdate.data.logomark, {type: 'storage'})" width="150px" height="150px" class="img-fluid"/>
                                     <template v-else>
                                         <img :src="getAsset(config.essential.ownerApp.assets.img.logomark, {type: 'none', back: 1})" width="150px" height="150px" class="img-fluid"/>
@@ -227,8 +227,8 @@
                                     </div>
                                 </td>
                             </tr>
-                            <tr class="text-center">
-                                <td>
+                            <tr>
+                                <td class="text-center">
                                     <img v-if="isDefined(forms[entity].createUpdate.data.logotype)" :src="getAsset(forms[entity].createUpdate.data.logotype, {type: 'storage'})" width="150px" height="150px" class="img-fluid"/>
                                     <template v-else>
                                         <img :src="getAsset(config.essential.ownerApp.assets.img.logotype, {type: 'none', back: 1})" width="150px" height="150px" class="img-fluid"/>
@@ -254,8 +254,8 @@
                                     </div>
                                 </td>
                             </tr>
-                            <tr class="text-center">
-                                <td>
+                            <tr>
+                                <td class="text-center">
                                     <img v-if="isDefined(forms[entity].createUpdate.data.combinationmark)" :src="getAsset(forms[entity].createUpdate.data.combinationmark, {type: 'storage'})" width="150px" height="150px" class="img-fluid"/>
                                     <template v-else>
                                         <img :src="getAsset(config.essential.ownerApp.assets.img.combinationmark, {type: 'none', back: 1})" width="150px" height="150px" class="img-fluid"/>
@@ -281,8 +281,8 @@
                                     </div>
                                 </td>
                             </tr>
-                            <tr class="text-center">
-                                <td>
+                            <tr>
+                                <td class="text-center">
                                     <img v-if="isDefined(forms[entity].createUpdate.data.login_image)" :src="getAsset(forms[entity].createUpdate.data.login_image, {type: 'storage'})" width="150px" height="150px" class="img-fluid"/>
                                     <template v-else>
                                         <img :src="getAsset(config.essential.ownerApp.assets.img.login_image, {type: 'none', back: 1})" width="150px" height="150px" class="img-fluid"/>
@@ -633,6 +633,11 @@ export default {
                 tab.show();
 
             }
+
+        },
+        onEmailInput(value) {
+
+            this.forms[this.entity].createUpdate.data.email = (value ?? "").toString().toLowerCase();
 
         },
         // Forms
