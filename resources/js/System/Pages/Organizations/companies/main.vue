@@ -192,120 +192,39 @@
             </div>
             <div class="tab-pane fade" id="navs-pills-branding" role="tabpanel">
                 <div class="table-responsive mt-1">
+                    <p class="small text-muted mb-2">
+                        <i class="fa fa-info-circle me-1"></i>
+                        <span v-text="fileFormatHintText"></span>
+                    </p>
                     <table class="table table-hover">
                         <thead class="align-middle bg-secondary text-center">
                             <tr>
-                                <th class="text-white" style="width: 40%;">IMAGEN</th>
-                                <th class="text-white" style="width: 60%;">NOMBRE DEL RECURSO</th>
+                                <th class="text-white" style="width: 40%;" v-text="MODULE.texts.branding.tablePreview"></th>
+                                <th class="text-white" style="width: 60%;" v-text="MODULE.texts.branding.tableUpload"></th>
                             </tr>
                         </thead>
                         <tbody class="table-border-bottom-0 bg-white">
-                            <tr>
-                                <td class="text-center">
-                                    <img v-if="isDefined(forms[entity].createUpdate.data.logomark)" :src="getAsset(forms[entity].createUpdate.data.logomark, {type: 'storage'})" width="150px" height="150px" class="img-fluid"/>
-                                    <template v-else>
-                                        <img :src="getAsset(config.essential.ownerApp.assets.img.logomark, {type: 'none', back: 1})" width="150px" height="150px" class="img-fluid"/>
-                                        <div class="alert alert-warning w-100 py-1 mb-0 text-nowrap">Es referencial</div>
-                                    </template>
+                            <tr v-for="item in MODULE.brandingItems" :key="item.formField">
+                                <td class="text-center align-middle">
+                                    <img v-if="isDefined(forms[entity].createUpdate.data[item.formField])" :src="getAsset(forms[entity].createUpdate.data[item.formField], {type: 'storage'})" width="150" height="150" class="img-fluid object-fit-contain" alt=""/>
+                                    <div v-else class="d-flex flex-column align-items-center justify-content-center">
+                                        <img :src="getAsset(config.essential.ownerApp.assets.img[item.formField], {type: 'none', back: 1})" width="130" height="130" class="img-fluid object-fit-contain opacity-75" alt=""/>
+                                        <div class="badge bg-secondary mt-1" v-text="MODULE.texts.branding.placeholderLabel"></div>
+                                    </div>
                                 </td>
-                                <td class="text-start">
+                                <td class="text-start align-middle">
                                     <InputSlot
                                         :hasDiv="false"
-                                        :title="MODULE.texts.form.logomark"
+                                        :title="MODULE.texts.form[item.formKey]"
                                         :titleClass="[config.forms.classes.title]">
                                         <template v-slot:input>
-                                            <input type="file" class="form-control" id="logomarkFileId" accept="image/png, image/jpg, image/jpeg"/>
+                                            <input type="file" class="form-control" :id="item.fileInputId" accept="image/png, image/jpg, image/jpeg"/>
                                         </template>
                                     </InputSlot>
-                                    <div class="d-block mt-1 text-nowrap">
-                                        <i class="fa fa-info-circle text-info"></i>
-                                        <span class="ms-2 small">Nota: Ícono o símbolo gráfico que representa la marca sin texto.</span>
-                                    </div>
-                                    <div class="d-block mt-1 text-nowrap">
-                                        <i class="fa fa-warning text-warning"></i>
-                                        <span class="ms-2 small">Tamaño máximo: {{ maxFileSizeMB }} MB (PNG, JPG, JPEG).</span>
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td class="text-center">
-                                    <img v-if="isDefined(forms[entity].createUpdate.data.logotype)" :src="getAsset(forms[entity].createUpdate.data.logotype, {type: 'storage'})" width="150px" height="150px" class="img-fluid"/>
-                                    <template v-else>
-                                        <img :src="getAsset(config.essential.ownerApp.assets.img.logotype, {type: 'none', back: 1})" width="150px" height="150px" class="img-fluid"/>
-                                        <div class="alert alert-warning w-100 py-1 mb-0 text-nowrap">Es referencial</div>
-                                    </template>
-                                </td>
-                                <td class="text-start">
-                                    <InputSlot
-                                        :hasDiv="false"
-                                        :title="MODULE.texts.form.logotype"
-                                        :titleClass="[config.forms.classes.title]">
-                                        <template v-slot:input>
-                                            <input type="file" class="form-control" id="logotypeFileId" accept="image/png, image/jpg, image/jpeg"/>
-                                        </template>
-                                    </InputSlot>
-                                    <div class="d-block mt-1 text-nowrap">
-                                        <i class="fa fa-info-circle text-info"></i>
-                                        <span class="ms-2 small">Nota: Versión textual del nombre de la marca. Debe contener solo letras, sin símbolos.</span>
-                                    </div>
-                                    <div class="d-block mt-1 text-nowrap">
-                                        <i class="fa fa-warning text-warning"></i>
-                                        <span class="ms-2 small">Tamaño máximo: {{ maxFileSizeMB }} MB (PNG, JPG, JPEG).</span>
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td class="text-center">
-                                    <img v-if="isDefined(forms[entity].createUpdate.data.combinationmark)" :src="getAsset(forms[entity].createUpdate.data.combinationmark, {type: 'storage'})" width="150px" height="150px" class="img-fluid"/>
-                                    <template v-else>
-                                        <img :src="getAsset(config.essential.ownerApp.assets.img.combinationmark, {type: 'none', back: 1})" width="150px" height="150px" class="img-fluid"/>
-                                        <div class="alert alert-warning w-100 py-1 mb-0 text-nowrap">Es referencial</div>
-                                    </template>
-                                </td>
-                                <td class="text-start">
-                                    <InputSlot
-                                        :hasDiv="false"
-                                        :title="MODULE.texts.form.combinationmark"
-                                        :titleClass="[config.forms.classes.title]">
-                                        <template v-slot:input>
-                                            <input type="file" class="form-control" id="combinationmarkFileId" accept="image/png, image/jpg, image/jpeg"/>
-                                        </template>
-                                    </InputSlot>
-                                    <div class="d-block mt-1 text-nowrap">
-                                        <i class="fa fa-info-circle text-info"></i>
-                                        <span class="ms-2 small">Nota: Combinación del logotipo y el isotipo en una sola unidad visual.</span>
-                                    </div>
-                                    <div class="d-block mt-1 text-nowrap">
-                                        <i class="fa fa-warning text-warning"></i>
-                                        <span class="ms-2 small">Tamaño máximo: {{ maxFileSizeMB }} MB (PNG, JPG, JPEG).</span>
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td class="text-center">
-                                    <img v-if="isDefined(forms[entity].createUpdate.data.login_image)" :src="getAsset(forms[entity].createUpdate.data.login_image, {type: 'storage'})" width="150px" height="150px" class="img-fluid"/>
-                                    <template v-else>
-                                        <img :src="getAsset(config.essential.ownerApp.assets.img.login_image, {type: 'none', back: 1})" width="150px" height="150px" class="img-fluid"/>
-                                        <div class="alert alert-warning w-100 py-1 mb-0 text-nowrap">Es referencial</div>
-                                    </template>
-                                </td>
-                                <td class="text-start">
-                                    <InputSlot
-                                        :hasDiv="false"
-                                        :title="MODULE.texts.form.loginImage"
-                                        :titleClass="[config.forms.classes.title]">
-                                        <template v-slot:input>
-                                            <input type="file" class="form-control" id="loginImageFileId" accept="image/png, image/jpg, image/jpeg"/>
-                                        </template>
-                                    </InputSlot>
-                                    <div class="d-block mt-1">
-                                        <i class="fa fa-info-circle text-info"></i>
-                                        <span class="ms-2 small">Nota: Imagen que se muestra en la pantalla de inicio de sesión. Generalmente puede ser un logo, una ilustración institucional o una imagen decorativa que represente a la entidad.</span>
-                                    </div>
-                                    <div class="d-block mt-1 text-nowrap">
-                                        <i class="fa fa-warning text-warning"></i>
-                                        <span class="ms-2 small">Tamaño máximo: {{ maxFileSizeMB }} MB (PNG, JPG, JPEG).</span>
-                                    </div>
+                                    <p class="small text-muted mb-0 mt-1">
+                                        <i class="fa fa-lightbulb-o me-1"></i>
+                                        <span v-text="item.hint"></span>
+                                    </p>
                                 </td>
                             </tr>
                         </tbody>
@@ -318,14 +237,13 @@
                         hasDiv
                         :isInputGroup="false"
                         :divInputClass="['d-flex justify-content-center']"
-                        xl="12"
-                        lg="12">
+                        xl="6"
+                        lg="6">
                         <template v-slot:input>
                             <MyDashboardCompany/>
                         </template>
                     </InputSlot>
                     <InputSlot
-                        v-if="false"
                         hasDiv
                         :isInputGroup="false"
                         :divInputClass="['d-flex justify-content-center']"
@@ -355,6 +273,8 @@
                         hasDiv
                         :title="MODULE.texts.form.tokenApiMisc"
                         :titleClass="[config.forms.classes.title]"
+                        maxlength="100"
+                        showCharCounter
                         hasTextBottom
                         :textBottomInfo="forms[entity].createUpdate.errors?.token_api_misc"
                         xl="6"
@@ -381,35 +301,37 @@ import { initCrudModule } from "@System/Helpers/ModuleFactory.js";
 import * as Forms from "@System/Helpers/Forms.js";
 import * as Requests from "@System/Helpers/Requests.js";
 import * as Utils from "@System/Helpers/Utils.js";
+import { validateOnlyDigits } from "@System/Helpers/ValidationHelpers.js";
 
 const MODULE_CONFIG = {
     entity: "companies",
     menuId: "menu-configuration-my_company",
     pageTitle: "Mi empresa",
     pageTitleSingular: "Mi empresa",
-    breadcrumbParent: "Configuración"
+    breadcrumbParent: "Configuración",
+    perPage: 1
 };
 
 const FORM_FIELDS = {
     id: null,
-    slug: "",
     identity_document_type: null,
     document_number: "",
     legal_name: "",
     commercial_name: "",
+    address: "",
     tagline: "",
     description: "",
-    address: "",
     telephone: "",
     email: "",
-    token_api_misc: "",
+    facebook: "",
+    instagram: "",
+    whatsapp: "",
     logomark: "",
     logotype: "",
     combinationmark: "",
     login_image: "",
-    facebook: "",
-    instagram: "",
-    whatsapp: "",
+    slug: "",
+    token_api_misc: "",
     status: null
 };
 
@@ -418,14 +340,14 @@ const FORM_FIELD_CONFIG = {
     document_number: {trim: true},
     legal_name: {trim: true},
     commercial_name: {trim: true},
-    tagline: {trim: true, normalize: true},
-    description: {trim: true, normalize: true},
-    address: {trim: true, normalize: true},
+    address: {trim: true},
+    tagline: {trim: true},
+    description: {trim: true},
     telephone: {trim: true, normalize: true},
-    email: {trim: true, normalize: true},
-    facebook: {trim: true, normalize: true},
-    instagram: {trim: true, normalize: true},
-    whatsapp: {trim: true, normalize: true},
+    email: {trim: true},
+    facebook: {trim: true},
+    instagram: {trim: true},
+    whatsapp: {trim: true},
     status: {getCode: true}
 };
 
@@ -433,31 +355,44 @@ const TAB_ITEMS = [
     {id: "general", icon: "fa-building", textKey: "general", visible: true},
     {id: "contacts", icon: "fa-phone", textKey: "contacts", visible: true},
     {id: "branding", icon: "fa-palette", textKey: "branding", visible: true},
-    {id: "share", icon: "fa-link", textKey: "share", visible: false},
-    {id: "configuration", icon: "fa-cog", textKey: "configuration", visible: false}
+    {id: "share", icon: "fa-link", textKey: "share", visible: true},
+    {id: "configuration", icon: "fa-cog", textKey: "configuration", visible: true}
+];
+
+const BRANDING_ITEMS = [
+    {formField: "logomark", formKey: "logomark", fileInputId: "logomarkFileId", hint: "Símbolo o ícono de la marca sin texto."},
+    {formField: "logotype", formKey: "logotype", fileInputId: "logotypeFileId", hint: "Texto del nombre de la marca, solo letras."},
+    {formField: "combinationmark", formKey: "combinationmark", fileInputId: "combinationmarkFileId", hint: "Logo e isotipo combinados en una sola imagen."},
+    {formField: "login_image", formKey: "loginImage", fileInputId: "loginImageFileId", hint: "Imagen de la pantalla de inicio de sesión."}
 ];
 
 const TEXTS = {
+    branding: {
+        tablePreview: "Vista previa",
+        tableUpload: "Subir imagen",
+        placeholderLabel: "Plantilla por defecto",
+        fileFormatHint: "PNG, JPG o JPEG. Máx. {{size}} MB"
+    },
     form: {
         identityDocumentType: "Tipo de documento",
         documentNumber: "Número de documento",
         legalName: "Nombre legal",
         commercialName: "Nombre comercial",
         address: "Dirección",
+        tagline: "Slogan",
+        description: "Descripción general",
         telephone: "Teléfono",
         email: "Correo electrónico",
         facebook: "Facebook",
         instagram: "Instagram",
         whatsapp: "Whatsapp",
-        tagline: "Slogan",
-        description: "Descripción general",
         logomark: "Isotipo",
         logotype: "Logotipo",
         combinationmark: "Marca combinada",
         loginImage: "Imagen de login",
-        searchDocumentTooltip: "Buscar N° documento",
         slug: "Acceso MI WEB",
-        tokenApiMisc: "Token API - Misc"
+        tokenApiMisc: "Token API - Misc",
+        searchDocumentTooltip: "Buscar N° documento"
     },
     tabs: {
         general: "1. Información general",
@@ -476,7 +411,8 @@ const MODULE = {
     formFields: FORM_FIELDS,
     formFieldConfig: FORM_FIELD_CONFIG,
     texts: TEXTS,
-    tabItems: TAB_ITEMS
+    tabItems: TAB_ITEMS,
+    brandingItems: BRANDING_ITEMS
 };
 
 export default {
@@ -962,6 +898,11 @@ export default {
         maxFileSizeMB() {
 
             return this.config.forms.inputs.maxSize / 1024;
+
+        },
+        fileFormatHintText() {
+
+            return this.MODULE.texts.branding.fileFormatHint.replace("{{size}}", this.maxFileSizeMB);
 
         },
         tabItems() {
