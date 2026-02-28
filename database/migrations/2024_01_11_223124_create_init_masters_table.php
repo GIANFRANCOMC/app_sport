@@ -307,7 +307,7 @@ return new class extends Migration {
             ["company_id" => 1, "sub_section_id" => 60],
             ["company_id" => 1, "sub_section_id" => 61],
             // ["company_id" => 1, "sub_section_id" => 62],
-            ["company_id" => 1, "sub_section_id" => 63],
+            // ["company_id" => 1, "sub_section_id" => 63],
             ["company_id" => 1, "sub_section_id" => 70],
             ["company_id" => 1, "sub_section_id" => 71],
             ["company_id" => 1, "sub_section_id" => 80]

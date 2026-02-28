@@ -25,7 +25,7 @@ export const generalConfig = {
             round: 2,
             minValue: 0,
             maxValue: 9999999,
-            maxSize: 4096
+            maxSize: 2048
         },
         errors: {
             functions: {
