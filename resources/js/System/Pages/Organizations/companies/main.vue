@@ -593,7 +593,7 @@ export default {
 
                 }
 
-                const preparedData  = Forms.prepareFormData(formData, this.MODULE.formFieldConfig);
+                const preparedData  = this.prepareFormData(formData, this.MODULE.formFieldConfig);
                 const id            = preparedData.id;
                 const isUpdate      = this.isDefined(id);
                 const requestMethod = isUpdate ? "patch" : "post";
@@ -626,7 +626,7 @@ export default {
         },
         prepareFormData(formData, formFieldConfig) {
 
-            const preparedData  = Forms.prepareFormData(formData, formFieldConfig);
+            const preparedData = Forms.prepareFormData(formData, formFieldConfig);
 
             // Append file inputs
             this.appendFileToFormData(preparedData, "logomarkFileId", "logomark");
@@ -635,6 +635,19 @@ export default {
             this.appendFileToFormData(preparedData, "loginImageFileId", "login_image");
 
             return preparedData;
+
+        },
+        appendFileToFormData(formData, elementId, fieldName) {
+
+            const fileElement = document.getElementById(elementId);
+
+            if(fileElement?.files?.length > 0) {
+
+                formData.append(fieldName, fileElement.files[0]);
+
+            }
+
+            return formData;
 
         },
         updateFormImages(company) {
@@ -647,7 +660,7 @@ export default {
             formData.login_image     = company?.login_image;
 
         },
-        clearForm() {
+        /* clearForm() {
 
             const fileInputIds = ["logomarkFileId", "logotypeFileId", "combinationmarkFileId", "loginImageFileId"];
 
@@ -655,15 +668,11 @@ export default {
 
                 const element = document.getElementById(id);
 
-                if(element) {
-
-                    element.value = "";
-
-                }
+                if(element) element.value = "";
 
             });
 
-        },
+        }, */
         validateFormData(formData) {
 
             const result = {
@@ -685,16 +694,16 @@ export default {
             };
 
             // Validate required fields
-            this.validateRequiredField(result, formData?.identity_document_type, "identity_document_type", sections.general.label, getPrefix("Tipo de documento"));
-            this.validateRequiredField(result, formData?.document_number, "document_number", sections.general.label, getPrefix("Número de documento"));
-            this.validateRequiredField(result, formData?.legal_name, "legal_name", sections.general.label, getPrefix("Nombre legal"));
-            this.validateRequiredField(result, formData?.commercial_name, "commercial_name", sections.general.label, getPrefix("Nombre comercial"));
+            this.validateRequiredField(result, formData?.identity_document_type, "identity_document_type", sections.general.label, "Tipo de documento");
+            this.validateRequiredField(result, formData?.document_number, "document_number", sections.general.label, "Número de documento");
+            this.validateRequiredField(result, formData?.legal_name, "legal_name", sections.general.label, "Nombre legal");
+            this.validateRequiredField(result, formData?.commercial_name, "commercial_name", sections.general.label, "Nombre comercial");
 
             // Validate image files
-            this.validateImageFile(result, "logomarkFileId", "logomark", sections.branding.label, getPrefix("Isotipo"));
-            this.validateImageFile(result, "logotypeFileId", "logotype", sections.branding.label, getPrefix("Logotipo"));
-            this.validateImageFile(result, "combinationmarkFileId", "combinationmark", sections.branding.label, getPrefix("Marca combinada"));
-            this.validateImageFile(result, "loginImageFileId", "login_image", sections.branding.label, getPrefix("Imagen de login"));
+            this.validateImageFile(result, "logomarkFileId", "logomark", sections.branding.label, "Isotipo");
+            this.validateImageFile(result, "logotypeFileId", "logotype", sections.branding.label, "Logotipo");
+            this.validateImageFile(result, "combinationmarkFileId", "combinationmark", sections.branding.label, "Marca combinada");
+            this.validateImageFile(result, "loginImageFileId", "login_image", sections.branding.label, "Imagen de login");
 
             return result;
 
@@ -727,19 +736,13 @@ export default {
 
             if(file.size > maxSize) {
 
-                result[fieldName].push({
-                    section: section,
-                    msg: `${prefix}${this.config.forms.errors.functions.maxSize.numeric(this.config.forms.inputs.maxSize / 1024)}`
-                });
+                result[fieldName].push({section: section, msg: `${prefix}${this.config.forms.errors.functions.maxSize.numeric(this.config.forms.inputs.maxSize / 1024)}`});
 
                 result.bool = false;
 
             }else if(!allowedExtensions.includes(fileExtension)) {
 
-                result[fieldName].push({
-                    section: section,
-                    msg: `${prefix}${this.config.forms.errors.labels.not_valid_extension}`
-                });
+                result[fieldName].push({section: section, msg: `${prefix}${this.config.forms.errors.labels.not_valid_extension}`});
 
                 result.bool = false;
 
@@ -749,7 +752,7 @@ export default {
         async searchDocumentNumber() {
 
             const entityForms          = this.forms[this.entity].createUpdate;
-            const documentNumber      = entityForms.data.document_number;
+            const documentNumber       = entityForms.data.document_number;
             const identityDocumentType = entityForms.data.identity_document_type;
 
             if(!this.isDefined(documentNumber)) {
@@ -781,18 +784,19 @@ export default {
                 entityForms.data.address         = data?.address ?? "";
 
                 Alerts.toastrs({type: "success", subtitle: response?.data?.msg});
+                Alerts.swals({show: false});
 
             }else {
 
                 Alerts.toastrs({type: "error", subtitle: response?.data?.msg});
+                Alerts.swals({show: false});
 
             }
 
-            Alerts.swals({show: false});
             Alerts.tooltips({show: false});
 
         },
-        // Utils
+        // Others
         isDefined(value) {
 
             return Utils.isDefined({value});
@@ -848,6 +852,7 @@ export default {
             return this.isDefined(this.forms[this.entity].createUpdate.data?.id);
 
         },
+        // Identity document type
         isDocumentTypeSearchable() {
 
             const documentType = this.forms[this.entity].createUpdate.data.identity_document_type?.data;
@@ -878,7 +883,7 @@ export default {
 
             }
 
-            return 15;
+            return 1;
 
         },
         maxFileSizeMB() {
