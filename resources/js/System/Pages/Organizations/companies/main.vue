@@ -192,7 +192,7 @@
             </div>
             <div class="tab-pane fade" id="navs-pills-branding" role="tabpanel">
                 <div class="table-responsive mt-1">
-                    <p class="small text-muted mb-2">
+                    <p class="small fw-semibold mb-2">
                         <i class="fa fa-info-circle me-1"></i>
                         <span v-text="fileFormatHintText"></span>
                     </p>
@@ -355,8 +355,8 @@ const TAB_ITEMS = [
     {id: "general", icon: "fa-building", label: "Información general", visible: true},
     {id: "contacts", icon: "fa-phone", label: "Información de contacto y redes", visible: true},
     {id: "branding", icon: "fa-palette", label: "Identidad visual", visible: true},
-    {id: "share", icon: "fa-link", label: "Accesos compartidos", visible: true},
-    {id: "configuration", icon: "fa-cog", label: "Parámetros", visible: true}
+    {id: "share", icon: "fa-link", label: "Accesos compartidos", visible: false},
+    {id: "configuration", icon: "fa-cog", label: "Parámetros", visible: false}
 ];
 
 const BRANDING_ITEMS = [
@@ -368,10 +368,10 @@ const BRANDING_ITEMS = [
 
 const TEXTS = {
     branding: {
-        tablePreview: "Vista previa",
-        tableUpload: "Subir imagen",
+        tablePreview: "Imagen",
+        tableUpload: "Recurso",
         placeholderLabel: "Plantilla por defecto",
-        fileFormatHint: "PNG, JPG o JPEG. Máx. {{size}} MB"
+        fileFormatHint: "Formatos validos PNG, JPG o JPEG. Máx. {{size}} MB"
     },
     form: {
         identityDocumentType: "Tipo de documento",
@@ -594,18 +594,19 @@ export default {
                 }
 
                 const preparedData  = this.prepareFormData(formData, this.MODULE.formFieldConfig);
-                const id            = preparedData.id;
+                const id            = preparedData.get("id");
                 const isUpdate      = this.isDefined(id);
-                const requestMethod = isUpdate ? "patch" : "post";
-                const route         = this.routeActions[isUpdate ? "update" : "store"];
-                const result        = await Requests[requestMethod]({route, data: preparedData, id});
+                const requestMethod = "patch";
+                const route         = this.routeActions["update"];
+                const result        = await Requests[requestMethod]({route, formData: preparedData, id});
 
                 if(Requests.valid({result})) {
 
                     this.updateFormImages(result.data.company);
                     Alerts.generateAlert({type: "success", msgContent: result.data.msg});
 
-                    Forms.clearFormData(entityForms.data, this.MODULE.formFields);
+                    // Forms.clearFormData(entityForms.data, this.MODULE.formFields);
+                    this.clearForm();
 
                 }else {
 
@@ -628,26 +629,16 @@ export default {
 
             const preparedData = Forms.prepareFormData(formData, formFieldConfig);
 
-            // Append file inputs
-            this.appendFileToFormData(preparedData, "logomarkFileId", "logomark");
-            this.appendFileToFormData(preparedData, "logotypeFileId", "logotype");
-            this.appendFileToFormData(preparedData, "combinationmarkFileId", "combinationmark");
-            this.appendFileToFormData(preparedData, "loginImageFileId", "login_image");
+            const excludeFields = ["logomark", "logotype", "combinationmark", "login_image"];
 
-            return preparedData;
+            const fileInputs = [
+                { elementId: "logomarkFileId", fieldName: "logomark" },
+                { elementId: "logotypeFileId", fieldName: "logotype" },
+                { elementId: "combinationmarkFileId", fieldName: "combinationmark" },
+                { elementId: "loginImageFileId", fieldName: "login_image" }
+            ];
 
-        },
-        appendFileToFormData(formData, elementId, fieldName) {
-
-            const fileElement = document.getElementById(elementId);
-
-            if(fileElement?.files?.length > 0) {
-
-                formData.append(fieldName, fileElement.files[0]);
-
-            }
-
-            return formData;
+            return Forms.toFormDataWithFiles(preparedData, {excludeFields, fileInputs});
 
         },
         updateFormImages(company) {
@@ -660,7 +651,7 @@ export default {
             formData.login_image     = company?.login_image;
 
         },
-        /* clearForm() {
+        clearForm() {
 
             const fileInputIds = ["logomarkFileId", "logotypeFileId", "combinationmarkFileId", "loginImageFileId"];
 
@@ -672,12 +663,12 @@ export default {
 
             });
 
-        }, */
+        },
         validateFormData(formData) {
 
             const result = {
                 bool: true,
-                identity_document_type: [],
+                identity_document_type_id: [],
                 document_number: [],
                 legal_name: [],
                 commercial_name: [],
@@ -694,7 +685,7 @@ export default {
             };
 
             // Validate required fields
-            this.validateRequiredField(result, formData?.identity_document_type, "identity_document_type", sections.general.label, "Tipo de documento");
+            this.validateRequiredField(result, formData?.identity_document_type, "identity_document_type_id", sections.general.label, "Tipo de documento");
             this.validateRequiredField(result, formData?.document_number, "document_number", sections.general.label, "Número de documento");
             this.validateRequiredField(result, formData?.legal_name, "legal_name", sections.general.label, "Nombre legal");
             this.validateRequiredField(result, formData?.commercial_name, "commercial_name", sections.general.label, "Nombre comercial");
@@ -712,7 +703,7 @@ export default {
 
             if(!this.isDefined(value)) {
 
-                result[fieldName].push({section: section, msg: `${prefix}${this.config.forms.errors.labels.required}`});
+                result[fieldName].push({section: section, msg: `${prefix}: ${this.config.forms.errors.labels.required}`});
 
                 result.bool = false;
 
@@ -736,13 +727,13 @@ export default {
 
             if(file.size > maxSize) {
 
-                result[fieldName].push({section: section, msg: `${prefix}${this.config.forms.errors.functions.maxSize.numeric(this.config.forms.inputs.maxSize / 1024)}`});
+                result[fieldName].push({section: section, msg: `${prefix}: ${this.config.forms.errors.functions.maxSize.numeric(this.config.forms.inputs.maxSize / 1024)}`});
 
                 result.bool = false;
 
             }else if(!allowedExtensions.includes(fileExtension)) {
 
-                result[fieldName].push({section: section, msg: `${prefix}${this.config.forms.errors.labels.not_valid_extension}`});
+                result[fieldName].push({section: section, msg: `${prefix}: ${this.config.forms.errors.labels.not_valid_extension}`});
 
                 result.bool = false;
 
@@ -844,7 +835,7 @@ export default {
         },
         statuses() {
 
-            return (this.options?.statuses ?? []).map(e => ({code: e.code, label: e.label}));
+            return (this.options?.statuses ?? []).map(e => ({code: e.code, label: e.label, data: e}));
 
         },
         hasRecord() {
@@ -906,16 +897,12 @@ export default {
         "forms.companies.createUpdate.data.identity_document_type": {
             handler(newValue) {
 
-                if(this.isDefined(newValue)) {
+                const maxLength    = this.documentNumberMaxLength;
+                const currentValue = this.forms[this.entity].createUpdate.data.document_number?.toString() || "";
 
-                    const maxLength    = this.documentNumberMaxLength;
-                    const currentValue = this.forms[this.entity].createUpdate.data.document_number?.toString() || "";
+                if(currentValue.length > maxLength) {
 
-                    if(currentValue.length > maxLength) {
-
-                        this.forms[this.entity].createUpdate.data.document_number = currentValue.substring(0, maxLength);
-
-                    }
+                    this.forms[this.entity].createUpdate.data.document_number = currentValue.substring(0, maxLength);
 
                 }
 

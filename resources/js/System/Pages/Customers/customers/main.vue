@@ -1122,16 +1122,12 @@ export default {
         "forms.customers.createUpdate.data.identity_document_type": {
             handler(newValue) {
 
-                if(this.isDefined(newValue)) {
+                const maxLength    = this.documentNumberMaxLength;
+                const currentValue = this.forms[this.entity].createUpdate.data.document_number?.toString() || "";
 
-                    const maxLength    = this.documentNumberMaxLength;
-                    const currentValue = this.forms[this.entity].createUpdate.data.document_number?.toString() || "";
+                if(currentValue.length > maxLength) {
 
-                    if(currentValue.length > maxLength) {
-
-                        this.forms[this.entity].createUpdate.data.document_number = currentValue.substring(0, maxLength);
-
-                    }
+                    this.forms[this.entity].createUpdate.data.document_number = currentValue.substring(0, maxLength);
 
                 }
 

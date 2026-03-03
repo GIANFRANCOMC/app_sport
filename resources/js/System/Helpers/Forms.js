@@ -113,6 +113,48 @@ export function prepareFormData(formData, config = {}) {
 }
 
 /**
+ * Convierte datos JSON a FormData cuando hay archivos seleccionados.
+ * Si no hay archivos, retorna el objeto JSON original.
+ * @param {Object} jsonData - Datos del formulario (objeto plano)
+ * @param {Object} options - Opciones {excludeFields: string[], fileInputs: {elementId: string, fieldName: string}[]}
+ * @param {string[]} options.excludeFields - Campos a excluir al convertir (ej: URLs de imágenes que serán reemplazadas por archivos)
+ * @param {Array<{elementId: string, fieldName: string}>} options.fileInputs - Configuración de inputs de archivo
+ * @returns {Object|FormData} Objeto JSON si no hay archivos, FormData si hay archivos
+ */
+export function toFormDataWithFiles(jsonData, options = {}) {
+    const { excludeFields = [], fileInputs = [] } = options;
+
+    const hasFiles = fileInputs.some(({ elementId }) => {
+        const el = document.getElementById(elementId);
+        return el?.files?.length > 0;
+    });
+
+    // if (!hasFiles) {
+        // return jsonData;
+    // }
+
+    const formDataInstance = new FormData();
+
+    Object.keys(jsonData).forEach((key) => {
+        if (!excludeFields.includes(key)) {
+            const value = jsonData[key];
+            if (value !== undefined && value !== null) {
+                formDataInstance.append(key, value instanceof Blob ? value : String(value));
+            }
+        }
+    });
+
+    fileInputs.forEach(({ elementId, fieldName }) => {
+        const el = document.getElementById(elementId);
+        if (el?.files?.length > 0) {
+            formDataInstance.append(fieldName, el.files[0]);
+        }
+    });
+
+    return formDataInstance;
+}
+
+/**
  * Maneja errores de formulario de forma centralizada
  * @param {Object|Array} errors - Errores del servidor
  * @param {Object} formErrorsObject - Objeto donde se almacenarán los errores

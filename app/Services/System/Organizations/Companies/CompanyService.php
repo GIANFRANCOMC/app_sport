@@ -89,7 +89,7 @@ class CompanyService {
 
         $extension = $file->getClientOriginalExtension();
         $fileName  = "{$fieldName}.{$extension}";
-        $filePath  = $file->storeAs($company->internal_code, $fileName, "public");
+        $filePath  = $file->storeAs("{$company->internal_code}/branding", $fileName, "public");
 
         return $filePath;
 

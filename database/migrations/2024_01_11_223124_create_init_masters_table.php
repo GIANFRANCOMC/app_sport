@@ -227,7 +227,7 @@ return new class extends Migration {
                 "slug" => "pagape",
                 "internal_code" => Utilities::generateCode(7),
                 "identity_document_type_id" => 1,
-                "document_number" => "999999999",
+                "document_number" => "999999999999999",
                 "legal_name" => "TU EMPRESA S.A.",
                 "commercial_name" => "TU EMPRESA",
                 "currency_id" => 1,
@@ -310,7 +310,7 @@ return new class extends Migration {
             // ["company_id" => 1, "sub_section_id" => 63],
             ["company_id" => 1, "sub_section_id" => 70],
             ["company_id" => 1, "sub_section_id" => 71],
-            ["company_id" => 1, "sub_section_id" => 80]
+            // ["company_id" => 1, "sub_section_id" => 80]
         ]);
 
         DB::table("roles")->insert([
