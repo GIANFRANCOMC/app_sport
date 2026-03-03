@@ -26,7 +26,7 @@ class StoreBiometricDeviceRequest extends FormRequest {
     public function rules(): array {
 
         return [
-            "branch_id"     => ["required", "integer", new BelongsToCompany("branches", [], "La sucursal seleccionada no pertenece a su empresa.")],
+            "branch_id"     => ["required", "integer", new BelongsToCompany("branches", [], null)],
             "name"          => "required|string|max:50",
             "description"   => "nullable|string|max:100",
             "brand"         => "required|in:ZKTeco",

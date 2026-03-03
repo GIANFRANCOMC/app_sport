@@ -27,7 +27,7 @@ class StoreBookComplaintRequest extends FormRequest {
 
         return [
             "admin_response" => "required|string|max:600",
-            "status"         => ["required", "string", Rule::in(["pending", "in_progress", "resolved"])]
+            "status"         => "required|string|in:pending,in_progress,resolved"
         ];
 
     }

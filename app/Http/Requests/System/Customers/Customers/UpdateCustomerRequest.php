@@ -25,11 +25,11 @@ class UpdateCustomerRequest extends FormRequest {
      */
     public function rules(): array {
 
-        $customerId = $this->route("id");
+        $customerId = (int) $this->route("id");
 
         return [
             "identity_document_type_id" => "required|integer",
-            "document_number"           => ["required", "string", new DocumentNumberLength((int) $this->identity_document_type_id), new UniqueInCompany("customers", "document_number", $customerId ? (int) $customerId : null, [], "número de documento")],
+            "document_number"           => ["required", "string", new DocumentNumberLength((int) $this->identity_document_type_id), new UniqueInCompany("customers", "document_number", $customerId, [], "número de documento")],
             "name"                      => "required|string|max:100",
             "email"                     => "nullable|email|max:100",
             "phone_number"              => "nullable|string|max:15",
