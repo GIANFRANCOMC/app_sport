@@ -31,7 +31,7 @@ class UpdateCompanyRequest extends FormRequest {
 
         $validations = [
             "identity_document_type_id" => "required|integer",
-            "document_number"           => ["required", "string", new DocumentNumberLength($this->identity_document_type_id)],
+            "document_number"           => ["required", "string", new DocumentNumberLength((int) $this->identity_document_type_id)],
             "legal_name"                => "required|string|max:100",
             "commercial_name"           => "required|string|max:100",
             "tagline"                   => "nullable|string|max:200",

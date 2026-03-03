@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Requests\System\Devices\BiometricDevices;
 
 use Illuminate\Foundation\Http\FormRequest;
-use App\Rules\System\Organizations\{BranchBelongsToCompany};
+use App\Rules\System\Defaults\{BelongsToCompany};
 
 class StoreBiometricDeviceRequest extends FormRequest {
 
@@ -26,7 +26,7 @@ class StoreBiometricDeviceRequest extends FormRequest {
     public function rules(): array {
 
         return [
-            "branch_id"     => ["required", "integer", new BranchBelongsToCompany()],
+            "branch_id"     => ["required", "integer", new BelongsToCompany("branches", [], "La sucursal seleccionada no pertenece a su empresa.")],
             "name"          => "required|string|max:50",
             "description"   => "nullable|string|max:100",
             "brand"         => "required|in:ZKTeco",

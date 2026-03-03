@@ -5,19 +5,9 @@ declare(strict_types=1);
 namespace App\Http\Requests\System\Customers\Customers;
 
 use Illuminate\Foundation\Http\FormRequest;
-use App\Rules\System\Defaults\{DocumentNumberLength};
-use App\Rules\System\Customers\{UniqueDocumentNumberInCompany};
+use App\Rules\System\Defaults\{DocumentNumberLength, UniqueInCompany};
 
 class UpdateCustomerRequest extends FormRequest {
-
-    /**
-     * Determine if the user is authorized to make this request.
-     */
-    public function authorize(): bool {
-
-        return true;
-
-    }
 
     /**
      * Determine if the user is authorized to make this request.
@@ -39,7 +29,7 @@ class UpdateCustomerRequest extends FormRequest {
 
         return [
             "identity_document_type_id" => "required|integer",
-            "document_number"           => ["required", "string", new DocumentNumberLength(), new UniqueDocumentNumberInCompany($customerId ? (int) $customerId : null)],
+            "document_number"           => ["required", "string", new DocumentNumberLength((int) $this->identity_document_type_id), new UniqueInCompany("customers", "document_number", $customerId ? (int) $customerId : null, [], "número de documento")],
             "name"                      => "required|string|max:100",
             "email"                     => "nullable|email|max:100",
             "phone_number"              => "nullable|string|max:15",
