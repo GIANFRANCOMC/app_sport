@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\System\Customers\TrackingAttendances;
 
+use App\Helpers\System\Utilities;
 use Illuminate\Foundation\Http\FormRequest;
 
 class CancelTrackingAttendanceRequest extends FormRequest {
