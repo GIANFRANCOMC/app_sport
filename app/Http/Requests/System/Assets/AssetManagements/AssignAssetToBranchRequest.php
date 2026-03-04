@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\System\Assets\AssetManagements;
 
+use App\Helpers\System\Utilities;
 use Illuminate\Foundation\Http\FormRequest;
 
 class AssignAssetToBranchRequest extends FormRequest {

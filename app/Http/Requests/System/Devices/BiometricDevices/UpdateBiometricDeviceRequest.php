@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\System\Devices\BiometricDevices;
 
+use App\Helpers\System\Utilities;
 use Illuminate\Foundation\Http\FormRequest;
 use App\Rules\System\Defaults\{BelongsToCompany};
 
