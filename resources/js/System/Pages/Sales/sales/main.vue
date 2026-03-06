@@ -4,60 +4,63 @@
     <!-- Content -->
     <div class="row g-4">
         <div class="col-lg-9 col-12">
-            <div class="card invoice-preview-card">
+            <div class="card">
                 <div class="card-body">
                     <div class="row g-3 mb-4">
                         <InputSlot
                             hasDiv
-                            title="Sucursal"
+                            :title="MODULE.texts.form.branch"
+                            :titleClass="[config.forms.classes.title]"
                             isRequired
                             hasTextBottom
-                            :textBottomInfo="forms.entity.createUpdate.errors?.branch"
+                            :textBottomInfo="forms[entity].createUpdate.errors?.branch_id"
                             xl="7"
                             lg="12">
                             <template v-slot:input>
                                 <v-select
-                                    v-model="forms.entity.createUpdate.data.branch"
+                                    v-model="forms[entity].createUpdate.data.branch"
                                     :options="branches"
+                                    :class="config.forms.classes.select2"
                                     :clearable="false"
-                                    :searchable="false"
-                                    placeholder="Seleccione"/>
+                                    :searchable="false"/>
                             </template>
                         </InputSlot>
                         <InputSlot
                             hasDiv
-                            title="Tipo de comprobante"
+                            :title="MODULE.texts.form.serie"
+                            :titleClass="[config.forms.classes.title]"
                             isRequired
                             hasTextBottom
-                            :textBottomInfo="forms.entity.createUpdate.errors?.serie"
+                            :textBottomInfo="forms[entity].createUpdate.errors?.serie_id"
                             xl="5"
                             lg="6">
                             <template v-slot:input>
                                 <v-select
-                                    v-model="forms.entity.createUpdate.data.serie"
+                                    v-model="forms[entity].createUpdate.data.serie"
                                     :options="series"
+                                    :class="config.forms.classes.select2"
                                     :clearable="false"
-                                    :searchable="false"
-                                    placeholder="Seleccione">
-                                </v-select>
+                                    :searchable="false"/>
                             </template>
                         </InputSlot>
                         <InputDate
-                            v-model="forms.entity.createUpdate.data.issue_date"
+                            v-model="forms[entity].createUpdate.data.issue_date"
                             hasDiv
-                            title="Fecha de emisión"
+                            :title="MODULE.texts.form.issueDate"
+                            :titleClass="[config.forms.classes.title]"
                             isRequired
                             disabled
                             hasTextBottom
-                            :textBottomInfo="forms.entity.createUpdate.errors?.issue_date"
+                            :textBottomInfo="forms[entity].createUpdate.errors?.issue_date"
                             xl="3"
                             lg="6"/>
                         <InputSlot
                             hasDiv
-                            title="Cliente"
+                            :title="MODULE.texts.form.holder"
+                            :titleClass="[config.forms.classes.title]"
                             isRequired
                             hasTextBottom
-                            :textBottomInfo="forms.entity.createUpdate.errors?.holder"
+                            :textBottomInfo="forms[entity].createUpdate.errors?.holder_id"
                             xl="9"
                             lg="12">
                             <template v-slot:default>
@@ -67,41 +70,20 @@
                             </template>
                             <template v-slot:input>
                                 <v-select
-                                    v-model="forms.entity.createUpdate.data.holder"
+                                    v-model="forms[entity].createUpdate.data.holder"
                                     :options="holders"
+                                    :class="config.forms.classes.select2"
                                     :clearable="false"
-                                    placeholder="Seleccione"/>
+                                    :searchable="true"/>
                             </template>
                         </InputSlot>
-                        <!-- <InputSlot
-                            hasDiv
-                            title="Tipo de moneda"
-                            isRequired
-                            hasTextBottom
-                            :textBottomInfo="forms.entity.createUpdate.errors?.currency"
-                            xl="3"
-                            lg="6">
-                            <template v-slot:input>
-                                <v-select
-                                    v-model="forms.entity.createUpdate.data.currency"
-                                    :options="currencies"
-                                    :clearable="false"
-                                    :searchable="false"
-                                    placeholder="Seleccione">
-                                    <template #option="{ label, data }">
-                                        <span v-text="label" class="d-block fw-bold"></span>
-                                        <small v-text="'('+data?.sign+')'" class="d-block"></small>
-                                    </template>
-                                </v-select>
-                            </template>
-                        </InputSlot> -->
                     </div>
                     <div class="row g-3">
                         <div class="table-responsive">
                             <table class="table table-hover">
                                 <thead>
                                     <tr class="text-center align-middle">
-                                        <th class="bg-secondary text-white fw-semibold col-auto">#</th>
+                                        <th class="bg-secondary text-white fw-semibold col-auto position-sticky start-0 z-1">#</th>
                                         <th class="bg-secondary text-white fw-semibold col-1">DESCRIPCIÓN</th>
                                         <th class="bg-secondary text-white fw-semibold col-3">CANTIDAD</th>
                                         <th class="bg-secondary text-white fw-semibold min-w-150px">PRECIO UNITARIO</th>
@@ -110,11 +92,11 @@
                                     </tr>
                                 </thead>
                                 <tbody class="table-border-bottom-0 bg-white">
-                                    <template v-if="(forms.entity.createUpdate.data.details).length > 0">
-                                        <template v-for="(record, keyRecord) in forms.entity.createUpdate.data.details" :key="record.id">
+                                    <template v-if="(forms[entity].createUpdate.data.details).length > 0">
+                                        <template v-for="(record, keyRecord) in forms[entity].createUpdate.data.details" :key="record.id">
                                             <tr class="text-center">
-                                                <td>
-                                                    <span v-text="keyRecord + 1" class="badge rounded-pill bg-info-1 fw-bold"></span>
+                                                <td :rowspan="isSubscription(record?.type) && record?.extras?.showDetail ? 2 : 1">
+                                                    <span v-text="keyRecord + 1" class="fw-bold"></span>
                                                 </td>
                                                 <td class="fw-semibold text-start">
                                                     <span class="text-break" v-text="record.name"></span>
@@ -124,7 +106,7 @@
                                                         v-model="record.quantity"
                                                         @change="calculateDuration({record})"
                                                         :decimals="getItemDecimals({mode: 'result', record})"/>
-                                                    <div class="d-block mt-1">
+                                                    <div class="d-flex justify-content-center gap-1 mt-1">
                                                         <button class="btn btn-danger btn-xs waves-effect" type="button" @click="changeQuantityDetail({record, keyRecord, type: 'subtract'})">
                                                             <i class="fa fa-minus"></i>
                                                         </button>
@@ -136,9 +118,9 @@
                                                 <td>
                                                     <InputNumber v-model="record.price">
                                                         <template v-slot:inputGroupPrepend v-if="isDefined({value: record?.currency})">
-                                                            <button class="btn btn-primary waves-effect px-2" type="button">
-                                                                <small v-text="record?.currency?.sign"></small>
-                                                            </button>
+                                                            <span class="input-group-text text-muted bg-light">
+                                                                <span class="text-dark" v-text="record?.currency?.sign"></span>
+                                                            </span>
                                                         </template>
                                                     </InputNumber>
                                                 </td>
@@ -158,78 +140,39 @@
                                                         <template v-slot:input>
                                                             <button class="btn btn-danger btn-xs waves-effect" type="button" @click="deleteDetail({record, keyRecord})">
                                                                 <i class="fa fa-times"></i>
-                                                                <span class="ms-1">Eliminar</span>
+                                                                <span class="ms-1" v-text="MODULE.texts.actions.delete"></span>
                                                             </button>
                                                             <button v-if="['product', 'service'].includes(record?.type)" class="btn btn-info-1 btn-xs waves-effect" type="button" @click="duplicateDetail({record, keyRecord})">
                                                                 <i class="fa fa-copy"></i>
-                                                                <span class="ms-1">Duplicar</span>
+                                                                <span class="ms-1" v-text="MODULE.texts.actions.duplicate"></span>
                                                             </button>
-                                                            <!-- <template v-if="isSubscription(record?.type)">
-                                                                <button class="btn btn-success btn-xs waves-effect" type="button" @click="viewDetail({record, keyRecord})">
-                                                                    <i :class="record?.extras?.showDetail ? 'fa fa-eye-slash' : 'fa fa-eye'"></i>
-                                                                    <span class="ms-1" v-text="record?.extras?.showDetail ? 'Ocultar detalle' : 'Mostar detalle'"></span>
-                                                                </button>
-                                                            </template> -->
                                                         </template>
                                                     </InputSlot>
                                                 </td>
                                             </tr>
                                             <template v-if="record?.extras?.showDetail">
                                                 <template v-if="isSubscription(record?.type)">
-                                                    <tr class="border-transparent text-center">
-                                                        <td colspan="1"></td>
-                                                        <td colspan="5">
-                                                            <div class="row justify-content-center g-2 my-1">
-                                                                <div class="col-4">
-                                                                    <InputDatetime
-                                                                        title="Fecha de inicio"
-                                                                        v-model="record.extras.start_date"
-                                                                        @change="calculateDuration({record})"
-                                                                        isRequired/>
-                                                                </div>
-                                                                <div class="col-4">
-                                                                    <InputDatetime
-                                                                        title="Fecha de finalización"
-                                                                        v-model="record.extras.end_date"
-                                                                        isRequired
-                                                                        disabled/>
-                                                                </div>
-                                                                <InputSlot
-                                                                    v-if="false"
-                                                                    :isInputGroup="false"
-                                                                    :divInputClass="['col-12', 'text-start', 'mt-3']">
-                                                                    <template v-slot:input>
-                                                                        <div v-if="['day', 'month', 'year'].includes(record.extras?.duration_type)" class="form-check form-check-primary my-1">
-                                                                            <label class="form-check-label fw-semibold">
-                                                                                <input
-                                                                                    class="form-check-input"
-                                                                                    type="checkbox"
-                                                                                    v-model="record.extras.set_end_of_day"
-                                                                                    @change="calculateDuration({record})"/>
-                                                                                Ajustar la hora de la Fecha de finalización al final del día (23:59 = 11:59 PM)
-                                                                            </label>
-                                                                        </div>
-                                                                        <!--<div class="form-check form-check-primary my-2">
-                                                                            <label class="form-check-label">
-                                                                                <input
-                                                                                    class="form-check-input"
-                                                                                    type="checkbox"
-                                                                                    v-model="record.extras.force"/>
-                                                                                Tomar en cuenta la membresías activas
-                                                                            </label>
-                                                                        </div>-->
-                                                                    </template>
-                                                                </InputSlot>
-                                                            </div>
-                                                        </td>
-                                                    </tr>
-                                                    <tr class="border-transparent">
-                                                        <td colspan="6">
-                                                            <div class="divider text-center divider-info">
-                                                                <div class="divider-text">
-                                                                    <div class="badge rounded-pill bg-label-info px-5 py-1">
-                                                                        <i class="fa fa-info-circle"></i>
-                                                                        <span class="ms-2 fw-bold h6 text-info" v-text="'Detalle #'+(keyRecord + 1)"></span>
+                                                    <tr class="bg-warning">
+                                                        <td colspan="5" class="pt-0 pb-1 px-2">
+                                                            <div class="border-start ps-3 pt-2 pb-3 bg-white">
+                                                                <small class="text-muted text-uppercase fw-semibold d-block mb-2">
+                                                                    <i class="fa fa-calendar-alt me-1"></i>
+                                                                    <span v-text="record.name"></span>
+                                                                </small>
+                                                                <div class="row g-3 px-4">
+                                                                    <div class="col-md-6">
+                                                                        <InputDatetime
+                                                                            title="Fecha de inicio"
+                                                                            v-model="record.extras.start_date"
+                                                                            @change="calculateDuration({record})"
+                                                                            isRequired/>
+                                                                    </div>
+                                                                    <div class="col-md-6">
+                                                                        <InputDatetime
+                                                                            title="Fecha de finalización"
+                                                                            v-model="record.extras.end_date"
+                                                                            isRequired
+                                                                            disabled/>
                                                                     </div>
                                                                 </div>
                                                             </div>
@@ -242,7 +185,7 @@
                                             <td colspan="4" class="fw-bold text-end">TOTAL :</td>
                                             <td colspan="2" class="fw-bold text-start">
                                                 <span class="text-break">
-                                                    <span v-text="forms.entity.createUpdate.data.currency?.data?.sign ?? ''"></span>
+                                                    <span v-text="forms[entity].createUpdate.data.currency?.data?.sign ?? ''"></span>
                                                     <span v-text="separatorNumber(total)" class="ms-2"></span>
                                                 </span>
                                             </td>
@@ -251,22 +194,14 @@
                                     <template v-else>
                                         <tr>
                                             <td class="text-center" colspan="99">
-                                                <WithoutData type="image"/>
+                                                <WithoutData type="text"/>
                                             </td>
                                         </tr>
                                     </template>
                                 </tbody>
                             </table>
                         </div>
-                        <!-- <small :class="config.forms.errors.styles.default" v-html="isDefined({value: forms.entity.createUpdate.errors?.details}) ? forms.entity.createUpdate.errors?.details : ''"></small> -->
-                    </div>
-                    <div class="row justify-content-end g-3 my-1">
-                        <div class="col-lg-auto col-sm-auto">
-                            <a href="javascript:void(0)" @click="modalAddDetail({})" class="fw-bold">
-                                <i class="fa fa-plus-circle"></i>
-                                <span class="ms-1">Agregar detalle</span>
-                            </a>
-                        </div>
+                        <!-- <small :class="config.forms.errors.styles.default" v-html="isDefined({value: forms[entity].createUpdate.errors?.details}) ? forms[entity].createUpdate.errors?.details : ''"></small> -->
                     </div>
                 </div>
             </div>
@@ -276,23 +211,24 @@
                 <div class="card-body">
                     <div class="row g-3">
                         <InputTextArea
-                            v-model="forms.entity.createUpdate.data.observation"
+                            v-model="forms[entity].createUpdate.data.observation"
                             hasDiv
-                            :divClass="['mb-3', 'p-0']"
-                            title="Observaciones"
+                            :divClass="['p-0']"
+                            :title="MODULE.texts.form.observation"
+                            :titleClass="[config.forms.classes.title]"
                             hasTextBottom
-                            :textBottomInfo="forms.entity.createUpdate.errors?.observation"/>
-                        <button class="btn btn-info-1 waves-effect my-1" @click="viewSubscriptions({})">
+                            :textBottomInfo="forms[entity].createUpdate.errors?.observation"/>
+                        <button class="btn btn-outline-secondary waves-effect w-100" @click="viewSubscriptions({})">
                             <i class="fa-solid fa-binoculars"></i>
-                            <span class="ms-2">Ver membresías</span>
+                            <span class="ms-2" v-text="MODULE.texts.actions.viewMemberships"></span>
                         </button>
-                        <button class="btn btn-primary waves-effect my-1" @click="modalAddDetail({})">
+                        <button class="btn btn-primary waves-effect w-100" @click="modalAddDetail({})">
                             <i class="fa fa-plus"></i>
-                            <span class="ms-2">Agregar detalle</span>
+                            <span class="ms-2" v-text="MODULE.texts.actions.addDetail"></span>
                         </button>
-                        <button class="btn btn-success waves-effect my-1" @click="createUpdateEntity()">
+                        <button class="btn btn-success waves-effect w-100" @click="createUpdateEntity()">
                             <i class="fa-solid fa-cash-register"></i>
-                            <span class="ms-2">Generar venta</span>
+                            <span class="ms-2" v-text="MODULE.texts.actions.generateSale"></span>
                         </button>
                     </div>
                 </div>
@@ -301,25 +237,30 @@
     </div>
 
     <!-- Modals -->
-    <div class="modal fade" :id="forms.entity.createUpdate.extras.modals.details.id" data-bs-backdrop="static" tabindex="-1" aria-hidden="true">
+    <div class="modal fade" :id="forms[entity].createUpdate.extras.modals.details.id" data-bs-backdrop="static" tabindex="-1" role="dialog">
         <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title text-uppercase fw-bold" v-text="forms.entity.createUpdate.extras.modals.details.titles[forms.entity.createUpdate.extras.modals.details.data?.mode]"></h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <h5 class="modal-title text-uppercase fw-bold" v-text="forms[entity].createUpdate.extras.modals.details.titles[forms[entity].createUpdate.extras.modals.details.data?.mode]"></h5>
+                    <button type="button" class="btn-header-modal" data-bs-dismiss="modal">
+                        <i class="fa fa-times icon-close-modal"></i>
+                    </button>
                 </div>
                 <div class="modal-body">
                     <div class="row g-3">
                         <InputSlot
                             hasDiv
-                            title="Catálogo comercial"
+                            :title="MODULE.texts.form.commercialCatalog"
+                            :titleClass="[config.forms.classes.title]"
                             isRequired
                             hasTextBottom
-                            :textBottomInfo="forms.entity.createUpdate.extras.modals.details.errors?.item">
+                            :textBottomInfo="forms[entity].createUpdate.extras.modals.details.errors?.item">
                             <template v-slot:input>
                                 <v-select
-                                    v-model="forms.entity.createUpdate.extras.modals.details.data.item"
+                                    v-model="forms[entity].createUpdate.extras.modals.details.data.item"
                                     :options="items"
+                                    :class="config.forms.classes.select2"
+                                    @close="tooltips({show: true, time: 500})"
                                     :clearable="false"
                                     placeholder="Seleccione">
                                     <template #option="{ label, data }">
@@ -354,7 +295,7 @@
                             </template>
                         </InputSlot>
                         <InputSlot
-                            v-if="isDefined({value: forms.entity.createUpdate.extras.modals.details.data.extras?.min_price}) || isDefined({value: forms.entity.createUpdate.extras.modals.details.data.extras?.max_price})"
+                            v-if="isDefined({value: forms[entity].createUpdate.extras.modals.details.data.extras?.min_price}) || isDefined({value: forms[entity].createUpdate.extras.modals.details.data.extras?.max_price})"
                             hasDiv
                             :isInputGroup="false"
                             :divInputClass="['d-flex flex-wrap justify-content-start align-items-center gap-2 gap-md-2']"
@@ -362,47 +303,48 @@
                             lg="12">
                             <template v-slot:input>
                                 <span class="fw-bold colon-at-end">Rango de precios</span>
-                                <span v-if="isDefined({value: forms.entity.createUpdate.extras.modals.details.data.extras?.min_price})" v-text="'Min: '+forms.entity.createUpdate.extras.modals.details.data.item?.data?.currency?.sign+' '+separatorNumber(forms.entity.createUpdate.extras.modals.details.data.extras?.min_price)" class="fw-semibold text-danger"></span>
-                                <span v-if="isDefined({value: forms.entity.createUpdate.extras.modals.details.data.extras?.max_price})" v-text="'Max: '+forms.entity.createUpdate.extras.modals.details.data.item?.data?.currency?.sign+' '+separatorNumber(forms.entity.createUpdate.extras.modals.details.data.extras?.max_price)" class="fw-semibold text-success"></span>
+                                <span v-if="isDefined({value: forms[entity].createUpdate.extras.modals.details.data.extras?.min_price})" v-text="'Min: '+forms[entity].createUpdate.extras.modals.details.data.item?.data?.currency?.sign+' '+separatorNumber(forms[entity].createUpdate.extras.modals.details.data.extras?.min_price)" class="fw-semibold text-danger"></span>
+                                <span v-if="isDefined({value: forms[entity].createUpdate.extras.modals.details.data.extras?.max_price})" v-text="'Max: '+forms[entity].createUpdate.extras.modals.details.data.item?.data?.currency?.sign+' '+separatorNumber(forms[entity].createUpdate.extras.modals.details.data.extras?.max_price)" class="fw-semibold text-success"></span>
                             </template>
                         </InputSlot>
                         <InputNumber
-                            v-model="forms.entity.createUpdate.extras.modals.details.data.quantity"
-                            @change="calculateDuration({record: forms.entity.createUpdate.extras.modals.details.data})"
+                            v-model="forms[entity].createUpdate.extras.modals.details.data.quantity"
+                            @change="calculateDuration({record: forms[entity].createUpdate.extras.modals.details.data})"
                             hasDiv
-                            :title="isSubscription(forms.entity.createUpdate.extras.modals.details.data.type) ? 'Cantidad de Periodos' : 'Cantidad'"
+                            :title="isSubscription(forms[entity].createUpdate.extras.modals.details.data.type) ? MODULE.texts.form.quantityPeriods : MODULE.texts.form.quantity"
                             isRequired
-                            :decimals="getItemDecimals({mode: 'result', record: forms.entity.createUpdate.extras.modals.details.data})"
+                            :decimals="getItemDecimals({mode: 'result', record: forms[entity].createUpdate.extras.modals.details.data})"
                             hasTextBottom
-                            :textBottomInfo="forms.entity.createUpdate.extras.modals.details.errors?.quantity"
+                            :textBottomInfo="forms[entity].createUpdate.extras.modals.details.errors?.quantity"
                             xl="4"
                             lg="4"/>
                         <InputNumber
-                            v-model="forms.entity.createUpdate.extras.modals.details.data.price"
+                            v-model="forms[entity].createUpdate.extras.modals.details.data.price"
                             hasDiv
-                            title="Precio"
+                            :title="MODULE.texts.form.price"
                             isRequired
-                            :minValue="forms.entity.createUpdate.extras.modals.details.data.extras?.min_price"
-                            :maxValue="forms.entity.createUpdate.extras.modals.details.data.extras?.max_price"
+                            :minValue="forms[entity].createUpdate.extras.modals.details.data.extras?.min_price"
+                            :maxValue="forms[entity].createUpdate.extras.modals.details.data.extras?.max_price"
                             hasTextBottom
-                            :textBottomInfo="forms.entity.createUpdate.extras.modals.details.errors?.price"
+                            :textBottomInfo="forms[entity].createUpdate.extras.modals.details.errors?.price"
                             xl="4"
                             lg="4">
                             <template v-slot:inputGroupPrepend>
-                                <template v-if="isDefined({value: forms.entity.createUpdate.extras.modals.details.data.item?.data?.currency})">
-                                    <button class="btn btn-primary waves-effect pe-none" type="button" v-text="forms.entity.createUpdate.extras.modals.details.data.item?.data?.currency?.sign"></button>
+                                <template v-if="isDefined({value: forms[entity].createUpdate.extras.modals.details.data.item?.data?.currency})">
+                                    <button class="btn btn-primary waves-effect pe-none" type="button" v-text="forms[entity].createUpdate.extras.modals.details.data.item?.data?.currency?.sign"></button>
                                 </template>
                             </template>
                         </InputNumber>
                         <InputSlot
                             hasDiv
-                            title="Total"
+                            :title="MODULE.texts.form.total"
+                            :titleClass="[config.forms.classes.title]"
                             isRequired
                             xl="4"
                             lg="4">
                             <template v-slot:inputGroupPrepend>
-                                <template v-if="isDefined({value: forms.entity.createUpdate.data.currency?.data})">
-                                    <button class="btn btn-primary waves-effect pe-none" type="button" v-text="forms.entity.createUpdate.data.currency?.data?.sign"></button>
+                                <template v-if="isDefined({value: forms[entity].createUpdate.data.currency?.data})">
+                                    <button class="btn btn-primary waves-effect pe-none" type="button" v-text="forms[entity].createUpdate.data.currency?.data?.sign"></button>
                                 </template>
                             </template>
                             <template v-slot:input>
@@ -410,32 +352,32 @@
                             </template>
                         </InputSlot>
                     </div>
-                    <template v-if="isSubscription(forms.entity.createUpdate.extras.modals.details.data.type)">
+                    <template v-if="isSubscription(forms[entity].createUpdate.extras.modals.details.data.type)">
                         <div class="mt-4">
                             <div class="card">
                                 <div class="card-header bg-success text-white py-2">
-                                    <span class="fw-semibold">Detalle de la membresía</span>
+                                    <span class="fw-semibold" v-text="MODULE.texts.form.membershipDetail"></span>
                                 </div>
                                 <div class="card-body">
                                     <div class="row g-3 mt-1 mb-3">
                                         <InputDatetime
-                                            v-model="forms.entity.createUpdate.extras.modals.details.data.extras.start_date"
-                                            @change="calculateDuration({record: forms.entity.createUpdate.extras.modals.details.data})"
+                                            v-model="forms[entity].createUpdate.extras.modals.details.data.extras.start_date"
+                                            @change="calculateDuration({record: forms[entity].createUpdate.extras.modals.details.data})"
                                             hasDiv
-                                            title="Fecha de inicio"
+                                            :title="MODULE.texts.form.startDate"
                                             isRequired
                                             hasTextBottom
-                                            :textBottomInfo="forms.entity.createUpdate.extras.modals.details.errors?.extras_start_date"
+                                            :textBottomInfo="forms[entity].createUpdate.extras.modals.details.errors?.extras_start_date"
                                             xl="6"
                                             lg="6"/>
                                         <InputDatetime
-                                            v-model="forms.entity.createUpdate.extras.modals.details.data.extras.end_date"
+                                            v-model="forms[entity].createUpdate.extras.modals.details.data.extras.end_date"
                                             hasDiv
-                                            title="Fecha de finalización"
+                                            :title="MODULE.texts.form.endDate"
                                             isRequired
                                             disabled
                                             hasTextBottom
-                                            :textBottomInfo="forms.entity.createUpdate.extras.modals.details.errors?.extras_end_date"
+                                            :textBottomInfo="forms[entity].createUpdate.extras.modals.details.errors?.extras_end_date"
                                             xl="6"
                                             lg="6"/>
                                         <InputSlot
@@ -450,20 +392,20 @@
                                                         </div>
                                                     </h5>
                                                     <h5 class="ms-2 mb-0 d-flex align-items-center">
-                                                        <span class="" v-text="forms.entity.createUpdate.extras.modals.details.data.extras.formatted_duration"></span>
+                                                        <span class="" v-text="forms[entity].createUpdate.extras.modals.details.data.extras.formatted_duration"></span>
                                                         <span class="ms-1">x</span>
-                                                        <span class="ms-1" v-text="(isDefined({value: forms.entity.createUpdate.extras.modals.details.data.quantity}) ? forms.entity.createUpdate.extras.modals.details.data.quantity : '0')+' periodos'"></span>
+                                                        <span class="ms-1" v-text="(isDefined({value: forms[entity].createUpdate.extras.modals.details.data.quantity}) ? forms[entity].createUpdate.extras.modals.details.data.quantity : '0')+' periodos'"></span>
                                                         <span class="ms-1">=</span>
-                                                        <span class="fw-bold ms-1" v-text="forms.entity.createUpdate.extras.modals.details.data.extras.formatted_total_duration"></span>
+                                                        <span class="fw-bold ms-1" v-text="forms[entity].createUpdate.extras.modals.details.data.extras.formatted_total_duration"></span>
                                                     </h5>
                                                 </div>
-                                                <!-- <div v-if="false  && ['day', 'month', 'year'].includes(forms.entity.createUpdate.extras.modals.details.data.extras?.duration_type)" class="form-check form-check-primary my-1">
+                                                <!-- <div v-if="false  && ['day', 'month', 'year'].includes(forms[entity].createUpdate.extras.modals.details.data.extras?.duration_type)" class="form-check form-check-primary my-1">
                                                     <label class="form-check-label fw-semibold">
                                                         <input
                                                             class="form-check-input"
                                                             type="checkbox"
-                                                            v-model="forms.entity.createUpdate.extras.modals.details.data.extras.set_end_of_day"
-                                                            @change="calculateDuration({record: forms.entity.createUpdate.extras.modals.details.data})"/>
+                                                            v-model="forms[entity].createUpdate.extras.modals.details.data.extras.set_end_of_day"
+                                                            @change="calculateDuration({record: forms[entity].createUpdate.extras.modals.details.data})"/>
                                                         Ajustar la <u>hora de la Fecha de finalización</u> al final del día (23:59 = 11:59 PM)
                                                     </label>
                                                 </div> -->
@@ -472,7 +414,7 @@
                                                         <input
                                                             class="form-check-input"
                                                             type="checkbox"
-                                                            v-model="forms.entity.createUpdate.extras.modals.details.data.extras.force"/>
+                                                            v-model="forms[entity].createUpdate.extras.modals.details.data.extras.force"/>
                                                         Tomar en cuenta la membresías activas
                                                     </label>
                                                 </div>-->
@@ -482,13 +424,13 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="accordion mt-3" id="accordionSubscriptions" v-if="false && isDefined({value: forms.entity.createUpdate.data.holder?.data?.id})">
+                        <div class="accordion mt-3" id="accordionSubscriptions" v-if="false && isDefined({value: forms[entity].createUpdate.data.holder?.data?.id})">
                             <div class="card accordion-item">
                                 <h2 class="accordion-header d-flex align-items-center border">
                                     <button type="button" class="accordion-button fw-semibold collapsed" data-bs-toggle="collapse" data-bs-target="#accordionSubscriptions-1" aria-expanded="false">
                                         <i class="fa-solid fa-binoculars"></i>
                                         <span class="ms-2">Membresías activas</span>
-                                        <span class="badge badge-center rounded-pill bg-primary ms-2" v-text="(options?.holders?.subscriptions[forms.entity.createUpdate.data.holder?.data?.id] ?? []).length"></span>
+                                        <span class="badge badge-center rounded-pill bg-primary ms-2" v-text="(options?.holders?.subscriptions[forms[entity].createUpdate.data.holder?.data?.id] ?? []).length"></span>
                                     </button>
                                 </h2>
                                 <div id="accordionSubscriptions-1" class="accordion-collapse collapse">
@@ -503,8 +445,8 @@
                                                     </tr>
                                                 </thead>
                                                 <tbody class="table-border-bottom-0 bg-white">
-                                                    <template v-if="(options?.holders?.subscriptions[forms.entity.createUpdate.data.holder?.data?.id] ?? []).length > 0">
-                                                        <template v-for="(record, keyRecord) in options?.holders?.subscriptions[forms.entity.createUpdate.data.holder?.data?.id]" :key="record.id">
+                                                    <template v-if="(options?.holders?.subscriptions[forms[entity].createUpdate.data.holder?.data?.id] ?? []).length > 0">
+                                                        <template v-for="(record, keyRecord) in options?.holders?.subscriptions[forms[entity].createUpdate.data.holder?.data?.id]" :key="record.id">
                                                             <tr class="text-nowrap text-center">
                                                                 <td v-text="keyRecord + 1"></td>
                                                                 <td>
@@ -535,31 +477,33 @@
                     </template>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary waves-effect" data-bs-dismiss="modal">Cerrar</button>
-                    <button type="button" :class="['btn waves-effect', ['store'].includes(forms.entity.createUpdate.extras.modals.details.data?.mode) ? 'btn-primary' : 'btn-warning']" @click="addDetail()">
+                    <button type="button" class="btn btn-secondary waves-effect" data-bs-dismiss="modal" v-text="MODULE.texts.actions.close"></button>
+                    <button type="button" :class="['btn waves-effect', ['store'].includes(forms[entity].createUpdate.extras.modals.details.data?.mode) ? 'btn-primary' : 'btn-warning']" @click="addDetail()">
                         <i class="fa fa-save"></i>
-                        <span class="ms-2">Guardar</span>
+                        <span class="ms-2" v-text="MODULE.texts.actions.save"></span>
                     </button>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="modal fade" :id="forms.entity.createUpdate.extras.modals.subscriptions.id" data-bs-backdrop="static" tabindex="-1" aria-hidden="true">
+    <div class="modal fade" :id="forms[entity].createUpdate.extras.modals.subscriptions.id" data-bs-backdrop="static" tabindex="-1" role="dialog">
         <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title text-uppercase fw-bold" v-text="forms.entity.createUpdate.extras.modals.subscriptions.titles.default"></h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <h5 class="modal-title text-uppercase fw-bold" v-text="MODULE.texts.modal.activeMemberships"></h5>
+                    <button type="button" class="btn-header-modal" data-bs-dismiss="modal">
+                        <i class="fa fa-times icon-close-modal"></i>
+                    </button>
                 </div>
                 <div class="modal-body">
                     <div class="row mb-3">
                         <div class="d-block">
                             <i class="fa fa-user"></i>
                             <span class="ms-2">Cliente:</span>
-                            <span v-text="forms.entity.createUpdate.data.holder?.data?.document_number" class="fw-bold ms-2"></span>
+                            <span v-text="forms[entity].createUpdate.data.holder?.data?.document_number" class="fw-bold ms-2"></span>
                             <span class="fw-bold ms-1">-</span>
-                            <span v-text="forms.entity.createUpdate.data.holder?.data?.name" class="fw-bold ms-1"></span>
+                            <span v-text="forms[entity].createUpdate.data.holder?.data?.name" class="fw-bold ms-1"></span>
                         </div>
                     </div>
                     <div class="row g-3">
@@ -573,7 +517,7 @@
                                     </tr>
                                 </thead>
                                 <tbody class="table-border-bottom-0 bg-white">
-                                    <template v-if="forms.entity.createUpdate.extras.modals.subscriptions.data.loading">
+                                    <template v-if="forms[entity].createUpdate.extras.modals.subscriptions.data.loading">
                                         <tr class="text-center">
                                             <td colspan="99" class="py-4">
                                                 <Loader/>
@@ -581,8 +525,8 @@
                                         </tr>
                                     </template>
                                     <template v-else>
-                                        <template v-if="(options?.holders?.subscriptions[forms.entity.createUpdate.data.holder?.data?.id] ?? []).length > 0">
-                                            <template v-for="(record, keyRecord) in options?.holders?.subscriptions[forms.entity.createUpdate.data.holder?.data?.id]" :key="record.id">
+                                        <template v-if="(options?.holders?.subscriptions[forms[entity].createUpdate.data.holder?.data?.id] ?? []).length > 0">
+                                            <template v-for="(record, keyRecord) in options?.holders?.subscriptions[forms[entity].createUpdate.data.holder?.data?.id]" :key="record.id">
                                                 <tr class="text-nowrap text-center">
                                                     <td v-text="keyRecord + 1"></td>
                                                     <td>
@@ -610,29 +554,29 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary waves-effect" data-bs-dismiss="modal">Cerrar</button>
-                    <button type="button" :class="['btn waves-effect', 'btn-info-1']" @click="refreshSubscriptions()">
+                    <button type="button" class="btn btn-secondary waves-effect" data-bs-dismiss="modal" v-text="MODULE.texts.actions.close"></button>
+                    <button type="button" class="btn btn-info-1 waves-effect" @click="refreshSubscriptions()">
                         <i class="fa fa-refresh"></i>
-                        <span class="ms-2">Actualizar</span>
+                        <span class="ms-2" v-text="MODULE.texts.actions.refresh"></span>
                     </button>
                 </div>
             </div>
         </div>
     </div>
 
-    <PrintSale :modalId="forms.entity.createUpdate.extras.modals.finished.id" :data="forms.entity.createUpdate.extras.modals.finished.data">
+    <PrintSale :modalId="forms[entity].createUpdate.extras.modals.finished.id" :data="forms[entity].createUpdate.extras.modals.finished.data">
         <template v-slot:messageAppend>
             <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 text-center mb-2">
-                <template v-if="forms.entity.createUpdate.extras.modals.finished.data?.extras?.bool">
+                <template v-if="forms[entity].createUpdate.extras.modals.finished.data?.extras?.bool">
                     <div class="alert alert-success">
                         <i class="fa fa-check-circle text-success fs-4"></i>
-                        <span class="fw-semibold fs-5 ms-2" v-text="forms.entity.createUpdate.extras.modals.finished.data?.extras?.msg"></span>
+                        <span class="fw-semibold fs-5 ms-2" v-text="forms[entity].createUpdate.extras.modals.finished.data?.extras?.msg"></span>
                     </div>
                 </template>
                 <template v-else>
                     <div class="alert alert-danger">
                         <i class="fa fa-check-circle text-danger fs-4"></i>
-                        <span class="fw-semibold fs-5 ms-2" v-text="forms.entity.createUpdate.extras.modals.finished.data?.extras?.msg"></span>
+                        <span class="fw-semibold fs-5 ms-2" v-text="forms[entity].createUpdate.extras.modals.finished.data?.extras?.msg"></span>
                     </div>
                 </template>
             </div>
@@ -643,18 +587,18 @@
                     <div class="badge bg-success p-3 rounded mb-1">
                         <i class="fa-solid fa-cash-register fs-3"></i>
                     </div>
-                    <span class="d-block fw-semibold">Nueva venta</span>
+                    <span class="d-block fw-semibold" v-text="MODULE.texts.actions.newSale"></span>
                 </div>
             </div>
             <div class="row g-2 mt-4">
                 <InputText
                     hasDiv
                     title="Número de celular (Whatsapp)"
-                    v-model="forms.entity.createUpdate.extras.modals.finished.data.whatsapp">
+                    v-model="forms[entity].createUpdate.extras.modals.finished.data.whatsapp">
                     <template v-slot:inputGroupAppend>
-                        <button class="btn btn-success waves-effect" type="button" @click="sendWhatsapp({data: forms.entity.createUpdate.extras.modals.finished.data})" :disabled="!isDefined({value: forms.entity.createUpdate.extras.modals.finished.data.whatsapp})">
+                        <button class="btn btn-success waves-effect" type="button" @click="sendWhatsapp({data: forms[entity].createUpdate.extras.modals.finished.data})" :disabled="!isDefined({value: forms[entity].createUpdate.extras.modals.finished.data.whatsapp})">
                             <i class="fa-brands fa-whatsapp"></i>
-                            <span class="ms-2">Enviar</span>
+                            <span class="ms-2" v-text="MODULE.texts.actions.send"></span>
                         </button>
                     </template>
                 </InputText>
@@ -662,11 +606,11 @@
                     v-if="false"
                     hasDiv
                     title="Correo electrónico"
-                    v-model="forms.entity.createUpdate.extras.modals.finished.data.email">
+                    v-model="forms[entity].createUpdate.extras.modals.finished.data.email">
                     <template v-slot:inputGroupAppend>
-                        <button class="btn btn-info-1 waves-effect" type="button" @click="sendEmail({data: forms.entity.createUpdate.extras.modals.finished.data})" :disabled="!isDefined({value: forms.entity.createUpdate.extras.modals.finished.data.email})">
+                        <button class="btn btn-info-1 waves-effect" type="button" @click="sendEmail({data: forms[entity].createUpdate.extras.modals.finished.data})" :disabled="!isDefined({value: forms[entity].createUpdate.extras.modals.finished.data.email})">
                             <i class="fa fa-envelope"></i>
-                            <span class="ms-2">Enviar</span>
+                            <span class="ms-2" v-text="MODULE.texts.actions.send"></span>
                         </button>
                     </template>
                 </InputText>
@@ -676,14 +620,146 @@
 </template>
 
 <script>
-import * as Alerts    from "@System/Helpers/Alerts.js";
-import * as Constants from "@System/Helpers/Constants.js";
-import * as Requests  from "@System/Helpers/Requests.js";
-import * as Utils     from "@System/Helpers/Utils.js";
+import * as Alerts         from "@System/Helpers/Alerts.js";
+import { initCrudModule }  from "@System/Helpers/ModuleFactory.js";
+import * as Requests       from "@System/Helpers/Requests.js";
+import * as Utils          from "@System/Helpers/Utils.js";
+
+const MODULE_CONFIG = {
+    entity: "sales",
+    menuId: "menu-sales-create",
+    pageTitle: "Nueva venta",
+    breadcrumbParent: "Ventas"
+};
+
+const TEXTS = {
+    form: {
+        branch: "Sucursal",
+        serie: "Tipo de comprobante",
+        issueDate: "Fecha de emisión",
+        holder: "Cliente",
+        observation: "Observaciones",
+        commercialCatalog: "Catálogo comercial",
+        quantity: "Cantidad",
+        quantityPeriods: "Cantidad de Periodos",
+        price: "Precio",
+        total: "Total",
+        membershipDetail: "Detalle de la membresía",
+        startDate: "Fecha de inicio",
+        endDate: "Fecha de finalización"
+    },
+    actions: {
+        addDetail: "Agregar detalle",
+        generateSale: "Generar venta",
+        viewMemberships: "Ver membresías",
+        close: "Cerrar",
+        save: "Guardar",
+        delete: "Eliminar",
+        duplicate: "Duplicar",
+        refresh: "Actualizar",
+        newSale: "Nueva venta",
+        send: "Enviar"
+    },
+    modal: {
+        add: "Agregar",
+        edit: "Editar",
+        activeMemberships: "Membresías activas"
+    }
+};
+
+const MODULE = {
+    config: MODULE_CONFIG,
+    texts: TEXTS
+};
 
 export default {
-    components: {
-        //
+    name: "SalesMain",
+    data() {
+
+        const crudModule = initCrudModule({
+            entity: MODULE.config.entity,
+            menuId: MODULE.config.menuId,
+            pageTitle: MODULE.config.pageTitle
+        });
+
+        crudModule.forms[MODULE.config.entity].createUpdate = {
+            extras: {
+                modals: {
+                    details: {
+                        id: Utils.uuid(),
+                        titles: {
+                            store: TEXTS.modal.add,
+                            update: TEXTS.modal.edit
+                        },
+                        data: {
+                            id: null,
+                            item: null,
+                            type: "",
+                            currency: null,
+                            name: "",
+                            quantity: 1,
+                            price: 0,
+                            observation: "",
+                            extras: {
+                                min_price: "",
+                                max_price: "",
+                                duration_type: "",
+                                duration_value: "",
+                                start_date: "",
+                                end_date: "",
+                                set_end_of_day: false,
+                                force: false,
+                                observation: "",
+                                formatted_duration: "",
+                                formatted_total_duration: "",
+                                formatted_type: "",
+                                showDetail: true
+                            },
+                            mode: "store"
+                        },
+                        errors: {}
+                    },
+                    subscriptions: {
+                        id: Utils.uuid(),
+                        titles: {
+                            default: TEXTS.modal.activeMemberships
+                        },
+                        data: {
+                            loading: false
+                        }
+                    },
+                    finished: {
+                        id: Utils.uuid(),
+                        data: {
+                            id: null,
+                            extras: {},
+                            whatsapp: "",
+                            email: ""
+                        }
+                    }
+                }
+            },
+            data: {
+                id: null,
+                branch: null,
+                serie: null,
+                issue_date: "",
+                holder: null,
+                currency: null,
+                observation: "",
+                status: "",
+                details: []
+            },
+            errors: {
+                details: []
+            }
+        };
+
+        return {
+            ...crudModule,
+            MODULE: MODULE
+        };
+
     },
     mounted: async function() {
 
@@ -691,8 +767,8 @@ export default {
         Utils.navbarItem(this.config.entity.page.menu.id, {});
         Alerts.swals({type: "initParams"});
 
-        let initParams = await this.initParams({}),
-            initOthers = await this.initOthers({});
+        const initParams = await this.initParams({});
+        const initOthers = await this.initOthers({});
 
         if(initParams && initOthers) {
 
@@ -700,100 +776,6 @@ export default {
 
         }
 
-    },
-    data() {
-        return {
-            forms: {
-                entity: {
-                    createUpdate: {
-                        extras: {
-                            modals: {
-                                details: {
-                                    id: Utils.uuid(),
-                                    titles: {
-                                        store: "Agregar",
-                                        update: "Editar"
-                                    },
-                                    data: {
-                                        id: null,
-                                        item: null,
-                                        type: "",
-                                        currency: null,
-                                        name: "",
-                                        quantity: 1,
-                                        price: 0,
-                                        observation: "",
-                                        extras: {
-                                            min_price: "",
-                                            max_price: "",
-                                            duration_type: "",
-                                            duration_value: "",
-                                            start_date: "",
-                                            end_date: "",
-                                            set_end_of_day: false,
-                                            force: false,
-                                            observation: "",
-                                            formatted_duration: "",
-                                            formatted_total_duration: "",
-                                            formatted_type: "",
-                                            showDetail: true
-                                        },
-                                        mode: "store"
-                                    },
-                                    errors: {}
-                                },
-                                subscriptions: {
-                                    id: Utils.uuid(),
-                                    titles: {
-                                        default: "Membresías activas"
-                                    },
-                                    data: {
-                                        loading: false
-                                    }
-                                },
-                                finished: {
-                                    id: Utils.uuid(),
-                                    data: {
-                                        id: null,
-                                        extras: {},
-                                        whatsapp: "",
-                                        email: ""
-                                    }
-                                }
-                            }
-                        },
-                        data: {
-                            id: null,
-                            branch: null,
-                            serie: null,
-                            issue_date: "",
-                            holder: null,
-                            currency: null,
-                            observation: "",
-                            status: "",
-                            details: []
-                        },
-                        errors: {
-                            details: []
-                        }
-                    }
-                }
-            },
-            options: {},
-            config: {
-                ...Constants.generalConfig,
-                entity: {
-                    ...Requests.config({entity: "sales"}),
-                    page: {
-                        title: "Nuevo",
-                        active: true,
-                        menu: {
-                            id: "menu-sales-create"
-                        }
-                    }
-                }
-            }
-        };
     },
     methods: {
         // Init
@@ -815,10 +797,10 @@ export default {
 
             return new Promise(resolve => {
 
-                this.forms.entity.createUpdate.data.branch     = (this.branches).length > 0 ? this.branches[0] : null;
-                this.forms.entity.createUpdate.data.issue_date = Utils.getCurrentDate();
-                this.forms.entity.createUpdate.data.holder     = (this.holders).length > 0 ? this.holders[0] : null;
-                this.forms.entity.createUpdate.data.currency   = (this.currencies).length > 0 ? this.currencies[0] : null;
+                this.forms[this.entity].createUpdate.data.branch     = (this.branches).length > 0 ? this.branches[0] : null;
+                this.forms[this.entity].createUpdate.data.issue_date = Utils.getCurrentDate();
+                this.forms[this.entity].createUpdate.data.holder     = (this.holders).length > 0 ? this.holders[0] : null;
+                this.forms[this.entity].createUpdate.data.currency   = (this.currencies).length > 0 ? this.currencies[0] : null;
 
                 resolve(true);
 
@@ -828,7 +810,7 @@ export default {
         // Actions modal detail
         modalAddDetail({}) {
 
-            let form = this.forms.entity.createUpdate.extras.modals.details;
+            let form = this.forms[this.entity].createUpdate.extras.modals.details;
 
             form.data.mode = "store";
 
@@ -841,7 +823,7 @@ export default {
 
             this.formErrors({functionName, type: "clear"});
 
-            let form = Utils.cloneJson(this.forms.entity.createUpdate.extras.modals.details.data);
+            let form = Utils.cloneJson(this.forms[this.entity].createUpdate.extras.modals.details.data);
 
             const validateForm = this.validateForm({functionName, form, extras: {type: "descriptive"}});
 
@@ -851,7 +833,7 @@ export default {
 
                 if(["store"].includes(form.mode)) {
 
-                    (this.forms.entity.createUpdate.data.details).push({...form, id: Utils.uuid()});
+                    (this.forms[this.entity].createUpdate.data.details).push({...form, id: Utils.uuid()});
 
                     Alerts.toastrs({type: "success", subtitle: `Se ha agregado <b><small>(${form?.quantity})</small> ${form?.name}</b> al detalle de la venta.`});
 
@@ -927,7 +909,7 @@ export default {
 
                     if(result.isConfirmed) {
 
-                        (el.forms.entity.createUpdate.data.details).splice(keyRecord, 1);
+                        (el.forms[el.entity].createUpdate.data.details).splice(keyRecord, 1);
 
                         Alerts.toastrs({type: "success", subtitle: `<b>${form?.name}</b> ha sido eliminado del detalle de la venta.`});
 
@@ -974,7 +956,7 @@ export default {
 
                         form.id = Utils.uuid();
 
-                        (el.forms.entity.createUpdate.data.details).push(form);
+                        (el.forms[el.entity].createUpdate.data.details).push(form);
 
                         Alerts.toastrs({type: "success", subtitle: `<b>${form?.name}</b> ha sido agregado al detalle de la venta.`});
 
@@ -996,7 +978,7 @@ export default {
         },
         viewSubscriptions({}) {
 
-            let form = this.forms.entity.createUpdate.extras.modals.subscriptions;
+            let form = this.forms[this.entity].createUpdate.extras.modals.subscriptions;
 
             this.refreshSubscriptions();
 
@@ -1005,13 +987,13 @@ export default {
         },
         async refreshSubscriptions() {
 
-            let form = this.forms.entity.createUpdate.extras.modals.subscriptions;
+            let form = this.forms[this.entity].createUpdate.extras.modals.subscriptions;
 
             form.data.loading = true;
 
-            const getSubscriptions = await Utils.getSubscriptions({customer: this.forms.entity.createUpdate.data.holder?.data});
+            const getSubscriptions = await Utils.getSubscriptions({customer: this.forms[this.entity].createUpdate.data.holder?.data});
 
-            this.options.holders.subscriptions[this.forms.entity.createUpdate.data.holder?.data?.id] = Requests.valid({result: getSubscriptions}) ? getSubscriptions?.data?.subscriptions : false;
+            this.options.holders.subscriptions[this.forms[this.entity].createUpdate.data.holder?.data?.id] = Requests.valid({result: getSubscriptions}) ? getSubscriptions?.data?.subscriptions : false;
 
             form.data.loading = false;
 
@@ -1024,7 +1006,7 @@ export default {
             Alerts.swals({});
             this.formErrors({functionName, type: "clear"});
 
-            let form = Utils.cloneJson(this.forms.entity.createUpdate.data);
+            let form = Utils.cloneJson(this.forms[this.entity].createUpdate.data);
 
             const validateForm = this.validateForm({functionName, form, extras: {type: "descriptive"}});
 
@@ -1057,15 +1039,15 @@ export default {
 
                     const {sale, ...extras} = createUpdate.data;
 
-                    let holder = this.forms.entity.createUpdate.data.holder;
+                    let holder = this.forms[this.entity].createUpdate.data.holder;
 
-                    const whatsapp = this.isDefined({value: holder.data?.phone_number}) ? holder.data?.phone_number : ""; // this.forms.entity.createUpdate.extras.modals.finished.data.whatsapp;
-                    const email    = this.isDefined({value: holder.data?.email}) ? holder.data?.email : ""; // this.forms.entity.createUpdate.extras.modals.finished.data.email;
+                    const whatsapp = this.isDefined({value: holder.data?.phone_number}) ? holder.data?.phone_number : ""; // this.forms[this.entity].createUpdate.extras.modals.finished.data.whatsapp;
+                    const email    = this.isDefined({value: holder.data?.email}) ? holder.data?.email : ""; // this.forms[this.entity].createUpdate.extras.modals.finished.data.email;
 
-                    this.forms.entity.createUpdate.extras.modals.finished.data = {...sale, extras, whatsapp, email};
+                    this.forms[this.entity].createUpdate.extras.modals.finished.data = {...sale, extras, whatsapp, email};
 
                     Alerts.swals({show: false});
-                    Alerts.modals({type: "show", id: this.forms.entity.createUpdate.extras.modals.finished.id, timeout: 300});
+                    Alerts.modals({type: "show", id: this.forms[this.entity].createUpdate.extras.modals.finished.id, timeout: 300});
 
                     this.clearForm({functionName});
 
@@ -1088,7 +1070,7 @@ export default {
 
         },
         // Forms utils
-        addCustomerPostAction({response = nul}) {
+        addCustomerPostAction({response = null}) {
 
             if(Requests.valid({result: response}) && this.isDefined({value: response?.data?.customer})) {
 
@@ -1101,17 +1083,17 @@ export default {
 
             switch(functionName) {
                 case "addDetail":
-                    this.forms.entity.createUpdate.extras.modals.details.data.id   = null;
-                    this.forms.entity.createUpdate.extras.modals.details.data.item = null;
+                    this.forms[this.entity].createUpdate.extras.modals.details.data.id   = null;
+                    this.forms[this.entity].createUpdate.extras.modals.details.data.item = null;
                     break;
 
                 case "createUpdateEntity":
-                    this.forms.entity.createUpdate.data.id          = null;
-                    // this.forms.entity.createUpdate.data.issue_date  = Utils.getCurrentDate();
-                    // this.forms.entity.createUpdate.data.holder      = null;
-                    this.forms.entity.createUpdate.data.observation = "";
-                    this.forms.entity.createUpdate.data.status      = "";
-                    // this.forms.entity.createUpdate.data.details     = [];
+                    this.forms[this.entity].createUpdate.data.id          = null;
+                    // this.forms[this.entity].createUpdate.data.issue_date  = Utils.getCurrentDate();
+                    // this.forms[this.entity].createUpdate.data.holder      = null;
+                    this.forms[this.entity].createUpdate.data.observation = "";
+                    this.forms[this.entity].createUpdate.data.status      = "";
+                    // this.forms[this.entity].createUpdate.data.details     = [];
                     break;
             }
 
@@ -1120,11 +1102,11 @@ export default {
 
             if(["addDetail"].includes(functionName)) {
 
-                this.forms.entity.createUpdate.extras.modals.details.errors = ["set"].includes(type) ? errors : [];
+                this.forms[this.entity].createUpdate.extras.modals.details.errors = ["set"].includes(type) ? errors : [];
 
             }else if(["createUpdateEntity"].includes(functionName)) {
 
-                this.forms.entity.createUpdate.errors = ["set"].includes(type) ? errors : [];
+                this.forms[this.entity].createUpdate.errors = ["set"].includes(type) ? errors : [];
 
             }
 
@@ -1185,7 +1167,7 @@ export default {
 
                         /* if(!form?.extras?.force) {
 
-                            const subscriptions = Utils.cloneJson(this.options?.holders?.subscriptions[this.forms.entity.createUpdate.data.holder?.data?.id]);
+                            const subscriptions = Utils.cloneJson(this.options?.holders?.subscriptions[this.forms[this.entity].createUpdate.data.holder?.data?.id]);
 
                             let findOverlaps = Utils.findOverlaps({start_date: form?.extras?.start_date, end_date: form?.extras?.end_date}, subscriptions);
 
@@ -1435,9 +1417,14 @@ export default {
             return Utils.legibleFormatDate({dateString, type});
 
         },
+        tooltips({show = true, time = 10}) {
+
+            Alerts.tooltips({show, time});
+
+        },
         sendWhatsapp({data = null, action = "reportSale"}) {
 
-            const phoneNumber = this.forms.entity.createUpdate.extras.modals.finished.data.whatsapp;
+            const phoneNumber = this.forms[this.entity].createUpdate.extras.modals.finished.data.whatsapp;
             const message     = Utils.getMessageWhatsapp({data, action});
 
             Utils.sendWhatsapp({phoneNumber, message});
@@ -1469,9 +1456,14 @@ export default {
         }
     },
     computed: {
-        breadcrumbTitles: function() {
+        entity() {
 
-            return [{title: "Ventas"}, this.config.entity.page];
+            return this.MODULE.config.entity;
+
+        },
+        breadcrumbTitles() {
+
+            return [{title: MODULE.config.breadcrumbParent}, this.config.entity.page];
 
         },
         branches: function() {
@@ -1481,7 +1473,7 @@ export default {
         },
         series: function() {
 
-            const branch = (this.options?.branches?.records ?? []).filter(e => e?.id == this.forms.entity.createUpdate.data.branch?.code);
+            const branch = (this.options?.branches?.records ?? []).filter(e => e?.id == this.forms[this.entity].createUpdate.data.branch?.code);
 
             if(branch.length === 1) {
 
@@ -1513,7 +1505,7 @@ export default {
 
             let total = 0;
 
-            for(let detail of this.forms.entity.createUpdate.data.details) {
+            for(let detail of this.forms[this.entity].createUpdate.data.details) {
 
                 total += Number(this.calculateTotal({item: detail}));
 
@@ -1524,28 +1516,28 @@ export default {
         },
         totalModalDetail: function() {
 
-            return this.calculateTotal({item: this.forms.entity.createUpdate.extras.modals.details.data});
+            return this.calculateTotal({item: this.forms[this.entity].createUpdate.extras.modals.details.data});
 
         }
     },
     watch: {
-        "forms.entity.createUpdate.data.branch": function(newValue, oldValue) {
+        "forms.sales.createUpdate.data.branch"() {
 
-            this.forms.entity.createUpdate.data.serie = (this.series).length > 0 ? this.series[0] : null;
+            this.forms[this.entity].createUpdate.data.serie = (this.series).length > 0 ? this.series[0] : null;
 
         },
-        "forms.entity.createUpdate.data.holder": async function(newValue, oldValue) {
+        "forms.sales.createUpdate.data.holder": async function(newValue) {
 
             const getSubscriptions = await Utils.getSubscriptions({customer: newValue?.data});
 
             this.options.holders.subscriptions[newValue?.data?.id] = Requests.valid({result: getSubscriptions}) ? getSubscriptions?.data?.subscriptions : false;
 
         },
-        "forms.entity.createUpdate.extras.modals.details.data.item": function(newValue, oldValue) {
+        "forms.sales.createUpdate.extras.modals.details.data.item": function(newValue) {
 
             const data = newValue?.data;
 
-            let modalData = this.forms.entity.createUpdate.extras.modals.details.data;
+            const modalData = this.forms[this.entity].createUpdate.extras.modals.details.data;
 
             modalData.type     = data?.type;
             modalData.currency = data?.currency;
