@@ -1,5 +1,5 @@
 <template>
-    <a href="javascript:void(0)" @click="modalCreateUpdateEntity({})" class="me-1" data-bs-toggle="tooltip" data-bs-placement="top" title="Agregar cliente">
+    <a href="javascript:void(0)" @click="openModal()" class="me-1" data-bs-toggle="tooltip" data-bs-placement="top" title="Agregar cliente">
         <i class="fa fa-plus-circle"></i>
     </a>
 
@@ -396,67 +396,86 @@ export default {
             Alerts.tooltips({show: true, time: 500});
 
         },
-        saveEntity() {
+        async saveEntity() {
 
-            this.createUpdateEntity();
-
-        },
-        async createUpdateEntity() {
+            if(this.isSaving) return;
 
             const entityForms = this.forms[this.entity].createUpdate;
 
             Alerts.swals({});
+
             entityForms.errors = {};
+            this.isSaving = true;
 
-            const formData   = Utils.cloneJson(entityForms.data);
-            const validation = Forms.validateFormData(formData, this.validationRules, {isDescriptive: true, errorLabels: this.MODULE.errorLabels});
+            try {
 
-            if(!validation.bool) {
+                const formData   = Utils.cloneJson(entityForms.data);
+                const validation = this.validateFormData(formData);
 
-                Object.assign(entityForms.errors, validation.errors);
-                Alerts.generateAlert({messages: Utils.getErrors({errors: validation.errors}), msgContent: this.config.messages.errorValidate});
-                Alerts.swals({show: false});
-                this.handlePostAction({response: validation});
-                return;
+                if(!validation.bool) {
 
-            }
+                    Alerts.generateAlert({messages: Utils.getErrors({errors: validation.errors}), msgContent: this.config.messages.errorValidate});
+                    this.isSaving = false;
+                    this.handlePostAction({response: validation});
+                    return;
 
-            const preparedData = Forms.prepareFormData(formData, this.MODULE.formFieldConfig);
+                }
 
-            const createUpdate = await Requests.post({route: this.routeActions.store, data: preparedData});
+                const preparedData  = Forms.prepareFormData(formData, this.MODULE.formFieldConfig);
+                const id            = preparedData.id;
+                const isUpdate      = this.isDefined(id);
+                const requestMethod = isUpdate ? "patch" : "post";
+                const route         = this.routeActions[isUpdate ? "update" : "store"];
+                const result        = await Requests[requestMethod]({route, data: preparedData, id});
 
-            if(Requests.valid({result: createUpdate})) {
+                if(Requests.valid({result})) {
 
-                Alerts.modals({type: "hide", id: entityForms.extras.modals.default.id});
-                Alerts.toastrs({type: "success", subtitle: createUpdate?.data?.msg});
-                Alerts.swals({show: false});
+                    Alerts.modals({type: "hide", id: entityForms.extras.modals.default.id});
+                    Alerts.generateAlert({type: "success", msgContent: result.data.msg});
 
-                Forms.clearFormData(entityForms.data, this.MODULE.formFields);
-                this.handlePostAction({response: createUpdate});
+                    Forms.clearFormData(entityForms.data, this.MODULE.formFields);
+                    this.handlePostAction({response: result});
 
-            } else {
+                }else {
 
-                Forms.handleFormResponseErrors({result: createUpdate, formErrorsObject: entityForms.errors, config: this.config});
-                Alerts.swals({show: false});
-                this.handlePostAction({response: createUpdate});
+                    Forms.handleFormResponseErrors({result, formErrorsObject: entityForms.errors, config: this.config});
+                    this.handlePostAction({response: result});
+
+                }
+
+            }catch(error) {
+
+                Alerts.generateAlert({type: "error", messages: [error], msgContent: this.config.messages.catchError});
+
+            }finally {
+
+                this.isSaving = false;
 
             }
 
         },
+        validateFormData(formData) {
+
+            const result = Forms.validateFormData(formData, this.validationRules, {isDescriptive: true, errorLabels: this.MODULE.errorLabels});
+
+            return result;
+
+        },
+        // Others
         async searchDocumentNumber() {
 
             const entityForms          = this.forms[this.entity].createUpdate;
             const documentNumber       = entityForms.data.document_number;
             const identityDocumentType = entityForms.data.identity_document_type;
 
-            if(!this.isDefined({value: documentNumber})) {
+            if(!this.isDefined(documentNumber)) {
 
                 Alerts.generateAlert({msgContent: "Debe ingresar el número de documento para realizar la búsqueda."});
                 return;
 
             }
 
-            if(!this.isDefined({value: identityDocumentType})) {
+            if(!this.isDefined(identityDocumentType)) {
 
                 Alerts.generateAlert({msgContent: "Debe seleccionar el tipo de documento."});
                 return;
@@ -477,7 +496,7 @@ export default {
 
                     entityForms.data.name = `${data?.first_name || ""} ${data?.last_name || ""} ${data?.second_last_name || ""}`.trim();
 
-                } else if(identityDocumentType.data?.code === "ruc") {
+                }else if(identityDocumentType.data?.code === "ruc") {
 
                     entityForms.data.name = data?.legal_name || "";
 
@@ -486,7 +505,7 @@ export default {
                 Alerts.toastrs({type: "success", subtitle: response?.data?.msg});
                 Alerts.swals({show: false});
 
-            } else {
+            }else {
 
                 Alerts.toastrs({type: "error", subtitle: response?.data?.msg});
                 Alerts.swals({show: false});
@@ -496,7 +515,7 @@ export default {
             Alerts.tooltips({show: false});
 
         },
-        isDefined({value}) {
+        isDefined(value) {
 
             return Utils.isDefined({value});
 
