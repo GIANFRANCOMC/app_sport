@@ -168,7 +168,9 @@ import { validateOnlyDigits } from "@System/Helpers/ValidationHelpers.js";
 import InputDate from "@System/Components/InputDate.vue";
 
 const MODULE_CONFIG = {
-    entity: "customers"
+    entity: "customers",
+    pageTitle: "Clientes",
+    pageTitleSingular: "Cliente"
 };
 
 const FORM_FIELDS = {
@@ -186,7 +188,7 @@ const FORM_FIELD_CONFIG = {
     identity_document_type: {mapToField: "identity_document_type_id"},
     document_number: {trim: true},
     name: {trim: true},
-    email: {trim: true, normalize: true},
+    email: {trim: true},
     phone_number: {trim: true, normalize: true},
     gender: {getCode: true, removeIfEmpty: true},
     birthdate: {normalize: true},
@@ -226,12 +228,11 @@ const TEXTS = {
         gender: "Género",
         birthdate: "Fecha de nacimiento",
         status: "Estado",
-        searchDocumentTooltip: "Buscar documento"
+        searchDocumentTooltip: "Buscar N° documento"
     },
     modal: {
         close: "Cerrar",
-        save: "Guardar",
-        addCustomer: "Agregar cliente"
+        save: "Guardar"
     }
 };
 
