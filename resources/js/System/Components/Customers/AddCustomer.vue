@@ -8,7 +8,7 @@
         <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title text-uppercase fw-bold" v-text="forms[entity].createUpdate.extras.modals.default.titles.store"></h5>
+                    <h5 class="modal-title text-uppercase fw-bold" v-text="modalTitles.createUpdate[isUpdate ? 'update' : 'store']"></h5>
                     <button type="button" class="btn-header-modal" data-bs-dismiss="modal">
                         <i class="fa fa-times icon-close-modal"></i>
                     </button>
@@ -47,9 +47,9 @@
                                 :textBottomInfo="forms[entity].createUpdate.errors?.document_number"
                                 xl="6"
                                 lg="6">
-                                <template v-slot:inputGroupPrepend>
+                                <template v-slot:inputGroupPrepend v-if="!isUpdate">
                                     <template v-if="isDocumentTypeSearchable">
-                                        <button :class="['btn waves-effect', 'btn-primary']" type="button" @click="searchDocumentNumber" data-bs-toggle="tooltip" data-bs-placement="top" :title="MODULE.texts.form.searchDocumentTooltip">
+                                        <button :class="['btn waves-effect', isUpdate ? 'btn-warning' : 'btn-primary']" type="button" @click="searchDocumentNumber" data-bs-toggle="tooltip" data-bs-placement="top" :title="MODULE.texts.form.searchDocumentTooltip">
                                             <i class="fa fa-search"></i>
                                         </button>
                                     </template>
@@ -69,6 +69,7 @@
                                 lg="6"/>
                             <InputText
                                 v-model="forms[entity].createUpdate.data.email"
+                                @input="onEmailInput"
                                 hasDiv
                                 :title="MODULE.texts.form.email"
                                 :titleClass="[config.forms.classes.title]"
@@ -145,7 +146,7 @@
                     </button>
                     <button
                         type="button"
-                        :class="['btn waves-effect', 'btn-primary']"
+                        :class="['btn waves-effect', isUpdate ? 'btn-warning' : 'btn-primary']"
                         @click="saveEntity"
                         :disabled="isSaving">
                         <i class="fa fa-save"></i>
@@ -169,8 +170,11 @@ import InputDate from "@System/Components/InputDate.vue";
 
 const MODULE_CONFIG = {
     entity: "customers",
+    menuId: "menu-customers",
     pageTitle: "Clientes",
-    pageTitleSingular: "Cliente"
+    pageTitleSingular: "Cliente",
+    breadcrumbParent: "Gestión de clientes",
+    perPage: 6
 };
 
 const FORM_FIELDS = {
@@ -262,35 +266,42 @@ export default {
 
         const crudModule = initCrudModule({
             entity: MODULE.config.entity,
-            menuId: `menu-${MODULE.config.entity}`,
-            pageTitle: "Clientes"
+            menuId: MODULE.config.menuId,
+            pageTitle: MODULE.config.pageTitle,
+            pageTitleSingular: MODULE.config.pageTitleSingular
         });
 
-        crudModule.forms[MODULE.config.entity].createUpdate = {
-            extras: {
-                modals: {
-                    default: {
-                        id: Utils.uuid(),
-                        titles: {
-                            store: MODULE.texts.modal.addCustomer
-                        }
-                    }
-                }
-            },
-            data: Forms.initFormData(FORM_FIELDS),
-            errors: {}
-        };
+        crudModule.forms[MODULE.config.entity].createUpdate.data = Forms.initFormData(MODULE.formFields);
 
         return {
             ...crudModule,
-            MODULE: MODULE
+            MODULE: MODULE,
+            isInitialized: false,
+            isSaving: false
         };
+
+    },
+    mounted: async function() {
+
+        this.isInitialized = true;
 
     },
     computed: {
         entity() {
 
             return this.MODULE.config.entity;
+
+        },
+        isUpdate() {
+
+            return this.isDefined(this.forms[this.entity].createUpdate.data.id);
+
+        },
+        modalTitles() {
+
+            return {
+                createUpdate: this.forms[this.entity].createUpdate.extras.modals.default.titles
+            };
 
         },
         identityDocumentTypes() {
