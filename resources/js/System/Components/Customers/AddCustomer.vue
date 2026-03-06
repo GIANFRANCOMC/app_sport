@@ -292,16 +292,9 @@ export default {
             return this.MODULE.config.entity;
 
         },
-        isUpdate() {
+        routeActions() {
 
-            return this.isDefined(this.forms[this.entity].createUpdate.data.id);
-
-        },
-        modalTitles() {
-
-            return {
-                createUpdate: this.forms[this.entity].createUpdate.extras.modals.default.titles
-            };
+            return this.config.entity.routes;
 
         },
         identityDocumentTypes() {
@@ -316,11 +309,22 @@ export default {
         },
         statuses() {
 
-            const records = (this.options?.statuses ?? []).map(e => ({code: e.code, label: e.label, data: e}));
-
-            return records.length > 0 ? records : [{code: "active", label: "Activo"}];
+            return (this.options?.statuses ?? []).map(e => ({code: e.code, label: e.label, data: e}));
 
         },
+        isUpdate() {
+
+            return this.isDefined(this.forms[this.entity].createUpdate.data.id);
+
+        },
+        modalTitles() {
+
+            return {
+                createUpdate: this.forms[this.entity].createUpdate.extras.modals.default.titles
+            };
+
+        },
+        // Identity document type
         isDocumentTypeSearchable() {
 
             const documentType = this.forms[this.entity].createUpdate.data.identity_document_type?.data;
@@ -370,19 +374,26 @@ export default {
         }
     },
     methods: {
-        modalCreateUpdateEntity() {
+        onEmailInput(value) {
+
+            this.forms[this.entity].createUpdate.data.email = (value ?? "").toString().toLowerCase();
+
+        },
+        // Forms
+        openModal() {
 
             const entityForms = this.forms[this.entity].createUpdate;
 
             entityForms.errors = {};
             Forms.clearFormData(entityForms.data, this.MODULE.formFields);
 
+            // Set defaults for new record
             entityForms.data.identity_document_type = this.identityDocumentTypes.length > 1 ? this.identityDocumentTypes[1] : null;
             entityForms.data.gender                 = this.genders.length > 0 ? this.genders[0] : null;
             entityForms.data.status                 = this.statuses.length > 0 ? this.statuses[0] : null;
 
             Alerts.modals({type: "show", id: entityForms.extras.modals.default.id});
-            Alerts.tooltips({show: false});
+            Alerts.tooltips({show: true, time: 500});
 
         },
         saveEntity() {
@@ -412,7 +423,7 @@ export default {
 
             const preparedData = Forms.prepareFormData(formData, this.MODULE.formFieldConfig);
 
-            const createUpdate = await Requests.post({route: this.config.entity.routes.store, data: preparedData});
+            const createUpdate = await Requests.post({route: this.routeActions.store, data: preparedData});
 
             if(Requests.valid({result: createUpdate})) {
 
