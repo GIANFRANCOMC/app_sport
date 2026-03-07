@@ -65,7 +65,7 @@
                             lg="12">
                             <template v-slot:default>
                                 <AddCustomer
-                                    :options="options"
+                                    :options="customerOptions"
                                     @postAction="addCustomerPostAction"/>
                             </template>
                             <template v-slot:input>
@@ -783,11 +783,12 @@ export default {
 
             const initParams = await Requests.get({route: this.config.entity.routes.initParams, data: {page: "main"}, showAlert: true});
 
-            this.options.branches    = initParams.data?.config?.branches;
-            this.options.currencies  = initParams.data?.config?.currencies;
-            this.options.holders     = {subscriptions: {}, ...initParams.data?.config?.customers};
-            this.options.identityDocumentTypes = initParams.data?.config?.identityDocumentTypes;
-            this.options.items       = initParams.data?.config?.items;
+            this.options.branches             = initParams.data?.config?.branches;
+            this.options.currencies           = initParams.data?.config?.currencies;
+            this.options.holders              = {subscriptions: {}, ...initParams.data?.config?.customers};
+            this.options.customers            = initParams.data?.config?.customers;
+            this.options.statuses             = initParams.data?.config?.statuses;
+            this.options.items                = initParams.data?.config?.items;
             this.options.salesHeader = initParams.data?.config?.salesHeader;
 
             return Requests.valid({result: initParams});
@@ -1464,6 +1465,13 @@ export default {
         breadcrumbTitles() {
 
             return [{title: MODULE.config.breadcrumbParent}, this.config.entity.page];
+
+        },
+        customerOptions() {
+
+            const { records, ...rest } = this.options.customers ?? {};
+
+            return rest;
 
         },
         branches: function() {

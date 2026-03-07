@@ -58,10 +58,10 @@ class SaleConfigService {
                 $config->currencies->records = Currency::get();
 
                 $config->customers = new stdClass();
-                $config->customers->records = Customer::getAll("sale", $companyId);
-
-                $config->identityDocumentTypes = new stdClass();
-                $config->identityDocumentTypes->records = IdentityDocumentType::getAll("sale");
+                $config->customers->records  = Customer::getAll("sale", $companyId);
+                $config->customers->identityDocumentTypes = IdentityDocumentType::getAll("customer", $companyId);
+                $config->customers->genders  = Customer::getGenders();
+                $config->customers->statuses = Customer::getStatuses();
 
                 $config->items = new stdClass();
                 $config->items->durationTypes = Item::getDurationTypes();
