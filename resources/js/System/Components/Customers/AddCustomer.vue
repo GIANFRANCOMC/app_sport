@@ -170,11 +170,9 @@ import InputDate from "@System/Components/InputDate.vue";
 
 const MODULE_CONFIG = {
     entity: "customers",
-    menuId: "menu-customers",
     pageTitle: "Clientes",
     pageTitleSingular: "Cliente",
-    breadcrumbParent: "Gestión de clientes",
-    perPage: 6
+    breadcrumbParent: "Gestión de clientes"
 };
 
 const FORM_FIELDS = {
@@ -273,8 +271,10 @@ export default {
 
         crudModule.forms[MODULE.config.entity].createUpdate.data = Forms.initFormData(MODULE.formFields);
 
+        const {options, ...restCrudModule} = crudModule;
+
         return {
-            ...crudModule,
+            ...restCrudModule,
             MODULE: MODULE,
             isInitialized: false,
             isSaving: false
@@ -299,7 +299,7 @@ export default {
         },
         identityDocumentTypes() {
 
-            return (this.options?.identityDocumentTypes?.records ?? []).map(e => ({code: e.id, label: e.name, data: e}));
+            return (this.options?.identityDocumentTypes ?? []).map(e => ({code: e.id, label: e.name, data: e}));
 
         },
         genders() {
