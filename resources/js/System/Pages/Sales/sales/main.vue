@@ -167,14 +167,14 @@
                                                         </td>
                                                         <td colspan="5">
                                                             <div class="row g-3 pt-3 pb-4 px-4">
-                                                                <div class="col-md-6">
+                                                                <div class="col-6">
                                                                     <InputDatetime
                                                                         title="Fecha de inicio"
                                                                         v-model="record.extras.start_date"
                                                                         @change="calculateDuration({mode: 'record', record})"
                                                                         isRequired/>
                                                                 </div>
-                                                                <div class="col-md-6">
+                                                                <div class="col-6">
                                                                     <InputDatetime
                                                                         title="Fecha de finalización"
                                                                         v-model="record.extras.end_date"
@@ -271,31 +271,33 @@
                                     :searchable="true"
                                     placeholder="Seleccione">
                                     <template #option="{ label, data }">
-                                        <span v-text="label" class="d-block fw-bold"></span>
-                                        <div class="d-block">
-                                            <small>
-                                                <i class="fa fa-star text-warning"></i>
-                                            </small>
-                                            <small class="ms-2 colon-at-end">Precio unitario</small>
-                                            <small v-text="data?.currency?.sign+' '+separatorNumber(data?.price)" class="ms-2 fw-bold"></small>
-                                        </div>
-                                        <div class="d-block" v-if="isDefined({value: data?.min_price}) || isDefined({value: data?.max_price})">
-                                            <small>
-                                                <i class="fa fa-money-bill text-success"></i>
-                                            </small>
-                                            <small class="ms-2 colon-at-end">Rango de precios</small>
-                                            <small v-if="isDefined({value: data?.min_price})" v-text="'Min: '+data?.currency?.sign+' '+data?.min_price" class="ms-2 fw-bold"></small>
-                                            <small v-if="isDefined({value: data?.max_price})" v-text="'Max: '+data?.currency?.sign+' '+data?.max_price" class="ms-2 fw-bold"></small>
-                                        </div>
-                                        <template v-if="isSubscription(data?.type)">
+                                        <div class="pb-1">
+                                            <span v-text="label" class="d-block fw-bold"></span>
                                             <div class="d-block">
                                                 <small>
-                                                    <i class="fa fa-clock text-info"></i>
+                                                    <i class="fa fa-star text-warning"></i>
                                                 </small>
-                                                <small class="ms-2 colon-at-end">Duración de la {{ data?.formatted_type.toLowerCase() }}</small>
-                                                <small v-text="data?.formatted_duration" class="ms-2 fw-bold text-lowercase"></small>
+                                                <small class="ms-2 colon-at-end">Precio unitario</small>
+                                                <small v-text="data?.currency?.sign+' '+separatorNumber(data?.price)" class="ms-2 fw-bold"></small>
                                             </div>
-                                        </template>
+                                            <div class="d-block" v-if="isDefined({value: data?.min_price}) || isDefined({value: data?.max_price})">
+                                                <small>
+                                                    <i class="fa fa-money-bill text-success"></i>
+                                                </small>
+                                                <small class="ms-2 colon-at-end">Rango de precios</small>
+                                                <small v-if="isDefined({value: data?.min_price})" v-text="'Min: '+data?.currency?.sign+' '+data?.min_price" class="ms-2 fw-bold"></small>
+                                                <small v-if="isDefined({value: data?.max_price})" v-text="'Max: '+data?.currency?.sign+' '+data?.max_price" class="ms-2 fw-bold"></small>
+                                            </div>
+                                            <template v-if="isSubscription(data?.type)">
+                                                <div class="d-block">
+                                                    <small>
+                                                        <i class="fa fa-clock text-info"></i>
+                                                    </small>
+                                                    <small class="ms-2 colon-at-end">Duración de la {{ data?.formatted_type.toLowerCase() }}</small>
+                                                    <small v-text="data?.formatted_duration" class="ms-2 fw-bold text-lowercase"></small>
+                                                </div>
+                                            </template>
+                                        </div>
                                     </template>
                                 </v-select>
                             </template>

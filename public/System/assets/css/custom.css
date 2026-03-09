@@ -63,6 +63,11 @@ input.input-number-no-range[type=number] {
     border-color: #dbdade !important;
 }
 
+.vs__search::placeholder {
+    color: #a5a3ae !important;
+    font-style: italic !important;
+}
+
 /* BACKGROUND */
 .bg-info-1 {
     background-color: #1da1f2 !important;
