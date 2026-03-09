@@ -80,31 +80,31 @@
                     </div>
                     <div class="row g-3">
                         <div class="table-responsive">
-                            <table class="table table-hover">
-                                <thead>
-                                    <tr class="text-center align-middle">
-                                        <th class="bg-secondary text-white fw-semibold col-auto position-sticky start-0 z-1">#</th>
-                                        <th class="bg-secondary text-white fw-semibold col-1">DESCRIPCIÓN</th>
-                                        <th class="bg-secondary text-white fw-semibold col-3">CANTIDAD</th>
-                                        <th class="bg-secondary text-white fw-semibold min-w-150px">PRECIO UNITARIO</th>
-                                        <th class="bg-secondary text-white fw-semibold min-w-150px">TOTAL</th>
-                                        <th class="bg-secondary text-white fw-semibold col-auto"></th>
+                            <table class="table">
+                                <thead class="align-middle bg-secondary text-center">
+                                    <tr>
+                                        <th class="text-white" style="width: 10%;">#</th>
+                                        <th class="text-white" style="width: 20%;">DESCRIPCIÓN</th>
+                                        <th class="text-white" style="width: 20%;">CANTIDAD</th>
+                                        <th class="text-white" style="width: 20%;">PRECIO UNITARIO</th>
+                                        <th class="text-white" style="width: 20%;">TOTAL</th>
+                                        <th class="text-white" style="width: 10%;">ACCIONES</th>
                                     </tr>
                                 </thead>
                                 <tbody class="table-border-bottom-0 bg-white">
                                     <template v-if="(forms[entity].createUpdate.data.details).length > 0">
                                         <template v-for="(record, keyRecord) in forms[entity].createUpdate.data.details" :key="record.id">
-                                            <tr class="text-center">
-                                                <td :rowspan="isSubscription(record?.type) && record?.extras?.showDetail ? 2 : 1">
+                                            <tr>
+                                                <td class="text-center" :rowspan="isSubscription(record?.type) && record?.extras?.showDetail ? 2 : 1">
                                                     <span v-text="keyRecord + 1" class="fw-bold"></span>
                                                 </td>
-                                                <td class="fw-semibold text-start">
+                                                <td class="text-start">
                                                     <span class="text-break" v-text="record.name"></span>
                                                 </td>
-                                                <td>
+                                                <td class="text-center">
                                                     <InputNumber
                                                         v-model="record.quantity"
-                                                        @change="calculateDuration({record})"
+                                                        @change="calculateDuration({mode: 'record', record})"
                                                         :decimals="getItemDecimals({mode: 'result', record})"/>
                                                     <div class="d-flex justify-content-center gap-1 mt-1">
                                                         <button class="btn btn-danger btn-xs waves-effect" type="button" @click="changeQuantityDetail({record, keyRecord, type: 'subtract'})">
@@ -115,22 +115,22 @@
                                                         </button>
                                                     </div>
                                                 </td>
-                                                <td>
+                                                <td class="text-center">
                                                     <InputNumber v-model="record.price">
                                                         <template v-slot:inputGroupPrepend v-if="isDefined({value: record?.currency})">
-                                                            <span class="input-group-text text-muted bg-light">
-                                                                <span class="text-dark" v-text="record?.currency?.sign"></span>
+                                                            <span class="input-group-text bg-light text-dark">
+                                                                <span v-text="record?.currency?.sign"></span>
                                                             </span>
                                                         </template>
                                                     </InputNumber>
                                                 </td>
-                                                <td>
-                                                    <span class="text-break fw-semibold">
+                                                <td class="text-center">
+                                                    <span class="text-break fw-bold">
                                                         <small v-text="record.currency?.sign ?? ''"></small>
                                                         <small v-text="separatorNumber(calculateTotal({item: record}))" class="ms-2"></small>
                                                     </span>
                                                 </td>
-                                                <td>
+                                                <td class="text-center">
                                                     <InputSlot
                                                         hasDiv
                                                         :isInputGroup="false"
@@ -142,38 +142,41 @@
                                                                 <i class="fa fa-times"></i>
                                                                 <span class="ms-1" v-text="MODULE.texts.actions.delete"></span>
                                                             </button>
-                                                            <button v-if="['product', 'service'].includes(record?.type)" class="btn btn-info-1 btn-xs waves-effect" type="button" @click="duplicateDetail({record, keyRecord})">
+                                                            <button v-if="!isSubscription(record?.type)" class="btn btn-info-1 btn-xs waves-effect" type="button" @click="duplicateDetail({record, keyRecord})">
                                                                 <i class="fa fa-copy"></i>
                                                                 <span class="ms-1" v-text="MODULE.texts.actions.duplicate"></span>
                                                             </button>
+                                                            <template v-if="isSubscription(record?.type)">
+                                                                <button class="btn btn-success btn-xs waves-effect" type="button" @click="viewDetail({record, keyRecord})">
+                                                                    <i :class="record?.extras?.showDetail ? 'fa fa-eye-slash' : 'fa fa-eye'"></i>
+                                                                    <span class="ms-1" v-text="record?.extras?.showDetail ? 'Detalle' : 'Detalle'"></span>
+                                                                </button>
+                                                            </template>
                                                         </template>
                                                     </InputSlot>
                                                 </td>
                                             </tr>
                                             <template v-if="record?.extras?.showDetail">
                                                 <template v-if="isSubscription(record?.type)">
-                                                    <tr class="bg-warning">
-                                                        <td colspan="5" class="pt-0 pb-1 px-2">
-                                                            <div class="border-start ps-3 pt-2 pb-3 bg-white">
-                                                                <small class="text-muted text-uppercase fw-semibold d-block mb-2">
-                                                                    <i class="fa fa-calendar-alt me-1"></i>
-                                                                    <span v-text="record.name"></span>
-                                                                </small>
-                                                                <div class="row g-3 px-4">
-                                                                    <div class="col-md-6">
-                                                                        <InputDatetime
-                                                                            title="Fecha de inicio"
-                                                                            v-model="record.extras.start_date"
-                                                                            @change="calculateDuration({record})"
-                                                                            isRequired/>
-                                                                    </div>
-                                                                    <div class="col-md-6">
-                                                                        <InputDatetime
-                                                                            title="Fecha de finalización"
-                                                                            v-model="record.extras.end_date"
-                                                                            isRequired
-                                                                            disabled/>
-                                                                    </div>
+                                                    <tr>
+                                                        <td class="bg-light text-center colon-at-end fw-bold text-dark">
+                                                            Detalle
+                                                        </td>
+                                                        <td colspan="5">
+                                                            <div class="row g-3 pt-3 pb-4 px-4">
+                                                                <div class="col-md-6">
+                                                                    <InputDatetime
+                                                                        title="Fecha de inicio"
+                                                                        v-model="record.extras.start_date"
+                                                                        @change="calculateDuration({record})"
+                                                                        isRequired/>
+                                                                </div>
+                                                                <div class="col-md-6">
+                                                                    <InputDatetime
+                                                                        title="Fecha de finalización"
+                                                                        v-model="record.extras.end_date"
+                                                                        isRequired
+                                                                        disabled/>
                                                                 </div>
                                                             </div>
                                                         </td>
@@ -181,9 +184,9 @@
                                                 </template>
                                             </template>
                                         </template>
-                                        <tr class="fs-5">
-                                            <td colspan="4" class="fw-bold text-end">TOTAL :</td>
-                                            <td colspan="2" class="fw-bold text-start">
+                                        <tr class="fs-5 fw-bold">
+                                            <td colspan="4" class="text-end">TOTAL :</td>
+                                            <td colspan="2" class="text-start">
                                                 <span class="text-break">
                                                     <span v-text="forms[entity].createUpdate.data.currency?.data?.sign ?? ''"></span>
                                                     <span v-text="separatorNumber(total)" class="ms-2"></span>
