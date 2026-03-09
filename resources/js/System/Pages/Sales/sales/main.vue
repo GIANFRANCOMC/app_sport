@@ -22,7 +22,8 @@
                                     :options="branches"
                                     :class="config.forms.classes.select2"
                                     :clearable="false"
-                                    :searchable="false"/>
+                                    :searchable="false"
+                                    placeholder="Seleccione"/>
                             </template>
                         </InputSlot>
                         <InputSlot
@@ -40,7 +41,8 @@
                                     :options="series"
                                     :class="config.forms.classes.select2"
                                     :clearable="false"
-                                    :searchable="false"/>
+                                    :searchable="false"
+                                    placeholder="Seleccione"/>
                             </template>
                         </InputSlot>
                         <InputDate
@@ -74,7 +76,8 @@
                                     :options="holders"
                                     :class="config.forms.classes.select2"
                                     :clearable="false"
-                                    :searchable="true"/>
+                                    :searchable="true"
+                                    placeholder="Seleccione"/>
                             </template>
                         </InputSlot>
                     </div>
@@ -168,7 +171,7 @@
                                                                     <InputDatetime
                                                                         title="Fecha de inicio"
                                                                         v-model="record.extras.start_date"
-                                                                        @change="calculateDuration({record})"
+                                                                        @change="calculateDuration({mode: 'record', record})"
                                                                         isRequired/>
                                                                 </div>
                                                                 <div class="col-md-6">
@@ -241,10 +244,10 @@
 
     <!-- Modals -->
     <div class="modal fade" :id="forms[entity].createUpdate.extras.modals.details.id" data-bs-backdrop="static" tabindex="-1" role="dialog">
-        <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title text-uppercase fw-bold" v-text="forms[entity].createUpdate.extras.modals.details.titles[forms[entity].createUpdate.extras.modals.details.data?.mode]"></h5>
+                    <h5 class="modal-title text-uppercase fw-bold" v-text="modalDetailsTitle"></h5>
                     <button type="button" class="btn-header-modal" data-bs-dismiss="modal">
                         <i class="fa fa-times icon-close-modal"></i>
                     </button>
@@ -257,7 +260,7 @@
                             :titleClass="[config.forms.classes.title]"
                             isRequired
                             hasTextBottom
-                            :textBottomInfo="forms[entity].createUpdate.extras.modals.details.errors?.item">
+                            :textBottomInfo="forms[entity].createUpdate.extras.modals.details.errors?.item_id">
                             <template v-slot:input>
                                 <v-select
                                     v-model="forms[entity].createUpdate.extras.modals.details.data.item"
@@ -265,6 +268,7 @@
                                     :class="config.forms.classes.select2"
                                     @close="tooltips({show: true, time: 500})"
                                     :clearable="false"
+                                    :searchable="true"
                                     placeholder="Seleccione">
                                     <template #option="{ label, data }">
                                         <span v-text="label" class="d-block fw-bold"></span>
@@ -273,24 +277,23 @@
                                                 <i class="fa fa-star text-warning"></i>
                                             </small>
                                             <small v-text="data?.formatted_type" class="ms-2"></small>
-                                            <small v-text="data?.currency?.sign" class="ms-2"></small>
-                                            <small v-text="separatorNumber(data?.price)" class="ms-1"></small>
+                                            <small v-text="data?.currency?.sign+' '+separatorNumber(data?.price)" class="ms-2 fw-bold"></small>
                                         </div>
                                         <div class="d-block" v-if="isDefined({value: data?.min_price}) || isDefined({value: data?.max_price})">
                                             <small>
                                                 <i class="fa fa-money-bill text-success"></i>
                                             </small>
                                             <small class="ms-2 colon-at-end">Rango de precios</small>
-                                            <small v-if="isDefined({value: data?.min_price})" v-text="'Min: '+data?.currency?.sign+data?.min_price" class="ms-2 text-danger fw-bold"></small>
-                                            <small v-if="isDefined({value: data?.max_price})" v-text="'Max: '+data?.currency?.sign+data?.max_price" class="ms-2 text-success fw-bold"></small>
+                                            <small v-if="isDefined({value: data?.min_price})" v-text="'Min: '+data?.currency?.sign+' '+data?.min_price" class="ms-2 fw-bold"></small>
+                                            <small v-if="isDefined({value: data?.max_price})" v-text="'Max: '+data?.currency?.sign+' '+data?.max_price" class="ms-2 fw-bold"></small>
                                         </div>
                                         <template v-if="isSubscription(data?.type)">
                                             <div class="d-block">
                                                 <small>
                                                     <i class="fa fa-clock text-info"></i>
                                                 </small>
-                                                <small class="ms-2">Duración:</small>
-                                                <small v-text="data?.formatted_duration" class="ms-2"></small>
+                                                <small class="ms-2 colon-at-end">Duración</small>
+                                                <small v-text="data?.formatted_duration" class="ms-2 fw-bold"></small>
                                             </div>
                                         </template>
                                     </template>
@@ -312,7 +315,7 @@
                         </InputSlot>
                         <InputNumber
                             v-model="forms[entity].createUpdate.extras.modals.details.data.quantity"
-                            @change="calculateDuration({record: forms[entity].createUpdate.extras.modals.details.data})"
+                            @change="calculateDuration({mode: 'record', record: forms[entity].createUpdate.extras.modals.details.data})"
                             hasDiv
                             :title="isSubscription(forms[entity].createUpdate.extras.modals.details.data.type) ? MODULE.texts.form.quantityPeriods : MODULE.texts.form.quantity"
                             isRequired
@@ -358,14 +361,14 @@
                     <template v-if="isSubscription(forms[entity].createUpdate.extras.modals.details.data.type)">
                         <div class="mt-4">
                             <div class="card">
-                                <div class="card-header bg-success text-white py-2">
+                                <div class="card-header bg-light text-dark py-2">
                                     <span class="fw-semibold" v-text="MODULE.texts.form.membershipDetail"></span>
                                 </div>
                                 <div class="card-body">
                                     <div class="row g-3 mt-1 mb-3">
                                         <InputDatetime
                                             v-model="forms[entity].createUpdate.extras.modals.details.data.extras.start_date"
-                                            @change="calculateDuration({record: forms[entity].createUpdate.extras.modals.details.data})"
+                                            @change="calculateDuration({mode: 'record', record: forms[entity].createUpdate.extras.modals.details.data})"
                                             hasDiv
                                             :title="MODULE.texts.form.startDate"
                                             isRequired
@@ -387,10 +390,10 @@
                                             :isInputGroup="false"
                                             :divInputClass="['col-12', 'text-start', 'mt-3']">
                                             <template v-slot:input>
-                                                <div class="d-flex align-items-center my-1 flex-wrap">
+                                                <div class="d-flex align-items-center mt-1 flex-wrap">
                                                     <h5 class="mb-0 d-flex align-items-center">
-                                                        <div class="badge bg-label-dark fw-semibold">
-                                                            <i class="fa fa-calculator text-dark"></i>
+                                                        <div class="badge bg-label-success fw-semibold">
+                                                            <i class="fa fa-calculator text-success"></i>
                                                             <span class="ms-2">Duración total calculada:</span>
                                                         </div>
                                                     </h5>
@@ -402,17 +405,17 @@
                                                         <span class="fw-bold ms-1" v-text="forms[entity].createUpdate.extras.modals.details.data.extras.formatted_total_duration"></span>
                                                     </h5>
                                                 </div>
-                                                <!-- <div v-if="false  && ['day', 'month', 'year'].includes(forms[entity].createUpdate.extras.modals.details.data.extras?.duration_type)" class="form-check form-check-primary my-1">
+                                                <div v-if="['day', 'month', 'year'].includes(forms[entity].createUpdate.extras.modals.details.data.extras?.duration_type)" class="form-check form-check-primary mt-3">
                                                     <label class="form-check-label fw-semibold">
                                                         <input
                                                             class="form-check-input"
                                                             type="checkbox"
                                                             v-model="forms[entity].createUpdate.extras.modals.details.data.extras.set_end_of_day"
-                                                            @change="calculateDuration({record: forms[entity].createUpdate.extras.modals.details.data})"/>
+                                                            @change="calculateDuration({mode: 'record', record: forms[entity].createUpdate.extras.modals.details.data})"/>
                                                         Ajustar la <u>hora de la Fecha de finalización</u> al final del día (23:59 = 11:59 PM)
                                                     </label>
-                                                </div> -->
-                                                <!--<div class="form-check form-check-primary fw-semibold my-1">
+                                                </div>
+                                                <div class="form-check form-check-primary fw-semibold my-1" v-if="false">
                                                     <label class="form-check-label">
                                                         <input
                                                             class="form-check-input"
@@ -420,7 +423,7 @@
                                                             v-model="forms[entity].createUpdate.extras.modals.details.data.extras.force"/>
                                                         Tomar en cuenta la membresías activas
                                                     </label>
-                                                </div>-->
+                                                </div>
                                             </template>
                                         </InputSlot>
                                     </div>
@@ -664,8 +667,8 @@ const TEXTS = {
         send: "Enviar"
     },
     modal: {
-        add: "Agregar",
-        edit: "Editar",
+        add: "AGREGAR DETALLE",
+        edit: "EDITAR DETALLE",
         activeMemberships: "Membresías activas"
     }
 };
@@ -1529,6 +1532,14 @@ export default {
 
             return this.calculateTotal({item: this.forms[this.entity].createUpdate.extras.modals.details.data});
 
+        },
+        modalDetailsTitle() {
+
+            const mode   = this.forms[this.entity].createUpdate.extras.modals.details.data?.mode;
+            const titles = this.forms[this.entity].createUpdate.extras.modals.details.titles;
+
+            return titles?.[mode] ?? "";
+
         }
     },
     watch: {
@@ -1593,7 +1604,7 @@ export default {
                     start_date: Utils.isDefined({value: modalData.extras.start_date}) ? modalData.extras.start_date : Utils.getCurrentDate("datetime"),
                     end_date: "",
                     set_end_of_day: ["today"].includes(data?.duration_type),
-                    force: true,
+                    force: false,
                     observation: "",
                     formatted_duration: data?.formatted_duration,
                     formatted_total_duration: "",
