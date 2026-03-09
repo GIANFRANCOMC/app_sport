@@ -85,9 +85,9 @@
                                     <tr>
                                         <th class="text-white" style="width: 10%;">#</th>
                                         <th class="text-white" style="width: 20%;">DESCRIPCIÓN</th>
-                                        <th class="text-white" style="width: 20%;">CANTIDAD</th>
-                                        <th class="text-white" style="width: 20%;">PRECIO UNITARIO</th>
-                                        <th class="text-white" style="width: 20%;">TOTAL</th>
+                                        <th class="text-white min-w-150px" style="width: 20%;">CANTIDAD</th>
+                                        <th class="text-white min-w-150px" style="width: 20%;">PRECIO UNITARIO</th>
+                                        <th class="text-white min-w-150px" style="width: 20%;">TOTAL</th>
                                         <th class="text-white" style="width: 10%;">ACCIONES</th>
                                     </tr>
                                 </thead>
@@ -95,8 +95,8 @@
                                     <template v-if="(forms[entity].createUpdate.data.details).length > 0">
                                         <template v-for="(record, keyRecord) in forms[entity].createUpdate.data.details" :key="record.id">
                                             <tr>
-                                                <td class="text-center" :rowspan="isSubscription(record?.type) && record?.extras?.showDetail ? 2 : 1">
-                                                    <span v-text="keyRecord + 1" class="fw-bold"></span>
+                                                <td class="text-center fw-bold" :rowspan="isSubscription(record?.type) && record?.extras?.showDetail ? 2 : 1">
+                                                    <span v-text="keyRecord + 1"></span>
                                                 </td>
                                                 <td class="text-start">
                                                     <span class="text-break" v-text="record.name"></span>
@@ -127,7 +127,7 @@
                                                 <td class="text-center">
                                                     <span class="text-break fw-bold">
                                                         <small v-text="record.currency?.sign ?? ''"></small>
-                                                        <small v-text="separatorNumber(calculateTotal({item: record}))" class="ms-2"></small>
+                                                        <small v-text="separatorNumber(calculateTotal({item: record}))" class="ms-1"></small>
                                                     </span>
                                                 </td>
                                                 <td class="text-center">
@@ -189,7 +189,7 @@
                                             <td colspan="2" class="text-start">
                                                 <span class="text-break">
                                                     <span v-text="forms[entity].createUpdate.data.currency?.data?.sign ?? ''"></span>
-                                                    <span v-text="separatorNumber(total)" class="ms-2"></span>
+                                                    <span v-text="separatorNumber(total)" class="ms-1"></span>
                                                 </span>
                                             </td>
                                         </tr>
@@ -212,16 +212,16 @@
         <div class="col-lg-3 col-12">
             <div class="card">
                 <div class="card-body">
-                    <div class="row g-3">
+                    <div class="row g-2">
                         <InputTextArea
                             v-model="forms[entity].createUpdate.data.observation"
                             hasDiv
-                            :divClass="['p-0']"
+                            :divClass="['p-0 mb-3']"
                             :title="MODULE.texts.form.observation"
                             :titleClass="[config.forms.classes.title]"
                             hasTextBottom
                             :textBottomInfo="forms[entity].createUpdate.errors?.observation"/>
-                        <button class="btn btn-outline-secondary waves-effect w-100" @click="viewSubscriptions({})">
+                        <button class="btn btn-info-1 waves-effect w-100" @click="viewSubscriptions({})">
                             <i class="fa-solid fa-binoculars"></i>
                             <span class="ms-2" v-text="MODULE.texts.actions.viewMemberships"></span>
                         </button>
