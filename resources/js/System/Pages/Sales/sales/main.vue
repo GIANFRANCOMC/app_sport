@@ -121,9 +121,9 @@
                                                 <td class="text-center">
                                                     <InputNumber v-model="record.price">
                                                         <template v-slot:inputGroupPrepend v-if="isDefined({value: record?.currency})">
-                                                            <span class="input-group-text bg-light text-dark">
+                                                            <div class="input-group-text bg-light text-dark">
                                                                 <span v-text="record?.currency?.sign"></span>
-                                                            </span>
+                                                            </div>
                                                         </template>
                                                     </InputNumber>
                                                 </td>
@@ -276,7 +276,7 @@
                                             <small>
                                                 <i class="fa fa-star text-warning"></i>
                                             </small>
-                                            <small v-text="data?.formatted_type" class="ms-2"></small>
+                                            <small class="ms-2 colon-at-end">Precio unitario</small>
                                             <small v-text="data?.currency?.sign+' '+separatorNumber(data?.price)" class="ms-2 fw-bold"></small>
                                         </div>
                                         <div class="d-block" v-if="isDefined({value: data?.min_price}) || isDefined({value: data?.max_price})">
@@ -292,8 +292,8 @@
                                                 <small>
                                                     <i class="fa fa-clock text-info"></i>
                                                 </small>
-                                                <small class="ms-2 colon-at-end">Duración</small>
-                                                <small v-text="data?.formatted_duration" class="ms-2 fw-bold"></small>
+                                                <small class="ms-2 colon-at-end">Duración de la {{ data?.formatted_type.toLowerCase() }}</small>
+                                                <small v-text="data?.formatted_duration" class="ms-2 fw-bold text-lowercase"></small>
                                             </div>
                                         </template>
                                     </template>
@@ -337,7 +337,9 @@
                             lg="4">
                             <template v-slot:inputGroupPrepend>
                                 <template v-if="isDefined({value: forms[entity].createUpdate.extras.modals.details.data.item?.data?.currency})">
-                                    <button class="btn btn-primary waves-effect pe-none" type="button" v-text="forms[entity].createUpdate.extras.modals.details.data.item?.data?.currency?.sign"></button>
+                                    <div class="input-group-text bg-light text-dark">
+                                        <span v-text="forms[entity].createUpdate.extras.modals.details.data.item?.data?.currency?.sign"></span>
+                                    </div>
                                 </template>
                             </template>
                         </InputNumber>
@@ -350,7 +352,9 @@
                             lg="4">
                             <template v-slot:inputGroupPrepend>
                                 <template v-if="isDefined({value: forms[entity].createUpdate.data.currency?.data})">
-                                    <button class="btn btn-primary waves-effect pe-none" type="button" v-text="forms[entity].createUpdate.data.currency?.data?.sign"></button>
+                                    <div class="input-group-text bg-light text-dark">
+                                        <span v-text="forms[entity].createUpdate.data.currency?.data?.sign"></span>
+                                    </div>
                                 </template>
                             </template>
                             <template v-slot:input>
