@@ -298,13 +298,13 @@
                             v-if="isDefined({value: forms[entity].createUpdate.extras.modals.details.data.extras?.min_price}) || isDefined({value: forms[entity].createUpdate.extras.modals.details.data.extras?.max_price})"
                             hasDiv
                             :isInputGroup="false"
-                            :divInputClass="['d-flex flex-wrap justify-content-start align-items-center gap-2 gap-md-2']"
+                            :divInputClass="['d-flex flex-column flex-md-row flex-wrap justify-content-center align-items-start align-items-md-center gap-2 p-2 border rounded border-light bg-light']"
                             xl="12"
                             lg="12">
                             <template v-slot:input>
                                 <span class="fw-bold colon-at-end">Rango de precios</span>
                                 <span v-if="isDefined({value: forms[entity].createUpdate.extras.modals.details.data.extras?.min_price})" v-text="'Min: '+forms[entity].createUpdate.extras.modals.details.data.item?.data?.currency?.sign+' '+separatorNumber(forms[entity].createUpdate.extras.modals.details.data.extras?.min_price)" class="fw-semibold text-danger"></span>
-                                <span v-if="isDefined({value: forms[entity].createUpdate.extras.modals.details.data.extras?.max_price})" v-text="'Max: '+forms[entity].createUpdate.extras.modals.details.data.item?.data?.currency?.sign+' '+separatorNumber(forms[entity].createUpdate.extras.modals.details.data.extras?.max_price)" class="fw-semibold text-success"></span>
+                                <span v-if="isDefined({value: forms[entity].createUpdate.extras.modals.details.data.extras?.max_price})" v-text="'Max: '+forms[entity].createUpdate.extras.modals.details.data.item?.data?.currency?.sign+' '+separatorNumber(forms[entity].createUpdate.extras.modals.details.data.extras?.max_price)" class="fw-semibold text-dark"></span>
                             </template>
                         </InputSlot>
                         <InputNumber
@@ -353,130 +353,60 @@
                                 <input class="form-control" disabled :value="separatorNumber(totalModalDetail)"/>
                             </template>
                         </InputSlot>
-                    </div>
-                    <template v-if="isSubscription(forms[entity].createUpdate.extras.modals.details.data.type)">
-                        <div class="mt-4">
-                            <div class="card">
-                                <div class="card-header bg-light text-dark py-2">
-                                    <span class="fw-semibold" v-text="MODULE.texts.form.membershipDetail"></span>
-                                </div>
-                                <div class="card-body">
-                                    <div class="row g-3 mt-1 mb-3">
-                                        <InputDatetime
-                                            v-model="forms[entity].createUpdate.extras.modals.details.data.extras.start_date"
-                                            @change="calculateDuration({mode: 'record', record: forms[entity].createUpdate.extras.modals.details.data})"
-                                            hasDiv
-                                            :title="MODULE.texts.form.startDate"
-                                            isRequired
-                                            hasTextBottom
-                                            :textBottomInfo="forms[entity].createUpdate.extras.modals.details.errors?.extras_start_date"
-                                            xl="6"
-                                            lg="6"/>
-                                        <InputDatetime
-                                            v-model="forms[entity].createUpdate.extras.modals.details.data.extras.end_date"
-                                            hasDiv
-                                            :title="MODULE.texts.form.endDate"
-                                            isRequired
-                                            disabled
-                                            hasTextBottom
-                                            :textBottomInfo="forms[entity].createUpdate.extras.modals.details.errors?.extras_end_date"
-                                            xl="6"
-                                            lg="6"/>
-                                        <InputSlot
-                                            :isInputGroup="false"
-                                            :divInputClass="['col-12', 'text-start', 'mt-3']">
-                                            <template v-slot:input>
-                                                <div class="d-flex align-items-center mt-1 flex-wrap">
-                                                    <h5 class="mb-0 d-flex align-items-center">
-                                                        <div class="badge bg-label-success fw-semibold">
-                                                            <i class="fa fa-calculator text-success"></i>
-                                                            <span class="ms-2">Duración total calculada:</span>
-                                                        </div>
-                                                    </h5>
-                                                    <h5 class="ms-2 mb-0 d-flex align-items-center">
-                                                        <span class="" v-text="forms[entity].createUpdate.extras.modals.details.data.extras.formatted_duration"></span>
-                                                        <span class="ms-1">x</span>
-                                                        <span class="ms-1" v-text="(isDefined({value: forms[entity].createUpdate.extras.modals.details.data.quantity}) ? forms[entity].createUpdate.extras.modals.details.data.quantity : '0')+' periodos'"></span>
-                                                        <span class="ms-1">=</span>
-                                                        <span class="fw-bold ms-1" v-text="forms[entity].createUpdate.extras.modals.details.data.extras.formatted_total_duration"></span>
-                                                    </h5>
-                                                </div>
-                                                <div v-if="['day', 'month', 'year'].includes(forms[entity].createUpdate.extras.modals.details.data.extras?.duration_type)" class="form-check form-check-primary mt-3">
-                                                    <label class="form-check-label fw-semibold">
-                                                        <input
-                                                            class="form-check-input"
-                                                            type="checkbox"
-                                                            v-model="forms[entity].createUpdate.extras.modals.details.data.extras.set_end_of_day"
-                                                            @change="calculateDuration({mode: 'record', record: forms[entity].createUpdate.extras.modals.details.data})"/>
-                                                        Ajustar la <u>hora de la Fecha de finalización</u> al final del día (23:59 = 11:59 PM)
-                                                    </label>
-                                                </div>
-                                                <div class="form-check form-check-primary fw-semibold my-1" v-if="false">
-                                                    <label class="form-check-label">
-                                                        <input
-                                                            class="form-check-input"
-                                                            type="checkbox"
-                                                            v-model="forms[entity].createUpdate.extras.modals.details.data.extras.force"/>
-                                                        Tomar en cuenta la membresías activas
-                                                    </label>
-                                                </div>
-                                            </template>
-                                        </InputSlot>
+                        <template v-if="isSubscription(forms[entity].createUpdate.extras.modals.details.data.type)">
+                            <InputDatetime
+                                v-model="forms[entity].createUpdate.extras.modals.details.data.extras.start_date"
+                                @change="calculateDuration({mode: 'record', record: forms[entity].createUpdate.extras.modals.details.data})"
+                                hasDiv
+                                :title="MODULE.texts.form.startDate"
+                                :titleClass="[config.forms.classes.title]"
+                                isRequired
+                                hasTextBottom
+                                :textBottomInfo="forms[entity].createUpdate.extras.modals.details.errors?.extras_start_date"
+                                xl="6"
+                                lg="6"/>
+                            <InputDatetime
+                                v-model="forms[entity].createUpdate.extras.modals.details.data.extras.end_date"
+                                hasDiv
+                                :title="MODULE.texts.form.endDate"
+                                :titleClass="[config.forms.classes.title]"
+                                isRequired
+                                disabled
+                                hasTextBottom
+                                :textBottomInfo="forms[entity].createUpdate.extras.modals.details.errors?.extras_end_date"
+                                xl="6"
+                                lg="6"/>
+                            <InputSlot
+                                :isInputGroup="false"
+                                :divInputClass="['d-flex flex-wrap justify-content-start align-items-center']">
+                                <template v-slot:input>
+                                    <div v-if="isDurationTypeCalendar(forms[entity].createUpdate.extras.modals.details.data.extras?.duration_type)" class="form-check form-check-primary">
+                                        <label class="form-check-label fw-semibold">
+                                            <input class="form-check-input" type="checkbox" v-model="forms[entity].createUpdate.extras.modals.details.data.extras.set_end_of_day"
+                                                @change="calculateDuration({mode: 'record', record: forms[entity].createUpdate.extras.modals.details.data})"/>
+                                            Ajustar la <u>hora de la Fecha de finalización</u> al final del día (23:59 = 11:59 PM)
+                                        </label>
                                     </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="accordion mt-3" id="accordionSubscriptions" v-if="false && isDefined({value: forms[entity].createUpdate.data.holder?.data?.id})">
-                            <div class="card accordion-item">
-                                <h2 class="accordion-header d-flex align-items-center border">
-                                    <button type="button" class="accordion-button fw-semibold collapsed" data-bs-toggle="collapse" data-bs-target="#accordionSubscriptions-1" aria-expanded="false">
-                                        <i class="fa-solid fa-binoculars"></i>
-                                        <span class="ms-2">Membresías activas</span>
-                                        <span class="badge badge-center rounded-pill bg-primary ms-2" v-text="(options?.holders?.subscriptions[forms[entity].createUpdate.data.holder?.data?.id] ?? []).length"></span>
-                                    </button>
-                                </h2>
-                                <div id="accordionSubscriptions-1" class="accordion-collapse collapse">
-                                    <div class="accordion-body">
-                                        <div class="table-responsive my-3">
-                                            <table class="table table-sm table-hover">
-                                                <thead>
-                                                    <tr class="text-center align-middle">
-                                                        <th class="bg-secondary text-white fw-semibold col-1">#</th>
-                                                        <th class="bg-secondary text-white fw-semibold text-nowrap col-2">FECHA DE INICIO</th>
-                                                        <th class="bg-secondary text-white fw-semibold text-nowrap col-2">FECHA DE FINALIZACIÓN</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody class="table-border-bottom-0 bg-white">
-                                                    <template v-if="(options?.holders?.subscriptions[forms[entity].createUpdate.data.holder?.data?.id] ?? []).length > 0">
-                                                        <template v-for="(record, keyRecord) in options?.holders?.subscriptions[forms[entity].createUpdate.data.holder?.data?.id]" :key="record.id">
-                                                            <tr class="text-nowrap text-center">
-                                                                <td v-text="keyRecord + 1"></td>
-                                                                <td>
-                                                                    <span v-text="legibleFormatDate({dateString: record.start_date, type: 'date'})" class="d-block fw-semibold"></span>
-                                                                    <span v-text="legibleFormatDate({dateString: record.start_date, type: 'time'})" class="d-block fw-semibold"></span>
-                                                                </td>
-                                                                <td>
-                                                                    <span v-text="legibleFormatDate({dateString: record.end_date, type: 'date'})" class="d-block fw-semibold"></span>
-                                                                    <span v-text="legibleFormatDate({dateString: record.end_date, type: 'time'})" class="d-block fw-semibold"></span>
-                                                                </td>
-                                                            </tr>
-                                                        </template>
-                                                    </template>
-                                                    <template v-else>
-                                                        <tr>
-                                                            <td class="text-center" colspan="99">
-                                                                <WithoutData type="text"/>
-                                                            </td>
-                                                        </tr>
-                                                    </template>
-                                                </tbody>
-                                            </table>
+                                    <div class="form-check form-check-primary fw-semibold">
+                                        <label class="form-check-label">
+                                            <input class="form-check-input" type="checkbox" v-model="forms[entity].createUpdate.extras.modals.details.data.extras.force"/>
+                                            Tomar en cuenta la membresías activas
+                                        </label>
+                                    </div>
+                                    <div class="d-flex flex-column flex-md-row flex-wrap justify-content-center align-items-start align-items-md-center gap-2 p-2 mt-2 border rounded border-light bg-light w-100">
+                                        <span class="fw-bold colon-at-end">Duración total calculada</span>
+                                        <div class="d-flex align-items-center fw-semibold">
+                                            <span class="text-lowercase" v-text="forms[entity].createUpdate.extras.modals.details.data.extras.formatted_duration"></span>
+                                            <span class="ms-1">x</span>
+                                            <span class="ms-1 text-lowercase" v-text="(isDefined({value: forms[entity].createUpdate.extras.modals.details.data.quantity}) ? forms[entity].createUpdate.extras.modals.details.data.quantity : '0')+' periodos'"></span>
+                                            <span class="ms-1">=</span>
+                                            <span class="fw-bold text-dark ms-1 text-lowercase" v-text="forms[entity].createUpdate.extras.modals.details.data.extras.formatted_total_duration"></span>
                                         </div>
                                     </div>
-                                </div>
-                            </div>
-                        </div>
-                    </template>
+                                </template>
+                            </InputSlot>
+                        </template>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary waves-effect" data-bs-dismiss="modal" v-text="MODULE.texts.actions.close"></button>
@@ -1350,6 +1280,11 @@ export default {
         isSubscription(type) {
 
             return ["subscription"].includes(type);
+
+        },
+        isDurationTypeCalendar(durationType) {
+
+            return ["day", "month", "year"].includes(durationType);
 
         },
         calculateTotal({item}) {
