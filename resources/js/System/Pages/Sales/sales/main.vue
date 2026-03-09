@@ -274,29 +274,21 @@
                                         <div class="pb-1">
                                             <span v-text="label" class="d-block fw-bold"></span>
                                             <div class="d-block">
-                                                <small>
-                                                    <i class="fa fa-star text-warning"></i>
-                                                </small>
+                                                <i class="fa fa-money-bill text-success small"></i>
                                                 <small class="ms-2 colon-at-end">Precio unitario</small>
                                                 <small v-text="data?.currency?.sign+' '+separatorNumber(data?.price)" class="ms-2 fw-bold"></small>
                                             </div>
                                             <div class="d-block" v-if="isDefined({value: data?.min_price}) || isDefined({value: data?.max_price})">
-                                                <small>
-                                                    <i class="fa fa-money-bill text-success"></i>
-                                                </small>
+                                                <i class="fa fa-arrows-alt-h text-warning small"></i>
                                                 <small class="ms-2 colon-at-end">Rango de precios</small>
                                                 <small v-if="isDefined({value: data?.min_price})" v-text="'Min: '+data?.currency?.sign+' '+data?.min_price" class="ms-2 fw-bold"></small>
                                                 <small v-if="isDefined({value: data?.max_price})" v-text="'Max: '+data?.currency?.sign+' '+data?.max_price" class="ms-2 fw-bold"></small>
                                             </div>
-                                            <template v-if="isSubscription(data?.type)">
-                                                <div class="d-block">
-                                                    <small>
-                                                        <i class="fa fa-clock text-info"></i>
-                                                    </small>
-                                                    <small class="ms-2 colon-at-end">Duración de la {{ data?.formatted_type.toLowerCase() }}</small>
-                                                    <small v-text="data?.formatted_duration" class="ms-2 fw-bold text-lowercase"></small>
-                                                </div>
-                                            </template>
+                                            <div class="d-block" v-if="isSubscription(data?.type)">
+                                                <i class="fa fa-clock text-info small"></i>
+                                                <small class="ms-2 colon-at-end">Duración de la {{ data?.formatted_type.toLowerCase() }}</small>
+                                                <small v-text="data?.formatted_duration" class="ms-2 fw-bold text-lowercase"></small>
+                                            </div>
                                         </div>
                                     </template>
                                 </v-select>
@@ -320,6 +312,7 @@
                             @change="calculateDuration({mode: 'record', record: forms[entity].createUpdate.extras.modals.details.data})"
                             hasDiv
                             :title="isSubscription(forms[entity].createUpdate.extras.modals.details.data.type) ? MODULE.texts.form.quantityPeriods : MODULE.texts.form.quantity"
+                            :titleClass="[config.forms.classes.title]"
                             isRequired
                             :decimals="getItemDecimals({mode: 'result', record: forms[entity].createUpdate.extras.modals.details.data})"
                             hasTextBottom
@@ -330,6 +323,7 @@
                             v-model="forms[entity].createUpdate.extras.modals.details.data.price"
                             hasDiv
                             :title="MODULE.texts.form.price"
+                            :titleClass="[config.forms.classes.title]"
                             isRequired
                             :minValue="forms[entity].createUpdate.extras.modals.details.data.extras?.min_price"
                             :maxValue="forms[entity].createUpdate.extras.modals.details.data.extras?.max_price"
@@ -337,12 +331,10 @@
                             :textBottomInfo="forms[entity].createUpdate.extras.modals.details.errors?.price"
                             xl="4"
                             lg="4">
-                            <template v-slot:inputGroupPrepend>
-                                <template v-if="isDefined({value: forms[entity].createUpdate.extras.modals.details.data.item?.data?.currency})">
-                                    <div class="input-group-text bg-light text-dark">
-                                        <span v-text="forms[entity].createUpdate.extras.modals.details.data.item?.data?.currency?.sign"></span>
-                                    </div>
-                                </template>
+                            <template v-slot:inputGroupPrepend v-if="isDefined({value: forms[entity].createUpdate.extras.modals.details.data.item?.data?.currency})">
+                                <div class="input-group-text bg-light text-dark">
+                                    <span v-text="forms[entity].createUpdate.extras.modals.details.data.item?.data?.currency?.sign"></span>
+                                </div>
                             </template>
                         </InputNumber>
                         <InputSlot
@@ -352,12 +344,10 @@
                             isRequired
                             xl="4"
                             lg="4">
-                            <template v-slot:inputGroupPrepend>
-                                <template v-if="isDefined({value: forms[entity].createUpdate.data.currency?.data})">
-                                    <div class="input-group-text bg-light text-dark">
-                                        <span v-text="forms[entity].createUpdate.data.currency?.data?.sign"></span>
-                                    </div>
-                                </template>
+                            <template v-slot:inputGroupPrepend v-if="isDefined({value: forms[entity].createUpdate.data.currency?.data})">
+                                <div class="input-group-text bg-light text-dark">
+                                    <span v-text="forms[entity].createUpdate.data.currency?.data?.sign"></span>
+                                </div>
                             </template>
                             <template v-slot:input>
                                 <input class="form-control" disabled :value="separatorNumber(totalModalDetail)"/>
@@ -653,7 +643,7 @@ const TEXTS = {
         observation: "Observaciones",
         commercialCatalog: "Catálogo comercial",
         quantity: "Cantidad",
-        quantityPeriods: "Cantidad de Periodos",
+        quantityPeriods: "Cantidad de períodos",
         price: "Precio",
         total: "Total",
         membershipDetail: "Detalle de la membresía",
