@@ -1,5 +1,14 @@
 import { requestRoute } from "./Constants.js";
 
+/**
+ * Obtiene la URL absoluta del logomark para que funcione en cualquier ruta
+ * @returns {string} URL del logomark desde la raíz del dominio
+ */
+function getLogomarkSrc() {
+    const path = window.ownerApp?.assets?.img?.logomark;
+    return path ? `/${path.replace(/^\//, "")}` : "";
+}
+
 export function swals({show = true, type = "default", timeout = 0}) {
 
     if(show) {
@@ -48,7 +57,7 @@ export function swals({show = true, type = "default", timeout = 0}) {
                     }
                 </style>
                 <span class="h5">${message} Este proceso puede tomar algunos segundos, por favor espere.</span>
-                <img src="${window.ownerApp.assets.img.logomark}" class="img-fluid swal-logo mt-1 mb-0">
+                <img src="${getLogomarkSrc()}" class="img-fluid swal-logo mt-1 mb-0">
             `,
             allowOutsideClick: false,
             showConfirmButton: false

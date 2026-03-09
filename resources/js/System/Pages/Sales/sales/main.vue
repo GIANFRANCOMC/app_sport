@@ -870,7 +870,7 @@ export default {
 
             }
 
-            if(Number(operation) >= 0) {
+            if(Number(operation) > 0) {
 
                 record.quantity = operation;
 
@@ -878,7 +878,7 @@ export default {
 
             }else {
 
-                Alerts.toastrs({type: "error", subtitle: this.config.forms.errors.labels.min_number_0});
+                Alerts.generateAlert({type: "error", msgContent: this.config.forms.errors.labels.min_number_0});
 
             }
 
