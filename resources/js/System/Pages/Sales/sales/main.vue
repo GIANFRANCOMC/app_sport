@@ -363,8 +363,8 @@
                                 isRequired
                                 hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.extras.modals.details.errors?.extras_start_date"
-                                xl="6"
-                                lg="6"/>
+                                xl="4"
+                                lg="4"/>
                             <InputDatetime
                                 v-model="forms[entity].createUpdate.extras.modals.details.data.extras.end_date"
                                 hasDiv
@@ -374,33 +374,42 @@
                                 disabled
                                 hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.extras.modals.details.errors?.extras_end_date"
-                                xl="6"
-                                lg="6"/>
+                                xl="4"
+                                lg="4"/>
                             <InputSlot
                                 :isInputGroup="false"
                                 :divInputClass="['d-flex flex-wrap justify-content-start align-items-center']">
                                 <template v-slot:input>
-                                    <div v-if="isDurationTypeCalendar(forms[entity].createUpdate.extras.modals.details.data.extras?.duration_type)" class="form-check form-check-primary">
-                                        <label class="form-check-label fw-semibold">
-                                            <input class="form-check-input" type="checkbox" v-model="forms[entity].createUpdate.extras.modals.details.data.extras.set_end_of_day"
-                                                @change="calculateDuration({mode: 'record', record: forms[entity].createUpdate.extras.modals.details.data})"/>
-                                            Ajustar la <u>hora de la Fecha de finalización</u> al final del día (23:59 = 11:59 PM)
-                                        </label>
+                                    <div class="d-flex flex-wrap justify-content-start align-items-center gap-1 mb-2" v-if="false &&isDurationTypeCalendar(forms[entity].createUpdate.extras.modals.details.data.extras?.duration_type)">
+                                        <div class="form-check form-check-primary">
+                                            <label class="form-check-label fw-semibold">
+                                                <input
+                                                    class="form-check-input"
+                                                    type="checkbox"
+                                                    v-model="forms[entity].createUpdate.extras.modals.details.data.extras.set_end_of_day"
+                                                    @change="calculateDuration({mode: 'record', record: forms[entity].createUpdate.extras.modals.details.data})"/>
+                                                Ajustar la hora de la fecha de finalización al final del día (23:59 = 11:59 PM)
+                                            </label>
+                                        </div>
+                                        <div class="form-check form-check-primary fw-semibold">
+                                            <label class="form-check-label">
+                                                <input
+                                                    class="form-check-input"
+                                                    type="checkbox"
+                                                    v-model="forms[entity].createUpdate.extras.modals.details.data.extras.force"/>
+                                                Tomar en cuenta la membresías activas
+                                            </label>
+                                        </div>
                                     </div>
-                                    <div class="form-check form-check-primary fw-semibold">
-                                        <label class="form-check-label">
-                                            <input class="form-check-input" type="checkbox" v-model="forms[entity].createUpdate.extras.modals.details.data.extras.force"/>
-                                            Tomar en cuenta la membresías activas
-                                        </label>
-                                    </div>
-                                    <div class="d-flex flex-column flex-md-row flex-wrap justify-content-center align-items-start align-items-md-center gap-2 p-2 mt-2 border rounded border-light bg-light w-100">
-                                        <span class="fw-bold colon-at-end">Duración total calculada</span>
-                                        <div class="d-flex align-items-center fw-semibold">
+                                    <div class="d-flex flex-wrap justify-content-center align-items-center gap-2 p-2 border rounded border-light bg-light w-100">
+                                        <span class="fw-bold colon-at-end text-dark">Duración total calculada</span>
+                                        <div class="d-flex flex-wrap justify-content-center align-items-center fw-semibold gap-1">
                                             <span class="text-lowercase" v-text="forms[entity].createUpdate.extras.modals.details.data.extras.formatted_duration"></span>
-                                            <span class="ms-1">x</span>
-                                            <span class="ms-1 text-lowercase" v-text="(isDefined({value: forms[entity].createUpdate.extras.modals.details.data.quantity}) ? forms[entity].createUpdate.extras.modals.details.data.quantity : '0')+' periodos'"></span>
-                                            <span class="ms-1">=</span>
-                                            <span class="fw-bold text-dark ms-1 text-lowercase" v-text="forms[entity].createUpdate.extras.modals.details.data.extras.formatted_total_duration"></span>
+                                            <span class="">x</span>
+                                            <span class="text-lowercase" v-text="isDefined({value: forms[entity].createUpdate.extras.modals.details.data.quantity}) ? separatorNumber(forms[entity].createUpdate.extras.modals.details.data.quantity) : '0'"></span>
+                                            <span class="text-lowercase" v-text="Number(forms[entity].createUpdate.extras.modals.details.data.quantity) === 1 ? 'periodo' : 'periodos'"></span>
+                                            <span class="">=</span>
+                                            <span class="fw-bold text-dark text-lowercase" v-text="forms[entity].createUpdate.extras.modals.details.data.extras.formatted_total_duration"></span>
                                         </div>
                                     </div>
                                 </template>
@@ -1314,7 +1323,7 @@ export default {
 
                     record.extras.end_date = endDate;
 
-                    record.extras.formatted_total_duration = `${durationTotal} `+(durationTotal > 1 ? durationTypeLegible?.plural : durationTypeLegible?.label);
+                    record.extras.formatted_total_duration = `${this.separatorNumber(durationTotal)} `+(durationTotal > 1 ? durationTypeLegible?.plural : durationTypeLegible?.label);
 
                 }else if(["result"].includes(mode)) {
 
