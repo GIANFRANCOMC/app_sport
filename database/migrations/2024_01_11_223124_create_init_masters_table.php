@@ -241,7 +241,7 @@ return new class extends Migration {
             ["id" => 1, "slug" => "sc_home", "name" => "home", "order" => 1, "dom_id" => "menu-parent-home", "dom_label" => "Inicio", "dom_icon" => "fa fa-home", "has_sub_menu" => false],
             ["id" => 2, "slug" => "sc_dashboard", "name" => "dashboard", "order" => 2, "dom_id" => "menu-parent-dashboard", "dom_label" => "Dashboard", "dom_icon" => "fa-solid fa-gauge", "has_sub_menu" => false],
             ["id" => 3, "slug" => "sc_sales", "name" => "sales", "order" => 3, "dom_id" => "menu-parent-sales", "dom_label" => "Ventas", "dom_icon" => "fa-solid fa-cash-register", "has_sub_menu" => true],
-            ["id" => 4, "slug" => "sc_customers", "name" => "customers", "order" => 4, "dom_id" => "menu-parent-customers", "dom_label" => "Gestión de clientes", "dom_icon" => "fa fa-user", "has_sub_menu" => true],
+            ["id" => 4, "slug" => "sc_customers", "name" => "customers", "order" => 4, "dom_id" => "menu-parent-customers", "dom_label" => "Gestión de clientes", "dom_icon" => "fa fa-user", "has_sub_menu" => false],
             ["id" => 5, "slug" => "sc_items", "name" => "items", "order" => 6, "dom_id" => "menu-parent-items", "dom_label" => "Catálogo comercial", "dom_icon" => "fa fa-book", "has_sub_menu" => true],
             ["id" => 6, "slug" => "sc_infrastructure", "name" => "infrastructure", "order" => 8, "dom_id" => "menu-parent-infrastructure", "dom_label" => "Infraestructura", "dom_icon" => "fa-solid fa-industry", "has_sub_menu" => true],
             ["id" => 7, "slug" => "sc_configuration", "name" => "configuration", "order" => 10, "dom_id" => "menu-parent-configuration", "dom_label" => "Configuración", "dom_icon" => "fa fa-gear", "has_sub_menu" => true],
