@@ -84,30 +84,44 @@
                         </div>
                     </form>
                 @else
-                    <div class="alert alert-danger d-flex align-items-center mt-3" role="alert">
-                        <span class="alert-icon rounded">
-                            <i class="ti ti-ban"></i>
-                        </span>
-                        <span class="ms-3">
-                            Actualice su <b>membresía</b> para acceder.
-                        </span>
-                    </div>
-                    <hr/>
-                    <div class="text-center mt-3 mt-md-4">
-                        <small class="text-muted">
-                            ¿Tienes problemas para acceder? Escríbenos a
-                            <a href="mailto:{{ $ownerApp->support->email }}" class="br-link">{{ $ownerApp->support->email }}</a> o llámanos al
-                            <a href="tel:{{ $ownerApp->support->phone }}" class="br-link">{{ $ownerApp->support->phone }}</a> para ayudarte a recuperar tu acceso.
-                        </small>
+                    <div class="br-auth-access-denied mt-3 mt-md-4">
+                        <div class="br-auth-access-denied__notice" role="alert" aria-live="polite">
+                            <span class="br-auth-access-denied__notice-icon" aria-hidden="true"><i class="ti ti-lock"></i></span>
+                            <div>
+                                <h2 class="br-auth-access-denied__title">Acceso no disponible por ahora</h2>
+                                <p class="br-auth-access-denied__text">
+                                    En este momento <strong>no puedes iniciar sesión</strong> porque la <strong>membresía o el plan</strong> de tu empresa no está activo o ya venció.
+                                </p>
+                                <p class="br-auth-access-denied__hint mb-0">
+                                    Renueva el plan o pide a quien administra la cuenta que lo actualice. Si <strong>ya pagaste</strong>, el cambio puede tardar unos minutos en reflejarse.
+                                </p>
+                            </div>
+                        </div>
+                        <aside class="br-auth-support-box br-auth-support-box--access br-auth-support-box--access-lite mb-0" aria-labelledby="br-auth-contactanos-heading-denied">
+                            <p id="br-auth-contactanos-heading-denied" class="br-auth-contact-us-kicker">Contáctanos</p>
+                            <p class="br-auth-support-lite-label mb-2">¿Necesitas ayuda con el acceso o la membresía?</p>
+                            <div class="br-auth-support-lines">
+                                <div class="br-auth-support-line mb-2">
+                                    <span class="br-auth-support-line-label">Correo electrónico</span>
+                                    <a href="mailto:{{ $ownerApp->support->email }}" class="br-link">{{ $ownerApp->support->email }}</a>
+                                </div>
+                                <div class="br-auth-support-line">
+                                    <span class="br-auth-support-line-label">Teléfono</span>
+                                    <a href="tel:{{ $ownerApp->support->phone }}" class="br-link">{{ $ownerApp->support->phone }}</a>
+                                </div>
+                            </div>
+                        </aside>
                     </div>
                 @endif
             </div>
         </div>
         @if($seeLoginForm)
             <div class="text-center mt-3 mt-md-4">
-                <small class="text-muted">
-                    ¿Necesitas ayuda? Escríbenos a
-                    <a href="mailto:{{ $ownerApp->support->email }}" class="br-link">{{ $ownerApp->support->email }}</a> o llámanos al
+                <small class="br-auth-help-footer d-inline-block">
+                    <span class="br-auth-help-question">¿Necesitas ayuda?</span>
+                    <span class="text-muted"> Escríbenos a </span>
+                    <a href="mailto:{{ $ownerApp->support->email }}" class="br-link">{{ $ownerApp->support->email }}</a>
+                    <span class="text-muted"> o llámanos al </span>
                     <a href="tel:{{ $ownerApp->support->phone }}" class="br-link">{{ $ownerApp->support->phone }}</a>
                 </small>
             </div>
@@ -128,14 +142,32 @@
                     e.preventDefault();
 
                     Swal.fire({
-                        icon              : "warning",
+                        icon              : "info",
+                        title             : "Falta un paso de seguridad",
                         allowOutsideClick : false,
-		                allowEscapeKey    : false,
-                        html              : `<span class="d-block fw-bold">Captcha requerido</span> <span class="d-block mt-2">Por favor, completa el captcha para continuar.</span>`,
-                        confirmButtonText : "Entendido",
+                        allowEscapeKey    : false,
+                        html              : `
+                            <div class="text-start px-1">
+                                <p class="mb-3 mb-md-4" style="line-height: 1.55;">
+                                    Para proteger tu cuenta, debemos comprobar que <strong>no eres un robot</strong>.
+                                </p>
+                                <p class="mb-0 fw-semibold" style="line-height: 1.55;">
+                                    ¿Qué hacer?
+                                </p>
+                                <ol class="text-start mt-2 mb-0 ps-3 small" style="line-height: 1.6;">
+                                    <li class="mb-2"><strong>Encima</strong> del botón azul «Iniciar sesión» verás la verificación: haz lo que te pida (marcar una casilla, elegir imágenes, etc.).</li>
+                                    <li>Cuando se complete correctamente, pulsa <strong>«Iniciar sesión»</strong>.</li>
+                                </ol>
+                            </div>
+                        `,
+                        confirmButtonText : "De acuerdo",
+                        width             : "32rem",
+                        padding           : "1.25rem 1.25rem 1.5rem",
                         customClass: {
-                            confirmButton: "btn btn-primary waves-effect"
-                    }});
+                            confirmButton: "btn btn-primary waves-effect",
+                            popup        : "text-start",
+                        },
+                    });
 
                 }
 
