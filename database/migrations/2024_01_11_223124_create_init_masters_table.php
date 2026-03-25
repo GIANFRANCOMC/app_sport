@@ -228,8 +228,8 @@ return new class extends Migration {
                 "internal_code" => Utilities::generateCode(7),
                 "identity_document_type_id" => 1,
                 "document_number" => "999999999999999",
-                "legal_name" => "TU EMPRESA S.A.",
-                "commercial_name" => "TU EMPRESA",
+                "legal_name" => "BLAPOS S.A.",
+                "commercial_name" => "BLAPOS",
                 "currency_id" => 1,
                 "address" => "",
                 "telephone" => "",
@@ -289,7 +289,7 @@ return new class extends Migration {
         ]);
 
         DB::table("companies_sub_sections")->insert([
-            ["company_id" => 1, "sub_section_id" => 10],
+            // ["company_id" => 1, "sub_section_id" => 10],
             ["company_id" => 1, "sub_section_id" => 20],
             ["company_id" => 1, "sub_section_id" => 30],
             ["company_id" => 1, "sub_section_id" => 31],
