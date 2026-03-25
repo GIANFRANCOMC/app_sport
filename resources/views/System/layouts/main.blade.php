@@ -63,6 +63,20 @@
                             $visiblePreferences  = collect($valuePreferences)->filter(fn($e) => $e->visible_in_menu)->pluck("sub_section_id")->toArray();
 
                             $favoriteCounter = 0;
+
+                            foreach($sections as $section) {
+
+                                $favSubs = $section->subSections->whereIn("id", $favoritePreferences);
+
+                                if(!$favSubs->first()) {
+
+                                    continue;
+
+                                }
+
+                                $favoriteCounter++;
+
+                            }
                         @endphp
                         <li class="menu-header br-sidebar-admin-wrap px-4 py-2">
                             <a href="{{ route('home.index') }}" class="br-sidebar-admin-link br-sidebar-admin-link--compact {{ request()->routeIs('home.index') ? 'br-sidebar-admin-link--active' : '' }}" @if(request()->routeIs('home.index')) aria-current="page" @endif title="Configura tus favoritos (atajos en el panel).">
@@ -75,45 +89,42 @@
                                 <i class="fa-solid fa-chevron-right br-sidebar-admin-link__chevron" aria-hidden="true"></i>
                             </a>
                         </li>
-                        <li class="menu-header pt-1">
-                            <span class="menu-header-text text-uppercase">Favoritos</span>
-                        </li>
-                        @foreach($sections as $section)
-                            @php
-                                $subSectionsFiltered = $section->subSections->whereIn("id", $favoritePreferences);
-
-                                $reference = $subSectionsFiltered->first();
-
-                                if(!$reference) {
-                                    continue;
-                                }
-
-                                $favoriteCounter++;
-                            @endphp
-                            <li class="{{ $section->has_sub_menu ? 'menu-header pe-none pt-1' : ('menu-item '.$section->dom_id) }}">
-                                <a href="{{ $section->has_sub_menu ? 'javascript:void(0);' : $reference->dom_route_url }}" class="{{ $section->has_sub_menu ? 'fw-regular' : 'fw-bold' }} menu-link">
-                                    <i class="{{ $section->dom_icon }} br-icon-accent me-3"></i>
-                                    <div>{{ $section->dom_label }}</div>
-                                </a>
+                        @if($favoriteCounter > 0)
+                            <li class="menu-header pt-1">
+                                <span class="menu-header-text text-uppercase">Favoritos</span>
                             </li>
-                            @if($section->has_sub_menu)
-                                <li class="menu-item open">
-                                    <ul class="menu-sub py-0">
-                                        @foreach($subSectionsFiltered as $subSection)
-                                            <li class="menu-item {{ $subSection->dom_id }}" id="{{ $subSection->dom_id }}">
-                                                <a href="{{ $subSection->dom_route_url }}" class="fw-bold menu-link py-1">
-                                                    <div class="text-truncate">{{ $subSection->dom_label }}</div>
-                                                </a>
-                                            </li>
-                                        @endforeach
-                                    </ul>
+                            @foreach($sections as $section)
+                                @php
+                                    $subSectionsFiltered = $section->subSections->whereIn("id", $favoritePreferences);
+
+                                    $reference = $subSectionsFiltered->first();
+
+                                    if(!$reference) {
+
+                                        continue;
+
+                                    }
+                                @endphp
+                                <li class="{{ $section->has_sub_menu ? 'menu-header pe-none pt-1' : ('menu-item '.$section->dom_id) }}">
+                                    <a href="{{ $section->has_sub_menu ? 'javascript:void(0);' : $reference->dom_route_url }}" class="{{ $section->has_sub_menu ? 'fw-regular' : 'fw-bold' }} menu-link">
+                                        <i class="{{ $section->dom_icon }} br-icon-accent me-3"></i>
+                                        <div>{{ $section->dom_label }}</div>
+                                    </a>
                                 </li>
-                            @endif
-                        @endforeach
-                        @if($favoriteCounter === 0)
-                            <li class="menu-header pt-1 pb-0 text-center">
-                                <span class="menu-header-text text-uppercase text-white">Sin favoritos</span>
-                            </li>
+                                @if($section->has_sub_menu)
+                                    <li class="menu-item open">
+                                        <ul class="menu-sub py-0">
+                                            @foreach($subSectionsFiltered as $subSection)
+                                                <li class="menu-item {{ $subSection->dom_id }}" id="{{ $subSection->dom_id }}">
+                                                    <a href="{{ $subSection->dom_route_url }}" class="fw-bold menu-link py-1">
+                                                        <div class="text-truncate">{{ $subSection->dom_label }}</div>
+                                                    </a>
+                                                </li>
+                                            @endforeach
+                                        </ul>
+                                    </li>
+                                @endif
+                            @endforeach
                         @endif
                         <li class="menu-header pt-2">
                             <span class="menu-header-text text-uppercase">Menú</span>
@@ -129,7 +140,9 @@
                                 $reference = $subSectionsFiltered->first();
 
                                 if(!$reference) {
+
                                     continue;
+
                                 }
                             @endphp
                             <li class="menu-item {{ $section->dom_id }}" id="{{ $section->dom_id }}">
