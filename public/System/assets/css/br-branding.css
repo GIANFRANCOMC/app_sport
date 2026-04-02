@@ -1235,35 +1235,35 @@ html:not(.layout-menu-collapsed)
    Login invitado (System/auth/login.blade.php + guests/auth layout)
    ------------------------------------------------------------------------- */
 /*
- * Fondo login: velos radiales (marca) sobre degradado base, sin textura de puntos.
+ * Fondo login: velos radiales (marca #2899E5 / navy #1A1A35) sobre degradado base más oscuro.
  */
 body:has(.br-auth-login-page) {
   min-height: 100vh;
-  background-color: #e8f1fa;
+  background-color: #0f121f;
   background-image:
     radial-gradient(
-      ellipse 120% 85% at 8% 12%,
-      rgba(40, 153, 229, 0.38) 0%,
-      rgba(40, 153, 229, 0.08) 42%,
-      transparent 68%
+      ellipse 125% 90% at 10% 8%,
+      rgba(40, 153, 229, 0.45) 0%,
+      rgba(40, 153, 229, 0.14) 36%,
+      transparent 62%
     ),
     radial-gradient(
-      ellipse 110% 75% at 96% 92%,
-      rgba(26, 26, 53, 0.22) 0%,
-      rgba(26, 26, 53, 0.06) 45%,
-      transparent 65%
+      ellipse 100% 80% at 92% 88%,
+      rgba(26, 26, 53, 0.92) 0%,
+      rgba(26, 26, 53, 0.35) 42%,
+      transparent 70%
     ),
     radial-gradient(
-      ellipse 90% 60% at 50% 118%,
-      rgba(40, 153, 229, 0.14) 0%,
-      transparent 58%
+      ellipse 85% 55% at 50% 105%,
+      rgba(40, 153, 229, 0.22) 0%,
+      transparent 55%
     ),
     linear-gradient(
       168deg,
-      #fbfdff 0%,
-      #f0f6fd 38%,
-      #e4eef9 72%,
-      #dde8f4 100%
+      #121528 0%,
+      #161a2e 32%,
+      #14182a 58%,
+      #0e101c 100%
     );
   background-repeat: no-repeat;
   background-attachment: fixed;
@@ -1281,7 +1281,7 @@ body:has(.br-auth-login-page) {
 
 .br-auth-login-eyebrow {
   margin: 0;
-  font-size: 0.8125rem;
+  font-size: 0.9375rem;
   font-weight: 600;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -1370,11 +1370,11 @@ body:has(.br-auth-login-page) .btn-primary:focus {
   border: 1px solid rgba(40, 153, 229, 0.1);
 }
 
-.br-auth-login-page .text-muted {
-  color: var(--br-text-muted) !important;
+/* Pie de ayuda (fuera de la tarjeta, sobre fondo oscuro) */
+.br-auth-login-page .br-auth-help-footer .text-muted {
+  color: rgba(255, 255, 255, 0.62) !important;
 }
 
-/* Pie de ayuda bajo el formulario: pregunta con leve énfasis, resto discreto */
 .br-auth-login-page .br-auth-help-footer {
   max-width: 28rem;
   line-height: 1.7;
@@ -1384,7 +1384,7 @@ body:has(.br-auth-login-page) .btn-primary:focus {
 
 .br-auth-login-page .br-auth-help-question {
   font-weight: 600;
-  color: var(--br-secondary);
+  color: rgba(255, 255, 255, 0.92) !important;
   letter-spacing: -0.015em;
 }
 
