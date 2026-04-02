@@ -1334,6 +1334,40 @@ body:has(.br-auth-login-page) {
   box-shadow: var(--br-shadow-sm), var(--br-focus-ring);
 }
 
+/* Campo contraseña: alternar ver / ocultar */
+.br-auth-login-page .br-auth-password-field .form-control {
+  padding-right: 2.75rem;
+}
+
+.br-auth-password-toggle {
+  position: absolute;
+  right: 0.3rem;
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  padding: 0;
+  border: none;
+  border-radius: var(--br-radius-sm);
+  background: transparent;
+  color: var(--br-text-muted);
+  cursor: pointer;
+  transition: var(--br-transition);
+}
+
+.br-auth-password-toggle:hover {
+  color: var(--br-secondary);
+  background: rgba(26, 26, 53, 0.06);
+}
+
+.br-auth-password-toggle:focus-visible {
+  outline: none;
+  box-shadow: var(--br-focus-ring);
+}
+
 .br-auth-login-page select.form-control:focus,
 .br-auth-login-page .form-select:focus {
   border-color: var(--br-primary);

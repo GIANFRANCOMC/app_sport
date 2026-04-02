@@ -32,7 +32,12 @@
                         </div>
                         <div class="mb-3">
                             <label for="password" class="form-label colon-at-end fw-semibold">Contraseña</label>
-                            <input type="password" class="form-control" id="password" name="password" placeholder="•••••••" required autocomplete="current-password"/>
+                            <div class="br-auth-password-field position-relative">
+                                <input type="password" class="form-control br-auth-password-input" id="password" name="password" placeholder="•••••••" required autocomplete="current-password"/>
+                                <button type="button" class="br-auth-password-toggle" id="br-auth-password-toggle" aria-label="Mostrar contraseña" aria-pressed="false">
+                                    <i class="fa-solid fa-eye" aria-hidden="true"></i>
+                                </button>
+                            </div>
                             @if($errors->get("password"))
                                 @foreach((array) $errors->get("password") as $message)
                                     <small class="text-danger">{{ $message }}</small>
@@ -170,6 +175,22 @@
                     });
 
                 }
+
+            });
+
+            const passwordInput = document.getElementById("password");
+            const passwordToggle = document.getElementById("br-auth-password-toggle");
+            const passwordToggleIcon = passwordToggle?.querySelector("i");
+
+            passwordToggle?.addEventListener("click", function() {
+
+                if(!passwordInput || !passwordToggleIcon) return;
+
+                const visible = passwordInput.type === "password";
+                passwordInput.type = visible ? "text" : "password";
+                passwordToggle.setAttribute("aria-pressed", visible ? "true" : "false");
+                passwordToggle.setAttribute("aria-label", visible ? "Ocultar contraseña" : "Mostrar contraseña");
+                passwordToggleIcon.className = visible ? "fa-solid fa-eye-slash" : "fa-solid fa-eye";
 
             });
 
