@@ -1449,9 +1449,11 @@ body:has(.br-auth-login-page) .btn-primary:focus {
   padding: 1.125rem 1.125rem 1.25rem;
   border-radius: var(--br-radius-lg);
   background: linear-gradient(145deg, var(--br-danger-soft) 0%, #fff 55%);
-  border: 1px solid rgba(239, 68, 68, 0.22);
-  border-left: 4px solid var(--br-danger);
-  box-shadow: 0 2px 14px rgba(239, 68, 68, 0.08);
+  border: 2px solid rgba(239, 68, 68, 0.42);
+  border-left: 5px solid var(--br-danger);
+  box-shadow:
+    0 0 0 1px rgba(239, 68, 68, 0.12),
+    0 4px 18px rgba(239, 68, 68, 0.12);
 }
 
 .br-auth-access-denied__notice-icon {
@@ -1468,7 +1470,17 @@ body:has(.br-auth-login-page) .btn-primary:focus {
   font-weight: 700;
   letter-spacing: -0.02em;
   line-height: 1.3;
-  color: var(--br-secondary) !important;
+  color: var(--br-danger) !important;
+}
+
+.br-auth-access-denied__strong-danger {
+  color: var(--br-danger) !important;
+  font-weight: 700;
+}
+
+.br-auth-access-denied__strong-success {
+  color: var(--br-success) !important;
+  font-weight: 700;
 }
 
 .br-auth-access-denied__text {

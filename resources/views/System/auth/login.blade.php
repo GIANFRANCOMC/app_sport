@@ -95,10 +95,10 @@
                             <div>
                                 <h2 class="br-auth-access-denied__title">Acceso no disponible por ahora</h2>
                                 <p class="br-auth-access-denied__text">
-                                    En este momento <strong>no puedes iniciar sesión</strong> porque la <strong>membresía o el plan</strong> de tu empresa no está activo o ya venció.
+                                    En este momento <strong class="br-auth-access-denied__strong-danger">no puedes iniciar sesión</strong> porque la <strong>membresía o el plan</strong> de tu empresa no está activo o ya venció.
                                 </p>
                                 <p class="br-auth-access-denied__hint mb-0">
-                                    Renueva el plan o pide a quien administra la cuenta que lo actualice. Si <strong>ya pagaste</strong>, el cambio puede tardar unos minutos en reflejarse.
+                                    Renueva el plan o pide a quien administra la cuenta que lo actualice. Si <strong class="br-auth-access-denied__strong-success">ya pagaste</strong>, el cambio puede tardar unos minutos en reflejarse.
                                 </p>
                             </div>
                         </div>
