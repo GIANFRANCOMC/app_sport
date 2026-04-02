@@ -1434,21 +1434,6 @@ body:has(.br-auth-login-page) .btn-primary:focus {
   color: rgba(255, 255, 255, 0.72) !important;
 }
 
-.br-auth-login-page .br-auth-help-footer a.br-link {
-  color: #e0f2fe !important;
-  text-decoration: none !important;
-}
-
-.br-auth-login-page .br-auth-help-footer a.br-link:visited {
-  color: #dbeafe !important;
-}
-
-.br-auth-login-page .br-auth-help-footer a.br-link:hover,
-.br-auth-login-page .br-auth-help-footer a.br-link:focus {
-  color: #fff !important;
-  text-decoration: none !important;
-}
-
 /* Estado “sin acceso” (membresía / plan): aviso + soporte */
 .br-auth-access-denied {
   display: flex;
