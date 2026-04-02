@@ -1620,11 +1620,11 @@ body:has(.br-auth-login-page) .btn-primary:focus {
 
 .br-auth-support-bar__kicker {
   margin: 0 0 0.65rem;
-  font-size: 0.6875rem;
+  font-size: 0.9375rem;
   font-weight: 700;
-  letter-spacing: 0.16em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.9) !important;
+  color: rgba(255, 255, 255, 0.92) !important;
   text-align: center;
 }
 
@@ -1647,6 +1647,14 @@ body:has(.br-auth-login-page) .btn-primary:focus {
   font-size: 0.75rem;
   font-weight: 600;
   color: rgba(255, 255, 255, 0.65) !important;
+}
+
+.br-auth-support-bar__label::before {
+  content: "\00B7";
+  display: inline-block;
+  margin-right: 0.35em;
+  opacity: 0.5;
+  font-weight: 400;
 }
 
 .br-auth-support-bar--transparent .br-link {
