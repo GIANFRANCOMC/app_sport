@@ -104,17 +104,20 @@
                                 </p>
                             </div>
                         </div>
-                        <aside class="br-auth-support-box br-auth-support-box--access br-auth-support-box--access-lite mb-0" aria-labelledby="br-auth-contactanos-heading-denied">
-                            <p id="br-auth-contactanos-heading-denied" class="br-auth-contact-us-kicker">Contáctanos</p>
-                            <p class="br-auth-support-lite-label mb-2">¿Necesitas ayuda con el acceso o la membresía?</p>
-                            <div class="br-auth-support-lines">
-                                <div class="br-auth-support-line mb-2">
-                                    <span class="br-auth-support-line-label">Correo electrónico</span>
-                                    <a href="mailto:{{ $ownerApp->support->email }}" class="br-link">{{ $ownerApp->support->email }}</a>
+                        <aside class="br-auth-support-bar br-auth-support-bar--transparent mb-0" aria-labelledby="br-auth-contactanos-heading-denied">
+                            <div class="br-auth-support-bar__layout">
+                                <div class="br-auth-support-bar__left">
+                                    <p id="br-auth-contactanos-heading-denied" class="br-auth-support-bar__kicker">Contáctanos</p>
+                                    <div class="br-auth-support-bar__channel">
+                                        <span class="br-auth-support-bar__label">Correo electrónico</span>
+                                        <a href="mailto:{{ $ownerApp->support->email }}" class="br-link">{{ $ownerApp->support->email }}</a>
+                                    </div>
                                 </div>
-                                <div class="br-auth-support-line">
-                                    <span class="br-auth-support-line-label">Teléfono</span>
-                                    <a href="tel:{{ $ownerApp->support->phone }}" class="br-link">{{ $ownerApp->support->phone }}</a>
+                                <div class="br-auth-support-bar__right">
+                                    <div class="br-auth-support-bar__channel br-auth-support-bar__channel--phone">
+                                        <span class="br-auth-support-bar__label">Teléfono</span>
+                                        <a href="tel:{{ $ownerApp->support->phone }}" class="br-link">{{ $ownerApp->support->phone }}</a>
+                                    </div>
                                 </div>
                             </div>
                         </aside>

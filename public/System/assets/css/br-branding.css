@@ -1598,6 +1598,86 @@ body:has(.br-auth-login-page) .btn-primary:focus {
   box-shadow: none;
 }
 
+/* Barra de contacto (login sin acceso): fondo transparente, correo a la izquierda, teléfono a la derecha */
+.br-auth-support-bar--transparent {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0.35rem 0 0;
+  width: 100%;
+}
+
+.br-auth-support-bar__layout {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem 1.5rem;
+}
+
+.br-auth-support-bar__left {
+  flex: 1 1 12rem;
+  min-width: 0;
+}
+
+.br-auth-support-bar__right {
+  flex: 0 1 auto;
+  min-width: 0;
+  text-align: right;
+}
+
+.br-auth-support-bar__kicker {
+  margin: 0 0 0.5rem;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.9) !important;
+  text-align: left;
+}
+
+.br-auth-support-bar__channel {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.2rem;
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
+
+.br-auth-support-bar__channel--phone {
+  align-items: flex-end;
+  text-align: right;
+}
+
+.br-auth-support-bar__label {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.65) !important;
+}
+
+.br-auth-support-bar--transparent .br-link {
+  font-weight: 600;
+  word-break: break-word;
+}
+
+@media (max-width: 575.98px) {
+  .br-auth-support-bar__layout {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .br-auth-support-bar__right {
+    text-align: left;
+  }
+
+  .br-auth-support-bar__channel--phone {
+    align-items: flex-start;
+    text-align: left;
+  }
+}
+
 /* Rótulo de sección: indica que lo siguiente es canal de contacto */
 .br-auth-contact-us-kicker {
   margin: 0 0 0.35rem;
