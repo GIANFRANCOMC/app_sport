@@ -1598,12 +1598,13 @@ body:has(.br-auth-login-page) .btn-primary:focus {
   box-shadow: none;
 }
 
-/* Barra de contacto (login sin acceso): fondo transparente, bloque centrado; correo y luego teléfono en líneas aparte */
+/* Barra de contacto (login sin acceso): fondo transparente; correo y teléfono alineados en columna; Contáctanos más abajo */
 .br-auth-support-bar--transparent {
   background: transparent !important;
   border: none !important;
   box-shadow: none !important;
-  padding: 0.35rem 0 0;
+  padding: 0;
+  margin-top: 1.75rem;
   width: 100%;
 }
 
@@ -1611,27 +1612,35 @@ body:has(.br-auth-login-page) .btn-primary:focus {
   display: flex;
   flex-direction: column;
   align-items: center;
-  text-align: center;
   gap: 0;
-  max-width: 28rem;
-  margin-left: auto;
-  margin-right: auto;
+  width: 100%;
 }
 
 .br-auth-support-bar__kicker {
-  margin: 0 0 0.65rem;
+  margin: 0 0 0.75rem;
   font-size: 0.9375rem;
   font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: rgba(255, 255, 255, 0.92) !important;
   text-align: center;
+  width: 100%;
+}
+
+/* Bloque centrado; ancho = el del contenido más ancho; misma columna para correo y teléfono */
+.br-auth-support-bar__inner {
+  width: fit-content;
+  max-width: min(100%, 28rem);
+  margin-left: auto;
+  margin-right: auto;
+  text-align: left;
 }
 
 .br-auth-support-bar__channel {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-start;
+  text-align: left;
   gap: 0.2rem;
   font-size: 0.875rem;
   line-height: 1.45;
