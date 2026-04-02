@@ -7,7 +7,7 @@
     @endphp
 
     <div class="br-auth-login-page container-fluid min-vh-100 d-flex flex-column justify-content-center align-items-center">
-        <div class="row w-100 br-auth-login-card rounded overflow-hidden" style="max-width: 480px;">
+        <div class="row w-100 br-auth-login-card overflow-hidden" style="max-width: 480px;">
             <div class="col-lg-12 bg-white px-3 px-md-5 py-4 py-md-5">
                 <header class="br-auth-login-header text-center">
                     <p class="br-auth-login-eyebrow mb-2">Bienvenido</p>
