@@ -7,7 +7,7 @@
     @endphp
 
     <div class="br-auth-login-page container-fluid min-vh-100 d-flex flex-column justify-content-center align-items-center">
-        <div class="row w-100 shadow-lg rounded overflow-hidden" style="max-width: 480px;">
+        <div class="row w-100 br-auth-login-card rounded overflow-hidden" style="max-width: 480px;">
             <div class="col-lg-12 bg-white px-3 px-md-5 py-4 py-md-5">
                 <header class="br-auth-login-header text-center">
                     <p class="br-auth-login-eyebrow mb-2">Bienvenido</p>
@@ -116,8 +116,8 @@
             </div>
         </div>
         @if($seeLoginForm)
-            <div class="text-center mt-3 mt-md-4">
-                <small class="br-auth-help-footer d-inline-block">
+            <div class="text-center mt-3 mt-md-4 px-2">
+                <small class="br-auth-help-footer d-inline-block mb-0">
                     <span class="br-auth-help-question">¿Necesitas ayuda?</span>
                     <span class="text-muted"> Escríbenos a </span>
                     <a href="mailto:{{ $ownerApp->support->email }}" class="br-link">{{ $ownerApp->support->email }}</a>

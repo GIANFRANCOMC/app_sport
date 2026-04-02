@@ -1235,35 +1235,35 @@ html:not(.layout-menu-collapsed)
    Login invitado (System/auth/login.blade.php + guests/auth layout)
    ------------------------------------------------------------------------- */
 /*
- * Fondo login: velos radiales (marca #2899E5 / navy #1A1A35) sobre degradado base más oscuro.
+ * Fondo login: velos radiales (marca #2899E5 / navy #1A1A35), base aclarada vs. tema oscuro.
  */
 body:has(.br-auth-login-page) {
   min-height: 100vh;
-  background-color: #0f121f;
+  background-color: #1a2034;
   background-image:
     radial-gradient(
       ellipse 125% 90% at 10% 8%,
-      rgba(40, 153, 229, 0.45) 0%,
-      rgba(40, 153, 229, 0.14) 36%,
-      transparent 62%
+      rgba(40, 153, 229, 0.38) 0%,
+      rgba(40, 153, 229, 0.12) 38%,
+      transparent 64%
     ),
     radial-gradient(
       ellipse 100% 80% at 92% 88%,
-      rgba(26, 26, 53, 0.92) 0%,
-      rgba(26, 26, 53, 0.35) 42%,
-      transparent 70%
+      rgba(26, 26, 53, 0.72) 0%,
+      rgba(26, 26, 53, 0.28) 44%,
+      transparent 72%
     ),
     radial-gradient(
       ellipse 85% 55% at 50% 105%,
-      rgba(40, 153, 229, 0.22) 0%,
-      transparent 55%
+      rgba(40, 153, 229, 0.18) 0%,
+      transparent 56%
     ),
     linear-gradient(
       168deg,
-      #121528 0%,
-      #161a2e 32%,
-      #14182a 58%,
-      #0e101c 100%
+      #1e2540 0%,
+      #222a45 30%,
+      #1c2238 56%,
+      #181e32 100%
     );
   background-repeat: no-repeat;
   background-attachment: fixed;
@@ -1318,13 +1318,15 @@ body:has(.br-auth-login-page) {
   color: var(--br-secondary);
 }
 
-.br-auth-login-page .form-control {
-  border-color: var(--br-border);
+.br-auth-login-page .form-control,
+.br-auth-login-page .form-select {
+  border-color: #c5d0dc;
   transition: var(--br-transition);
 }
 
-.br-auth-login-page .form-control:hover {
-  border-color: var(--br-border-strong);
+.br-auth-login-page .form-control:hover,
+.br-auth-login-page .form-select:hover {
+  border-color: #a8b5c4;
 }
 
 .br-auth-login-page .form-control:focus {
@@ -1365,27 +1367,52 @@ body:has(.br-auth-login-page) .btn-primary:focus {
   box-shadow: var(--br-focus-ring) !important;
 }
 
+/* Tarjeta principal login: relieve sobre fondo */
+.br-auth-login-page .br-auth-login-card {
+  background-color: #fff;
+  border: 1px solid rgba(40, 153, 229, 0.14);
+  box-shadow:
+    0 4px 6px -1px rgba(15, 18, 31, 0.12),
+    0 12px 28px -8px rgba(26, 26, 53, 0.35),
+    0 24px 48px -12px rgba(40, 153, 229, 0.18),
+    0 0 0 1px rgba(255, 255, 255, 0.06) inset !important;
+}
+
 .br-auth-login-page .shadow-lg {
   box-shadow: var(--br-shadow) !important;
   border: 1px solid rgba(40, 153, 229, 0.1);
 }
 
-/* Pie de ayuda (fuera de la tarjeta, sobre fondo oscuro) */
-.br-auth-login-page .br-auth-help-footer .text-muted {
-  color: rgba(255, 255, 255, 0.62) !important;
-}
-
+/* Pie de ayuda: texto claro sobre fondo oscuro (sin caja blanca) */
 .br-auth-login-page .br-auth-help-footer {
   max-width: 28rem;
-  line-height: 1.7;
-  display: inline-block;
-  vertical-align: top;
+  line-height: 1.65;
+  font-size: 0.875rem;
 }
 
-.br-auth-login-page .br-auth-help-question {
+.br-auth-login-page .br-auth-help-footer .br-auth-help-question {
   font-weight: 600;
-  color: rgba(255, 255, 255, 0.92) !important;
   letter-spacing: -0.015em;
+  color: #fff !important;
+}
+
+.br-auth-login-page .br-auth-help-footer .text-muted {
+  color: rgba(255, 255, 255, 0.72) !important;
+}
+
+.br-auth-login-page .br-auth-help-footer a.br-link {
+  color: #e0f2fe !important;
+  text-decoration: none !important;
+}
+
+.br-auth-login-page .br-auth-help-footer a.br-link:visited {
+  color: #dbeafe !important;
+}
+
+.br-auth-login-page .br-auth-help-footer a.br-link:hover,
+.br-auth-login-page .br-auth-help-footer a.br-link:focus {
+  color: #fff !important;
+  text-decoration: none !important;
 }
 
 /* Estado “sin acceso” (membresía / plan): aviso + soporte */
