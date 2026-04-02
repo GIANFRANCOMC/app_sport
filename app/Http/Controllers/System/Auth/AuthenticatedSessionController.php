@@ -63,8 +63,6 @@ class AuthenticatedSessionController extends Controller {
 
         }
 
-        $data->company = null;
-
         return view("System/auth/login", compact("data"));
 
     }
