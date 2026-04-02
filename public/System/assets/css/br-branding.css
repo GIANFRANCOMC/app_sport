@@ -1413,6 +1413,24 @@ body:has(.br-auth-login-page) .btn-primary:focus {
     inset 0 1px 0 rgba(255, 255, 255, 0.9) !important;
 }
 
+/* Sin formulario de login: sin card (sin fondo, borde ni sombra; contenido sobre el body) */
+.br-auth-login-page .br-auth-login-card.br-auth-login-card--no-access {
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+.br-auth-login-page .br-auth-login-inner--no-access {
+  background: transparent !important;
+}
+
+.br-auth-login-page .br-auth-login-card.br-auth-login-card--no-access .br-login-brand-name {
+  color: rgba(255, 255, 255, 0.96) !important;
+}
+
 .br-auth-login-page .shadow-lg {
   box-shadow: var(--br-shadow) !important;
   border: 1px solid rgba(40, 153, 229, 0.1);

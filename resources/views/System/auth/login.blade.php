@@ -7,10 +7,12 @@
     @endphp
 
     <div class="br-auth-login-page container-fluid min-vh-100 d-flex flex-column justify-content-center align-items-center">
-        <div class="row w-100 br-auth-login-card overflow-hidden" style="max-width: 480px;">
-            <div class="col-lg-12 bg-white px-3 px-md-5 py-4 py-md-5">
+        <div class="row w-100 br-auth-login-card {{ $seeLoginForm ? "overflow-hidden" : "br-auth-login-card--no-access" }}" style="max-width: 480px;">
+            <div class="col-lg-12 px-3 px-md-5 py-4 py-md-5 {{ $seeLoginForm ? "bg-white" : "br-auth-login-inner--no-access" }}">
                 <header class="br-auth-login-header text-center">
-                    <p class="br-auth-login-eyebrow mb-2">Bienvenido</p>
+                    @if($seeLoginForm)
+                        <p class="br-auth-login-eyebrow mb-2">Bienvenido</p>
+                    @endif
                     <h1 class="br-auth-login-title br-login-brand-name">
                         {{ $hasCompany ? $data->company->commercial_name : $ownerApp->commercial_name }}
                     </h1>
