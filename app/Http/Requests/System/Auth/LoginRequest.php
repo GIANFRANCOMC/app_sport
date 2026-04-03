@@ -4,10 +4,12 @@ namespace App\Http\Requests\System\Auth;
 
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Support\Facades\{Auth, Hash, RateLimiter};
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
+use App\Helpers\System\Utilities;
 use App\Models\System\Organizations\{User};
 
 class LoginRequest extends FormRequest {
@@ -76,9 +78,9 @@ class LoginRequest extends FormRequest {
         // Check if the company is active
         if(!$user->company || $user->company->status !== "active") {
 
-            throw ValidationException::withMessages([
-                "company_id" => trans("auth.company_inactive")
-            ]);
+            throw new HttpResponseException(
+                redirect("/".Utilities::companyLoginQuery($user->company_id))
+            );
 
         }
 

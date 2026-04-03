@@ -63,6 +63,12 @@ class Utilities {
 
     }
 
+    public static function companyLoginQuery(int|string $companyId): string {
+
+        return "?company=".base64_encode((string) $companyId);
+
+    }
+
     public static function isDefined($valor) {
 
         return isset($valor) && !empty($valor);

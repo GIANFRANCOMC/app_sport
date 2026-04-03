@@ -52,7 +52,7 @@ class AuthenticatedSessionController extends Controller {
 
             }else {
 
-                $data->companies = Company::whereIn("status", ["active"])
+                $data->companies = Company::whereIn("status", ["active", "inactive"])
                                           ->with(["socialsMedia"])
                                           ->orderBy("commercial_name", "ASC")
                                           ->get();
@@ -91,9 +91,7 @@ class AuthenticatedSessionController extends Controller {
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        $query = "?company=".base64_encode((string) $company->id);
-
-        return redirect("/".$query);
+        return redirect("/".Utilities::companyLoginQuery($company->id));
 
     }
 
