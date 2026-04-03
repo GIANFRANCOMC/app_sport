@@ -50,9 +50,7 @@ class AuthenticatedSessionController extends Controller {
 
                 }
 
-            }
-
-            if(!Utilities::isDefined($data->company)) {
+            }else {
 
                 $data->companies = Company::whereIn("status", ["active"])
                                           ->with(["socialsMedia"])
