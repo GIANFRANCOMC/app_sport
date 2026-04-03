@@ -181,8 +181,8 @@
 
             });
 
-            const passwordInput = document.getElementById("password");
-            const passwordToggle = document.getElementById("br-auth-password-toggle");
+            const passwordInput      = document.getElementById("password");
+            const passwordToggle     = document.getElementById("br-auth-password-toggle");
             const passwordToggleIcon = passwordToggle?.querySelector("i");
 
             passwordToggle?.addEventListener("click", function() {

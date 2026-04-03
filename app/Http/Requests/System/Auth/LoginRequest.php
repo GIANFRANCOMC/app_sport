@@ -59,6 +59,7 @@ class LoginRequest extends FormRequest {
         $user = User::where("email", $credentials["email"])
                     ->where("company_id", $companyId)
                     ->whereIn("status", ["active"])
+                    ->with(["company"])
                     ->first();
 
         // Attempt to authenticate the user
@@ -68,6 +69,15 @@ class LoginRequest extends FormRequest {
 
             throw ValidationException::withMessages([
                 "email" => trans("auth.failed")
+            ]);
+
+        }
+
+        // Check if the company is active
+        if(!$user->company || $user->company->status !== "active") {
+
+            throw ValidationException::withMessages([
+                "company_id" => trans("auth.company_inactive")
             ]);
 
         }
