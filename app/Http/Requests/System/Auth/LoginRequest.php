@@ -10,7 +10,7 @@ use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
 use App\Helpers\System\Utilities;
-use App\Models\System\Organizations\{User};
+use App\Models\System\Organizations\{Company, User};
 
 class LoginRequest extends FormRequest {
 
@@ -58,6 +58,18 @@ class LoginRequest extends FormRequest {
         $credentials = $this->only("email", "password");
         $companyId   = $this->input("company_id");
 
+        $company = Company::where("id", $companyId)
+                          ->first();
+
+        // Check if the company is active
+        if(!Utilities::isDefined($company) || $company->status !== "active") {
+
+            throw new HttpResponseException(
+                redirect("/".Utilities::companyLoginQuery($companyId))
+            );
+
+        }
+
         $user = User::where("email", $credentials["email"])
                     ->where("company_id", $companyId)
                     ->whereIn("status", ["active"])
@@ -65,22 +77,13 @@ class LoginRequest extends FormRequest {
                     ->first();
 
         // Attempt to authenticate the user
-        if(!$user || !Hash::check($credentials["password"], $user->password)) {
+        if(!Utilities::isDefined($user) || !Hash::check($credentials["password"], $user->password)) {
 
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([
                 "email" => trans("auth.failed")
             ]);
-
-        }
-
-        // Check if the company is active
-        if(!$user->company || $user->company->status !== "active") {
-
-            throw new HttpResponseException(
-                redirect("/".Utilities::companyLoginQuery($user->company_id))
-            );
 
         }
 
