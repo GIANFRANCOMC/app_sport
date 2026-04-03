@@ -1,10 +1,22 @@
 @charset "UTF-8";
+
 /**
- * Branding (br-) — paleta fundadora
- * Colores logo: #2899E5 (primario), #1A1A35 (secundario / texto fuerte)
- * Inspiración: escalas tipo Tailwind, foco UX (contraste, focus, estados)
+ * br-branding.css — Marca y UI reutilizable (prefijo `br-`)
+ *
+ * Tokens:     `--br-*` (color, radios, sombras, foco, transiciones)
+ * Componentes: `.br-*` (`.br-btn`, `.br-card`, `.br-link`, formularios propios, …)
+ * App logueada: `body.br-layout`, `.br-menu-brand`, `.br-layout-content`, sidebar, navbar
+ *
+ * Login invitado (pantalla aparte): `br-login.css` — clases `.br-auth-*`
+ *
+ * Carga: después de `core.css` / tema; en login, `br-branding.css` antes que `br-login.css`.
+ *
+ * Colores logo: #2899E5 (primario), #1A1A35 (secundario). Estilo: escalas tipo Tailwind, UX.
  */
 
+/* -------------------------------------------------------------------------
+ * [br] Tokens CSS — variables globales (--br-*)
+ * ------------------------------------------------------------------------- */
 :root {
   /* Primario — azul marca */
   --br-primary: #2899e5;
@@ -71,8 +83,8 @@
 }
 
 /* -------------------------------------------------------------------------
-   Tipografía / enlaces
-   ------------------------------------------------------------------------- */
+ * [br] Tipografía y enlaces — .br-link, .br-link-muted, .br-link-inverse
+ * ------------------------------------------------------------------------- */
 .br-link {
   color: var(--br-primary);
   text-decoration: none;
@@ -110,8 +122,8 @@
 }
 
 /* -------------------------------------------------------------------------
-   Botones base
-   ------------------------------------------------------------------------- */
+ * [br] Botones — .br-btn*, variantes primary / secondary / semánticas / outline / ghost
+ * ------------------------------------------------------------------------- */
 .br-btn {
   display: inline-flex;
   align-items: center;
@@ -237,7 +249,7 @@
   border-color: var(--br-info-hover);
 }
 
-/* Outline */
+/* --- [br] Botón outline --- */
 .br-btn-outline-primary {
   background-color: transparent;
   border-color: var(--br-primary);
@@ -262,7 +274,7 @@
   border-color: var(--br-secondary);
 }
 
-/* Ghost / soft */
+/* --- [br] Botón ghost / soft --- */
 .br-btn-ghost-primary {
   background-color: transparent;
   border-color: transparent;
@@ -284,8 +296,8 @@
 }
 
 /* -------------------------------------------------------------------------
-   Formularios
-   ------------------------------------------------------------------------- */
+ * [br] Formularios propios — .br-input, .br-label, .br-check, grupos
+ * ------------------------------------------------------------------------- */
 .br-form-group {
   margin-bottom: 1rem;
 }
@@ -439,8 +451,8 @@
 }
 
 /* -------------------------------------------------------------------------
-   Superficies, texto, badges
-   ------------------------------------------------------------------------- */
+ * [br] Superficies, texto, tarjetas, badges, alertas — utilidades .br-bg-*, .br-text-*, .br-card
+ * ------------------------------------------------------------------------- */
 .br-bg-primary {
   background-color: var(--br-primary) !important;
   color: var(--br-on-primary);
@@ -574,7 +586,7 @@
   color: var(--br-neutral);
 }
 
-/* Alertas compactas marca */
+/* --- [br] Alertas compactas --- */
 .br-alert {
   display: flex;
   gap: 0.75rem;
@@ -615,7 +627,7 @@
   color: #0c4a6e;
 }
 
-/* Divisor */
+/* --- [br] Divisor --- */
 .br-divider {
   height: 1px;
   background: var(--br-border);
@@ -623,20 +635,21 @@
   border: 0;
 }
 
-/* Utilidad: foco solo teclado en contenedores interactivos */
+/* --- [br] Foco teclado en contenedor --- */
 .br-focus-within:focus-within {
   box-shadow: var(--br-focus-ring);
   border-radius: var(--br-radius);
 }
 
 /* -------------------------------------------------------------------------
-   Layout aplicación (System layouts / main.blade.php)
-   Sidebar navy vivo + acentos #2899E5 (más luz y saturación, menos “apagado”)
-   ------------------------------------------------------------------------- */
+ * [br] Layout aplicación — body.br-layout, menú, navbar, contenido
+ * Vistas: System/layouts (main.blade.php). Sidebar navy + acentos #2899E5.
+ * ------------------------------------------------------------------------- */
 body.br-layout {
   background-color: var(--br-surface);
 }
 
+/* --- [br-layout] Velo bajo navbar fijo --- */
 html.layout-navbar-fixed body.br-layout .layout-page:before {
   backdrop-filter: saturate(200%) blur(10px);
   background: linear-gradient(
@@ -649,7 +662,7 @@ html.layout-navbar-fixed body.br-layout .layout-page:before {
   mask: linear-gradient(#f8fafc, #f8fafc 18%, transparent 100%);
 }
 
-/* Degradado original del sidebar (navy + brillo azul suave) */
+/* --- [br-layout] Fondo del sidebar (.br-menu-brand) --- */
 .br-layout .br-menu-brand.bg-menu-theme {
   background:
     radial-gradient(120% 80% at 0% 0%, rgba(40, 153, 229, 0.22) 0%, transparent 55%),
@@ -694,10 +707,7 @@ html.layout-navbar-fixed body.br-layout .layout-page:before {
   color: #fff !important;
 }
 
-/*
- * Ítem activo (ruta actual): franja izquierda marca + fondo claro sobre el navy,
- * texto reforzado — se distingue bien sin tapar todo el renglón de azul plano.
- */
+/* --- [br-layout] Ítem de menú activo (ruta actual) --- */
 .br-layout .br-menu-brand.menu-vertical .menu-item.active > .menu-link:not(.menu-toggle),
 .br-layout .br-menu-brand .menu-sub .menu-item.active > .menu-link {
   background: linear-gradient(
@@ -741,7 +751,7 @@ html:not(.layout-menu-collapsed) .br-layout .br-menu-brand .menu-inner .menu-ite
   color: rgba(255, 255, 255, 0.38) !important;
 }
 
-/* Barra derecha del tema: más corta y coherente con la franja activa */
+/* --- [br-layout] Indicador derecho del ítem activo --- */
 .layout-wrapper:not(.layout-horizontal) .br-layout .br-menu-brand .menu-inner > .menu-item.active:before {
   background: linear-gradient(180deg, #fff 0%, var(--br-primary) 100%);
   box-shadow: 0 0 12px rgba(40, 153, 229, 0.5);
@@ -757,7 +767,7 @@ html:not(.layout-menu-collapsed) .br-layout .br-menu-brand .menu-inner .menu-ite
     0 10px 24px rgba(0, 0, 0, 0.2);
 }
 
-/* Cabecera del menú: empresa, usuario, rol */
+/* --- [br] Perfil en sidebar — empresa, usuario, rol (.br-sidebar-profile*) --- */
 .br-layout .br-menu-brand .br-sidebar-profile-wrap {
   list-style: none;
 }
@@ -849,7 +859,7 @@ html:not(.layout-menu-collapsed) .br-layout .br-menu-brand .menu-inner .menu-ite
   letter-spacing: 0.02em;
 }
 
-/* Acceso a configuración de menú / favoritos */
+/* --- [br] Acceso admin sidebar — favoritos / configuración menú (.br-sidebar-admin*) --- */
 .br-sidebar-admin-wrap {
   list-style: none;
 }
@@ -956,7 +966,7 @@ html:not(.layout-menu-collapsed) .br-layout .br-menu-brand .menu-inner .menu-ite
   font-size: 0.6rem;
 }
 
-/* Enlace compacto: tono ámbar / amarillo suave (config favoritos y menú) */
+/* --- [br] Admin compacto — tono ámbar (favoritos / menú) --- */
 .br-sidebar-admin-link--compact {
   background: rgba(250, 204, 21, 0.12) !important;
   border-color: rgba(253, 224, 71, 0.32) !important;
@@ -983,7 +993,7 @@ html:not(.layout-menu-collapsed) .br-layout .br-menu-brand .menu-inner .menu-ite
   opacity: 0.95;
 }
 
-/* Ruta /home (home.index): opción más resaltada */
+/* --- [br] Admin compacto — estado activo (p. ej. home) --- */
 .br-sidebar-admin-link--compact.br-sidebar-admin-link--active {
   background: linear-gradient(
     90deg,
@@ -1025,7 +1035,7 @@ html:not(.layout-menu-collapsed) .br-layout .br-menu-brand .menu-inner .menu-ite
   border-color: rgba(254, 249, 195, 0.78) !important;
 }
 
-/* Iconos del menú: blanco suave (sin celeste); activo = blanco pleno */
+/* --- [br-layout] Iconos de menú (.br-icon-accent) --- */
 .br-layout .br-menu-brand .br-icon-accent {
   color: rgba(255, 255, 255, 0.72) !important;
 }
@@ -1039,6 +1049,7 @@ html:not(.layout-menu-collapsed) .br-layout .br-menu-brand .menu-inner .menu-ite
   color: #fff !important;
 }
 
+/* --- [br-layout] Barra superior (navbar) --- */
 .br-layout-navbar.bg-navbar-theme {
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 252, 255, 0.96) 100%) !important;
   backdrop-filter: blur(12px) saturate(160%);
@@ -1055,6 +1066,7 @@ html:not(.layout-menu-collapsed) .br-layout .br-menu-brand .menu-inner .menu-ite
   color: var(--br-primary) !important;
 }
 
+/* --- [br] Cerrar sesión — .br-menu-logout* --- */
 .br-menu-logout-item {
   margin-top: 0.35rem;
 }
@@ -1122,7 +1134,10 @@ html:not(.layout-menu-collapsed)
   color: #fff !important;
 }
 
-/* Área principal + marca en componentes Bootstrap (misma línea que login / br-*) */
+/* -------------------------------------------------------------------------
+ * [br] Contenido principal + Bootstrap bajo .br-layout
+ * .br-layout-content, .btn-primary, paginación, checks, pills, badges tema, …
+ * ------------------------------------------------------------------------- */
 .br-layout .br-layout-content {
   background-color: var(--br-surface);
   background-image: linear-gradient(
@@ -1229,477 +1244,5 @@ html:not(.layout-menu-collapsed)
 
 .br-layout a.link-primary {
   color: var(--br-primary) !important;
-}
-
-/* -------------------------------------------------------------------------
-   Login invitado (System/auth/login.blade.php + guests/auth layout)
-   ------------------------------------------------------------------------- */
-/*
- * Fondo login: velos radiales (marca #2899E5 / navy #1A1A35), base aclarada vs. tema oscuro.
- */
-body:has(.br-auth-login-page) {
-  min-height: 100vh;
-  background-color: #1a2034;
-  background-image:
-    radial-gradient(
-      ellipse 125% 90% at 10% 8%,
-      rgba(40, 153, 229, 0.38) 0%,
-      rgba(40, 153, 229, 0.12) 38%,
-      transparent 64%
-    ),
-    radial-gradient(
-      ellipse 100% 80% at 92% 88%,
-      rgba(26, 26, 53, 0.72) 0%,
-      rgba(26, 26, 53, 0.28) 44%,
-      transparent 72%
-    ),
-    radial-gradient(
-      ellipse 85% 55% at 50% 105%,
-      rgba(40, 153, 229, 0.18) 0%,
-      transparent 56%
-    ),
-    linear-gradient(
-      168deg,
-      #1e2540 0%,
-      #222a45 30%,
-      #1c2238 56%,
-      #181e32 100%
-    );
-  background-repeat: no-repeat;
-  background-attachment: fixed;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  body:has(.br-auth-login-page) {
-    background-attachment: scroll;
-  }
-}
-
-.br-auth-login-header {
-  margin-bottom: 0.25rem;
-}
-
-.br-auth-login-eyebrow {
-  margin: 0;
-  font-size: 0.9375rem;
-  font-weight: 600;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--br-primary) !important;
-}
-
-.br-auth-login-title {
-  margin: 0;
-  font-size: clamp(1.375rem, 4.5vw, 1.75rem);
-  font-weight: 700;
-  line-height: 1.25;
-  letter-spacing: -0.02em;
-}
-
-.br-auth-login-sub {
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: var(--br-text-muted) !important;
-}
-
-.br-auth-login-page .br-login-brand-name {
-  color: var(--br-secondary) !important;
-}
-
-.br-auth-login-page a.br-link {
-  font-weight: 600;
-}
-
-.br-auth-login-page a.br-link:visited {
-  color: var(--br-primary);
-}
-
-.br-auth-login-page .form-label {
-  color: var(--br-secondary);
-}
-
-.br-auth-login-page .form-control,
-.br-auth-login-page .form-select {
-  border-color: #c5d0dc;
-  transition: var(--br-transition);
-}
-
-.br-auth-login-page .form-control:hover,
-.br-auth-login-page .form-select:hover {
-  border-color: #a8b5c4;
-}
-
-.br-auth-login-page .form-control:focus {
-  border-color: var(--br-primary);
-  box-shadow: var(--br-shadow-sm), var(--br-focus-ring);
-}
-
-/* Campo contraseña: alternar ver / ocultar */
-.br-auth-login-page .br-auth-password-field .form-control {
-  padding-right: 2.75rem;
-}
-
-.br-auth-password-toggle {
-  position: absolute;
-  right: 0.3rem;
-  top: 50%;
-  transform: translateY(-50%);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 2.25rem;
-  height: 2.25rem;
-  padding: 0;
-  border: none;
-  border-radius: var(--br-radius-sm);
-  background: transparent;
-  color: var(--br-text-muted);
-  cursor: pointer;
-  transition: var(--br-transition);
-}
-
-.br-auth-password-toggle:hover {
-  color: var(--br-secondary);
-  background: rgba(26, 26, 53, 0.06);
-}
-
-.br-auth-password-toggle:focus-visible {
-  outline: none;
-  box-shadow: var(--br-focus-ring);
-}
-
-.br-auth-login-page select.form-control:focus,
-.br-auth-login-page .form-select:focus {
-  border-color: var(--br-primary);
-  box-shadow: var(--br-shadow-sm), var(--br-focus-ring);
-}
-
-/* Botón principal: marca (incl. SweetAlert en esta página) */
-body:has(.br-auth-login-page) .btn-primary,
-.br-auth-login-page .br-btn-primary {
-  background-color: var(--br-primary) !important;
-  border-color: var(--br-primary) !important;
-  color: var(--br-on-primary) !important;
-}
-
-body:has(.br-auth-login-page) .btn-primary:hover,
-body:has(.br-auth-login-page) .btn-primary:focus,
-.br-auth-login-page .br-btn-primary:hover,
-.br-auth-login-page .br-btn-primary:focus {
-  background-color: var(--br-primary-hover) !important;
-  border-color: var(--br-primary-hover) !important;
-  color: var(--br-on-primary) !important;
-}
-
-body:has(.br-auth-login-page) .btn-primary:active {
-  background-color: var(--br-primary-active) !important;
-  border-color: var(--br-primary-active) !important;
-}
-
-body:has(.br-auth-login-page) .btn-check:focus + .btn-primary,
-body:has(.br-auth-login-page) .btn-primary:focus {
-  box-shadow: var(--br-focus-ring) !important;
-}
-
-/* Tarjeta principal login: esquinas amplias y sombra suave */
-.br-auth-login-page .br-auth-login-card {
-  background-color: #fff;
-  border-radius: 1.5rem;
-  border: 1px solid rgba(40, 153, 229, 0.12);
-  box-shadow:
-    0 2px 4px rgba(15, 18, 31, 0.04),
-    0 8px 24px rgba(26, 26, 53, 0.1),
-    0 20px 48px -12px rgba(40, 153, 229, 0.14),
-    inset 0 1px 0 rgba(255, 255, 255, 0.9) !important;
-}
-
-/* Sin formulario de login: sin card (sin fondo, borde ni sombra; contenido sobre el body) */
-.br-auth-login-page .br-auth-login-card.br-auth-login-card--no-access {
-  background: transparent !important;
-  border: none !important;
-  border-radius: 0 !important;
-  box-shadow: none !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-}
-
-.br-auth-login-page .br-auth-login-inner--no-access {
-  background: transparent !important;
-}
-
-.br-auth-login-page .br-auth-login-card.br-auth-login-card--no-access .br-login-brand-name {
-  color: rgba(255, 255, 255, 0.96) !important;
-}
-
-.br-auth-login-page .shadow-lg {
-  box-shadow: var(--br-shadow) !important;
-  border: 1px solid rgba(40, 153, 229, 0.1);
-}
-
-/* Pie de ayuda: texto claro sobre fondo oscuro (sin caja blanca) */
-.br-auth-login-page .br-auth-help-footer {
-  max-width: 28rem;
-  line-height: 1.65;
-  font-size: 0.875rem;
-}
-
-.br-auth-login-page .br-auth-help-footer .br-auth-help-question {
-  font-weight: 600;
-  letter-spacing: -0.015em;
-  color: #fff !important;
-}
-
-.br-auth-login-page .br-auth-help-footer .text-muted {
-  color: rgba(255, 255, 255, 0.72) !important;
-}
-
-/* Estado “sin acceso” (membresía / plan): aviso + soporte */
-.br-auth-access-denied {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.br-auth-access-denied__notice {
-  display: flex;
-  gap: 0.875rem;
-  align-items: flex-start;
-  padding: 1.125rem 1.125rem 1.25rem;
-  border-radius: var(--br-radius-lg);
-  background: linear-gradient(145deg, var(--br-danger-soft) 0%, #fff 55%);
-  border: 2px solid rgba(239, 68, 68, 0.42);
-  border-left: 5px solid var(--br-danger);
-  box-shadow:
-    0 0 0 1px rgba(239, 68, 68, 0.12),
-    0 4px 18px rgba(239, 68, 68, 0.12);
-}
-
-.br-auth-access-denied__notice-icon {
-  flex-shrink: 0;
-  margin-top: 0.1rem;
-  font-size: 1.625rem;
-  line-height: 1;
-  color: var(--br-danger);
-}
-
-.br-auth-access-denied__title {
-  margin: 0 0 0.5rem;
-  font-size: 1.0625rem;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  line-height: 1.3;
-  color: var(--br-danger) !important;
-}
-
-.br-auth-access-denied__strong-danger {
-  color: var(--br-danger) !important;
-  font-weight: 700;
-}
-
-.br-auth-access-denied__strong-success {
-  color: var(--br-success) !important;
-  font-weight: 700;
-}
-
-.br-auth-access-denied__text {
-  margin: 0 0 0.65rem;
-  font-size: 0.875rem;
-  line-height: 1.55;
-  color: var(--br-text) !important;
-}
-
-.br-auth-access-denied__hint {
-  font-size: 0.8125rem;
-  line-height: 1.5;
-  color: var(--br-text-muted) !important;
-  padding-top: 0.65rem;
-  border-top: 1px solid rgba(239, 68, 68, 0.12);
-}
-
-/* Ayuda en login: dos bloques distintos (general vs. acceso / membresía) */
-.br-auth-support-box {
-  width: 100%;
-  max-width: 480px;
-  margin-left: auto;
-  margin-right: auto;
-  padding: 1rem 1.125rem 1.125rem;
-  border-radius: var(--br-radius-lg);
-  border: 1px solid transparent;
-  border-left-width: 4px;
-}
-
-.br-auth-support-box .br-auth-support-inner {
-  display: flex;
-  gap: 0.875rem;
-  align-items: flex-start;
-}
-
-.br-auth-support-box .br-auth-support-icon {
-  flex-shrink: 0;
-  font-size: 1.5rem;
-  line-height: 1;
-  margin-top: 0.1rem;
-}
-
-.br-auth-support-box .br-auth-support-title {
-  margin: 0 0 0.25rem;
-  font-size: 1rem;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  color: var(--br-secondary) !important;
-}
-
-.br-auth-support-box .br-auth-support-lead {
-  margin: 0 0 0.75rem;
-  font-size: 0.8125rem;
-  font-weight: 500;
-  line-height: 1.45;
-  color: var(--br-text-muted) !important;
-}
-
-/* Filas de contacto: etiqueta + enlace (correo vs teléfono) */
-.br-auth-support-lines {
-  font-size: 0.875rem;
-  line-height: 1.45;
-}
-
-.br-auth-support-line-label {
-  display: block;
-  font-size: 0.8125rem;
-  font-weight: 600;
-  color: var(--br-secondary) !important;
-  line-height: 1.35;
-}
-
-.br-auth-support-line .br-link {
-  font-weight: 600;
-  word-break: break-word;
-}
-
-/* Acceso bloqueado / membresía: tono aviso, más visible que el texto gris */
-.br-auth-support-box--access {
-  background: linear-gradient(135deg, var(--br-warning-soft) 0%, #fffbeb 100%);
-  border-color: rgba(217, 119, 6, 0.22);
-  border-left-color: var(--br-warning);
-  box-shadow: 0 2px 12px rgba(245, 158, 11, 0.1);
-}
-
-.br-auth-support-box--access .br-auth-support-icon {
-  color: var(--br-warning-hover);
-}
-
-/* Soporte compacto bajo “acceso denegado”: mismo mensaje, menos peso visual */
-.br-auth-support-box--access.br-auth-support-box--access-lite {
-  padding: 0.8rem 1rem;
-  background: #fffdf8;
-  border: 1px solid rgba(245, 158, 11, 0.2);
-  border-left: 3px solid var(--br-warning);
-  border-radius: var(--br-radius);
-  box-shadow: none;
-}
-
-/* Barra de contacto (login sin acceso): fondo transparente; correo y teléfono alineados en columna; Contáctanos más abajo */
-.br-auth-support-bar--transparent {
-  background: transparent !important;
-  border: none !important;
-  box-shadow: none !important;
-  padding: 0;
-  margin-top: 1.75rem;
-  width: 100%;
-}
-
-.br-auth-support-bar__layout {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0;
-  width: 100%;
-}
-
-.br-auth-support-bar__kicker {
-  margin: 0 0 0.75rem;
-  font-size: 0.9375rem;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.92) !important;
-  text-align: center;
-  width: 100%;
-}
-
-/* Bloque centrado; ancho = el del contenido más ancho; misma columna para correo y teléfono */
-.br-auth-support-bar__inner {
-  width: fit-content;
-  max-width: min(100%, 28rem);
-  margin-left: auto;
-  margin-right: auto;
-  text-align: left;
-}
-
-.br-auth-support-bar__channel {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  text-align: left;
-  gap: 0.2rem;
-  font-size: 0.875rem;
-  line-height: 1.45;
-  width: 100%;
-}
-
-.br-auth-support-bar__channel--phone {
-  margin-top: 0.75rem;
-}
-
-.br-auth-support-bar__label {
-  display: block;
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.65) !important;
-}
-
-.br-auth-support-bar__label::before {
-  content: "\00B7";
-  display: inline-block;
-  margin-right: 0.35em;
-  opacity: 0.5;
-  font-weight: 400;
-}
-
-.br-auth-support-bar--transparent .br-link {
-  font-weight: 600;
-  word-break: break-word;
-}
-
-/* Rótulo de sección: indica que lo siguiente es canal de contacto */
-.br-auth-contact-us-kicker {
-  margin: 0 0 0.35rem;
-  font-size: 0.6875rem;
-  font-weight: 700;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--br-primary) !important;
-  text-align: center;
-}
-
-@media (min-width: 768px) {
-  .br-auth-contact-us-kicker {
-    text-align: left;
-  }
-}
-
-.br-auth-support-lite-label {
-  margin: 0;
-  font-size: 0.8125rem;
-  font-weight: 600;
-  line-height: 1.4;
-  color: var(--br-text-muted) !important;
-  text-align: center;
-}
-
-@media (min-width: 768px) {
-  .br-auth-support-lite-label {
-    text-align: left;
-  }
 }
 

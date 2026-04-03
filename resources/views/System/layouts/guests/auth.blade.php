@@ -9,6 +9,7 @@
     data-template="vertical-menu-template-starter">
     <head>
         @include("System.layouts.partials.up")
+        <link rel="stylesheet" href="{{ asset('System/assets/css/br-login.css') }}" />
     </head>
     <body>
         {{ $slot }}
