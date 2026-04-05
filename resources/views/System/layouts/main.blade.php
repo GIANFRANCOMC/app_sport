@@ -86,7 +86,7 @@
                                     <i class="fa-solid fa-star"></i>
                                 </span>
                                 <span class="br-sidebar-admin-link__body">
-                                    <span class="br-sidebar-admin-link__title ms-1">Configurar favoritos</span>
+                                    <span class="br-sidebar-admin-link__title ms-1">Favoritos</span>
                                 </span>
                                 <i class="fa-solid fa-chevron-right br-sidebar-admin-link__chevron" aria-hidden="true"></i>
                             </a>

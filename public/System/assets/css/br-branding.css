@@ -950,24 +950,31 @@ html:not(.layout-menu-collapsed) .br-layout .br-menu-brand .menu-inner .menu-ite
 }
 
 .br-sidebar-admin-link--compact {
-  padding: 0.35rem 0.5rem;
-  gap: 0.45rem;
+  padding: 0.48rem 0.65rem;
+  gap: 0.55rem;
+  width: 70%;
+  max-width: 70%;
+}
+
+.br-sidebar-admin-link--compact .br-sidebar-admin-link__body {
+  flex: 1;
+  min-width: 0;
 }
 
 .br-sidebar-admin-link--compact .br-sidebar-admin-link__icon {
-  width: 1.625rem;
-  height: 1.625rem;
-  font-size: 0.78rem;
+  width: 1.875rem;
+  height: 1.875rem;
+  font-size: 0.88rem;
 }
 
 .br-sidebar-admin-link--compact .br-sidebar-admin-link__title {
-  font-size: 0.75rem;
+  font-size: 0.8125rem;
   font-weight: 700;
-  line-height: 1.2;
+  line-height: 1.25;
 }
 
 .br-sidebar-admin-link--compact .br-sidebar-admin-link__chevron {
-  font-size: 0.6rem;
+  font-size: 0.68rem;
 }
 
 /* --- [br] Admin compacto — tono ámbar (favoritos / menú) --- */
