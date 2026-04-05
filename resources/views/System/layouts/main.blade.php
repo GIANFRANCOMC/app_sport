@@ -35,23 +35,25 @@
             <div class="layout-container">
                 <aside id="layout-menu" class="layout-menu menu-vertical menu bg-menu-theme br-menu-brand">
                     <ul class="menu-inner mb-3 mt-2">
-                        <li class="menu-header br-sidebar-profile-wrap text-center">
+                        <li class="menu-header br-sidebar-profile-wrap text-start">
                             <div class="br-sidebar-profile">
-                                <div class="br-sidebar-profile-avatar mx-auto mb-3">
+                                <div class="br-sidebar-profile-avatar flex-shrink-0">
                                     <div class="avatar avatar-lg bg-white rounded-circle overflow-hidden br-brand-avatar">
                                         <img src="{{ asset($company->logomark ? 'storage/'.$company->logomark : $ownerApp->assets->img->logomark) }}" class="w-100 h-100 object-fit-cover" alt="Logo de {{ $company->commercial_name }}"/>
                                     </div>
                                 </div>
-                                <p class="br-sidebar-profile-company mb-1" title="{{ $company->commercial_name }}">
-                                    {{ Str::limit($company->commercial_name, 22) }}
-                                </p>
-                                <p class="br-sidebar-profile-user mb-1" title="{{ $user->name }}">
-                                    {{ Str::limit($user->name, 24) }}
-                                </p>
-                                <div class="br-sidebar-profile-role-head mb-1">
-                                    <p class="br-sidebar-profile-role br-sidebar-profile-role--accent mb-0" title="{{ $role->name }}">
-                                        <span class="br-sidebar-profile-role-name text-uppercase">{{ Str::limit($role->name, 22) }}</span>
+                                <div class="br-sidebar-profile-meta">
+                                    <p class="br-sidebar-profile-user mb-1" title="{{ $user->name }}">
+                                        {{ Str::limit($user->name, 28) }}
                                     </p>
+                                    <p class="br-sidebar-profile-company mb-1" title="{{ $company->commercial_name }}">
+                                        {{ Str::limit($company->commercial_name, 28) }}
+                                    </p>
+                                    <div class="br-sidebar-profile-role-head mb-0">
+                                        <p class="br-sidebar-profile-role mb-0" title="{{ $role->name }}">
+                                            <span class="br-sidebar-profile-role-name">{{ Str::limit($role->name, 26) }}</span>
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
                         </li>
