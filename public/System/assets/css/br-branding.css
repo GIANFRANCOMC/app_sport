@@ -1308,7 +1308,12 @@ html:not(.layout-menu-collapsed)
 .br-layout .br-fab-favorites__item-icon {
   flex-shrink: 0;
   font-size: 0.95rem;
-  color: rgba(40, 153, 229, 0.85);
+  color: rgba(51, 65, 85, 0.72);
+  transition: color 0.15s ease;
+}
+
+.br-layout .br-fab-favorites__link:hover .br-fab-favorites__item-icon {
+  color: var(--br-primary);
 }
 
 .br-layout .br-fab-favorites__item-label {
@@ -1350,37 +1355,55 @@ html:not(.layout-menu-collapsed)
   box-shadow: var(--br-focus-ring), 0 5px 14px rgba(251, 191, 36, 0.45);
 }
 
+/* Como .modal-header .btn-header-modal (custom.css): rojo #dc3545 e icono blanco, sin animación de desplazamiento */
 .br-layout .br-fab-favorites__close {
   flex-shrink: 0;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 1.5rem;
-  height: 1.5rem;
+  box-sizing: content-box;
+  width: 1.2rem;
+  height: 1.2rem;
   padding: 0;
   margin: 0;
-  border: none;
-  border-radius: 0.35rem;
-  background: rgba(15, 23, 42, 0.1);
-  color: var(--br-secondary);
-  font-size: 0.65rem;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 0.3rem;
+  background-color: #dc3545;
+  color: #fff;
+  font-size: 0.62rem;
   line-height: 1;
   cursor: pointer;
-  transition: background-color 0.18s ease, color 0.18s ease, transform 0.15s ease;
+  box-shadow: 0 0.125rem 0.4rem rgba(220, 53, 69, 0.35);
+  transition: background-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.br-layout .br-fab-favorites__close i {
+  color: #fff;
+  font-size: 0.62rem;
+  font-weight: 900;
+  line-height: 1;
 }
 
 .br-layout .br-fab-favorites__close:hover {
-  background: rgba(40, 153, 229, 0.2);
-  color: var(--br-primary);
+  color: #fff;
+  background-color: #c82333;
+  border-color: rgba(0, 0, 0, 0.08);
+  box-shadow: 0 0.2rem 0.55rem rgba(220, 53, 69, 0.45);
 }
 
 .br-layout .br-fab-favorites__close:focus-visible {
   outline: none;
-  box-shadow: var(--br-focus-ring);
+  box-shadow: var(--br-focus-ring), 0 0.125rem 0.4rem rgba(220, 53, 69, 0.35);
+}
+
+.br-layout .br-fab-favorites__head .br-fab-favorites__close:hover,
+.br-layout .br-fab-favorites__head .br-fab-favorites__close:active {
+  transform: translateY(-50%);
 }
 
 .br-layout .br-fab-favorites__head .br-fab-favorites__close:active {
-  transform: translateY(-50%) scale(0.94);
+  background-color: #bd2130;
+  box-shadow: 0 0.1rem 0.3rem rgba(220, 53, 69, 0.4);
 }
 
 @media (max-width: 575.98px) {
