@@ -304,34 +304,44 @@
 
         <script>
             (function () {
+
                 var root = document.getElementById("brFabFavorites");
+
                 if (!root) return;
+
                 var btn = document.getElementById("brFabFavoritesToggle");
                 var panel = document.getElementById("brFabFavoritesPanel");
                 var closeBtn = document.getElementById("brFabFavoritesClose");
                 var backdrop = document.getElementById("brFabFavoritesBackdrop");
 
                 function setOpen(open) {
+
                     root.setAttribute("data-open", open ? "1" : "0");
                     panel.classList.toggle("br-fab-favorites__panel--open", open);
                     panel.setAttribute("aria-hidden", open ? "false" : "true");
                     btn.setAttribute("aria-expanded", open ? "true" : "false");
+
                 }
 
                 btn.addEventListener("click", function (e) {
+
                     e.stopPropagation();
                     setOpen(!panel.classList.contains("br-fab-favorites__panel--open"));
+
                 });
+
                 closeBtn.addEventListener("click", function () { setOpen(false); });
-                if (backdrop) {
-                    backdrop.addEventListener("click", function () { setOpen(false); });
-                }
+
+                if(backdrop) backdrop.addEventListener("click", function () { setOpen(false); });
+
                 document.addEventListener("keydown", function (e) {
                     if (e.key === "Escape" && root.getAttribute("data-open") === "1") { setOpen(false); btn.focus(); }
                 });
+
                 document.addEventListener("click", function (e) {
                     if (root.getAttribute("data-open") === "1" && !root.contains(e.target)) { setOpen(false); }
                 });
+
             })();
         </script>
 

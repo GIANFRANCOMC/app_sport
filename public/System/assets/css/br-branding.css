@@ -1271,8 +1271,18 @@ html:not(.layout-menu-collapsed)
 
 @media (prefers-reduced-motion: reduce) {
   .br-layout .br-fab-favorites__panel,
-  .br-layout .br-fab-favorites__backdrop {
+  .br-layout .br-fab-favorites__backdrop,
+  .br-layout .br-fab-favorites__btn,
+  .br-layout .br-fab-favorites__btn::before,
+  .br-layout .br-fab-favorites__btn i {
     transition-duration: 0.01ms;
+  }
+
+  .br-layout .br-fab-favorites__btn:hover,
+  .br-layout .br-fab-favorites__btn:active,
+  .br-layout .br-fab-favorites__btn:hover i,
+  .br-layout .br-fab-favorites__btn:active i {
+    transform: none;
   }
 }
 
@@ -1414,9 +1424,16 @@ html:not(.layout-menu-collapsed)
   font-size: 1.1rem;
   line-height: 1;
   color: #fff !important;
-  /* Borde = misma colorimetría que el relleno (135deg); capa exterior ligeramente más profunda para leer el aro */
   border: 2px solid transparent !important;
-  /* ~60 % amarillo / ~40 % morado (a lo largo del degradado 135deg) */
+  border-radius: 50% !important;
+  overflow: hidden;
+  cursor: pointer;
+  box-sizing: border-box;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  isolation: isolate;
+  /* Borde degradado suave 135deg (sin saltos bruscos claro/oscuro) */
   background:
     linear-gradient(
       135deg,
@@ -1431,44 +1448,148 @@ html:not(.layout-menu-collapsed)
       padding-box,
     linear-gradient(
       135deg,
-      #fde047 0%,
-      #facc15 14%,
-      #eab308 28%,
-      #ca8a04 44%,
-      #b45309 60%,
-      #5d3d6e 82%,
-      #3d2a52 100%
+      #fef3c7 0%,
+      #fde68a 18%,
+      #facc15 34%,
+      #eab308 50%,
+      #c0840a 62%,
+      #8b6a9a 78%,
+      #5d4a6e 92%,
+      #4a3268 100%
     )
       border-box !important;
   background-clip: padding-box, border-box;
   background-origin: padding-box, border-box;
   box-shadow:
-    0 1px 2px rgba(0, 0, 0, 0.1),
-    0 4px 14px rgba(251, 191, 36, 0.28),
-    0 4px 14px rgba(74, 50, 104, 0.18);
-  transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+    0 0 0 1px rgba(255, 255, 255, 0.22),
+    0 0 0 2px rgba(74, 50, 104, 0.08),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.32),
+    inset 0 -2px 8px rgba(61, 42, 82, 0.18),
+    0 1px 2px rgba(0, 0, 0, 0.08),
+    0 4px 14px rgba(251, 191, 36, 0.2),
+    0 4px 14px rgba(74, 50, 104, 0.16);
+  transition:
+    transform 0.25s cubic-bezier(0.34, 1.15, 0.64, 1),
+    box-shadow 0.25s ease;
+}
+
+/* Brillo superior (relieve); encima del degradado, debajo del icono */
+.br-layout .br-fab-favorites__btn::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(
+    95% 72% at 30% 12%,
+    rgba(255, 255, 255, 0.34) 0%,
+    rgba(255, 255, 255, 0.08) 40%,
+    transparent 62%
+  );
+  pointer-events: none;
+  z-index: 0;
+  transition: opacity 0.22s ease;
 }
 
 .br-layout .br-fab-favorites__btn i {
+  position: relative;
+  z-index: 1;
   color: #fff !important;
-  filter: drop-shadow(0 1px 2px rgba(55, 40, 30, 0.35));
+  filter: drop-shadow(0 1px 2px rgba(45, 32, 28, 0.45));
+  transition: transform 0.25s cubic-bezier(0.34, 1.15, 0.64, 1);
 }
 
 .br-layout .br-fab-favorites__btn:hover {
-  transform: scale(1.05);
-  filter: brightness(1.04);
+  transform: scale(1.06);
   box-shadow:
-    0 2px 4px rgba(0, 0, 0, 0.12),
-    0 6px 18px rgba(251, 191, 36, 0.34),
-    0 6px 18px rgba(74, 50, 104, 0.22);
+    0 0 0 1px rgba(253, 224, 71, 0.35),
+    0 0 0 2px rgba(109, 75, 138, 0.12),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.38),
+    inset 0 -2px 8px rgba(61, 42, 82, 0.16),
+    0 3px 12px rgba(0, 0, 0, 0.08),
+    0 8px 22px rgba(251, 191, 36, 0.28),
+    0 8px 22px rgba(74, 50, 104, 0.22);
+}
+
+.br-layout .br-fab-favorites__btn:hover::before {
+  opacity: 0.92;
+}
+
+.br-layout .br-fab-favorites__btn:hover i {
+  transform: scale(1.08);
+}
+
+.br-layout .br-fab-favorites__btn:active {
+  transform: scale(0.97);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.18),
+    0 0 0 2px rgba(45, 31, 58, 0.1),
+    inset 0 0 0 1px rgba(0, 0, 0, 0.05),
+    inset 0 2px 5px rgba(61, 42, 82, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    0 2px 8px rgba(251, 191, 36, 0.18),
+    0 2px 8px rgba(74, 50, 104, 0.14);
+  transition-duration: 0.08s;
+}
+
+.br-layout .br-fab-favorites__btn:active i {
+  transform: scale(0.96);
+}
+
+/* Panel abierto: halos más suaves */
+.br-layout .br-fab-favorites__btn[aria-expanded="true"] {
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.26),
+    0 0 0 2px rgba(74, 50, 104, 0.08),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.32),
+    inset 0 -2px 8px rgba(61, 42, 82, 0.18),
+    0 0 0 2px rgba(253, 224, 71, 0.22),
+    0 0 0 5px rgba(109, 75, 138, 0.12),
+    0 5px 18px rgba(251, 191, 36, 0.24),
+    0 5px 18px rgba(74, 50, 104, 0.2);
+}
+
+.br-layout .br-fab-favorites__btn[aria-expanded="true"]:hover {
+  transform: scale(1.06);
+  box-shadow:
+    0 0 0 1px rgba(253, 224, 71, 0.32),
+    0 0 0 2px rgba(109, 75, 138, 0.1),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.38),
+    inset 0 -2px 8px rgba(61, 42, 82, 0.14),
+    0 0 0 2px rgba(253, 224, 71, 0.28),
+    0 0 0 5px rgba(109, 75, 138, 0.14),
+    0 8px 22px rgba(251, 191, 36, 0.3),
+    0 8px 22px rgba(74, 50, 104, 0.24);
 }
 
 .br-layout .br-fab-favorites__btn:focus-visible {
   outline: none;
   box-shadow:
     var(--br-focus-ring),
-    0 4px 14px rgba(251, 191, 36, 0.34),
-    0 4px 14px rgba(74, 50, 104, 0.24);
+    0 0 0 1px rgba(255, 255, 255, 0.22),
+    0 0 0 2px rgba(74, 50, 104, 0.08),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.32),
+    0 4px 16px rgba(251, 191, 36, 0.24),
+    0 4px 16px rgba(74, 50, 104, 0.18);
+}
+
+.br-layout .br-fab-favorites__btn[aria-expanded="true"]:focus-visible {
+  outline: none;
+  box-shadow:
+    var(--br-focus-ring),
+    0 0 0 1px rgba(255, 255, 255, 0.26),
+    0 0 0 2px rgba(74, 50, 104, 0.08),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.32),
+    inset 0 -2px 8px rgba(61, 42, 82, 0.18),
+    0 0 0 2px rgba(253, 224, 71, 0.22),
+    0 0 0 5px rgba(109, 75, 138, 0.12),
+    0 5px 18px rgba(251, 191, 36, 0.22),
+    0 5px 18px rgba(74, 50, 104, 0.18);
 }
 
 /* Como .modal-header .btn-header-modal (custom.css): rojo #dc3545 e icono blanco, sin animación de desplazamiento */
