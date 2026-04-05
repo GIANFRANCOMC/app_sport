@@ -79,6 +79,44 @@
                                 $favoriteCounter++;
 
                             }
+
+                            $fabFavoriteItems = collect();
+
+                            foreach($sections as $section) {
+
+                                $subSectionsFab = $section->subSections->whereIn("id", $favoritePreferences);
+
+                                if(!$subSectionsFab->first()) {
+
+                                    continue;
+
+                                }
+
+                                if($section->has_sub_menu) {
+
+                                    foreach($subSectionsFab as $subSection) {
+
+                                        $fabFavoriteItems->push([
+                                            "label" => $section->dom_label." › ".$subSection->dom_label,
+                                            "url"   => $subSection->dom_route_url,
+                                            "icon"  => $section->dom_icon,
+                                        ]);
+
+                                    }
+
+                                } else {
+
+                                    $refFab = $subSectionsFab->first();
+
+                                    $fabFavoriteItems->push([
+                                        "label" => $section->dom_label,
+                                        "url"   => $refFab->dom_route_url,
+                                        "icon"  => $section->dom_icon,
+                                    ]);
+
+                                }
+
+                            }
                         @endphp
                         <li class="menu-item {{ request()->routeIs('home.index') ? 'active' : '' }}" title="Configura tus favoritos (atajos en el panel).">
                             <a href="{{ route('home.index') }}" class="menu-link" @if(request()->routeIs('home.index')) aria-current="page" @endif>
@@ -87,7 +125,7 @@
                             </a>
                         </li>
                         @if($favoriteCounter > 0)
-                            <li class="menu-header divider py-0">
+                            <li class="menu-header divider py-0 d-none">
                                 <span class="menu-header-text text-uppercase divider-text">Favoritos</span>
                             </li>
                             @foreach($sections as $section)
@@ -102,14 +140,14 @@
 
                                     }
                                 @endphp
-                                <li class="{{ $section->has_sub_menu ? 'menu-header pe-none pt-1' : ('menu-item '.$section->dom_id) }}">
+                                <li class="d-none {{ $section->has_sub_menu ? 'menu-header pe-none pt-1' : ('menu-item '.$section->dom_id) }}">
                                     <a href="{{ $section->has_sub_menu ? 'javascript:void(0);' : $reference->dom_route_url }}" class="fw-semibold menu-link">
                                         <i class="{{ $section->dom_icon }} br-icon-accent me-3"></i>
                                         <div>{{ $section->dom_label }}</div>
                                     </a>
                                 </li>
                                 @if($section->has_sub_menu)
-                                    <li class="menu-item open">
+                                    <li class="menu-item open d-none">
                                         <ul class="menu-sub py-0">
                                             @foreach($subSectionsFiltered as $subSection)
                                                 <li class="menu-item {{ $subSection->dom_id }}" id="{{ $subSection->dom_id }}">
@@ -229,6 +267,68 @@
             <div class="layout-overlay layout-menu-toggle"></div>
             {{-- <div class="drag-target"></div> --}}
         </div>
+
+        <div class="br-fab-favorites" id="brFabFavorites" data-open="0">
+            <div class="br-fab-favorites__panel shadow-lg" id="brFabFavoritesPanel" role="region" aria-labelledby="brFabFavoritesTitle" aria-hidden="true">
+                <div class="br-fab-favorites__head">
+                    <span id="brFabFavoritesTitle" class="br-fab-favorites__title">Favoritos</span>
+                    <button type="button" class="br-fab-favorites__close" id="brFabFavoritesClose" aria-label="Cerrar panel de favoritos">
+                        <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+                    </button>
+                </div>
+                <div class="br-fab-favorites__body">
+                    @if($fabFavoriteItems->isEmpty())
+                        <p class="br-fab-favorites__empty mb-0">
+                            Aún no marcas favoritos. Entra al <a href="{{ route('home.index') }}" class="fw-semibold">inicio</a> y elige accesos para acortar tu día.
+                        </p>
+                    @else
+                        <ul class="br-fab-favorites__list list-unstyled mb-0">
+                            @foreach($fabFavoriteItems as $fab)
+                                <li class="br-fab-favorites__item">
+                                    <a href="{{ $fab['url'] }}" class="br-fab-favorites__link">
+                                        <i class="{{ $fab['icon'] }} br-fab-favorites__item-icon" aria-hidden="true"></i>
+                                        <span class="br-fab-favorites__item-label">{{ $fab['label'] }}</span>
+                                    </a>
+                                </li>
+                            @endforeach
+                        </ul>
+                    @endif
+                </div>
+            </div>
+            <button type="button" class="br-fab-favorites__btn btn rounded-circle shadow" id="brFabFavoritesToggle" title="Favoritos" aria-expanded="false" aria-controls="brFabFavoritesPanel">
+                <i class="fa-solid fa-star" aria-hidden="true"></i>
+                <span class="visually-hidden">Abrir favoritos</span>
+            </button>
+        </div>
+
+        <script>
+            (function () {
+                var root = document.getElementById("brFabFavorites");
+                if (!root) return;
+                var btn = document.getElementById("brFabFavoritesToggle");
+                var panel = document.getElementById("brFabFavoritesPanel");
+                var closeBtn = document.getElementById("brFabFavoritesClose");
+
+                function setOpen(open) {
+                    root.setAttribute("data-open", open ? "1" : "0");
+                    panel.classList.toggle("br-fab-favorites__panel--open", open);
+                    panel.setAttribute("aria-hidden", open ? "false" : "true");
+                    btn.setAttribute("aria-expanded", open ? "true" : "false");
+                }
+
+                btn.addEventListener("click", function (e) {
+                    e.stopPropagation();
+                    setOpen(!panel.classList.contains("br-fab-favorites__panel--open"));
+                });
+                closeBtn.addEventListener("click", function () { setOpen(false); });
+                document.addEventListener("keydown", function (e) {
+                    if (e.key === "Escape" && root.getAttribute("data-open") === "1") { setOpen(false); btn.focus(); }
+                });
+                document.addEventListener("click", function (e) {
+                    if (root.getAttribute("data-open") === "1" && !root.contains(e.target)) { setOpen(false); }
+                });
+            })();
+        </script>
 
         @include("System.layouts.partials.down")
     </body>
