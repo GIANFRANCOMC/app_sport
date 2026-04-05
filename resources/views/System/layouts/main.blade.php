@@ -80,15 +80,10 @@
 
                             }
                         @endphp
-                        <li class="menu-header br-sidebar-admin-wrap px-4 py-2">
-                            <a href="{{ route('home.index') }}" class="br-sidebar-admin-link br-sidebar-admin-link--compact {{ request()->routeIs('home.index') ? 'br-sidebar-admin-link--active' : '' }}" @if(request()->routeIs('home.index')) aria-current="page" @endif title="Configura tus favoritos (atajos en el panel).">
-                                <span class="br-sidebar-admin-link__icon" aria-hidden="true">
-                                    <i class="fa-solid fa-star"></i>
-                                </span>
-                                <span class="br-sidebar-admin-link__body">
-                                    <span class="br-sidebar-admin-link__title ms-1">Favoritos</span>
-                                </span>
-                                <i class="fa-solid fa-chevron-right br-sidebar-admin-link__chevron" aria-hidden="true"></i>
+                        <li class="menu-item {{ request()->routeIs('home.index') ? 'active' : '' }}" title="Configura tus favoritos (atajos en el panel).">
+                            <a href="{{ route('home.index') }}" class="menu-link" @if(request()->routeIs('home.index')) aria-current="page" @endif>
+                                <i class="fa-solid fa-star br-icon-favorites me-3" aria-hidden="true"></i>
+                                <div>Favoritos</div>
                             </a>
                         </li>
                         @if($favoriteCounter > 0)

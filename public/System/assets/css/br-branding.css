@@ -863,189 +863,6 @@ html:not(.layout-menu-collapsed) .br-layout .br-menu-brand .menu-inner .menu-ite
   letter-spacing: inherit;
 }
 
-/* --- [br] Acceso admin sidebar — favoritos / configuración menú (.br-sidebar-admin*) --- */
-.br-sidebar-admin-wrap {
-  list-style: none;
-}
-
-.br-sidebar-admin-link {
-  display: flex;
-  align-items: center;
-  gap: 0.65rem;
-  width: 100%;
-  padding: 0.55rem 0.65rem;
-  text-decoration: none;
-  text-align: left;
-  color: rgba(255, 255, 255, 0.94) !important;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: var(--br-radius);
-  transition: var(--br-transition);
-}
-
-.br-sidebar-admin-link:hover {
-  color: #fff !important;
-  background: rgba(40, 153, 229, 0.22);
-  border-color: rgba(40, 153, 229, 0.45);
-}
-
-.br-sidebar-admin-link:focus-visible {
-  outline: none;
-  box-shadow: var(--br-focus-ring);
-}
-
-.br-sidebar-admin-link__icon {
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 2.125rem;
-  height: 2.125rem;
-  font-size: 0.95rem;
-  border-radius: var(--br-radius-sm);
-  background: rgba(255, 255, 255, 0.1);
-  color: rgba(255, 255, 255, 0.95);
-}
-
-.br-sidebar-admin-link:hover .br-sidebar-admin-link__icon {
-  background: rgba(255, 255, 255, 0.18);
-}
-
-.br-sidebar-admin-link__body {
-  display: flex;
-  flex-direction: column;
-  gap: 0.15rem;
-  min-width: 0;
-  flex: 1;
-}
-
-.br-sidebar-admin-link__title {
-  font-size: 0.8125rem;
-  font-weight: 700;
-  line-height: 1.25;
-  letter-spacing: -0.01em;
-}
-
-.br-sidebar-admin-link__hint {
-  font-size: 0.6875rem;
-  font-weight: 500;
-  line-height: 1.3;
-  color: rgba(255, 255, 255, 0.65) !important;
-}
-
-.br-sidebar-admin-link:hover .br-sidebar-admin-link__hint {
-  color: rgba(255, 255, 255, 0.82) !important;
-}
-
-.br-sidebar-admin-link__chevron {
-  flex-shrink: 0;
-  font-size: 0.65rem;
-  opacity: 0.55;
-  transition: transform 0.2s ease, opacity 0.2s ease;
-}
-
-.br-sidebar-admin-link:hover .br-sidebar-admin-link__chevron {
-  opacity: 0.95;
-  transform: translateX(2px);
-}
-
-.br-sidebar-admin-link--compact {
-  padding: 0.48rem 0.65rem;
-  gap: 0.55rem;
-  width: 70%;
-  max-width: 70%;
-}
-
-.br-sidebar-admin-link--compact .br-sidebar-admin-link__body {
-  flex: 1;
-  min-width: 0;
-}
-
-.br-sidebar-admin-link--compact .br-sidebar-admin-link__icon {
-  width: 1.875rem;
-  height: 1.875rem;
-  font-size: 0.88rem;
-}
-
-.br-sidebar-admin-link--compact .br-sidebar-admin-link__title {
-  font-size: 0.8125rem;
-  font-weight: 700;
-  line-height: 1.25;
-}
-
-.br-sidebar-admin-link--compact .br-sidebar-admin-link__chevron {
-  font-size: 0.68rem;
-}
-
-/* --- [br] Admin compacto — tono ámbar (favoritos / menú) --- */
-.br-sidebar-admin-link--compact {
-  background: rgba(250, 204, 21, 0.12) !important;
-  border-color: rgba(253, 224, 71, 0.32) !important;
-  color: #fffbeb !important;
-}
-
-.br-sidebar-admin-link--compact .br-sidebar-admin-link__icon {
-  background: rgba(250, 204, 21, 0.22) !important;
-  color: #fde68a !important;
-}
-
-.br-sidebar-admin-link--compact:hover {
-  background: rgba(250, 204, 21, 0.24) !important;
-  border-color: rgba(253, 224, 71, 0.48) !important;
-  color: #fff !important;
-}
-
-.br-sidebar-admin-link--compact:hover .br-sidebar-admin-link__icon {
-  background: rgba(250, 204, 21, 0.34) !important;
-  color: #fef08a !important;
-}
-
-.br-sidebar-admin-link--compact:hover .br-sidebar-admin-link__chevron {
-  opacity: 0.95;
-}
-
-/* --- [br] Admin compacto — estado activo (p. ej. home) --- */
-.br-sidebar-admin-link--compact.br-sidebar-admin-link--active {
-  background: linear-gradient(
-    90deg,
-    rgba(253, 224, 71, 0.42) 0%,
-    rgba(250, 204, 21, 0.18) 55%,
-    rgba(250, 204, 21, 0.1) 100%
-  ) !important;
-  border-color: rgba(254, 249, 195, 0.65) !important;
-  color: #fff !important;
-  box-shadow:
-    inset 3px 0 0 #fde047,
-    0 2px 12px rgba(250, 204, 21, 0.2);
-}
-
-.br-sidebar-admin-link--compact.br-sidebar-admin-link--active .br-sidebar-admin-link__icon {
-  background: rgba(255, 255, 255, 0.22) !important;
-  color: #fef08a !important;
-  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.15);
-}
-
-.br-sidebar-admin-link--compact.br-sidebar-admin-link--active .br-sidebar-admin-link__title {
-  font-weight: 800;
-  letter-spacing: -0.02em;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
-}
-
-.br-sidebar-admin-link--compact.br-sidebar-admin-link--active .br-sidebar-admin-link__chevron {
-  opacity: 1;
-  color: #fef9c3;
-}
-
-.br-sidebar-admin-link--compact.br-sidebar-admin-link--active:hover {
-  background: linear-gradient(
-    90deg,
-    rgba(253, 224, 71, 0.5) 0%,
-    rgba(250, 204, 21, 0.26) 55%,
-    rgba(250, 204, 21, 0.14) 100%
-  ) !important;
-  border-color: rgba(254, 249, 195, 0.78) !important;
-}
-
 /* --- [br-layout] Iconos de menú (.br-icon-accent) --- */
 .br-layout .br-menu-brand .br-icon-accent {
   color: rgba(255, 255, 255, 0.72) !important;
@@ -1058,6 +875,22 @@ html:not(.layout-menu-collapsed) .br-layout .br-menu-brand .menu-inner .menu-ite
 .br-layout .br-menu-brand .menu-item.active > .menu-link .br-icon-accent,
 .br-layout .br-menu-brand .menu-item.open > .menu-link.menu-toggle .br-icon-accent {
   color: #fff !important;
+}
+
+/* Icono Favoritos (estrella) — ámbar para diferenciarlo del resto del menú */
+.br-layout .br-menu-brand .menu-link .br-icon-favorites {
+  color: #fbbf24 !important;
+  filter: drop-shadow(0 0 6px rgba(250, 204, 21, 0.35));
+}
+
+.br-layout .br-menu-brand .menu-link:hover .br-icon-favorites {
+  color: #fde047 !important;
+  filter: drop-shadow(0 0 8px rgba(253, 224, 71, 0.45));
+}
+
+.br-layout .br-menu-brand .menu-item.active > .menu-link .br-icon-favorites {
+  color: #fef08a !important;
+  filter: drop-shadow(0 0 10px rgba(254, 240, 138, 0.5));
 }
 
 /* --- [br-layout] Barra superior (navbar) --- */
