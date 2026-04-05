@@ -269,6 +269,7 @@
         </div>
 
         <div class="br-fab-favorites" id="brFabFavorites" data-open="0">
+            <div class="br-fab-favorites__backdrop" id="brFabFavoritesBackdrop" aria-hidden="true"></div>
             <div class="br-fab-favorites__panel" id="brFabFavoritesPanel" role="region" aria-labelledby="brFabFavoritesTitle" aria-hidden="true">
                 <div class="br-fab-favorites__head">
                     <span id="brFabFavoritesTitle" class="br-fab-favorites__title">Favoritos</span>
@@ -308,6 +309,7 @@
                 var btn = document.getElementById("brFabFavoritesToggle");
                 var panel = document.getElementById("brFabFavoritesPanel");
                 var closeBtn = document.getElementById("brFabFavoritesClose");
+                var backdrop = document.getElementById("brFabFavoritesBackdrop");
 
                 function setOpen(open) {
                     root.setAttribute("data-open", open ? "1" : "0");
@@ -321,6 +323,9 @@
                     setOpen(!panel.classList.contains("br-fab-favorites__panel--open"));
                 });
                 closeBtn.addEventListener("click", function () { setOpen(false); });
+                if (backdrop) {
+                    backdrop.addEventListener("click", function () { setOpen(false); });
+                }
                 document.addEventListener("keydown", function (e) {
                     if (e.key === "Escape" && root.getAttribute("data-open") === "1") { setOpen(false); btn.focus(); }
                 });

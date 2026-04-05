@@ -1033,6 +1033,31 @@ html:not(.layout-menu-collapsed) .br-layout .br-menu-brand .menu-inner .menu-ite
   padding: 0.55rem 1.1rem;
 }
 
+/* Celular (≤ sm): solo texto «Cerrar sesión», sin icono */
+@media (max-width: 575.98px) {
+  .br-layout .br-menu-brand.menu-vertical .menu-inner > .menu-item.br-menu-logout-item > .menu-link.br-menu-logout .br-menu-logout__icon-wrap {
+    display: none;
+  }
+
+  .br-layout .br-menu-brand.menu-vertical .menu-inner > .menu-item.br-menu-logout-item > .menu-link.br-menu-logout .br-menu-logout__label {
+    max-width: 12rem;
+    opacity: 1;
+    padding: 0.55rem 1.1rem;
+  }
+
+  .br-layout .br-menu-brand.menu-vertical .menu-inner > .menu-item.br-menu-logout-item > .menu-link.br-menu-logout:hover .br-menu-logout__icon-wrap,
+  .br-layout .br-menu-brand.menu-vertical .menu-inner > .menu-item.br-menu-logout-item > .menu-link.br-menu-logout:focus-within .br-menu-logout__icon-wrap {
+    display: none;
+  }
+
+  .br-layout .br-menu-brand.menu-vertical .menu-inner > .menu-item.br-menu-logout-item > .menu-link.br-menu-logout:hover .br-menu-logout__label,
+  .br-layout .br-menu-brand.menu-vertical .menu-inner > .menu-item.br-menu-logout-item > .menu-link.br-menu-logout:focus-within .br-menu-logout__label {
+    max-width: 12rem;
+    opacity: 1;
+    padding: 0.55rem 1.1rem;
+  }
+}
+
 html:not(.layout-menu-collapsed)
   .br-layout
   .br-menu-brand
@@ -1185,21 +1210,46 @@ html:not(.layout-menu-collapsed)
   align-items: flex-end;
   justify-content: flex-end;
   gap: 0.65rem;
+  isolation: isolate;
+}
+
+/* Fondo borroso: cubre el viewport; el panel y el FAB quedan encima (z-index mayor) */
+.br-layout .br-fab-favorites__backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  background: rgba(15, 23, 42, 0.12);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition:
+    opacity 0.38s cubic-bezier(0.22, 1, 0.36, 1),
+    visibility 0.38s;
+}
+
+.br-layout .br-fab-favorites[data-open="1"] .br-fab-favorites__backdrop {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
 }
 
 .br-layout .br-fab-favorites__panel {
   position: absolute;
   right: 0;
   bottom: calc(100% + 0.65rem);
+  z-index: 1;
   width: min(18rem, calc(100vw - 0.95rem));
   max-height: min(70vh, 26rem);
   overflow: auto;
   border-radius: 0.65rem;
   background: transparent;
-  border: 2px solid rgba(99, 102, 241, 0.65);
+  border: 1px solid rgba(109, 75, 138, 0.38);
   box-shadow:
-    0 1px 2px rgba(99, 102, 241, 0.2),
-    0 4px 12px rgba(79, 70, 229, 0.2);
+    0 0 0 1px rgba(255, 255, 255, 0.08) inset,
+    0 2px 8px rgba(74, 50, 104, 0.16),
+    0 8px 22px rgba(15, 23, 42, 0.1);
   color: var(--br-secondary);
   opacity: 0;
   visibility: hidden;
@@ -1220,7 +1270,8 @@ html:not(.layout-menu-collapsed)
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .br-layout .br-fab-favorites__panel {
+  .br-layout .br-fab-favorites__panel,
+  .br-layout .br-fab-favorites__backdrop {
     transition-duration: 0.01ms;
   }
 }
@@ -1232,9 +1283,12 @@ html:not(.layout-menu-collapsed)
   justify-content: center;
   padding: 0.32rem 0.35rem;
   box-sizing: border-box;
-  border-radius: 0;
+  border-radius: 0.55rem 0.55rem 0 0;
   border: none;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow:
+    0 1px 0 rgba(0, 0, 0, 0.14),
+    inset 0 -1px 0 rgba(251, 191, 36, 0.07);
   background:
     radial-gradient(120% 80% at 0% 0%, rgba(40, 153, 229, 0.22) 0%, transparent 55%),
     linear-gradient(
@@ -1271,8 +1325,11 @@ html:not(.layout-menu-collapsed)
   padding: 0.42rem 0.4rem 0.5rem 0.55rem;
   text-align: left;
   background: linear-gradient(180deg, #fff9e8 0%, #fff6e0 45%, #fff3d6 100%);
-  border-radius: 0;
+  border-radius: 0 0 0.55rem 0.55rem;
   border: none;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.42),
+    inset 0 -1px 0 rgba(234, 179, 8, 0.1);
 }
 
 .br-layout .br-fab-favorites__empty {
@@ -1346,6 +1403,8 @@ html:not(.layout-menu-collapsed)
 }
 
 .br-layout .br-fab-favorites__btn {
+  position: relative;
+  z-index: 1;
   width: 2.85rem;
   height: 2.85rem;
   padding: 0;
