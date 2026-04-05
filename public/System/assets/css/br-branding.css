@@ -932,7 +932,7 @@ html:not(.layout-menu-collapsed) .br-layout .br-menu-brand .menu-inner .menu-ite
   display: flex !important;
   justify-content: center !important;
   align-items: center !important;
-  margin-top: 0.45rem !important;
+  margin-top: 0.2rem !important;
   margin-bottom: 0.125rem;
   padding-top: 0.5rem !important;
 }

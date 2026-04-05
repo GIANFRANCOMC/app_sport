@@ -87,8 +87,8 @@
                             </a>
                         </li>
                         @if($favoriteCounter > 0)
-                            <li class="menu-header pt-1">
-                                <span class="menu-header-text text-uppercase">Favoritos</span>
+                            <li class="menu-header divider py-0">
+                                <span class="menu-header-text text-uppercase divider-text">Favoritos</span>
                             </li>
                             @foreach($sections as $section)
                                 @php
@@ -176,7 +176,7 @@
                             <a href="javascript:void(0)" class="menu-link br-menu-logout" onclick="$('#logout').submit();" role="button" aria-label="Cerrar sesión" title="Cerrar sesión">
                                 <span class="br-menu-logout__inner">
                                     <span class="br-menu-logout__icon-wrap" aria-hidden="true">
-                                        <i class="fa-solid fa-right-from-bracket"></i>
+                                        <i class="fa-solid fa-power-off"></i>
                                     </span>
                                     <span class="br-menu-logout__label">Cerrar sesión</span>
                                 </span>
