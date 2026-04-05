@@ -1177,7 +1177,7 @@ html:not(.layout-menu-collapsed)
 /* --- [br] FAB favoritos (esquina inferior derecha) --- */
 .br-layout .br-fab-favorites {
   position: fixed;
-  right: 0.4rem;
+  right: 1.1rem;
   bottom: 0.85rem;
   z-index: 1090;
   display: flex;
@@ -1203,13 +1203,13 @@ html:not(.layout-menu-collapsed)
   color: var(--br-secondary);
   opacity: 0;
   visibility: hidden;
-  transform: translateY(0.65rem) scale(0.98);
+  transform: translateY(0.4rem) scale(0.99);
   transform-origin: bottom right;
   pointer-events: none;
   transition:
-    opacity 0.28s cubic-bezier(0.4, 0, 0.2, 1),
-    transform 0.28s cubic-bezier(0.34, 1.2, 0.64, 1),
-    visibility 0.28s;
+    opacity 0.38s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.38s cubic-bezier(0.22, 1, 0.36, 1),
+    visibility 0.38s;
 }
 
 .br-layout .br-fab-favorites__panel.br-fab-favorites__panel--open {
@@ -1354,29 +1354,44 @@ html:not(.layout-menu-collapsed)
   justify-content: center;
   font-size: 1.1rem;
   line-height: 1;
-  background: #fbbf24 !important;
-  border: 1px solid rgba(255, 255, 255, 0.38) !important;
   color: #fff !important;
+  border: 2px solid rgba(107, 98, 155, 0.55) !important;
+  background: linear-gradient(
+    135deg,
+    #fef08a 0%,
+    #fbbf24 30%,
+    #d97706 48%,
+    #b4a8d4 74%,
+    #9a8ec2 100%
+  ) !important;
   box-shadow:
-    0 0 0 1px rgba(255, 255, 255, 0.22) inset,
-    0 5px 14px rgba(251, 191, 36, 0.4),
-    0 2px 5px rgba(0, 0, 0, 0.08) !important;
+    0 1px 2px rgba(0, 0, 0, 0.1),
+    0 4px 14px rgba(251, 191, 36, 0.26),
+    0 4px 14px rgba(107, 98, 155, 0.18);
   transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
 }
 
 .br-layout .br-fab-favorites__btn i {
-  filter: drop-shadow(0 1px 1px rgba(120, 53, 15, 0.25));
+  color: #fff !important;
+  filter: drop-shadow(0 1px 2px rgba(30, 27, 75, 0.35));
 }
 
 .br-layout .br-fab-favorites__btn:hover {
   transform: scale(1.05);
-  filter: brightness(1.04);
-  border-color: rgba(255, 255, 255, 0.52) !important;
+  filter: brightness(1.03);
+  border-color: rgba(107, 98, 155, 0.72) !important;
+  box-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.12),
+    0 6px 18px rgba(251, 191, 36, 0.32),
+    0 6px 18px rgba(107, 98, 155, 0.22);
 }
 
 .br-layout .br-fab-favorites__btn:focus-visible {
   outline: none;
-  box-shadow: var(--br-focus-ring), 0 5px 14px rgba(251, 191, 36, 0.45);
+  box-shadow:
+    var(--br-focus-ring),
+    0 4px 14px rgba(251, 191, 36, 0.32),
+    0 4px 14px rgba(107, 98, 155, 0.24);
 }
 
 /* Como .modal-header .btn-header-modal (custom.css): rojo #dc3545 e icono blanco, sin animación de desplazamiento */
@@ -1432,7 +1447,7 @@ html:not(.layout-menu-collapsed)
 
 @media (max-width: 575.98px) {
   .br-layout .br-fab-favorites {
-    right: 0.35rem;
+    right: 0.85rem;
     bottom: 0.75rem;
   }
 
