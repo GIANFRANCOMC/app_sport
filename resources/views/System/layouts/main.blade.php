@@ -103,7 +103,7 @@
                                     }
                                 @endphp
                                 <li class="{{ $section->has_sub_menu ? 'menu-header pe-none pt-1' : ('menu-item '.$section->dom_id) }}">
-                                    <a href="{{ $section->has_sub_menu ? 'javascript:void(0);' : $reference->dom_route_url }}" class="{{ $section->has_sub_menu ? 'fw-regular' : 'fw-bold' }} menu-link">
+                                    <a href="{{ $section->has_sub_menu ? 'javascript:void(0);' : $reference->dom_route_url }}" class="fw-semibold menu-link">
                                         <i class="{{ $section->dom_icon }} br-icon-accent me-3"></i>
                                         <div>{{ $section->dom_label }}</div>
                                     </a>
@@ -113,7 +113,7 @@
                                         <ul class="menu-sub py-0">
                                             @foreach($subSectionsFiltered as $subSection)
                                                 <li class="menu-item {{ $subSection->dom_id }}" id="{{ $subSection->dom_id }}">
-                                                    <a href="{{ $subSection->dom_route_url }}" class="fw-bold menu-link py-1">
+                                                    <a href="{{ $subSection->dom_route_url }}" class="fw-regular menu-link py-1">
                                                         <div class="text-truncate">{{ $subSection->dom_label }}</div>
                                                     </a>
                                                 </li>
@@ -143,7 +143,7 @@
                                 }
                             @endphp
                             <li class="menu-item {{ $section->dom_id }}" id="{{ $section->dom_id }}">
-                                <a href="{{ $section->has_sub_menu ? 'javascript:void(0);' : $reference->dom_route_url }}" class="{{ $section->has_sub_menu ? 'menu-link menu-toggle' : 'menu-link' }}">
+                                <a href="{{ $section->has_sub_menu ? 'javascript:void(0);' : $reference->dom_route_url }}" class="{{ $section->has_sub_menu ? 'menu-link menu-toggle fw-semibold' : 'menu-link fw-semibold' }}">
                                     <i class="{{ $section->dom_icon }} br-icon-accent me-3"></i>
                                     <div>{{ $section->dom_label }}</div>
                                 </a>
@@ -151,7 +151,7 @@
                                     <ul class="menu-sub">
                                         @foreach($subSectionsFiltered as $subSection)
                                             <li class="menu-item {{ $subSection->dom_id }}" id="{{ $subSection->dom_id }}">
-                                                <a href="{{ $subSection->dom_route_url }}" class="menu-link py-1">
+                                                <a href="{{ $subSection->dom_route_url }}" class="fw-regular menu-link py-1">
                                                     <div class="text-truncate">{{ $subSection->dom_label }}</div>
                                                 </a>
                                             </li>
