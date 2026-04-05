@@ -1177,8 +1177,8 @@ html:not(.layout-menu-collapsed)
 /* --- [br] FAB favoritos (esquina inferior derecha) --- */
 .br-layout .br-fab-favorites {
   position: fixed;
-  right: 1.25rem;
-  bottom: 1.25rem;
+  right: 0.4rem;
+  bottom: 0.85rem;
   z-index: 1090;
   display: flex;
   flex-direction: column;
@@ -1191,15 +1191,15 @@ html:not(.layout-menu-collapsed)
   position: absolute;
   right: 0;
   bottom: calc(100% + 0.65rem);
-  width: min(23rem, calc(100vw - 0.65rem));
+  width: min(20rem, calc(100vw - 0.85rem));
   max-height: min(70vh, 26rem);
   overflow: auto;
   border-radius: 0.65rem;
   background: #fff;
-  border: 1px solid rgba(251, 191, 36, 0.38);
+  border: 2px solid rgba(251, 191, 36, 0.72);
   box-shadow:
-    0 1px 2px rgba(251, 191, 36, 0.1),
-    0 4px 12px rgba(251, 191, 36, 0.12);
+    0 1px 2px rgba(251, 191, 36, 0.14),
+    0 4px 12px rgba(251, 191, 36, 0.16);
   color: var(--br-secondary);
   opacity: 0;
   visibility: hidden;
@@ -1230,9 +1230,14 @@ html:not(.layout-menu-collapsed)
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  padding: 0.28rem 1.65rem 0.28rem 0.42rem;
-  border-bottom: 1px solid rgba(251, 191, 36, 0.18);
-  background: linear-gradient(180deg, rgba(251, 191, 36, 0.18) 0%, rgba(255, 255, 255, 0.96) 100%);
+  padding: 0.32rem 1.55rem 0.32rem 0.35rem;
+  border-bottom: 1px solid rgba(251, 191, 36, 0.4);
+  background: linear-gradient(
+    180deg,
+    rgba(255, 243, 199, 0.98) 0%,
+    rgba(255, 249, 232, 0.98) 45%,
+    rgba(255, 255, 255, 1) 100%
+  );
 }
 
 .br-layout .br-fab-favorites__title {
@@ -1252,7 +1257,7 @@ html:not(.layout-menu-collapsed)
 }
 
 .br-layout .br-fab-favorites__body {
-  padding: 0.42rem 0.12rem 0.5rem;
+  padding: 0.42rem 0.06rem 0.5rem;
   text-align: center;
 }
 
@@ -1260,7 +1265,7 @@ html:not(.layout-menu-collapsed)
   font-size: 0.8125rem;
   line-height: 1.45;
   color: rgba(30, 41, 59, 0.82);
-  padding: 0.28rem 0.12rem 0.08rem;
+  padding: 0.28rem 0.06rem 0.08rem;
   text-align: center;
 }
 
@@ -1374,8 +1379,12 @@ html:not(.layout-menu-collapsed)
 
 @media (max-width: 575.98px) {
   .br-layout .br-fab-favorites {
-    right: 0.85rem;
-    bottom: 0.85rem;
+    right: 0.35rem;
+    bottom: 0.75rem;
+  }
+
+  .br-layout .br-fab-favorites__panel {
+    width: min(20rem, calc(100vw - 0.75rem));
   }
 
   .br-layout .br-fab-favorites__btn {
