@@ -927,88 +927,141 @@ html:not(.layout-menu-collapsed) .br-layout .br-menu-brand .menu-inner .menu-ite
   color: var(--br-primary) !important;
 }
 
-/* --- [br] Cerrar sesión — .br-menu-logout* --- */
-.br-menu-logout-item {
-  margin-top: 0.35rem;
+/* --- [br] Cerrar sesión — .br-menu-logout* ---
+   Selectores alineados al tema (.menu-vertical .menu-inner > .menu-item) para ganar en cascada */
+.br-layout .br-menu-brand.menu-vertical .menu-inner > .menu-item.br-menu-logout-item {
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  margin-top: 0.2rem !important;
+  margin-bottom: 0.125rem;
+  padding-top: 0.85rem !important;
 }
 
-.br-layout .br-menu-brand .br-menu-logout {
-  display: flex !important;
-  align-items: center;
-  justify-content: center;
-  gap: 0;
-  padding: 0.55rem 0.7rem !important;
+/* Enlace: ancho fijo → ampliable; icono y texto superpuestos con crossfade suave */
+.br-layout .br-menu-brand.menu-vertical .menu-inner > .menu-item.br-menu-logout-item > .menu-link.br-menu-logout {
+  position: relative;
+  display: block !important;
+  width: 2.35rem !important;
+  min-width: 2.35rem;
+  height: 2.35rem;
+  max-width: calc(100% - 1.75rem);
+  margin-left: auto !important;
+  margin-right: auto !important;
+  padding: 0 !important;
   border: none !important;
-  border-radius: var(--br-radius) !important;
+  border-radius: var(--br-radius-sm) !important;
   font-weight: 600;
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   letter-spacing: 0.01em;
   background: transparent !important;
   box-shadow: none !important;
   color: var(--br-danger) !important;
+  flex: 0 0 auto !important;
   overflow: hidden;
   transition:
+    width 0.5s cubic-bezier(0.33, 1, 0.68, 1),
+    min-width 0.5s cubic-bezier(0.33, 1, 0.68, 1),
+    height 0.4s cubic-bezier(0.33, 1, 0.68, 1),
+    min-height 0.4s cubic-bezier(0.33, 1, 0.68, 1),
     color 0.2s ease,
     background-color 0.2s ease;
 }
 
+.br-layout .br-menu-brand.menu-vertical .menu-inner > .menu-item.br-menu-logout-item > .menu-link.br-menu-logout:hover,
+.br-layout .br-menu-brand.menu-vertical .menu-inner > .menu-item.br-menu-logout-item > .menu-link.br-menu-logout:focus {
+  width: 11rem !important;
+  min-width: 11rem;
+  height: auto;
+  min-height: 2.6rem;
+  background: transparent !important;
+  border: none !important;
+  color: #fff !important;
+}
+
 .br-menu-logout__icon-wrap {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0;
-  width: 1.875rem;
-  height: 1.875rem;
+  width: 2.35rem;
+  height: 2.35rem;
+  margin: 0;
   border-radius: var(--br-radius-sm);
   border: none;
   background: var(--br-danger) !important;
-  font-size: 0.9rem;
+  font-size: 1.05rem;
   color: #fff !important;
+  transform: translate(-50%, -50%) scale(1);
+  opacity: 1;
   transition:
-    opacity 0.2s ease,
-    background-color 0.2s ease;
+    opacity 0.45s cubic-bezier(0.4, 0, 0.2, 1),
+    transform 0.45s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .br-menu-logout__icon-wrap i {
   color: #fff !important;
 }
 
+/* Sin hover: el texto no debe verse (opacity 0 + overflow del padre dejaba ver el centro del texto) */
 .br-menu-logout__label {
-  display: none;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 2;
+  display: flex;
   align-items: center;
   justify-content: center;
-  flex: 0 1 auto;
-  min-width: 0;
+  margin: 0;
+  padding: 0.55rem 1.1rem;
+  min-height: 2.35rem;
   text-align: center;
   font-weight: 600;
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   letter-spacing: 0.01em;
   line-height: 1.2;
   white-space: nowrap;
   border-radius: var(--br-radius-sm);
   border: none;
-  padding: 0.45rem 0.85rem;
-  min-height: 1.875rem;
   background: var(--br-danger) !important;
   color: #fff !important;
+  transform: translate(-50%, -50%) scale(0.96);
+  opacity: 0;
+  visibility: hidden;
+  clip-path: inset(50%);
+  pointer-events: none;
+  transition:
+    opacity 0.45s cubic-bezier(0.4, 0, 0.2, 1) 0.1s,
+    transform 0.45s cubic-bezier(0.4, 0, 0.2, 1) 0.1s,
+    visibility 0s linear 0.45s,
+    clip-path 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.br-layout .br-menu-logout:hover,
-.br-layout .br-menu-logout:focus {
-  justify-content: center;
-  background: transparent !important;
-  border: none !important;
-  color: #fff !important;
+.br-layout .br-menu-brand.menu-vertical .menu-inner > .menu-item.br-menu-logout-item > .menu-link.br-menu-logout:hover .br-menu-logout__icon-wrap,
+.br-layout .br-menu-brand.menu-vertical .menu-inner > .menu-item.br-menu-logout-item > .menu-link.br-menu-logout:focus .br-menu-logout__icon-wrap {
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0.88);
+  pointer-events: none;
+  transition:
+    opacity 0.38s cubic-bezier(0.4, 0, 0.2, 1),
+    transform 0.38s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.br-layout .br-menu-logout:hover .br-menu-logout__icon-wrap,
-.br-layout .br-menu-logout:focus .br-menu-logout__icon-wrap {
-  display: none;
-}
-
-.br-layout .br-menu-logout:hover .br-menu-logout__label,
-.br-layout .br-menu-logout:focus .br-menu-logout__label {
-  display: inline-flex;
+.br-layout .br-menu-brand.menu-vertical .menu-inner > .menu-item.br-menu-logout-item > .menu-link.br-menu-logout:hover .br-menu-logout__label,
+.br-layout .br-menu-brand.menu-vertical .menu-inner > .menu-item.br-menu-logout-item > .menu-link.br-menu-logout:focus .br-menu-logout__label {
+  opacity: 1;
+  visibility: visible;
+  clip-path: inset(0);
+  transform: translate(-50%, -50%) scale(1);
+  pointer-events: auto;
+  transition:
+    opacity 0.48s cubic-bezier(0.4, 0, 0.2, 1) 0.08s,
+    transform 0.48s cubic-bezier(0.4, 0, 0.2, 1) 0.08s,
+    visibility 0s linear 0s,
+    clip-path 0.45s cubic-bezier(0.4, 0, 0.2, 1) 0.05s;
 }
 
 html:not(.layout-menu-collapsed)
