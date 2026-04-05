@@ -174,10 +174,12 @@
                         </li>
                         <li class="menu-item br-menu-logout-item">
                             <a href="javascript:void(0)" class="menu-link br-menu-logout" onclick="$('#logout').submit();" role="button" aria-label="Cerrar sesión" title="Cerrar sesión">
-                                <span class="br-menu-logout__icon-wrap" aria-hidden="true">
-                                    <i class="fa-solid fa-right-from-bracket"></i>
+                                <span class="br-menu-logout__inner">
+                                    <span class="br-menu-logout__icon-wrap" aria-hidden="true">
+                                        <i class="fa-solid fa-right-from-bracket"></i>
+                                    </span>
+                                    <span class="br-menu-logout__label">Cerrar sesión</span>
                                 </span>
-                                <span class="br-menu-logout__label">Cerrar sesión</span>
                             </a>
                             <form method="POST" action="{{ route('logout') }}" id="logout">
                                 @csrf
