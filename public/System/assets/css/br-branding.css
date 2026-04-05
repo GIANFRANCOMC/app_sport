@@ -1191,7 +1191,7 @@ html:not(.layout-menu-collapsed)
   position: absolute;
   right: 0;
   bottom: calc(100% + 0.65rem);
-  width: min(20rem, calc(100vw - 0.85rem));
+  width: min(18rem, calc(100vw - 0.95rem));
   max-height: min(70vh, 26rem);
   overflow: auto;
   border-radius: 0.65rem;
@@ -1229,8 +1229,8 @@ html:not(.layout-menu-collapsed)
   position: relative;
   display: flex;
   align-items: center;
-  justify-content: flex-start;
-  padding: 0.32rem 1.55rem 0.32rem 0.35rem;
+  justify-content: center;
+  padding: 0.32rem 0.35rem;
   border-bottom: 1px solid rgba(251, 191, 36, 0.4);
   background: linear-gradient(
     180deg,
@@ -1241,11 +1241,15 @@ html:not(.layout-menu-collapsed)
 }
 
 .br-layout .br-fab-favorites__title {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0 1.75rem;
   font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  text-align: left;
+  text-align: center;
   color: var(--br-secondary);
 }
 
@@ -1257,21 +1261,26 @@ html:not(.layout-menu-collapsed)
 }
 
 .br-layout .br-fab-favorites__body {
-  padding: 0.42rem 0.06rem 0.5rem;
-  text-align: center;
+  padding: 0.42rem 0.4rem 0.5rem 0.55rem;
+  text-align: left;
 }
 
 .br-layout .br-fab-favorites__empty {
   font-size: 0.8125rem;
   line-height: 1.45;
   color: rgba(30, 41, 59, 0.82);
-  padding: 0.28rem 0.06rem 0.08rem;
+  padding: 0.28rem 0 0.08rem;
   text-align: center;
 }
 
 .br-layout .br-fab-favorites__list {
   padding: 0;
   margin: 0;
+  width: 100%;
+}
+
+.br-layout .br-fab-favorites__item {
+  width: 100%;
 }
 
 .br-layout .br-fab-favorites__item + .br-fab-favorites__item {
@@ -1279,11 +1288,13 @@ html:not(.layout-menu-collapsed)
 }
 
 .br-layout .br-fab-favorites__link {
-  display: inline-flex;
+  display: flex;
+  width: 100%;
+  box-sizing: border-box;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   gap: 0.55rem;
-  padding: 0.38rem 0.25rem;
+  padding: 0.38rem 0.35rem;
   border-radius: 0.4rem;
   text-decoration: none;
   font-size: 0.8125rem;
@@ -1384,7 +1395,7 @@ html:not(.layout-menu-collapsed)
   }
 
   .br-layout .br-fab-favorites__panel {
-    width: min(20rem, calc(100vw - 0.75rem));
+    width: min(18rem, calc(100vw - 0.85rem));
   }
 
   .br-layout .br-fab-favorites__btn {

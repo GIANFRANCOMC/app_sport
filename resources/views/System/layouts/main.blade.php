@@ -271,7 +271,7 @@
         <div class="br-fab-favorites" id="brFabFavorites" data-open="0">
             <div class="br-fab-favorites__panel" id="brFabFavoritesPanel" role="region" aria-labelledby="brFabFavoritesTitle" aria-hidden="true">
                 <div class="br-fab-favorites__head">
-                    <span id="brFabFavoritesTitle" class="br-fab-favorites__title ms-2">Favoritos</span>
+                    <span id="brFabFavoritesTitle" class="br-fab-favorites__title">Favoritos</span>
                     <button type="button" class="br-fab-favorites__close" id="brFabFavoritesClose" aria-label="Cerrar panel de favoritos">
                         <i class="fa-solid fa-xmark" aria-hidden="true"></i>
                     </button>
