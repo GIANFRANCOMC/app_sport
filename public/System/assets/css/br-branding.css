@@ -747,6 +747,10 @@ html:not(.layout-menu-collapsed) .br-layout .br-menu-brand .menu-inner .menu-ite
   font-size: 0.65rem !important;
 }
 
+.br-layout .br-menu-brand .menu-header-text.divider-text {
+  font-size: 0.8125rem !important;
+}
+
 .br-layout .br-menu-brand .menu-inner .menu-sub .menu-item:not(.active) > .menu-link::before {
   color: rgba(255, 255, 255, 0.38) !important;
 }
