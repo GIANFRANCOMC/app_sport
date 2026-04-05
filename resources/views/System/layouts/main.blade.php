@@ -46,7 +46,7 @@
                                     <p class="br-sidebar-profile-user mb-1" title="{{ $user->name }}">
                                         {{ Str::limit($user->name, 28) }}
                                     </p>
-                                    <p class="br-sidebar-profile-company mb-1" title="{{ $company->commercial_name }}">
+                                    <p class="br-sidebar-profile-company mb-1 d-none" title="{{ $company->commercial_name }}">
                                         {{ Str::limit($company->commercial_name, 28) }}
                                     </p>
                                     <div class="br-sidebar-profile-role-head mb-0">
