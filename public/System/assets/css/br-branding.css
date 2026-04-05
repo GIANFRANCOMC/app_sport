@@ -1231,12 +1231,8 @@ html:not(.layout-menu-collapsed)
   align-items: center;
   justify-content: center;
   padding: 0.32rem 0.35rem;
-  border-bottom: 1px solid rgba(251, 191, 36, 0.35);
-  background: linear-gradient(
-    180deg,
-    rgba(255, 236, 180, 0.55) 0%,
-    rgba(255, 244, 210, 0.4) 100%
-  );
+  border-bottom: 1px solid rgba(217, 119, 6, 0.28);
+  background: linear-gradient(180deg, #fef08a 0%, #fde047 55%, #facc15 100%);
 }
 
 .br-layout .br-fab-favorites__title {
