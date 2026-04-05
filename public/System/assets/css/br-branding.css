@@ -1355,43 +1355,61 @@ html:not(.layout-menu-collapsed)
   font-size: 1.1rem;
   line-height: 1;
   color: #fff !important;
-  border: 2px solid rgba(107, 98, 155, 0.55) !important;
-  background: linear-gradient(
-    135deg,
-    #fef08a 0%,
-    #fbbf24 30%,
-    #d97706 48%,
-    #b4a8d4 74%,
-    #9a8ec2 100%
-  ) !important;
+  /* Borde = misma colorimetría que el relleno (135deg); capa exterior ligeramente más profunda para leer el aro */
+  border: 2px solid transparent !important;
+  /* ~60 % amarillo / ~40 % morado (a lo largo del degradado 135deg) */
+  background:
+    linear-gradient(
+      135deg,
+      #fef08a 0%,
+      #fde047 14%,
+      #fbbf24 28%,
+      #eab308 44%,
+      #d97706 60%,
+      #6d4b8a 82%,
+      #4a3268 100%
+    )
+      padding-box,
+    linear-gradient(
+      135deg,
+      #fde047 0%,
+      #facc15 14%,
+      #eab308 28%,
+      #ca8a04 44%,
+      #b45309 60%,
+      #5d3d6e 82%,
+      #3d2a52 100%
+    )
+      border-box !important;
+  background-clip: padding-box, border-box;
+  background-origin: padding-box, border-box;
   box-shadow:
     0 1px 2px rgba(0, 0, 0, 0.1),
-    0 4px 14px rgba(251, 191, 36, 0.26),
-    0 4px 14px rgba(107, 98, 155, 0.18);
+    0 4px 14px rgba(251, 191, 36, 0.28),
+    0 4px 14px rgba(74, 50, 104, 0.18);
   transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
 }
 
 .br-layout .br-fab-favorites__btn i {
   color: #fff !important;
-  filter: drop-shadow(0 1px 2px rgba(30, 27, 75, 0.35));
+  filter: drop-shadow(0 1px 2px rgba(55, 40, 30, 0.35));
 }
 
 .br-layout .br-fab-favorites__btn:hover {
   transform: scale(1.05);
-  filter: brightness(1.03);
-  border-color: rgba(107, 98, 155, 0.72) !important;
+  filter: brightness(1.04);
   box-shadow:
     0 2px 4px rgba(0, 0, 0, 0.12),
-    0 6px 18px rgba(251, 191, 36, 0.32),
-    0 6px 18px rgba(107, 98, 155, 0.22);
+    0 6px 18px rgba(251, 191, 36, 0.34),
+    0 6px 18px rgba(74, 50, 104, 0.22);
 }
 
 .br-layout .br-fab-favorites__btn:focus-visible {
   outline: none;
   box-shadow:
     var(--br-focus-ring),
-    0 4px 14px rgba(251, 191, 36, 0.32),
-    0 4px 14px rgba(107, 98, 155, 0.24);
+    0 4px 14px rgba(251, 191, 36, 0.34),
+    0 4px 14px rgba(74, 50, 104, 0.24);
 }
 
 /* Como .modal-header .btn-header-modal (custom.css): rojo #dc3545 e icono blanco, sin animación de desplazamiento */
