@@ -935,8 +935,8 @@ html:not(.layout-menu-collapsed) .br-layout .br-menu-brand .menu-inner .menu-ite
 .br-layout .br-menu-brand .br-menu-logout {
   display: flex !important;
   align-items: center;
-  justify-content: flex-start;
-  gap: 0.65rem;
+  justify-content: center;
+  gap: 0;
   padding: 0.55rem 0.7rem !important;
   border-radius: var(--br-radius) !important;
   font-weight: 600;
@@ -945,6 +945,11 @@ html:not(.layout-menu-collapsed) .br-layout .br-menu-brand .menu-inner .menu-ite
   background: rgba(252, 165, 165, 0.2) !important;
   border: 1px solid rgba(248, 113, 113, 0.5) !important;
   color: #ffe4e6 !important;
+  overflow: hidden;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease;
 }
 
 .br-menu-logout__icon-wrap {
@@ -957,17 +962,20 @@ html:not(.layout-menu-collapsed) .br-layout .br-menu-brand .menu-inner .menu-ite
   border-radius: var(--br-radius-sm);
   background: rgba(255, 255, 255, 0.14);
   font-size: 0.9rem;
+  transition: opacity 0.2s ease;
 }
 
 .br-menu-logout__label {
+  display: none;
   flex: 1;
   min-width: 0;
-  text-align: left;
+  text-align: center;
   color: inherit !important;
 }
 
 .br-layout .br-menu-logout:hover,
 .br-layout .br-menu-logout:focus {
+  justify-content: center;
   background: var(--br-danger) !important;
   border-color: var(--br-danger) !important;
   color: #fff !important;
@@ -975,7 +983,12 @@ html:not(.layout-menu-collapsed) .br-layout .br-menu-brand .menu-inner .menu-ite
 
 .br-layout .br-menu-logout:hover .br-menu-logout__icon-wrap,
 .br-layout .br-menu-logout:focus .br-menu-logout__icon-wrap {
-  background: rgba(255, 255, 255, 0.22);
+  display: none;
+}
+
+.br-layout .br-menu-logout:hover .br-menu-logout__label,
+.br-layout .br-menu-logout:focus .br-menu-logout__label {
+  display: block;
 }
 
 html:not(.layout-menu-collapsed)
