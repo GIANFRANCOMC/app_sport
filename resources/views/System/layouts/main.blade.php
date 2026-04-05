@@ -123,8 +123,8 @@
                                 @endif
                             @endforeach
                         @endif
-                        <li class="menu-header pt-2">
-                            <span class="menu-header-text text-uppercase">Menú</span>
+                        <li class="menu-header divider py-0">
+                            <span class="menu-header-text text-uppercase divider-text">Menú</span>
                         </li>
                         @foreach($sections as $section)
                             @php
