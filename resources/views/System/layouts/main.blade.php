@@ -82,7 +82,7 @@
                         @endphp
                         <li class="menu-item {{ request()->routeIs('home.index') ? 'active' : '' }}" title="Configura tus favoritos (atajos en el panel).">
                             <a href="{{ route('home.index') }}" class="menu-link" @if(request()->routeIs('home.index')) aria-current="page" @endif>
-                                <i class="fa-solid fa-star br-icon-favorites me-3" aria-hidden="true"></i>
+                                <i class="menu-icon fa-solid fa-star br-icon-favorites me-3" aria-hidden="true"></i>
                                 <div>Favoritos</div>
                             </a>
                         </li>
@@ -174,7 +174,7 @@
                         </li>
                         <li class="menu-item br-menu-logout-item">
                             <a href="javascript:void(0)" class="menu-link br-menu-logout" onclick="$('#logout').submit();" role="button">
-                                <span class="br-menu-logout__icon-wrap" aria-hidden="true">
+                                <span class="br-menu-logout__icon-wrap">
                                     <i class="fa-solid fa-right-from-bracket"></i>
                                 </span>
                                 <span class="br-menu-logout__label">Cerrar sesión</span>
