@@ -69,7 +69,7 @@
                                         type="button"
                                         class="br-btn br-btn-sm br-btn-secondary"
                                         @click="startDashboardDateEdit">
-                                        <span>Cambiar fecha a consultar</span>
+                                        <span>Consultar fecha</span>
                                     </button>
                                 </div>
                                 <div
