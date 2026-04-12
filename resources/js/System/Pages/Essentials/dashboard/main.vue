@@ -1,6 +1,6 @@
 <template>
     <div class="br-dashboard">
-        <div class="row mb-2 align-items-start br-dashboard__split">
+        <div class="row mb-4 align-items-start br-dashboard__split">
             <div class="col-12 col-md-6 col-lg-8">
                 <section class="br-dashboard__kpis br-dashboard__kpis--split row g-2 mb-0" aria-label="Indicadores del día consultado">
                     <div class="col-12 col-sm-6 col-lg-4">
@@ -105,7 +105,7 @@
         </div>
 
         <!-- Gráfico -->
-        <!-- <section class="row g-3 mb-4" aria-labelledby="br-dashboard-chart-title">
+        <section class="row g-3 mb-4" aria-labelledby="br-dashboard-chart-title">
             <div class="col-12">
                 <div class="br-dashboard-card card h-100">
                     <div class="br-dashboard-card__header card-header">
@@ -130,7 +130,7 @@
                     </div>
                 </div>
             </div>
-        </section> -->
+        </section>
 
         <!-- Tabla -->
         <!-- <section class="br-dashboard-card card" aria-labelledby="br-dashboard-sales-title">
