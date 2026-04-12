@@ -112,27 +112,24 @@
             </div>
         </div>
 
-        <!-- Gráfico -->
+        <!-- Gráfico: barras por hora (una barra = total de esa hora) -->
         <section class="row g-3 mb-4" aria-labelledby="br-dashboard-chart-title">
             <div class="col-12">
                 <div class="br-dashboard-card card h-100">
                     <div class="br-dashboard-card__header card-header">
                         <div>
                             <h2 id="br-dashboard-chart-title" class="br-dashboard-card__title h5 mb-1">
-                                Ventas por franja horaria
+                                Ventas por hora
                             </h2>
-                            <p class="br-dashboard-card__meta mb-0">
-                                {{ reportDateLabel }}
-                            </p>
                         </div>
                     </div>
                     <div class="card-body pt-2">
-                        <div class="br-dashboard-chart-wrap">
+                        <div class="br-dashboard-chart-wrap br-dashboard-chart-wrap--hourly">
                             <canvas
-                                id="barChartId"
-                                class="chartjs"
-                                data-height="260"
-                                aria-label="Gráfico de barras de ventas por franja horaria"
+                                id="dashboardSalesHourlyChart"
+                                class="chartjs br-dashboard-chart-canvas"
+                                data-height="300"
+                                aria-label="Gráfico de barras: ventas por hora del día consultado"
                                 role="img"></canvas>
                         </div>
                     </div>
@@ -266,7 +263,7 @@ import * as Constants from "@System/Helpers/Constants.js";
 import * as Requests  from "@System/Helpers/Requests.js";
 import * as Utils     from "@System/Helpers/Utils.js";
 
-let barChartInstance = null;
+let dashboardSalesChartInstance = null;
 
 export default {
     components: {
@@ -420,15 +417,49 @@ export default {
         },
         initChart() {
 
-            // Utils
-            const roundUpToNearest = (value) => {
-                if (value <= 500) return 500;
-                if (value <= 1000) return 1000;
-                if (value <= 3000) return 3000;
-                return Math.ceil(value / 20000) * 20000;
+            /**
+             * Eje Y según el pico real: evita forzar 0–100 cuando el máximo es pocos soles (1, 8, …).
+             * Margen ~12 % y redondeo a escala legible (1–2–5–10 por orden de magnitud).
+             */
+            const niceCeilAxisMax = (peak) => {
+
+                const headroom = 1.12;
+                if(peak <= 0) {
+
+                    return 10;
+
+                }
+                const target = peak * headroom;
+                if(target < 1) {
+
+                    return Math.max(1, Math.ceil(target * 100) / 100);
+
+                }
+                const exp = Math.floor(Math.log10(target));
+                const pow10 = Math.pow(10, exp);
+                const n = target / pow10;
+                let nice;
+                if(n <= 1) {
+
+                    nice = 1;
+
+                }else if(n <= 2) {
+
+                    nice = 2;
+
+                }else if(n <= 5) {
+
+                    nice = 5;
+
+                }else {
+
+                    nice = 10;
+
+                }
+                return nice * pow10;
+
             };
 
-            // Ajust height
             const chartList = document.querySelectorAll(".chartjs");
 
             chartList.forEach(function(chartListItem) {
@@ -437,91 +468,279 @@ export default {
 
             });
 
-            // Config (etiquetas alineadas al flujo comercial típico)
-            const intervals = [
-                { label: "12:00 a. m. – 2:59 a. m.", start: 0, end: 3 },
-                { label: "3:00 a. m. – 5:59 a. m.", start: 3, end: 6 },
-                { label: "6:00 a. m. – 8:59 a. m.", start: 6, end: 9 },
-                { label: "9:00 a. m. – 11:59 a. m.", start: 9, end: 12 },
-                { label: "12:00 p. m. – 2:59 p. m.", start: 12, end: 15 },
-                { label: "3:00 p. m. – 5:59 p. m.", start: 15, end: 18 },
-                { label: "6:00 p. m. – 8:59 p. m.", start: 18, end: 21 },
-                { label: "9:00 p. m. – 11:59 p. m.", start: 21, end: 24 }
-            ];
+            /** Etiqueta eje X: hora en 12 h + a. m. / p. m. (índice 0–23) */
+            const formatHourLabelAmpm = (h) => {
 
-            const totalsByInterval = intervals.map(interval => ({ label: interval.label, total: 0 }));
+                if(h === 0) {
+
+                    return "12:00 a. m.";
+
+                }
+                if(h === 12) {
+
+                    return "12:00 p. m.";
+
+                }
+                if(h < 12) {
+
+                    return `${h}:00 a. m.`;
+
+                }
+                return `${h - 12}:00 p. m.`;
+
+            };
+
+            /** Fin de franja horaria para tooltip (…:59) */
+            const formatHourEndAmpm = (h) => {
+
+                if(h === 0) {
+
+                    return "12:59 a. m.";
+
+                }
+                if(h === 12) {
+
+                    return "12:59 p. m.";
+
+                }
+                if(h < 12) {
+
+                    return `${h}:59 a. m.`;
+
+                }
+                return `${h - 12}:59 p. m.`;
+
+            };
+
+            /** Eje X corto (más ancho por barra, sin diagonal): "9 a. m.", "12 p. m." */
+            const formatHourCompactAmpm = (h) => {
+
+                if(h === 0) {
+
+                    return "12 a. m.";
+
+                }
+                if(h === 12) {
+
+                    return "12 p. m.";
+
+                }
+                if(h < 12) {
+
+                    return `${h} a. m.`;
+
+                }
+                return `${h - 12} p. m.`;
+
+            };
+
+            const totalsByHour = Array.from({length: 24}, () => 0);
 
             const sales = this.forms.entity.dashboard.data.sales?.all?.records ?? [];
 
-            sales.forEach(sale => {
+            sales.forEach((sale) => {
 
                 const saleHour = new Date(sale.created_at).getHours();
-                const interval = intervals.find(i => saleHour >= i.start && saleHour < i.end);
+                if(saleHour >= 0 && saleHour < 24) {
 
-                if(interval) {
-
-                    const index = intervals.indexOf(interval);
-                    totalsByInterval[index].total += parseFloat(sale.total);
+                    totalsByHour[saleHour] += parseFloat(sale.total);
 
                 }
 
             });
 
-            const barChart = document.getElementById("barChartId");
-            const labels   = totalsByInterval.map(i => i.label);
-            const data     = totalsByInterval.map(i => i.total);
-            const yMax     = roundUpToNearest(Math.max(500, ...data));
+            const hasAnySale = totalsByHour.some((t) => t > 0);
+            let firstHour = 0;
+            let lastHour = 23;
+            if(hasAnySale) {
 
-            const primary = this.config.colors.charts.default.primaryColor;
-            const barFill = this.hexToRgba(primary, 0.88);
+                firstHour = totalsByHour.findIndex((t) => t > 0);
+                for(let i = 23; i >= 0; i--) {
 
-            if(barChart) {
+                    if(totalsByHour[i] > 0) {
 
-                if(barChartInstance) {
+                        lastHour = i;
+                        break;
 
-                    barChartInstance.destroy();
+                    }
 
                 }
 
-                barChartInstance = new Chart(barChart, {
+            }
+
+            const sliceHours = [];
+            for(let h = firstHour; h <= lastHour; h++) {
+
+                sliceHours.push(h);
+
+            }
+
+            const nBars = sliceHours.length;
+            const labels = sliceHours.map((h) => formatHourCompactAmpm(h));
+            const data = sliceHours.map((h) => totalsByHour[h]);
+            const maxVal = Math.max(0, ...data);
+            const yMax = niceCeilAxisMax(maxVal);
+
+            /** Eje Y: 7 intervalos horizontales → 8 marcas (0 … máx.), enteros y paso fijo */
+            const yIntervals = 7;
+            let yStep = Math.max(1, Math.ceil(yMax / yIntervals));
+            let yAxisMax = yStep * yIntervals;
+            while(yAxisMax < yMax) {
+
+                yStep += 1;
+                yAxisMax = yStep * yIntervals;
+
+            }
+
+            const canvas = document.getElementById("dashboardSalesHourlyChart");
+            const primary = this.config.colors.charts.default.primaryColor;
+            const barFill = this.hexToRgba(primary, 0.88);
+            const barHover = this.hexToRgba(primary, 1);
+            const vm = this;
+            const xScaleTitle = hasAnySale && sliceHours.length < 24
+                ? `Franja: ${formatHourLabelAmpm(firstHour)} – ${formatHourEndAmpm(lastHour)}`
+                : "Todas las horas del día";
+
+            const maxBarThickness = nBars <= 6 ? 52 : nBars <= 12 ? 42 : nBars <= 18 ? 34 : 26;
+            const categoryPercentage = nBars <= 10 ? 0.94 : nBars <= 16 ? 0.9 : 0.86;
+            const barPercentage = nBars <= 10 ? 0.98 : 0.95;
+            const labelFontSize = nBars > 18 ? 7.5 : nBars > 14 ? 8 : 9.5;
+            const tickRotation = nBars > 16 ? 35 : 0;
+
+            if(canvas) {
+
+                if(dashboardSalesChartInstance) {
+
+                    dashboardSalesChartInstance.destroy();
+
+                }
+
+                dashboardSalesChartInstance = new Chart(canvas, {
                     type: "bar",
                     data: {
-                        labels: labels,
+                        labels,
                         datasets: [
                             {
-                                data: data,
+                                label: "Total por hora (S/)",
+                                data,
                                 backgroundColor: barFill,
                                 borderColor: primary,
                                 borderWidth: 1,
-                                maxBarThickness: 22,
                                 borderRadius: {
-                                    topRight: 10,
-                                    topLeft: 10
-                                }
+                                    topLeft: 8,
+                                    topRight: 8,
+                                    bottomLeft: 0,
+                                    bottomRight: 0
+                                },
+                                borderSkipped: false,
+                                maxBarThickness: maxBarThickness,
+                                hoverBackgroundColor: barHover,
+                                hoverBorderColor: primary
                             }
                         ]
                     },
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
+                        layout: {
+                            padding: {
+                                bottom: tickRotation > 0 ? 22 : 10,
+                                left: 2,
+                                right: 2
+                            }
+                        },
                         animation: {
-                            duration: 500
+                            duration: 550
+                        },
+                        interaction: {
+                            mode: "index",
+                            intersect: false
+                        },
+                        datasets: {
+                            bar: {
+                                categoryPercentage: categoryPercentage,
+                                barPercentage: barPercentage
+                            }
                         },
                         plugins: {
+                            legend: {
+                                display: true,
+                                position: "bottom",
+                                align: "center",
+                                labels: {
+                                    usePointStyle: true,
+                                    pointStyle: "rect",
+                                    padding: 18,
+                                    boxWidth: 12,
+                                    boxHeight: 8,
+                                    color: this.config.colors.charts.default.titleColor,
+                                    font: {
+                                        size: 12,
+                                        weight: "600"
+                                    }
+                                }
+                            },
                             tooltip: {
                                 backgroundColor: this.config.colors.charts.default.backgroundColor,
                                 bodyColor: this.config.colors.charts.default.bodyColor,
                                 borderColor: this.config.colors.charts.default.borderColor,
                                 borderWidth: 1,
-                                rtl: false,
-                                titleColor: this.config.colors.charts.default.titleColor
-                            },
-                            legend: {
-                                display: false
+                                titleColor: this.config.colors.charts.default.titleColor,
+                                displayColors: true,
+                                padding: 12,
+                                callbacks: {
+                                    title(items) {
+
+                                        if(!items.length) {
+
+                                            return "";
+
+                                        }
+                                        const hour = sliceHours[items[0].dataIndex];
+                                        return `${formatHourLabelAmpm(hour)} – ${formatHourEndAmpm(hour)}`;
+
+                                    },
+                                    label(ctx) {
+
+                                        const v = ctx.parsed.y;
+                                        return ` Ventas: S/ ${vm.separatorNumber(vm.fixedNumber(v))}`;
+
+                                    }
+                                }
                             }
                         },
                         scales: {
                             x: {
+                                title: {
+                                    display: true,
+                                    text: xScaleTitle,
+                                    color: this.config.colors.charts.default.labelColor,
+                                    font: {size: 10, weight: "600"}
+                                },
+                                grid: {
+                                    color: this.config.colors.charts.default.borderColor,
+                                    drawBorder: false,
+                                    borderColor: this.config.colors.charts.default.borderColor
+                                },
+                                ticks: {
+                                    color: "#000000",
+                                    autoSkip: false,
+                                    maxRotation: tickRotation,
+                                    minRotation: tickRotation,
+                                    font: {
+                                        size: labelFontSize
+                                    }
+                                }
+                            },
+                            y: {
+                                min: 0,
+                                max: yAxisMax,
+                                title: {
+                                    display: true,
+                                    text: "Soles (S/)",
+                                    color: this.config.colors.charts.default.labelColor,
+                                    font: {size: 11, weight: "600"}
+                                },
                                 grid: {
                                     color: this.config.colors.charts.default.borderColor,
                                     drawBorder: false,
@@ -529,30 +748,21 @@ export default {
                                 },
                                 ticks: {
                                     color: this.config.colors.charts.default.labelColor,
-                                    maxRotation: 45,
-                                    minRotation: 0,
-                                    autoSkip: true,
-                                    maxTicksLimit: 8
-                                }
-                            },
-                            y: {
-                                min: 0,
-                                max: yMax,
-                                grid: {
-                                    color: this.config.colors.charts.default.borderColor,
-                                    drawBorder: false,
-                                    borderColor: this.config.colors.charts.default.borderColor
-                                },
-                                ticks: {
-                                    stepSize: yMax / 5,
-                                    color: this.config.colors.charts.default.labelColor
+                                    stepSize: yStep,
+                                    precision: 0,
+                                    callback(value) {
+
+                                        const n = Math.round(Number(value));
+                                        return vm.separatorNumber(String(n));
+
+                                    }
                                 }
                             }
                         }
                     }
                 });
 
-            };
+            }
 
         },
         hexToRgba(hex, alpha) {

@@ -2111,6 +2111,18 @@ html:not(.layout-menu-collapsed)
   min-height: 220px;
 }
 
+.br-layout .br-dashboard-chart-wrap--hourly {
+  width: 100%;
+  height: 300px;
+  min-height: 260px;
+}
+
+.br-layout .br-dashboard-chart-canvas {
+  display: block;
+  width: 100% !important;
+  max-width: 100%;
+}
+
 .br-layout .br-dashboard-table thead th {
   background: var(--br-secondary);
   color: var(--br-on-secondary);
