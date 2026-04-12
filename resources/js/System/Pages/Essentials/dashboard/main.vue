@@ -50,7 +50,7 @@
                     </div>
                 </section>
             </div>
-            <div class="col-12 col-md-6 col-lg-4 br-dashboard__split-date align-self-stretch">
+            <div class="col-12 col-md-6 col-lg-4 br-dashboard__split-date align-self-stretch mt-3 mt-md-2">
                 <section class="br-dashboard__split-pane h-100 d-flex flex-column" aria-label="Fecha consultada">
                     <div class="br-dashboard-date br-dashboard-date--split br-dashboard-date--split-fill flex-grow-1 d-flex flex-column">
                         <div class="br-dashboard-date__content flex-grow-1 d-flex flex-column">
