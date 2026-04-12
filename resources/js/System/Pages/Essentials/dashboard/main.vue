@@ -72,16 +72,13 @@
                                     class="br-dashboard-date__editor d-flex flex-wrap align-items-center gap-2 pt-1"
                                     role="group"
                                     aria-label="Editar fecha consultada">
-                                    <div class="flex-grow-1" style="min-width: 10rem;">
-                                        <InputDate
-                                            v-model="forms.entity.dashboard.data.dateAux"
-                                            hasDiv
-                                            title="Fecha a consultar"
-                                            isRequired
-                                            :max="dashboardConsultDateMax"
-                                            :titleClass="['form-label', 'colon-at-end', 'fw-semibold', 'small', 'mb-1']"
-                                            :divClass="['mb-0', 'br-dashboard-date__input-wrap']"/>
-                                    </div>
+                                    <input
+                                        ref="dashboardDatePickerInput"
+                                        v-model="forms.entity.dashboard.data.dateAux"
+                                        type="date"
+                                        class="form-control br-dashboard-date__picker-input-hidden"
+                                        :max="dashboardConsultDateMax"
+                                        aria-label="Fecha a consultar"/>
                                     <button
                                         type="button"
                                         class="btn btn-sm btn-danger br-dashboard-date__btn"
@@ -348,6 +345,38 @@ export default {
             }
             this.forms.entity.dashboard.data.dateAux = d;
             this.forms.entity.dashboard.data.dashboardDateEditing = true;
+            this.$nextTick(() => {
+
+                this.openDashboardDatePickerNative();
+
+            });
+
+        },
+        openDashboardDatePickerNative() {
+
+            const el = this.$refs.dashboardDatePickerInput;
+            if(!el) {
+
+                return;
+
+            }
+            try {
+
+                if(typeof el.showPicker === "function") {
+
+                    el.showPicker();
+
+                } else {
+
+                    el.focus();
+
+                }
+
+            } catch(_) {
+
+                el.focus();
+
+            }
 
         },
         cancelDashboardDateEdit() {
