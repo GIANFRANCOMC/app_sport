@@ -122,7 +122,7 @@
 }
 
 /* -------------------------------------------------------------------------
- * [br] Botones — .br-btn*, variantes primary / secondary / semánticas / outline / ghost
+ * [br] Botones — .br-btn* (.br-btn-sm, .br-btn-xs, .br-btn-lg), variantes de color / outline / ghost
  * ------------------------------------------------------------------------- */
 .br-btn {
   display: inline-flex;
@@ -157,6 +157,15 @@
 .br-btn-sm {
   padding: 0.375rem 0.75rem;
   font-size: 0.8125rem;
+  border-radius: var(--br-radius-sm);
+}
+
+/** Extra pequeño (iconos compactos, acciones en línea) */
+.br-btn-xs {
+  padding: 0.25rem 0.4375rem;
+  font-size: 0.75rem;
+  line-height: 1.25;
+  gap: 0.25rem;
   border-radius: var(--br-radius-sm);
 }
 
@@ -1886,7 +1895,7 @@ html:not(.layout-menu-collapsed)
 }
 
 .br-layout .br-dashboard-date__eyebrow {
-  margin: 0 0 0.2rem;
+  margin: 0;
   font-size: 0.6875rem;
   font-weight: 800;
   letter-spacing: 0.06em;
@@ -1907,11 +1916,6 @@ html:not(.layout-menu-collapsed)
   flex: 0 0 auto;
 }
 
-.br-layout .br-dashboard-date__btn {
-  font-weight: 600;
-  border-radius: var(--br-radius-sm);
-}
-
 .br-layout .br-dashboard-date--split {
   padding: 0;
   gap: 0.35rem;
@@ -1920,9 +1924,10 @@ html:not(.layout-menu-collapsed)
 }
 
 .br-layout .br-dashboard-date--split .br-dashboard-date__eyebrow {
+  margin-top: 0;
+  margin-bottom: 0;
   font-size: 0.75rem;
   font-weight: 800;
-  margin-bottom: 0.15rem;
 }
 
 .br-layout .br-dashboard-date--split .br-dashboard-date__value {
@@ -1931,11 +1936,7 @@ html:not(.layout-menu-collapsed)
 }
 
 .br-layout .br-dashboard-date--split .br-dashboard-date__actions {
-  margin-top: 0.2rem;
-}
-
-.br-layout .br-dashboard-date--split .br-dashboard-date__btn {
-  font-size: 0.8125rem;
+  margin-top: 0;
 }
 
 .br-layout .br-dashboard-date--split .br-dashboard-date__input-wrap {
@@ -2105,6 +2106,26 @@ html:not(.layout-menu-collapsed)
   color: var(--br-text-muted);
 }
 
+.br-layout .br-dashboard-chart-section__title-wrap {
+  width: 100%;
+}
+
+.br-layout .br-dashboard-chart-section__title {
+  color: var(--br-secondary);
+  letter-spacing: 0.08em;
+  line-height: 1.35;
+  text-transform: uppercase;
+}
+
+/* Contenedor del gráfico: sin card, sin borde ni sombra */
+.br-layout .br-dashboard-chart-panel {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+  margin: 0;
+}
+
 .br-layout .br-dashboard-chart-wrap {
   position: relative;
   height: 260px;
@@ -2115,6 +2136,29 @@ html:not(.layout-menu-collapsed)
   width: 100%;
   height: 300px;
   min-height: 260px;
+  position: relative;
+}
+
+.br-layout .br-dashboard-chart-empty-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0;
+  background: rgba(255, 255, 255, 0.28);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  pointer-events: none;
+}
+
+.br-layout .br-dashboard-chart-empty-overlay__text {
+  font-size: clamp(1.1rem, 3vw, 1.5rem);
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  color: var(--br-danger);
+  text-transform: uppercase;
 }
 
 .br-layout .br-dashboard-chart-canvas {

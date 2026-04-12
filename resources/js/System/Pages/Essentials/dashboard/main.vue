@@ -67,7 +67,7 @@
                                 <div v-if="!forms.entity.dashboard.data.dashboardDateEditing" class="br-dashboard-date__actions">
                                     <button
                                         type="button"
-                                        class="btn btn-sm btn-secondary br-dashboard-date__btn"
+                                        class="br-btn br-btn-sm br-btn-secondary"
                                         @click="startDashboardDateEdit">
                                         <span>Cambiar fecha a consultar</span>
                                     </button>
@@ -90,14 +90,14 @@
                                     <div class="d-flex flex-column gap-1 flex-shrink-0 align-self-end">
                                         <button
                                             type="button"
-                                            class="btn btn-xs btn-danger br-dashboard-date__btn"
+                                            class="br-btn br-btn-xs br-btn-danger"
                                             aria-label="Cancelar"
                                             @click="cancelDashboardDateEdit">
                                             <i class="fa-solid fa-xmark" aria-hidden="true"></i>
                                         </button>
                                         <button
                                             type="button"
-                                            class="btn btn-xs btn-success br-dashboard-date__btn"
+                                            class="br-btn br-btn-xs br-btn-success"
                                             aria-label="Aplicar"
                                             :disabled="!canApplyDashboardDate"
                                             @click="applyDashboardDate">
@@ -112,25 +112,35 @@
             </div>
         </div>
 
-        <!-- Gráfico: barras por hora (una barra = total de esa hora) -->
-        <section class="row g-3 mb-4" aria-labelledby="br-dashboard-chart-title">
+        <!-- Gráfico: título aparte; área del chart sin card (fondo transparente) -->
+        <section class="row g-3 mb-4 pt-2" aria-labelledby="br-dashboard-chart-title">
             <div class="col-12">
-                <div class="br-dashboard-card card h-100">
-                    <div class="br-dashboard-card__header card-header">
-                        <div>
-                            <h2 id="br-dashboard-chart-title" class="br-dashboard-card__title h5 mb-1">
-                                Ventas por hora
-                            </h2>
-                        </div>
-                    </div>
-                    <div class="card-body pt-2">
-                        <div class="br-dashboard-chart-wrap br-dashboard-chart-wrap--hourly">
-                            <canvas
-                                id="dashboardSalesHourlyChart"
-                                class="chartjs br-dashboard-chart-canvas"
-                                data-height="300"
-                                aria-label="Gráfico de barras: ventas por hora del día consultado"
-                                role="img"></canvas>
+                <div class="text-center mb-0 br-dashboard-chart-section__title-wrap">
+                    <span
+                        id="br-dashboard-chart-title"
+                        class="form-label fw-bold fs-6 mb-0 d-inline-block br-dashboard-chart-section__title"
+                        role="heading"
+                        aria-level="2">
+                        Ventas por hora
+                    </span>
+                    <p class="br-dashboard-chart-section__subtitle small text-muted mb-0">
+                        {{ dashboardChartHoursRangeCaption }}
+                    </p>
+                </div>
+                <div class="br-dashboard-chart-panel">
+                    <div class="br-dashboard-chart-wrap br-dashboard-chart-wrap--hourly">
+                        <canvas
+                            id="dashboardSalesHourlyChart"
+                            class="chartjs br-dashboard-chart-canvas"
+                            data-height="300"
+                            aria-label="Gráfico de barras: ventas por hora del día consultado"
+                            role="img"></canvas>
+                        <div
+                            v-if="dashboardChartNoSales"
+                            class="br-dashboard-chart-empty-overlay"
+                            role="status"
+                            aria-live="polite">
+                            <span class="br-dashboard-chart-empty-overlay__text">SIN VENTAS</span>
                         </div>
                     </div>
                 </div>
@@ -415,6 +425,69 @@ export default {
             return Requests.valid({result: initData});
 
         },
+        /** Etiqueta eje X: hora en 12 h + a. m. / p. m. (índice 0–23) */
+        dashboardChartFormatHourLabelAmpm(h) {
+
+            if(h === 0) {
+
+                return "12:00 a. m.";
+
+            }
+            if(h === 12) {
+
+                return "12:00 p. m.";
+
+            }
+            if(h < 12) {
+
+                return `${h}:00 a. m.`;
+
+            }
+            return `${h - 12}:00 p. m.`;
+
+        },
+        /** Fin de franja horaria para tooltip (…:59) */
+        dashboardChartFormatHourEndAmpm(h) {
+
+            if(h === 0) {
+
+                return "12:59 a. m.";
+
+            }
+            if(h === 12) {
+
+                return "12:59 p. m.";
+
+            }
+            if(h < 12) {
+
+                return `${h}:59 a. m.`;
+
+            }
+            return `${h - 12}:59 p. m.`;
+
+        },
+        /** Eje X corto (más ancho por barra, sin diagonal): "9 a. m.", "12 p. m." */
+        dashboardChartFormatHourCompactAmpm(h) {
+
+            if(h === 0) {
+
+                return "12 a. m.";
+
+            }
+            if(h === 12) {
+
+                return "12 p. m.";
+
+            }
+            if(h < 12) {
+
+                return `${h} a. m.`;
+
+            }
+            return `${h - 12} p. m.`;
+
+        },
         initChart() {
 
             /**
@@ -468,72 +541,6 @@ export default {
 
             });
 
-            /** Etiqueta eje X: hora en 12 h + a. m. / p. m. (índice 0–23) */
-            const formatHourLabelAmpm = (h) => {
-
-                if(h === 0) {
-
-                    return "12:00 a. m.";
-
-                }
-                if(h === 12) {
-
-                    return "12:00 p. m.";
-
-                }
-                if(h < 12) {
-
-                    return `${h}:00 a. m.`;
-
-                }
-                return `${h - 12}:00 p. m.`;
-
-            };
-
-            /** Fin de franja horaria para tooltip (…:59) */
-            const formatHourEndAmpm = (h) => {
-
-                if(h === 0) {
-
-                    return "12:59 a. m.";
-
-                }
-                if(h === 12) {
-
-                    return "12:59 p. m.";
-
-                }
-                if(h < 12) {
-
-                    return `${h}:59 a. m.`;
-
-                }
-                return `${h - 12}:59 p. m.`;
-
-            };
-
-            /** Eje X corto (más ancho por barra, sin diagonal): "9 a. m.", "12 p. m." */
-            const formatHourCompactAmpm = (h) => {
-
-                if(h === 0) {
-
-                    return "12 a. m.";
-
-                }
-                if(h === 12) {
-
-                    return "12 p. m.";
-
-                }
-                if(h < 12) {
-
-                    return `${h} a. m.`;
-
-                }
-                return `${h - 12} p. m.`;
-
-            };
-
             const totalsByHour = Array.from({length: 24}, () => 0);
 
             const sales = this.forms.entity.dashboard.data.sales?.all?.records ?? [];
@@ -576,7 +583,7 @@ export default {
             }
 
             const nBars = sliceHours.length;
-            const labels = sliceHours.map((h) => formatHourCompactAmpm(h));
+            const labels = sliceHours.map((h) => this.dashboardChartFormatHourCompactAmpm(h));
             const data = sliceHours.map((h) => totalsByHour[h]);
             const maxVal = Math.max(0, ...data);
             const yMax = niceCeilAxisMax(maxVal);
@@ -597,9 +604,8 @@ export default {
             const barFill = this.hexToRgba(primary, 0.88);
             const barHover = this.hexToRgba(primary, 1);
             const vm = this;
-            const xScaleTitle = hasAnySale && sliceHours.length < 24
-                ? `Franja: ${formatHourLabelAmpm(firstHour)} – ${formatHourEndAmpm(lastHour)}`
-                : "Todas las horas del día";
+            /** Líneas de grilla un poco más visibles que --border del tema (#e2e8f0), sin pasarse */
+            const chartGridColor = "#d1d9e3";
 
             const maxBarThickness = nBars <= 6 ? 52 : nBars <= 12 ? 42 : nBars <= 18 ? 34 : 26;
             const categoryPercentage = nBars <= 10 ? 0.94 : nBars <= 16 ? 0.9 : 0.86;
@@ -697,7 +703,7 @@ export default {
 
                                         }
                                         const hour = sliceHours[items[0].dataIndex];
-                                        return `${formatHourLabelAmpm(hour)} – ${formatHourEndAmpm(hour)}`;
+                                        return `${vm.dashboardChartFormatHourLabelAmpm(hour)} – ${vm.dashboardChartFormatHourEndAmpm(hour)}`;
 
                                     },
                                     label(ctx) {
@@ -712,15 +718,12 @@ export default {
                         scales: {
                             x: {
                                 title: {
-                                    display: true,
-                                    text: xScaleTitle,
-                                    color: this.config.colors.charts.default.labelColor,
-                                    font: {size: 10, weight: "600"}
+                                    display: false
                                 },
                                 grid: {
-                                    color: this.config.colors.charts.default.borderColor,
+                                    color: chartGridColor,
                                     drawBorder: false,
-                                    borderColor: this.config.colors.charts.default.borderColor
+                                    borderColor: chartGridColor
                                 },
                                 ticks: {
                                     color: "#000000",
@@ -742,9 +745,9 @@ export default {
                                     font: {size: 11, weight: "600"}
                                 },
                                 grid: {
-                                    color: this.config.colors.charts.default.borderColor,
+                                    color: chartGridColor,
                                     drawBorder: false,
-                                    borderColor: this.config.colors.charts.default.borderColor
+                                    borderColor: chartGridColor
                                 },
                                 ticks: {
                                     color: this.config.colors.charts.default.labelColor,
@@ -856,6 +859,60 @@ export default {
         dashboardConsultDateMax: function() {
 
             return Utils.getCurrentDate();
+
+        },
+        /** Sin registros de venta en el día consultado (tras cargar datos) */
+        dashboardChartNoSales: function() {
+
+            const sales = this.forms.entity.dashboard.data.sales;
+            if(sales === null || sales === undefined) {
+
+                return false;
+
+            }
+            const records = sales?.all?.records;
+            return Array.isArray(records) && records.length === 0;
+
+        },
+        /** Rango de horas mostrado en el gráfico (debajo del título); sin texto en el eje X */
+        dashboardChartHoursRangeCaption: function() {
+
+            const totalsByHour = Array.from({length: 24}, () => 0);
+            const sales = this.forms.entity.dashboard.data.sales?.all?.records ?? [];
+            sales.forEach((sale) => {
+
+                const saleHour = new Date(sale.created_at).getHours();
+                if(saleHour >= 0 && saleHour < 24) {
+
+                    totalsByHour[saleHour] += parseFloat(sale.total);
+
+                }
+
+            });
+            const hasAnySale = totalsByHour.some((t) => t > 0);
+            if(!hasAnySale) {
+
+                return "Todas las horas del día";
+
+            }
+            const firstHour = totalsByHour.findIndex((t) => t > 0);
+            let lastHour = 23;
+            for(let i = 23; i >= 0; i--) {
+
+                if(totalsByHour[i] > 0) {
+
+                    lastHour = i;
+                    break;
+
+                }
+
+            }
+            if(lastHour - firstHour + 1 >= 24) {
+
+                return "Todas las horas del día";
+
+            }
+            return `${this.dashboardChartFormatHourLabelAmpm(firstHour)} – ${this.dashboardChartFormatHourEndAmpm(lastHour)}`;
 
         },
         /** Sin fecha válida en el input: Aplicar visible pero deshabilitado */
