@@ -1,182 +1,224 @@
 <template>
-    <!-- <Breadcrumb :list="breadcrumbTitles"/> -->
+    <div class="br-dashboard">
+        <div class="row mb-2 align-items-start br-dashboard__split">
+            <div class="col-12 col-md-6 col-lg-8">
+                <section class="br-dashboard__kpis br-dashboard__kpis--split row g-2 mb-0" aria-label="Indicadores del día consultado">
+                    <div class="col-12 col-sm-6 col-lg-4">
+                        <div class="br-dashboard-kpi br-dashboard-kpi--success h-100">
+                            <div class="br-dashboard-kpi__inner">
+                                <div class="br-dashboard-kpi__icon" aria-hidden="true">
+                                    <i class="fa-solid fa-sack-dollar"></i>
+                                </div>
+                                <div class="br-dashboard-kpi__body">
+                                    <p class="br-dashboard-kpi__label">Ventas en total</p>
+                                    <p class="br-dashboard-kpi__value">
+                                        S/&nbsp;{{ separatorNumber(fixedNumber(forms.entity.dashboard.data.sales?.all?.total ?? 0)) }}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-sm-6 col-lg-4">
+                        <div class="br-dashboard-kpi br-dashboard-kpi--danger h-100">
+                            <div class="br-dashboard-kpi__inner">
+                                <div class="br-dashboard-kpi__icon" aria-hidden="true">
+                                    <i class="fa-solid fa-sack-xmark"></i>
+                                </div>
+                                <div class="br-dashboard-kpi__body">
+                                    <p class="br-dashboard-kpi__label">Ventas anuladas</p>
+                                    <p class="br-dashboard-kpi__value">
+                                        S/&nbsp;{{ separatorNumber(fixedNumber(forms.entity.dashboard.data.sales?.canceled?.total ?? 0)) }}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-sm-6 col-lg-4">
+                        <div class="br-dashboard-kpi br-dashboard-kpi--warning h-100">
+                            <div class="br-dashboard-kpi__inner">
+                                <div class="br-dashboard-kpi__icon" aria-hidden="true">
+                                    <i class="fa-solid fa-building-user"></i>
+                                </div>
+                                <div class="br-dashboard-kpi__body">
+                                    <p class="br-dashboard-kpi__label">Sucursales activas</p>
+                                    <p class="br-dashboard-kpi__value">
+                                        {{ separatorNumber(forms.entity.dashboard.data.branches?.valid?.count ?? 0) }}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+            <div class="col-12 col-md-6 col-lg-4 br-dashboard__split-date">
+                <section class="br-dashboard__split-pane" aria-label="Fecha consultada">
+                    <div class="br-dashboard-date br-dashboard-date--split">
+                        <div class="br-dashboard-date__content">
+                            <div class="br-dashboard-date__main">
+                                <p class="br-dashboard-date__eyebrow">Consulta actual</p>
+                                <p class="br-dashboard-date__value" :title="reportDateLabel">
+                                    {{ consultationDateLong }}
+                                </p>
+                                <div v-if="!dashboardDateEditing" class="br-dashboard-date__actions">
+                                    <button
+                                        type="button"
+                                        class="btn btn-sm btn-secondary br-dashboard-date__btn"
+                                        @click="startDashboardDateEdit">
+                                        <span>Cambiar fecha a consultar</span>
+                                    </button>
+                                </div>
+                                <div
+                                    v-else
+                                    class="br-dashboard-date__editor d-flex flex-wrap align-items-center gap-2 pt-1"
+                                    role="group"
+                                    aria-label="Editar fecha consultada">
+                                    <div class="flex-grow-1" style="min-width: 10rem;">
+                                        <InputDate
+                                            v-model="dateDraft"
+                                            hasDiv
+                                            title=""
+                                            :isRequired="false"
+                                            :max="dashboardConsultDateMax"
+                                            :titleClass="['d-none']"
+                                            :divClass="['mb-0', 'br-dashboard-date__input-wrap']"/>
+                                    </div>
+                                    <button
+                                        type="button"
+                                        class="btn btn-sm btn-danger br-dashboard-date__btn"
+                                        aria-label="Cancelar"
+                                        @click="cancelDashboardDateEdit">
+                                        <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+                                    </button>
+                                    <button
+                                        type="button"
+                                        class="btn btn-sm btn-success br-dashboard-date__btn"
+                                        aria-label="Aplicar"
+                                        @click="applyDashboardDate">
+                                        <i class="fa-solid fa-check" aria-hidden="true"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
 
-    <!-- Content -->
-    <div class="row g-3 mb-4">
-        <div class="col-lg-3 col-sm-6">
-            <div class="card card-border-shadow-success h-100">
-                <div class="card-body">
-                    <div class="d-flex align-items-center mb-3">
-                        <div class="avatar me-3">
-                            <span class="avatar-initial rounded bg-label-success">
-                                <i class="fa-solid fa-cash-register"></i>
-                            </span>
+        <!-- Gráfico -->
+        <!-- <section class="row g-3 mb-4" aria-labelledby="br-dashboard-chart-title">
+            <div class="col-12">
+                <div class="br-dashboard-card card h-100">
+                    <div class="br-dashboard-card__header card-header">
+                        <div>
+                            <h2 id="br-dashboard-chart-title" class="br-dashboard-card__title h5 mb-1">
+                                Ventas por franja horaria
+                            </h2>
+                            <p class="br-dashboard-card__meta mb-0">
+                                {{ reportDateLabel }}
+                            </p>
                         </div>
-                        <h5 class="mb-0" v-text="'S/ '+separatorNumber(fixedNumber(forms.entity.dashboard.data.sales?.all?.total ?? 0))"></h5>
                     </div>
-                    <span class="fw-semibold">VENTAS EN TOTAL</span>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-3 col-sm-6">
-            <div class="card card-border-shadow-danger h-100">
-                <div class="card-body">
-                    <div class="d-flex align-items-center mb-3">
-                        <div class="avatar me-3">
-                            <span class="avatar-initial rounded bg-label-danger">
-                                <i class="fa-solid fa-rectangle-xmark"></i>
-                            </span>
+                    <div class="card-body pt-2">
+                        <div class="br-dashboard-chart-wrap">
+                            <canvas
+                                id="barChartId"
+                                class="chartjs"
+                                data-height="260"
+                                aria-label="Gráfico de barras de ventas por franja horaria"
+                                role="img"></canvas>
                         </div>
-                        <h5 class="mb-0" v-text="'S/ '+separatorNumber(fixedNumber(forms.entity.dashboard.data.sales?.canceled?.total ?? 0))"></h5>
-                    </div>
-                    <span class="fw-semibold">VENTAS ANULADAS</span>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-3 col-sm-6">
-            <div class="card card-border-shadow-info h-100">
-                <div class="card-body">
-                    <div class="d-flex align-items-center mb-3">
-                        <div class="avatar me-3">
-                            <span class="avatar-initial rounded bg-label-info">
-                                <i class="ti ti-git-fork ti-md"></i>
-                            </span>
-                        </div>
-                        <h5 class="mb-0" v-text="separatorNumber(forms.entity.dashboard.data.branches?.valid?.count ?? 0)"></h5>
-                    </div>
-                    <span class="fw-semibold">SUCURSALES</span>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-3 col-sm-6">
-            <div class="card card-border-shadow-secondary h-100">
-                <div class="card-body">
-                    <InputDate
-                        v-model="forms.entity.dashboard.data.date"
-                        @change="initData({loading: true})"
-                        hasDiv
-                        title="Fecha a consultar"
-                        isRequired
-                        :titleClass="['form-label', 'colon-at-end', 'fw-semibold']"/>
-                </div>
-            </div>
-        </div>
-        <!-- <div class="col-lg-3 col-sm-6">
-            <div class="card card-border-shadow-secondary h-100">
-                <div class="card-body">
-                    <div class="d-flex align-items-center mb-3">
-                        <div class="avatar me-3">
-                            <span class="avatar-initial rounded bg-label-secondary">
-                                <i class="fa-solid fa-users"></i>
-                            </span>
-                        </div>
-                        <h5 class="mb-0" v-text="separatorNumber(forms.entity.dashboard.data.users?.valid?.count ?? 0)"></h5>
-                    </div>
-                    <span class="fw-semibold">COLABORADORES</span>
-                </div>
-            </div>
-        </div> -->
-    </div>
-    <div class="row g-3 mb-4">
-        <div class="col-xl-12 col-12">
-            <div class="card">
-                <div class="card-header d-flex align-items-center justify-content-between">
-                    <div class="card-title mb-0">
-                        <h5 class="m-0 fw-semibold">
-                            Ventas creadas
-                            <small class="text-muted" v-text="'| Fecha: '+legibleFormatDate({dateString: forms.entity.dashboard.data.date, type: 'date'})"></small>
-                        </h5>
-                    </div>
-                    <div v-show="false">
-                        <button class="btn btn-sm btn-primary" @click="initChart()" type="button">
-                            <i class="fa-solid fa-sync"></i>
-                            <span class="ms-2">Actualizar</span>
-                        </button>
                     </div>
                 </div>
-                <div class="card-body">
-                    <canvas id="barChartId" class="chartjs" data-height="230"></canvas>
+            </div>
+        </section> -->
+
+        <!-- Tabla -->
+        <!-- <section class="br-dashboard-card card" aria-labelledby="br-dashboard-sales-title">
+            <div class="br-dashboard-card__header card-header">
+                <div>
+                    <h2 id="br-dashboard-sales-title" class="br-dashboard-card__title h5 mb-1">
+                        Últimas ventas
+                    </h2>
+                    <p class="br-dashboard-card__meta mb-0">
+                        Hasta 10 movimientos · {{ reportDateLabel }}
+                    </p>
                 </div>
             </div>
-        </div>
-    </div>
-    <div class="card h-100">
-        <div class="card-header d-flex align-items-center justify-content-between">
-            <div class="card-title mb-0">
-                <h5 class="m-0 fw-semibold">
-                    Últimas ventas
-                    <small class="text-muted" v-text="'| Fecha: '+legibleFormatDate({dateString: forms.entity.dashboard.data.date, type: 'date'})"></small>
-                </h5>
-            </div>
-            <div v-show="false">
-                <button class="btn btn-sm btn-primary" @click="goSalesList()">
-                    <i class="fa-solid fa-cash-register"></i>
-                    <span class="ms-2">Ir al listado de ventas</span>
-                </button>
-            </div>
-        </div>
-        <div class="card-body">
-            <div class="table-responsive">
-                <table class="table table-hover">
-                    <thead>
-                        <tr class="text-center align-middle">
-                            <th class="bg-secondary text-white fw-semibold min-w-150px" style="width: 20%;">DOCUMENTO</th>
-                            <th class="bg-secondary text-white fw-semibold min-w-150px" style="width: 25%;">CLIENTE</th>
-                            <th class="bg-secondary text-white fw-semibold min-w-150px" style="width: 15%;">FECHA DE EMISIÓN</th>
-                            <th class="bg-secondary text-white fw-semibold min-w-150px" style="width: 15%;">TOTAL</th>
-                            <th class="bg-secondary text-white fw-semibold min-w-150px" style="width: 15%;">ESTADO</th>
-                            <th class="bg-secondary text-white fw-semibold min-w-150px" style="width: 10%;">ACCIONES</th>
-                        </tr>
-                    </thead>
-                    <tbody class="table-border-bottom-0 bg-white">
-                        <template v-if="lastSales.length > 0">
-                            <tr v-for="record in lastSales" :key="record.id" class="text-center">
-                                <td class="text-start">
-                                    <span v-text="record.serie_sequential" class="fw-bold d-block"></span>
-                                    <small v-text="record.serie?.document_type?.name" class="d-block"></small>
-                                </td>
-                                <td class="text-start">
-                                    <span v-text="record.holder?.name" class="fw-bold d-block"></span>
-                                    <small v-text="record.holder?.document_number" class="d-block"></small>
-                                </td>
-                                <td>
-                                    <span v-text="record.formatted_issue_date" class="d-block"></span>
-                                </td>
-                                <td>
-                                    <span v-text="record.currency?.sign ?? ''" class="fw-semibold"></span>
-                                    <span v-text="separatorNumber(record.total)" class="fw-semibold ms-1"></span>
-                                </td>
-                                <td>
-                                    <span :class="['badge', 'fw-semibold', 'text-capitalize', { 'bg-label-success': ['active'].includes(record.status), 'bg-label-danger': ['inactive', 'canceled'].includes(record.status) }]" v-text="record.formatted_status"></span>
-                                </td>
-                                <td>
-                                    <InputSlot
-                                        hasDiv
-                                        :isInputGroup="false"
-                                        :divInputClass="['d-flex flex-wrap justify-content-center gap-2 gap-md-1']"
-                                        xl="12"
-                                        lg="12">
-                                        <template v-slot:input>
-                                            <button type="button" class="btn btn-sm btn-primary waves-effect" @click="modalActionsEntity({record})">
-                                                <i class="fa fa-gear"></i>
-                                                <span class="ms-2">Acciones</span>
-                                            </button>
-                                        </template>
-                                    </InputSlot>
-                                </td>
-                            </tr>
-                        </template>
-                        <template v-else>
+            <div class="card-body px-0 pt-0">
+                <div class="table-responsive">
+                    <table class="table table-hover br-dashboard-table mb-0">
+                        <thead>
                             <tr>
-                                <td class="text-center" colspan="99">
-                                    <WithoutData type="image"/>
-                                </td>
+                                <th scope="col">Documento</th>
+                                <th scope="col">Cliente</th>
+                                <th scope="col" class="text-center">Emisión</th>
+                                <th scope="col" class="text-end">Total</th>
+                                <th scope="col" class="text-center">Estado</th>
+                                <th scope="col" class="text-center">Acciones</th>
                             </tr>
-                        </template>
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            <template v-if="lastSales.length > 0">
+                                <tr v-for="record in lastSales" :key="record.id">
+                                    <td class="align-middle">
+                                        <span class="fw-semibold d-block text-body">{{ record.serie_sequential }}</span>
+                                        <small class="text-muted">{{ record.serie?.document_type?.name }}</small>
+                                    </td>
+                                    <td class="align-middle">
+                                        <span class="fw-semibold d-block text-body">{{ record.holder?.name }}</span>
+                                        <small class="text-muted">{{ record.holder?.document_number }}</small>
+                                    </td>
+                                    <td class="align-middle text-center text-nowrap">
+                                        {{ record.formatted_issue_date }}
+                                    </td>
+                                    <td class="align-middle text-end text-nowrap">
+                                        <span class="text-muted">{{ record.currency?.sign ?? "" }}</span>
+                                        <span class="fw-semibold ms-1">{{ separatorNumber(record.total) }}</span>
+                                    </td>
+                                    <td class="align-middle text-center">
+                                        <span
+                                            :class="[
+                                                'badge',
+                                                'rounded-pill',
+                                                'px-2',
+                                                'fw-semibold',
+                                                'text-capitalize',
+                                                { 'bg-label-success': ['active'].includes(record.status), 'bg-label-danger': ['inactive', 'canceled'].includes(record.status) }
+                                            ]"
+                                            v-text="record.formatted_status"></span>
+                                    </td>
+                                    <td class="align-middle text-center">
+                                        <InputSlot
+                                            hasDiv
+                                            :isInputGroup="false"
+                                            :divInputClass="['d-flex flex-wrap justify-content-center gap-2']"
+                                            xl="12"
+                                            lg="12">
+                                            <template v-slot:input>
+                                                <button
+                                                    type="button"
+                                                    class="btn btn-sm btn-primary"
+                                                    @click="modalActionsEntity({record})">
+                                                    <i class="fa fa-gear" aria-hidden="true"></i>
+                                                    <span class="ms-1">Acciones</span>
+                                                </button>
+                                            </template>
+                                        </InputSlot>
+                                    </td>
+                                </tr>
+                            </template>
+                            <template v-else>
+                                <tr>
+                                    <td class="text-center py-5" colspan="6">
+                                        <WithoutData type="image"/>
+                                    </td>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+                </div>
             </div>
-        </div>
+        </section> -->
     </div>
 
     <PrintSale :modalId="forms.entity.dashboard.extras.modals.actions.id" :data="forms.entity.dashboard.extras.modals.actions.data">
@@ -240,6 +282,8 @@ export default {
     },
     data() {
         return {
+            dateDraft: "",
+            dashboardDateEditing: false,
             forms: {
                 entity: {
                     dashboard: {
@@ -282,7 +326,63 @@ export default {
             }
         };
     },
+    computed: {
+
+        /** YYYY-MM-DD de hoy: tope para el input y bloqueo de fechas futuras en el calendario nativo */
+        dashboardConsultDateMax() {
+
+            return Utils.getCurrentDate();
+
+        }
+
+    },
     methods: {
+        startDashboardDateEdit() {
+
+            const max = Utils.getCurrentDate();
+            let d = this.forms.entity.dashboard.data.date || max;
+            if(d > max) {
+
+                d = max;
+
+            }
+            this.dateDraft = d;
+            this.dashboardDateEditing = true;
+
+        },
+        cancelDashboardDateEdit() {
+
+            const max = Utils.getCurrentDate();
+            let d = this.forms.entity.dashboard.data.date || max;
+            if(d > max) {
+
+                d = max;
+
+            }
+            this.dateDraft = d;
+            this.dashboardDateEditing = false;
+
+        },
+        applyDashboardDate() {
+
+            const max = Utils.getCurrentDate();
+            let next = this.dateDraft;
+            if(next > max) {
+
+                next = max;
+
+            }
+            this.dateDraft = next;
+            const prev = this.forms.entity.dashboard.data.date;
+            this.forms.entity.dashboard.data.date = next;
+            this.dashboardDateEditing = false;
+            if(next !== prev) {
+
+                this.initData({loading: true});
+
+            }
+
+        },
         // Init
         async initParams({}) {
 
@@ -352,22 +452,21 @@ export default {
 
             });
 
-            // Config
+            // Config (etiquetas alineadas al flujo comercial típico)
             const intervals = [
-                { label: "12:00 AM - 02:59 AM", start: 0, end: 3 },
-                { label: "03:00 AM - 05:59 AM", start: 3, end: 6 },
-                { label: "06:00 AM - 08:59 AM", start: 6, end: 9 },
-                { label: "09:00 AM - 11:59 PM", start: 9, end: 12 },
-                { label: "12:00 PM - 02:59 PM", start: 12, end: 15 },
-                { label: "03:00 PM - 05:59 PM", start: 15, end: 18 },
-                { label: "06:00 PM - 08:59 PM", start: 18, end: 21 },
-                { label: "09:00 PM - 11:59 AM", start: 21, end: 24 }
+                { label: "12:00 a. m. – 2:59 a. m.", start: 0, end: 3 },
+                { label: "3:00 a. m. – 5:59 a. m.", start: 3, end: 6 },
+                { label: "6:00 a. m. – 8:59 a. m.", start: 6, end: 9 },
+                { label: "9:00 a. m. – 11:59 a. m.", start: 9, end: 12 },
+                { label: "12:00 p. m. – 2:59 p. m.", start: 12, end: 15 },
+                { label: "3:00 p. m. – 5:59 p. m.", start: 15, end: 18 },
+                { label: "6:00 p. m. – 8:59 p. m.", start: 18, end: 21 },
+                { label: "9:00 p. m. – 11:59 p. m.", start: 21, end: 24 }
             ];
 
             const totalsByInterval = intervals.map(interval => ({ label: interval.label, total: 0 }));
 
-            // Process data
-            const sales = this.forms.entity.dashboard.data.sales.all.records;
+            const sales = this.forms.entity.dashboard.data.sales?.all?.records ?? [];
 
             sales.forEach(sale => {
 
@@ -383,11 +482,13 @@ export default {
 
             });
 
-            // Get information
             const barChart = document.getElementById("barChartId");
             const labels   = totalsByInterval.map(i => i.label);
             const data     = totalsByInterval.map(i => i.total);
-            const yMax     = roundUpToNearest(Math.max(...data));
+            const yMax     = roundUpToNearest(Math.max(500, ...data));
+
+            const primary = this.config.colors.charts.default.primaryColor;
+            const barFill = this.hexToRgba(primary, 0.88);
 
             if(barChart) {
 
@@ -404,12 +505,13 @@ export default {
                         datasets: [
                             {
                                 data: data,
-                                backgroundColor: "#28dac6",
-                                borderColor: "transparent",
-                                maxBarThickness: 20,
+                                backgroundColor: barFill,
+                                borderColor: primary,
+                                borderWidth: 1,
+                                maxBarThickness: 22,
                                 borderRadius: {
-                                    topRight: 15,
-                                    topLeft: 15
+                                    topRight: 10,
+                                    topLeft: 10
                                 }
                             }
                         ]
@@ -441,7 +543,11 @@ export default {
                                     borderColor: this.config.colors.charts.default.borderColor
                                 },
                                 ticks: {
-                                    color: this.config.colors.charts.default.labelColor
+                                    color: this.config.colors.charts.default.labelColor,
+                                    maxRotation: 45,
+                                    minRotation: 0,
+                                    autoSkip: true,
+                                    maxTicksLimit: 8
                                 }
                             },
                             y: {
@@ -462,6 +568,19 @@ export default {
                 });
 
             };
+
+        },
+        hexToRgba(hex, alpha) {
+
+            const h = hex.replace("#", "");
+            const n = h.length === 3
+                ? h.split("").map(c => c + c).join("")
+                : h;
+            const num = parseInt(n, 16);
+            const r = (num >> 16) & 255;
+            const g = (num >> 8) & 255;
+            const b = num & 255;
+            return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 
         },
         // Entity forms
@@ -545,6 +664,45 @@ export default {
         lastSales: function() {
 
             return (this.forms.entity.dashboard.data.sales?.all?.records ?? []).slice(0, 10);
+
+        },
+        reportDateLabel: function() {
+
+            const d = this.forms.entity.dashboard.data.date;
+            if(!d) {
+                return "";
+            }
+            return "Fecha: " + this.legibleFormatDate({dateString: d, type: "date"});
+
+        },
+        consultationDateLong: function() {
+
+            const d = this.forms.entity.dashboard.data.date;
+            if(!d) {
+                return "Selecciona una fecha";
+            }
+            try {
+                const raw = String(d).trim();
+                const parts = raw.includes("T") ? raw.split("T")[0].split("-") : raw.split("-");
+                if(parts.length >= 3) {
+                    const y = parseInt(parts[0], 10);
+                    const m = parseInt(parts[1], 10) - 1;
+                    const day = parseInt(parts[2], 10);
+                    const date = new Date(y, m, day);
+                    if(!isNaN(date.getTime())) {
+                        const s = new Intl.DateTimeFormat("es-PE", {
+                            weekday: "long",
+                            day: "numeric",
+                            month: "long",
+                            year: "numeric"
+                        }).format(date);
+                        return s.charAt(0).toUpperCase() + s.slice(1);
+                    }
+                }
+            } catch (e) {
+                //
+            }
+            return this.legibleFormatDate({dateString: d, type: "date"});
 
         }
     }

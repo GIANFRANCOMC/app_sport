@@ -57,14 +57,14 @@ export const generalConfig = {
         charts: {
             default: {
                 backgroundColor: "#ffffff",
-                bodyColor: "#6f6b7d",
-                labelColor: "#7a7883",
-                borderColor: "#dbdade",
-                titleColor: "#5d596c",
-                defaultColor: "#1da1f2",
-                primaryColor: "#7367F0",
-                successColor: "#28C76F",
-                dangerColor: "#EA5455"
+                bodyColor: "#64748b",
+                labelColor: "#64748b",
+                borderColor: "#e2e8f0",
+                titleColor: "#1e293b",
+                defaultColor: "#2899e5",
+                primaryColor: "#2899e5",
+                successColor: "#10b981",
+                dangerColor: "#ef4444"
             }
         }
     },

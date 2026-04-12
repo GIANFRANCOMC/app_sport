@@ -236,15 +236,15 @@
                             </a>
                         </div>
                         <div class="navbar-nav-right d-flex align-items-center" id="navbar-collapse">
-                            <div class="navbar-nav align-items-center">
+                            {{-- <div class="navbar-nav align-items-center">
                                 <div class="nav-item navbar-search-wrapper mb-0">
                                     <a class="nav-item nav-link search-toggler d-flex align-items-center px-0 br-navbar-brand-link" href="{{ $ownerApp->web }}" target="_blank" rel="noopener noreferrer">
                                         <img src="{{ asset($ownerApp->assets->img->logotype) }}" class="d-none d-md-block" width="80"/>
                                         <img src="{{ asset($ownerApp->assets->img->logomark) }}" class="d-block d-md-none" width="50"/>
                                     </a>
                                 </div>
-                            </div>
-                            <ul class="navbar-nav flex-row align-items-center ms-auto">
+                            </div> --}}
+                            {{-- <ul class="navbar-nav flex-row align-items-center ms-auto">
                                 <li class="nav-item">
                                     <a class="nav-link px-0" href="javascript:void(0);" onclick='generateMyUrl(@json($company), true, "my_web")'>
                                         <span class="br-btn br-btn-primary br-btn-sm rounded-pill">
@@ -253,7 +253,7 @@
                                         </span>
                                     </a>
                                 </li>
-                            </ul>
+                            </ul> --}}
                         </div>
                     </nav>
                     <div class="content-wrapper br-layout-content">

@@ -171,7 +171,7 @@
 
     <PrintSale :modalId="forms.entity.createUpdate.extras.modals.actions.id" :data="forms.entity.createUpdate.extras.modals.actions.data">
         <template v-slot:extraGroupAppend>
-            <div v-if="false && ['active'].includes(forms.entity.createUpdate.extras.modals.actions.data?.status)" class="col-xl-3 col-lg-3 col-md-3 col-sm-3">
+            <div v-if="['active'].includes(forms.entity.createUpdate.extras.modals.actions.data?.status)" class="col-xl-3 col-lg-3 col-md-3 col-sm-3">
                 <div class="text-center cursor-pointer p-1" @click="cancelEntity({})">
                     <div class="badge bg-danger p-3 rounded mb-1">
                         <i class="fa-solid fa-rectangle-xmark fs-3"></i>
