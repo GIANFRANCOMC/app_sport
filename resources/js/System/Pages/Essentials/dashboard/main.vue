@@ -59,7 +59,7 @@
                                 <p class="br-dashboard-date__value" :title="reportDateLabel">
                                     {{ consultationDateLong }}
                                 </p>
-                                <div v-if="!dashboardDateEditing" class="br-dashboard-date__actions">
+                                <div v-if="!forms.entity.dashboard.data.dashboardDateEditing" class="br-dashboard-date__actions">
                                     <button
                                         type="button"
                                         class="btn btn-sm btn-secondary br-dashboard-date__btn"
@@ -74,12 +74,12 @@
                                     aria-label="Editar fecha consultada">
                                     <div class="flex-grow-1" style="min-width: 10rem;">
                                         <InputDate
-                                            v-model="dateDraft"
+                                            v-model="forms.entity.dashboard.data.dateAux"
                                             hasDiv
-                                            title=""
-                                            :isRequired="false"
+                                            title="Fecha a consultar"
+                                            isRequired
                                             :max="dashboardConsultDateMax"
-                                            :titleClass="['d-none']"
+                                            :titleClass="['form-label', 'colon-at-end', 'fw-semibold', 'small', 'mb-1']"
                                             :divClass="['mb-0', 'br-dashboard-date__input-wrap']"/>
                                     </div>
                                     <button
@@ -282,8 +282,6 @@ export default {
     },
     data() {
         return {
-            dateDraft: "",
-            dashboardDateEditing: false,
             forms: {
                 entity: {
                     dashboard: {
@@ -303,6 +301,8 @@ export default {
                         },
                         data: {
                             date: "",
+                            dateAux: "",
+                            dashboardDateEditing: false,
                             sales: null,
                             branches: null,
                             users: null
@@ -346,41 +346,23 @@ export default {
                 d = max;
 
             }
-            this.dateDraft = d;
-            this.dashboardDateEditing = true;
+            this.forms.entity.dashboard.data.dateAux = d;
+            this.forms.entity.dashboard.data.dashboardDateEditing = true;
 
         },
         cancelDashboardDateEdit() {
 
-            const max = Utils.getCurrentDate();
-            let d = this.forms.entity.dashboard.data.date || max;
-            if(d > max) {
-
-                d = max;
-
-            }
-            this.dateDraft = d;
-            this.dashboardDateEditing = false;
+            this.forms.entity.dashboard.data.dateAux = "";
+            this.forms.entity.dashboard.data.dashboardDateEditing = false;
 
         },
         applyDashboardDate() {
 
-            const max = Utils.getCurrentDate();
-            let next = this.dateDraft;
-            if(next > max) {
+            this.forms.entity.dashboard.data.date = this.forms.entity.dashboard.data.dateAux;
+            this.forms.entity.dashboard.data.dateAux = "";
+            this.forms.entity.dashboard.data.dashboardDateEditing = false;
 
-                next = max;
-
-            }
-            this.dateDraft = next;
-            const prev = this.forms.entity.dashboard.data.date;
-            this.forms.entity.dashboard.data.date = next;
-            this.dashboardDateEditing = false;
-            if(next !== prev) {
-
-                this.initData({loading: true});
-
-            }
+            this.initData({loading: true});
 
         },
         // Init

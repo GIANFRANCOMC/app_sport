@@ -1170,6 +1170,21 @@ html:not(.layout-menu-collapsed)
   background-color: var(--br-primary);
 }
 
+/* Inputs fecha/hora: acento azul marca (evita morado del tema en calendario nativo) */
+.br-layout input[type="date"],
+.br-layout input[type="datetime-local"],
+.br-layout input[type="time"],
+.br-layout input[type="month"],
+.br-layout input[type="week"] {
+  accent-color: var(--br-primary);
+  color-scheme: light;
+}
+
+.br-layout input[type="date"]::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  opacity: 0.88;
+}
+
 .br-layout .nav-pills .nav-link.active,
 .br-layout .nav-pills .show > .nav-link {
   background-color: var(--br-primary) !important;
