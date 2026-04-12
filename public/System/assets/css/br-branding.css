@@ -2106,11 +2106,11 @@ html:not(.layout-menu-collapsed)
   color: var(--br-text-muted);
 }
 
-.br-layout .br-dashboard-chart-section__title-wrap {
+.br-dashboard .br-dashboard-chart-section__title-wrap {
   width: 100%;
 }
 
-.br-layout .br-dashboard-chart-section__title {
+.br-dashboard .br-dashboard-chart-section__title {
   color: var(--br-secondary);
   letter-spacing: 0.08em;
   line-height: 1.35;
@@ -2118,7 +2118,7 @@ html:not(.layout-menu-collapsed)
 }
 
 /* Contenedor del gráfico: sin card, sin borde ni sombra */
-.br-layout .br-dashboard-chart-panel {
+.br-dashboard .br-dashboard-chart-panel {
   background: transparent;
   border: none;
   box-shadow: none;
@@ -2126,23 +2126,26 @@ html:not(.layout-menu-collapsed)
   margin: 0;
 }
 
-.br-layout .br-dashboard-chart-wrap {
+.br-dashboard .br-dashboard-chart-wrap {
   position: relative;
   height: 260px;
   min-height: 220px;
 }
 
-.br-layout .br-dashboard-chart-wrap--hourly {
+/* overflow + isolation: el canvas en WebKit móvil puede pintar encima del overlay sin esto */
+.br-dashboard .br-dashboard-chart-wrap--hourly {
   width: 100%;
   height: 300px;
   min-height: 260px;
   position: relative;
+  overflow: hidden;
+  isolation: isolate;
 }
 
-.br-layout .br-dashboard-chart-empty-overlay {
+.br-dashboard .br-dashboard-chart-empty-overlay {
   position: absolute;
   inset: 0;
-  z-index: 2;
+  z-index: 10;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2151,20 +2154,24 @@ html:not(.layout-menu-collapsed)
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   pointer-events: none;
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
 }
 
-.br-layout .br-dashboard-chart-empty-overlay__text {
+.br-dashboard .br-dashboard-chart-empty-overlay__text {
   font-size: clamp(1.1rem, 3vw, 1.5rem);
   font-weight: 800;
   letter-spacing: 0.12em;
-  color: var(--br-danger);
+  color: var(--br-danger, #dc3545);
   text-transform: uppercase;
 }
 
-.br-layout .br-dashboard-chart-canvas {
+.br-dashboard .br-dashboard-chart-canvas {
   display: block;
   width: 100% !important;
   max-width: 100%;
+  position: relative;
+  z-index: 1;
 }
 
 .br-layout .br-dashboard-table thead th {
