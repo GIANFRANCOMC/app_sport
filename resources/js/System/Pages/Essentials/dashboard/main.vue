@@ -72,13 +72,20 @@
                                     class="br-dashboard-date__editor d-flex flex-wrap align-items-center gap-2 pt-1"
                                     role="group"
                                     aria-label="Editar fecha consultada">
-                                    <input
-                                        ref="dashboardDatePickerInput"
-                                        v-model="forms.entity.dashboard.data.dateAux"
-                                        type="date"
-                                        class="form-control br-dashboard-date__picker-input-hidden"
-                                        :max="dashboardConsultDateMax"
-                                        aria-label="Fecha a consultar"/>
+                                    <div
+                                        v-if="forms.entity.dashboard.data.dashboardDateInputVisible"
+                                        class="flex-grow-1"
+                                        style="min-width: 10rem;">
+                                        <InputDate
+                                            v-model="forms.entity.dashboard.data.dateAux"
+                                            hasDiv
+                                            title="Fecha a consultar"
+                                            isRequired
+                                            :max="dashboardConsultDateMax"
+                                            :titleClass="['form-label', 'colon-at-end', 'fw-semibold', 'small', 'mb-1']"
+                                            :divClass="['mb-0', 'br-dashboard-date__input-wrap']"
+                                            @change="onDashboardDatePicked"/>
+                                    </div>
                                     <button
                                         type="button"
                                         class="btn btn-sm btn-danger br-dashboard-date__btn"
@@ -300,6 +307,8 @@ export default {
                             date: "",
                             dateAux: "",
                             dashboardDateEditing: false,
+                            /** Mientras edita: true = mostrar InputDate; false = ya eligió fecha en el calendario */
+                            dashboardDateInputVisible: true,
                             sales: null,
                             branches: null,
                             users: null
@@ -323,16 +332,6 @@ export default {
             }
         };
     },
-    computed: {
-
-        /** YYYY-MM-DD de hoy: tope para el input y bloqueo de fechas futuras en el calendario nativo */
-        dashboardConsultDateMax() {
-
-            return Utils.getCurrentDate();
-
-        }
-
-    },
     methods: {
         startDashboardDateEdit() {
 
@@ -344,44 +343,19 @@ export default {
 
             }
             this.forms.entity.dashboard.data.dateAux = d;
+            this.forms.entity.dashboard.data.dashboardDateInputVisible = true;
             this.forms.entity.dashboard.data.dashboardDateEditing = true;
-            this.$nextTick(() => {
-
-                this.openDashboardDatePickerNative();
-
-            });
 
         },
-        openDashboardDatePickerNative() {
+        onDashboardDatePicked() {
 
-            const el = this.$refs.dashboardDatePickerInput;
-            if(!el) {
-
-                return;
-
-            }
-            try {
-
-                if(typeof el.showPicker === "function") {
-
-                    el.showPicker();
-
-                } else {
-
-                    el.focus();
-
-                }
-
-            } catch(_) {
-
-                el.focus();
-
-            }
+            this.forms.entity.dashboard.data.dashboardDateInputVisible = false;
 
         },
         cancelDashboardDateEdit() {
 
             this.forms.entity.dashboard.data.dateAux = "";
+            this.forms.entity.dashboard.data.dashboardDateInputVisible = true;
             this.forms.entity.dashboard.data.dashboardDateEditing = false;
 
         },
@@ -389,6 +363,7 @@ export default {
 
             this.forms.entity.dashboard.data.date = this.forms.entity.dashboard.data.dateAux;
             this.forms.entity.dashboard.data.dateAux = "";
+            this.forms.entity.dashboard.data.dashboardDateInputVisible = true;
             this.forms.entity.dashboard.data.dashboardDateEditing = false;
 
             this.initData({loading: true});
@@ -667,6 +642,13 @@ export default {
         }
     },
     computed: {
+
+        /** YYYY-MM-DD de hoy: tope para el input y bloqueo de fechas futuras en el calendario nativo */
+        dashboardConsultDateMax: function() {
+
+            return Utils.getCurrentDate();
+
+        },
         breadcrumbTitles: function() {
 
             return [this.config.entity.page];
@@ -688,7 +670,9 @@ export default {
         },
         consultationDateLong: function() {
 
-            const d = this.forms.entity.dashboard.data.date;
+            const d = this.forms.entity.dashboard.data.dashboardDateEditing
+                ? this.forms.entity.dashboard.data.dateAux
+                : this.forms.entity.dashboard.data.date;
             if(!d) {
                 return "Selecciona una fecha";
             }
