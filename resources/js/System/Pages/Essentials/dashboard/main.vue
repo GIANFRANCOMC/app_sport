@@ -50,14 +50,16 @@
                     </div>
                 </section>
             </div>
-            <div class="col-12 col-md-6 col-lg-4 br-dashboard__split-date">
-                <section class="br-dashboard__split-pane" aria-label="Fecha consultada">
-                    <div class="br-dashboard-date br-dashboard-date--split">
-                        <div class="br-dashboard-date__content">
-                            <div class="br-dashboard-date__main">
-                                <p v-if="showDashboardDateLabel" class="br-dashboard-date__eyebrow">Consulta actual</p>
+            <div class="col-12 col-md-6 col-lg-4 br-dashboard__split-date align-self-stretch">
+                <section class="br-dashboard__split-pane h-100 d-flex flex-column" aria-label="Fecha consultada">
+                    <div class="br-dashboard-date br-dashboard-date--split br-dashboard-date--split-fill flex-grow-1 d-flex flex-column">
+                        <div class="br-dashboard-date__content flex-grow-1 d-flex flex-column">
+                            <div class="br-dashboard-date__main flex-grow-1 d-flex flex-column">
+                                <p v-if="!forms.entity.dashboard.data.dashboardDateEditing" class="br-dashboard-date__eyebrow">
+                                    Consulta actual
+                                </p>
                                 <p
-                                    v-if="showDashboardDateLabel"
+                                    v-if="!forms.entity.dashboard.data.dashboardDateEditing"
                                     class="br-dashboard-date__value"
                                     :title="reportDateLabel">
                                     {{ consultationDateLong }}
@@ -72,13 +74,10 @@
                                 </div>
                                 <div
                                     v-else
-                                    class="br-dashboard-date__editor d-flex flex-wrap align-items-center gap-2 pt-1"
+                                    class="br-dashboard-date__editor br-dashboard-date__editor--stack d-flex flex-wrap align-items-end justify-content-end gap-2 pt-1 w-100"
                                     role="group"
                                     aria-label="Editar fecha consultada">
-                                    <div
-                                        v-if="forms.entity.dashboard.data.dashboardDateInputVisible"
-                                        class="flex-grow-1"
-                                        style="min-width: 10rem;">
+                                    <div class="flex-grow-1 align-self-end" style="min-width: 10rem;">
                                         <InputDate
                                             v-model="forms.entity.dashboard.data.dateAux"
                                             hasDiv
@@ -86,23 +85,24 @@
                                             isRequired
                                             :max="dashboardConsultDateMax"
                                             :titleClass="['form-label', 'colon-at-end', 'fw-semibold', 'small', 'mb-1']"
-                                            :divClass="['mb-0', 'br-dashboard-date__input-wrap']"
-                                            @change="onDashboardDatePicked"/>
+                                            :divClass="['mb-0', 'br-dashboard-date__input-wrap']"/>
                                     </div>
-                                    <button
-                                        type="button"
-                                        class="btn btn-sm btn-danger br-dashboard-date__btn"
-                                        aria-label="Cancelar"
-                                        @click="cancelDashboardDateEdit">
-                                        <i class="fa-solid fa-xmark" aria-hidden="true"></i>
-                                    </button>
-                                    <button
-                                        type="button"
-                                        class="btn btn-sm btn-success br-dashboard-date__btn"
-                                        aria-label="Aplicar"
-                                        @click="applyDashboardDate">
-                                        <i class="fa-solid fa-check" aria-hidden="true"></i>
-                                    </button>
+                                    <div class="d-flex flex-column gap-1 flex-shrink-0 align-self-end">
+                                        <button
+                                            type="button"
+                                            class="btn btn-xs btn-danger br-dashboard-date__btn"
+                                            aria-label="Cancelar"
+                                            @click="cancelDashboardDateEdit">
+                                            <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+                                        </button>
+                                        <button
+                                            type="button"
+                                            class="btn btn-xs btn-success br-dashboard-date__btn"
+                                            aria-label="Aplicar"
+                                            @click="applyDashboardDate">
+                                            <i class="fa-solid fa-check" aria-hidden="true"></i>
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -310,8 +310,6 @@ export default {
                             date: "",
                             dateAux: "",
                             dashboardDateEditing: false,
-                            /** Mientras edita: true = mostrar InputDate; false = ya eligió fecha en el calendario */
-                            dashboardDateInputVisible: true,
                             sales: null,
                             branches: null,
                             users: null
@@ -346,19 +344,12 @@ export default {
 
             }
             this.forms.entity.dashboard.data.dateAux = d;
-            this.forms.entity.dashboard.data.dashboardDateInputVisible = true;
             this.forms.entity.dashboard.data.dashboardDateEditing = true;
-
-        },
-        onDashboardDatePicked() {
-
-            this.forms.entity.dashboard.data.dashboardDateInputVisible = false;
 
         },
         cancelDashboardDateEdit() {
 
             this.forms.entity.dashboard.data.dateAux = "";
-            this.forms.entity.dashboard.data.dashboardDateInputVisible = true;
             this.forms.entity.dashboard.data.dashboardDateEditing = false;
 
         },
@@ -366,7 +357,6 @@ export default {
 
             this.forms.entity.dashboard.data.date = this.forms.entity.dashboard.data.dateAux;
             this.forms.entity.dashboard.data.dateAux = "";
-            this.forms.entity.dashboard.data.dashboardDateInputVisible = true;
             this.forms.entity.dashboard.data.dashboardDateEditing = false;
 
             this.initData({loading: true});
@@ -652,13 +642,6 @@ export default {
             return Utils.getCurrentDate();
 
         },
-        /** Oculta "Consulta actual" + fecha mientras solo se muestra el InputDate al elegir día */
-        showDashboardDateLabel: function() {
-
-            const d = this.forms.entity.dashboard.data;
-            return !d.dashboardDateEditing || !d.dashboardDateInputVisible;
-
-        },
         breadcrumbTitles: function() {
 
             return [this.config.entity.page];
@@ -680,9 +663,7 @@ export default {
         },
         consultationDateLong: function() {
 
-            const d = this.forms.entity.dashboard.data.dashboardDateEditing
-                ? this.forms.entity.dashboard.data.dateAux
-                : this.forms.entity.dashboard.data.date;
+            const d = this.forms.entity.dashboard.data.date;
             if(!d) {
                 return "Selecciona una fecha";
             }

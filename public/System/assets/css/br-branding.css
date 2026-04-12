@@ -1725,6 +1725,28 @@ html:not(.layout-menu-collapsed)
   justify-content: flex-start;
 }
 
+/* Columna fecha alineada abajo respecto a los KPI: cadena flex + editor al pie */
+.br-layout .br-dashboard__split-date.align-self-stretch .br-dashboard-date--split-fill {
+  flex-direction: column;
+  flex-wrap: nowrap;
+  align-items: stretch;
+  min-height: 0;
+}
+
+.br-layout .br-dashboard__split-date .br-dashboard-date--split-fill .br-dashboard-date__content {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.br-layout .br-dashboard__split-date .br-dashboard-date--split-fill .br-dashboard-date__content,
+.br-layout .br-dashboard__split-date .br-dashboard-date--split-fill .br-dashboard-date__main {
+  min-height: 0;
+}
+
+.br-layout .br-dashboard__split-date .br-dashboard-date__editor--stack {
+  margin-top: auto;
+}
+
 .br-layout .br-dashboard__kpis--split > [class*="col"] {
   display: flex;
 }
