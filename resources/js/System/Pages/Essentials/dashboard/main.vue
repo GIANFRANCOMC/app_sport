@@ -99,6 +99,7 @@
                                             type="button"
                                             class="btn btn-xs btn-success br-dashboard-date__btn"
                                             aria-label="Aplicar"
+                                            :disabled="!canApplyDashboardDate"
                                             @click="applyDashboardDate">
                                             <i class="fa-solid fa-check" aria-hidden="true"></i>
                                         </button>
@@ -355,6 +356,11 @@ export default {
         },
         applyDashboardDate() {
 
+            if(!this.canApplyDashboardDate) {
+
+                return;
+
+            }
             this.forms.entity.dashboard.data.date = this.forms.entity.dashboard.data.dateAux;
             this.forms.entity.dashboard.data.dateAux = "";
             this.forms.entity.dashboard.data.dashboardDateEditing = false;
@@ -640,6 +646,45 @@ export default {
         dashboardConsultDateMax: function() {
 
             return Utils.getCurrentDate();
+
+        },
+        /** Sin fecha válida en el input: Aplicar visible pero deshabilitado */
+        canApplyDashboardDate: function() {
+
+            if(!this.forms.entity.dashboard.data.dashboardDateEditing) {
+
+                return false;
+
+            }
+            const raw = this.forms.entity.dashboard.data.dateAux;
+            if(raw === null || raw === undefined) {
+
+                return false;
+
+            }
+            const s = String(raw).trim().split("T")[0];
+            if(!s) {
+
+                return false;
+
+            }
+            if(!/^\d{4}-\d{2}-\d{2}$/.test(s)) {
+
+                return false;
+
+            }
+            const max = this.dashboardConsultDateMax;
+            if(s > max) {
+
+                return false;
+
+            }
+            const parts = s.split("-");
+            const y = parseInt(parts[0], 10);
+            const m = parseInt(parts[1], 10) - 1;
+            const day = parseInt(parts[2], 10);
+            const dt = new Date(y, m, day);
+            return !isNaN(dt.getTime());
 
         },
         breadcrumbTitles: function() {

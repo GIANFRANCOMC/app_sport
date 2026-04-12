@@ -1170,19 +1170,50 @@ html:not(.layout-menu-collapsed)
   background-color: var(--br-primary);
 }
 
-/* Inputs fecha/hora: acento azul marca (evita morado del tema en calendario nativo) */
+/* Inputs fecha/hora: acento azul marca (evita morado del navegador en calendario nativo) */
 .br-layout input[type="date"],
 .br-layout input[type="datetime-local"],
 .br-layout input[type="time"],
 .br-layout input[type="month"],
 .br-layout input[type="week"] {
-  accent-color: var(--br-primary);
+  accent-color: var(--br-primary) !important;
   color-scheme: light;
+  caret-color: var(--br-primary);
+}
+
+.br-layout input[type="date"]:focus,
+.br-layout input[type="date"]:focus-visible,
+.br-layout input[type="datetime-local"]:focus,
+.br-layout input[type="datetime-local"]:focus-visible,
+.br-layout input[type="time"]:focus,
+.br-layout input[type="time"]:focus-visible,
+.br-layout input[type="month"]:focus,
+.br-layout input[type="month"]:focus-visible,
+.br-layout input[type="week"]:focus,
+.br-layout input[type="week"]:focus-visible {
+  outline: 2px solid var(--br-primary);
+  outline-offset: 2px;
+}
+
+/* Chrome/Chromium: segmentos día/mes/año al abrir o tabular el date */
+.br-layout input[type="date"]::-webkit-datetime-edit-year-field:focus,
+.br-layout input[type="date"]::-webkit-datetime-edit-month-field:focus,
+.br-layout input[type="date"]::-webkit-datetime-edit-day-field:focus {
+  background-color: var(--br-primary-soft);
+  color: var(--br-secondary);
+  outline: none;
 }
 
 .br-layout input[type="date"]::-webkit-calendar-picker-indicator {
   cursor: pointer;
   opacity: 0.88;
+  filter: none;
+}
+
+/* Tema Vuexy: .input-group:focus-within usa #7367f0 — alinear con branding */
+.br-layout .input-group:focus-within .form-control,
+.br-layout .input-group:focus-within .input-group-text {
+  border-color: var(--br-primary) !important;
 }
 
 .br-layout .nav-pills .nav-link.active,
