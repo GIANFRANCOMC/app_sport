@@ -55,8 +55,11 @@
                     <div class="br-dashboard-date br-dashboard-date--split">
                         <div class="br-dashboard-date__content">
                             <div class="br-dashboard-date__main">
-                                <p class="br-dashboard-date__eyebrow">Consulta actual</p>
-                                <p class="br-dashboard-date__value" :title="reportDateLabel">
+                                <p v-if="showDashboardDateLabel" class="br-dashboard-date__eyebrow">Consulta actual</p>
+                                <p
+                                    v-if="showDashboardDateLabel"
+                                    class="br-dashboard-date__value"
+                                    :title="reportDateLabel">
                                     {{ consultationDateLong }}
                                 </p>
                                 <div v-if="!forms.entity.dashboard.data.dashboardDateEditing" class="br-dashboard-date__actions">
@@ -647,6 +650,13 @@ export default {
         dashboardConsultDateMax: function() {
 
             return Utils.getCurrentDate();
+
+        },
+        /** Oculta "Consulta actual" + fecha mientras solo se muestra el InputDate al elegir día */
+        showDashboardDateLabel: function() {
+
+            const d = this.forms.entity.dashboard.data;
+            return !d.dashboardDateEditing || !d.dashboardDateInputVisible;
 
         },
         breadcrumbTitles: function() {
