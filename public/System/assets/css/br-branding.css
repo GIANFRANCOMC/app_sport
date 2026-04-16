@@ -2126,6 +2126,36 @@ html:not(.layout-menu-collapsed)
   margin: 0;
 }
 
+/* Scroll horizontal en pantallas estrechas: evita barras y etiquetas superpuestas */
+.br-dashboard .br-dashboard-chart-scroll {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+  touch-action: pan-x pinch-zoom;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(148, 163, 184, 0.65) transparent;
+}
+
+.br-dashboard .br-dashboard-chart-scroll::-webkit-scrollbar {
+  height: 6px;
+}
+
+.br-dashboard .br-dashboard-chart-scroll::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.55);
+  border-radius: 999px;
+}
+
+.br-dashboard .br-dashboard-chart-scroll-inner {
+  box-sizing: border-box;
+}
+
+.br-dashboard .br-dashboard-chart-scroll-hint {
+  line-height: 1.35;
+}
+
 .br-dashboard .br-dashboard-chart-wrap {
   position: relative;
   height: 260px;

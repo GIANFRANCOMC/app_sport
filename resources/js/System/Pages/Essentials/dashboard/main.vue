@@ -117,20 +117,33 @@
                     <p class="br-dashboard-chart-section__subtitle small text-muted mb-0">
                         {{ dashboardChartHoursRangeCaption }}
                     </p>
+                    <p
+                        v-if="!dashboardChartNoSales"
+                        class="br-dashboard-chart-scroll-hint d-md-none small text-muted mb-2 mb-md-0 mt-1">
+                        Desliza horizontalmente para ver todas las horas.
+                    </p>
                 </div>
                 <div class="br-dashboard-chart-panel">
                     <div
-                        class="br-dashboard-chart-wrap br-dashboard-chart-wrap--hourly"
-                        :class="{ 'br-dashboard-chart-wrap--hourly-empty': dashboardChartNoSales }">
-                        <canvas
-                            v-if="!dashboardChartNoSales"
-                            id="dashboardSalesHourlyChart"
-                            class="chartjs br-dashboard-chart-canvas"
-                            data-height="300"
-                            aria-label="Gráfico de barras: ventas por hora del día consultado"
-                            role="img"></canvas>
+                        v-if="!dashboardChartNoSales"
+                        class="br-dashboard-chart-scroll"
+                        role="region"
+                        aria-label="Gráfico de ventas por hora, desplazable en pantallas pequeñas">
                         <div
-                            v-else
+                            class="br-dashboard-chart-scroll-inner br-dashboard-chart-wrap br-dashboard-chart-wrap--hourly"
+                            :style="dashboardChartScrollInnerStyle">
+                            <canvas
+                                id="dashboardSalesHourlyChart"
+                                class="chartjs br-dashboard-chart-canvas"
+                                data-height="300"
+                                aria-label="Gráfico de barras: ventas por hora del día consultado"
+                                role="img"></canvas>
+                        </div>
+                    </div>
+                    <div
+                        v-else
+                        class="br-dashboard-chart-wrap br-dashboard-chart-wrap--hourly br-dashboard-chart-wrap--hourly-empty">
+                        <div
                             class="br-dashboard-chart-empty-overlay"
                             role="status"
                             aria-live="polite">
@@ -336,6 +349,8 @@ export default {
                 }
             },
             options: {},
+            /** Ancho mínimo del área scroll (según barras y si son rango o hora suelta) */
+            dashboardChartMinWidthPx: 0,
             config: {
                 ...Constants.generalConfig,
                 entity: {
@@ -763,23 +778,120 @@ export default {
 
             if(canvas) {
 
+                const viewportNarrow = typeof window !== "undefined" && window.matchMedia("(max-width: 767.98px)").matches;
+                const pxPerSingle = viewportNarrow ? 52 : 44;
+                /** Rangos sin ventas: más anchura para etiquetas largas (ej. 9 a. m. – 11 a. m.) */
+                const pxPerGap = viewportNarrow ? 118 : 88;
+                let scrollMinPx = 48;
+                segments.forEach((seg) => {
+
+                    scrollMinPx += seg.kind === "gap" ? pxPerGap : pxPerSingle;
+
+                });
+                this.dashboardChartMinWidthPx = Math.max(320, scrollMinPx);
+
                 if(dashboardSalesChartInstance) {
 
                     dashboardSalesChartInstance.destroy();
+                    dashboardSalesChartInstance = null;
 
                 }
 
-                dashboardSalesChartInstance = new Chart(canvas, {
+                const transparent = "rgba(0, 0, 0, 0)";
+                const barBgPerIndex = data.map((v) => (Number(v) > 0 ? barFill : transparent));
+                const barBorderPerIndex = data.map((v) => (Number(v) > 0 ? primary : transparent));
+                const barBorderWPerIndex = data.map((v) => (Number(v) > 0 ? 1 : 0));
+                const barHoverBgPerIndex = data.map((v) => (Number(v) > 0 ? barHover : transparent));
+                const barHoverBorderPerIndex = data.map((v) => (Number(v) > 0 ? primary : transparent));
+
+                const dashboardSinVentasWatermarkPlugin = {
+                    id: "dashboardSinVentasWatermark",
+                    afterDatasetsDraw(chart) {
+
+                        const meta = chart.getDatasetMeta(0);
+                        if(!meta || !meta.data) {
+
+                            return;
+
+                        }
+                        const values = chart.data.datasets[0].data;
+                        const { ctx, chartArea } = chart;
+                        let fontFamily = "sans-serif";
+                        if(typeof Chart !== "undefined" && Chart.defaults && Chart.defaults.font && Chart.defaults.font.family) {
+
+                            fontFamily = Chart.defaults.font.family;
+
+                        }
+
+                        ctx.save();
+                        const watermarkText = "SIN VENTAS";
+                        const plotH = chartArea.bottom - chartArea.top;
+                        const n = values.length;
+
+                        values.forEach((_, i) => {
+
+                            if(segmentHasSales[i]) {
+
+                                return;
+
+                            }
+                            const el = meta.data[i];
+                            if(!el || el.skip) {
+
+                                return;
+
+                            }
+                            const x = el.x;
+                            const y = (chartArea.top + chartArea.bottom) / 2;
+                            let fontSize = Math.min(11, Math.max(8, 7 + chartArea.width / Math.max(n * 6, 1)));
+                            ctx.font = `600 ${fontSize}px ${fontFamily}`;
+                            let textW = ctx.measureText(watermarkText).width;
+                            while(textW > plotH - 12 && fontSize > 7) {
+
+                                fontSize -= 0.5;
+                                ctx.font = `600 ${fontSize}px ${fontFamily}`;
+                                textW = ctx.measureText(watermarkText).width;
+
+                            }
+
+                            ctx.save();
+                            ctx.translate(x, y);
+                            /** Texto vertical (-90°): ocupa poco ancho en el eje X y no invade otras categorías */
+                            ctx.rotate(-Math.PI / 2);
+                            ctx.textAlign = "center";
+                            ctx.textBaseline = "middle";
+                            ctx.fillStyle = "rgba(148, 163, 184, 0.44)";
+                            ctx.fillText(watermarkText, 0, 0);
+                            ctx.restore();
+
+                        });
+
+                        ctx.restore();
+
+                    }
+                };
+
+                this.$nextTick(() => {
+
+                    const canvasEl = document.getElementById("dashboardSalesHourlyChart");
+                    if(!canvasEl) {
+
+                        return;
+
+                    }
+
+                    dashboardSalesChartInstance = new Chart(canvasEl, {
                     type: "bar",
+                    plugins: [dashboardSinVentasWatermarkPlugin],
                     data: {
                         labels,
                         datasets: [
                             {
                                 label: "Total por hora (S/)",
                                 data,
-                                backgroundColor: barFill,
-                                borderColor: primary,
-                                borderWidth: 1,
+                                backgroundColor: barBgPerIndex,
+                                borderColor: barBorderPerIndex,
+                                borderWidth: barBorderWPerIndex,
                                 borderRadius: {
                                     topLeft: 8,
                                     topRight: 8,
@@ -788,8 +900,8 @@ export default {
                                 },
                                 borderSkipped: false,
                                 maxBarThickness: maxBarThickness,
-                                hoverBackgroundColor: barHover,
-                                hoverBorderColor: primary
+                                hoverBackgroundColor: barHoverBgPerIndex,
+                                hoverBorderColor: barHoverBorderPerIndex
                             }
                         ]
                     },
@@ -936,10 +1048,18 @@ export default {
                     }
                 });
 
-            } else if(dashboardSalesChartInstance) {
+                });
 
-                dashboardSalesChartInstance.destroy();
-                dashboardSalesChartInstance = null;
+            } else {
+
+                this.dashboardChartMinWidthPx = 0;
+
+                if(dashboardSalesChartInstance) {
+
+                    dashboardSalesChartInstance.destroy();
+                    dashboardSalesChartInstance = null;
+
+                }
 
             }
 
@@ -1041,6 +1161,21 @@ export default {
 
             const records = sales?.all?.records;
             return Array.isArray(records) && records.length === 0;
+
+        },
+        /** Min-width del canvas: hora suelta vs rango sin ventas (gap más ancho; en móvil aún más) */
+        dashboardChartScrollInnerStyle: function() {
+
+            const w = this.dashboardChartMinWidthPx;
+            if(!w) {
+
+                return {};
+
+            }
+            return {
+                minWidth: `${w}px`,
+                width: "100%"
+            };
 
         },
         dashboardChartHoursRangeCaption: function() {
