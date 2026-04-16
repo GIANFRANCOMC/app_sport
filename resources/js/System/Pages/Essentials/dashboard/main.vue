@@ -55,25 +55,16 @@
                     <div class="br-dashboard-date br-dashboard-date--split br-dashboard-date--split-fill flex-grow-1 d-flex flex-column">
                         <div class="br-dashboard-date__content flex-grow-1 d-flex flex-column">
                             <div class="br-dashboard-date__main flex-grow-1 d-flex flex-column">
-                                <p v-if="!forms.entity.dashboard.data.dashboardDateEditing" class="br-dashboard-date__eyebrow">
-                                    Consulta actual
-                                </p>
-                                <p
-                                    v-if="!forms.entity.dashboard.data.dashboardDateEditing"
-                                    class="br-dashboard-date__value"
-                                    :title="reportDateLabel">
-                                    {{ consultationDateLong }}
-                                </p>
-                                <div v-if="!forms.entity.dashboard.data.dashboardDateEditing" class="br-dashboard-date__actions">
-                                    <button
-                                        type="button"
-                                        class="br-btn br-btn-sm br-btn-secondary"
-                                        @click="startDashboardDateEdit">
-                                        <span>Consultar fecha</span>
-                                    </button>
-                                </div>
-                                <div
-                                    v-else
+                                <template v-if="!forms.entity.dashboard.data.dashboardDateEditing">
+                                    <p class="br-dashboard-date__eyebrow">Consulta actual</p>
+                                    <p class="br-dashboard-date__value" :title="reportDateLabel" v-text="consultationDateLong"></p>
+                                    <div class="br-dashboard-date__actions">
+                                        <button type="button" class="br-btn br-btn-sm br-btn-secondary" @click="startDashboardDateEdit">
+                                            <span>Consultar fecha</span>
+                                        </button>
+                                    </div>
+                                </template>
+                                <div v-else
                                     class="br-dashboard-date__editor br-dashboard-date__editor--stack d-flex flex-wrap align-items-end justify-content-end gap-2 pt-1 w-100"
                                     role="group"
                                     aria-label="Editar fecha consultada">
@@ -128,15 +119,18 @@
                     </p>
                 </div>
                 <div class="br-dashboard-chart-panel">
-                    <div class="br-dashboard-chart-wrap br-dashboard-chart-wrap--hourly">
+                    <div
+                        class="br-dashboard-chart-wrap br-dashboard-chart-wrap--hourly"
+                        :class="{ 'br-dashboard-chart-wrap--hourly-empty': dashboardChartNoSales }">
                         <canvas
+                            v-if="!dashboardChartNoSales"
                             id="dashboardSalesHourlyChart"
                             class="chartjs br-dashboard-chart-canvas"
                             data-height="300"
                             aria-label="Gráfico de barras: ventas por hora del día consultado"
                             role="img"></canvas>
                         <div
-                            v-if="dashboardChartNoSales"
+                            v-else
                             class="br-dashboard-chart-empty-overlay"
                             role="status"
                             aria-live="polite">
@@ -294,6 +288,22 @@ export default {
 
         }
 
+        this._onDashboardChartResize = () => {
+
+            this.onDashboardChartWindowResize();
+
+        };
+        window.addEventListener("resize", this._onDashboardChartResize);
+
+    },
+    beforeUnmount() {
+
+        if(this._onDashboardChartResize) {
+
+            window.removeEventListener("resize", this._onDashboardChartResize);
+
+        }
+
     },
     data() {
         return {
@@ -414,7 +424,11 @@ export default {
             this.forms.entity.dashboard.data.branches = initData.data?.data?.branches;
             this.forms.entity.dashboard.data.users    = initData.data?.data?.users;
 
-            this.initChart();
+            this.$nextTick(() => {
+
+                this.initChart();
+
+            });
 
             if(loading) {
 
@@ -486,6 +500,40 @@ export default {
 
             }
             return `${h - 12} p. m.`;
+
+        },
+        /** Título "Soles (S/)" del eje Y: solo pantallas >= md (Bootstrap), más espacio en móvil */
+        dashboardChartShouldShowYAxisTitle() {
+
+            if(typeof window === "undefined") {
+
+                return true;
+
+            }
+            return window.matchMedia("(min-width: 768px)").matches;
+
+        },
+        onDashboardChartWindowResize() {
+
+            if(!dashboardSalesChartInstance) {
+
+                return;
+
+            }
+            const show = this.dashboardChartShouldShowYAxisTitle();
+            const yTitle = dashboardSalesChartInstance.options?.scales?.y?.title;
+            if(!yTitle) {
+
+                return;
+
+            }
+            if(yTitle.display === show) {
+
+                return;
+
+            }
+            yTitle.display = show;
+            dashboardSalesChartInstance.update("none");
 
         },
         initChart() {
@@ -575,6 +623,8 @@ export default {
 
             }
 
+            const vm = this;
+
             const sliceHours = [];
             for(let h = firstHour; h <= lastHour; h++) {
 
@@ -582,9 +632,72 @@ export default {
 
             }
 
-            const nBars = sliceHours.length;
-            const labels = sliceHours.map((h) => this.dashboardChartFormatHourCompactAmpm(h));
-            const data = sliceHours.map((h) => totalsByHour[h]);
+            /**
+             * Agrupa horas seguidas sin ventas en un solo punto (eje X) para ahorrar espacio.
+             * Las horas con ventas siguen siendo una barra por hora.
+             */
+            const segments = [];
+            let si = 0;
+            while(si < sliceHours.length) {
+
+                const h = sliceHours[si];
+                if(totalsByHour[h] > 0) {
+
+                    segments.push({kind: "single", hour: h});
+                    si++;
+
+                }else {
+
+                    const zStart = h;
+                    let zEnd = h;
+                    while(si < sliceHours.length && totalsByHour[sliceHours[si]] === 0) {
+
+                        zEnd = sliceHours[si];
+                        si++;
+
+                    }
+                    if(zStart === zEnd) {
+
+                        segments.push({kind: "single", hour: zStart});
+
+                    }else {
+
+                        segments.push({kind: "gap", startHour: zStart, endHour: zEnd});
+
+                    }
+
+                }
+
+            }
+
+            const nBars = segments.length;
+            const labels = segments.map((seg) => {
+
+                if(seg.kind === "single") {
+
+                    return vm.dashboardChartFormatHourCompactAmpm(seg.hour);
+
+                }
+                return `${vm.dashboardChartFormatHourCompactAmpm(seg.startHour)} – ${vm.dashboardChartFormatHourCompactAmpm(seg.endHour)}`;
+
+            });
+            const data = segments.map((seg) => {
+
+                if(seg.kind === "single") {
+
+                    return totalsByHour[seg.hour];
+
+                }
+                let sum = 0;
+                for(let hh = seg.startHour; hh <= seg.endHour; hh++) {
+
+                    sum += totalsByHour[hh];
+
+                }
+                return sum;
+
+            });
+            const segmentHasSales = data.map((v) => Number(v) > 0);
             const maxVal = Math.max(0, ...data);
             const yMax = niceCeilAxisMax(maxVal);
 
@@ -603,7 +716,6 @@ export default {
             const primary = this.config.colors.charts.default.primaryColor;
             const barFill = this.hexToRgba(primary, 0.88);
             const barHover = this.hexToRgba(primary, 1);
-            const vm = this;
             /** Líneas de grilla un poco más visibles que --border del tema (#e2e8f0), sin pasarse */
             const chartGridColor = "#d1d9e3";
 
@@ -612,6 +724,42 @@ export default {
             const barPercentage = nBars <= 10 ? 0.98 : 0.95;
             const labelFontSize = nBars > 18 ? 7.5 : nBars > 14 ? 8 : 9.5;
             const tickRotation = nBars > 16 ? 35 : 0;
+            /** Eje X: etiquetas con ventas más visibles; sin ventas, texto más tenue */
+            const tickColorMuted = "#94a3b8";
+            const tickColorEmphasis = "#0f172a";
+            const tickFontSizeEmphasis = labelFontSize + 1.25;
+            const resolveTickSegmentIndex = (ctx) => {
+
+                if(typeof ctx.index === "number") {
+
+                    return ctx.index;
+
+                }
+                const t = ctx.tick;
+                if(t && typeof t.index === "number") {
+
+                    return t.index;
+
+                }
+                if(t && typeof t.label === "string") {
+
+                    let j = labels.indexOf(t.label);
+                    if(j >= 0) {
+
+                        return j;
+
+                    }
+                    j = labels.findIndex((lb) => String(lb) === String(t.label));
+                    if(j >= 0) {
+
+                        return j;
+
+                    }
+
+                }
+                return -1;
+
+            };
 
             if(canvas) {
 
@@ -702,8 +850,14 @@ export default {
                                             return "";
 
                                         }
-                                        const hour = sliceHours[items[0].dataIndex];
-                                        return `${vm.dashboardChartFormatHourLabelAmpm(hour)} – ${vm.dashboardChartFormatHourEndAmpm(hour)}`;
+                                        const seg = segments[items[0].dataIndex];
+                                        if(seg.kind === "single") {
+
+                                            const hour = seg.hour;
+                                            return `${vm.dashboardChartFormatHourLabelAmpm(hour)} – ${vm.dashboardChartFormatHourEndAmpm(hour)}`;
+
+                                        }
+                                        return `${vm.dashboardChartFormatHourLabelAmpm(seg.startHour)} – ${vm.dashboardChartFormatHourEndAmpm(seg.endHour)}`;
 
                                     },
                                     label(ctx) {
@@ -726,12 +880,29 @@ export default {
                                     borderColor: chartGridColor
                                 },
                                 ticks: {
-                                    color: "#000000",
                                     autoSkip: false,
                                     maxRotation: tickRotation,
                                     minRotation: tickRotation,
-                                    font: {
-                                        size: labelFontSize
+                                    color(ctx) {
+
+                                        const i = resolveTickSegmentIndex(ctx);
+                                        if(i < 0 || i >= segmentHasSales.length) {
+
+                                            return tickColorMuted;
+
+                                        }
+                                        return segmentHasSales[i] ? tickColorEmphasis : tickColorMuted;
+
+                                    },
+                                    font(ctx) {
+
+                                        const i = resolveTickSegmentIndex(ctx);
+                                        const has = i >= 0 && i < segmentHasSales.length && segmentHasSales[i];
+                                        return {
+                                            size: has ? tickFontSizeEmphasis : labelFontSize,
+                                            weight: has ? "600" : "400"
+                                        };
+
                                     }
                                 }
                             },
@@ -739,7 +910,7 @@ export default {
                                 min: 0,
                                 max: yAxisMax,
                                 title: {
-                                    display: true,
+                                    display: this.dashboardChartShouldShowYAxisTitle(),
                                     text: "Soles (S/)",
                                     color: this.config.colors.charts.default.labelColor,
                                     font: {size: 11, weight: "600"}
@@ -765,15 +936,18 @@ export default {
                     }
                 });
 
+            } else if(dashboardSalesChartInstance) {
+
+                dashboardSalesChartInstance.destroy();
+                dashboardSalesChartInstance = null;
+
             }
 
         },
         hexToRgba(hex, alpha) {
 
             const h = hex.replace("#", "");
-            const n = h.length === 3
-                ? h.split("").map(c => c + c).join("")
-                : h;
+            const n = h.length === 3 ? h.split("").map(c => c + c).join("") : h;
             const num = parseInt(n, 16);
             const r = (num >> 16) & 255;
             const g = (num >> 8) & 255;
@@ -854,27 +1028,21 @@ export default {
         }
     },
     computed: {
-
-        /** YYYY-MM-DD de hoy: tope para el input y bloqueo de fechas futuras en el calendario nativo */
         dashboardConsultDateMax: function() {
 
             return Utils.getCurrentDate();
 
         },
-        /** Sin registros de venta en el día consultado (tras cargar datos) */
         dashboardChartNoSales: function() {
 
             const sales = this.forms.entity.dashboard.data.sales;
-            if(sales === null || sales === undefined) {
 
-                return false;
+            if(sales === null || sales === undefined) return false;
 
-            }
             const records = sales?.all?.records;
             return Array.isArray(records) && records.length === 0;
 
         },
-        /** Rango de horas mostrado en el gráfico (debajo del título); sin texto en el eje X */
         dashboardChartHoursRangeCaption: function() {
 
             const totalsByHour = Array.from({length: 24}, () => 0);
@@ -882,6 +1050,7 @@ export default {
             sales.forEach((sale) => {
 
                 const saleHour = new Date(sale.created_at).getHours();
+
                 if(saleHour >= 0 && saleHour < 24) {
 
                     totalsByHour[saleHour] += parseFloat(sale.total);
@@ -889,14 +1058,14 @@ export default {
                 }
 
             });
+
             const hasAnySale = totalsByHour.some((t) => t > 0);
-            if(!hasAnySale) {
 
-                return "Todas las horas del día";
+            if(!hasAnySale) return "Todas las horas del día";
 
-            }
             const firstHour = totalsByHour.findIndex((t) => t > 0);
             let lastHour = 23;
+
             for(let i = 23; i >= 0; i--) {
 
                 if(totalsByHour[i] > 0) {
@@ -907,50 +1076,35 @@ export default {
                 }
 
             }
-            if(lastHour - firstHour + 1 >= 24) {
 
-                return "Todas las horas del día";
+            if(lastHour - firstHour + 1 >= 24) return "Todas las horas del día";
 
-            }
             return `${this.dashboardChartFormatHourLabelAmpm(firstHour)} – ${this.dashboardChartFormatHourEndAmpm(lastHour)}`;
 
         },
-        /** Sin fecha válida en el input: Aplicar visible pero deshabilitado */
         canApplyDashboardDate: function() {
 
-            if(!this.forms.entity.dashboard.data.dashboardDateEditing) {
+            if(!this.forms.entity.dashboard.data.dashboardDateEditing) return false;
 
-                return false;
-
-            }
             const raw = this.forms.entity.dashboard.data.dateAux;
-            if(raw === null || raw === undefined) {
 
-                return false;
+            if(raw === null || raw === undefined) return false;
 
-            }
             const s = String(raw).trim().split("T")[0];
-            if(!s) {
 
-                return false;
+            if(!s) return false;
+            if(!/^\d{4}-\d{2}-\d{2}$/.test(s)) return false;
 
-            }
-            if(!/^\d{4}-\d{2}-\d{2}$/.test(s)) {
-
-                return false;
-
-            }
             const max = this.dashboardConsultDateMax;
-            if(s > max) {
 
-                return false;
+            if(s > max) return false;
 
-            }
             const parts = s.split("-");
             const y = parseInt(parts[0], 10);
             const m = parseInt(parts[1], 10) - 1;
             const day = parseInt(parts[2], 10);
             const dt = new Date(y, m, day);
+
             return !isNaN(dt.getTime());
 
         },
@@ -967,39 +1121,50 @@ export default {
         reportDateLabel: function() {
 
             const d = this.forms.entity.dashboard.data.date;
-            if(!d) {
-                return "";
-            }
+
+            if(!d) return "";
+
             return "Fecha: " + this.legibleFormatDate({dateString: d, type: "date"});
 
         },
         consultationDateLong: function() {
 
             const d = this.forms.entity.dashboard.data.date;
-            if(!d) {
-                return "Selecciona una fecha";
-            }
+            if(!d) return "Selecciona una fecha";
+
             try {
+
                 const raw = String(d).trim();
                 const parts = raw.includes("T") ? raw.split("T")[0].split("-") : raw.split("-");
+
                 if(parts.length >= 3) {
+
                     const y = parseInt(parts[0], 10);
                     const m = parseInt(parts[1], 10) - 1;
                     const day = parseInt(parts[2], 10);
                     const date = new Date(y, m, day);
+
                     if(!isNaN(date.getTime())) {
+
                         const s = new Intl.DateTimeFormat("es-PE", {
                             weekday: "long",
                             day: "numeric",
                             month: "long",
                             year: "numeric"
                         }).format(date);
+
                         return s.charAt(0).toUpperCase() + s.slice(1);
+
                     }
+
                 }
-            } catch (e) {
+
+            }catch (e) {
+
                 //
+
             }
+
             return this.legibleFormatDate({dateString: d, type: "date"});
 
         }

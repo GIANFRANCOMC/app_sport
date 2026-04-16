@@ -2142,6 +2142,12 @@ html:not(.layout-menu-collapsed)
   isolation: isolate;
 }
 
+/* Solo mensaje SIN VENTAS: menos altura que el gráfico (overlay usa inset: 0) */
+.br-dashboard .br-dashboard-chart-wrap--hourly.br-dashboard-chart-wrap--hourly-empty {
+  height: 104px;
+  min-height: 104px;
+}
+
 .br-dashboard .br-dashboard-chart-empty-overlay {
   position: absolute;
   inset: 0;
