@@ -163,9 +163,7 @@ import * as Utils     from "@System/Helpers/Utils.js";
 let dashboardSalesChartInstance = null;
 
 export default {
-    components: {
-        //
-    },
+    name: "DashboardMain",
     mounted: async function() {
 
         Utils.navbarItem(this.config.entity.page.menu.id, {});
@@ -180,21 +178,14 @@ export default {
 
         }
 
-        this._onDashboardChartResize = () => {
+        this._onDashboardChartResize = () => this.onDashboardChartWindowResize();
 
-            this.onDashboardChartWindowResize();
-
-        };
         window.addEventListener("resize", this._onDashboardChartResize);
 
     },
     beforeUnmount() {
 
-        if(this._onDashboardChartResize) {
-
-            window.removeEventListener("resize", this._onDashboardChartResize);
-
-        }
+        if(this._onDashboardChartResize) window.removeEventListener("resize", this._onDashboardChartResize);
 
     },
     data() {
@@ -202,34 +193,19 @@ export default {
             forms: {
                 entity: {
                     dashboard: {
-                        extras: {
-                            modals: {
-                                actions: {
-                                    id: Utils.uuid(),
-                                    data: {
-                                        id: null,
-                                        extras: {},
-                                        whatsapp: "",
-                                        email: ""
-                                    },
-                                    errors: {}
-                                }
-                            }
-                        },
                         data: {
                             date: "",
                             dateAux: "",
                             dateEditing: false,
                             sales: null,
                             branches: null,
-                            users: null
+                            users: null,
+                            dashboardChartMinWidthPx: 0 // Minimum scroll area width for hourly chart (per bar; wider for gap ranges)
                         }
                     }
                 }
             },
             options: {},
-            /** Ancho mínimo del área scroll (según barras y si son rango o hora suelta) */
-            dashboardChartMinWidthPx: 0,
             config: {
                 ...Constants.generalConfig,
                 entity: {
@@ -316,7 +292,7 @@ export default {
             this.initData({loading: true});
 
         },
-        /** Etiqueta eje X: hora en 12 h + a. m. / p. m. (índice 0–23) */
+        // X-axis label: 12 h time with a. m. / p. m. (hour index 0–23)
         dashboardChartFormatHourLabelAmpm(h) {
 
             if(h === 0) return "12:00 a. m.";
@@ -326,7 +302,7 @@ export default {
             return `${h - 12}:00 p. m.`;
 
         },
-        /** Fin de franja horaria para tooltip (…:59) */
+        // End of hour range for tooltip (…:59)
         dashboardChartFormatHourEndAmpm(h) {
 
             if(h === 0) return "12:59 a. m.";
@@ -336,7 +312,7 @@ export default {
             return `${h - 12}:59 p. m.`;
 
         },
-        /** Eje X corto (más ancho por barra, sin diagonal): "9 a. m.", "12 p. m." */
+        // Compact X-axis label (wider bars, no tilt): "9 a. m.", "12 p. m."
         dashboardChartFormatHourCompactAmpm(h) {
 
             if(h === 0) return "12 a. m.";
@@ -346,7 +322,7 @@ export default {
             return `${h - 12} p. m.`;
 
         },
-        /** Título "Soles (S/)" del eje Y: solo pantallas >= md (Bootstrap), más espacio en móvil */
+        // Y-axis title "Soles (S/)": show only from md breakpoint up (Bootstrap); frees space on mobile
         dashboardChartShouldShowYAxisTitle() {
 
             if(typeof window === "undefined") return true;
@@ -365,57 +341,59 @@ export default {
             if(yTitle.display === show) return;
 
             yTitle.display = show;
+
             dashboardSalesChartInstance.update("none");
 
         },
-        initChart() {
+        // Y-axis max from peak (~12% headroom; 1–2–5–10 rounding)
+        dashboardChartNiceCeilAxisMax(peak) {
 
-            /**
-             * Eje Y según el pico real: evita forzar 0–100 cuando el máximo es pocos soles (1, 8, …).
-             * Margen ~12 % y redondeo a escala legible (1–2–5–10 por orden de magnitud).
-             */
-            const niceCeilAxisMax = (peak) => {
+            const headroom = 1.12;
 
-                const headroom = 1.12;
+            if(peak <= 0) return 10;
 
-                if(peak <= 0) return 10;
+            const target = peak * headroom;
 
-                const target = peak * headroom;
+            if(target < 1) return Math.max(1, Math.ceil(target * 100) / 100);
 
-                if(target < 1) return Math.max(1, Math.ceil(target * 100) / 100);
+            const exp = Math.floor(Math.log10(target));
+            const pow10 = Math.pow(10, exp);
+            const n = target / pow10;
+            let nice;
 
-                const exp = Math.floor(Math.log10(target));
-                const pow10 = Math.pow(10, exp);
-                const n = target / pow10;
-                let nice;
+            if(n <= 1) nice = 1;
+            else if(n <= 2) nice = 2;
+            else if(n <= 5) nice = 5;
+            else nice = 10;
 
-                if(n <= 1) nice = 1;
-                else if(n <= 2) nice = 2;
-                else if(n <= 5) nice = 5;
-                else nice = 10;
+            return nice * pow10;
 
-                return nice * pow10;
+        },
+        dashboardChartSyncChartjsCanvasHeights() {
 
-            };
+            document.querySelectorAll(".chartjs").forEach((el) => {
 
-            const chartList = document.querySelectorAll(".chartjs");
-
-            chartList.forEach(function(chartListItem) {
-
-                chartListItem.height = chartListItem.dataset.height;
+                el.height = el.dataset.height;
 
             });
 
-            const totalsByHour = Array.from({length: 24}, () => 0);
-            const sales = this.forms.entity.dashboard.data.sales?.all?.records ?? [];
+        },
+        dashboardChartTotalsByHour(records) {
 
-            sales.forEach((sale) => {
+            const totalsByHour = Array.from({length: 24}, () => 0);
+
+            records.forEach((sale) => {
 
                 const saleHour = new Date(sale.created_at).getHours();
 
                 if(saleHour >= 0 && saleHour < 24) totalsByHour[saleHour] += parseFloat(sale.total);
 
             });
+
+            return totalsByHour;
+
+        },
+        dashboardChartSliceHours(totalsByHour) {
 
             const hasAnySale = totalsByHour.some((t) => t > 0);
             let firstHour = 0;
@@ -438,25 +416,27 @@ export default {
 
             }
 
-            const vm = this;
-
             const sliceHours = [];
+
             for(let h = firstHour; h <= lastHour; h++) {
 
                 sliceHours.push(h);
 
             }
 
-            /**
-             * Agrupa horas seguidas sin ventas en un solo punto (eje X) para ahorrar espacio.
-             * Las horas con ventas siguen siendo una barra por hora.
-             */
+            return sliceHours;
+
+        },
+        // Merge consecutive no-sales hours into one X-axis category to save space. Hours with sales stay one bar per hour.
+        dashboardChartBuildSegments(sliceHours, totalsByHour) {
+
             const segments = [];
             let si = 0;
 
             while(si < sliceHours.length) {
 
                 const h = sliceHours[si];
+
                 if(totalsByHour[h] > 0) {
 
                     segments.push({kind: "single", hour: h});
@@ -480,12 +460,16 @@ export default {
 
             }
 
-            const nBars = segments.length;
+            return segments;
+
+        },
+        dashboardChartLabelsAndData(segments, totalsByHour) {
+
             const labels = segments.map((seg) => {
 
-                if(seg.kind === "single") return vm.dashboardChartFormatHourCompactAmpm(seg.hour);
+                if(seg.kind === "single") return this.dashboardChartFormatHourCompactAmpm(seg.hour);
 
-                return `${vm.dashboardChartFormatHourCompactAmpm(seg.startHour)} - ${vm.dashboardChartFormatHourCompactAmpm(seg.endHour)}`;
+                return `${this.dashboardChartFormatHourCompactAmpm(seg.startHour)} - ${this.dashboardChartFormatHourCompactAmpm(seg.endHour)}`;
 
             });
 
@@ -506,10 +490,14 @@ export default {
             });
 
             const segmentHasSales = data.map((v) => Number(v) > 0);
-            const maxVal = Math.max(0, ...data);
-            const yMax = niceCeilAxisMax(maxVal);
 
-            /** Eje Y: 7 intervalos horizontales → 8 marcas (0 … máx.), enteros y paso fijo */
+            return {labels, data, segmentHasSales};
+
+        },
+        // Y-axis: 7 horizontal intervals → 8 ticks (0 … max), integers with fixed step
+        dashboardChartYAxisStepAndMax(maxVal) {
+
+            const yMax = this.dashboardChartNiceCeilAxisMax(maxVal);
             const yIntervals = 7;
             let yStep = Math.max(1, Math.ceil(yMax / yIntervals));
             let yAxisMax = yStep * yIntervals;
@@ -521,23 +509,40 @@ export default {
 
             }
 
-            const canvas = document.getElementById("dashboardSalesHourlyChart");
-            const primary = this.config.colors.charts.default.primaryColor;
-            const barFill = this.hexToRgba(primary, 0.88);
-            const barHover = this.hexToRgba(primary, 1);
-            /** Líneas de grilla un poco más visibles que --border del tema (#e2e8f0), sin pasarse */
-            const chartGridColor = "#d1d9e3";
+            return {yStep, yAxisMax};
 
-            const maxBarThickness = nBars <= 6 ? 52 : nBars <= 12 ? 42 : nBars <= 18 ? 34 : 26;
-            const categoryPercentage = nBars <= 10 ? 0.94 : nBars <= 16 ? 0.9 : 0.86;
-            const barPercentage = nBars <= 10 ? 0.98 : 0.95;
-            const labelFontSize = nBars > 18 ? 7.5 : nBars > 14 ? 8 : 9.5;
-            const tickRotation = nBars > 16 ? 35 : 0;
-            /** Eje X: etiquetas con ventas más visibles; sin ventas, texto más tenue */
-            const tickColorMuted = "#94a3b8";
-            const tickColorEmphasis = "#0f172a";
-            const tickFontSizeEmphasis = labelFontSize + 1.25;
-            const resolveTickSegmentIndex = (ctx) => {
+        },
+        dashboardChartBarLayout(nBars) {
+
+            return {
+                maxBarThickness: nBars <= 6 ? 52 : nBars <= 12 ? 42 : nBars <= 18 ? 34 : 26,
+                categoryPercentage: nBars <= 10 ? 0.94 : nBars <= 16 ? 0.9 : 0.86,
+                barPercentage: nBars <= 10 ? 0.98 : 0.95,
+                labelFontSize: nBars > 18 ? 7.5 : nBars > 14 ? 8 : 9.5,
+                tickRotation: nBars > 16 ? 35 : 0
+            };
+
+        },
+        // No-sales ranges: extra width for long labels (e.g. 9 a. m. – 11 a. m.)
+        dashboardChartScrollMinWidthForSegments(segments) {
+
+            const viewportNarrow = typeof window !== "undefined" && window.matchMedia("(max-width: 767.98px)").matches;
+            const pxPerSingle = viewportNarrow ? 52 : 44;
+            const pxPerGap = viewportNarrow ? 118 : 88;
+            let scrollMinPx = 48;
+
+            segments.forEach((seg) => {
+
+                scrollMinPx += seg.kind === "gap" ? pxPerGap : pxPerSingle;
+
+            });
+
+            return Math.max(320, scrollMinPx);
+
+        },
+        dashboardChartMakeTickIndexResolver(labels) {
+
+            return (ctx) => {
 
                 if(typeof ctx.index === "number") return ctx.index;
 
@@ -561,93 +566,322 @@ export default {
 
             };
 
-            if(canvas) {
+        },
+        dashboardChartBarIndexStyles(data, primary, barFill, barHover) {
 
-                const viewportNarrow = typeof window !== "undefined" && window.matchMedia("(max-width: 767.98px)").matches;
-                const pxPerSingle = viewportNarrow ? 52 : 44;
-                /** Rangos sin ventas: más anchura para etiquetas largas (ej. 9 a. m. – 11 a. m.) */
-                const pxPerGap = viewportNarrow ? 118 : 88;
-                let scrollMinPx = 48;
+            const transparent = "rgba(0, 0, 0, 0)";
 
-                segments.forEach((seg) => {
+            return {
+                barBgPerIndex: data.map((v) => (Number(v) > 0 ? barFill : transparent)),
+                barBorderPerIndex: data.map((v) => (Number(v) > 0 ? primary : transparent)),
+                barBorderWPerIndex: data.map((v) => (Number(v) > 0 ? 1 : 0)),
+                barHoverBgPerIndex: data.map((v) => (Number(v) > 0 ? barHover : transparent)),
+                barHoverBorderPerIndex: data.map((v) => (Number(v) > 0 ? primary : transparent))
+            };
 
-                    scrollMinPx += seg.kind === "gap" ? pxPerGap : pxPerSingle;
+        },
+        // Vertical watermark for categories with no sales
+        dashboardChartNoSalesWatermarkPlugin(segmentHasSales) {
 
-                });
+            return {
+                id: "dashboardEmptyWatermark",
+                afterDatasetsDraw(chart) {
 
-                this.dashboardChartMinWidthPx = Math.max(320, scrollMinPx);
+                    const meta = chart.getDatasetMeta(0);
 
-                if(dashboardSalesChartInstance) {
+                    if(!meta || !meta.data) return;
 
-                    dashboardSalesChartInstance.destroy();
-                    dashboardSalesChartInstance = null;
+                    const values = chart.data.datasets[0].data;
+                    const { ctx, chartArea } = chart;
+                    let fontFamily = "sans-serif";
 
-                }
+                    if(typeof Chart !== "undefined" && Chart.defaults && Chart.defaults.font && Chart.defaults.font.family) fontFamily = Chart.defaults.font.family;
 
-                const transparent = "rgba(0, 0, 0, 0)";
-                const barBgPerIndex = data.map((v) => (Number(v) > 0 ? barFill : transparent));
-                const barBorderPerIndex = data.map((v) => (Number(v) > 0 ? primary : transparent));
-                const barBorderWPerIndex = data.map((v) => (Number(v) > 0 ? 1 : 0));
-                const barHoverBgPerIndex = data.map((v) => (Number(v) > 0 ? barHover : transparent));
-                const barHoverBorderPerIndex = data.map((v) => (Number(v) > 0 ? primary : transparent));
+                    ctx.save();
 
-                const dashboardSinVentasWatermarkPlugin = {
-                    id: "dashboardSinVentasWatermark",
-                    afterDatasetsDraw(chart) {
+                    const watermarkText = "SIN VENTAS";
+                    const plotH = chartArea.bottom - chartArea.top;
+                    const n = values.length;
 
-                        const meta = chart.getDatasetMeta(0);
-                        if(!meta || !meta.data) return;
+                    values.forEach((_, i) => {
 
-                        const values = chart.data.datasets[0].data;
-                        const { ctx, chartArea } = chart;
-                        let fontFamily = "sans-serif";
+                        if(segmentHasSales[i]) return;
 
-                        if(typeof Chart !== "undefined" && Chart.defaults && Chart.defaults.font && Chart.defaults.font.family) fontFamily = Chart.defaults.font.family;
+                        const el = meta.data[i];
+
+                        if(!el || el.skip) return;
+
+                        const x = el.x;
+                        const y = (chartArea.top + chartArea.bottom) / 2;
+                        let fontSize = Math.min(11, Math.max(8, 7 + chartArea.width / Math.max(n * 6, 1)));
+
+                        ctx.font = `600 ${fontSize}px ${fontFamily}`;
+
+                        let textW = ctx.measureText(watermarkText).width;
+
+                        while(textW > plotH - 12 && fontSize > 7) {
+
+                            fontSize -= 0.5;
+                            ctx.font = `600 ${fontSize}px ${fontFamily}`;
+                            textW = ctx.measureText(watermarkText).width;
+
+                        }
 
                         ctx.save();
+                        ctx.translate(x, y);
 
-                        const watermarkText = "SIN VENTAS";
-                        const plotH = chartArea.bottom - chartArea.top;
-                        const n = values.length;
-
-                        values.forEach((_, i) => {
-
-                            if(segmentHasSales[i]) return;
-
-                            const el = meta.data[i];
-
-                            if(!el || el.skip) return;
-
-                            const x = el.x;
-                            const y = (chartArea.top + chartArea.bottom) / 2;
-                            let fontSize = Math.min(11, Math.max(8, 7 + chartArea.width / Math.max(n * 6, 1)));
-                            ctx.font = `600 ${fontSize}px ${fontFamily}`;
-                            let textW = ctx.measureText(watermarkText).width;
-
-                            while(textW > plotH - 12 && fontSize > 7) {
-
-                                fontSize -= 0.5;
-                                ctx.font = `600 ${fontSize}px ${fontFamily}`;
-                                textW = ctx.measureText(watermarkText).width;
-
-                            }
-
-                            ctx.save();
-                            ctx.translate(x, y);
-                            /** Texto vertical (-90°): ocupa poco ancho en el eje X y no invade otras categorías */
-                            ctx.rotate(-Math.PI / 2);
-                            ctx.textAlign = "center";
-                            ctx.textBaseline = "middle";
-                            ctx.fillStyle = "rgba(148, 163, 184, 0.44)";
-                            ctx.fillText(watermarkText, 0, 0);
-                            ctx.restore();
-
-                        });
-
+                        // Vertical text (-90°): narrow on X-axis, avoids overlapping adjacent categories
+                        ctx.rotate(-Math.PI / 2);
+                        ctx.textAlign = "center";
+                        ctx.textBaseline = "middle";
+                        ctx.fillStyle = "rgba(148, 163, 184, 0.44)";
+                        ctx.fillText(watermarkText, 0, 0);
                         ctx.restore();
 
+                    });
+
+                    ctx.restore();
+
+                }
+            };
+
+        },
+        dashboardChartDestroySalesHourlyIfAny() {
+
+            if(dashboardSalesChartInstance) {
+
+                dashboardSalesChartInstance.destroy();
+                dashboardSalesChartInstance = null;
+
+            }
+
+        },
+        /**
+         * Full Chart.js config for hourly sales bar chart.
+         * @param {object} p — labels, data, segments, segmentHasSales, chartGridColor, layout + bar index styles + yAxisMax, yStep
+         */
+        dashboardChartSalesHourlyConfig(p) {
+
+            const vm = this;
+            const {
+                labels,
+                data,
+                segments,
+                segmentHasSales,
+                chartGridColor,
+                maxBarThickness,
+                categoryPercentage,
+                barPercentage,
+                labelFontSize,
+                tickRotation,
+                yAxisMax,
+                yStep,
+                barBgPerIndex,
+                barBorderPerIndex,
+                barBorderWPerIndex,
+                barHoverBgPerIndex,
+                barHoverBorderPerIndex
+            } = p;
+
+            const resolveTickSegmentIndex = this.dashboardChartMakeTickIndexResolver(labels);
+            const tickColorMuted = "#94a3b8";
+            const tickColorEmphasis = "#0f172a";
+            const tickFontSizeEmphasis = labelFontSize + 1.25;
+
+            return {
+                type: "bar",
+                plugins: [this.dashboardChartNoSalesWatermarkPlugin(segmentHasSales)],
+                data: {
+                    labels,
+                    datasets: [
+                        {
+                            label: "Total por hora (S/)",
+                            data,
+                            backgroundColor: barBgPerIndex,
+                            borderColor: barBorderPerIndex,
+                            borderWidth: barBorderWPerIndex,
+                            borderRadius: {
+                                topLeft: 8,
+                                topRight: 8,
+                                bottomLeft: 0,
+                                bottomRight: 0
+                            },
+                            borderSkipped: false,
+                            maxBarThickness,
+                            hoverBackgroundColor: barHoverBgPerIndex,
+                            hoverBorderColor: barHoverBorderPerIndex
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    layout: {
+                        padding: {
+                            bottom: tickRotation > 0 ? 22 : 10,
+                            left: 2,
+                            right: 2
+                        }
+                    },
+                    animation: {duration: 550},
+                    interaction: {mode: "index", intersect: false},
+                    datasets: {
+                        bar: {categoryPercentage, barPercentage}
+                    },
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: "bottom",
+                            align: "center",
+                            labels: {
+                                usePointStyle: true,
+                                pointStyle: "rect",
+                                padding: 18,
+                                boxWidth: 12,
+                                boxHeight: 8,
+                                color: this.config.colors.charts.default.titleColor,
+                                font: {size: 12, weight: "600"}
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: this.config.colors.charts.default.backgroundColor,
+                            bodyColor: this.config.colors.charts.default.bodyColor,
+                            borderColor: this.config.colors.charts.default.borderColor,
+                            borderWidth: 1,
+                            titleColor: this.config.colors.charts.default.titleColor,
+                            displayColors: true,
+                            padding: 12,
+                            callbacks: {
+                                title(items) {
+
+                                    if(!items.length) return "";
+
+                                    const seg = segments[items[0].dataIndex];
+
+                                    if(seg.kind === "single") {
+
+                                        const hour = seg.hour;
+                                        return `${vm.dashboardChartFormatHourLabelAmpm(hour)} – ${vm.dashboardChartFormatHourEndAmpm(hour)}`;
+
+                                    }
+
+                                    return `${vm.dashboardChartFormatHourLabelAmpm(seg.startHour)} – ${vm.dashboardChartFormatHourEndAmpm(seg.endHour)}`;
+
+                                },
+                                label(ctx) {
+
+                                    const v = ctx.parsed.y;
+                                    return ` Ventas: S/ ${vm.separatorNumber(vm.fixedNumber(v))}`;
+
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: {display: false},
+                            grid: {
+                                color: chartGridColor,
+                                drawBorder: false,
+                                borderColor: chartGridColor
+                            },
+                            ticks: {
+                                autoSkip: false,
+                                maxRotation: tickRotation,
+                                minRotation: tickRotation,
+                                color(ctx) {
+
+                                    const i = resolveTickSegmentIndex(ctx);
+
+                                    if(i < 0 || i >= segmentHasSales.length) return tickColorMuted;
+
+                                    return segmentHasSales[i] ? tickColorEmphasis : tickColorMuted;
+
+                                },
+                                font(ctx) {
+
+                                    const i = resolveTickSegmentIndex(ctx);
+                                    const has = i >= 0 && i < segmentHasSales.length && segmentHasSales[i];
+
+                                    return {
+                                        size: has ? tickFontSizeEmphasis : labelFontSize,
+                                        weight: has ? "600" : "400"
+                                    };
+
+                                }
+                            }
+                        },
+                        y: {
+                            min: 0,
+                            max: yAxisMax,
+                            title: {
+                                display: this.dashboardChartShouldShowYAxisTitle(),
+                                text: "Soles (S/)",
+                                color: this.config.colors.charts.default.labelColor,
+                                font: {size: 11, weight: "600"}
+                            },
+                            grid: {
+                                color: chartGridColor,
+                                drawBorder: false,
+                                borderColor: chartGridColor
+                            },
+                            ticks: {
+                                color: this.config.colors.charts.default.labelColor,
+                                stepSize: yStep,
+                                precision: 0,
+                                callback(value) {
+
+                                    const n = Math.round(Number(value));
+                                    return vm.separatorNumber(String(n));
+
+                                }
+                            }
+                        }
                     }
-                };
+                }
+            };
+
+        },
+        initChart() {
+
+            this.dashboardChartSyncChartjsCanvasHeights();
+
+            const records = this.forms.entity.dashboard.data.sales?.all?.records ?? [];
+            const totalsByHour = this.dashboardChartTotalsByHour(records);
+            const sliceHours = this.dashboardChartSliceHours(totalsByHour);
+            const segments = this.dashboardChartBuildSegments(sliceHours, totalsByHour);
+            const {labels, data, segmentHasSales} = this.dashboardChartLabelsAndData(segments, totalsByHour);
+            const maxVal = Math.max(0, ...data);
+            const {yStep, yAxisMax} = this.dashboardChartYAxisStepAndMax(maxVal);
+
+            const canvas = document.getElementById("dashboardSalesHourlyChart");
+            const primary = this.config.colors.charts.default.primaryColor;
+            const barFill = this.hexToRgba(primary, 0.88);
+            const barHover = this.hexToRgba(primary, 1);
+            const chartGridColor = "#d1d9e3"; // Grid lines slightly more visible than theme --border (#e2e8f0), without excess
+            const layout = this.dashboardChartBarLayout(segments.length);
+
+            if(canvas) {
+
+                this.forms.entity.dashboard.data.dashboardChartMinWidthPx = this.dashboardChartScrollMinWidthForSegments(segments);
+                this.dashboardChartDestroySalesHourlyIfAny();
+
+                const styles = this.dashboardChartBarIndexStyles(data, primary, barFill, barHover);
+                const chartConfig = this.dashboardChartSalesHourlyConfig({
+                    labels,
+                    data,
+                    segments,
+                    segmentHasSales,
+                    chartGridColor,
+                    maxBarThickness: layout.maxBarThickness,
+                    categoryPercentage: layout.categoryPercentage,
+                    barPercentage: layout.barPercentage,
+                    labelFontSize: layout.labelFontSize,
+                    tickRotation: layout.tickRotation,
+                    yAxisMax,
+                    yStep,
+                    ...styles
+                });
 
                 this.$nextTick(() => {
 
@@ -655,184 +889,14 @@ export default {
 
                     if(!canvasEl) return;
 
-                    dashboardSalesChartInstance = new Chart(canvasEl, {
-                        type: "bar",
-                        plugins: [dashboardSinVentasWatermarkPlugin],
-                        data: {
-                            labels,
-                            datasets: [
-                                {
-                                    label: "Total por hora (S/)",
-                                    data,
-                                    backgroundColor: barBgPerIndex,
-                                    borderColor: barBorderPerIndex,
-                                    borderWidth: barBorderWPerIndex,
-                                    borderRadius: {
-                                        topLeft: 8,
-                                        topRight: 8,
-                                        bottomLeft: 0,
-                                        bottomRight: 0
-                                    },
-                                    borderSkipped: false,
-                                    maxBarThickness: maxBarThickness,
-                                    hoverBackgroundColor: barHoverBgPerIndex,
-                                    hoverBorderColor: barHoverBorderPerIndex
-                                }
-                            ]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            layout: {
-                                padding: {
-                                    bottom: tickRotation > 0 ? 22 : 10,
-                                    left: 2,
-                                    right: 2
-                                }
-                            },
-                            animation: {
-                                duration: 550
-                            },
-                            interaction: {
-                                mode: "index",
-                                intersect: false
-                            },
-                            datasets: {
-                                bar: {
-                                    categoryPercentage: categoryPercentage,
-                                    barPercentage: barPercentage
-                                }
-                            },
-                            plugins: {
-                                legend: {
-                                    display: true,
-                                    position: "bottom",
-                                    align: "center",
-                                    labels: {
-                                        usePointStyle: true,
-                                        pointStyle: "rect",
-                                        padding: 18,
-                                        boxWidth: 12,
-                                        boxHeight: 8,
-                                        color: this.config.colors.charts.default.titleColor,
-                                        font: {
-                                            size: 12,
-                                            weight: "600"
-                                        }
-                                    }
-                                },
-                                tooltip: {
-                                    backgroundColor: this.config.colors.charts.default.backgroundColor,
-                                    bodyColor: this.config.colors.charts.default.bodyColor,
-                                    borderColor: this.config.colors.charts.default.borderColor,
-                                    borderWidth: 1,
-                                    titleColor: this.config.colors.charts.default.titleColor,
-                                    displayColors: true,
-                                    padding: 12,
-                                    callbacks: {
-                                        title(items) {
-
-                                            if(!items.length) return "";
-
-                                            const seg = segments[items[0].dataIndex];
-
-                                            if(seg.kind === "single") {
-
-                                                const hour = seg.hour;
-                                                return `${vm.dashboardChartFormatHourLabelAmpm(hour)} – ${vm.dashboardChartFormatHourEndAmpm(hour)}`;
-
-                                            }
-
-                                            return `${vm.dashboardChartFormatHourLabelAmpm(seg.startHour)} – ${vm.dashboardChartFormatHourEndAmpm(seg.endHour)}`;
-
-                                        },
-                                        label(ctx) {
-
-                                            const v = ctx.parsed.y;
-                                            return ` Ventas: S/ ${vm.separatorNumber(vm.fixedNumber(v))}`;
-
-                                        }
-                                    }
-                                }
-                            },
-                            scales: {
-                                x: {
-                                    title: {
-                                        display: false
-                                    },
-                                    grid: {
-                                        color: chartGridColor,
-                                        drawBorder: false,
-                                        borderColor: chartGridColor
-                                    },
-                                    ticks: {
-                                        autoSkip: false,
-                                        maxRotation: tickRotation,
-                                        minRotation: tickRotation,
-                                        color(ctx) {
-
-                                            const i = resolveTickSegmentIndex(ctx);
-
-                                            if(i < 0 || i >= segmentHasSales.length) return tickColorMuted;
-
-                                            return segmentHasSales[i] ? tickColorEmphasis : tickColorMuted;
-
-                                        },
-                                        font(ctx) {
-
-                                            const i = resolveTickSegmentIndex(ctx);
-                                            const has = i >= 0 && i < segmentHasSales.length && segmentHasSales[i];
-
-                                            return {
-                                                size: has ? tickFontSizeEmphasis : labelFontSize,
-                                                weight: has ? "600" : "400"
-                                            };
-
-                                        }
-                                    }
-                                },
-                                y: {
-                                    min: 0,
-                                    max: yAxisMax,
-                                    title: {
-                                        display: this.dashboardChartShouldShowYAxisTitle(),
-                                        text: "Soles (S/)",
-                                        color: this.config.colors.charts.default.labelColor,
-                                        font: {size: 11, weight: "600"}
-                                    },
-                                    grid: {
-                                        color: chartGridColor,
-                                        drawBorder: false,
-                                        borderColor: chartGridColor
-                                    },
-                                    ticks: {
-                                        color: this.config.colors.charts.default.labelColor,
-                                        stepSize: yStep,
-                                        precision: 0,
-                                        callback(value) {
-
-                                            const n = Math.round(Number(value));
-                                            return vm.separatorNumber(String(n));
-
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    });
+                    dashboardSalesChartInstance = new Chart(canvasEl, chartConfig);
 
                 });
 
             }else {
 
-                this.dashboardChartMinWidthPx = 0;
-
-                if(dashboardSalesChartInstance) {
-
-                    dashboardSalesChartInstance.destroy();
-                    dashboardSalesChartInstance = null;
-
-                }
+                this.forms.entity.dashboard.data.dashboardChartMinWidthPx = 0;
+                this.dashboardChartDestroySalesHourlyIfAny();
 
             }
 
@@ -845,25 +909,8 @@ export default {
             const r = (num >> 16) & 255;
             const g = (num >> 8) & 255;
             const b = num & 255;
+
             return `rgba(${r}, ${g}, ${b}, ${alpha})`;
-
-        },
-        // Entity forms
-        modalActionsEntity({record = null}) {
-
-            const whatsapp = record?.holder?.phone_number ?? "";
-            const email    = record?.holder?.email ?? "";
-
-            this.forms.entity.dashboard.extras.modals.actions.data = {...record, extras: {}, whatsapp, email};
-
-            Alerts.modals({type: "show", id: this.forms.entity.dashboard.extras.modals.actions.id});
-
-        },
-        goSalesList() {
-
-            const url = Requests.config({entity: "sales", type: "consult"});
-
-            window.location.href = url;
 
         },
         // Others
@@ -886,38 +933,6 @@ export default {
 
             return Utils.legibleFormatDate({dateString, type});
 
-        },
-        sendWhatsapp({data = null, action = "reportSale"}) {
-
-            const phoneNumber = this.forms.entity.dashboard.extras.modals.actions.data.whatsapp;
-            const message     = Utils.getMessageWhatsapp({data, action});
-
-            Utils.sendWhatsapp({phoneNumber, message});
-
-        },
-        async sendEmail({data = null, action = "reportSale"}) {
-
-            let route = Requests.config({entity: "helpers", type: "sendEmail"});
-            const formJson = {serie_sequential: data?.serie_sequential, email: data?.email, message: Utils.getMessageWhatsapp({data, action})};
-
-            Alerts.swals({});
-
-            let sendEmail = await Requests.post({route: route, data: formJson, id: data?.id});
-
-            if(Requests.valid({result: sendEmail})) {
-
-                Alerts.toastrs({type: "success", subtitle: sendEmail?.data?.msg});
-                Alerts.swals({show: false});
-
-            }else {
-
-                Alerts.toastrs({type: "error", subtitle: sendEmail?.data?.msg});
-                Alerts.swals({show: false});
-
-            }
-
-            Alerts.tooltips({show: false});
-
         }
     },
     computed: {
@@ -938,18 +953,17 @@ export default {
             if(sales === null || sales === undefined) return false;
 
             const records = sales?.all?.records;
+
             return Array.isArray(records) && records.length === 0;
 
         },
-        /** Min-width del canvas: hora suelta vs rango sin ventas (gap más ancho; en móvil aún más) */
+        // Canvas min-width: single hour vs no-sales gap (gap wider; wider still on mobile)
         dashboardChartScrollInnerStyle: function() {
 
-            const w = this.dashboardChartMinWidthPx;
-            if(!w) {
+            const w = this.forms.entity.dashboard.data.dashboardChartMinWidthPx;
 
-                return {};
+            if(!w) return {};
 
-            }
             return {
                 minWidth: `${w}px`,
                 width: "100%"
@@ -960,15 +974,12 @@ export default {
 
             const totalsByHour = Array.from({length: 24}, () => 0);
             const sales = this.forms.entity.dashboard.data.sales?.all?.records ?? [];
+
             sales.forEach((sale) => {
 
                 const saleHour = new Date(sale.created_at).getHours();
 
-                if(saleHour >= 0 && saleHour < 24) {
-
-                    totalsByHour[saleHour] += parseFloat(sale.total);
-
-                }
+                if(saleHour >= 0 && saleHour < 24) totalsByHour[saleHour] += parseFloat(sale.total);
 
             });
 
@@ -1037,12 +1048,13 @@ export default {
 
             if(!d) return "";
 
-            return "Fecha: " + this.legibleFormatDate({dateString: d, type: "date"});
+            return `Fecha: ${this.legibleFormatDate({dateString: d, type: "date"})}`;
 
         },
         consultationDateLong: function() {
 
             const d = this.forms.entity.dashboard.data.date;
+
             if(!d) return "Selecciona una fecha";
 
             try {
