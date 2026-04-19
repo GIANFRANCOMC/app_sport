@@ -251,7 +251,7 @@
                     title="Número de celular (Whatsapp)"
                     v-model="forms.entity.dashboard.extras.modals.actions.data.whatsapp">
                     <template v-slot:inputGroupAppend>
-                        <button class="btn btn-success waves-effect" type="button" @click="sendWhatsapp({data: forms.entity.dashboard.extras.modals.actions.data})" :disabled="!isDefined({value: forms.entity.dashboard.extras.modals.actions.data.whatsapp})">
+                        <button class="btn btn-success waves-effect" type="button" @click="sendWhatsapp({data: forms.entity.dashboard.extras.modals.actions.data})" :disabled="!isDefined(forms.entity.dashboard.extras.modals.actions.data.whatsapp)">
                             <i class="fa-brands fa-whatsapp"></i>
                             <span class="ms-2">Enviar</span>
                         </button>
@@ -263,7 +263,7 @@
                     title="Correo electrónico"
                     v-model="forms.entity.dashboard.extras.modals.actions.data.email">
                     <template v-slot:inputGroupAppend>
-                        <button class="btn btn-info-1 waves-effect" type="button" @click="sendEmail({data: forms.entity.dashboard.extras.modals.actions.data})" :disabled="!isDefined({value: forms.entity.dashboard.extras.modals.actions.data.email})">
+                        <button class="btn btn-info-1 waves-effect" type="button" @click="sendEmail({data: forms.entity.dashboard.extras.modals.actions.data})" :disabled="!isDefined(forms.entity.dashboard.extras.modals.actions.data.email)">
                             <i class="fa fa-envelope"></i>
                             <span class="ms-2">Enviar</span>
                         </button>
@@ -291,10 +291,9 @@ export default {
         Utils.navbarItem(this.config.entity.page.menu.id, {});
         Alerts.swals({type: "initParams"});
 
-        let initParams = await this.initParams({}),
-            initOthers = await this.initOthers({});
+        let initParams = await this.initParams();
 
-        if(initParams && initOthers) {
+        if(initParams) {
 
             Alerts.swals({show: false});
             this.initData({});
@@ -367,91 +366,74 @@ export default {
         };
     },
     methods: {
-        startDashboardDateEdit() {
+        async initParams() {
 
-            const max = Utils.getCurrentDate();
-            let d = this.forms.entity.dashboard.data.date || max;
-            if(d > max) {
-
-                d = max;
-
-            }
-            this.forms.entity.dashboard.data.dateAux = d;
-            this.forms.entity.dashboard.data.dashboardDateEditing = true;
-
-        },
-        cancelDashboardDateEdit() {
-
-            this.forms.entity.dashboard.data.dateAux = "";
-            this.forms.entity.dashboard.data.dashboardDateEditing = false;
-
-        },
-        applyDashboardDate() {
-
-            if(!this.canApplyDashboardDate) {
-
-                return;
-
-            }
-            this.forms.entity.dashboard.data.date = this.forms.entity.dashboard.data.dateAux;
-            this.forms.entity.dashboard.data.dateAux = "";
-            this.forms.entity.dashboard.data.dashboardDateEditing = false;
-
-            this.initData({loading: true});
-
-        },
-        // Init
-        async initParams({}) {
-
-            let initParams = await Requests.get({route: this.config.entity.routes.initParams, data: {page: "main"}, showAlert: true});
-
-            return Requests.valid({result: initParams});
-
-        },
-        async initOthers({}) {
-
-            return new Promise(resolve => {
-
-                this.forms.entity.dashboard.data.date = Utils.getCurrentDate();
-
-                resolve(true);
-
+            const response = await Requests.get({
+                route: this.routeActions.initParams,
+                data: {page: "main"},
+                showAlert: true
             });
+
+            return Requests.valid({result: response});
 
         },
         async initData({loading = false}) {
 
-            if(loading) {
+            let formDate = this.forms.entity.dashboard.data;
 
-                Alerts.swals({type: "consult"});
+            if(loading) Alerts.swals({type: "consult"});
 
-            }
+            if(!this.isDefined(formDate.date)) formDate.date = Utils.getCurrentDate();
 
-            if(!this.isDefined({value: this.forms.entity.dashboard.data.date})) {
-
-                this.forms.entity.dashboard.data.date = Utils.getCurrentDate();
-
-            }
-
-            let initData = await Requests.get({route: this.config.entity.routes.initData, data: {page: "main", date: this.forms.entity.dashboard.data.date}, showAlert: true});
-
-            this.forms.entity.dashboard.data.sales    = initData.data?.data?.sales;
-            this.forms.entity.dashboard.data.branches = initData.data?.data?.branches;
-            this.forms.entity.dashboard.data.users    = initData.data?.data?.users;
-
-            this.$nextTick(() => {
-
-                this.initChart();
-
+            let initData = await Requests.get({
+                route: this.config.entity.routes.initData,
+                data: {page: "main", date: formDate.date},
+                showAlert: true
             });
 
-            if(loading) {
+            formDate.sales    = initData.data?.data?.sales;
+            formDate.branches = initData.data?.data?.branches;
+            formDate.users    = initData.data?.data?.users;
 
-                Alerts.swals({show: false});
+            this.$nextTick(() => this.initChart());
 
-            }
+            if(loading) Alerts.swals({show: false});
 
             return Requests.valid({result: initData});
+
+        },
+        // Consult date
+        startDashboardDateEdit() {
+
+            let formDate = this.forms.entity.dashboard.data;
+            let max = Utils.getCurrentDate();
+            let dateAux = formDate.date || max;
+
+            if(dateAux > max) dateAux = max;
+
+            formDate.dateAux = dateAux;
+            formDate.dashboardDateEditing = true;
+
+        },
+        cancelDashboardDateEdit() {
+
+            let formDate = this.forms.entity.dashboard.data;
+
+            formDate.dateAux = "";
+            formDate.dashboardDateEditing = false;
+
+        },
+        applyDashboardDate() {
+
+            let formDate = this.forms.entity.dashboard.data;
+
+            if(!this.canApplyDashboardDate) return;
+
+            formDate.date = formDate.dateAux;
+            formDate.dateAux = "";
+            formDate.dashboardDateEditing = false;
+
+            this.initData({loading: true});
 
         },
         /** Etiqueta eje X: hora en 12 h + a. m. / p. m. (índice 0–23) */
@@ -1094,7 +1076,7 @@ export default {
 
         },
         // Others
-        isDefined({value}) {
+        isDefined(value) {
 
             return Utils.isDefined({value});
 
@@ -1148,6 +1130,11 @@ export default {
         }
     },
     computed: {
+        routeActions() {
+
+            return this.config.entity.routes;
+
+        },
         dashboardConsultDateMax: function() {
 
             return Utils.getCurrentDate();
