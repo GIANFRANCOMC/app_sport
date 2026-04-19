@@ -1723,7 +1723,7 @@ html:not(.layout-menu-collapsed)
   color: var(--br-text);
 }
 
-/* KPIs (izq.) · Fecha (der. ≥lg): sin estirar altura; gutters compactos */
+/* Split row: KPIs left, date right; compact gutters */
 .br-layout .br-dashboard__split.row {
   align-items: flex-start;
   --bs-gutter-x: 0.75rem;
@@ -1765,7 +1765,7 @@ html:not(.layout-menu-collapsed)
   justify-content: flex-start;
 }
 
-/* Columna fecha alineada abajo respecto a los KPI: cadena flex + editor al pie */
+/* Date column: flex chain so editor sits at bottom vs KPI height */
 .br-layout .br-dashboard__split-date.align-self-stretch .br-dashboard-date--split-fill {
   flex-direction: column;
   flex-wrap: nowrap;
@@ -1803,7 +1803,7 @@ html:not(.layout-menu-collapsed)
   transform: translateY(-1px);
 }
 
-/* KPIs split: fondo tintado; solo el icono lleva borde */
+/* Split KPIs: tinted background; icon ring only */
 .br-layout .br-dashboard__kpis--split .br-dashboard-kpi--success {
   background: var(--br-success-soft);
 }
@@ -1837,7 +1837,7 @@ html:not(.layout-menu-collapsed)
   box-shadow: inset 0 0 0 0.5px color-mix(in srgb, var(--br-warning) 38%, transparent);
 }
 
-/* KPIs del split: altura un poco mayor que compacto base */
+/* Split KPI inner: slightly taller than default compact */
 .br-layout .br-dashboard__kpis--split .br-dashboard-kpi__inner {
   min-height: 4.85rem;
   padding: 0.65rem 0.45rem 0.65rem 0.75rem;
@@ -2083,41 +2083,35 @@ html:not(.layout-menu-collapsed)
   color: var(--br-warning-hover);
 }
 
-.br-layout .br-dashboard-card {
-  border-radius: var(--br-dash-radius);
-  border: 1px solid var(--br-border);
-  box-shadow: var(--br-shadow-sm);
-  overflow: hidden;
-}
-
-.br-layout .br-dashboard-card__header {
-  background: linear-gradient(180deg, var(--br-primary-soft) 0%, var(--br-surface-elevated) 100%);
-  border-bottom: 1px solid var(--br-border);
-  padding: 1rem 1.25rem;
-}
-
-.br-layout .br-dashboard-card__title {
-  color: var(--br-secondary);
-  font-weight: 700;
-}
-
-.br-layout .br-dashboard-card__meta {
-  font-size: 0.8125rem;
-  color: var(--br-text-muted);
-}
-
 .br-dashboard .br-dashboard-chart-section__title-wrap {
   width: 100%;
+  text-align: center;
+  margin-bottom: 0;
 }
 
 .br-dashboard .br-dashboard-chart-section__title {
+  display: inline-block;
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.35;
   color: var(--br-secondary);
   letter-spacing: 0.08em;
-  line-height: 1.35;
   text-transform: uppercase;
 }
 
-/* Contenedor del gráfico: sin card, sin borde ni sombra */
+/* Matches "Consulta actual" (.br-dashboard-date__eyebrow in split pane) */
+.br-dashboard .br-dashboard-chart-section__subtitle {
+  margin: 0.35rem 0 0;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--br-text-muted);
+  line-height: 1.35;
+}
+
+/* Chart panel: no card chrome */
 .br-dashboard .br-dashboard-chart-panel {
   background: transparent;
   border: none;
@@ -2126,7 +2120,7 @@ html:not(.layout-menu-collapsed)
   margin: 0;
 }
 
-/* Scroll horizontal en pantallas estrechas: evita barras y etiquetas superpuestas */
+/* Horizontal scroll on narrow viewports */
 .br-dashboard .br-dashboard-chart-scroll {
   width: 100%;
   max-width: 100%;
@@ -2153,26 +2147,29 @@ html:not(.layout-menu-collapsed)
 }
 
 .br-dashboard .br-dashboard-chart-scroll-hint {
+  margin: 0.25rem 0 0;
   line-height: 1.35;
+  font-size: 0.875rem;
+  color: var(--br-text-muted);
 }
 
-.br-dashboard .br-dashboard-chart-wrap {
-  position: relative;
-  height: 260px;
-  min-height: 220px;
+@media (min-width: 768px) {
+  .br-dashboard .br-dashboard-chart-scroll-hint {
+    display: none;
+  }
 }
 
-/* overflow + isolation: el canvas en WebKit móvil puede pintar encima del overlay sin esto */
+/* Chart area: overflow + isolation (WebKit canvas vs overlay) */
 .br-dashboard .br-dashboard-chart-wrap--hourly {
+  position: relative;
   width: 100%;
   height: 300px;
   min-height: 260px;
-  position: relative;
   overflow: hidden;
   isolation: isolate;
 }
 
-/* Solo mensaje SIN VENTAS: menos altura que el gráfico (overlay usa inset: 0) */
+/* Empty state: shorter than full chart */
 .br-dashboard .br-dashboard-chart-wrap--hourly.br-dashboard-chart-wrap--hourly-empty {
   height: 104px;
   min-height: 104px;
@@ -2209,26 +2206,3 @@ html:not(.layout-menu-collapsed)
   position: relative;
   z-index: 1;
 }
-
-.br-layout .br-dashboard-table thead th {
-  background: var(--br-secondary);
-  color: var(--br-on-secondary);
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  padding: 0.65rem 0.85rem;
-  border: none;
-  vertical-align: middle;
-}
-
-.br-layout .br-dashboard-table tbody td {
-  padding: 0.65rem 0.85rem;
-  vertical-align: middle;
-  border-color: var(--br-border);
-}
-
-.br-layout .br-dashboard-table tbody tr:last-child td {
-  border-bottom: none;
-}
-

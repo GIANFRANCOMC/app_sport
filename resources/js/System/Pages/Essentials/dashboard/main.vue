@@ -11,9 +11,7 @@
                                 </div>
                                 <div class="br-dashboard-kpi__body">
                                     <p class="br-dashboard-kpi__label">Ventas en total</p>
-                                    <p class="br-dashboard-kpi__value">
-                                        S/&nbsp;{{ separatorNumber(fixedNumber(forms.entity.dashboard.data.sales?.all?.total ?? 0)) }}
-                                    </p>
+                                    <p class="br-dashboard-kpi__value" v-text="'S/ '+separatorNumber(fixedNumber(forms.entity.dashboard.data.sales?.all?.total ?? 0))"></p>
                                 </div>
                             </div>
                         </div>
@@ -26,9 +24,7 @@
                                 </div>
                                 <div class="br-dashboard-kpi__body">
                                     <p class="br-dashboard-kpi__label">Ventas anuladas</p>
-                                    <p class="br-dashboard-kpi__value">
-                                        S/&nbsp;{{ separatorNumber(fixedNumber(forms.entity.dashboard.data.sales?.canceled?.total ?? 0)) }}
-                                    </p>
+                                    <p class="br-dashboard-kpi__value" v-text="'S/ '+separatorNumber(fixedNumber(forms.entity.dashboard.data.sales?.canceled?.total ?? 0))"></p>
                                 </div>
                             </div>
                         </div>
@@ -41,9 +37,7 @@
                                 </div>
                                 <div class="br-dashboard-kpi__body">
                                     <p class="br-dashboard-kpi__label">Sucursales activas</p>
-                                    <p class="br-dashboard-kpi__value">
-                                        {{ separatorNumber(forms.entity.dashboard.data.branches?.valid?.count ?? 0) }}
-                                    </p>
+                                    <p class="br-dashboard-kpi__value" v-text="separatorNumber(forms.entity.dashboard.data.branches?.valid?.count ?? 0)"></p>
                                 </div>
                             </div>
                         </div>
@@ -103,23 +97,14 @@
             </div>
         </div>
 
-        <!-- Gráfico: título aparte; área del chart sin card (fondo transparente) -->
         <section class="row g-3 mb-4 pt-2" aria-labelledby="br-dashboard-chart-title">
             <div class="col-12">
-                <div class="text-center mb-0 br-dashboard-chart-section__title-wrap">
-                    <span
-                        id="br-dashboard-chart-title"
-                        class="form-label fw-bold fs-6 mb-0 d-inline-block br-dashboard-chart-section__title"
-                        role="heading"
-                        aria-level="2">
+                <div class="br-dashboard-chart-section__title-wrap">
+                    <h2 id="br-dashboard-chart-title" class="br-dashboard-chart-section__title">
                         Ventas por hora
-                    </span>
-                    <p class="br-dashboard-chart-section__subtitle small text-muted mb-0" v-text="dashboardChartHoursRangeCaption"></p>
-                    <p
-                        v-if="!dashboardChartNoSales"
-                        class="br-dashboard-chart-scroll-hint d-md-none small text-muted mb-2 mb-md-0 mt-1">
-                        Desliza horizontalmente para ver todas las horas.
-                    </p>
+                    </h2>
+                    <p class="br-dashboard-chart-section__subtitle" v-text="dashboardChartHoursRangeCaption"></p>
+                    <p v-if="!dashboardChartNoSales" class="br-dashboard-chart-scroll-hint">Desliza horizontalmente para ver todas las horas.</p>
                 </div>
                 <div class="br-dashboard-chart-panel">
                     <div
@@ -751,6 +736,11 @@ export default {
                             titleColor: this.config.colors.charts.default.titleColor,
                             displayColors: true,
                             padding: 12,
+                            filter: (tooltipItem) => {
+
+                                return Boolean(segmentHasSales[tooltipItem.dataIndex]);
+
+                            },
                             callbacks: {
                                 title(items) {
 
