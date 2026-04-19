@@ -100,9 +100,7 @@
         <section class="row g-3 mb-4 pt-2" aria-labelledby="br-dashboard-chart-title">
             <div class="col-12">
                 <div class="br-dashboard-chart-section__title-wrap">
-                    <h2 id="br-dashboard-chart-title" class="br-dashboard-chart-section__title">
-                        Ventas por hora
-                    </h2>
+                    <h2 id="br-dashboard-chart-title" class="br-dashboard-chart-section__title">Ventas por hora</h2>
                     <p class="br-dashboard-chart-section__subtitle" v-text="dashboardChartHoursRangeCaption"></p>
                     <p v-if="!dashboardChartNoSales" class="br-dashboard-chart-scroll-hint">Desliza horizontalmente para ver todas las horas.</p>
                 </div>
