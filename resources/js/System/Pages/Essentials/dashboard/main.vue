@@ -55,7 +55,7 @@
                     <div class="br-dashboard-date br-dashboard-date--split br-dashboard-date--split-fill flex-grow-1 d-flex flex-column">
                         <div class="br-dashboard-date__content flex-grow-1 d-flex flex-column">
                             <div class="br-dashboard-date__main flex-grow-1 d-flex flex-column">
-                                <template v-if="!forms.entity.dashboard.data.dashboardDateEditing">
+                                <template v-if="!forms.entity.dashboard.data.dateEditing">
                                     <p class="br-dashboard-date__eyebrow">Consulta actual</p>
                                     <p class="br-dashboard-date__value" :title="reportDateLabel" v-text="consultationDateLong"></p>
                                     <div class="br-dashboard-date__actions">
@@ -114,9 +114,7 @@
                         aria-level="2">
                         Ventas por hora
                     </span>
-                    <p class="br-dashboard-chart-section__subtitle small text-muted mb-0">
-                        {{ dashboardChartHoursRangeCaption }}
-                    </p>
+                    <p class="br-dashboard-chart-section__subtitle small text-muted mb-0" v-text="dashboardChartHoursRangeCaption"></p>
                     <p
                         v-if="!dashboardChartNoSales"
                         class="br-dashboard-chart-scroll-hint d-md-none small text-muted mb-2 mb-md-0 mt-1">
@@ -153,125 +151,7 @@
                 </div>
             </div>
         </section>
-
-        <!-- Tabla -->
-        <!-- <section class="br-dashboard-card card" aria-labelledby="br-dashboard-sales-title">
-            <div class="br-dashboard-card__header card-header">
-                <div>
-                    <h2 id="br-dashboard-sales-title" class="br-dashboard-card__title h5 mb-1">
-                        Últimas ventas
-                    </h2>
-                    <p class="br-dashboard-card__meta mb-0">
-                        Hasta 10 movimientos · {{ reportDateLabel }}
-                    </p>
-                </div>
-            </div>
-            <div class="card-body px-0 pt-0">
-                <div class="table-responsive">
-                    <table class="table table-hover br-dashboard-table mb-0">
-                        <thead>
-                            <tr>
-                                <th scope="col">Documento</th>
-                                <th scope="col">Cliente</th>
-                                <th scope="col" class="text-center">Emisión</th>
-                                <th scope="col" class="text-end">Total</th>
-                                <th scope="col" class="text-center">Estado</th>
-                                <th scope="col" class="text-center">Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <template v-if="lastSales.length > 0">
-                                <tr v-for="record in lastSales" :key="record.id">
-                                    <td class="align-middle">
-                                        <span class="fw-semibold d-block text-body">{{ record.serie_sequential }}</span>
-                                        <small class="text-muted">{{ record.serie?.document_type?.name }}</small>
-                                    </td>
-                                    <td class="align-middle">
-                                        <span class="fw-semibold d-block text-body">{{ record.holder?.name }}</span>
-                                        <small class="text-muted">{{ record.holder?.document_number }}</small>
-                                    </td>
-                                    <td class="align-middle text-center text-nowrap">
-                                        {{ record.formatted_issue_date }}
-                                    </td>
-                                    <td class="align-middle text-end text-nowrap">
-                                        <span class="text-muted">{{ record.currency?.sign ?? "" }}</span>
-                                        <span class="fw-semibold ms-1">{{ separatorNumber(record.total) }}</span>
-                                    </td>
-                                    <td class="align-middle text-center">
-                                        <span
-                                            :class="[
-                                                'badge',
-                                                'rounded-pill',
-                                                'px-2',
-                                                'fw-semibold',
-                                                'text-capitalize',
-                                                { 'bg-label-success': ['active'].includes(record.status), 'bg-label-danger': ['inactive', 'canceled'].includes(record.status) }
-                                            ]"
-                                            v-text="record.formatted_status"></span>
-                                    </td>
-                                    <td class="align-middle text-center">
-                                        <InputSlot
-                                            hasDiv
-                                            :isInputGroup="false"
-                                            :divInputClass="['d-flex flex-wrap justify-content-center gap-2']"
-                                            xl="12"
-                                            lg="12">
-                                            <template v-slot:input>
-                                                <button
-                                                    type="button"
-                                                    class="btn btn-sm btn-primary"
-                                                    @click="modalActionsEntity({record})">
-                                                    <i class="fa fa-gear" aria-hidden="true"></i>
-                                                    <span class="ms-1">Acciones</span>
-                                                </button>
-                                            </template>
-                                        </InputSlot>
-                                    </td>
-                                </tr>
-                            </template>
-                            <template v-else>
-                                <tr>
-                                    <td class="text-center py-5" colspan="6">
-                                        <WithoutData type="image"/>
-                                    </td>
-                                </tr>
-                            </template>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </section> -->
     </div>
-
-    <PrintSale :modalId="forms.entity.dashboard.extras.modals.actions.id" :data="forms.entity.dashboard.extras.modals.actions.data">
-        <template v-slot:extraGroupAppend>
-            <div class="row g-2 mt-4">
-                <InputText
-                    hasDiv
-                    title="Número de celular (Whatsapp)"
-                    v-model="forms.entity.dashboard.extras.modals.actions.data.whatsapp">
-                    <template v-slot:inputGroupAppend>
-                        <button class="btn btn-success waves-effect" type="button" @click="sendWhatsapp({data: forms.entity.dashboard.extras.modals.actions.data})" :disabled="!isDefined(forms.entity.dashboard.extras.modals.actions.data.whatsapp)">
-                            <i class="fa-brands fa-whatsapp"></i>
-                            <span class="ms-2">Enviar</span>
-                        </button>
-                    </template>
-                </InputText>
-                <InputText
-                    v-if="false"
-                    hasDiv
-                    title="Correo electrónico"
-                    v-model="forms.entity.dashboard.extras.modals.actions.data.email">
-                    <template v-slot:inputGroupAppend>
-                        <button class="btn btn-info-1 waves-effect" type="button" @click="sendEmail({data: forms.entity.dashboard.extras.modals.actions.data})" :disabled="!isDefined(forms.entity.dashboard.extras.modals.actions.data.email)">
-                            <i class="fa fa-envelope"></i>
-                            <span class="ms-2">Enviar</span>
-                        </button>
-                    </template>
-                </InputText>
-            </div>
-        </template>
-    </PrintSale>
 </template>
 
 <script>
@@ -339,7 +219,7 @@ export default {
                         data: {
                             date: "",
                             dateAux: "",
-                            dashboardDateEditing: false,
+                            dateEditing: false,
                             sales: null,
                             branches: null,
                             users: null
@@ -379,21 +259,21 @@ export default {
         },
         async initData({loading = false}) {
 
-            let formDate = this.forms.entity.dashboard.data;
+            let formData = this.forms.entity.dashboard.data;
 
             if(loading) Alerts.swals({type: "consult"});
 
-            if(!this.isDefined(formDate.date)) formDate.date = Utils.getCurrentDate();
+            if(!this.isDefined(formData.date)) formData.date = Utils.getCurrentDate();
 
             let initData = await Requests.get({
                 route: this.config.entity.routes.initData,
-                data: {page: "main", date: formDate.date},
+                data: {page: "main", date: formData.date},
                 showAlert: true
             });
 
-            formDate.sales    = initData.data?.data?.sales;
-            formDate.branches = initData.data?.data?.branches;
-            formDate.users    = initData.data?.data?.users;
+            formData.sales    = initData.data?.data?.sales;
+            formData.branches = initData.data?.data?.branches;
+            formData.users    = initData.data?.data?.users;
 
             this.$nextTick(() => this.initChart());
 
@@ -405,33 +285,33 @@ export default {
         // Consult date
         startDashboardDateEdit() {
 
-            let formDate = this.forms.entity.dashboard.data;
-            let max = Utils.getCurrentDate();
-            let dateAux = formDate.date || max;
+            let formData = this.forms.entity.dashboard.data;
+            let max      = Utils.getCurrentDate();
+            let dateAux  = formData.date || max;
 
             if(dateAux > max) dateAux = max;
 
-            formDate.dateAux = dateAux;
-            formDate.dashboardDateEditing = true;
+            formData.dateAux = dateAux;
+            formData.dateEditing = true;
 
         },
         cancelDashboardDateEdit() {
 
-            let formDate = this.forms.entity.dashboard.data;
+            let formData = this.forms.entity.dashboard.data;
 
-            formDate.dateAux = "";
-            formDate.dashboardDateEditing = false;
+            formData.dateAux = "";
+            formData.dateEditing = false;
 
         },
         applyDashboardDate() {
 
-            let formDate = this.forms.entity.dashboard.data;
+            let formData = this.forms.entity.dashboard.data;
 
             if(!this.canApplyDashboardDate) return;
 
-            formDate.date = formDate.dateAux;
-            formDate.dateAux = "";
-            formDate.dashboardDateEditing = false;
+            formData.date = formData.dateAux;
+            formData.dateAux = "";
+            formData.dateEditing = false;
 
             this.initData({loading: true});
 
@@ -439,96 +319,51 @@ export default {
         /** Etiqueta eje X: hora en 12 h + a. m. / p. m. (índice 0–23) */
         dashboardChartFormatHourLabelAmpm(h) {
 
-            if(h === 0) {
+            if(h === 0) return "12:00 a. m.";
+            if(h === 12) return "12:00 p. m.";
+            if(h < 12) return `${h}:00 a. m.`;
 
-                return "12:00 a. m.";
-
-            }
-            if(h === 12) {
-
-                return "12:00 p. m.";
-
-            }
-            if(h < 12) {
-
-                return `${h}:00 a. m.`;
-
-            }
             return `${h - 12}:00 p. m.`;
 
         },
         /** Fin de franja horaria para tooltip (…:59) */
         dashboardChartFormatHourEndAmpm(h) {
 
-            if(h === 0) {
+            if(h === 0) return "12:59 a. m.";
+            if(h === 12) return "12:59 p. m.";
+            if(h < 12) return `${h}:59 a. m.`;
 
-                return "12:59 a. m.";
-
-            }
-            if(h === 12) {
-
-                return "12:59 p. m.";
-
-            }
-            if(h < 12) {
-
-                return `${h}:59 a. m.`;
-
-            }
             return `${h - 12}:59 p. m.`;
 
         },
         /** Eje X corto (más ancho por barra, sin diagonal): "9 a. m.", "12 p. m." */
         dashboardChartFormatHourCompactAmpm(h) {
 
-            if(h === 0) {
+            if(h === 0) return "12 a. m.";
+            if(h === 12) return "12 p. m.";
+            if(h < 12) return `${h} a. m.`;
 
-                return "12 a. m.";
-
-            }
-            if(h === 12) {
-
-                return "12 p. m.";
-
-            }
-            if(h < 12) {
-
-                return `${h} a. m.`;
-
-            }
             return `${h - 12} p. m.`;
 
         },
         /** Título "Soles (S/)" del eje Y: solo pantallas >= md (Bootstrap), más espacio en móvil */
         dashboardChartShouldShowYAxisTitle() {
 
-            if(typeof window === "undefined") {
+            if(typeof window === "undefined") return true;
 
-                return true;
-
-            }
             return window.matchMedia("(min-width: 768px)").matches;
 
         },
         onDashboardChartWindowResize() {
 
-            if(!dashboardSalesChartInstance) {
+            if(!dashboardSalesChartInstance) return;
 
-                return;
-
-            }
             const show = this.dashboardChartShouldShowYAxisTitle();
             const yTitle = dashboardSalesChartInstance.options?.scales?.y?.title;
-            if(!yTitle) {
 
-                return;
+            if(!yTitle) return;
+            if(yTitle.display === show) return;
 
-            }
-            if(yTitle.display === show) {
-
-                return;
-
-            }
             yTitle.display = show;
             dashboardSalesChartInstance.update("none");
 
@@ -542,38 +377,23 @@ export default {
             const niceCeilAxisMax = (peak) => {
 
                 const headroom = 1.12;
-                if(peak <= 0) {
 
-                    return 10;
+                if(peak <= 0) return 10;
 
-                }
                 const target = peak * headroom;
-                if(target < 1) {
 
-                    return Math.max(1, Math.ceil(target * 100) / 100);
+                if(target < 1) return Math.max(1, Math.ceil(target * 100) / 100);
 
-                }
                 const exp = Math.floor(Math.log10(target));
                 const pow10 = Math.pow(10, exp);
                 const n = target / pow10;
                 let nice;
-                if(n <= 1) {
 
-                    nice = 1;
+                if(n <= 1) nice = 1;
+                else if(n <= 2) nice = 2;
+                else if(n <= 5) nice = 5;
+                else nice = 10;
 
-                }else if(n <= 2) {
-
-                    nice = 2;
-
-                }else if(n <= 5) {
-
-                    nice = 5;
-
-                }else {
-
-                    nice = 10;
-
-                }
                 return nice * pow10;
 
             };
@@ -587,26 +407,24 @@ export default {
             });
 
             const totalsByHour = Array.from({length: 24}, () => 0);
-
             const sales = this.forms.entity.dashboard.data.sales?.all?.records ?? [];
 
             sales.forEach((sale) => {
 
                 const saleHour = new Date(sale.created_at).getHours();
-                if(saleHour >= 0 && saleHour < 24) {
 
-                    totalsByHour[saleHour] += parseFloat(sale.total);
-
-                }
+                if(saleHour >= 0 && saleHour < 24) totalsByHour[saleHour] += parseFloat(sale.total);
 
             });
 
             const hasAnySale = totalsByHour.some((t) => t > 0);
             let firstHour = 0;
             let lastHour = 23;
+
             if(hasAnySale) {
 
                 firstHour = totalsByHour.findIndex((t) => t > 0);
+
                 for(let i = 23; i >= 0; i--) {
 
                     if(totalsByHour[i] > 0) {
@@ -635,6 +453,7 @@ export default {
              */
             const segments = [];
             let si = 0;
+
             while(si < sliceHours.length) {
 
                 const h = sliceHours[si];
@@ -647,21 +466,15 @@ export default {
 
                     const zStart = h;
                     let zEnd = h;
+
                     while(si < sliceHours.length && totalsByHour[sliceHours[si]] === 0) {
 
                         zEnd = sliceHours[si];
                         si++;
 
                     }
-                    if(zStart === zEnd) {
 
-                        segments.push({kind: "single", hour: zStart});
-
-                    }else {
-
-                        segments.push({kind: "gap", startHour: zStart, endHour: zEnd});
-
-                    }
+                    zStart === zEnd ? segments.push({kind: "single", hour: zStart}) : segments.push({kind: "gap", startHour: zStart, endHour: zEnd});
 
                 }
 
@@ -670,30 +483,28 @@ export default {
             const nBars = segments.length;
             const labels = segments.map((seg) => {
 
-                if(seg.kind === "single") {
+                if(seg.kind === "single") return vm.dashboardChartFormatHourCompactAmpm(seg.hour);
 
-                    return vm.dashboardChartFormatHourCompactAmpm(seg.hour);
-
-                }
-                return `${vm.dashboardChartFormatHourCompactAmpm(seg.startHour)} – ${vm.dashboardChartFormatHourCompactAmpm(seg.endHour)}`;
+                return `${vm.dashboardChartFormatHourCompactAmpm(seg.startHour)} - ${vm.dashboardChartFormatHourCompactAmpm(seg.endHour)}`;
 
             });
+
             const data = segments.map((seg) => {
 
-                if(seg.kind === "single") {
+                if(seg.kind === "single") return totalsByHour[seg.hour];
 
-                    return totalsByHour[seg.hour];
-
-                }
                 let sum = 0;
+
                 for(let hh = seg.startHour; hh <= seg.endHour; hh++) {
 
                     sum += totalsByHour[hh];
 
                 }
+
                 return sum;
 
             });
+
             const segmentHasSales = data.map((v) => Number(v) > 0);
             const maxVal = Math.max(0, ...data);
             const yMax = niceCeilAxisMax(maxVal);
@@ -702,6 +513,7 @@ export default {
             const yIntervals = 7;
             let yStep = Math.max(1, Math.ceil(yMax / yIntervals));
             let yAxisMax = yStep * yIntervals;
+
             while(yAxisMax < yMax) {
 
                 yStep += 1;
@@ -727,33 +539,24 @@ export default {
             const tickFontSizeEmphasis = labelFontSize + 1.25;
             const resolveTickSegmentIndex = (ctx) => {
 
-                if(typeof ctx.index === "number") {
+                if(typeof ctx.index === "number") return ctx.index;
 
-                    return ctx.index;
-
-                }
                 const t = ctx.tick;
-                if(t && typeof t.index === "number") {
 
-                    return t.index;
+                if(t && typeof t.index === "number") return t.index;
 
-                }
                 if(t && typeof t.label === "string") {
 
                     let j = labels.indexOf(t.label);
-                    if(j >= 0) {
 
-                        return j;
+                    if(j >= 0) return j;
 
-                    }
                     j = labels.findIndex((lb) => String(lb) === String(t.label));
-                    if(j >= 0) {
 
-                        return j;
-
-                    }
+                    if(j >= 0) return j;
 
                 }
+
                 return -1;
 
             };
@@ -765,11 +568,13 @@ export default {
                 /** Rangos sin ventas: más anchura para etiquetas largas (ej. 9 a. m. – 11 a. m.) */
                 const pxPerGap = viewportNarrow ? 118 : 88;
                 let scrollMinPx = 48;
+
                 segments.forEach((seg) => {
 
                     scrollMinPx += seg.kind === "gap" ? pxPerGap : pxPerSingle;
 
                 });
+
                 this.dashboardChartMinWidthPx = Math.max(320, scrollMinPx);
 
                 if(dashboardSalesChartInstance) {
@@ -791,43 +596,34 @@ export default {
                     afterDatasetsDraw(chart) {
 
                         const meta = chart.getDatasetMeta(0);
-                        if(!meta || !meta.data) {
+                        if(!meta || !meta.data) return;
 
-                            return;
-
-                        }
                         const values = chart.data.datasets[0].data;
                         const { ctx, chartArea } = chart;
                         let fontFamily = "sans-serif";
-                        if(typeof Chart !== "undefined" && Chart.defaults && Chart.defaults.font && Chart.defaults.font.family) {
 
-                            fontFamily = Chart.defaults.font.family;
-
-                        }
+                        if(typeof Chart !== "undefined" && Chart.defaults && Chart.defaults.font && Chart.defaults.font.family) fontFamily = Chart.defaults.font.family;
 
                         ctx.save();
+
                         const watermarkText = "SIN VENTAS";
                         const plotH = chartArea.bottom - chartArea.top;
                         const n = values.length;
 
                         values.forEach((_, i) => {
 
-                            if(segmentHasSales[i]) {
+                            if(segmentHasSales[i]) return;
 
-                                return;
-
-                            }
                             const el = meta.data[i];
-                            if(!el || el.skip) {
 
-                                return;
+                            if(!el || el.skip) return;
 
-                            }
                             const x = el.x;
                             const y = (chartArea.top + chartArea.bottom) / 2;
                             let fontSize = Math.min(11, Math.max(8, 7 + chartArea.width / Math.max(n * 6, 1)));
                             ctx.font = `600 ${fontSize}px ${fontFamily}`;
                             let textW = ctx.measureText(watermarkText).width;
+
                             while(textW > plotH - 12 && fontSize > 7) {
 
                                 fontSize -= 0.5;
@@ -856,183 +652,178 @@ export default {
                 this.$nextTick(() => {
 
                     const canvasEl = document.getElementById("dashboardSalesHourlyChart");
-                    if(!canvasEl) {
 
-                        return;
-
-                    }
+                    if(!canvasEl) return;
 
                     dashboardSalesChartInstance = new Chart(canvasEl, {
-                    type: "bar",
-                    plugins: [dashboardSinVentasWatermarkPlugin],
-                    data: {
-                        labels,
-                        datasets: [
-                            {
-                                label: "Total por hora (S/)",
-                                data,
-                                backgroundColor: barBgPerIndex,
-                                borderColor: barBorderPerIndex,
-                                borderWidth: barBorderWPerIndex,
-                                borderRadius: {
-                                    topLeft: 8,
-                                    topRight: 8,
-                                    bottomLeft: 0,
-                                    bottomRight: 0
+                        type: "bar",
+                        plugins: [dashboardSinVentasWatermarkPlugin],
+                        data: {
+                            labels,
+                            datasets: [
+                                {
+                                    label: "Total por hora (S/)",
+                                    data,
+                                    backgroundColor: barBgPerIndex,
+                                    borderColor: barBorderPerIndex,
+                                    borderWidth: barBorderWPerIndex,
+                                    borderRadius: {
+                                        topLeft: 8,
+                                        topRight: 8,
+                                        bottomLeft: 0,
+                                        bottomRight: 0
+                                    },
+                                    borderSkipped: false,
+                                    maxBarThickness: maxBarThickness,
+                                    hoverBackgroundColor: barHoverBgPerIndex,
+                                    hoverBorderColor: barHoverBorderPerIndex
+                                }
+                            ]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            layout: {
+                                padding: {
+                                    bottom: tickRotation > 0 ? 22 : 10,
+                                    left: 2,
+                                    right: 2
+                                }
+                            },
+                            animation: {
+                                duration: 550
+                            },
+                            interaction: {
+                                mode: "index",
+                                intersect: false
+                            },
+                            datasets: {
+                                bar: {
+                                    categoryPercentage: categoryPercentage,
+                                    barPercentage: barPercentage
+                                }
+                            },
+                            plugins: {
+                                legend: {
+                                    display: true,
+                                    position: "bottom",
+                                    align: "center",
+                                    labels: {
+                                        usePointStyle: true,
+                                        pointStyle: "rect",
+                                        padding: 18,
+                                        boxWidth: 12,
+                                        boxHeight: 8,
+                                        color: this.config.colors.charts.default.titleColor,
+                                        font: {
+                                            size: 12,
+                                            weight: "600"
+                                        }
+                                    }
                                 },
-                                borderSkipped: false,
-                                maxBarThickness: maxBarThickness,
-                                hoverBackgroundColor: barHoverBgPerIndex,
-                                hoverBorderColor: barHoverBorderPerIndex
-                            }
-                        ]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        layout: {
-                            padding: {
-                                bottom: tickRotation > 0 ? 22 : 10,
-                                left: 2,
-                                right: 2
-                            }
-                        },
-                        animation: {
-                            duration: 550
-                        },
-                        interaction: {
-                            mode: "index",
-                            intersect: false
-                        },
-                        datasets: {
-                            bar: {
-                                categoryPercentage: categoryPercentage,
-                                barPercentage: barPercentage
-                            }
-                        },
-                        plugins: {
-                            legend: {
-                                display: true,
-                                position: "bottom",
-                                align: "center",
-                                labels: {
-                                    usePointStyle: true,
-                                    pointStyle: "rect",
-                                    padding: 18,
-                                    boxWidth: 12,
-                                    boxHeight: 8,
-                                    color: this.config.colors.charts.default.titleColor,
-                                    font: {
-                                        size: 12,
-                                        weight: "600"
+                                tooltip: {
+                                    backgroundColor: this.config.colors.charts.default.backgroundColor,
+                                    bodyColor: this.config.colors.charts.default.bodyColor,
+                                    borderColor: this.config.colors.charts.default.borderColor,
+                                    borderWidth: 1,
+                                    titleColor: this.config.colors.charts.default.titleColor,
+                                    displayColors: true,
+                                    padding: 12,
+                                    callbacks: {
+                                        title(items) {
+
+                                            if(!items.length) return "";
+
+                                            const seg = segments[items[0].dataIndex];
+
+                                            if(seg.kind === "single") {
+
+                                                const hour = seg.hour;
+                                                return `${vm.dashboardChartFormatHourLabelAmpm(hour)} – ${vm.dashboardChartFormatHourEndAmpm(hour)}`;
+
+                                            }
+
+                                            return `${vm.dashboardChartFormatHourLabelAmpm(seg.startHour)} – ${vm.dashboardChartFormatHourEndAmpm(seg.endHour)}`;
+
+                                        },
+                                        label(ctx) {
+
+                                            const v = ctx.parsed.y;
+                                            return ` Ventas: S/ ${vm.separatorNumber(vm.fixedNumber(v))}`;
+
+                                        }
                                     }
                                 }
                             },
-                            tooltip: {
-                                backgroundColor: this.config.colors.charts.default.backgroundColor,
-                                bodyColor: this.config.colors.charts.default.bodyColor,
-                                borderColor: this.config.colors.charts.default.borderColor,
-                                borderWidth: 1,
-                                titleColor: this.config.colors.charts.default.titleColor,
-                                displayColors: true,
-                                padding: 12,
-                                callbacks: {
-                                    title(items) {
-
-                                        if(!items.length) {
-
-                                            return "";
-
-                                        }
-                                        const seg = segments[items[0].dataIndex];
-                                        if(seg.kind === "single") {
-
-                                            const hour = seg.hour;
-                                            return `${vm.dashboardChartFormatHourLabelAmpm(hour)} – ${vm.dashboardChartFormatHourEndAmpm(hour)}`;
-
-                                        }
-                                        return `${vm.dashboardChartFormatHourLabelAmpm(seg.startHour)} – ${vm.dashboardChartFormatHourEndAmpm(seg.endHour)}`;
-
+                            scales: {
+                                x: {
+                                    title: {
+                                        display: false
                                     },
-                                    label(ctx) {
+                                    grid: {
+                                        color: chartGridColor,
+                                        drawBorder: false,
+                                        borderColor: chartGridColor
+                                    },
+                                    ticks: {
+                                        autoSkip: false,
+                                        maxRotation: tickRotation,
+                                        minRotation: tickRotation,
+                                        color(ctx) {
 
-                                        const v = ctx.parsed.y;
-                                        return ` Ventas: S/ ${vm.separatorNumber(vm.fixedNumber(v))}`;
+                                            const i = resolveTickSegmentIndex(ctx);
 
-                                    }
-                                }
-                            }
-                        },
-                        scales: {
-                            x: {
-                                title: {
-                                    display: false
-                                },
-                                grid: {
-                                    color: chartGridColor,
-                                    drawBorder: false,
-                                    borderColor: chartGridColor
-                                },
-                                ticks: {
-                                    autoSkip: false,
-                                    maxRotation: tickRotation,
-                                    minRotation: tickRotation,
-                                    color(ctx) {
+                                            if(i < 0 || i >= segmentHasSales.length) return tickColorMuted;
 
-                                        const i = resolveTickSegmentIndex(ctx);
-                                        if(i < 0 || i >= segmentHasSales.length) {
+                                            return segmentHasSales[i] ? tickColorEmphasis : tickColorMuted;
 
-                                            return tickColorMuted;
+                                        },
+                                        font(ctx) {
+
+                                            const i = resolveTickSegmentIndex(ctx);
+                                            const has = i >= 0 && i < segmentHasSales.length && segmentHasSales[i];
+
+                                            return {
+                                                size: has ? tickFontSizeEmphasis : labelFontSize,
+                                                weight: has ? "600" : "400"
+                                            };
 
                                         }
-                                        return segmentHasSales[i] ? tickColorEmphasis : tickColorMuted;
-
-                                    },
-                                    font(ctx) {
-
-                                        const i = resolveTickSegmentIndex(ctx);
-                                        const has = i >= 0 && i < segmentHasSales.length && segmentHasSales[i];
-                                        return {
-                                            size: has ? tickFontSizeEmphasis : labelFontSize,
-                                            weight: has ? "600" : "400"
-                                        };
-
                                     }
-                                }
-                            },
-                            y: {
-                                min: 0,
-                                max: yAxisMax,
-                                title: {
-                                    display: this.dashboardChartShouldShowYAxisTitle(),
-                                    text: "Soles (S/)",
-                                    color: this.config.colors.charts.default.labelColor,
-                                    font: {size: 11, weight: "600"}
                                 },
-                                grid: {
-                                    color: chartGridColor,
-                                    drawBorder: false,
-                                    borderColor: chartGridColor
-                                },
-                                ticks: {
-                                    color: this.config.colors.charts.default.labelColor,
-                                    stepSize: yStep,
-                                    precision: 0,
-                                    callback(value) {
+                                y: {
+                                    min: 0,
+                                    max: yAxisMax,
+                                    title: {
+                                        display: this.dashboardChartShouldShowYAxisTitle(),
+                                        text: "Soles (S/)",
+                                        color: this.config.colors.charts.default.labelColor,
+                                        font: {size: 11, weight: "600"}
+                                    },
+                                    grid: {
+                                        color: chartGridColor,
+                                        drawBorder: false,
+                                        borderColor: chartGridColor
+                                    },
+                                    ticks: {
+                                        color: this.config.colors.charts.default.labelColor,
+                                        stepSize: yStep,
+                                        precision: 0,
+                                        callback(value) {
 
-                                        const n = Math.round(Number(value));
-                                        return vm.separatorNumber(String(n));
+                                            const n = Math.round(Number(value));
+                                            return vm.separatorNumber(String(n));
 
+                                        }
                                     }
                                 }
                             }
                         }
-                    }
-                });
+                    });
 
                 });
 
-            } else {
+            }else {
 
                 this.dashboardChartMinWidthPx = 0;
 
@@ -1206,7 +997,7 @@ export default {
         },
         canApplyDashboardDate: function() {
 
-            if(!this.forms.entity.dashboard.data.dashboardDateEditing) return false;
+            if(!this.forms.entity.dashboard.data.dateEditing) return false;
 
             const raw = this.forms.entity.dashboard.data.dateAux;
 
