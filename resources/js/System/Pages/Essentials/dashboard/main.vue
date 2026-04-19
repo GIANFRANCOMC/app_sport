@@ -1,8 +1,10 @@
 <template>
+    <Breadcrumb :list="breadcrumbTitles"/>
+
     <div class="br-dashboard">
         <div class="row mb-4 align-items-start br-dashboard__split">
             <div class="col-12 col-md-6 col-lg-8">
-                <section class="br-dashboard__kpis br-dashboard__kpis--split row g-2 mb-0" aria-label="Indicadores del día consultado">
+                <section class="br-dashboard__kpis br-dashboard__kpis--split row g-2 mb-0" :aria-label="MODULE.texts.chart.kpiSectionAria">
                     <div class="col-12 col-sm-6 col-lg-4">
                         <div class="br-dashboard-kpi br-dashboard-kpi--success h-100">
                             <div class="br-dashboard-kpi__inner">
@@ -10,7 +12,7 @@
                                     <i class="fa-solid fa-sack-dollar"></i>
                                 </div>
                                 <div class="br-dashboard-kpi__body">
-                                    <p class="br-dashboard-kpi__label">Ventas en total</p>
+                                    <p class="br-dashboard-kpi__label" v-text="MODULE.texts.kpi.salesTotal"></p>
                                     <p class="br-dashboard-kpi__value" v-text="'S/ '+separatorNumber(fixedNumber(forms.entity.dashboard.data.sales?.all?.total ?? 0))"></p>
                                 </div>
                             </div>
@@ -23,7 +25,7 @@
                                     <i class="fa-solid fa-sack-xmark"></i>
                                 </div>
                                 <div class="br-dashboard-kpi__body">
-                                    <p class="br-dashboard-kpi__label">Ventas anuladas</p>
+                                    <p class="br-dashboard-kpi__label" v-text="MODULE.texts.kpi.salesCanceled"></p>
                                     <p class="br-dashboard-kpi__value" v-text="'S/ '+separatorNumber(fixedNumber(forms.entity.dashboard.data.sales?.canceled?.total ?? 0))"></p>
                                 </div>
                             </div>
@@ -36,7 +38,7 @@
                                     <i class="fa-solid fa-building-user"></i>
                                 </div>
                                 <div class="br-dashboard-kpi__body">
-                                    <p class="br-dashboard-kpi__label">Sucursales activas</p>
+                                    <p class="br-dashboard-kpi__label" v-text="MODULE.texts.kpi.branchesActive"></p>
                                     <p class="br-dashboard-kpi__value" v-text="separatorNumber(forms.entity.dashboard.data.branches?.valid?.count ?? 0)"></p>
                                 </div>
                             </div>
@@ -45,28 +47,28 @@
                 </section>
             </div>
             <div class="col-12 col-md-6 col-lg-4 br-dashboard__split-date align-self-stretch mt-3 mt-md-2 px-4 px-md-3">
-                <section class="br-dashboard__split-pane h-100 d-flex flex-column" aria-label="Fecha consultada">
+                <section class="br-dashboard__split-pane h-100 d-flex flex-column" :aria-label="MODULE.texts.date.sectionAria">
                     <div class="br-dashboard-date br-dashboard-date--split br-dashboard-date--split-fill flex-grow-1 d-flex flex-column">
                         <div class="br-dashboard-date__content flex-grow-1 d-flex flex-column">
                             <div class="br-dashboard-date__main flex-grow-1 d-flex flex-column">
                                 <template v-if="!forms.entity.dashboard.data.dateEditing">
-                                    <p class="br-dashboard-date__eyebrow">Consulta actual</p>
+                                    <p class="br-dashboard-date__eyebrow" v-text="MODULE.texts.date.eyebrow"></p>
                                     <p class="br-dashboard-date__value" :title="reportDateLabel" v-text="consultationDateLong"></p>
                                     <div class="br-dashboard-date__actions">
                                         <button type="button" class="br-btn br-btn-sm br-btn-secondary" @click="startDashboardDateEdit">
-                                            <span>Consultar fecha</span>
+                                            <span v-text="MODULE.texts.date.consultButton"></span>
                                         </button>
                                     </div>
                                 </template>
                                 <div v-else
                                     class="br-dashboard-date__editor br-dashboard-date__editor--stack d-flex flex-wrap align-items-end justify-content-end gap-2 pt-1 w-100"
                                     role="group"
-                                    aria-label="Editar fecha consultada">
+                                    :aria-label="MODULE.texts.date.editorAria">
                                     <div class="flex-grow-1 align-self-end" style="min-width: 10rem;">
                                         <InputDate
                                             v-model="forms.entity.dashboard.data.dateAux"
                                             hasDiv
-                                            title="Fecha a consultar"
+                                            :title="MODULE.texts.date.inputTitle"
                                             isRequired
                                             :max="dashboardConsultDateMax"
                                             :titleClass="['form-label', 'colon-at-end', 'fw-semibold', 'small', 'mb-1']"
@@ -76,14 +78,14 @@
                                         <button
                                             type="button"
                                             class="br-btn br-btn-xs br-btn-danger"
-                                            aria-label="Cancelar"
+                                            :aria-label="MODULE.texts.date.cancelAria"
                                             @click="cancelDashboardDateEdit">
                                             <i class="fa-solid fa-xmark" aria-hidden="true"></i>
                                         </button>
                                         <button
                                             type="button"
                                             class="br-btn br-btn-xs br-btn-success"
-                                            aria-label="Aplicar"
+                                            :aria-label="MODULE.texts.date.applyAria"
                                             :disabled="!canApplyDashboardDate"
                                             @click="applyDashboardDate">
                                             <i class="fa-solid fa-check" aria-hidden="true"></i>
@@ -100,16 +102,16 @@
         <section class="row g-3 mb-4 pt-2" aria-labelledby="br-dashboard-chart-title">
             <div class="col-12">
                 <div class="br-dashboard-chart-section__title-wrap">
-                    <h2 id="br-dashboard-chart-title" class="br-dashboard-chart-section__title">Ventas por hora</h2>
+                    <h2 id="br-dashboard-chart-title" class="br-dashboard-chart-section__title" v-text="MODULE.texts.chart.sectionTitle"></h2>
                     <p class="br-dashboard-chart-section__subtitle" v-text="dashboardChartHoursRangeCaption"></p>
-                    <p v-if="!dashboardChartNoSales" class="br-dashboard-chart-scroll-hint">Desliza horizontalmente para ver todas las horas.</p>
+                    <p v-if="!dashboardChartNoSales" class="br-dashboard-chart-scroll-hint" v-text="MODULE.texts.chart.scrollHint"></p>
                 </div>
                 <div class="br-dashboard-chart-panel">
                     <div
                         v-if="!dashboardChartNoSales"
                         class="br-dashboard-chart-scroll"
                         role="region"
-                        aria-label="Gráfico de ventas por hora, desplazable en pantallas pequeñas">
+                        :aria-label="MODULE.texts.chart.chartScrollRegionAria">
                         <div
                             class="br-dashboard-chart-scroll-inner br-dashboard-chart-wrap br-dashboard-chart-wrap--hourly"
                             :style="dashboardChartScrollInnerStyle">
@@ -117,7 +119,7 @@
                                 id="dashboardSalesHourlyChart"
                                 class="chartjs br-dashboard-chart-canvas"
                                 data-height="300"
-                                aria-label="Gráfico de barras: ventas por hora del día consultado"
+                                :aria-label="MODULE.texts.chart.canvasAria"
                                 role="img"></canvas>
                         </div>
                     </div>
@@ -128,7 +130,7 @@
                             class="br-dashboard-chart-empty-overlay"
                             role="status"
                             aria-live="polite">
-                            <span class="br-dashboard-chart-empty-overlay__text">SIN VENTAS</span>
+                            <span class="br-dashboard-chart-empty-overlay__text" v-text="MODULE.texts.chart.noSales"></span>
                         </div>
                     </div>
                 </div>
@@ -143,10 +145,90 @@ import * as Constants from "@System/Helpers/Constants.js";
 import * as Requests  from "@System/Helpers/Requests.js";
 import * as Utils     from "@System/Helpers/Utils.js";
 
+const MODULE_CONFIG = {
+    entity: "dashboard",
+    menuId: "menu-parent-dashboard",
+    pageTitle: "Dashboard",
+    breadcrumbParent: "Esenciales"
+};
+
+const TEXTS = {
+    kpi: {
+        salesTotal: "Ventas en total",
+        salesCanceled: "Ventas anuladas",
+        branchesActive: "Sucursales activas"
+    },
+    date: {
+        eyebrow: "Consulta actual",
+        consultButton: "Consultar fecha",
+        inputTitle: "Fecha a consultar",
+        editorAria: "Editar fecha consultada",
+        cancelAria: "Cancelar",
+        applyAria: "Aplicar",
+        placeholder: "Selecciona una fecha",
+        reportPrefix: "Fecha: ",
+        sectionAria: "Fecha consultada"
+    },
+    chart: {
+        sectionTitle: "Ventas por hora",
+        scrollHint: "Desliza horizontalmente para ver todas las horas.",
+        noSales: "SIN VENTAS",
+        hoursRangeAllDay: "Todas las horas del día",
+        datasetLegend: "Total por hora (S/)",
+        yAxisTitle: "Soles (S/)",
+        tooltipSalesPrefix: "Ventas: S/ ",
+        kpiSectionAria: "Indicadores del día consultado",
+        chartScrollRegionAria: "Gráfico de ventas por hora, desplazable en pantallas pequeñas",
+        canvasAria: "Gráfico de barras: ventas por hora del día consultado"
+    }
+};
+
+const MODULE = {
+    config: MODULE_CONFIG,
+    texts: TEXTS
+};
+
 let dashboardSalesChartInstance = null;
 
 export default {
     name: "DashboardMain",
+    components: {
+        //
+    },
+    data() {
+        return {
+            forms: {
+                entity: {
+                    dashboard: {
+                        data: {
+                            date: "",
+                            dateAux: "",
+                            dateEditing: false,
+                            sales: null,
+                            branches: null,
+                            users: null,
+                            dashboardChartMinWidthPx: 0 // Minimum scroll area width for hourly chart (per bar; wider for gap ranges)
+                        }
+                    }
+                }
+            },
+            options: {},
+            MODULE,
+            config: {
+                ...Constants.generalConfig,
+                entity: {
+                    ...Requests.config({entity: MODULE_CONFIG.entity}),
+                    page: {
+                        title: MODULE_CONFIG.pageTitle,
+                        active: true,
+                        menu: {
+                            id: MODULE_CONFIG.menuId
+                        }
+                    }
+                }
+            }
+        };
+    },
     mounted: async function() {
 
         Utils.navbarItem(this.config.entity.page.menu.id, {});
@@ -170,39 +252,6 @@ export default {
 
         if(this._onDashboardChartResize) window.removeEventListener("resize", this._onDashboardChartResize);
 
-    },
-    data() {
-        return {
-            forms: {
-                entity: {
-                    dashboard: {
-                        data: {
-                            date: "",
-                            dateAux: "",
-                            dateEditing: false,
-                            sales: null,
-                            branches: null,
-                            users: null,
-                            dashboardChartMinWidthPx: 0 // Minimum scroll area width for hourly chart (per bar; wider for gap ranges)
-                        }
-                    }
-                }
-            },
-            options: {},
-            config: {
-                ...Constants.generalConfig,
-                entity: {
-                    ...Requests.config({entity: "dashboard"}),
-                    page: {
-                        title: "Dashboard",
-                        active: true,
-                        menu: {
-                            id: "menu-parent-dashboard"
-                        }
-                    }
-                }
-            }
-        };
     },
     methods: {
         async initParams() {
@@ -566,6 +615,8 @@ export default {
         // Vertical watermark for categories with no sales
         dashboardChartNoSalesWatermarkPlugin(segmentHasSales) {
 
+            const watermarkText = this.MODULE.texts.chart.noSales;
+
             return {
                 id: "dashboardEmptyWatermark",
                 afterDatasetsDraw(chart) {
@@ -581,8 +632,6 @@ export default {
                     if(typeof Chart !== "undefined" && Chart.defaults && Chart.defaults.font && Chart.defaults.font.family) fontFamily = Chart.defaults.font.family;
 
                     ctx.save();
-
-                    const watermarkText = "SIN VENTAS";
                     const plotH = chartArea.bottom - chartArea.top;
                     const n = values.length;
 
@@ -678,7 +727,7 @@ export default {
                     labels,
                     datasets: [
                         {
-                            label: "Total por hora (S/)",
+                            label: this.MODULE.texts.chart.datasetLegend,
                             data,
                             backgroundColor: barBgPerIndex,
                             borderColor: barBorderPerIndex,
@@ -759,7 +808,7 @@ export default {
                                 label(ctx) {
 
                                     const v = ctx.parsed.y;
-                                    return ` Ventas: S/ ${vm.separatorNumber(vm.fixedNumber(v))}`;
+                                    return ` ${vm.MODULE.texts.chart.tooltipSalesPrefix}${vm.separatorNumber(vm.fixedNumber(v))}`;
 
                                 }
                             }
@@ -804,7 +853,7 @@ export default {
                             max: yAxisMax,
                             title: {
                                 display: this.dashboardChartShouldShowYAxisTitle(),
-                                text: "Soles (S/)",
+                                text: this.MODULE.texts.chart.yAxisTitle,
                                 color: this.config.colors.charts.default.labelColor,
                                 font: {size: 11, weight: "600"}
                             },
@@ -929,6 +978,13 @@ export default {
             return this.config.entity.routes;
 
         },
+        breadcrumbTitles: function() {
+
+            return [
+                this.config.entity.page
+            ];
+
+        },
         dashboardConsultDateMax: function() {
 
             return Utils.getCurrentDate();
@@ -973,7 +1029,7 @@ export default {
 
             const hasAnySale = totalsByHour.some((t) => t > 0);
 
-            if(!hasAnySale) return "Todas las horas del día";
+            if(!hasAnySale) return this.MODULE.texts.chart.hoursRangeAllDay;
 
             const firstHour = totalsByHour.findIndex((t) => t > 0);
             let lastHour = 23;
@@ -989,7 +1045,7 @@ export default {
 
             }
 
-            if(lastHour - firstHour + 1 >= 24) return "Todas las horas del día";
+            if(lastHour - firstHour + 1 >= 24) return this.MODULE.texts.chart.hoursRangeAllDay;
 
             return `${this.dashboardChartFormatHourLabelAmpm(firstHour)} – ${this.dashboardChartFormatHourEndAmpm(lastHour)}`;
 
@@ -1020,30 +1076,20 @@ export default {
             return !isNaN(dt.getTime());
 
         },
-        breadcrumbTitles: function() {
-
-            return [this.config.entity.page];
-
-        },
-        lastSales: function() {
-
-            return (this.forms.entity.dashboard.data.sales?.all?.records ?? []).slice(0, 10);
-
-        },
         reportDateLabel: function() {
 
             const d = this.forms.entity.dashboard.data.date;
 
             if(!d) return "";
 
-            return `Fecha: ${this.legibleFormatDate({dateString: d, type: "date"})}`;
+            return `${this.MODULE.texts.date.reportPrefix}${this.legibleFormatDate({dateString: d, type: "date"})}`;
 
         },
         consultationDateLong: function() {
 
             const d = this.forms.entity.dashboard.data.date;
 
-            if(!d) return "Selecciona una fecha";
+            if(!d) return this.MODULE.texts.date.placeholder;
 
             try {
 
@@ -1084,3 +1130,6 @@ export default {
     }
 };
 </script>
+
+<style scoped>
+</style>
