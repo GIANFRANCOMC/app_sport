@@ -1,6 +1,12 @@
 <template>
-    <a href="javascript:void(0)" @click="openModal()" class="me-1" data-bs-toggle="tooltip" data-bs-placement="top" title="Agregar cliente">
-        <i class="fa fa-plus-circle"></i>
+    <a
+        href="javascript:void(0)"
+        @click="openModal()"
+        class="br-link me-2 ms-1 d-inline-flex align-items-center"
+        data-bs-toggle="tooltip"
+        data-bs-placement="top"
+        title="Agregar cliente">
+        <i class="fa-solid fa-user-plus" aria-hidden="true"></i>
     </a>
 
     <!-- Modal Create -->

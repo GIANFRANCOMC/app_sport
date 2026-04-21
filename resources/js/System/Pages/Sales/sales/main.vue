@@ -86,12 +86,12 @@
                             <table class="table">
                                 <thead class="align-middle bg-secondary text-center">
                                     <tr>
-                                        <th class="text-white" style="width: 10%;">#</th>
-                                        <th class="text-white" style="width: 20%;">DESCRIPCIÓN</th>
-                                        <th class="text-white min-w-150px" style="width: 20%;">CANTIDAD</th>
-                                        <th class="text-white min-w-150px" style="width: 20%;">PRECIO UNITARIO</th>
-                                        <th class="text-white min-w-150px" style="width: 20%;">TOTAL</th>
-                                        <th class="text-white" style="width: 10%;">ACCIONES</th>
+                                        <th class="text-white fw-semibold" style="width: 10%;">#</th>
+                                        <th class="text-white fw-semibold" style="width: 20%;">DESCRIPCIÓN</th>
+                                        <th class="text-white fw-semibold min-w-150px" style="width: 20%;">CANTIDAD</th>
+                                        <th class="text-white fw-semibold min-w-150px" style="width: 20%;">PRECIO UNITARIO</th>
+                                        <th class="text-white fw-semibold min-w-150px" style="width: 20%;">TOTAL</th>
+                                        <th class="text-white fw-semibold" style="width: 10%;">ACCIONES</th>
                                     </tr>
                                 </thead>
                                 <tbody class="table-border-bottom-0 bg-white">
@@ -199,8 +199,28 @@
                                     </template>
                                     <template v-else>
                                         <tr>
-                                            <td class="text-center" colspan="99">
-                                                <WithoutData type="text"/>
+                                            <td class="pt-0 border-0" colspan="99">
+                                                <div class="br-sale-detail-empty">
+                                                    <div class="br-sale-detail-empty__top">
+                                                        <div class="br-sale-detail-empty__body">
+                                                            <img
+                                                                class="br-sale-detail-empty__img"
+                                                                :src="saleDetailEmptyImageUrl"
+                                                                alt=""
+                                                                width="100"
+                                                                height="84"
+                                                                loading="lazy"
+                                                                decoding="async"/>
+                                                            <p class="br-sale-detail-empty__text">
+                                                                <span v-text="MODULE.texts.emptySaleDetailPrefix"></span><a
+                                                                    href="#"
+                                                                    class="br-link br-sale-detail-empty__link"
+                                                                    @click.prevent="modalAddDetail({})"
+                                                                    v-text="MODULE.texts.actions.addDetail"></a><span v-text="MODULE.texts.emptySaleDetailSuffix"></span>
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                </div>
                                             </td>
                                         </tr>
                                     </template>
@@ -213,31 +233,60 @@
             </div>
         </div>
         <div class="col-lg-3 col-12">
-            <div class="card">
-                <div class="card-body">
-                    <div class="row g-2">
-                        <InputTextArea
-                            v-model="forms[entity].createUpdate.data.observation"
-                            hasDiv
-                            :divClass="['p-0 mb-3']"
-                            :title="MODULE.texts.form.observation"
-                            :titleClass="[config.forms.classes.title]"
-                            hasTextBottom
-                            :textBottomInfo="forms[entity].createUpdate.errors?.observation"/>
-                        <button class="btn btn-info-1 waves-effect w-100" @click="viewSubscriptions({})">
-                            <i class="fa-solid fa-binoculars"></i>
-                            <span class="ms-2" v-text="MODULE.texts.actions.viewMemberships"></span>
-                        </button>
-                        <button class="btn btn-primary waves-effect w-100" @click="modalAddDetail({})">
-                            <i class="fa fa-plus"></i>
-                            <span class="ms-2" v-text="MODULE.texts.actions.addDetail"></span>
-                        </button>
-                        <button class="btn btn-success waves-effect w-100" @click="createUpdateEntity()">
-                            <i class="fa-solid fa-cash-register"></i>
-                            <span class="ms-2" v-text="MODULE.texts.actions.generateSale"></span>
-                        </button>
+            <div class="w-100 mb-2 mb-md-3">
+                <div class="br-observation-tile">
+                    <div
+                        role="button"
+                        tabindex="0"
+                        class="br-tap-field"
+                        :class="observationHasContent ? 'br-tap-field--has-value' : 'br-tap-field--empty'"
+                        @click="openObservationsModal"
+                        @keydown.enter.prevent="openObservationsModal"
+                        @keydown.space.prevent="openObservationsModal"
+                        :aria-label="observationsFieldAriaLabel">
+                        <div class="br-tap-field__head">
+                            <span class="br-tap-field__eyebrow" v-text="MODULE.texts.form.observation"></span>
+                            <i
+                                class="br-tap-field__icon"
+                                :class="observationHasContent ? 'fa-solid fa-square-pen' : 'fa-solid fa-note-sticky'"
+                                aria-hidden="true"></i>
+                        </div>
+                        <span
+                            v-if="observationHasContent"
+                            class="br-tap-field__value"
+                            :class="{ 'br-tap-field__value--expanded': observationPreviewExpanded }"
+                            :title="observationPreviewTooltip"
+                            v-text="observationDisplayPreview"></span>
+                        <span v-else class="br-tap-field__placeholder" v-text="MODULE.texts.observations.discreteEmpty"></span>
                     </div>
+                    <button
+                        v-if="observationHasContent && observationIsTruncatable"
+                        type="button"
+                        class="br-observation-tile__toggle"
+                        :aria-expanded="observationPreviewExpanded"
+                        @click.stop="toggleObservationPreviewExpand">
+                        <span v-text="observationPreviewToggleLabel"></span>
+                    </button>
                 </div>
+                <p
+                    v-if="forms[entity].createUpdate.errors?.observation?.length"
+                    class="small mb-0 mt-2"
+                    :class="config.forms.errors.styles.default"
+                    v-html="observationErrorsDisplay"></p>
+            </div>
+            <div class="br-sale-sidebar-actions">
+                <div class="br-sale-sidebar-actions__pair">
+                    <button type="button" class="br-btn br-btn-sm br-btn-primary" @click="modalAddDetail({})">
+                        <span v-text="MODULE.texts.actions.addDetail"></span>
+                    </button>
+                    <button type="button" class="br-btn br-btn-sm br-btn-secondary" @click="viewSubscriptions({})">
+                        <span v-text="MODULE.texts.actions.viewMemberships"></span>
+                    </button>
+                </div>
+                <button type="button" class="br-btn br-btn-success br-sale-sidebar-actions__cta" @click="createUpdateEntity()">
+                    <i class="fa-solid fa-cash-register" aria-hidden="true"></i>
+                    <span v-text="MODULE.texts.actions.generateSale"></span>
+                </button>
             </div>
         </div>
     </div>
@@ -428,6 +477,35 @@
         </div>
     </div>
 
+    <div class="modal fade" :id="forms[entity].createUpdate.extras.modals.observations.id" data-bs-backdrop="static" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-dialog-centered modal-md" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title text-uppercase fw-bold" v-text="MODULE.texts.modal.observations"></h5>
+                    <button type="button" class="btn-header-modal" data-bs-dismiss="modal" :aria-label="MODULE.texts.actions.close">
+                        <i class="fa fa-times icon-close-modal"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <InputTextArea
+                        v-model="forms[entity].createUpdate.extras.modals.observations.draft"
+                        hasDiv
+                        :divClass="['p-0']"
+                        title=""
+                        :placeholder="MODULE.texts.observations.modalPlaceholder"
+                        :rows="6"/>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary waves-effect" data-bs-dismiss="modal" v-text="MODULE.texts.actions.close"></button>
+                    <button type="button" class="btn btn-primary waves-effect" @click="saveObservationsModal">
+                        <i class="fa fa-save"></i>
+                        <span class="ms-2" v-text="MODULE.texts.actions.saveObservations"></span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="modal fade" :id="forms[entity].createUpdate.extras.modals.subscriptions.id" data-bs-backdrop="static" tabindex="-1" role="dialog">
         <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
             <div class="modal-content">
@@ -562,6 +640,7 @@
 
 <script>
 import * as Alerts         from "@System/Helpers/Alerts.js";
+import * as Constants      from "@System/Helpers/Constants.js";
 import { initCrudModule }  from "@System/Helpers/ModuleFactory.js";
 import * as Requests       from "@System/Helpers/Requests.js";
 import * as Utils          from "@System/Helpers/Utils.js";
@@ -574,6 +653,13 @@ const MODULE_CONFIG = {
 };
 
 const TEXTS = {
+    observations: {
+        emptyHint: "Sin observaciones registradas.",
+        discreteEmpty: "Sin observaciones",
+        modalPlaceholder: "Escriba aquí la observación de la venta…",
+        viewMore: "Ver más",
+        viewLess: "Ver menos"
+    },
     form: {
         branch: "Sucursal",
         serie: "Tipo de comprobante",
@@ -599,13 +685,20 @@ const TEXTS = {
         duplicate: "Duplicar",
         refresh: "Actualizar",
         newSale: "Nueva venta",
-        send: "Enviar"
+        send: "Enviar",
+        openObservations: "Diligenciar observaciones",
+        observationAdd: "Agregar observación",
+        observationEdit: "Modificar observación",
+        saveObservations: "Guardar"
     },
     modal: {
         add: "AGREGAR DETALLE",
         edit: "EDITAR DETALLE",
-        activeMemberships: "Membresías activas"
-    }
+        activeMemberships: "Membresías activas",
+        observations: "Observaciones"
+    },
+    emptySaleDetailPrefix: "No hay productos en el detalle. Agréguelos con la acción ",
+    emptySaleDetailSuffix: "."
 };
 
 const MODULE = {
@@ -660,6 +753,10 @@ export default {
                         },
                         errors: {}
                     },
+                    observations: {
+                        id: Utils.uuid(),
+                        draft: ""
+                    },
                     subscriptions: {
                         id: Utils.uuid(),
                         titles: {
@@ -698,7 +795,8 @@ export default {
 
         return {
             ...crudModule,
-            MODULE: MODULE
+            MODULE: MODULE,
+            observationPreviewExpanded: false
         };
 
     },
@@ -747,6 +845,29 @@ export default {
                 resolve(true);
 
             });
+
+        },
+        openObservationsModal() {
+
+            const obs = this.forms[this.entity].createUpdate.data.observation;
+
+            this.forms[this.entity].createUpdate.extras.modals.observations.draft = obs == null ? "" : String(obs);
+
+            Alerts.modals({type: "show", id: this.forms[this.entity].createUpdate.extras.modals.observations.id});
+
+        },
+        toggleObservationPreviewExpand() {
+
+            this.observationPreviewExpanded = !this.observationPreviewExpanded;
+
+        },
+        saveObservationsModal() {
+
+            const draft = this.forms[this.entity].createUpdate.extras.modals.observations.draft;
+
+            this.forms[this.entity].createUpdate.data.observation = draft == null ? "" : String(draft);
+
+            Alerts.modals({type: "hide", id: this.forms[this.entity].createUpdate.extras.modals.observations.id});
 
         },
         // Actions modal detail
@@ -1034,6 +1155,7 @@ export default {
                     // this.forms[this.entity].createUpdate.data.issue_date  = Utils.getCurrentDate();
                     // this.forms[this.entity].createUpdate.data.holder      = null;
                     this.forms[this.entity].createUpdate.data.observation = "";
+                    this.forms[this.entity].createUpdate.extras.modals.observations.draft = "";
                     this.forms[this.entity].createUpdate.data.status      = "";
                     // this.forms[this.entity].createUpdate.data.details     = [];
                     break;
@@ -1468,6 +1590,83 @@ export default {
             return this.fixedNumber(total);
 
         },
+        saleDetailEmptyImageUrl() {
+
+            return "/System/assets/img/utils/without_data/empty_sale_detail.svg";
+
+        },
+        observationFullText() {
+
+            const raw = this.forms[this.entity].createUpdate.data.observation;
+
+            if(!this.isDefined({value: raw})) return "";
+
+            return String(raw).trim();
+
+        },
+        observationHasContent() {
+
+            return this.observationFullText.length > 0;
+
+        },
+        /** Preview length before "Ver más" (sidebar). */
+        observationPreviewCharLimit() {
+
+            return 400;
+
+        },
+        observationIsTruncatable() {
+
+            return this.observationFullText.length > this.observationPreviewCharLimit;
+
+        },
+        observationDisplayPreview() {
+
+            const full = this.observationFullText;
+
+            if(!full) return "";
+
+            if(this.observationPreviewExpanded || !this.observationIsTruncatable) return full;
+
+            const max = this.observationPreviewCharLimit;
+
+            return `${full.slice(0, max)}…`;
+
+        },
+        observationPreviewTooltip() {
+
+            if(!this.observationHasContent || this.observationPreviewExpanded || !this.observationIsTruncatable) return "";
+
+            return this.observationFullText;
+
+        },
+        observationPreviewToggleLabel() {
+
+            return this.observationPreviewExpanded ? this.MODULE.texts.observations.viewLess : this.MODULE.texts.observations.viewMore;
+
+        },
+        observationErrorsDisplay() {
+
+            const err = this.forms[this.entity].createUpdate.errors?.observation;
+
+            if(!err) return "";
+
+            return Array.isArray(err) ? err.join("<br/>") : String(err);
+
+        },
+        observationsCtaButtonLabel() {
+
+            const raw = this.forms[this.entity].createUpdate.data.observation;
+            const has = raw != null && String(raw).trim() !== "";
+
+            return has ? this.MODULE.texts.actions.observationEdit : this.MODULE.texts.actions.observationAdd;
+
+        },
+        observationsFieldAriaLabel() {
+
+            return `${this.MODULE.texts.form.observation}. ${this.observationsCtaButtonLabel}`;
+
+        },
         totalModalDetail: function() {
 
             return this.calculateTotal({item: this.forms[this.entity].createUpdate.extras.modals.details.data});
@@ -1483,6 +1682,11 @@ export default {
         }
     },
     watch: {
+        "forms.sales.createUpdate.data.observation"() {
+
+            this.observationPreviewExpanded = false;
+
+        },
         "forms.sales.createUpdate.data.branch"() {
 
             this.forms[this.entity].createUpdate.data.serie = (this.series).length > 0 ? this.series[0] : null;

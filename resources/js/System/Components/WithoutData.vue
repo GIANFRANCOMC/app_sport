@@ -26,10 +26,17 @@ export default {
             type: String,
             required: false,
             default: Constants.generalConfig.messages.withoutResults
+        },
+        imageSrc: {
+            type: String,
+            required: false,
+            default: null
         }
     },
     computed: {
         image() {
+
+            if(this.imageSrc) return this.imageSrc;
 
             return `${Constants.requestRoute}/System/assets/img/utils/without_data/2.png`;
 
