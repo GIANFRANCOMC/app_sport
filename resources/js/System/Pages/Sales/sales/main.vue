@@ -84,14 +84,14 @@
                     <div class="row g-3">
                         <div class="table-responsive">
                             <table class="table">
-                                <thead class="align-middle bg-secondary text-center">
+                                <thead class="text-center">
                                     <tr>
-                                        <th class="text-white fw-semibold" style="width: 10%;">#</th>
-                                        <th class="text-white fw-semibold" style="width: 20%;">DESCRIPCIÓN</th>
-                                        <th class="text-white fw-semibold min-w-150px" style="width: 20%;">CANTIDAD</th>
-                                        <th class="text-white fw-semibold min-w-150px" style="width: 20%;">PRECIO UNITARIO</th>
-                                        <th class="text-white fw-semibold min-w-150px" style="width: 20%;">TOTAL</th>
-                                        <th class="text-white fw-semibold" style="width: 10%;">ACCIONES</th>
+                                        <th style="width: 10%;">#</th>
+                                        <th class="min-w-150px" style="width: 20%;">DESCRIPCIÓN</th>
+                                        <th class="min-w-150px" style="width: 20%;">CANTIDAD</th>
+                                        <th class="min-w-150px" style="width: 20%;">PRECIO UNITARIO</th>
+                                        <th class="min-w-150px" style="width: 20%;">TOTAL</th>
+                                        <th style="width: 10%;">ACCIONES</th>
                                     </tr>
                                 </thead>
                                 <tbody class="table-border-bottom-0 bg-white">
@@ -109,7 +109,7 @@
                                                         v-model="record.quantity"
                                                         @change="calculateDuration({mode: 'record', record})"
                                                         :decimals="getItemDecimals({mode: 'result', record})"/>
-                                                    <div class="d-flex justify-content-center gap-1 mt-1">
+                                                    <div class="d-flex justify-content-center gap-2 mt-2">
                                                         <button class="btn btn-danger btn-xs waves-effect" type="button" @click="changeQuantityDetail({record, keyRecord, type: 'subtract'})">
                                                             <i class="fa fa-minus"></i>
                                                         </button>
@@ -162,9 +162,7 @@
                                             <template v-if="record?.extras?.showDetail">
                                                 <template v-if="isSubscription(record?.type)">
                                                     <tr>
-                                                        <td class="bg-light text-center colon-at-end fw-bold text-dark">
-                                                            Detalle
-                                                        </td>
+                                                        <td class="bg-light text-center colon-at-end fw-bold text-dark">Detalle</td>
                                                         <td colspan="5">
                                                             <div class="row g-3 pt-3 pb-4 px-4">
                                                                 <div class="col-6">
@@ -199,7 +197,7 @@
                                     </template>
                                     <template v-else>
                                         <tr>
-                                            <td class="pt-0 border-0" colspan="99">
+                                            <td class="pt-1 pb-0 border-0" colspan="99">
                                                 <div class="br-sale-detail-empty">
                                                     <div class="br-sale-detail-empty__top">
                                                         <div class="br-sale-detail-empty__body">
@@ -212,11 +210,9 @@
                                                                 loading="lazy"
                                                                 decoding="async"/>
                                                             <p class="br-sale-detail-empty__text">
-                                                                <span v-text="MODULE.texts.emptySaleDetailPrefix"></span><a
-                                                                    href="#"
-                                                                    class="br-link br-sale-detail-empty__link"
-                                                                    @click.prevent="modalAddDetail({})"
-                                                                    v-text="MODULE.texts.actions.addDetail"></a><span v-text="MODULE.texts.emptySaleDetailSuffix"></span>
+                                                                <span v-text="MODULE.texts.emptySaleDetailPrefix"></span>
+                                                                <a href="javascript:void(0)" class="br-link br-sale-detail-empty__link" @click.prevent="modalAddDetail({})" v-text="MODULE.texts.actions.addDetail"></a>
+                                                                <span v-text="MODULE.texts.emptySaleDetailSuffix"></span>
                                                             </p>
                                                         </div>
                                                     </div>
@@ -246,17 +242,15 @@
                         :aria-label="observationsFieldAriaLabel">
                         <div class="br-tap-field__head">
                             <span class="br-tap-field__eyebrow" v-text="MODULE.texts.form.observation"></span>
-                            <i
-                                class="br-tap-field__icon"
-                                :class="observationHasContent ? 'fa-solid fa-square-pen' : 'fa-solid fa-note-sticky'"
-                                aria-hidden="true"></i>
+                            <i class="br-tap-field__icon" :class="observationHasContent ? 'fa-solid fa-square-pen' : 'fa-solid fa-note-sticky'" aria-hidden="true"></i>
                         </div>
                         <span
                             v-if="observationHasContent"
                             class="br-tap-field__value"
                             :class="{ 'br-tap-field__value--expanded': observationPreviewExpanded }"
                             :title="observationPreviewTooltip"
-                            v-text="observationDisplayPreview"></span>
+                            v-text="observationDisplayPreview">
+                        </span>
                         <span v-else class="br-tap-field__placeholder" v-text="MODULE.texts.observations.discreteEmpty"></span>
                     </div>
                     <button
