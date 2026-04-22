@@ -121,8 +121,8 @@
                                                 <td class="text-center">
                                                     <InputNumber v-model="record.price">
                                                         <template v-slot:inputGroupPrepend v-if="isDefined({value: record?.currency})">
-                                                            <div class="input-group-text bg-light text-dark">
-                                                                <span v-text="record?.currency?.sign"></span>
+                                                            <div class="input-group-text br-input-currency-addon">
+                                                                <span class="br-input-currency-addon__sign" v-text="record?.currency?.sign"></span>
                                                             </div>
                                                         </template>
                                                     </InputNumber>
@@ -270,14 +270,14 @@
             </div>
             <div class="br-sale-sidebar-actions">
                 <div class="br-sale-sidebar-actions__pair">
-                    <button type="button" class="br-btn br-btn-sm br-btn-primary" @click="modalAddDetail({})">
+                    <button type="button" class="br-btn br-btn-sm br-btn-primary waves-effect" @click="modalAddDetail({})">
                         <span v-text="MODULE.texts.actions.addDetail"></span>
                     </button>
-                    <button type="button" class="br-btn br-btn-sm br-btn-secondary" @click="viewSubscriptions({})">
+                    <button type="button" class="br-btn br-btn-sm br-btn-secondary waves-effect" @click="viewSubscriptions({})">
                         <span v-text="MODULE.texts.actions.viewMemberships"></span>
                     </button>
                 </div>
-                <button type="button" class="br-btn br-btn-success br-sale-sidebar-actions__cta" @click="createUpdateEntity()">
+                <button type="button" class="br-btn br-btn-success br-sale-sidebar-actions__cta waves-effect" @click="createUpdateEntity()">
                     <i class="fa-solid fa-cash-register" aria-hidden="true"></i>
                     <span v-text="MODULE.texts.actions.generateSale"></span>
                 </button>
@@ -375,8 +375,8 @@
                             xl="4"
                             lg="4">
                             <template v-slot:inputGroupPrepend v-if="isDefined({value: forms[entity].createUpdate.extras.modals.details.data.item?.data?.currency})">
-                                <div class="input-group-text bg-light text-dark">
-                                    <span v-text="forms[entity].createUpdate.extras.modals.details.data.item?.data?.currency?.sign"></span>
+                                <div class="input-group-text br-input-currency-addon">
+                                    <span class="br-input-currency-addon__sign" v-text="forms[entity].createUpdate.extras.modals.details.data.item?.data?.currency?.sign"></span>
                                 </div>
                             </template>
                         </InputNumber>
@@ -388,8 +388,8 @@
                             xl="4"
                             lg="4">
                             <template v-slot:inputGroupPrepend v-if="isDefined({value: forms[entity].createUpdate.data.currency?.data})">
-                                <div class="input-group-text bg-light text-dark">
-                                    <span v-text="forms[entity].createUpdate.data.currency?.data?.sign"></span>
+                                <div class="input-group-text br-input-currency-addon">
+                                    <span class="br-input-currency-addon__sign" v-text="forms[entity].createUpdate.data.currency?.data?.sign"></span>
                                 </div>
                             </template>
                             <template v-slot:input>

@@ -15,7 +15,7 @@
  *
  * Mapa de secciones (mantener al añadir bloques):
  *   :root tokens → tablas thead → layout stack/sidebar venta → vacío detalle venta → tap field / observación
- *   → botones (.br-btn*) → enlaces (.br-link*) → layout app (.br-layout) → dashboard → FAB / utilidades finales
+ *   → prefijo moneda input → botones (.br-btn*) → enlaces (.br-link*) → layout app → dashboard → FAB
  */
 
 /* -------------------------------------------------------------------------
@@ -441,6 +441,39 @@ body.br-layout .table.table-sm > thead > tr > th {
   font-size: 0.8125rem;
   line-height: 1.45;
   color: var(--br-text-placeholder);
+}
+
+/* -------------------------------------------------------------------------
+ * [br] Prefijo moneda — .input-group-text con InputNumber / precio (ventas, modales)
+ * ------------------------------------------------------------------------- */
+.br-input-currency-addon {
+  justify-content: center;
+  min-width: 0;
+  width: auto;
+  padding-left: 0.48rem !important;
+  padding-right: 0.48rem !important;
+  font-weight: 500 !important;
+  font-size: 0.875rem;
+  line-height: 1.25;
+  color: var(--br-on-secondary) !important;
+  background: linear-gradient(
+    180deg,
+    var(--br-secondary) 0%,
+    var(--br-secondary-hover) 100%
+  ) !important;
+  border-color: var(--br-secondary) !important;
+  font-variant-numeric: tabular-nums;
+  box-shadow: var(--br-shadow-sm);
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.br-input-currency-addon__sign {
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 /* -------------------------------------------------------------------------
