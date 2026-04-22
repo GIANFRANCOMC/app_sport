@@ -90,7 +90,7 @@
                                         <th class="min-w-150px" style="width: 20%;">DESCRIPCIÓN</th>
                                         <th class="min-w-150px" style="width: 20%;">CANTIDAD</th>
                                         <th class="min-w-150px" style="width: 20%;">PRECIO UNITARIO</th>
-                                        <th class="min-w-150px" style="width: 20%;">TOTAL</th>
+                                        <th class="min-w-150px text-end pe-3" style="width: 20%;">TOTAL</th>
                                         <th style="width: 10%;">ACCIONES</th>
                                     </tr>
                                 </thead>
@@ -109,7 +109,7 @@
                                                         v-model="record.quantity"
                                                         @change="calculateDuration({mode: 'record', record})"
                                                         :decimals="getItemDecimals({mode: 'result', record})"/>
-                                                    <div class="d-flex justify-content-center gap-2 mt-2">
+                                                    <div class="d-flex justify-content-center gap-2 mt-1">
                                                         <button class="btn btn-danger btn-xs waves-effect" type="button" @click="changeQuantityDetail({record, keyRecord, type: 'subtract'})">
                                                             <i class="fa fa-minus"></i>
                                                         </button>
@@ -127,10 +127,10 @@
                                                         </template>
                                                     </InputNumber>
                                                 </td>
-                                                <td class="text-center">
-                                                    <span class="text-break fw-bold">
-                                                        <small v-text="record.currency?.sign ?? ''"></small>
-                                                        <small v-text="separatorNumber(calculateTotal({item: record}))" class="ms-1"></small>
+                                                <td class="text-end align-middle pe-3" :title="MODULE.texts.form.total">
+                                                    <span class="br-amount-inline">
+                                                        <span class="br-amount-inline__sign" v-text="record.currency?.sign ?? ''"></span>
+                                                        <span class="br-amount-inline__amount" v-text="separatorNumber(calculateTotal({item: record}))"></span>
                                                     </span>
                                                 </td>
                                                 <td class="text-center">
@@ -162,7 +162,7 @@
                                             <template v-if="record?.extras?.showDetail">
                                                 <template v-if="isSubscription(record?.type)">
                                                     <tr>
-                                                        <td class="bg-light text-center colon-at-end fw-bold text-dark">Detalle</td>
+                                                        <td class="text-center align-middle br-table-expand-label colon-at-end" v-text="MODULE.texts.form.detailRowMembershipLabel"></td>
                                                         <td colspan="5">
                                                             <div class="row g-3 pt-3 pb-4 px-4">
                                                                 <div class="col-6">
@@ -185,33 +185,36 @@
                                                 </template>
                                             </template>
                                         </template>
-                                        <tr class="fs-5 fw-bold">
-                                            <td colspan="4" class="text-end">TOTAL :</td>
-                                            <td colspan="2" class="text-start">
-                                                <span class="text-break">
-                                                    <span v-text="forms[entity].createUpdate.data.currency?.data?.sign ?? ''"></span>
-                                                    <span v-text="separatorNumber(total)" class="ms-1"></span>
+                                        <tr class="br-table-footer-stripe">
+                                            <td colspan="4" class="text-end align-middle br-table-footer-stripe__label">
+                                                <span v-text="MODULE.texts.form.footerTotalLabel" class="text-uppercase"></span>
+                                            </td>
+                                            <td class="text-end align-middle pe-3">
+                                                <span class="br-amount-inline br-amount-inline--emphasis">
+                                                    <span class="br-amount-inline__sign" v-text="forms[entity].createUpdate.data.currency?.data?.sign ?? ''"></span>
+                                                    <span class="br-amount-inline__amount" v-text="separatorNumber(total)"></span>
                                                 </span>
                                             </td>
+                                            <td class="align-middle"></td>
                                         </tr>
                                     </template>
                                     <template v-else>
                                         <tr>
                                             <td class="pt-1 pb-0 border-0" colspan="99">
-                                                <div class="br-sale-detail-empty">
-                                                    <div class="br-sale-detail-empty__top">
-                                                        <div class="br-sale-detail-empty__body">
+                                                <div class="br-table-detail-empty">
+                                                    <div class="br-table-detail-empty__top">
+                                                        <div class="br-table-detail-empty__body">
                                                             <img
-                                                                class="br-sale-detail-empty__img"
+                                                                class="br-table-detail-empty__img"
                                                                 :src="saleDetailEmptyImageUrl"
                                                                 alt=""
                                                                 width="100"
                                                                 height="84"
                                                                 loading="lazy"
                                                                 decoding="async"/>
-                                                            <p class="br-sale-detail-empty__text">
+                                                            <p class="br-table-detail-empty__text">
                                                                 <span v-text="MODULE.texts.emptySaleDetailPrefix"></span>
-                                                                <a href="javascript:void(0)" class="br-link br-sale-detail-empty__link" @click.prevent="modalAddDetail({})" v-text="MODULE.texts.actions.addDetail"></a>
+                                                                <a href="javascript:void(0)" class="br-link br-table-detail-empty__link" @click.prevent="modalAddDetail({})" v-text="MODULE.texts.actions.addDetail"></a>
                                                                 <span v-text="MODULE.texts.emptySaleDetailSuffix"></span>
                                                             </p>
                                                         </div>
@@ -665,7 +668,9 @@ const TEXTS = {
         quantityPeriods: "Cantidad de períodos",
         price: "Precio",
         total: "Total",
+        footerTotalLabel: "Importe total:",
         membershipDetail: "Detalle de la membresía",
+        detailRowMembershipLabel: "Membresía",
         startDate: "Fecha de inicio",
         endDate: "Fecha de finalización"
     },

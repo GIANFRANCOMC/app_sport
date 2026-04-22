@@ -14,8 +14,9 @@
  * Colores logo: #2899E5 (primario), #1A1A35 (secundario). Estilo: escalas tipo Tailwind, UX.
  *
  * Mapa de secciones (mantener al añadir bloques):
- *   :root tokens → tablas thead → layout stack/sidebar venta → vacío detalle venta → tap field / observación
- *   → prefijo moneda input → botones (.br-btn*) → enlaces (.br-link*) → layout app → dashboard → FAB
+ *   :root tokens → tablas thead → layout stack/sidebar venta
+ *   → detalle tabla (--br-amount-*, --br-table-footer-*, .br-amount-inline, .br-table-footer-stripe, …)
+ *   → tap field / observación → prefijo moneda input → botones (.br-btn*) → enlaces (.br-link*) → layout app → dashboard → FAB
  */
 
 /* -------------------------------------------------------------------------
@@ -95,6 +96,39 @@
   --br-table-thead-mid-c: #4d5a76;
   --br-table-thead-edge: rgba(91, 195, 255, 0.32);
   --br-table-thead-text: #ffffff;
+
+  /**
+   * Detalle tabular — importe en línea (signo + valor) y pie de totales.
+   * Reutilizable en ventas, compras, cotizaciones, etc.
+   */
+  --br-amount-inline-lh: 1.35;
+  --br-amount-sign-size: 0.8125rem;
+  --br-amount-sign-weight: 600;
+  --br-amount-sign-gap: 0.28rem;
+  --br-amount-value-size: 0.9375rem;
+  --br-amount-value-weight: 700;
+  --br-amount-em-sign-size: 0.875rem;
+  --br-amount-em-value-size: 1.125rem;
+  --br-amount-sign-size-sm: 0.75rem;
+  --br-amount-value-size-sm: 0.875rem;
+  --br-amount-em-value-size-sm: 1rem;
+  --br-amount-sign-gap-sm: 0.2rem;
+  --br-table-footer-label-size: 1rem;
+  --br-table-footer-label-weight: 700;
+  --br-table-footer-label-tracking: 0.02em;
+  --br-table-footer-label-size-sm: 0.9375rem;
+  --br-table-footer-cell-pad-y: 0.7rem;
+  --br-table-footer-stripe-fallback: var(--br-primary-soft);
+  --br-table-footer-stripe: color-mix(in srgb, var(--br-primary-soft) 56%, var(--br-primary-muted));
+
+  /**
+   * Celda rótulo de fila expandida (p. ej. membresía) — acento secundario, sin borde.
+   */
+  --br-table-expand-label-size: 0.6875rem;
+  --br-table-expand-label-weight: 700;
+  --br-table-expand-label-tracking: 0.08em;
+  --br-table-expand-label-bg-fallback: #f2f2f6;
+  --br-table-expand-label-bg: color-mix(in srgb, var(--br-secondary-soft) 38%, white);
 }
 
 /* -------------------------------------------------------------------------
@@ -188,9 +222,92 @@ body.br-layout .table.table-sm > thead > tr > th {
 }
 
 /* -------------------------------------------------------------------------
- * [br] Detalle de venta vacío (sales/main.vue) — ilustración + texto + .br-link
+ * [br] Detalle tabular — importe en línea, pie resaltado, fila expandida, vacío
+ * Tokens: --br-amount-*, --br-table-footer-*, --br-table-expand-* (:root).
+ * Reutilizable en cualquier módulo con tabla de líneas (ventas, compras, etc.).
  * ------------------------------------------------------------------------- */
-.br-sale-detail-empty {
+
+/* Rótulo de celda en fila expandida (p. ej. “Membresía” + fechas) */
+.br-table-expand-label {
+  font-size: var(--br-table-expand-label-size);
+  font-weight: var(--br-table-expand-label-weight);
+  letter-spacing: var(--br-table-expand-label-tracking);
+  text-transform: uppercase;
+  color: var(--br-secondary) !important;
+  background-color: var(--br-table-expand-label-bg-fallback) !important;
+  background-color: var(--br-table-expand-label-bg) !important;
+  white-space: nowrap;
+}
+
+/* Signo + monto en una celda (total por línea, totales auxiliares) */
+.br-amount-inline {
+  display: inline-block;
+  font-variant-numeric: tabular-nums;
+  line-height: var(--br-amount-inline-lh);
+  white-space: nowrap;
+  max-width: 100%;
+}
+
+.br-amount-inline__sign {
+  font-size: var(--br-amount-sign-size);
+  font-weight: var(--br-amount-sign-weight);
+  color: var(--br-text-muted);
+  margin-right: var(--br-amount-sign-gap);
+}
+
+.br-amount-inline__amount {
+  font-size: var(--br-amount-value-size);
+  font-weight: var(--br-amount-value-weight);
+  color: var(--br-secondary);
+}
+
+/* Énfasis: pie de tabla / total general (misma estructura, mayor escala) */
+.br-amount-inline--emphasis .br-amount-inline__sign {
+  font-size: var(--br-amount-em-sign-size);
+}
+
+.br-amount-inline--emphasis .br-amount-inline__amount {
+  font-size: var(--br-amount-em-value-size);
+}
+
+/* Franja inferior del detalle (!important ante .table / .bg-white del tbody) */
+body.br-layout .br-table-footer-stripe > td {
+  padding-top: var(--br-table-footer-cell-pad-y);
+  padding-bottom: var(--br-table-footer-cell-pad-y);
+  vertical-align: middle;
+  background-color: var(--br-table-footer-stripe-fallback) !important;
+  background-color: var(--br-table-footer-stripe) !important;
+}
+
+body.br-layout .br-table-footer-stripe__label {
+  font-size: var(--br-table-footer-label-size);
+  font-weight: var(--br-table-footer-label-weight);
+  letter-spacing: var(--br-table-footer-label-tracking);
+  color: var(--br-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 575.98px) {
+  .br-amount-inline__sign {
+    font-size: var(--br-amount-sign-size-sm);
+    margin-right: var(--br-amount-sign-gap-sm);
+  }
+
+  .br-amount-inline__amount {
+    font-size: var(--br-amount-value-size-sm);
+  }
+
+  .br-amount-inline--emphasis .br-amount-inline__amount {
+    font-size: var(--br-amount-em-value-size-sm);
+  }
+
+  body.br-layout .br-table-footer-stripe__label {
+    font-size: var(--br-table-footer-label-size-sm);
+  }
+}
+
+/* Tabla de detalle sin filas: ilustración + texto + .br-link */
+.br-table-detail-empty {
   display: flex;
   flex-direction: column;
   align-items: stretch;
@@ -204,7 +321,7 @@ body.br-layout .table.table-sm > thead > tr > th {
   box-shadow: none;
 }
 
-.br-sale-detail-empty__top {
+.br-table-detail-empty__top {
   display: flex;
   justify-content: center;
   width: 100%;
@@ -212,7 +329,7 @@ body.br-layout .table.table-sm > thead > tr > th {
   background: transparent;
 }
 
-.br-sale-detail-empty__body {
+.br-table-detail-empty__body {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -220,7 +337,7 @@ body.br-layout .table.table-sm > thead > tr > th {
   max-width: min(36rem, 100%);
 }
 
-.br-sale-detail-empty__img {
+.br-table-detail-empty__img {
   display: block;
   flex-shrink: 0;
   width: min(88px, 22vw);
@@ -231,7 +348,7 @@ body.br-layout .table.table-sm > thead > tr > th {
   pointer-events: none;
 }
 
-.br-sale-detail-empty__text {
+.br-table-detail-empty__text {
   margin: 0.45rem 0 0;
   max-width: 32rem;
   padding: 0 0.75rem;
@@ -243,26 +360,26 @@ body.br-layout .table.table-sm > thead > tr > th {
   text-wrap: balance;
 }
 
-.br-sale-detail-empty__text .br-sale-detail-empty__link {
+.br-table-detail-empty__text .br-table-detail-empty__link {
   display: inline;
   font-weight: 600;
 }
 
 @media (min-width: 768px) {
-  .br-sale-detail-empty {
+  .br-table-detail-empty {
     padding: 0.85rem 0 0.4rem;
   }
 
-  .br-sale-detail-empty__top {
+  .br-table-detail-empty__top {
     padding: 1rem 1.25rem 1.1rem;
   }
 
-  .br-sale-detail-empty__img {
+  .br-table-detail-empty__img {
     width: 100px;
     max-height: 84px;
   }
 
-  .br-sale-detail-empty__text {
+  .br-table-detail-empty__text {
     font-size: 0.9375rem;
   }
 }
@@ -453,8 +570,8 @@ body.br-layout .table.table-sm > thead > tr > th {
   padding-left: 0.48rem !important;
   padding-right: 0.48rem !important;
   font-weight: 500 !important;
-  font-size: 0.875rem;
-  line-height: 1.25;
+  font-size: 0.75rem !important;
+  line-height: 1.25 !important;
   color: var(--br-on-secondary) !important;
   background: linear-gradient(
     180deg,
@@ -470,7 +587,7 @@ body.br-layout .table.table-sm > thead > tr > th {
 
 .br-input-currency-addon__sign {
   font-weight: 500;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.02em !important;
   white-space: nowrap;
   user-select: none;
   -webkit-user-select: none;
