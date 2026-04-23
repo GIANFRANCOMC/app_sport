@@ -16,7 +16,7 @@
  * Mapa de secciones (mantener al añadir bloques):
  *   :root tokens → tablas thead → layout stack/sidebar venta
  *   → detalle tabla (--br-amount-*, --br-table-footer-*, .br-amount-inline, .br-table-footer-stripe, …)
- *   → tap field / observación → prefijo moneda input → botones (.br-btn*) → enlaces (.br-link*) → layout app → dashboard → FAB
+ *   → cabecera modal (.br-modal-header) → tap field / observación → prefijo moneda input → botones (.br-btn*) → enlaces (.br-link*) → layout app → dashboard → FAB
  */
 
 /* -------------------------------------------------------------------------
@@ -385,6 +385,79 @@ body.br-layout .br-table-footer-stripe__label {
 }
 
 /* -------------------------------------------------------------------------
+ * [br] Cabecera de modal — título centrado y franja (marca / contraste con el cuerpo)
+ * Uso: <div class="modal-header br-modal-header">…</div> en cualquier módulo logueado.
+ * ------------------------------------------------------------------------- */
+body.br-layout .modal-header.br-modal-header {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  min-height: 3.35rem;
+  padding: 0.85rem 3.35rem 0.85rem 1rem;
+  background-color: #e8ecf0;
+  background-color: color-mix(in srgb, var(--br-border) 44%, white);
+  background-image: none;
+  border-bottom: 1px solid var(--br-border);
+}
+
+body.br-layout .modal-header.br-modal-header .modal-title {
+  flex: 1 1 auto;
+  margin: 0 auto !important;
+  padding: 0 0.35rem;
+  text-align: center;
+  color: var(--br-secondary);
+  letter-spacing: 0.045em;
+}
+
+/*
+ * Cerrar modal: rojo de marca (fondo como antes); borde más suave. Posición en custom.css.
+ */
+body.br-layout .modal-header.br-modal-header .btn-header-modal {
+  background-color: var(--br-danger);
+  background-image: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--br-danger) 88%, white) 0%,
+    color-mix(in srgb, var(--br-danger-hover) 82%, white) 100%
+  );
+  border: 1px solid rgba(255, 255, 255, 0.38);
+  border-radius: var(--br-radius-sm);
+  box-shadow:
+    0 1px 2px rgba(26, 26, 53, 0.06),
+    0 2px 10px color-mix(in srgb, var(--br-danger) 32%, transparent);
+  transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+body.br-layout .modal-header.br-modal-header .btn-header-modal:hover {
+  background-color: var(--br-danger-hover);
+  background-image: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--br-danger-hover) 85%, white) 0%,
+    color-mix(in srgb, var(--br-danger) 78%, white) 100%
+  );
+  border-color: rgba(255, 255, 255, 0.52);
+  box-shadow:
+    0 2px 6px rgba(26, 26, 53, 0.08),
+    0 4px 14px color-mix(in srgb, var(--br-danger) 38%, transparent);
+}
+
+body.br-layout .modal-header.br-modal-header .btn-header-modal:active {
+  background-color: var(--br-danger-hover);
+  background-image: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--br-danger-hover) 78%, white) 0%,
+    var(--br-danger-hover) 100%
+  );
+}
+
+body.br-layout .modal-header.br-modal-header .btn-header-modal:focus-visible {
+  outline: none;
+  box-shadow: var(--br-focus-ring), 0 2px 10px color-mix(in srgb, var(--br-danger) 30%, transparent);
+}
+
+/* -------------------------------------------------------------------------
  * [br] Campo tocable — una sola acción (notas, descripciones cortas en sidebar)
  * Borde ligero; vacío = discontinuo; hover suave sin “caja” pesada.
  * ------------------------------------------------------------------------- */
@@ -575,10 +648,11 @@ body.br-layout .br-table-footer-stripe__label {
   color: var(--br-on-secondary) !important;
   background: linear-gradient(
     180deg,
-    var(--br-secondary) 0%,
-    var(--br-secondary-hover) 100%
+    color-mix(in srgb, var(--br-secondary) 86%, white) 0%,
+    color-mix(in srgb, var(--br-secondary-hover) 82%, white) 100%
   ) !important;
   border-color: var(--br-secondary) !important;
+  border-color: color-mix(in srgb, var(--br-secondary) 78%, white) !important;
   font-variant-numeric: tabular-nums;
   box-shadow: var(--br-shadow-sm);
   user-select: none;

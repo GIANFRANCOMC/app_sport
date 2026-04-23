@@ -292,7 +292,7 @@
     <div class="modal fade" :id="forms[entity].createUpdate.extras.modals.details.id" data-bs-backdrop="static" tabindex="-1" role="dialog">
         <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
             <div class="modal-content">
-                <div class="modal-header">
+                <div class="modal-header br-modal-header">
                     <h5 class="modal-title text-uppercase fw-bold" v-text="modalDetailsTitle"></h5>
                     <button type="button" class="btn-header-modal" data-bs-dismiss="modal">
                         <i class="fa fa-times icon-close-modal"></i>
@@ -465,9 +465,9 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary waves-effect" data-bs-dismiss="modal" v-text="MODULE.texts.actions.close"></button>
-                    <button type="button" :class="['btn waves-effect', ['store'].includes(forms[entity].createUpdate.extras.modals.details.data?.mode) ? 'btn-primary' : 'btn-warning']" @click="addDetail()">
-                        <i class="fa fa-save"></i>
-                        <span class="ms-2" v-text="MODULE.texts.actions.save"></span>
+                    <button type="button" class="btn waves-effect btn-primary" @click="addDetail()">
+                        <i class="fa fa-plus" aria-hidden="true"></i>
+                        <span class="ms-2" v-text="MODULE.texts.actions.add"></span>
                     </button>
                 </div>
             </div>
@@ -477,7 +477,7 @@
     <div class="modal fade" :id="forms[entity].createUpdate.extras.modals.observations.id" data-bs-backdrop="static" tabindex="-1" role="dialog">
         <div class="modal-dialog modal-dialog-centered modal-md" role="document">
             <div class="modal-content">
-                <div class="modal-header">
+                <div class="modal-header br-modal-header">
                     <h5 class="modal-title text-uppercase fw-bold" v-text="MODULE.texts.modal.observations"></h5>
                     <button type="button" class="btn-header-modal" data-bs-dismiss="modal" :aria-label="MODULE.texts.actions.close">
                         <i class="fa fa-times icon-close-modal"></i>
@@ -506,7 +506,7 @@
     <div class="modal fade" :id="forms[entity].createUpdate.extras.modals.subscriptions.id" data-bs-backdrop="static" tabindex="-1" role="dialog">
         <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
             <div class="modal-content">
-                <div class="modal-header">
+                <div class="modal-header br-modal-header">
                     <h5 class="modal-title text-uppercase fw-bold" v-text="MODULE.texts.modal.activeMemberships"></h5>
                     <button type="button" class="btn-header-modal" data-bs-dismiss="modal">
                         <i class="fa fa-times icon-close-modal"></i>
@@ -679,6 +679,7 @@ const TEXTS = {
         generateSale: "Generar venta",
         viewMemberships: "Ver membresías",
         close: "Cerrar",
+        add: "Agregar",
         save: "Guardar",
         delete: "Eliminar",
         duplicate: "Duplicar",
@@ -721,6 +722,7 @@ export default {
                     details: {
                         id: Utils.uuid(),
                         titles: {
+                            add: TEXTS.modal.add,
                             store: TEXTS.modal.add,
                             update: TEXTS.modal.edit
                         },
@@ -748,7 +750,7 @@ export default {
                                 formatted_type: "",
                                 showDetail: true
                             },
-                            mode: "store"
+                            mode: "add"
                         },
                         errors: {}
                     },
@@ -874,7 +876,7 @@ export default {
 
             let form = this.forms[this.entity].createUpdate.extras.modals.details;
 
-            form.data.mode = "store";
+            form.data.mode = "add";
 
             Alerts.modals({type: "show", id: form.id});
 
@@ -893,11 +895,11 @@ export default {
 
                 delete form.item.data;
 
-                if(["store"].includes(form.mode)) {
+                if(["add"].includes(form.mode)) {
 
                     (this.forms[this.entity].createUpdate.data.details).push({...form, id: Utils.uuid()});
 
-                    Alerts.toastrs({type: "success", subtitle: `Se ha agregado <b><small>(${form?.quantity})</small> ${form?.name}</b> al detalle de la venta.`});
+                    Alerts.generateAlert({type: "success", msgContent: `Se ha agregado <b><small>(${form?.quantity})</small> ${form?.name}</b> al detalle de la venta.`});
 
                     this.clearForm({functionName});
 
