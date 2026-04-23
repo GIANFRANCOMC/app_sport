@@ -10,13 +10,19 @@
     </a>
 
     <!-- Modal Create -->
-    <div class="modal fade" :id="forms[entity].createUpdate.extras.modals.default.id" data-bs-backdrop="static" tabindex="-1" role="dialog">
+    <div
+        class="modal fade"
+        :id="forms[entity].createUpdate.extras.modals.default.id"
+        data-bs-backdrop="static"
+        tabindex="-1"
+        aria-hidden="true"
+        role="dialog">
         <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
             <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title text-uppercase fw-bold" v-text="modalTitles.createUpdate[isUpdate ? 'update' : 'store']"></h5>
-                    <button type="button" class="btn-header-modal" data-bs-dismiss="modal">
-                        <i class="fa fa-times icon-close-modal"></i>
+                <div class="modal-header br-modal-header">
+                    <h5 class="modal-title text-uppercase fw-bold mb-0" v-text="modalTitles.createUpdate[isUpdate ? 'update' : 'store']"></h5>
+                    <button type="button" class="btn-header-modal" data-bs-dismiss="modal" :aria-label="MODULE.texts.modal.close">
+                        <i class="fa fa-times icon-close-modal" aria-hidden="true"></i>
                     </button>
                 </div>
                 <div class="modal-body">
@@ -55,8 +61,8 @@
                                 lg="6">
                                 <template v-slot:inputGroupPrepend v-if="!isUpdate">
                                     <template v-if="isDocumentTypeSearchable">
-                                        <button :class="['btn waves-effect', isUpdate ? 'btn-warning' : 'btn-primary']" type="button" @click="searchDocumentNumber" data-bs-toggle="tooltip" data-bs-placement="top" :title="MODULE.texts.form.searchDocumentTooltip">
-                                            <i class="fa fa-search"></i>
+                                        <button :class="['btn', 'waves-effect', isUpdate ? 'btn-warning' : 'btn-primary']" type="button" @click="searchDocumentNumber" data-bs-toggle="tooltip" data-bs-placement="top" :title="MODULE.texts.form.searchDocumentTooltip">
+                                            <i class="fa fa-search" aria-hidden="true"></i>
                                         </button>
                                     </template>
                                 </template>
@@ -152,10 +158,10 @@
                     </button>
                     <button
                         type="button"
-                        :class="['btn waves-effect', isUpdate ? 'btn-warning' : 'btn-primary']"
+                        :class="['btn', 'waves-effect', isUpdate ? 'btn-warning' : 'btn-primary']"
                         @click="saveEntity"
                         :disabled="isSaving">
-                        <i class="fa fa-save"></i>
+                        <i class="fa fa-save" aria-hidden="true"></i>
                         <span class="ms-2" v-text="MODULE.texts.modal.save"></span>
                     </button>
                 </div>

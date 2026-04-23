@@ -2,32 +2,39 @@
     <div class="modal fade" :id="modalId" data-bs-backdrop="static" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered" role="document">
             <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title text-uppercase fw-bold"></h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <div class="modal-header br-modal-header">
+                    <h5 class="modal-title text-uppercase fw-bold mb-0">
+                        <span class="fw-semibold" v-text="'Documento:'"></span>
+                        <span class="ms-2" v-text="title ?? data?.serie_sequential"></span>
+                    </h5>
+                    <button type="button" class="btn-header-modal" data-bs-dismiss="modal" aria-label="Cerrar">
+                        <i class="fa fa-times icon-close-modal" aria-hidden="true"></i>
+                    </button>
                 </div>
                 <div class="modal-body">
                     <div class="row g-1">
                         <slot name="messageAppend"></slot>
-                        <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 text-start">
-                            <span class="fw-semibold fs-5 ms-2" v-text="'Documento:'"></span>
-                            <span class="fw-bold text-uppercase fs-5 ms-2" v-text="title ?? data?.serie_sequential"></span>
-                        </div>
                     </div>
-                    <div class="row justify-content-center g-1 mt-4">
+                    <div class="row justify-content-center g-1 mt-1">
                         <div class="col-xl-3 col-lg-3 col-md-3 col-sm-3 mx-2" v-if="a4">
-                            <div class="text-center cursor-pointer" @click="exportpp({type: 'a4'})">
-                                <div class="badge bg-primary p-3 rounded mb-1">
-                                    <i class="fa fa-print fs-3"></i>
-                                </div>
+                            <div class="text-center">
+                                <button
+                                    type="button"
+                                    class="br-btn br-btn-sm br-btn-secondary waves-effect p-3 rounded mb-1 d-inline-flex align-items-center justify-content-center"
+                                    @click="exportpp({type: 'a4'})">
+                                    <i class="fa fa-print fs-3" aria-hidden="true"></i>
+                                </button>
                                 <span class="d-block fw-semibold">A4</span>
                             </div>
                         </div>
                         <div class="col-xl-3 col-lg-3 col-md-3 col-sm-3 mx-2" v-if="mm80">
-                            <div class="text-center cursor-pointer" @click="exportpp({type: 'mm80'})">
-                                <div class="badge bg-primary p-3 rounded mb-1">
-                                    <i class="fa-solid fa-note-sticky fs-3"></i>
-                                </div>
+                            <div class="text-center">
+                                <button
+                                    type="button"
+                                    class="br-btn br-btn-sm br-btn-secondary waves-effect p-3 rounded mb-1 d-inline-flex align-items-center justify-content-center"
+                                    @click="exportpp({type: 'mm80'})">
+                                    <i class="fa-solid fa-note-sticky fs-3" aria-hidden="true"></i>
+                                </button>
                                 <span class="d-block fw-semibold">80MM</span>
                             </div>
                         </div>

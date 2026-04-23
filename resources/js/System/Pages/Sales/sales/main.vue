@@ -558,8 +558,38 @@
                                         </template>
                                         <template v-else>
                                             <tr>
-                                                <td class="text-center" colspan="99">
-                                                    <WithoutData type="text"/>
+                                                <td class="pt-3 pb-3 border-0" colspan="99">
+                                                    <div class="br-table-detail-empty">
+                                                        <div class="br-table-detail-empty__top">
+                                                            <div class="br-table-detail-empty__body">
+                                                                <svg
+                                                                    xmlns="http://www.w3.org/2000/svg"
+                                                                    viewBox="0 0 240 200"
+                                                                    class="br-table-detail-empty__img"
+                                                                    role="img"
+                                                                    aria-labelledby="emptyNoMembershipTitle"
+                                                                    focusable="false">
+                                                                    <title id="emptyNoMembershipTitle">Sin membresías activas</title>
+                                                                    <circle cx="108" cy="76" r="28" fill="none" stroke="#556283" stroke-width="2.5" stroke-linecap="round"/>
+                                                                    <path
+                                                                        d="M48 172c14-46 52-70 60-70s46 24 60 70"
+                                                                        fill="none"
+                                                                        stroke="#4d5a76"
+                                                                        stroke-width="2.25"
+                                                                        stroke-linecap="round"
+                                                                        stroke-linejoin="round"/>
+                                                                    <circle cx="174" cy="58" r="24" fill="#ffffff" stroke="#ef4444" stroke-width="2.25"/>
+                                                                    <path
+                                                                        d="M163 47l22 22M185 47l-22 22"
+                                                                        fill="none"
+                                                                        stroke="#ef4444"
+                                                                        stroke-width="2.75"
+                                                                        stroke-linecap="round"/>
+                                                                </svg>
+                                                                <p class="br-table-detail-empty__text mb-0" v-text="MODULE.texts.emptyActiveMemberships"></p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
                                                 </td>
                                             </tr>
                                         </template>
@@ -599,21 +629,24 @@
         </template>
         <template v-slot:extraGroupAppend>
             <div class="col-xl-3 col-lg-3 col-md-3 col-sm-3 mx-2">
-                <div class="text-center cursor-pointer" data-bs-dismiss="modal">
-                    <div class="badge bg-success p-3 rounded mb-1">
-                        <i class="fa-solid fa-cash-register fs-3"></i>
-                    </div>
+                <div class="text-center">
+                    <button
+                        type="button"
+                        class="br-btn br-btn-sm br-btn-success waves-effect p-3 rounded mb-1 d-inline-flex align-items-center justify-content-center"
+                        data-bs-dismiss="modal">
+                        <i class="fa-solid fa-cash-register fs-3" aria-hidden="true"></i>
+                    </button>
                     <span class="d-block fw-semibold" v-text="MODULE.texts.actions.newSale"></span>
                 </div>
             </div>
             <div class="row g-2 mt-4">
                 <InputText
                     hasDiv
-                    title="Número de celular (Whatsapp)"
+                    :placeholder="MODULE.texts.form.whatsappPlaceholder"
                     v-model="forms[entity].createUpdate.extras.modals.finished.data.whatsapp">
                     <template v-slot:inputGroupAppend>
                         <button class="btn btn-success waves-effect" type="button" @click="sendWhatsapp({data: forms[entity].createUpdate.extras.modals.finished.data})" :disabled="!isDefined({value: forms[entity].createUpdate.extras.modals.finished.data.whatsapp})">
-                            <i class="fa-brands fa-whatsapp"></i>
+                            <i class="fa-brands fa-whatsapp fs-5" aria-hidden="true"></i>
                             <span class="ms-2" v-text="MODULE.texts.actions.send"></span>
                         </button>
                     </template>
@@ -621,11 +654,11 @@
                 <InputText
                     v-if="false"
                     hasDiv
-                    title="Correo electrónico"
+                    :placeholder="MODULE.texts.form.emailPlaceholder"
                     v-model="forms[entity].createUpdate.extras.modals.finished.data.email">
                     <template v-slot:inputGroupAppend>
                         <button class="btn btn-info-1 waves-effect" type="button" @click="sendEmail({data: forms[entity].createUpdate.extras.modals.finished.data})" :disabled="!isDefined({value: forms[entity].createUpdate.extras.modals.finished.data.email})">
-                            <i class="fa fa-envelope"></i>
+                            <i class="fa fa-envelope fs-5" aria-hidden="true"></i>
                             <span class="ms-2" v-text="MODULE.texts.actions.send"></span>
                         </button>
                     </template>
@@ -672,7 +705,9 @@ const TEXTS = {
         membershipDetail: "Detalle de la membresía",
         detailRowMembershipLabel: "Membresía",
         startDate: "Fecha de inicio",
-        endDate: "Fecha de finalización"
+        endDate: "Fecha de finalización",
+        whatsappPlaceholder: "Número con código de país (ej.: 51987654321)",
+        emailPlaceholder: "Correo electrónico (ej.: cliente@empresa.com)"
     },
     actions: {
         addDetail: "Agregar detalle",
@@ -698,7 +733,8 @@ const TEXTS = {
         observations: "Observaciones"
     },
     emptySaleDetailPrefix: "No hay productos en el detalle. Agréguelos con la acción ",
-    emptySaleDetailSuffix: "."
+    emptySaleDetailSuffix: ".",
+    emptyActiveMemberships: "No hay membresías activas registradas para este cliente."
 };
 
 const MODULE = {
@@ -1057,7 +1093,7 @@ export default {
 
             const getSubscriptions = await Utils.getSubscriptions({customer: this.forms[this.entity].createUpdate.data.holder?.data});
 
-            this.options.holders.subscriptions[this.forms[this.entity].createUpdate.data.holder?.data?.id] = Requests.valid({result: getSubscriptions}) ? getSubscriptions?.data?.subscriptions : false;
+            this.options.holders.subscriptions[this.forms[this.entity].createUpdate.data.holder?.data?.id] = Requests.valid({result: getSubscriptions}) ? getSubscriptions?.data?.data?.subscriptions : false;
 
             form.data.loading = false;
 
@@ -1158,7 +1194,7 @@ export default {
                     this.forms[this.entity].createUpdate.data.observation = "";
                     this.forms[this.entity].createUpdate.extras.modals.observations.draft = "";
                     this.forms[this.entity].createUpdate.data.status      = "";
-                    // this.forms[this.entity].createUpdate.data.details     = [];
+                    this.forms[this.entity].createUpdate.data.details     = [];
                     break;
             }
 

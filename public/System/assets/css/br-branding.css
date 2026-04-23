@@ -348,6 +348,10 @@ body.br-layout .br-table-footer-stripe__label {
   pointer-events: none;
 }
 
+svg.br-table-detail-empty__img {
+  overflow: visible;
+}
+
 .br-table-detail-empty__text {
   margin: 0.45rem 0 0;
   max-width: 32rem;
