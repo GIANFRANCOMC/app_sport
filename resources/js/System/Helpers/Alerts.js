@@ -9,6 +9,201 @@ function getLogomarkSrc() {
     return path ? `/${path.replace(/^\//, "")}` : "";
 }
 
+/** Paleta para `swals()` (alineada con `br-branding.css`). */
+const SWAL_BR = {
+    primary: "#2899e5",
+    secondary: "#1a1a35",
+    textMuted: "#64748b",
+    surface: "#ffffff",
+    shadow: "0 4px 18px rgba(26, 26, 53, 0.1)"
+};
+
+/** Layout y tiempos del loader circular (solo `buildSwalLoadingHtml`). */
+const SWAL_LOAD = Object.freeze({
+    segments: 20,
+    chaseCycleS: 2.8,
+    holdEndPct: 86,
+    resetStartPct: 91,
+    buildPhaseEndPct: 78,
+    orbitPx: 40
+});
+
+function swalBrPrimaryRgbCsv() {
+    const n = Number.parseInt(SWAL_BR.primary.slice(1), 16);
+    return `${(n >> 16) & 255},${(n >> 8) & 255},${n & 255}`;
+}
+
+/** Keyframes acumulativos; radio vía `--br-swal-orbit` en `.br-swal-load`. */
+function buildSwalAccumKeyframes(segmentCount, primaryRgb) {
+
+    const {buildPhaseEndPct, holdEndPct, resetStartPct} = SWAL_LOAD;
+    const baseT = "rotate(var(--br-t)) translateY(calc(-1 * var(--br-swal-orbit)))";
+    const dim = `opacity:0.2;transform:${baseT} scale(0.78);box-shadow:none;filter:brightness(0.95)`;
+    const bright = `opacity:1;transform:${baseT} scale(1.06);box-shadow:0 0 14px rgba(${primaryRgb},0.55),0 0 4px rgba(${primaryRgb},0.35);filter:brightness(1)`;
+
+    if(segmentCount <= 1) {
+
+        return `@keyframes brSwalAccum0{0%,100%{${dim}}2%,${holdEndPct}%{${bright}}${resetStartPct}%,100%{${dim}}}`;
+
+    }
+
+    const stepOn = buildPhaseEndPct / (segmentCount - 1);
+
+    let out = "";
+
+    for(let i = 0; i < segmentCount; i++) {
+
+        if(i === 0) {
+
+            out += `@keyframes brSwalAccum0{0%,100%{${dim}}0.55%,${holdEndPct}%{${bright}}${resetStartPct}%,100%{${dim}}}`;
+            continue;
+
+        }
+
+        const onPct = Number((i * stepOn).toFixed(3));
+        const beforeOn = Number(Math.max(0, onPct - 0.09).toFixed(3));
+        out += `@keyframes brSwalAccum${i}{0%,100%{${dim}}${beforeOn}%{${dim}}${onPct}%,${holdEndPct}%{${bright}}${resetStartPct}%,100%{${dim}}}`;
+
+    }
+
+    return out;
+
+}
+
+let swalLoadStaticPrefix = null;
+
+/** Estilos + ticks del loader (constantes; se construye una vez por carga del módulo). */
+function getSwalLoadStaticPrefix() {
+
+    if(swalLoadStaticPrefix !== null) {
+
+        return swalLoadStaticPrefix;
+
+    }
+
+    const {segments, chaseCycleS, orbitPx} = SWAL_LOAD;
+    const step = 360 / segments;
+    const primaryRgb = swalBrPrimaryRgbCsv();
+    const keyframes = buildSwalAccumKeyframes(segments, primaryRgb);
+    const ticks = Array.from({length: segments}, (_, i) => `<span class="br-swal-load__tick" style="--br-t:${i * step}deg;animation:brSwalAccum${i} ${chaseCycleS}s linear infinite;"></span>`).join("");
+
+    swalLoadStaticPrefix = {
+        styleAndTicks: `
+                <style>
+                    .br-swal-load-popup.swal2-popup {
+                        padding: 0.95rem 1.2rem;
+                        width: auto;
+                        max-width: min(22.5rem, calc(100vw - 1.5rem));
+                    }
+                    .br-swal-load-popup .swal2-html-container {
+                        margin: 0;
+                        padding: 0;
+                    }
+                    .br-swal-load__wrap {
+                        padding: 0.3rem 0.5rem 0.6rem;
+                        text-align: center;
+                        font-family: inherit;
+                    }
+                    .br-swal-load {
+                        --br-swal-orbit: ${orbitPx}px;
+                        position: relative;
+                        width: 92px;
+                        height: 92px;
+                        margin: 0 auto 0.85rem;
+                    }
+                    .br-swal-load__orbit {
+                        position: absolute;
+                        inset: 0;
+                    }
+                    .br-swal-load__tick {
+                        position: absolute;
+                        left: 50%;
+                        top: 50%;
+                        width: 8px;
+                        height: 3px;
+                        margin: -1.5px 0 0 -4px;
+                        border-radius: 2px;
+                        background: ${SWAL_BR.primary};
+                        transform: rotate(var(--br-t)) translateY(calc(-1 * var(--br-swal-orbit)));
+                        transform-origin: center center;
+                        pointer-events: none;
+                    }
+                    .br-swal-load__logo-wrap {
+                        position: absolute;
+                        left: 50%;
+                        top: 50%;
+                        transform: translate(-50%, -50%);
+                        z-index: 1;
+                        width: 76px;
+                        height: 76px;
+                        border-radius: 50%;
+                        background: ${SWAL_BR.surface};
+                        box-shadow: ${SWAL_BR.shadow};
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        padding: 5px;
+                    }
+                    .br-swal-load__logo {
+                        width: 100%;
+                        height: 100%;
+                        max-width: 52px;
+                        max-height: 52px;
+                        object-fit: contain;
+                        display: block;
+                        transform: scale(1.22);
+                        transform-origin: center center;
+                    }
+                    .br-swal-load-msg__title {
+                        margin: 0 0 0.5rem;
+                        font-size: 1.175rem;
+                        font-weight: 700;
+                        line-height: 1.35;
+                        color: ${SWAL_BR.secondary};
+                        letter-spacing: -0.01em;
+                    }
+                    .br-swal-load-msg__hint {
+                        margin: 0;
+                        font-size: 0.95rem;
+                        font-weight: 500;
+                        line-height: 1.45;
+                        color: ${SWAL_BR.textMuted};
+                        max-width: 21rem;
+                        margin-inline: auto;
+                    }
+                    ${keyframes}
+                </style>
+                <div class="br-swal-load__wrap">
+                    <div class="br-swal-load" role="status" aria-live="polite" aria-busy="true">
+                        <div class="br-swal-load__orbit" aria-hidden="true">${ticks}</div>
+                        <div class="br-swal-load__logo-wrap">
+            `,
+        logoSuffix: `
+                        </div>
+                    </div>
+                    <div class="br-swal-load-msg">
+            `
+    };
+
+    return swalLoadStaticPrefix;
+
+}
+
+/** HTML del Swal de carga (solo lo usa `swals()`). */
+function buildSwalLoadingHtml({message, logoSrc}) {
+
+    const {styleAndTicks, logoSuffix} = getSwalLoadStaticPrefix();
+    const titleLine = message.trim().replace(/\.\s*$/, "");
+    const titleHtml = titleLine ? `<p class="br-swal-load-msg__title">${titleLine}</p>` : "";
+
+    return `${styleAndTicks}<img src="${logoSrc}" alt="" class="br-swal-load__logo" width="52" height="52" decoding="async">${logoSuffix}${titleHtml}
+                        <p class="br-swal-load-msg__hint">Este proceso puede tomar unos segundos. Por favor espere.</p>
+                    </div>
+                </div>
+            `;
+
+}
+
 export function swals({show = true, type = "default", timeout = 0}) {
 
     if(show) {
@@ -42,25 +237,13 @@ export function swals({show = true, type = "default", timeout = 0}) {
         }
 
         Swal.fire({
-            html: `
-                <style>
-                    @keyframes fadeInOutSwal {
-                        0%, 100% { opacity: 0.2; }
-                        50% { opacity: 1; }
-                    }
-
-                    .swal-logo {
-                        width: 100px;
-                        animation: fadeInOutSwal 2s infinite;
-                        display: block;
-                        margin: 10px auto;
-                    }
-                </style>
-                <span class="h5">${message} Este proceso puede tomar algunos segundos, por favor espere.</span>
-                <img src="${getLogomarkSrc()}" class="img-fluid swal-logo mt-1 mb-0">
-            `,
+            html: buildSwalLoadingHtml({message, logoSrc: getLogomarkSrc()}),
             allowOutsideClick: false,
-            showConfirmButton: false
+            showConfirmButton: false,
+            customClass: {
+                popup: "br-swal-load-popup",
+                htmlContainer: "br-swal-load-html"
+            }
         });
 
     }else {
