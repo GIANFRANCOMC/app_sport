@@ -222,18 +222,6 @@ export function swals({show = true, type = "default", timeout = 0}) {
             case "initParams":
                 message = "";
                 break;
-
-            case "externalConsult":
-                message = "Consultando.";
-                break;
-
-            case "list":
-                message = "Cargando listado.";
-                break;
-
-            case "saveForm":
-                message = "Guardando formulario.";
-                break;
         }
 
         Swal.fire({
@@ -383,21 +371,21 @@ export function modals({type = "show", id = null, timeout = 0}) {
 export function generateAlert({messages = [], type = "warning", headerTitle = null, msgContent = null, keys = [], width = 550}) {
 
 	let tableAlertHtml = messages.length > 0 ? generateTableAlert({messages, type, keys}) : "";
-	
+
 	// Envolver msgContent automáticamente con div fw-semibold si es un string simple (sin HTML)
 	let formattedMsgContent = msgContent;
-	
+
 	if(msgContent && typeof msgContent === "string") {
-		
+
 		const trimmedContent = msgContent.trim();
 		const hasHtml = trimmedContent.startsWith("<") || trimmedContent.includes("<div") || trimmedContent.includes("<span") || trimmedContent.includes("<p");
-		
+
 		if(!hasHtml) {
-			
+
 			formattedMsgContent = `<div class="fw-semibold">${msgContent}</div>`;
-			
+
 		}
-		
+
 	}
 
 	Swal.fire({title             : headerTitle,
