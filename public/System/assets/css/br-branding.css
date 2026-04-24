@@ -16,6 +16,7 @@
  * Mapa de secciones (mantener al añadir bloques):
  *   :root tokens → tablas thead → layout stack/sidebar venta
  *   → detalle tabla (--br-amount-*, --br-table-footer-*, .br-amount-inline, .br-table-footer-stripe, …)
+ *   → .br-memberships-table (modal membresías activas)
  *   → cabecera modal (.br-modal-header) → tap field / observación → prefijo moneda input → botones (.br-btn*) → enlaces (.br-link*) → layout app → dashboard → FAB
  */
 
@@ -129,6 +130,21 @@
   --br-table-expand-label-tracking: 0.08em;
   --br-table-expand-label-bg-fallback: #f2f2f6;
   --br-table-expand-label-bg: color-mix(in srgb, var(--br-secondary-soft) 38%, white);
+
+  /**
+   * Tabla “Membresías activas” (modal ventas, reutilizable en otros módulos).
+   */
+  --br-memberships-stack-gap: 0.5rem;
+  --br-memberships-stack-max-w: 18rem;
+  --br-memberships-date-size: 1rem;
+  --br-memberships-date-weight: 700;
+  /* Pills gris claro (antes estilo label secundario en tabla) */
+  --br-memberships-time-pill-bg: var(--br-secondary-soft);
+  --br-memberships-time-pill-fg: var(--br-text-muted);
+  --br-memberships-time-pill-border: var(--br-border);
+  --br-memberships-meta-bg: color-mix(in srgb, var(--br-secondary-soft) 55%, transparent);
+  --br-memberships-origin-fg: var(--br-secondary);
+  --br-memberships-origin-icon: var(--br-primary);
 }
 
 /* -------------------------------------------------------------------------
@@ -237,6 +253,133 @@ body.br-layout .table.table-sm > thead > tr > th {
   background-color: var(--br-table-expand-label-bg-fallback) !important;
   background-color: var(--br-table-expand-label-bg) !important;
   white-space: nowrap;
+}
+
+/* Texto negro sobre el fondo gris por defecto del rótulo (p. ej. celda Membresía) */
+.br-table-expand-label.br-table-expand-label--black-text {
+  color: #0a0a0a !important;
+  font-size: 0.8125rem;
+  /* Laterales como celda de .table-bordered */
+  border-inline: var(--bs-border-width) solid
+    var(--bs-table-border-color, var(--bs-border-color));
+}
+
+/* -------------------------------------------------------------------------
+ * [br] Tabla membresías activas — `.br-memberships-table` en <table>
+ * ------------------------------------------------------------------------- */
+
+.br-layout .br-memberships-table thead th.br-memberships-table__th--primary {
+  background-color: var(--bs-secondary);
+  color: #fff;
+  font-weight: 600;
+  text-wrap: nowrap;
+  text-transform: uppercase;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.br-layout .br-memberships-table thead th.br-memberships-table__th--meta {
+  background-color: var(--bs-secondary);
+  color: #fff;
+  font-weight: 400;
+  font-size: 0.875rem;
+  text-wrap: nowrap;
+  text-transform: uppercase;
+  text-align: center;
+  vertical-align: middle;
+  border-left: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+.br-layout .br-memberships-table tbody td.br-memberships-table__td {
+  padding: 1rem 0.75rem;
+  vertical-align: middle;
+}
+
+.br-layout .br-memberships-table tbody td.br-memberships-table__td--meta {
+  border-left: var(--bs-border-width) solid var(--bs-border-color, #434968);
+  background-color: var(--br-memberships-meta-bg);
+}
+
+.br-layout .br-memberships-table tbody td.br-memberships-table__td--center {
+  text-align: center;
+}
+
+.br-layout .br-memberships-table .br-memberships-table__stack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--br-memberships-stack-gap);
+  text-align: center;
+  margin-inline: auto;
+  max-width: var(--br-memberships-stack-max-w);
+}
+
+.br-layout .br-memberships-table .br-memberships-table__date {
+  font-size: var(--br-memberships-date-size);
+  font-weight: var(--br-memberships-date-weight);
+  line-height: 1.25;
+  color: var(--bs-body-color);
+  padding-inline: 0.25rem;
+  text-wrap: wrap;
+}
+
+.br-layout .br-memberships-table .br-memberships-table__time {
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.br-layout .br-memberships-table .br-memberships-table__time--plain {
+  color: var(--bs-secondary-color) !important;
+}
+
+/* Pill hora: la tabla fuerza color/fondo en celdas; reforzar contraste del span */
+.br-layout .br-memberships-table tbody .br-memberships-table__time--pill {
+  position: relative;
+  z-index: 1;
+  display: inline-block !important;
+  padding: 0.35rem 0.65rem !important;
+  border: 1px solid var(--br-memberships-time-pill-border) !important;
+  border-radius: 50rem !important;
+  background-color: var(--br-memberships-time-pill-bg) !important;
+  color: var(--br-memberships-time-pill-fg) !important;
+  box-shadow: none !important;
+  vertical-align: middle;
+}
+
+/* Origen (tipo): solo icono + texto, sin caja tipo badge */
+.br-layout .br-memberships-table .br-memberships-table__origin {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  max-width: 100%;
+  font-weight: 600;
+  font-size: 0.875rem;
+  line-height: 1.25;
+  text-transform: capitalize;
+  color: var(--br-memberships-origin-fg) !important;
+}
+
+.br-layout .br-memberships-table .br-memberships-table__origin-icon {
+  flex-shrink: 0;
+  font-size: 1rem;
+  line-height: 1;
+  color: var(--br-memberships-origin-icon) !important;
+}
+
+.br-layout .br-memberships-table .br-memberships-table__origin-label {
+  text-wrap: balance;
+}
+
+.br-layout .br-memberships-table .br-memberships-table__empty {
+  display: block;
+  text-align: center;
+  font-size: 0.875rem;
+  color: var(--bs-secondary-color);
 }
 
 /* Signo + monto en una celda (total por línea, totales auxiliares) */
@@ -1376,7 +1519,7 @@ html:not(.layout-menu-collapsed)
 }
 
 .br-layout .btn-primary:hover,
-.br-layout .btn-primary:focus {
+.br-layout .btn-primary:focus-visible {
   background-color: var(--br-primary-hover) !important;
   border-color: var(--br-primary-hover) !important;
   color: var(--br-on-primary) !important;
@@ -1394,7 +1537,7 @@ html:not(.layout-menu-collapsed)
 }
 
 .br-layout .btn-outline-primary:hover,
-.br-layout .btn-outline-primary:focus {
+.br-layout .btn-outline-primary:focus-visible {
   background-color: var(--br-primary) !important;
   border-color: var(--br-primary) !important;
   color: var(--br-on-primary) !important;

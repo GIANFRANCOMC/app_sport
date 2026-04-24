@@ -86,7 +86,8 @@ input.input-number-no-range[type=number] {
     border-color: #1a91da !important;
 }
 
-.btn-check:focus + .btn-info-1, .btn-info-1:focus, .btn-info-1.focus {
+/* :focus-visible: teclado; clic con ratón no deja el botón “pegado” en estilo hover */
+.btn-check:focus + .btn-info-1, .btn-info-1:focus-visible, .btn-info-1.focus {
     color: #fff !important;
     background-color: #1a91da !important;
     border-color: #1a91da !important;
@@ -170,7 +171,7 @@ input.input-number-no-range[type=number] {
     box-shadow: 0 0.25rem 0.75rem rgba(165, 163, 174, 0.4);
 }
 
-.btn-header-modal:focus {
+.btn-header-modal:focus-visible {
     outline: 0;
     box-shadow: var(--bs-btn-close-focus-shadow);
     opacity: var(--bs-btn-close-focus-opacity);

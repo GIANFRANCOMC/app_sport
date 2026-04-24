@@ -101,19 +101,66 @@ export function toastrs({type = "success", options = null, code = null, title = 
 
 }
 
-export function tooltips({show = true, time = 10}) {
+/**
+ * Controla los tooltips de Bootstrap 5 (misma API que inicializa `main.js` con `bootstrap.Tooltip`).
+ *
+ * @param {Object} options
+ * @param {boolean} [options.show=true] — `false`: oculta todos los tooltips abiertos (instancias siguen vivas); `true`: destruye y vuelve a crear instancias en el DOM actual.
+ * @param {number} [options.time] — Retraso en ms (0 = inmediato). Si se omite: `10` con `show: true`, `0` con `show: false`.
+ * @param {string} [options.selector='[data-bs-toggle="tooltip"]'] — Selectores de disparadores.
+ */
+export function tooltips(options = {}) {
 
-    if(show) {
+    const {show = true, selector = "[data-bs-toggle=\"tooltip\"]"} = options;
+    const time = options.time !== undefined ? options.time : (show ? 10 : 0);
 
-        // time > 0 ? setTimeout(() => $('[data-bs-toggle="tooltip"]').tooltip(), time) : $('[data-bs-toggle="tooltip"]').tooltip();
-        time > 0 ? setTimeout(() => $('[data-bs-toggle="tooltip"]').tooltip(), time) : $('[data-bs-toggle="tooltip"]').tooltip();
+    const run = () => {
 
-    }else {
+        const Bootstrap = window.bootstrap;
 
-        // time > 0 ? setTimeout(() => $(".tooltip").tooltip("hide"), time) : $(".tooltip").tooltip("hide");
-        time > 0 ? setTimeout(() => $(".tooltip").hide(), time) : $(".tooltip").hide();
+        if(!Bootstrap?.Tooltip) {
 
-    }
+            return;
+
+        }
+
+        const triggers = document.querySelectorAll(selector);
+
+        if(show) {
+
+            triggers.forEach((el) => {
+
+                const existing = Bootstrap.Tooltip.getInstance(el);
+
+                if(existing) {
+
+                    existing.dispose();
+
+                }
+
+                new Bootstrap.Tooltip(el);
+
+            });
+
+        }else {
+
+            triggers.forEach((el) => {
+
+                const existing = Bootstrap.Tooltip.getInstance(el);
+
+                if(existing) {
+
+                    existing.hide();
+
+                }
+
+            });
+
+        }
+
+    };
+
+    time > 0 ? setTimeout(run, time) : run();
 
 }
 

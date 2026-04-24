@@ -42,7 +42,7 @@ export function parseISOToDatetimeLocal(isoString) {
 
 /**
  * Formatea una fecha de forma legible
- * @param {Object} options - {dateString: string, type: string, separator: string}
+ * @param {Object} options - {dateString: string, type: "datetime"|"date"|"weekday_date"|"weekday_datetime"|"time", separator: string}
  * @returns {string} Fecha formateada
  */
 export function legibleFormatDate({dateString = null, type = "datetime", separator = "/"}) {
@@ -81,6 +81,14 @@ export function legibleFormatDate({dateString = null, type = "datetime", separat
 
         if (type === "date") {
             return `${formattedDay}${separator}${formattedMonth}${separator}${year}`;
+        } else if (type === "weekday_date") {
+            const weekday = new Intl.DateTimeFormat("es", {weekday: "long"}).format(date);
+            const weekdayCap = weekday.charAt(0).toUpperCase() + weekday.slice(1);
+            return `${weekdayCap}, ${formattedDay}${separator}${formattedMonth}${separator}${year}`;
+        } else if (type === "weekday_datetime") {
+            const weekday = new Intl.DateTimeFormat("es", {weekday: "long"}).format(date);
+            const weekdayCap = weekday.charAt(0).toUpperCase() + weekday.slice(1);
+            return `${weekdayCap}, ${formattedDay}${separator}${formattedMonth}${separator}${year} · ${formattedHours}:${formattedMinutes} ${ampm}`;
         } else if (type === "datetime") {
             return `${formattedDay}${separator}${formattedMonth}${separator}${year} ${formattedHours}:${formattedMinutes} ${ampm}`;
         } else if (type === "time") {

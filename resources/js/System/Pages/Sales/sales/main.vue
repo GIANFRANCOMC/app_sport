@@ -162,7 +162,7 @@
                                             <template v-if="record?.extras?.showDetail">
                                                 <template v-if="isSubscription(record?.type)">
                                                     <tr>
-                                                        <td class="text-center align-middle br-table-expand-label colon-at-end" v-text="MODULE.texts.form.detailRowMembershipLabel"></td>
+                                                        <td class="text-center align-middle br-table-expand-label br-table-expand-label--black-text colon-at-end" v-text="MODULE.texts.form.detailRowMembershipLabel"></td>
                                                         <td colspan="5">
                                                             <div class="row g-3 pt-3 pb-4 px-4">
                                                                 <div class="col-6">
@@ -344,7 +344,7 @@
                             v-if="isDefined({value: forms[entity].createUpdate.extras.modals.details.data.extras?.min_price}) || isDefined({value: forms[entity].createUpdate.extras.modals.details.data.extras?.max_price})"
                             hasDiv
                             :isInputGroup="false"
-                            :divInputClass="['d-flex flex-column flex-md-row flex-wrap justify-content-center align-items-start align-items-md-center gap-2 p-2 border rounded border-light bg-light']"
+                            :divInputClass="['d-flex flex-column flex-md-row flex-wrap justify-content-center align-items-start align-items-md-center gap-2 p-2 border rounded border-light bg-warning-subtle']"
                             xl="12"
                             lg="12">
                             <template v-slot:input>
@@ -447,7 +447,7 @@
                                             </label>
                                         </div>
                                     </div>
-                                    <div class="d-flex flex-wrap justify-content-center align-items-center gap-2 p-2 border rounded border-light bg-light w-100">
+                                    <div class="d-flex flex-wrap justify-content-center align-items-center gap-2 p-2 mt-1 border rounded border-light bg-success-subtle w-100">
                                         <span class="fw-bold colon-at-end text-dark">Duración total calculada</span>
                                         <div class="d-flex flex-wrap justify-content-center align-items-center fw-semibold gap-1">
                                             <span class="text-lowercase" v-text="forms[entity].createUpdate.extras.modals.details.data.extras.formatted_duration"></span>
@@ -513,7 +513,7 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    <div class="row mb-3">
+                    <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
                         <div class="d-block">
                             <i class="fa fa-user"></i>
                             <span class="ms-2">Cliente:</span>
@@ -521,15 +521,24 @@
                             <span class="fw-bold ms-1">-</span>
                             <span v-text="forms[entity].createUpdate.data.holder?.data?.name" class="fw-bold ms-1"></span>
                         </div>
+                        <button
+                            type="button"
+                            class="btn btn-info-1 btn-sm waves-effect"
+                            @click="refreshSubscriptions()"
+                            data-bs-toggle="tooltip"
+                            title="Actualizar">
+                            <i class="fa fa-refresh"></i>
+                        </button>
                     </div>
                     <div class="row g-3">
                         <div class="table-responsive">
-                            <table class="table table-sm table-hover">
+                            <table class="table table-sm table-hover br-memberships-table">
                                 <thead>
-                                    <tr class="text-center align-middle">
-                                        <th class="bg-secondary text-white fw-semibold col-1">#</th>
-                                        <th class="bg-secondary text-white fw-semibold text-nowrap col-2">FECHA DE INICIO</th>
-                                        <th class="bg-secondary text-white fw-semibold text-nowrap col-2">FECHA DE FINALIZACIÓN</th>
+                                    <tr>
+                                        <th class="br-memberships-table__th br-memberships-table__th--primary">Fecha de inicio</th>
+                                        <th class="br-memberships-table__th br-memberships-table__th--primary">Fecha de finalización</th>
+                                        <th class="br-memberships-table__th br-memberships-table__th--meta" v-text="MODULE.texts.modal.subscriptionOrigin"></th>
+                                        <th class="br-memberships-table__th br-memberships-table__th--meta" v-text="MODULE.texts.modal.subscriptionCreatedAt"></th>
                                     </tr>
                                 </thead>
                                 <tbody class="table-border-bottom-0 bg-white">
@@ -542,16 +551,33 @@
                                     </template>
                                     <template v-else>
                                         <template v-if="(options?.holders?.subscriptions[forms[entity].createUpdate.data.holder?.data?.id] ?? []).length > 0">
-                                            <template v-for="(record, keyRecord) in options?.holders?.subscriptions[forms[entity].createUpdate.data.holder?.data?.id]" :key="record.id">
-                                                <tr class="text-nowrap text-center">
-                                                    <td v-text="keyRecord + 1"></td>
-                                                    <td>
-                                                        <span v-text="legibleFormatDate({dateString: record.start_date, type: 'date'})" class="d-block fw-semibold"></span>
-                                                        <span v-text="legibleFormatDate({dateString: record.start_date, type: 'time'})" class="d-block fw-semibold"></span>
+                                            <template v-for="record in options?.holders?.subscriptions[forms[entity].createUpdate.data.holder?.data?.id]" :key="record.id">
+                                                <tr class="align-middle">
+                                                    <td class="br-memberships-table__td">
+                                                        <div class="br-memberships-table__stack">
+                                                            <span class="br-memberships-table__date" v-text="legibleFormatDate({dateString: record.start_date, type: 'weekday_date'})"></span>
+                                                            <span class="br-memberships-table__time br-memberships-table__time--pill" v-text="legibleFormatDate({dateString: record.start_date, type: 'time'})"></span>
+                                                        </div>
                                                     </td>
-                                                    <td>
-                                                        <span v-text="legibleFormatDate({dateString: record.end_date, type: 'date'})" class="d-block fw-semibold"></span>
-                                                        <span v-text="legibleFormatDate({dateString: record.end_date, type: 'time'})" class="d-block fw-semibold"></span>
+                                                    <td class="br-memberships-table__td">
+                                                        <div class="br-memberships-table__stack">
+                                                            <span class="br-memberships-table__date" v-text="legibleFormatDate({dateString: record.end_date, type: 'weekday_date'})"></span>
+                                                            <span class="br-memberships-table__time br-memberships-table__time--pill" v-text="legibleFormatDate({dateString: record.end_date, type: 'time'})"></span>
+                                                        </div>
+                                                    </td>
+                                                    <td class="br-memberships-table__td br-memberships-table__td--meta br-memberships-table__td--center">
+                                                        <span v-if="record.formatted_type" class="br-memberships-table__origin">
+                                                            <i class="fa-solid fa-cash-register br-memberships-table__origin-icon" aria-hidden="true"></i>
+                                                            <span class="br-memberships-table__origin-label" v-text="record.formatted_type"></span>
+                                                        </span>
+                                                        <span v-else class="br-memberships-table__empty">—</span>
+                                                    </td>
+                                                    <td class="br-memberships-table__td br-memberships-table__td--meta">
+                                                        <div v-if="record.created_at" class="br-memberships-table__stack">
+                                                            <span class="br-memberships-table__date" v-text="legibleFormatDate({dateString: record.created_at, type: 'weekday_date'})"></span>
+                                                            <span class="br-memberships-table__time br-memberships-table__time--plain" v-text="legibleFormatDate({dateString: record.created_at, type: 'time'})"></span>
+                                                        </div>
+                                                        <span v-else class="br-memberships-table__empty">—</span>
                                                     </td>
                                                 </tr>
                                             </template>
@@ -601,10 +627,6 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary waves-effect" data-bs-dismiss="modal" v-text="MODULE.texts.actions.close"></button>
-                    <button type="button" class="btn btn-info-1 waves-effect" @click="refreshSubscriptions()">
-                        <i class="fa fa-refresh"></i>
-                        <span class="ms-2" v-text="MODULE.texts.actions.refresh"></span>
-                    </button>
                 </div>
             </div>
         </div>
@@ -730,7 +752,9 @@ const TEXTS = {
         add: "AGREGAR DETALLE",
         edit: "EDITAR DETALLE",
         activeMemberships: "Membresías activas",
-        observations: "Observaciones"
+        observations: "Observaciones",
+        subscriptionOrigin: "Origen",
+        subscriptionCreatedAt: "Fecha de creación"
     },
     emptySaleDetailPrefix: "No hay productos en el detalle. Agréguelos con la acción ",
     emptySaleDetailSuffix: ".",
@@ -935,7 +959,8 @@ export default {
 
                     (this.forms[this.entity].createUpdate.data.details).push({...form, id: Utils.uuid()});
 
-                    Alerts.generateAlert({type: "success", msgContent: `Se ha agregado <b><small>(${form?.quantity})</small> ${form?.name}</b> al detalle de la venta.`});
+                    // Alerts.generateAlert({type: "success", msgContent: `Se ha agregado <b><small>(${form?.quantity})</small> ${form?.name}</b> al detalle de la venta.`});
+                    Alerts.toastrs({type: "success", subtitle: `Se ha agregado <b><small>(${form?.quantity})</small> ${form?.name}</b> al detalle de la venta.`});
 
                     this.clearForm({functionName});
 
@@ -1091,11 +1116,15 @@ export default {
 
             form.data.loading = true;
 
+            Alerts.tooltips({show: false, time: 0});
+
             const getSubscriptions = await Utils.getSubscriptions({customer: this.forms[this.entity].createUpdate.data.holder?.data});
 
             this.options.holders.subscriptions[this.forms[this.entity].createUpdate.data.holder?.data?.id] = Requests.valid({result: getSubscriptions}) ? getSubscriptions?.data?.data?.subscriptions : false;
 
             form.data.loading = false;
+
+            Alerts.tooltips({show: true});
 
         },
         // Entity forms

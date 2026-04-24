@@ -323,6 +323,18 @@ export function legibleFormatDate({dateString = null, type = "datetime"}) {
 
             return `${formattedDay}-${formattedMonth}-${year}`;
 
+        }else if(type === "weekday_date") {
+
+            const weekday = new Intl.DateTimeFormat("es", {weekday: "long"}).format(date);
+            const weekdayCap = weekday.charAt(0).toUpperCase() + weekday.slice(1);
+            return `${weekdayCap}, ${formattedDay}-${formattedMonth}-${year}`;
+
+        }else if(type === "weekday_datetime") {
+
+            const weekday = new Intl.DateTimeFormat("es", {weekday: "long"}).format(date);
+            const weekdayCap = weekday.charAt(0).toUpperCase() + weekday.slice(1);
+            return `${weekdayCap}, ${formattedDay}-${formattedMonth}-${year} · ${formattedHours}:${formattedMinutes} ${ampm}`;
+
         }else if (type === "datetime") {
 
             return `${formattedDay}-${formattedMonth}-${year} ${formattedHours}:${formattedMinutes} ${ampm}`;
