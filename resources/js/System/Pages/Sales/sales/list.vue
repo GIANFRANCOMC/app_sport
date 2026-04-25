@@ -368,14 +368,15 @@ export default {
                 let el = this;
 
                 Swal.fire({
-                    html: `<span class="d-block my-1">¿Desea anular la venta <b>${form?.serie_sequential ?? ""}</b>?</span>
-                           <div class="br-swal-hint d-flex gap-2 align-items-start text-start">
-                                <p class="br-swal-hint__body mb-0">
+                    html: `<div class="br-swal-stack">
+                            <p class="br-swal-lead br-swal-lead--center">¿Desea anular la venta <b>${form?.serie_sequential ?? ""}</b>?</p>
+                            <div class="br-swal-hint">
+                                <p class="br-swal-hint__body">
                                     <span class="br-swal-hint__label">Importante.</span>
                                     Si esta venta incluye <span class="br-swal-hint__term">membresías</span>, estas serán <span class="br-swal-hint__risk">anuladas</span> automáticamente.
                                 </p>
                             </div>
-                           `,
+                           </div>`,
                     icon: "warning",
                     allowOutsideClick: false,
                     showCancelButton: true,

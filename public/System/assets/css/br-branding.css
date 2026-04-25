@@ -146,6 +146,19 @@
   --br-memberships-meta-bg: color-mix(in srgb, var(--br-secondary-soft) 55%, transparent);
   --br-memberships-origin-fg: var(--br-secondary);
   --br-memberships-origin-icon: var(--br-primary);
+
+  /**
+   * SweetAlert2 / diálogos portables — texto principal + aviso (escala con viewport).
+   */
+  --br-swal-stack-gap: clamp(0.5rem, 1.8vw, 0.875rem);
+  --br-swal-stack-max-width: min(100%, 36rem);
+  --br-swal-lead-font-size: clamp(0.9375rem, 3vw, 1.125rem);
+  --br-swal-lead-line-height: 1.38;
+  --br-swal-hint-padding-y: clamp(0.65rem, 2vw, 1rem);
+  --br-swal-hint-padding-x: clamp(0.75rem, 2.5vw, 1.125rem);
+  --br-swal-hint-font-size: clamp(0.8125rem, 2.6vw, 0.9375rem);
+  --br-swal-hint-label-font-size: clamp(0.8125rem, 2.4vw, 0.875rem);
+  --br-swal-hint-accent-width: clamp(3px, 0.5vw, 4px);
 }
 
 /* -------------------------------------------------------------------------
@@ -2865,10 +2878,46 @@ html:not(.layout-menu-collapsed)
   border: 1px solid color-mix(in srgb, var(--br-primary) 18%, var(--br-border));
 }
 
-/* Aviso en SweetAlert: fondo amarillo suave (--br-warning-soft) + texto legible */
+/* -------------------------------------------------------------------------
+ * [br] SweetAlert2 — bloque de contenido HTML (escalable, reutilizable)
+ * Usar: .br-swal-stack > .br-swal-lead + .br-swal-hint
+ * .br-swal-lead--center: solo la pregunta centrada; el aviso sigue al inicio
+ * ------------------------------------------------------------------------- */
+
+.br-swal-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--br-swal-stack-gap);
+  text-align: start;
+  max-width: var(--br-swal-stack-max-width);
+  margin-inline: auto;
+}
+
+.br-swal-lead {
+  margin: 0;
+  font-size: var(--br-swal-lead-font-size);
+  line-height: var(--br-swal-lead-line-height);
+  font-weight: 600;
+  color: var(--br-secondary);
+  letter-spacing: 0.01em;
+}
+
+.br-swal-lead--center {
+  text-align: center;
+  width: 100%;
+}
+
+.br-swal-lead b {
+  font-weight: 700;
+  color: inherit;
+}
+
+/* Aviso: fondo --br-warning-soft, tipografía fluida vía tokens */
 .br-swal-hint {
-  margin-top: 0.75rem;
-  padding: 0.85rem 1rem;
+  display: block;
+  margin: 0;
+  padding: var(--br-swal-hint-padding-y) var(--br-swal-hint-padding-x);
   border-radius: var(--br-radius);
   border: 1px solid color-mix(in srgb, var(--br-warning) 28%, var(--br-border));
   background: linear-gradient(
@@ -2876,25 +2925,22 @@ html:not(.layout-menu-collapsed)
     color-mix(in srgb, var(--br-warning-soft) 92%, white) 0%,
     var(--br-warning-soft) 100%
   );
-  border-inline-start: 4px solid var(--br-warning-hover);
+  border-inline-start: var(--br-swal-hint-accent-width) solid var(--br-warning-hover);
   box-shadow: var(--br-shadow-sm);
-}
-
-.br-swal-hint__icon {
-  flex-shrink: 0;
-  margin-top: 0.15rem;
-  font-size: 1rem;
-  line-height: 1;
-  color: var(--br-warning-hover);
+  text-align: start;
 }
 
 .br-swal-hint__label {
+  display: inline;
+  font-size: var(--br-swal-hint-label-font-size);
   font-weight: 600;
   color: var(--br-on-warning);
+  margin-inline-end: 0.28em;
 }
 
 .br-swal-hint__body {
-  font-size: 0.875rem;
+  margin: 0;
+  font-size: var(--br-swal-hint-font-size);
   line-height: 1.55;
   color: var(--br-secondary);
   font-weight: 400;
