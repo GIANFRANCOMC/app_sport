@@ -187,12 +187,12 @@
             <div class="row g-2 mt-4">
                 <InputText
                     hasDiv
-                    title="Número de celular (Whatsapp)"
+                    :placeholder="MODULE.texts.form.whatsappPlaceholder"
                     v-model="forms.entity.createUpdate.extras.modals.actions.data.whatsapp">
                     <template v-slot:inputGroupAppend>
                         <button class="btn btn-success waves-effect" type="button" @click="sendWhatsapp({data: forms.entity.createUpdate.extras.modals.actions.data})" :disabled="!isDefined({value: forms.entity.createUpdate.extras.modals.actions.data.whatsapp})">
-                            <i class="fa-brands fa-whatsapp"></i>
-                            <span class="ms-2">Enviar</span>
+                            <i class="fa-brands fa-whatsapp fs-5" aria-hidden="true"></i>
+                            <span class="ms-2" v-text="MODULE.texts.actions.send"></span>
                         </button>
                     </template>
                 </InputText>
@@ -219,6 +219,17 @@ import * as Constants from "@System/Helpers/Constants.js";
 import * as Requests  from "@System/Helpers/Requests.js";
 import * as Utils     from "@System/Helpers/Utils.js";
 import * as DateUtils from "@System/Helpers/DateUtils.js";
+
+const MODULE = {
+    texts: {
+        form: {
+            whatsappPlaceholder: "Número con código de país (ej.: 51987654321)"
+        },
+        actions: {
+            send: "Enviar"
+        }
+    }
+};
 
 export default {
     mounted: async function() {
@@ -293,7 +304,8 @@ export default {
                         }
                     }
                 }
-            }
+            },
+            MODULE
         };
     },
     methods: {
