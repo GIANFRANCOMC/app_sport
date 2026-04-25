@@ -184,7 +184,7 @@
                     <span class="d-block fw-semibold text-danger">Anular venta</span>
                 </div>
             </div>
-            <div class="row g-2 mt-4">
+            <div class="row g-2 justify-content-center my-4 px-1 px-md-5">
                 <InputText
                     hasDiv
                     :placeholder="MODULE.texts.form.whatsappPlaceholder"
@@ -192,7 +192,7 @@
                     <template v-slot:inputGroupAppend>
                         <button class="btn btn-success waves-effect" type="button" @click="sendWhatsapp({data: forms.entity.createUpdate.extras.modals.actions.data})" :disabled="!isDefined({value: forms.entity.createUpdate.extras.modals.actions.data.whatsapp})">
                             <i class="fa-brands fa-whatsapp fs-5" aria-hidden="true"></i>
-                            <span class="ms-2" v-text="MODULE.texts.actions.send"></span>
+                            <span class="d-none d-sm-inline ms-sm-2" v-text="MODULE.texts.actions.send"></span>
                         </button>
                     </template>
                 </InputText>
@@ -223,7 +223,7 @@ import * as DateUtils from "@System/Helpers/DateUtils.js";
 const MODULE = {
     texts: {
         form: {
-            whatsappPlaceholder: "Número con código de país (ej.: 51987654321)"
+            whatsappPlaceholder: "Número de celular (ej.: 51987654321)"
         },
         actions: {
             send: "Enviar"
@@ -368,10 +368,12 @@ export default {
                 let el = this;
 
                 Swal.fire({
-                    html: `<span class="d-block my-1">¿Desea anular la venta <b>${form?.serie_sequential}</b>?</span>
-                           <div class="d-block text-muted mt-2 mb-1">
-                                <i class="fa fa-warning text-warning"></i>
-                                <span><b>Importante:</b> Si esta venta incluye <u>membresías</u>, estas serán <b>anuladas</b> automáticamente.</span>
+                    html: `<span class="d-block my-1">¿Desea anular la venta <b>${form?.serie_sequential ?? ""}</b>?</span>
+                           <div class="br-swal-hint d-flex gap-2 align-items-start text-start">
+                                <p class="br-swal-hint__body mb-0">
+                                    <span class="br-swal-hint__label">Importante.</span>
+                                    Si esta venta incluye <span class="br-swal-hint__term">membresías</span>, estas serán <span class="br-swal-hint__risk">anuladas</span> automáticamente.
+                                </p>
                             </div>
                            `,
                     icon: "warning",

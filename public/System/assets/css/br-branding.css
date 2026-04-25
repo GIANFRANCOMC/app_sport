@@ -2794,3 +2794,122 @@ html:not(.layout-menu-collapsed)
   position: relative;
   z-index: 1;
 }
+
+/* -------------------------------------------------------------------------
+ * [br] Callouts globales (SweetAlert2, tooltips ricos, fuera de .br-layout)
+ * ------------------------------------------------------------------------- */
+
+.br-callout-notice {
+  border-radius: var(--br-radius);
+  border: 1px solid var(--br-border);
+  border-inline-start: 3px solid var(--br-primary);
+  background: var(--br-surface-elevated);
+  box-shadow: var(--br-shadow-sm);
+}
+
+/* Variante “precaución”: mismo lenguaje visual que el branding, sin bloque amarillo plano */
+.br-callout-notice--caution {
+  border-inline-start-color: color-mix(in srgb, var(--br-warning) 72%, var(--br-primary));
+  background: color-mix(in srgb, var(--br-neutral-soft) 42%, var(--br-surface-elevated));
+}
+
+.br-callout-notice__icon {
+  flex-shrink: 0;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: var(--br-radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(in srgb, var(--br-primary-soft) 88%, white);
+  color: var(--br-primary);
+  font-size: 1.125rem;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.65);
+}
+
+.br-callout-notice__icon--caution {
+  background: color-mix(in srgb, var(--br-warning-soft) 82%, white);
+  color: var(--br-warning-hover);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.75);
+}
+
+.br-callout-notice__title {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--br-secondary);
+  line-height: 1.35;
+  margin-bottom: 0.35rem;
+}
+
+.br-callout-notice__text {
+  font-size: 0.8125rem;
+  line-height: 1.55;
+  color: var(--br-text-muted);
+  margin: 0;
+}
+
+.br-callout-notice__text strong {
+  color: var(--br-secondary);
+  font-weight: 600;
+}
+
+.br-swal-doc-chip {
+  display: inline-block;
+  margin-top: 0.125rem;
+  padding: 0.2rem 0.55rem;
+  border-radius: var(--br-radius-sm);
+  background: var(--br-primary-soft);
+  color: var(--br-primary);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  border: 1px solid color-mix(in srgb, var(--br-primary) 18%, var(--br-border));
+}
+
+/* Aviso en SweetAlert: fondo amarillo suave (--br-warning-soft) + texto legible */
+.br-swal-hint {
+  margin-top: 0.75rem;
+  padding: 0.85rem 1rem;
+  border-radius: var(--br-radius);
+  border: 1px solid color-mix(in srgb, var(--br-warning) 28%, var(--br-border));
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--br-warning-soft) 92%, white) 0%,
+    var(--br-warning-soft) 100%
+  );
+  border-inline-start: 4px solid var(--br-warning-hover);
+  box-shadow: var(--br-shadow-sm);
+}
+
+.br-swal-hint__icon {
+  flex-shrink: 0;
+  margin-top: 0.15rem;
+  font-size: 1rem;
+  line-height: 1;
+  color: var(--br-warning-hover);
+}
+
+.br-swal-hint__label {
+  font-weight: 600;
+  color: var(--br-on-warning);
+}
+
+.br-swal-hint__body {
+  font-size: 0.875rem;
+  line-height: 1.55;
+  color: var(--br-secondary);
+  font-weight: 400;
+}
+
+.br-swal-hint__term {
+  color: var(--br-secondary);
+  font-weight: 600;
+  font-style: normal;
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--br-border-strong) 65%, transparent);
+  text-underline-offset: 0.15em;
+}
+
+.br-swal-hint__risk {
+  color: var(--br-danger);
+  font-weight: 600;
+}
