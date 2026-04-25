@@ -12,7 +12,7 @@
             <tbody class="table-border-bottom-0 bg-white">
                 <template v-if="data.length > 0">
                     <tr v-for="record in data" :key="record.id" class="text-center">
-                        <td :class="[{ 'bg-label-success': ['active'].includes(record.status), 'bg-label-primary': ['finalized'].includes(record.status), 'bg-label-danger': ['canceled'].includes(record.status) }]">
+                        <td :class="[{ 'br-status-surface--success': ['active'].includes(record.status), 'br-status-surface--primary': ['finalized'].includes(record.status), 'br-status-surface--danger': ['canceled'].includes(record.status) }]">
                             <span class="d-block fw-bold small" v-text="record.formatted_status"></span>
                         </td>
                         <td class="text-start">
@@ -26,7 +26,7 @@
                             </template>
                             <span v-else class="d-block fw-bold text-dark">Pendiente</span>
                         </td>
-                        <td :class="[{ 'bg-label-secondary': ['active'].includes(record.status) }]">
+                        <td :class="[{ 'br-status-surface--secondary': ['active'].includes(record.status) }]">
                             <template v-if="isDefined({value: record.end_date})">
                                 <span v-text="legibleFormatDate({dateString: record.end_date, type: 'date'})" class="d-block fw-semibold"></span>
                                 <span v-text="legibleFormatDate({dateString: record.end_date, type: 'time'})" class="d-block fw-semibold"></span>

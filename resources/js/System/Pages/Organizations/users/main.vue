@@ -61,7 +61,7 @@
                             </div>
                         </td>
                         <td class="text-center">
-                            <span :class="[getStatusBadgeClasses(record.status), 'flex-shrink-none']" v-text="record.formatted_status"></span>
+                            <StatusBadge class="flex-shrink-none" :status="record.status" :formatted-status="record.formatted_status"/>
                         </td>
                         <td class="text-center">
                             <button type="button" class="btn btn-xs btn-warning waves-effect" @click="openModal(record)">
@@ -700,11 +700,6 @@ export default {
         legibleFormatDate({dateString = null, type = "datetime"}) {
 
             return Utils.legibleFormatDate({dateString, type});
-
-        },
-        getStatusBadgeClasses(status) {
-
-            return Utils.getStatusBadgeClasses(status);
 
         },
         tooltips({show = true, time = 10}) {

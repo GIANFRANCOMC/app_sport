@@ -140,7 +140,7 @@ export function addDuration({startDate, type, quantity, setEndOfDay = false}) {
 }
 
 /**
- * Formatea la diferencia de días de forma legible
+ * Formatea la diferencia de días de forma legible (español)
  * @param {Object} options - {diff: number}
  * @returns {string} Diferencia formateada
  */
@@ -148,14 +148,14 @@ export function diffDaysLegible({diff}) {
     let diffDaysLegible = "";
     let numberDiff = Number(diff);
 
-    if (isNaN(numberDiff)) return "Not identified";
+    if (isNaN(numberDiff)) return "No identificado";
 
     if (numberDiff === 0) {
-        diffDaysLegible = "Today";
+        diffDaysLegible = "Hoy";
     } else {
         let absNumberDiff = Math.abs(numberDiff);
-        let daysLegible = absNumberDiff > 1 ? "days" : "day";
-        diffDaysLegible = `${numberDiff > 0 ? "In" : "Ago"} ${absNumberDiff} ${daysLegible}`;
+        let daysLegible = absNumberDiff > 1 ? "días" : "día";
+        diffDaysLegible = `${numberDiff > 0 ? "En" : "Hace"} ${absNumberDiff} ${daysLegible}`;
     }
 
     return diffDaysLegible;

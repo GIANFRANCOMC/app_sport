@@ -7,7 +7,7 @@ import * as Requests from "./Requests.js";
 import * as Alerts from "./Alerts.js";
 import * as Utils from "./Utils.js";
 import * as Constants from "./Constants.js";
-import { STATUS_BADGE_VARIANTS, CSS_CLASSES } from "./ModuleConstants.js";
+import { getStatusLabelClasses } from "./ModuleConstants.js";
 
 export const CrudMixin = {
     methods: {
@@ -84,11 +84,7 @@ export const CrudMixin = {
         },
 
         getStatusBadgeClasses(status, customVariants = {}) {
-            const variants = { ...STATUS_BADGE_VARIANTS, ...customVariants };
-            return [
-                ...CSS_CLASSES.BADGE_BASE,
-                variants[status] || "bg-label-secondary"
-            ];
+            return getStatusLabelClasses(status, customVariants);
         },
 
         separatorNumber(value) {

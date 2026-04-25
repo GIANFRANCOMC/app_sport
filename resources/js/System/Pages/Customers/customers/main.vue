@@ -34,7 +34,7 @@
                                 <span class="text-muted small fst-italic mb-1" v-text="record.identity_document_type?.name"></span>
                                 <span class="fs-5 fw-bold text-dark text-truncate" v-text="record.name"></span>
                             </div>
-                            <span :class="[getStatusBadgeClasses(record.status), 'flex-shrink-none']" v-text="record.formatted_status"></span>
+                            <StatusBadge class="flex-shrink-none" :status="record.status" :formatted-status="record.formatted_status"/>
                         </div>
                     </div>
                     <div class="card-body">
@@ -941,11 +941,6 @@ export default {
         legibleFormatDate({dateString = null, type = "datetime"}) {
 
             return Utils.legibleFormatDate({dateString, type});
-
-        },
-        getStatusBadgeClasses(status) {
-
-            return Utils.getStatusBadgeClasses(status);
 
         },
         tooltips({show = true, time = 10}) {

@@ -1,21 +1,24 @@
 <template>
-    <span :class="badgeClasses" v-text="formattedStatus"></span>
+    <span :class="badgeClasses" v-text="displayStatus"></span>
 </template>
 
 <script>
-import { STATUS_BADGE_VARIANTS, CSS_CLASSES } from "@System/Helpers/ModuleConstants.js";
+import { getStatusLabelClasses } from "@System/Helpers/ModuleConstants.js";
 
 export default {
     name: "StatusBadge",
     props: {
+        /** Código de estado (p. ej. active, pending). Si es null, se usa variante secondary. */
         status: {
             type: String,
-            required: true
+            default: null
         },
+        /** Texto mostrado; si no se envía, se muestra `status`. */
         formattedStatus: {
             type: String,
             default: null
         },
+        /** Mapa estado → modificador (success, danger, …) que se fusiona con el mapa global. */
         customVariants: {
             type: Object,
             default: () => ({})
@@ -23,11 +26,7 @@ export default {
     },
     computed: {
         badgeClasses() {
-            const variants = { ...STATUS_BADGE_VARIANTS, ...this.customVariants };
-            return [
-                ...CSS_CLASSES.BADGE_BASE,
-                variants[this.status] || "bg-label-secondary"
-            ];
+            return getStatusLabelClasses(this.status, this.customVariants);
         },
         displayStatus() {
             return this.formattedStatus || this.status;

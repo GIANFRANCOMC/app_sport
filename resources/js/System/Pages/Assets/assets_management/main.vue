@@ -61,7 +61,7 @@
                                 <span v-text="record.asset?.internal_code" class="fw-bold d-block"></span>
                                 <span v-text="record.asset?.name" class="d-block mb-1"></span>
                                 <span v-text="record.asset?.formatted_management_type" class="d-block text-primary fw-semibold mb-1"></span>
-                                <span :class="['badge', 'fw-semibold', 'text-capitalize', { 'bg-label-success': ['active'].includes(record.status), 'bg-label-warning': ['maintenance'].includes(record.status), 'bg-label-danger': ['retired'].includes(record.status) }]" v-text="record.formatted_status"></span>
+                                <StatusBadge :status="record.status" :formatted-status="record.formatted_status"/>
                             </div>
                             <div class="d-flex justify-content-end align-items-center flex-wrap gap-2 gap-md-3">
                                 <button class="btn btn-sm btn-warning" @click="modalAssetInBranch({record})" v-if="['active', 'maintenance'].includes(record.status)">Editar</button>
@@ -227,7 +227,7 @@
                                                         <span v-text="record?.quantity" class="ps-2"></span>
                                                     </td>
                                                     <td>
-                                                        <span :class="['badge', 'fw-semibold', 'text-capitalize', { 'bg-label-success': ['active'].includes(record.status), 'bg-label-warning': ['maintenance'].includes(record.status), 'bg-label-danger': ['retired'].includes(record.status) }]" v-text="record.formatted_status"></span>
+                                                        <StatusBadge :status="record.status" :formatted-status="record.formatted_status"/>
                                                     </td>
                                                     <td>
                                                         <button class="btn btn-danger btn-xs waves-effect" type="button" @click="unassignToUser({record, keyRecord})">
@@ -258,7 +258,10 @@
                                                             :hasDiv="false"/>
                                                     </td>
                                                     <td>
-                                                        <span :class="['badge', 'fw-semibold', 'text-capitalize', { 'bg-label-success': ['active'].includes(record.status), 'bg-label-primary': ['maintenance'].includes(record.status), 'bg-label-danger': ['retired'].includes(record.status) }]" v-text="record.formatted_status"></span>
+                                                        <StatusBadge
+                                                            :status="record.status"
+                                                            :formatted-status="record.formatted_status"
+                                                            :custom-variants="statusBadgeAssetMaintenancePrimary"/>
                                                     </td>
                                                     <td>
                                                         <button class="btn btn-danger btn-xs waves-effect" type="button" @click="unassignToUser({record, keyRecord})">
@@ -321,11 +324,9 @@ import * as Alerts    from "@System/Helpers/Alerts.js";
 import * as Constants from "@System/Helpers/Constants.js";
 import * as Requests  from "@System/Helpers/Requests.js";
 import * as Utils     from "@System/Helpers/Utils.js";
+import {STATUS_BADGE_CUSTOM_ASSET_MAINTENANCE_PRIMARY} from "@System/Helpers/ModuleConstants.js";
 
 export default {
-    components: {
-        //
-    },
     mounted: async function() {
 
         Utils.navbarItem("menu-parent-infrastructure", {addClass: "open"});
@@ -1281,6 +1282,9 @@ export default {
             return this.fixedNumber(calculate > 0 ? calculate : 0);
 
         },
+        statusBadgeAssetMaintenancePrimary() {
+            return STATUS_BADGE_CUSTOM_ASSET_MAINTENANCE_PRIMARY;
+        }
     },
     watch: {
         "lists.entity.filters.branch": function(newValue, oldValue) {

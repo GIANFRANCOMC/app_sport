@@ -8,7 +8,7 @@ import * as Requests from "./Requests.js";
 import * as Alerts from "./Alerts.js";
 import * as Utils from "./Utils.js";
 import * as Constants from "./Constants.js";
-import { STATUS_BADGE_VARIANTS, CSS_CLASSES, TEXT } from "./ModuleConstants.js";
+import { getStatusLabelClasses, TEXT } from "./ModuleConstants.js";
 
 export class BaseCrudModule {
     constructor(config = {}) {
@@ -274,10 +274,7 @@ export class BaseCrudModule {
      * Obtiene clases CSS para badge de estado
      */
     getStatusBadgeClasses(status) {
-        return [
-            ...CSS_CLASSES.BADGE_BASE,
-            STATUS_BADGE_VARIANTS[status] || "bg-label-secondary"
-        ];
+        return getStatusLabelClasses(status);
     }
 
     /**

@@ -15,17 +15,61 @@ export const STATUS = {
     RETIRED: "retired"
 };
 
-// Variantes de badges por estado
+/**
+ * Modificador visual para .br-status-label--{valor} (estándar de plataforma).
+ * Valores: success | info | warning | danger | primary | secondary | neutral | dark
+ */
 export const STATUS_BADGE_VARIANTS = {
-    [STATUS.ACTIVE]: "bg-label-success",
-    [STATUS.INACTIVE]: "bg-label-danger",
-    [STATUS.PENDING]: "bg-label-warning",
-    [STATUS.CANCELED]: "bg-label-danger",
-    [STATUS.SENT]: "bg-label-success",
-    [STATUS.FAILED]: "bg-label-danger",
-    [STATUS.MAINTENANCE]: "bg-label-warning",
-    [STATUS.RETIRED]: "bg-label-danger"
+    [STATUS.ACTIVE]: "success",
+    [STATUS.INACTIVE]: "danger",
+    [STATUS.PENDING]: "warning",
+    [STATUS.CANCELED]: "danger",
+    [STATUS.SENT]: "success",
+    [STATUS.FAILED]: "danger",
+    [STATUS.MAINTENANCE]: "warning",
+    [STATUS.RETIRED]: "danger"
 };
+
+/** Suscripciones en tracking: inactive como primary (no danger). */
+export const STATUS_BADGE_CUSTOM_SUBSCRIPTION = {
+    inactive: "primary"
+};
+
+/** Asistencias en timeline de cliente. */
+export const STATUS_BADGE_CUSTOM_ATTENDANCE_TIMELINE = {
+    active: "success",
+    finalized: "primary",
+    canceled: "danger",
+    inactive: "warning"
+};
+
+/** Libro de reclamos (códigos de estado). */
+export const STATUS_BADGE_CUSTOM_BOOK_COMPLAINTS = {
+    in_progress: "primary",
+    resolved: "success",
+    pending: "danger"
+};
+
+/** Activos en mantenimiento — variante warning (listados). */
+export const STATUS_BADGE_CUSTOM_ASSET_MAINTENANCE_WARNING = {
+    maintenance: "warning"
+};
+
+/** Activos en mantenimiento — variante primary (detalle). */
+export const STATUS_BADGE_CUSTOM_ASSET_MAINTENANCE_PRIMARY = {
+    maintenance: "primary"
+};
+
+const STATUS_LABEL_MODIFIERS_ALLOWED = new Set([
+    "success",
+    "info",
+    "warning",
+    "danger",
+    "primary",
+    "secondary",
+    "neutral",
+    "dark"
+]);
 
 // Opciones de filtrado comunes
 export const FILTER_BY_OPTIONS = {
@@ -41,7 +85,9 @@ export const FILTER_BY_OPTIONS = {
 export const CSS_CLASSES = {
     TITLE: "fw-bold colon-at-end fs-6",
     SELECT2: "bg-white",
-    BADGE_BASE: ["badge", "fw-semibold", "text-capitalize"],
+    /** @deprecated Preferir STATUS_LABEL_BASE; mismo contenido para compatibilidad */
+    BADGE_BASE: ["br-status-label", "fw-semibold", "text-capitalize"],
+    STATUS_LABEL_BASE: ["br-status-label", "fw-semibold", "text-capitalize"],
     BUTTON_PRIMARY: "btn btn-primary waves-effect",
     BUTTON_SUCCESS: "btn btn-success waves-effect",
     BUTTON_WARNING: "btn btn-warning waves-effect",
@@ -49,6 +95,20 @@ export const CSS_CLASSES = {
     BUTTON_INFO: "btn btn-info-1 waves-effect",
     BUTTON_SECONDARY: "btn btn-secondary waves-effect"
 };
+
+/**
+ * Clases para indicador de estado (etiqueta de marca).
+ * @param {string} status — clave de estado (p. ej. STATUS.ACTIVE)
+ * @param {Record<string, string>} customVariants — mapa estado → modificador permitido
+ * @returns {string[]}
+ */
+export function getStatusLabelClasses(status, customVariants = {}) {
+    const variants = {...STATUS_BADGE_VARIANTS, ...customVariants};
+    const raw = variants[status];
+    const mod =
+        typeof raw === "string" && STATUS_LABEL_MODIFIERS_ALLOWED.has(raw) ? raw : "secondary";
+    return [...CSS_CLASSES.STATUS_LABEL_BASE, `br-status-label--${mod}`];
+}
 
 // Textos comunes
 export const TEXT = {

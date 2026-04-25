@@ -13,7 +13,10 @@
                 <template v-if="data.length > 0">
                     <tr v-for="record in data" :key="record.id" class="text-center">
                         <td>
-                            <span :class="['badge', 'fw-semibold', { 'bg-label-success': ['active'].includes(record.status), 'bg-label-primary': ['inactive'].includes(record.status), 'bg-label-danger': ['canceled'].includes(record.status) }]" v-text="record.formatted_status"></span>
+                            <StatusBadge
+                                :status="record.status"
+                                :formatted-status="record.formatted_status"
+                                :custom-variants="statusBadgeSubscriptionVariants"/>
                         </td>
                         <td class="text-start">
                             <span v-text="record.branch?.name" class="fw-bold d-block"></span>
@@ -43,6 +46,7 @@
 
 <script>
 import * as Utils  from "../../Helpers/Utils.js";
+import {STATUS_BADGE_CUSTOM_SUBSCRIPTION} from "@System/Helpers/ModuleConstants.js";
 
 export default {
     name: "Subscriptions",
@@ -55,7 +59,9 @@ export default {
         }
     },
     computed: {
-        //
+        statusBadgeSubscriptionVariants() {
+            return STATUS_BADGE_CUSTOM_SUBSCRIPTION;
+        }
     },
     methods: {
         // Others

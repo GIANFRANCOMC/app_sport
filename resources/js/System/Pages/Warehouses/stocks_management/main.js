@@ -15,6 +15,7 @@ import InputText    from "@System/Components/InputText.vue";
 import Paginator    from "@System/Components/Paginator.vue";
 import Loader       from "@System/Components/Loader.vue";
 import WithoutData  from "@System/Components/WithoutData.vue";
+import StatusBadge  from "@System/Components/Generics/StatusBadge.vue";
 
 // App creation and mounted
 createApp(App)
@@ -29,4 +30,5 @@ createApp(App)
 .component("Paginator", Paginator)
 .component("Loader", Loader)
 .component("WithoutData", WithoutData)
+.component("StatusBadge", StatusBadge)
 .mount("#app");

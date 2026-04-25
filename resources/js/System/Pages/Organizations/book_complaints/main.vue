@@ -32,7 +32,11 @@
                                 <span class="text-muted small fw-semibold" v-text="legibleFormatDate({dateString: record.created_at, type: 'datetime'})"></span>
                                 <span class="fs-5 fw-bold text-dark text-truncate" v-text="getType(record)?.label"></span>
                             </div>
-                            <span :class="[getStatusBadgeClasses(record.status), 'flex-shrink-none']" v-text="record.formatted_status"></span>
+                            <StatusBadge
+                                class="flex-shrink-none"
+                                :status="record.status"
+                                :formatted-status="record.formatted_status"
+                                :custom-variants="bookComplaintsStatusBadgeVariants"/>
                         </div>
                     </div>
                     <div class="card-body">
@@ -121,7 +125,11 @@
                                                 <span class="text-muted small fw-semibold" v-text="legibleFormatDate({dateString: forms[entity].createUpdate.data.created_at, type: 'datetime'})"></span>
                                                 <span class="fs-5 fw-bold text-dark text-truncate" v-text="getType(forms[entity].createUpdate.data)?.label"></span>
                                             </div>
-                                            <span :class="[getStatusBadgeClasses(forms[entity].createUpdate.data.copy?.status?.code), 'flex-shrink-none']" v-text="forms[entity].createUpdate.data.copy?.status?.label"></span>
+                                            <StatusBadge
+                                                class="flex-shrink-none"
+                                                :status="forms[entity].createUpdate.data.copy?.status?.code"
+                                                :formatted-status="forms[entity].createUpdate.data.copy?.status?.label"
+                                                :custom-variants="bookComplaintsStatusBadgeVariants"/>
                                         </div>
                                         <div class="text-start mb-1">
                                             <span class="text-dark fw-bold colon-at-end" v-text="MODULE.texts.form.branch"></span>
@@ -234,6 +242,7 @@ import { initCrudModule } from "@System/Helpers/ModuleFactory.js";
 import * as Forms from "@System/Helpers/Forms.js";
 import * as Requests from "@System/Helpers/Requests.js";
 import * as Utils from "@System/Helpers/Utils.js";
+import {STATUS_BADGE_CUSTOM_BOOK_COMPLAINTS} from "@System/Helpers/ModuleConstants.js";
 
 const MODULE_CONFIG = {
     entity: "book_complaints",
@@ -376,7 +385,8 @@ export default {
             ...crudModule,
             MODULE: MODULE,
             isInitialized: false,
-            isSaving: false
+            isSaving: false,
+            bookComplaintsStatusBadgeVariants: STATUS_BADGE_CUSTOM_BOOK_COMPLAINTS
         };
 
     },
@@ -607,19 +617,6 @@ export default {
             return Utils.legibleFormatDate({dateString, type});
 
         },
-        getStatusBadgeClasses(status) {
-
-            if(typeof status === "string") {
-
-                if(["in_progress"].includes(status)) return "badge bg-label-primary fw-semibold";
-                if(["resolved"].includes(status)) return "badge bg-label-success fw-semibold";
-                if(["pending"].includes(status)) return "badge bg-label-danger fw-semibold";
-
-            }
-
-            return "badge bg-label-secondary fw-semibold";
-
-        }
     },
     computed: {
         entity() {

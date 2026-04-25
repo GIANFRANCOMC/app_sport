@@ -18,14 +18,21 @@
                         </td>
                         <td>
                             <span v-text="record.formatted_issue_date" class="d-block"></span>
-                            <span :class="['badge', 'fw-semibold', 'mt-1', { 'bg-label-success': record.diff_days_issue_date == 0, 'bg-label-warning': record.diff_days_issue_date != 0 }]" v-text="diffDaysLegible({diff: record.diff_days_issue_date})"></span>
+                            <span
+                                :class="[
+                                    'br-status-label',
+                                    'fw-semibold',
+                                    'mt-1',
+                                    { 'br-status-label--success': record.diff_days_issue_date === 0, 'br-status-label--warning': record.diff_days_issue_date !== 0 }
+                                ]"
+                                v-text="diffDaysLegible({diff: record.diff_days_issue_date})"></span>
                         </td>
                         <td>
                             <span v-text="record.currency?.sign ?? ''" class="fw-semibold"></span>
                             <span v-text="separatorNumber(record.total)" class="fw-semibold ms-1"></span>
                         </td>
                         <td>
-                            <span :class="['badge', 'fw-semibold', 'text-capitalize', { 'bg-label-success': ['active'].includes(record.status), 'bg-label-danger': ['inactive', 'canceled'].includes(record.status) }]" v-text="record.formatted_status"></span>
+                            <StatusBadge :status="record.status" :formatted-status="record.formatted_status"/>
                         </td>
                     </tr>
                 </template>

@@ -131,7 +131,10 @@
                     <template v-if="lists.entity.records.total > 0">
                         <tr v-for="record in lists.entity.records.data" :key="record.id" class="text-center">
                             <td>
-                                <span :class="['badge', 'fw-semibold', { 'bg-label-success': ['active'].includes(record.status), 'bg-label-primary': ['inactive'].includes(record.status), 'bg-label-danger': ['canceled'].includes(record.status) }]" v-text="record.formatted_status"></span>
+                                <StatusBadge
+                                    :status="record.status"
+                                    :formatted-status="record.formatted_status"
+                                    :custom-variants="statusBadgeSubscriptionVariants"/>
                             </td>
                             <td class="text-start">
                                 <span v-text="record.branch?.name" class="fw-bold d-block"></span>
@@ -206,9 +209,12 @@
                             <span class="ms-2" v-text="forms.entity.createUpdate.extras.modals.actions.data?.formatted_type"></span>
                             <span v-if="isDefined({value: forms.entity.createUpdate.extras.modals.actions.data?.sale_header?.serie_sequential})" class="ms-2 fw-semibold" v-text="forms.entity.createUpdate.extras.modals.actions.data?.sale_header?.serie_sequential"></span>
                         </div>
-                        <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12">
+                        <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 d-flex align-items-center flex-wrap gap-2">
                             <span class="fw-semibold">• Estado:</span>
-                            <span class="ms-2" v-text="forms.entity.createUpdate.extras.modals.actions.data?.formatted_status"></span>
+                            <StatusBadge
+                                :status="forms.entity.createUpdate.extras.modals.actions.data?.status"
+                                :formatted-status="forms.entity.createUpdate.extras.modals.actions.data?.formatted_status"
+                                :custom-variants="statusBadgeSubscriptionVariants"/>
                         </div>
                         <div v-if="['canceled'].includes(forms.entity.createUpdate.extras.modals.actions.data?.status)" class="col-xl-12 col-lg-12 col-md-12 col-sm-12">
                             <span class="fw-semibold">• Motivo:</span>
@@ -237,11 +243,9 @@ import * as Alerts    from "@System/Helpers/Alerts.js";
 import * as Constants from "@System/Helpers/Constants.js";
 import * as Requests  from "@System/Helpers/Requests.js";
 import * as Utils     from "@System/Helpers/Utils.js";
+import {STATUS_BADGE_CUSTOM_SUBSCRIPTION} from "@System/Helpers/ModuleConstants.js";
 
 export default {
-    components: {
-        //
-    },
     mounted: async function() {
 
         Utils.navbarItem("menu-parent-customers", {addClass: "open"});
@@ -567,6 +571,9 @@ export default {
 
             return this.options?.customers?.records.map(e => ({code: e.id, label: `${e.document_number} - ${e.name}`, data: e}));
 
+        },
+        statusBadgeSubscriptionVariants() {
+            return STATUS_BADGE_CUSTOM_SUBSCRIPTION;
         }
     },
     watch: {

@@ -127,15 +127,19 @@
                                 <small v-text="record.holder?.document_number" class="d-block"></small>
                             </td>
                             <td>
-                                <span v-text="record.formatted_issue_date" class="d-block"></span>
-                                <span :class="['badge', 'fw-semibold', 'mt-1', { 'bg-label-success': record.diff_days_issue_date == 0, 'bg-label-warning': record.diff_days_issue_date != 0 }]" v-text="diffDaysLegible({diff: record.diff_days_issue_date})"></span>
+                                <span v-text="legibleFormatDate({dateString: record.issue_date, type: 'weekday_date', separator: '/'})" class="d-block fw-semibold"></span>
+                                <span
+                                    :class="['br-sales-relative-pill', { 'br-sales-relative-pill--today': record.diff_days_issue_date === 0 }]"
+                                    v-text="diffDaysLegible({diff: record.diff_days_issue_date})"></span>
+                            </td>
+                            <td class="text-end align-middle pe-3" title="Total">
+                                <span class="br-amount-inline">
+                                    <span class="br-amount-inline__sign" v-text="record.currency?.sign ?? ''"></span>
+                                    <span class="br-amount-inline__amount" v-text="separatorNumber(record.total)"></span>
+                                </span>
                             </td>
                             <td>
-                                <span v-text="record.currency?.sign ?? ''" class="fw-semibold"></span>
-                                <span v-text="separatorNumber(record.total)" class="fw-semibold ms-1"></span>
-                            </td>
-                            <td>
-                                <span :class="['badge', 'fw-semibold', 'text-capitalize', { 'bg-label-success': ['active'].includes(record.status), 'bg-label-danger': ['inactive', 'canceled'].includes(record.status) }]" v-text="record.formatted_status"></span>
+                                <StatusBadge :status="record.status" :formatted-status="record.formatted_status"/>
                             </td>
                             <td>
                                 <InputSlot
@@ -215,9 +219,6 @@ import * as Requests  from "@System/Helpers/Requests.js";
 import * as Utils     from "@System/Helpers/Utils.js";
 
 export default {
-    components: {
-        //
-    },
     mounted: async function() {
 
         Utils.navbarItem("menu-parent-sales", {addClass: "open"});
@@ -475,6 +476,11 @@ export default {
         diffDaysLegible({diff}) {
 
             return Utils.diffDaysLegible({diff});
+
+        },
+        legibleFormatDate({dateString = null, type = "datetime", separator = "/"}) {
+
+            return Utils.legibleFormatDate({dateString, type, separator});
 
         },
         sendWhatsapp({data = null, action = "reportSale"}) {

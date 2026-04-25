@@ -51,7 +51,10 @@
                                     <div>
                                         <span :class="['text-uppercase', 'fw-bold']" v-text="item?.name"></span>
                                     </div>
-                                    <span :class="['badge', 'fw-semibold', 'py-1', { 'bg-label-success': ['active'].includes(item?.data?.status), 'bg-label-danger': ['inactive', 'canceled'].includes(item?.data?.status) }]" v-text="item?.data?.formatted_status"></span>
+                                    <StatusBadge
+                                        class="py-1"
+                                        :status="item?.data?.status"
+                                        :formatted-status="item?.data?.formatted_status"/>
                                 </div>
                                 <small class="text-body-secondary" v-text="legibleFormatDate({dateString: item?.data?.created_at, type: 'datetime'})"></small>
                             </div>
@@ -87,7 +90,11 @@
                                     <div>
                                         <span :class="['text-uppercase', 'fw-bold']" v-text="item?.name"></span>
                                     </div>
-                                    <span :class="['badge', 'fw-semibold', 'py-1', { 'bg-label-success': ['active'].includes(item?.data?.status), 'bg-label-primary': ['inactive'].includes(item?.data?.status), 'bg-label-danger': ['canceled'].includes(item?.data?.status) }]" v-text="item?.data?.formatted_status"></span>
+                                    <StatusBadge
+                                        class="py-1"
+                                        :status="item?.data?.status"
+                                        :formatted-status="item?.data?.formatted_status"
+                                        :custom-variants="statusBadgeSubscriptionVariants"/>
                                 </div>
                                 <small class="text-body-secondary" v-text="legibleFormatDate({dateString: item?.data?.created_at, type: 'datetime'})"></small>
                             </div>
@@ -122,7 +129,11 @@
                                     <div>
                                         <span :class="['text-uppercase', 'fw-bold']" v-text="item?.name"></span>
                                     </div>
-                                    <span :class="['badge', 'fw-semibold', 'py-1', { 'bg-label-success': ['active'].includes(item?.data?.status), 'bg-label-primary': ['finalized'].includes(item?.data?.status), 'bg-label-danger': ['canceled'].includes(item?.data?.status), 'bg-label-warning': ['inactive'].includes(item?.data?.status) }]" v-text="item?.data?.formatted_status"></span>
+                                    <StatusBadge
+                                        class="py-1"
+                                        :status="item?.data?.status"
+                                        :formatted-status="item?.data?.formatted_status"
+                                        :custom-variants="statusBadgeAttendanceTimelineVariants"/>
                                 </div>
                                 <small class="text-body-secondary" v-text="legibleFormatDate({dateString: item?.data?.created_at, type: 'datetime'})"></small>
                             </div>
@@ -162,6 +173,7 @@
 
 <script>
 import * as Utils  from "../../Helpers/Utils.js";
+import {STATUS_BADGE_CUSTOM_SUBSCRIPTION, STATUS_BADGE_CUSTOM_ATTENDANCE_TIMELINE} from "@System/Helpers/ModuleConstants.js";
 
 export default {
     name: "Timeline",
@@ -288,6 +300,12 @@ export default {
 
             return this.data?.extras?.options;
 
+        },
+        statusBadgeSubscriptionVariants() {
+            return STATUS_BADGE_CUSTOM_SUBSCRIPTION;
+        },
+        statusBadgeAttendanceTimelineVariants() {
+            return STATUS_BADGE_CUSTOM_ATTENDANCE_TIMELINE;
         }
     },
     methods: {

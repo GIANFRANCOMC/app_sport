@@ -19,6 +19,7 @@ import Loader        from "@System/Components/Loader.vue";
 import WithoutData   from "@System/Components/WithoutData.vue";
 import PrintSale     from "@System/Components/Sales/PrintSale.vue";
 import AddCustomer   from "@System/Components/Customers/AddCustomer.vue";
+import StatusBadge   from "@System/Components/Generics/StatusBadge.vue";
 
 // App creation and mounted
 createApp(App)
@@ -37,4 +38,5 @@ createApp(App)
 .component("WithoutData", WithoutData)
 .component("PrintSale", PrintSale)
 .component("AddCustomer", AddCustomer)
+.component("StatusBadge", StatusBadge)
 .mount("#app");

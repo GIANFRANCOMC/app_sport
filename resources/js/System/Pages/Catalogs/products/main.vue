@@ -64,7 +64,7 @@
                             </div>
                         </td>
                         <td class="text-center">
-                            <span :class="[getStatusBadgeClasses(record.status), 'flex-shrink-none']" v-text="record.formatted_status"></span>
+                            <StatusBadge class="flex-shrink-none" :status="record.status" :formatted-status="record.formatted_status"/>
                         </td>
                         <td class="text-center">
                             <button type="button" class="btn btn-xs btn-warning waves-effect" @click="openModal(record)">
@@ -708,11 +708,6 @@ export default {
             return Utils.separatorNumber(value);
 
         },
-        getStatusBadgeClasses(status) {
-
-            return Utils.getStatusBadgeClasses(status);
-
-        }
     },
     computed: {
         entity() {

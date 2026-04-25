@@ -45,7 +45,7 @@
                                 <span v-text="legibleFormatDate({dateString: record.created_at, type: 'time'})" class="d-block fw-semibold"></span>
                             </td>
                             <td>
-                                <span :class="['badge', 'fw-semibold', { 'bg-label-success': ['sent'].includes(record.status), 'bg-label-warning': ['pending'].includes(record.status), 'bg-label-danger': ['failed'].includes(record.status) }]" v-text="record.formatted_status"></span>
+                                <StatusBadge :status="record.status" :formatted-status="record.formatted_status"/>
                             </td>
                             <td>
                                 <InputSlot
@@ -100,9 +100,11 @@
                             <span class="fw-semibold">• Fecha de creación:</span>
                             <span class="ms-2" v-text="legibleFormatDate({dateString: forms.entity.createUpdate.extras.modals.actions.data?.created_at, type: 'datetime'})"></span>
                         </div>
-                        <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12">
+                        <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 d-flex align-items-center flex-wrap gap-2">
                             <span class="fw-semibold">• Estado:</span>
-                            <span class="ms-2" v-text="forms.entity.createUpdate.extras.modals.actions.data?.formatted_status"></span>
+                            <StatusBadge
+                                :status="forms.entity.createUpdate.extras.modals.actions.data?.status"
+                                :formatted-status="forms.entity.createUpdate.extras.modals.actions.data?.formatted_status"/>
                         </div>
                         <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12">
                             <span class="fw-semibold">• Contenido <small>(Referencia)</small></span>
@@ -125,9 +127,6 @@ import * as Requests  from "@System/Helpers/Requests.js";
 import * as Utils     from "@System/Helpers/Utils.js";
 
 export default {
-    components: {
-        //
-    },
     mounted: async function() {
 
         Utils.navbarItem("menu-parent-customers", {addClass: "open"});

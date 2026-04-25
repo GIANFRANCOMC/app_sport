@@ -15,7 +15,8 @@ import InputText    from "@System/Components/InputText.vue";
 import Paginator    from "@System/Components/Paginator.vue";
 import Loader       from "@System/Components/Loader.vue";
 import WithoutData  from "@System/Components/WithoutData.vue";
-import Timeline  from "@System/Components/TrackingCustomers/Timeline.vue";
+import Timeline     from "@System/Components/TrackingCustomers/Timeline.vue";
+import StatusBadge  from "@System/Components/Generics/StatusBadge.vue";
 
 // App creation and mounted
 createApp(App)
@@ -31,4 +32,5 @@ createApp(App)
 .component("Loader", Loader)
 .component("WithoutData", WithoutData)
 .component("Timeline", Timeline)
+.component("StatusBadge", StatusBadge)
 .mount("#app");

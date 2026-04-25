@@ -1309,12 +1309,12 @@ export default {
                                         <div class="d-block mt-1">
                                             <i class="fa-regular fa-calendar"></i>
                                             <span class="fw-semibold ms-1">F. inicio:</span>
-                                            <span class="badge bg-label-primary fw-bold">${this.legibleFormatDate({dateString: e?.start_date})}</span>
+                                            <span class="br-status-label br-status-label--primary fw-bold">${this.legibleFormatDate({dateString: e?.start_date})}</span>
                                         </div>
                                         <div class="d-block mt-1">
                                             <i class="fa-regular fa-calendar"></i>
                                             <span class="fw-semibold ms-1">F. final.:</span>
-                                            <span class="badge bg-label-success fw-bold">${this.legibleFormatDate({dateString: e?.end_date})}</span>
+                                            <span class="br-status-label br-status-label--success fw-bold">${this.legibleFormatDate({dateString: e?.end_date})}</span>
                                         </div>
                                     </div>`
                                 );

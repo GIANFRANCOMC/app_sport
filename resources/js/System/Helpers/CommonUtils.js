@@ -3,6 +3,7 @@
  */
 
 import { isDefined } from "./ValidationUtils.js";
+import { getStatusLabelClasses } from "./ModuleConstants.js";
 
 /**
  * Obtiene información esencial de la aplicación
@@ -81,19 +82,6 @@ export function getAsset(path, {type = "storage", back = 0}) {
  * @returns {Array} Array de clases CSS
  */
 export function getStatusBadgeClasses(status, variants = {}) {
-    const defaultVariants = {
-        active: "bg-label-success",
-        inactive: "bg-label-danger",
-        ...variants
-    };
-
-    return [
-        "badge",
-        "fw-semibold",
-        "px-3",
-        "py-2",
-        "text-capitalize",
-        defaultVariants[status] ?? "bg-label-secondary"
-    ];
+    return getStatusLabelClasses(status, variants);
 }
 

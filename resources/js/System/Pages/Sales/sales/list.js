@@ -16,6 +16,7 @@ import Paginator    from "@System/Components/Paginator.vue";
 import Loader       from "@System/Components/Loader.vue";
 import WithoutData  from "@System/Components/WithoutData.vue";
 import PrintSale    from "@System/Components/Sales/PrintSale.vue";
+import StatusBadge  from "@System/Components/Generics/StatusBadge.vue";
 
 // App creation and mounted
 createApp(App)
@@ -31,4 +32,5 @@ createApp(App)
 .component("Loader", Loader)
 .component("WithoutData", WithoutData)
 .component("PrintSale", PrintSale)
+.component("StatusBadge", StatusBadge)
 .mount("#app");

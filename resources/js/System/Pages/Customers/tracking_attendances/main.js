@@ -15,9 +15,11 @@ import InputSelect2  from "@System/Components/InputSelect2.vue";
 import InputText     from "@System/Components/InputText.vue";
 import Paginator     from "@System/Components/Paginator.vue";
 import Loader        from "@System/Components/Loader.vue";
-import CodeScanner from "@System/Components/CodeScanner.vue";
+import CodeScanner   from "@System/Components/CodeScanner.vue";
 import WithoutData   from "@System/Components/WithoutData.vue";
 import AnalogClock   from "@System/Components/AnalogClock.vue";
+
+import StatusBadge from "@System/Components/Generics/StatusBadge.vue";
 
 // App creation and mounted
 createApp(App)
@@ -35,4 +37,5 @@ createApp(App)
 .component("CodeScanner", CodeScanner)
 .component("WithoutData", WithoutData)
 .component("AnalogClock", AnalogClock)
+.component("StatusBadge", StatusBadge)
 .mount("#app");
