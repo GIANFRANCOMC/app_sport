@@ -1667,11 +1667,90 @@ html:not(.layout-menu-collapsed)
   color: var(--br-on-primary) !important;
 }
 
+/* Paginación activa — misma familia cromática que .table > thead (sin acento celeste primario) */
 .br-layout .pagination .page-item.active .page-link,
 .br-layout .pagination li.active > a.page-link {
-  background-color: var(--br-primary) !important;
-  border-color: var(--br-primary) !important;
-  color: #fff !important;
+  background:
+    linear-gradient(180deg, var(--br-table-thead-highlight-top) 0%, transparent 52%),
+    linear-gradient(
+      168deg,
+      var(--br-table-thead-mid-a) 0%,
+      var(--br-table-thead-mid-b) 40%,
+      var(--br-table-thead-mid-c) 100%
+    ) !important;
+  background-color: var(--br-table-thead-mid-c) !important;
+  /* Borde al tono del fondo (evita “doble marco” / contraste raro) */
+  border-color: var(--br-table-thead-mid-c) !important;
+  color: var(--br-table-thead-text) !important;
+  box-shadow: inset 0 -1px 0 var(--br-table-thead-edge), var(--br-shadow-sm);
+}
+
+/* Paginación (Laravel / componente Paginator) — acorde al thead de tablas */
+.br-layout .br-pagination {
+  width: 100%;
+}
+
+.br-layout .br-pagination__list {
+  gap: 0.35rem;
+}
+
+.br-layout .br-pagination .page-link.br-pagination__link {
+  border-radius: var(--br-radius-sm);
+  border: 1px solid color-mix(in srgb, var(--br-table-thead-mid-c) 14%, var(--br-border));
+  color: var(--br-text-muted);
+  background-color: color-mix(in srgb, var(--br-secondary-soft) 48%, var(--br-surface));
+  min-width: 2.4rem;
+  text-align: center;
+  padding: 0.45rem 0.65rem;
+  line-height: 1.25;
+  font-weight: 500;
+  font-size: 0.8125rem;
+  transition: var(--br-transition), box-shadow 0.28s ease-out;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55);
+}
+
+.br-layout .br-pagination .page-item:not(.active):not(.disabled) .page-link.br-pagination__link:hover {
+  border-color: color-mix(in srgb, var(--br-table-thead-mid-b) 38%, var(--br-border)) !important;
+  /* Mismo tono pizarra / violeta-grisáceo que el fondo del ítem activo (--br-table-thead-mid-*) */
+  color: var(--br-table-thead-mid-c) !important;
+  font-weight: 500;
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--br-table-thead-mid-a) 7%, white) 0%,
+      color-mix(in srgb, var(--br-secondary-soft) 58%, var(--br-surface)) 100%
+    ) !important;
+  background-color: color-mix(in srgb, var(--br-secondary-soft) 58%, var(--br-surface)) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.62),
+    0 2px 6px rgba(26, 26, 53, 0.05);
+}
+
+.br-layout .br-pagination .page-item:not(.active):not(.disabled) .page-link.br-pagination__link:active {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.48);
+}
+
+.br-layout .br-pagination .page-item:not(.active):not(.disabled) .page-link.br-pagination__link:focus-visible {
+  border-color: var(--br-table-thead-mid-b) !important;
+  color: var(--br-table-thead-mid-c) !important;
+  background-color: color-mix(in srgb, var(--br-secondary-soft) 78%, var(--br-surface)) !important;
+  outline: 0;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--br-table-thead-mid-a) 28%, transparent);
+}
+
+.br-layout .br-pagination .page-item.disabled .page-link.br-pagination__link {
+  opacity: 0.45;
+  pointer-events: none;
+  cursor: not-allowed;
+  box-shadow: none;
+  background-color: color-mix(in srgb, var(--br-secondary-soft) 28%, var(--br-surface));
+  border-color: color-mix(in srgb, var(--br-table-thead-mid-c) 8%, var(--br-border));
+}
+
+.br-layout .br-pagination .page-item.active .page-link.br-pagination__link {
+  font-weight: 600;
+  border-color: var(--br-table-thead-mid-c) !important;
+  box-shadow: inset 0 -1px 0 var(--br-table-thead-edge), 0 2px 10px rgba(26, 26, 53, 0.1);
 }
 
 .br-layout .form-check-input:checked,

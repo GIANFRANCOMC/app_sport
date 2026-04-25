@@ -66,6 +66,7 @@ input.input-number-no-range[type=number] {
 .vs__search::placeholder {
     color: #a5a3ae !important;
     font-style: italic !important;
+    font-size: 0.8rem !important;
 }
 
 /* BACKGROUND */

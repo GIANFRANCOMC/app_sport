@@ -16,7 +16,7 @@
                     :class="config.forms.classes.select2"
                     :clearable="true"
                     :searchable="false"
-                    placeholder="Seleccione una serie ...">
+                    placeholder="Seleccione">
                     <template #option="{ data }">
                         <span v-text="`${data?.legible_serie} - ${data?.document_type?.name}`" class="d-block fw-bold"></span>
                         <small v-text="data?.branch?.name" class="d-block"></small>
@@ -41,6 +41,7 @@
             hasDiv
             title="Fecha de emisión"
             :titleClass="[config.forms.classes.title]"
+            :max="maxIssueDate"
             xl="3"
             lg="6"/>
         <InputSlot
@@ -55,7 +56,7 @@
                     :options="holders"
                     :class="config.forms.classes.select2"
                     :clearable="true"
-                    placeholder="Seleccione un cliente ...">
+                    placeholder="Seleccione">
                     <template #option="{ label }">
                         <span v-text="truncate({value: label, length: 50})" class="d-block"></span>
                     </template>
@@ -149,9 +150,9 @@
                                     xl="12"
                                     lg="12">
                                     <template v-slot:input>
-                                        <button type="button" class="btn btn-sm btn-primary waves-effect" @click="modalActionsEntity({record})">
+                                        <button type="button" class="br-btn br-btn-sm br-btn-secondary" @click="modalActionsEntity({record})">
                                             <i class="fa fa-gear"></i>
-                                            <span class="ms-2">Acciones</span>
+                                            <span>Acciones</span>
                                         </button>
                                     </template>
                                 </InputSlot>
@@ -217,6 +218,7 @@ import * as Alerts    from "@System/Helpers/Alerts.js";
 import * as Constants from "@System/Helpers/Constants.js";
 import * as Requests  from "@System/Helpers/Requests.js";
 import * as Utils     from "@System/Helpers/Utils.js";
+import * as DateUtils from "@System/Helpers/DateUtils.js";
 
 export default {
     mounted: async function() {
@@ -520,6 +522,11 @@ export default {
         breadcrumbTitles: function() {
 
             return [{title: "Ventas"}, this.config.entity.page];
+
+        },
+        maxIssueDate() {
+
+            return DateUtils.getCurrentDate("date");
 
         },
         series: function() {

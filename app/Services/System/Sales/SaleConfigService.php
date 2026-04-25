@@ -41,7 +41,7 @@ class SaleConfigService {
             if($page === "list") {
 
                 $config->branches = new stdClass();
-                $config->branches->records = Branch::getAll("default", $companyId);
+                $config->branches->records = Branch::getAll("sale", $companyId);
 
                 $config->customers = new stdClass();
                 $config->customers->records = Customer::getAll("default", $companyId);
