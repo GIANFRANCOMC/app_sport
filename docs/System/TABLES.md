@@ -1,0 +1,210 @@
+# System - Tablas y relaciones
+
+Este archivo describe las tablas creadas por migraciones y usadas por System. Algunas tablas tambien son leidas por Guest, pero la administracion principal pertenece a System.
+
+## Maestros generales
+
+### identity_document_types
+
+Tipos de documento de identidad. Campos principales: `code`, `name`, `is_searchable`, `min_length`, `max_length`, `status`.
+
+Relaciones: usado por `users`, `customers` y `book_complaints`.
+
+### document_types
+
+Tipos de documentos comerciales o comprobantes. Campos: `code`, `name`, `status`.
+
+Relaciones: usado por `series`.
+
+### currencies
+
+Monedas. Campos: `code`, `sign`, `singular_name`, `plural_name`, `status`.
+
+Relaciones: usado por empresas, items, ventas, activos y asignaciones.
+
+## Empresa, menu y usuarios
+
+### companies
+
+Empresa o tenant funcional. Campos: `slug`, `internal_code`, documento, razon social, nombre comercial, moneda, tagline, descripcion, direccion, telefono, email, token externo, imagenes y `status`.
+
+Relaciones: tiene sucursales, usuarios, clientes, items, activos, redes sociales, subsecciones habilitadas, dispositivos biometricos.
+
+### company_socials_media
+
+Redes sociales y enlaces publicos de empresa. Campos: `company_id`, `type`, `link`, `status`.
+
+Relaciones: pertenece a `companies`.
+
+### sections
+
+Secciones de menu principal. Campos: `slug`, `name`, `order`, `dom_id`, `dom_label`, `dom_icon`, `has_sub_menu`, `status`.
+
+Relaciones: tiene `sub_sections`.
+
+### sub_sections
+
+Items de menu. Campos: `section_id`, `slug`, `name`, `order`, `dom_id`, `dom_label`, `dom_icon`, `dom_route`, `status`.
+
+Relaciones: pertenece a `sections`; se habilita por empresa mediante `companies_sub_sections`.
+
+### companies_sub_sections
+
+Permite activar/desactivar subsecciones para una empresa. Campos: `company_id`, `sub_section_id`, `status`.
+
+Relaciones: une `companies` con `sub_sections`.
+
+### roles
+
+Roles internos. Campos: `slug`, `name`, `status`.
+
+Relaciones: usado por `users`.
+
+### users
+
+Usuarios internos del sistema. Campos: `company_id`, `role_id`, `identity_document_type_id`, documento, nombre, email, password, telefono, genero, nacimiento, `status`.
+
+Relaciones: pertenece a empresa, rol y tipo de documento. Puede vender, crear registros, recibir activos y tener preferencias.
+
+### user_preferences
+
+Preferencias por usuario. Campos: `user_id`, `slug`, `value`, `status`.
+
+Relaciones: pertenece a `users`.
+
+## Organizacion fisica
+
+### branches
+
+Sucursales de empresa. Campos: `company_id`, `internal_code`, `name`, direccion, referencia, telefono, email, capacidad, mapa, `status`.
+
+Relaciones: pertenece a empresa; tiene series, almacenes, asistencias, membresias, dispositivos y activos.
+
+### series
+
+Series/correlativos por sucursal y tipo de documento. Campos: `branch_id`, `document_type_id`, `code`, `number`, `init`, `status`.
+
+Relaciones: pertenece a sucursal y tipo de documento; usada por ventas.
+
+## Catalogo comercial
+
+### categories
+
+Categorias comerciales. Campos: `company_id`, `internal_code`, `name`, `description`, `status`.
+
+Relaciones: pertenece a empresa; se une a items por `category_items`.
+
+### items
+
+Productos, servicios y membresias de catalogo. Campos: `company_id`, `currency_id`, `internal_code`, `name`, `description`, `price`, `min_price`, `max_price`, `type`, `duration_type`, `duration_value`, `see_my_web`, `see_my_web_price`, `status`.
+
+Relaciones: pertenece a empresa y moneda; tiene categorias; usado por ventas, stock y portal publico.
+
+### category_items
+
+Relacion entre categorias e items. Campos: `category_id`, `item_id`, `status`.
+
+Relaciones: une `categories` con `items`.
+
+## Clientes, membresias y asistencias
+
+### customers
+
+Clientes de la empresa. Campos: `company_id`, `identity_document_type_id`, `document_number`, `name`, `email`, `phone_number`, `gender`, `birthdate`, `status`.
+
+Relaciones: pertenece a empresa y tipo de documento; tiene ventas, membresias, asistencias y huellas.
+
+### subscriptions
+
+Membresias reales de clientes. Campos: `company_id`, `branch_id`, `sale_header_id`, `sale_body_id`, `customer_id`, `duration_type`, `duration_value`, `start_date`, `end_date`, `set_end_of_day`, `force`, `attendance_limit_per_day`, `observation`, `motive`, `type`, `status`.
+
+Relaciones: pertenece a empresa, sucursal y cliente; puede venir de venta.
+
+### attendances
+
+Registros de asistencia. Campos: `company_id`, `branch_id`, `customer_id`, `start_date`, `end_date`, `observation`, `motive`, `type`, `status`.
+
+Relaciones: pertenece a empresa, sucursal y cliente.
+
+### subscription_emails
+
+Emails relacionados a membresias. Campos: `to`, `subject`, `body`, `extras_json`, `type`, `model_id`, `model_type`, `status`.
+
+Relaciones: puede referenciar modelos mediante `model_id`/`model_type`.
+
+## Ventas
+
+### sales_header
+
+Cabecera de venta. Campos: `serie_id`, `sequential`, `holder_id`, `seller_id`, `currency_id`, `issue_date`, `total`, `observation`, `status`.
+
+Relaciones: pertenece a serie, cliente comprador, vendedor y moneda; tiene detalles.
+
+### sales_body
+
+Detalle de venta. Campos: `sale_header_id`, `item_id`, `currency_id`, `name`, `quantity`, `price`, `total`, `customer_id`, `type`, `observation`, `extras`, `status`.
+
+Relaciones: pertenece a cabecera, item, moneda y cliente.
+
+## Inventario
+
+### warehouses
+
+Almacenes por sucursal. Campos: `branch_id`, `name`, `status`.
+
+Relaciones: pertenece a sucursal; tiene `warehouse_items`.
+
+### warehouse_items
+
+Stock por item en almacen. Campos: `warehouse_id`, `item_id`, `quantity`, `status`.
+
+Relaciones: une almacenes con items.
+
+## Activos
+
+### assets
+
+Catalogo de activos. Campos: `company_id`, `internal_code`, `name`, `description`, `management_type`, `status`.
+
+Relaciones: pertenece a empresa; se asigna a sucursales.
+
+### branch_assets
+
+Activos disponibles/asignados en sucursales. Campos: `branch_id`, `asset_id`, `currency_id`, `quantity`, `acquisition_value`, `acquisition_date`, `note`, `status`.
+
+Relaciones: pertenece a sucursal, activo y moneda.
+
+### asset_assignments
+
+Asignaciones de activos a usuarios. Campos: `user_id`, `branch_id`, `asset_id`, `currency_id`, `quantity`, `acquisition_value`, `acquisition_date`, `note`, `status`.
+
+Relaciones: pertenece a usuario, sucursal, activo y moneda.
+
+### asset_assignment_logs
+
+Historial de movimientos de activos. Campos: `asset_assignment_id`, `from_user_id`, `to_user_id`, `action_type`, `quantity`, `note`.
+
+Relaciones: referencia asignaciones y usuarios origen/destino.
+
+## Libro de reclamaciones
+
+### book_complaints
+
+Reclamos, quejas o sugerencias. Campos: `company_id`, `branch_id`, `identity_document_type_id`, `document_number`, `name`, `email`, `phone_number`, `type`, `description`, `request`, `evidence`, `admin_response`, datos de dispositivo/IP, `status`.
+
+Relaciones: pertenece a empresa, sucursal y tipo de documento.
+
+## Biometria
+
+### biometric_devices
+
+Dispositivos biometricos por empresa/sucursal. Campos: `company_id`, `branch_id`, `name`, `brand`, `model`, `serial_number`, `ip_address`, `port`, `device_id`, `description`, `status`.
+
+Relaciones: pertenece a empresa y sucursal; tiene huellas de clientes.
+
+### customer_biometric_fingerprints
+
+Asociacion cliente-huella-dispositivo. Campos: `company_id`, `customer_id`, `biometric_device_id`, `device_user_id`, `finger_index`, `fingerprint_template`, `description`, `status`.
+
+Relaciones: pertenece a empresa, cliente y dispositivo.
+

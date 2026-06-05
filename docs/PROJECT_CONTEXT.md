@@ -1,0 +1,108 @@
+# Gympe - Contexto del proyecto
+
+## Resumen
+
+Gympe es una aplicacion web para gestion operativa de gimnasios, centros deportivos o negocios similares. El repositorio remoto actual es `GIANFRANCOMC/app_sport` y el codigo local esta en `C:\laragon\www\gympe`.
+
+El sistema combina administracion interna y portal publico por empresa. Internamente permite manejar empresas, sucursales, usuarios, clientes, catalogos de productos/servicios/membresias, ventas, asistencias, inventario, activos, reportes y dispositivos biometricos. Publicamente permite mostrar informacion comercial de la empresa, registrar reclamos y registrar asistencias mediante enlaces con `company_slug`.
+
+## Stack principal
+
+- Backend: Laravel 10, PHP 8.1.
+- Frontend: Vue 3 con Vite.
+- UI base: Blade para montar paginas y Vue para la interaccion.
+- Estilos: Tailwind CSS.
+- Autenticacion: Laravel Breeze / session auth.
+- PDF: `barryvdh/laravel-dompdf`.
+- Excel: `maatwebsite/excel`.
+- API externa probable: consulta de documentos via helper `searchDocumentNumber` y token `token_api_misc`.
+- Biometria: integracion con dispositivos ZKTeco K20 Pro.
+
+## Usuarios esperados
+
+- Administrador del sistema o propietario de empresa.
+- Personal de recepcion o ventas.
+- Personal que gestiona inventario, activos y sucursales.
+- Clientes del gimnasio, principalmente mediante carnet, QR o asistencia publica.
+- Visitantes publicos que consultan la web de una empresa o registran reclamos.
+
+## Conceptos centrales
+
+- Empresa (`companies`): tenant funcional del sistema. Casi todos los datos operativos pertenecen a una empresa.
+- Sucursal (`branches`): unidad fisica dentro de una empresa. Se usa en ventas, asistencia, almacenes, activos y dispositivos.
+- Usuario (`users`): operador interno autenticado. Tiene empresa, rol y datos personales.
+- Cliente (`customers`): persona que compra, recibe membresias y registra asistencias.
+- Item (`items`): entidad compartida para productos, servicios y membresias de catalogo.
+- Membresia real (`subscriptions`): derecho de asistencia de un cliente, creado manualmente o a partir de una venta.
+- Asistencia (`attendances`): check-in/check-out de un cliente en una sucursal.
+- Venta (`sales_header`, `sales_body`): transaccion comercial con detalle de productos, servicios o membresias.
+- Almacen (`warehouses`, `warehouse_items`): stock por sucursal para productos.
+- Activo (`assets`, `branch_assets`, `asset_assignments`): bienes administrados por sucursal y usuario.
+- Portal publico: rutas por `company_slug` para home, reclamos y asistencia QR/publica.
+
+## Reglas transversales entendidas
+
+- El sistema es multiempresa por `company_id`.
+- Las rutas internas estan protegidas por `auth` y `verified`.
+- Las rutas publicas usan `{company_slug}` y middleware `company.exists`.
+- Muchos listados filtran por `company_id` del usuario autenticado.
+- Los estados se modelan con strings/enums: `active`, `inactive`, `canceled`, `finalized`, `pending`, `resolved`, etc.
+- Los cambios importantes guardan auditoria basica: `created_by`, `updated_by`, `canceled_by`, `deleted_by` segun tabla.
+- La mayoria de modulos internos siguen CRUD: `index`, `initParams`, `list`, `create`, `store`, `show`, `edit`, `update`, `destroy`.
+- Las pantallas usan Blade como contenedor y Vue como modulo interactivo.
+- Los servicios `*ConfigService` preparan datos iniciales y suelen usar cache por empresa/modulo.
+- Los servicios principales encapsulan reglas de negocio y acceso a modelos.
+
+## Flujos importantes
+
+### Venta de membresia
+
+1. El usuario crea una venta en `sales`.
+2. Si un detalle de venta tiene `type = subscription`, `SaleService` crea un registro en `subscriptions`.
+3. La membresia queda asociada al cliente, sucursal, venta y detalle de venta.
+4. Si se anula la venta, `SaleService::cancel` cancela tambien las suscripciones activas creadas por esa venta.
+
+### Venta de producto
+
+1. El usuario crea una venta con detalles `type = product`.
+2. `SaleService` busca el almacen de la sucursal.
+3. Descuenta stock en `warehouse_items`.
+4. Si no existe registro de stock para ese producto, crea uno con cantidad negativa.
+
+### Registro de asistencia
+
+1. El cliente se identifica por carnet/id, documento, QR o biometria.
+2. `TrackingAttendanceBusinessService` valida cliente, sucursal y membresia vigente.
+3. Si hay asistencia activa, no permite otro check-in.
+4. Si la accion es checkout, finaliza la asistencia activa.
+5. Si el cliente tiene membresia vigente y no supera limites, crea asistencia `active`.
+
+### Portal publico por empresa
+
+1. La URL incluye `{company_slug}`.
+2. El middleware carga la empresa correspondiente.
+3. El home publico muestra datos comerciales, redes sociales e items visibles en la web.
+4. La asistencia publica puede recibir registros QR por sucursal.
+5. El libro de reclamaciones permite crear reclamos publicos.
+
+## Convenciones importantes para futuras modificaciones
+
+- Mantener nombres de clases y carpetas en ingles, como el proyecto actual.
+- Mantener textos funcionales en espanol si ya aparecen en vistas o respuestas.
+- Usar `FormRequest` cuando el modulo ya lo usa para crear/editar.
+- Respetar el patron `Controller -> Service -> Model`.
+- Para nuevos listados, seguir el patron `initParams` + `list` + pagina Vue.
+- Para cambios multiarchivo, modificar backend, frontend, validaciones y traducciones/mensajes si aplica.
+- Evitar refactors amplios salvo que el requerimiento lo pida.
+
+## Mejoras sugeridas globales
+
+- Corregir problemas de codificacion de caracteres en textos con acentos que aparecen como `Ã©`, `Â¡`, etc.
+- Reemplazar el README generico de Laravel por un README real del producto.
+- Agregar pruebas automatizadas para flujos criticos: venta, anulacion, asistencia, membresias y stock.
+- Centralizar estados en constantes/enums PHP para reducir strings repetidos.
+- Revisar validaciones de permisos por empresa/sucursal en todos los endpoints que reciben ids.
+- Documentar comandos de instalacion, migracion, seed y ejecucion local.
+- Revisar rutas publicas sensibles, especialmente asistencia publica y biometria.
+- Agregar logs estructurados para operaciones de negocio criticas.
+
