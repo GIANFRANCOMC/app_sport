@@ -4,6 +4,7 @@ namespace App\Models\System\Organizations;
 
 use App\Helpers\System\Utilities;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 use stdClass;
 
 class UserPreference extends Model {
@@ -50,86 +51,103 @@ class UserPreference extends Model {
 
     public static function updateItems($userId, $slug = "", $data = null, $extras = []) {
 
-        $userPreference = UserPreference::where("user_id", $userId)
-                                        ->where("slug", $slug)
-                                        ->where("status", "active")
-                                        ->first();
+        return DB::transaction(function() use($userId, $slug, $data, $extras) {
 
-        if(!Utilities::isDefined($userPreference)) {
+            $activePreferences = UserPreference::where("user_id", $userId)
+                                               ->where("slug", $slug)
+                                               ->where("status", "active")
+                                               ->orderByDesc("id")
+                                               ->lockForUpdate()
+                                               ->get();
 
-            $userPreference = new UserPreference();
-            $userPreference->user_id    = $userId;
-            $userPreference->slug       = $slug;
-            $userPreference->value      = null;
-            $userPreference->status     = "active";
-            $userPreference->created_at = now();
-            $userPreference->created_by = $userId;
+            $userPreference = $activePreferences->first();
 
-        }
+            if(!Utilities::isDefined($userPreference)) {
 
-        if(in_array($slug, ["config_companies_sub_sections"])) {
+                $userPreference = new UserPreference();
+                $userPreference->user_id    = $userId;
+                $userPreference->slug       = $slug;
+                $userPreference->value      = null;
+                $userPreference->status     = "active";
+                $userPreference->created_at = now();
+                $userPreference->created_by = $userId;
 
-            $value = Utilities::isDefined($userPreference->value) ? json_decode($userPreference->value) : new stdClass();
-            $subSectionsValue = collect($value->sub_sections ?? []);
+            }else if($activePreferences->count() > 1) {
 
-            foreach($data["records"] as $record) {
+                UserPreference::whereIn("id", $activePreferences->skip(1)->pluck("id"))
+                              ->update([
+                                  "status"     => "inactive",
+                                  "updated_at" => now(),
+                                  "updated_by" => $userId
+                              ]);
 
-                if(intval($record["sub_section_id"]) > 0) {
+            }
 
+            if(in_array($slug, ["config_companies_sub_sections"])) {
+
+                $value = Utilities::isDefined($userPreference->value) ? (json_decode($userPreference->value) ?: new stdClass()) : new stdClass();
+
+                $subSectionsValue = collect($value->sub_sections ?? [])
+                                        ->filter(fn($item) => intval($item->sub_section_id ?? 0) > 0)
+                                        ->mapWithKeys(function($item) {
+
+                                            $subSectionId = intval($item->sub_section_id);
+
+                                            return [$subSectionId => (object) [
+                                                "sub_section_id" => $subSectionId,
+                                                "visible_in_menu" => (bool) ($item->visible_in_menu ?? true),
+                                                "is_favorite" => (bool) ($item->is_favorite ?? false)
+                                            ]];
+
+                                        });
+
+                foreach($data["records"] ?? [] as $record) {
+
+                    $subSectionId = intval($record["sub_section_id"] ?? 0);
                     $actionType = $extras["type"] ?? "store_update";
 
-                    if(in_array($actionType, ["store_update"])) {
+                    if($subSectionId <= 0 || !in_array($actionType, ["store_update"])) {
 
-                        $index = $subSectionsValue->search(function($item) use($record) {
+                        continue;
 
-                            return $item->sub_section_id == $record["sub_section_id"];
+                    }
 
-                        });
+                    $preferenceValue = $subSectionsValue->get($subSectionId, (object) [
+                        "sub_section_id"  => $subSectionId,
+                        "visible_in_menu" => true,
+                        "is_favorite"     => false
+                    ]);
 
-                        if($index !== false && intval($index) >= 0) {
+                    foreach(["visible_in_menu", "is_favorite"] as $field) {
 
-                            $fieldsToChange = ["visible_in_menu", "is_favorite"];
+                        if(array_key_exists($field, $record) && is_bool($record[$field])) {
 
-                            foreach($fieldsToChange as $fieldToChange) {
-
-                                if(is_bool($record[$fieldToChange])) {
-
-                                    $subSectionsValue[$index]->{$fieldToChange} = $record[$fieldToChange];
-
-                                }
-
-                            }
-
-                        }else {
-
-                            $subSectionsValue->push((object) [
-                                "sub_section_id" => $record["sub_section_id"],
-                                "visible_in_menu" => $record["visible_in_menu"] ?? true,
-                                "is_favorite" => $record["is_favorite"] ?? false
-                            ]);
+                            $preferenceValue->{$field} = $record[$field];
 
                         }
 
                     }
 
+                    $subSectionsValue->put($subSectionId, $preferenceValue);
+
                 }
+
+                $userPreference->value = json_encode([
+                    "show_actions"        => (bool) ($data["show_actions"] ?? false),
+                    "show_only_favorites" => (bool) ($data["show_only_favorites"] ?? false),
+                    "sub_sections"        => $subSectionsValue->values()
+                ]);
 
             }
 
-            $userPreference->value = json_encode([
-                "show_actions" => $data["show_actions"] ?? false,
-                "show_only_favorites" => $data["show_only_favorites"] ?? false,
-                "sub_sections" => $subSectionsValue
-            ]);
+            $userPreference->status     = "active";
+            $userPreference->updated_at = now();
+            $userPreference->updated_by = $userId;
+            $userPreference->save();
 
-        }
+            return ["bool" => true];
 
-        $userPreference->status     = "active";
-        $userPreference->updated_at = now();
-        $userPreference->updated_by = $userId;
-        $userPreference->save();
-
-        return ["bool" => true];
+        });
 
     }
 

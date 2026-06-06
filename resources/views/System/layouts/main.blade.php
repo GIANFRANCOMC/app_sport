@@ -61,26 +61,23 @@
                             $subSectionIds    = $sections->pluck("subSections")->flatten()->pluck("id")->toArray();
                             $valuePreferences = $preferences["config_companies_sub_sections"]->sub_sections ?? [];
 
-                            $favoritePreferences = collect($valuePreferences)->filter(fn($e) => $e->is_favorite)->pluck("sub_section_id")->toArray();
-                            $visiblePreferences  = collect($valuePreferences)->filter(fn($e) => $e->visible_in_menu)->pluck("sub_section_id")->toArray();
+                            $favoritePreferences = collect($valuePreferences)
+                                                        ->filter(fn($preference) => data_get($preference, "is_favorite", false))
+                                                        ->pluck("sub_section_id")
+                                                        ->map(fn($id) => (int) $id)
+                                                        ->unique()
+                                                        ->values()
+                                                        ->toArray();
 
-                            $favoriteCounter = 0;
+                            $visiblePreferences = collect($valuePreferences)
+                                                        ->filter(fn($preference) => data_get($preference, "visible_in_menu", true))
+                                                        ->pluck("sub_section_id")
+                                                        ->map(fn($id) => (int) $id)
+                                                        ->unique()
+                                                        ->values()
+                                                        ->toArray();
 
-                            foreach($sections as $section) {
-
-                                $favSubs = $section->subSections->whereIn("id", $favoritePreferences);
-
-                                if(!$favSubs->first()) {
-
-                                    continue;
-
-                                }
-
-                                $favoriteCounter++;
-
-                            }
-
-                            $fabFavoriteItems = collect();
+                            $favoriteMenuGroups = collect();
 
                             foreach($sections as $section) {
 
@@ -92,29 +89,15 @@
 
                                 }
 
-                                if($section->has_sub_menu) {
-
-                                    foreach($subSectionsFab as $subSection) {
-
-                                        $fabFavoriteItems->push([
-                                            "label" => $section->dom_label." › ".$subSection->dom_label,
-                                            "url"   => $subSection->dom_route_url,
-                                            "icon"  => $section->dom_icon,
-                                        ]);
-
-                                    }
-
-                                } else {
-
-                                    $refFab = $subSectionsFab->first();
-
-                                    $fabFavoriteItems->push([
-                                        "label" => $section->dom_label,
-                                        "url"   => $refFab->dom_route_url,
-                                        "icon"  => $section->dom_icon,
-                                    ]);
-
-                                }
+                                $favoriteMenuGroups->push([
+                                    "section" => $section->dom_label,
+                                    "icon" => $section->dom_icon,
+                                    "items" => $subSectionsFab->map(fn($subSection) => [
+                                        "label" => $subSection->dom_label,
+                                        "description" => $subSection->description,
+                                        "url" => $subSection->dom_route_url
+                                    ])->values()
+                                ]);
 
                             }
                         @endphp
@@ -124,43 +107,6 @@
                                 <div>Favoritos</div>
                             </a>
                         </li>
-                        @if($favoriteCounter > 0)
-                            <li class="menu-header divider py-0 d-none">
-                                <span class="menu-header-text text-uppercase divider-text">Favoritos</span>
-                            </li>
-                            @foreach($sections as $section)
-                                @php
-                                    $subSectionsFiltered = $section->subSections->whereIn("id", $favoritePreferences);
-
-                                    $reference = $subSectionsFiltered->first();
-
-                                    if(!$reference) {
-
-                                        continue;
-
-                                    }
-                                @endphp
-                                <li class="d-none {{ $section->has_sub_menu ? 'menu-header pe-none pt-1' : ('menu-item '.$section->dom_id) }}">
-                                    <a href="{{ $section->has_sub_menu ? 'javascript:void(0);' : $reference->dom_route_url }}" class="fw-semibold menu-link">
-                                        <i class="{{ $section->dom_icon }} br-icon-accent me-3"></i>
-                                        <div>{{ $section->dom_label }}</div>
-                                    </a>
-                                </li>
-                                @if($section->has_sub_menu)
-                                    <li class="menu-item open d-none">
-                                        <ul class="menu-sub py-0">
-                                            @foreach($subSectionsFiltered as $subSection)
-                                                <li class="menu-item {{ $subSection->dom_id }}" id="{{ $subSection->dom_id }}">
-                                                    <a href="{{ $subSection->dom_route_url }}" class="fw-regular menu-link py-1">
-                                                        <div class="text-truncate">{{ $subSection->dom_label }}</div>
-                                                    </a>
-                                                </li>
-                                            @endforeach
-                                        </ul>
-                                    </li>
-                                @endif
-                            @endforeach
-                        @endif
                         <li class="menu-header divider py-0">
                             <span class="menu-header-text text-uppercase divider-text">Menú</span>
                         </li>
@@ -254,6 +200,62 @@
                                     </a>
                                 </li>
                             </ul> --}}
+                            <div class="br-fab-favorites br-navbar-favorites me-auto" id="brFabFavorites" data-open="0">
+                                <div class="br-fab-favorites__backdrop" id="brFabFavoritesBackdrop" aria-hidden="true"></div>
+                                <div class="br-fab-favorites__panel" id="brFabFavoritesPanel" role="region" aria-labelledby="brFabFavoritesTitle" aria-hidden="true">
+                                    <div class="br-fab-favorites__head">
+                                        <span id="brFabFavoritesTitle" class="br-fab-favorites__title">Favoritos</span>
+                                        <button type="button" class="br-fab-favorites__close" id="brFabFavoritesClose" aria-label="Cerrar favoritos" title="Cerrar favoritos">
+                                            <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+                                        </button>
+                                    </div>
+                                    <div class="br-fab-favorites__body" id="brFabFavoritesBody">
+                                        @if($favoriteMenuGroups->isEmpty())
+                                            <p class="br-fab-favorites__empty mb-0" data-favorites-empty>
+                                                Aún no tienes favoritos. Puedes configurarlos desde
+                                                <a href="{{ route('home.index') }}" class="fw-semibold">Favoritos</a>.
+                                            </p>
+                                        @else
+                                            <ul class="br-fab-favorites__list list-unstyled mb-0" data-favorites-list>
+                                                @foreach($favoriteMenuGroups as $group)
+                                                    <li class="br-fab-favorites__group">
+                                                        <div class="br-fab-favorites__group-head">
+                                                            <i class="{{ $group['icon'] }} br-fab-favorites__group-icon" aria-hidden="true"></i>
+                                                            <span>{{ $group['section'] }}</span>
+                                                        </div>
+                                                        <ul class="br-fab-favorites__group-items list-unstyled mb-0">
+                                                            @foreach($group['items'] as $favoriteItem)
+                                                                <li class="br-fab-favorites__item">
+                                                                    <a href="{{ $favoriteItem['url'] }}" class="br-fab-favorites__link">
+                                                                        <span class="br-fab-favorites__item-content">
+                                                                            <span class="br-fab-favorites__item-label">{{ $favoriteItem['label'] }}</span>
+                                                                            @if($favoriteItem['description'])
+                                                                                <span class="br-fab-favorites__item-description">{{ $favoriteItem['description'] }}</span>
+                                                                            @endif
+                                                                        </span>
+                                                                        <i class="fa-solid fa-arrow-right br-fab-favorites__item-arrow" aria-hidden="true"></i>
+                                                                    </a>
+                                                                </li>
+                                                            @endforeach
+                                                        </ul>
+                                                    </li>
+                                                @endforeach
+                                            </ul>
+                                        @endif
+                                    </div>
+                                </div>
+                                <button
+                                    type="button"
+                                    class="br-fab-favorites__btn br-navbar-favorites__btn"
+                                    id="brFabFavoritesToggle"
+                                    aria-label="Abrir favoritos"
+                                    aria-expanded="false"
+                                    aria-controls="brFabFavoritesPanel">
+                                    <i class="fa-solid fa-star" aria-hidden="true"></i>
+                                    <span class="br-navbar-favorites__label">Favoritos</span>
+                                    <span class="br-navbar-favorites__count" id="brFabFavoritesCount">{{ $favoriteMenuGroups->sum(fn($group) => $group['items']->count()) }}</span>
+                                </button>
+                            </div>
                         </div>
                     </nav>
                     <div class="content-wrapper br-layout-content">
@@ -268,40 +270,6 @@
             {{-- <div class="drag-target"></div> --}}
         </div>
 
-        <div class="br-fab-favorites" id="brFabFavorites" data-open="0">
-            <div class="br-fab-favorites__backdrop" id="brFabFavoritesBackdrop" aria-hidden="true"></div>
-            <div class="br-fab-favorites__panel" id="brFabFavoritesPanel" role="region" aria-labelledby="brFabFavoritesTitle" aria-hidden="true">
-                <div class="br-fab-favorites__head">
-                    <span id="brFabFavoritesTitle" class="br-fab-favorites__title">Favoritos</span>
-                    <button type="button" class="br-fab-favorites__close" id="brFabFavoritesClose" aria-label="Cerrar panel de favoritos">
-                        <i class="fa-solid fa-xmark" aria-hidden="true"></i>
-                    </button>
-                </div>
-                <div class="br-fab-favorites__body">
-                    @if($fabFavoriteItems->isEmpty())
-                        <p class="br-fab-favorites__empty mb-0">
-                            Aún no marcas favoritos. Entra al <a href="{{ route('home.index') }}" class="fw-semibold">inicio</a> y elige accesos para acortar tu día.
-                        </p>
-                    @else
-                        <ul class="br-fab-favorites__list list-unstyled mb-0">
-                            @foreach($fabFavoriteItems as $fab)
-                                <li class="br-fab-favorites__item">
-                                    <a href="{{ $fab['url'] }}" class="br-fab-favorites__link">
-                                        <i class="{{ $fab['icon'] }} br-fab-favorites__item-icon" aria-hidden="true"></i>
-                                        <span class="br-fab-favorites__item-label">{{ $fab['label'] }}</span>
-                                    </a>
-                                </li>
-                            @endforeach
-                        </ul>
-                    @endif
-                </div>
-            </div>
-            <button type="button" class="br-fab-favorites__btn btn rounded-circle shadow" id="brFabFavoritesToggle" title="Favoritos" aria-expanded="false" aria-controls="brFabFavoritesPanel">
-                <i class="fa-solid fa-star" aria-hidden="true"></i>
-                <span class="visually-hidden">Abrir favoritos</span>
-            </button>
-        </div>
-
         <script>
             (function () {
 
@@ -313,6 +281,9 @@
                 var panel = document.getElementById("brFabFavoritesPanel");
                 var closeBtn = document.getElementById("brFabFavoritesClose");
                 var backdrop = document.getElementById("brFabFavoritesBackdrop");
+                var body = document.getElementById("brFabFavoritesBody");
+                var count = document.getElementById("brFabFavoritesCount");
+                var homeUrl = @json(route("home.index"));
 
                 function setOpen(open) {
 
@@ -320,6 +291,138 @@
                     panel.classList.toggle("br-fab-favorites__panel--open", open);
                     panel.setAttribute("aria-hidden", open ? "false" : "true");
                     btn.setAttribute("aria-expanded", open ? "true" : "false");
+                    btn.setAttribute("aria-label", open ? "Cerrar favoritos" : "Abrir favoritos");
+
+                }
+
+                function getFavoriteItems(preferences) {
+
+                    var preferenceConfig = preferences?.config_companies_sub_sections;
+                    var favoriteIds = new Set(
+                        (preferenceConfig?.sub_sections || [])
+                            .filter(function (preference) { return preference?.is_favorite; })
+                            .map(function (preference) { return Number(preference.sub_section_id); })
+                    );
+                    var groups = [];
+
+                    (window.sections || []).forEach(function (section) {
+
+                        var subSections = section?.sub_sections || section?.subSections || [];
+                        var items = [];
+
+                        subSections.forEach(function (subSection) {
+
+                            if (!favoriteIds.has(Number(subSection.id))) return;
+
+                            items.push({
+                                label: subSection.dom_label,
+                                description: subSection.description || "",
+                                url: subSection.dom_route_url,
+                            });
+
+                        });
+
+                        if(items.length > 0) {
+
+                            groups.push({
+                                section: section.dom_label,
+                                icon: section.dom_icon,
+                                items: items
+                            });
+
+                        }
+
+                    });
+
+                    return groups;
+
+                }
+
+                function renderFavoriteItems(preferences) {
+
+                    var groups = getFavoriteItems(preferences);
+                    var totalItems = groups.reduce(function (total, group) {
+                        return total + group.items.length;
+                    }, 0);
+
+                    count.textContent = String(totalItems);
+                    body.replaceChildren();
+
+                    if (totalItems === 0) {
+
+                        var empty = document.createElement("p");
+                        var link = document.createElement("a");
+
+                        empty.className = "br-fab-favorites__empty mb-0";
+                        empty.append("Aún no tienes favoritos. Puedes configurarlos desde ");
+                        link.href = homeUrl;
+                        link.className = "fw-semibold";
+                        link.textContent = "Favoritos";
+                        empty.append(link, ".");
+                        body.appendChild(empty);
+
+                        return;
+
+                    }
+
+                    var list = document.createElement("ul");
+                    list.className = "br-fab-favorites__list list-unstyled mb-0";
+
+                    groups.forEach(function (group) {
+
+                        var groupItem = document.createElement("li");
+                        var groupHead = document.createElement("div");
+                        var groupIcon = document.createElement("i");
+                        var groupTitle = document.createElement("span");
+                        var groupList = document.createElement("ul");
+
+                        groupItem.className = "br-fab-favorites__group";
+                        groupHead.className = "br-fab-favorites__group-head";
+                        groupIcon.className = (group.icon || "") + " br-fab-favorites__group-icon";
+                        groupIcon.setAttribute("aria-hidden", "true");
+                        groupTitle.textContent = group.section;
+                        groupList.className = "br-fab-favorites__group-items list-unstyled mb-0";
+                        groupHead.append(groupIcon, groupTitle);
+
+                        group.items.forEach(function (item) {
+
+                            var listItem = document.createElement("li");
+                            var link = document.createElement("a");
+                            var content = document.createElement("span");
+                            var label = document.createElement("span");
+                            var description = document.createElement("span");
+                            var arrow = document.createElement("i");
+
+                            listItem.className = "br-fab-favorites__item";
+                            link.className = "br-fab-favorites__link";
+                            link.href = item.url;
+                            content.className = "br-fab-favorites__item-content";
+                            label.className = "br-fab-favorites__item-label";
+                            label.textContent = item.label;
+                            description.className = "br-fab-favorites__item-description";
+                            description.textContent = item.description;
+                            arrow.className = "fa-solid fa-arrow-right br-fab-favorites__item-arrow";
+                            arrow.setAttribute("aria-hidden", "true");
+                            content.appendChild(label);
+
+                            if(item.description) {
+
+                                content.appendChild(description);
+
+                            }
+
+                            link.append(content, arrow);
+                            listItem.appendChild(link);
+                            groupList.appendChild(listItem);
+
+                        });
+
+                        groupItem.append(groupHead, groupList);
+                        list.appendChild(groupItem);
+
+                    });
+
+                    body.appendChild(list);
 
                 }
 
@@ -340,6 +443,10 @@
 
                 document.addEventListener("click", function (e) {
                     if (root.getAttribute("data-open") === "1" && !root.contains(e.target)) { setOpen(false); }
+                });
+
+                window.addEventListener("br:preferences-updated", function (event) {
+                    renderFavoriteItems(event.detail?.preferences || window.preferences || {});
                 });
 
             })();

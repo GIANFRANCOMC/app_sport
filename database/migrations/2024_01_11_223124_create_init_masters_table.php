@@ -112,6 +112,7 @@ return new class extends Migration {
             $table->unsignedBigInteger("section_id");
             $table->string("slug");
             $table->string("name");
+            $table->string("description", 255)->nullable();
             $table->integer("order")->nullable();
             $table->string("dom_id")->default("");
             $table->string("dom_label")->default("");
@@ -241,7 +242,7 @@ return new class extends Migration {
             ["id" => 1, "slug" => "sc_home", "name" => "home", "order" => 1, "dom_id" => "menu-parent-home", "dom_label" => "Inicio", "dom_icon" => "fa fa-home", "has_sub_menu" => false],
             ["id" => 2, "slug" => "sc_dashboard", "name" => "dashboard", "order" => 2, "dom_id" => "menu-parent-dashboard", "dom_label" => "Dashboard", "dom_icon" => "fa-solid fa-gauge", "has_sub_menu" => false],
             ["id" => 3, "slug" => "sc_sales", "name" => "sales", "order" => 3, "dom_id" => "menu-parent-sales", "dom_label" => "Ventas", "dom_icon" => "fa-solid fa-cash-register", "has_sub_menu" => true],
-            ["id" => 4, "slug" => "sc_customers", "name" => "customers", "order" => 4, "dom_id" => "menu-parent-customers", "dom_label" => "Gestión de clientes", "dom_icon" => "fa fa-user", "has_sub_menu" => false],
+            ["id" => 4, "slug" => "sc_customers", "name" => "customers", "order" => 4, "dom_id" => "menu-parent-customers", "dom_label" => "Gestión de clientes", "dom_icon" => "fa fa-user", "has_sub_menu" => true],
             ["id" => 5, "slug" => "sc_items", "name" => "items", "order" => 6, "dom_id" => "menu-parent-items", "dom_label" => "Catálogo comercial", "dom_icon" => "fa fa-book", "has_sub_menu" => true],
             ["id" => 6, "slug" => "sc_infrastructure", "name" => "infrastructure", "order" => 8, "dom_id" => "menu-parent-infrastructure", "dom_label" => "Infraestructura", "dom_icon" => "fa-solid fa-industry", "has_sub_menu" => true],
             ["id" => 7, "slug" => "sc_configuration", "name" => "configuration", "order" => 10, "dom_id" => "menu-parent-configuration", "dom_label" => "Configuración", "dom_icon" => "fa fa-gear", "has_sub_menu" => true],
@@ -250,42 +251,42 @@ return new class extends Migration {
 
         DB::table("sub_sections")->insert([
             // Home
-            ["id" => 10, "section_id" => 1, "slug" => "sc_home", "name" => "home", "order" => 1, "dom_id" => "menu-home", "dom_label" => "Inicio", "dom_route" => "home.index"],
+            ["id" => 10, "section_id" => 1, "slug" => "sc_home", "name" => "home", "description" => "Organiza y abre tus accesos favoritos del sistema.", "order" => 1, "dom_id" => "menu-home", "dom_label" => "Inicio", "dom_route" => "home.index"],
 
             // Dashboard
-            ["id" => 20, "section_id" => 2, "slug" => "sc_dashboard", "name" => "dashboard", "order" => 1, "dom_id" => "menu-dashboard", "dom_label" => "Dashboard", "dom_route" => "dashboard.index"],
+            ["id" => 20, "section_id" => 2, "slug" => "sc_dashboard", "name" => "dashboard", "description" => "Consulta indicadores y el estado general de la operación.", "order" => 1, "dom_id" => "menu-dashboard", "dom_label" => "Dashboard", "dom_route" => "dashboard.index"],
 
             // Sales
-            ["id" => 30, "section_id" => 3, "slug" => "sc_sales-list", "name" => "sales-list", "order" => 1, "dom_id" => "menu-sales-list", "dom_label" => "Listado", "dom_route" => "sales.index"],
-            ["id" => 31, "section_id" => 3, "slug" => "sc_sales-create", "name" => "sales-create", "order" => 2, "dom_id" => "menu-sales-create", "dom_label" => "Nuevo", "dom_route" => "sales.create"],
+            ["id" => 30, "section_id" => 3, "slug" => "sc_sales-list", "name" => "sales-list", "description" => "Revisa las ventas registradas y consulta sus detalles.", "order" => 1, "dom_id" => "menu-sales-list", "dom_label" => "Listado", "dom_route" => "sales.index"],
+            ["id" => 31, "section_id" => 3, "slug" => "sc_sales-create", "name" => "sales-create", "description" => "Registra una nueva venta de productos, servicios o membresías.", "order" => 2, "dom_id" => "menu-sales-create", "dom_label" => "Nuevo", "dom_route" => "sales.create"],
 
             // Customers
-            ["id" => 40, "section_id" => 4, "slug" => "sc_customers", "name" => "customers", "order" => 1, "dom_id" => "menu-customers", "dom_label" => "Clientes", "dom_route" => "customers.index"],
-            ["id" => 41, "section_id" => 4, "slug" => "sc_customers-history", "name" => "customers-history", "order" => 2, "dom_id" => "menu-customers-history", "dom_label" => "Historial", "dom_route" => "tracking_customers.index"],
-            ["id" => 42, "section_id" => 4, "slug" => "sc_customers-subscriptions", "name" => "customers-subscriptions", "order" => 3, "dom_id" => "menu-customers-subscriptions", "dom_label" => "Membresías", "dom_route" => "tracking_subscriptions.index"],
-            ["id" => 43, "section_id" => 4, "slug" => "sc_customers-attendances", "name" => "customers-attendances", "order" => 4, "dom_id" => "menu-customers-attendances", "dom_label" => "Asistencias", "dom_route" => "tracking_attendances.index"],
-            ["id" => 44, "section_id" => 4, "slug" => "sc_customers-notifications", "name" => "customers-notifications", "order" => 5, "dom_id" => "menu-customers-notifications", "dom_label" => "Notificaciones", "dom_route" => "tracking_notifications.index"],
-            ["id" => 45, "section_id" => 4, "slug" => "sc_customers-book_complaints", "name" => "customers-book_complaints", "order" => 6, "dom_id" => "menu-customers-book_complaints", "dom_label" => "Libro de reclamaciones y sugerencias", "dom_route" => "book_complaints.index"],
+            ["id" => 40, "section_id" => 4, "slug" => "sc_customers", "name" => "customers", "description" => "Administra los datos y el estado de los clientes.", "order" => 1, "dom_id" => "menu-customers", "dom_label" => "Clientes", "dom_route" => "customers.index"],
+            ["id" => 41, "section_id" => 4, "slug" => "sc_customers-history", "name" => "customers-history", "description" => "Consulta la actividad y los movimientos de cada cliente.", "order" => 2, "dom_id" => "menu-customers-history", "dom_label" => "Historial", "dom_route" => "tracking_customers.index"],
+            ["id" => 42, "section_id" => 4, "slug" => "sc_customers-subscriptions", "name" => "customers-subscriptions", "description" => "Controla vigencias, renovaciones y estados de membresías.", "order" => 3, "dom_id" => "menu-customers-subscriptions", "dom_label" => "Membresías", "dom_route" => "tracking_subscriptions.index"],
+            ["id" => 43, "section_id" => 4, "slug" => "sc_customers-attendances", "name" => "customers-attendances", "description" => "Registra y consulta ingresos y salidas de clientes.", "order" => 4, "dom_id" => "menu-customers-attendances", "dom_label" => "Asistencias", "dom_route" => "tracking_attendances.index"],
+            ["id" => 44, "section_id" => 4, "slug" => "sc_customers-notifications", "name" => "customers-notifications", "description" => "Gestiona comunicaciones y avisos dirigidos a clientes.", "order" => 5, "dom_id" => "menu-customers-notifications", "dom_label" => "Notificaciones", "dom_route" => "tracking_notifications.index"],
+            ["id" => 45, "section_id" => 4, "slug" => "sc_customers-book_complaints", "name" => "customers-book_complaints", "description" => "Atiende reclamos, quejas y sugerencias recibidas.", "order" => 6, "dom_id" => "menu-customers-book_complaints", "dom_label" => "Libro de reclamaciones y sugerencias", "dom_route" => "book_complaints.index"],
 
             // Items
-            ["id" => 50, "section_id" => 5, "slug" => "sc_items-products", "name" => "items-products", "order" => 1, "dom_id" => "menu-items-products", "dom_label" => "Productos", "dom_route" => "products.index"],
-            ["id" => 51, "section_id" => 5, "slug" => "sc_items-services", "name" => "items-services", "order" => 2, "dom_id" => "menu-items-services", "dom_label" => "Servicios", "dom_route" => "services.index"],
-            ["id" => 52, "section_id" => 5, "slug" => "sc_items-subscriptions", "name" => "items-subscriptions", "order" => 3, "dom_id" => "menu-items-subscriptions", "dom_label" => "Membresías", "dom_route" => "subscriptions.index"],
-            ["id" => 53, "section_id" => 5, "slug" => "sc_items-categories", "name" => "items-categories", "order" => 4, "dom_id" => "menu-items-categories", "dom_label" => "Categorías", "dom_route" => "categories.index"],
-            ["id" => 54, "section_id" => 5, "slug" => "sc_items-stocks_management", "name" => "items-stocks_management", "order" => 5, "dom_id" => "menu-items-stocks_management", "dom_label" => "Gestión de stock", "dom_route" => "stocks_management.index"],
+            ["id" => 50, "section_id" => 5, "slug" => "sc_items-products", "name" => "items-products", "description" => "Administra productos, precios y disponibilidad comercial.", "order" => 1, "dom_id" => "menu-items-products", "dom_label" => "Productos", "dom_route" => "products.index"],
+            ["id" => 51, "section_id" => 5, "slug" => "sc_items-services", "name" => "items-services", "description" => "Configura los servicios ofrecidos por la empresa.", "order" => 2, "dom_id" => "menu-items-services", "dom_label" => "Servicios", "dom_route" => "services.index"],
+            ["id" => 52, "section_id" => 5, "slug" => "sc_items-subscriptions", "name" => "items-subscriptions", "description" => "Define planes de membresía, duración y precio de venta.", "order" => 3, "dom_id" => "menu-items-subscriptions", "dom_label" => "Membresías", "dom_route" => "subscriptions.index"],
+            ["id" => 53, "section_id" => 5, "slug" => "sc_items-categories", "name" => "items-categories", "description" => "Organiza productos y servicios mediante categorías.", "order" => 4, "dom_id" => "menu-items-categories", "dom_label" => "Categorías", "dom_route" => "categories.index"],
+            ["id" => 54, "section_id" => 5, "slug" => "sc_items-stocks_management", "name" => "items-stocks_management", "description" => "Supervisa existencias y movimientos de inventario.", "order" => 5, "dom_id" => "menu-items-stocks_management", "dom_label" => "Gestión de stock", "dom_route" => "stocks_management.index"],
 
             // Infrastructure
-            ["id" => 60, "section_id" => 6, "slug" => "sc_infrastructure-branches", "name" => "infrastructure-branches", "order" => 1, "dom_id" => "menu-infrastructure-branches", "dom_label" => "Sucursales", "dom_route" => "branches.index"],
-            ["id" => 61, "section_id" => 6, "slug" => "sc_infrastructure-assets", "name" => "infrastructure-assets", "order" => 2, "dom_id" => "menu-infrastructure-assets", "dom_label" => "Activos", "dom_route" => "assets.index"],
-            ["id" => 62, "section_id" => 6, "slug" => "sc_infrastructure-assets_management", "name" => "infrastructure-assets_management", "order" => 3, "dom_id" => "menu-infrastructure-assets_management", "dom_label" => "Gestión de activos", "dom_route" => "assets_management.index"],
-            ["id" => 63, "section_id" => 6, "slug" => "sc_infrastructure-biometric_devices", "name" => "infrastructure-biometric_devices", "order" => 4, "dom_id" => "menu-infrastructure-biometric_devices", "dom_label" => "Dispositivos biométricos", "dom_route" => "biometric_devices.index"],
+            ["id" => 60, "section_id" => 6, "slug" => "sc_infrastructure-branches", "name" => "infrastructure-branches", "description" => "Administra sedes, datos de contacto y capacidad.", "order" => 1, "dom_id" => "menu-infrastructure-branches", "dom_label" => "Sucursales", "dom_route" => "branches.index"],
+            ["id" => 61, "section_id" => 6, "slug" => "sc_infrastructure-assets", "name" => "infrastructure-assets", "description" => "Mantén el catálogo de equipos y bienes de la empresa.", "order" => 2, "dom_id" => "menu-infrastructure-assets", "dom_label" => "Activos", "dom_route" => "assets.index"],
+            ["id" => 62, "section_id" => 6, "slug" => "sc_infrastructure-assets_management", "name" => "infrastructure-assets_management", "description" => "Asigna, traslada y controla activos por sede o usuario.", "order" => 3, "dom_id" => "menu-infrastructure-assets_management", "dom_label" => "Gestión de activos", "dom_route" => "assets_management.index"],
+            ["id" => 63, "section_id" => 6, "slug" => "sc_infrastructure-biometric_devices", "name" => "infrastructure-biometric_devices", "description" => "Configura los dispositivos usados para control biométrico.", "order" => 4, "dom_id" => "menu-infrastructure-biometric_devices", "dom_label" => "Dispositivos biométricos", "dom_route" => "biometric_devices.index"],
 
             // Configuration
-            ["id" => 70, "section_id" => 7, "slug" => "sc_configuration-my_company", "name" => "configuration-my_company", "order" => 1, "dom_id" => "menu-configuration-my_company", "dom_label" => "Mi empresa", "dom_route" => "companies.index"],
-            ["id" => 71, "section_id" => 7, "slug" => "sc_configuration-users", "name" => "configuration-users", "order" => 2, "dom_id" => "menu-configuration-users", "dom_label" => "Colaboradores", "dom_route" => "users.index"],
+            ["id" => 70, "section_id" => 7, "slug" => "sc_configuration-my_company", "name" => "configuration-my_company", "description" => "Actualiza la identidad y los datos generales de la empresa.", "order" => 1, "dom_id" => "menu-configuration-my_company", "dom_label" => "Mi empresa", "dom_route" => "companies.index"],
+            ["id" => 71, "section_id" => 7, "slug" => "sc_configuration-users", "name" => "configuration-users", "description" => "Administra usuarios internos, roles y accesos.", "order" => 2, "dom_id" => "menu-configuration-users", "dom_label" => "Colaboradores", "dom_route" => "users.index"],
 
             // Reports
-            ["id" => 80, "section_id" => 8, "slug" => "sc_reports", "name" => "reports", "order" => 1, "dom_id" => "menu-reports", "dom_label" => "Reportes", "dom_route" => "reports.index"],
+            ["id" => 80, "section_id" => 8, "slug" => "sc_reports", "name" => "reports", "description" => "Genera consultas y reportes para análisis operativo.", "order" => 1, "dom_id" => "menu-reports", "dom_label" => "Reportes", "dom_route" => "reports.index"],
         ]);
 
         DB::table("companies_sub_sections")->insert([
@@ -295,10 +296,10 @@ return new class extends Migration {
             ["company_id" => 1, "sub_section_id" => 31],
             ["company_id" => 1, "sub_section_id" => 40],
             // ["company_id" => 1, "sub_section_id" => 41],
-            // ["company_id" => 1, "sub_section_id" => 42],
-            // ["company_id" => 1, "sub_section_id" => 43],
+            ["company_id" => 1, "sub_section_id" => 42],
+            ["company_id" => 1, "sub_section_id" => 43],
             // ["company_id" => 1, "sub_section_id" => 44],
-            // ["company_id" => 1, "sub_section_id" => 45],
+            ["company_id" => 1, "sub_section_id" => 45],
             ["company_id" => 1, "sub_section_id" => 50],
             ["company_id" => 1, "sub_section_id" => 51],
             ["company_id" => 1, "sub_section_id" => 52],

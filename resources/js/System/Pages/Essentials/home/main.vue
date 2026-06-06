@@ -1,391 +1,464 @@
 <template>
-    <!-- <Breadcrumb :list="breadcrumbTitles"/> -->
+    <main class="br-home">
+        <header class="br-home__header">
+            <div class="br-home__heading">
+                <p class="br-home__eyebrow mb-1">{{ page.eyebrow }}</p>
+                <h1 class="br-home__title mb-1">{{ page.title }}</h1>
+                <p class="br-home__subtitle mb-0">{{ page.subtitle }}</p>
+            </div>
 
-    <!-- Content -->
-    <div class="row g-3 mb-3">
-        <div class="col-xl-12 col-md-12 col-sm-12">
-            <div class="d-flex flex-wrap justify-content-end align-items-center gap-1 h-100">
-                <div class="form-check form-switch">
-                    <input class="form-check-input" type="checkbox" v-model="forms.entity.createUpdate.config.show_actions" id="toggleActions" @change="changeFavorite(null, null)">
-                    <label for="toggleActions" class="cursor-pointer">Mostrar acciones</label>
+            <div class="br-home__filters">
+                <div class="br-home-search">
+                    <i class="fa-solid fa-magnifying-glass br-home-search__icon" aria-hidden="true"></i>
+                    <input
+                        id="homeModuleSearch"
+                        v-model.trim="searchTerm"
+                        type="search"
+                        class="form-control br-home-search__input"
+                        :placeholder="page.filters.search.placeholder"
+                        :aria-label="page.filters.search.ariaLabel">
+                    <button
+                        v-if="searchTerm"
+                        type="button"
+                        class="br-home-search__clear"
+                        data-bs-toggle="tooltip"
+                        data-bs-placement="top"
+                        :title="page.filters.search.clearTooltip"
+                        :aria-label="page.filters.search.clearTooltip"
+                        @click="clearSearch">
+                        <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+                    </button>
                 </div>
-                <div class="form-check form-switch ms-3">
-                    <input class="form-check-input" type="checkbox" v-model="forms.entity.createUpdate.config.show_only_favorites" id="toggleFavs" @change="changeFavorite(null, null)">
-                    <label for="toggleFavs" class="cursor-pointer">Mostrar solo favoritos</label>
+
+                <div class="form-check form-switch br-home__filter">
+                    <input
+                        id="toggleFavorites"
+                        class="form-check-input"
+                        type="checkbox"
+                        v-model="forms.entity.createUpdate.config.show_only_favorites"
+                        :disabled="isSaving"
+                        data-bs-toggle="tooltip"
+                        data-bs-placement="bottom"
+                        :title="page.filters.favorites.tooltip"
+                        @change="saveGlobalPreferences">
+                    <label for="toggleFavorites" class="form-check-label">
+                        {{ page.filters.favorites.label }}
+                    </label>
                 </div>
             </div>
-        </div>
-        <div class="col-xl-12 col-md-12 col-sm-12" v-if="forms.entity.createUpdate.config.show_actions">
-            <div class="d-flex flex-wrap justify-content-end align-items-center gap-1 h-100">
-                <div class="alert alert-info mb-2 mb-md-1 fw-semibold">
-                    <i class="fa-solid fa-circle-info me-2"></i>
-                    <span>Los cambios se aplicarán cuando actualices la página.</span>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="row g-4">
-        <div v-if="forms.entity.createUpdate.config.show_only_favorites && favoritesCompaniesSubSection.length === 0">
-            <div class="col-xl-12 col-md-12 col-sm-12 text-center">
-                <WithoutData type="image" text="Tu lista de favoritos está vacía."/>
-            </div>
-        </div>
-        <template v-else>
-            <div class="col-xl-4 col-md-6 col-sm-12" v-for="(section, indexSection) in sections" :key="indexSection">
-                <div class="card border border-gray shadow-sm h-100">
-                    <div class="card-body py-3">
-                        <template v-if="!section?.has_sub_menu">
-                            <button type="button"
-                                    v-show="forms.entity.createUpdate.config.show_actions"
-                                    :class="['position-absolute top-0 start-0 translate-middle badge badge-center rounded-pill border-light mx-3', getStatusEntity(section.sub_sections[0], 'menu') ? 'bg-success' : 'bg-secondary']"
-                                    @click="changeFavorite(section, section.sub_sections[0], ['menu'])"
-                                    @mouseenter="setHoveredeEntity(section.sub_sections[0], 'menu', true)"
-                                    @mouseleave="setHoveredeEntity(section.sub_sections[0], 'menu', false)">
-                                <i :class="['fa-xs', getStatusEntity(section.sub_sections[0], 'menu') ? 'fa fa-bars' : 'fa fa-bars fa-beat-fade']" style="--fa-beat-fade-opacity: 0.67; --fa-beat-fade-scale: 1.075;"></i>
-                            </button>
-                            <button type="button"
-                                    v-show="forms.entity.createUpdate.config.show_actions"
-                                    :class="['position-absolute top-0 start-10 translate-middle badge badge-center rounded-pill border-light mx-4', getStatusEntity(section.sub_sections[0], 'favorite') ? 'bg-warning' : 'bg-secondary']"
-                                    @click="changeFavorite(section, section.sub_sections[0], ['favorite'])"
-                                    @mouseenter="setHoveredeEntity(section.sub_sections[0], 'favorite', true)"
-                                    @mouseleave="setHoveredeEntity(section.sub_sections[0], 'favorite', false)">
-                                <i :class="['fa-xs', getStatusEntity(section.sub_sections[0], 'favorite') ? 'fa fa-star' : 'fa-regular fa-star fa-beat-fade']" style="--fa-beat-fade-opacity: 0.67; --fa-beat-fade-scale: 1.075;"></i>
-                            </button>
-                            <div class="d-flex align-items-center justify-content-start h-100">
-                                <!-- <i :class="[section?.dom_icon, 'fa-xl']"></i> -->
-                                <a class="mb-0 ms-3 fw-bold text-dark h4" v-text="section?.order_company+'. '+section?.dom_label" :href="section.sub_sections[0]?.dom_route_url"></a>
-                                <i class="fa fa-star text-warning ms-2" v-if="!forms.entity.createUpdate.config.show_actions && getValueEntity(section.sub_sections[0])?.preferenceValue?.is_favorite"></i>
-                                <a class="ms-auto fs-2" :href="section.sub_sections[0]?.dom_route_url">
-                                    <i class="fa-solid fa-circle-arrow-right text-info-1"></i>
-                                </a>
-                            </div>
-                        </template>
-                        <template v-else>
-                            <div class="d-flex align-items-center justify-content-start mb-2">
-                                <!-- <i :class="[section?.dom_icon, 'fa-xl']"></i> -->
-                               <span class="mb-0 ms-3 fw-bold text-dark h4" v-text="section?.order_company+'. '+section?.dom_label"></span>
-                            </div>
-                            <div>
-                                <template v-for="(subSection, indexSubSection) in section?.sub_sections" :key="indexSubSection">
-                                    <div class="d-flex align-items-center justify-content-start ps-2 py-1 gap-2">
-                                        <button type="button"
-                                                v-show="forms.entity.createUpdate.config.show_actions"
-                                                :class="['badge badge-center rounded-pill border-light', getStatusEntity(subSection, 'menu') ? 'bg-success' : 'bg-secondary']"
-                                                @click="changeFavorite(section, subSection, ['menu'])"
-                                                @mouseenter="setHoveredeEntity(subSection, 'menu', true)"
-                                                @mouseleave="setHoveredeEntity(subSection, 'menu', false)">
-                                            <i :class="['fa-xs', getStatusEntity(subSection, 'menu') ? 'fa fa-bars' : 'fa fa-bars fa-beat-fade']" style="--fa-beat-fade-opacity: 0.67; --fa-beat-fade-scale: 1.075;"></i>
-                                        </button>
-                                        <button type="button"
-                                                v-show="forms.entity.createUpdate.config.show_actions"
-                                                :class="['badge badge-center rounded-pill border-light', getStatusEntity(subSection, 'favorite') ? 'bg-warning' : 'bg-secondary']"
-                                                @click="changeFavorite(section, subSection, ['favorite'])"
-                                                @mouseenter="setHoveredeEntity(subSection, 'favorite', true)"
-                                                @mouseleave="setHoveredeEntity(subSection, 'favorite', false)">
-                                            <i :class="['fa-xs', getStatusEntity(subSection, 'favorite') ? 'fa fa-star' : 'fa-regular fa-star fa-beat-fade']" style="--fa-beat-fade-opacity: 0.67; --fa-beat-fade-scale: 1.075;"></i>
-                                        </button>
-                                        <ul :class="['my-0', forms.entity.createUpdate.config.show_actions ? 'list-unstyled' : '']">
-                                            <li>
-                                                <a class="text-info-1 fw-semibold ms-2" v-text="subSection?.dom_label" :href="subSection?.dom_route_url"></a>
-                                                <i class="fa fa-star text-warning ms-2" v-if="!forms.entity.createUpdate.config.show_actions && getValueEntity(subSection)?.preferenceValue?.is_favorite"></i>
-                                            </li>
-                                        </ul>
-                                    </div>
-                                </template>
-                            </div>
-                        </template>
+        </header>
+
+        <section
+            v-if="sections.length === 0"
+            class="br-home__empty">
+            <WithoutData type="image" :text="emptyStateText"/>
+        </section>
+
+        <section v-else class="br-home__grid" :aria-label="page.modulesAriaLabel">
+            <article v-for="section in sections" :key="section.id" class="br-home-section">
+                <header class="br-home-section__header">
+                    <i :class="[section.dom_icon, 'br-home-section__icon']" aria-hidden="true"></i>
+                    <h2 class="br-home-section__title">{{ section.dom_label }}</h2>
+                </header>
+
+                <nav class="br-home-section__links" :aria-label="section.dom_label">
+                    <div
+                        class="br-home-access"
+                        v-for="subSection in section.sub_sections"
+                        :key="subSection.id">
+                        <a class="br-home-access__link" :href="subSection.dom_route_url">
+                            <span class="br-home-access__content">
+                                <span class="br-home-access__label">{{ subSection.dom_label }}</span>
+                                <span v-if="subSection.description" class="br-home-access__description">
+                                    {{ subSection.description }}
+                                </span>
+                            </span>
+                            <i class="fa-solid fa-arrow-right br-home-access__arrow" aria-hidden="true"></i>
+                        </a>
+
+                        <button
+                            :key="`${subSection.id}-${isFavorite(subSection) ? 'favorite' : 'available'}`"
+                            type="button"
+                            :class="['br-home-favorite', {'is-active': isFavorite(subSection)}]"
+                            :disabled="isSaving"
+                            data-bs-toggle="tooltip"
+                            data-bs-placement="top"
+                            :title="favoriteTooltip(subSection)"
+                            :aria-label="favoriteTooltip(subSection)"
+                            @click="changeFavorite(section, subSection, $event)">
+                            <i
+                                :class="isFavorite(subSection) ? 'fa-solid fa-star' : 'fa-regular fa-star'"
+                                aria-hidden="true"></i>
+                        </button>
                     </div>
-                </div>
-            </div>
-        </template>
-    </div>
+                </nav>
+            </article>
+        </section>
+    </main>
 </template>
 
 <script>
-import * as Alerts    from "@System/Helpers/Alerts.js";
+import {markRaw} from "vue";
+import * as Alerts from "@System/Helpers/Alerts.js";
 import * as Constants from "@System/Helpers/Constants.js";
-import * as Requests  from "@System/Helpers/Requests.js";
-import * as Utils     from "@System/Helpers/Utils.js";
+import * as Requests from "@System/Helpers/Requests.js";
+import * as Utils from "@System/Helpers/Utils.js";
+
+const PREFERENCES_UPDATED_EVENT = "br:preferences-updated";
+
+const PAGE_CONFIG = {
+    eyebrow: "Plataforma de trabajo",
+    title: "Favoritos",
+    subtitle: "Accede a los módulos habilitados para tu empresa.",
+    modulesAriaLabel: "Módulos disponibles",
+    active: true,
+    menu: {
+        id: "menu-parent-home"
+    },
+    filters: {
+        search: {
+            placeholder: "Buscar módulo o acceso",
+            ariaLabel: "Buscar entre los módulos disponibles",
+            clearTooltip: "Limpiar búsqueda"
+        },
+        favorites: {
+            label: "Solo favoritos",
+            tooltip: "Mostrar únicamente los accesos marcados como favoritos"
+        }
+    },
+    empty: {
+        favorites: "Aún no tienes accesos favoritos.",
+        search: "No encontramos módulos que coincidan con tu búsqueda.",
+        modules: "No hay módulos disponibles para tu empresa."
+    },
+    favorites: {
+        addTooltip: "Agregar a favoritos",
+        removeTooltip: "Quitar de favoritos"
+    },
+    confirmations: {
+        add: {
+            title: "Agregar a favoritos",
+            message: "Se añadirá al menú de favoritos y podrás abrirlo rápidamente desde cualquier pantalla.",
+            confirmText: "Agregar favorito"
+        },
+        remove: {
+            title: "Quitar de favoritos",
+            message: "Dejará de aparecer en favoritos, pero seguirá disponible en el menú principal.",
+            confirmText: "Quitar favorito"
+        },
+        cancelText: "Cancelar"
+    }
+};
+
+function createForms() {
+
+    return {
+        entity: {
+            createUpdate: {
+                config: {
+                    show_only_favorites: false
+                },
+                errors: {}
+            }
+        }
+    };
+
+}
+
+function normalizeSearchValue(value) {
+
+    return String(value ?? "")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase();
+
+}
+
+function createConfirmationContent(section, subSection, confirmation) {
+
+    const container = document.createElement("div");
+    const reference = document.createElement("p");
+    const referenceLabel = document.createElement("span");
+    const referenceValue = document.createElement("strong");
+    const message = document.createElement("p");
+
+    container.className = "br-home-confirmation__content";
+    reference.className = "br-home-confirmation__reference";
+    referenceLabel.className = "br-home-confirmation__reference-label";
+    referenceValue.className = "br-home-confirmation__reference-value";
+    message.className = "br-home-confirmation__message";
+
+    referenceLabel.textContent = section?.has_sub_menu ? "Módulo y acceso" : "Módulo";
+    referenceValue.textContent = section?.has_sub_menu
+        ? `${section.dom_label} > ${subSection.dom_label}`
+        : subSection.dom_label;
+    message.textContent = confirmation.message;
+
+    reference.append(referenceLabel, referenceValue);
+    container.append(reference, message);
+
+    return container;
+
+}
 
 export default {
-    components: {
-        //
-    },
-    mounted: async function() {
+    async mounted() {
 
-        Utils.navbarItem(this.config.entity.page.menu.id, {});
+        Utils.navbarItem(this.page.menu.id, {});
         Alerts.swals({type: "initParams"});
 
-        let initParams = await this.initParams({}),
-            initOthers = await this.initOthers({});
+        const initParams = await this.initParams({});
 
-        if(initParams && initOthers) {
+        this.restoreGlobalPreferences();
+        this.refreshTooltips();
+
+        if(initParams) {
 
             Alerts.swals({show: false});
 
         }
 
     },
+    beforeUnmount() {
+
+        Alerts.tooltips({show: false});
+
+    },
     data() {
+
         return {
-            forms: {
-                entity: {
-                    createUpdate: {
-                        extras: {
-                            modals: {
-                                default: {
-                                    id: Utils.uuid(),
-                                    titles: {
-                                        store: "Agregar",
-                                        update: "Editar"
-                                    }
-                                }
-                            }
-                        },
-                        data: {},
-                        config: {
-                            show_actions: false,
-                            show_only_favorites: false
-                        },
-                        errors: {}
-                    }
-                }
-            },
-            options: {},
+            forms: createForms(),
+            isSaving: false,
+            searchTerm: "",
             config: {
                 ...Constants.generalConfig,
                 entity: {
                     ...Requests.config({entity: "home"}),
-                    page: {
-                        title: "Inicio",
-                        active: true,
-                        menu: {
-                            id: "menu-parent-home"
-                        }
-                    }
+                    page: markRaw(PAGE_CONFIG)
                 }
             }
         };
     },
     methods: {
-        // Init
         async initParams({}) {
 
-            let initParams = await Requests.get({route: this.config.entity.routes.initParams, data: {page: "main"}, showAlert: true});
+            const initParams = await Requests.get({
+                route: this.config.entity.routes.initParams,
+                data: {page: "main"},
+                showAlert: true
+            });
 
             return Requests.valid({result: initParams});
 
         },
-        async initOthers({}) {
+        restoreGlobalPreferences() {
 
-            return new Promise(resolve => {
-
-                this.forms.entity.createUpdate.config.show_actions = this.preferenceCompaniesSubSection?.show_actions;
-                this.forms.entity.createUpdate.config.show_only_favorites = this.preferenceCompaniesSubSection?.show_only_favorites;
-
-                resolve(true);
-
-            });
+            this.forms.entity.createUpdate.config.show_only_favorites =
+                this.preferenceCompaniesSubSection?.show_only_favorites ?? false;
 
         },
-        // Entity forms
-        setHoveredeEntity(record = null, type = "", value) {
+        refreshTooltips() {
 
-            if(!this.isDefined({value: record?.hovered})) {
-
-                record.hovered = {
-                    menu: false,
-                    favorite: false
-                };
-
-            }
-
-            record.hovered[type] = value;
+            this.$nextTick(() => Alerts.tooltips({}));
 
         },
-        getValueEntity(record = null) {
+        isFavorite(subSection) {
 
-            let filtered = (this.preferenceCompaniesSubSection?.sub_sections ?? []).filter(e => Number(e?.sub_section_id) == record?.id);
-
-            const isNew = filtered.length === 0;
-            const preferenceValue = isNew ? null : filtered[0];
-
-            return {isNew, preferenceValue};
+            return this.favoriteSubSectionIdSet.has(Number(subSection?.id));
 
         },
-        getStatusEntity(record = null, type = "") {
+        favoriteTooltip(subSection) {
 
-            if(!this.isDefined({value: record})) return false;
-
-            const isHovered = record?.hovered?.[type] ?? false;
-
-            let isVisible = false;
-
-            if(["menu"].includes(type)) {
-
-                isVisible = this.visiblesCompaniesSubSection.includes(record.id);
-
-            }else if(["favorite"].includes(type)) {
-
-                isVisible = this.favoritesCompaniesSubSection.includes(record.id);
-
-            }
-
-            return isHovered ? !isVisible : isVisible;
+            return this.isFavorite(subSection)
+                ? this.page.favorites.removeTooltip
+                : this.page.favorites.addTooltip;
 
         },
-        async changeFavorite(section = null, subSection = null, types = []) {
+        clearSearch() {
 
-            let data = {
-                id: subSection?.id
-            };
+            this.searchTerm = "";
+            this.refreshTooltips();
 
-            let msgAlert = "",
-                confirmAlert = "";
+        },
+        async persistPreferences(data, subSectionId = 0) {
 
-            if(types.length > 0) {
+            this.isSaving = true;
 
-                const {isNew, preferenceValue} = this.getValueEntity(data);
+            try {
 
-                let hasSubMenu = section?.has_sub_menu;
+                const result = await Requests.patch({
+                    route: this.config.entity.routes.store,
+                    data: Utils.cloneJson({
+                        show_actions: false,
+                        show_only_favorites: this.forms.entity.createUpdate.config.show_only_favorites,
+                        ...data
+                    }),
+                    id: subSectionId
+                });
+                const isValid = Requests.valid({result});
 
-                const recordName = `${section?.dom_label}`+`${hasSubMenu ? " | "+subSection?.dom_label : ""}`;
+                if(isValid) {
 
-                if(["menu"].includes(types[0])) {
+                    this.config.essential.preferences =
+                        window.preferences =
+                        result?.data?.data?.preferences || [];
 
-                    data.visible_in_menu = isNew ? false : !preferenceValue?.visible_in_menu;
-
-                    msgAlert = data.visible_in_menu ? `¿Deseas mostrar <b>${recordName}</b> este módulo en el menú lateral?` : `¿Deseas ocultar <b>${recordName}</b> este módulo del menú lateral?`;
-                    confirmAlert = data.visible_in_menu ? `mostrar` : `ocultar`;
-
-                }
-
-                if(["favorite"].includes(types[0])) {
-
-                    data.is_favorite = isNew ? true : !preferenceValue?.is_favorite;
-
-                    msgAlert = data.is_favorite ? `¿Deseas agregar <b>${recordName}</b> este acceso a tus favoritos?` : `¿Deseas quitar <b>${recordName}</b> este acceso de tus favoritos?`;
-                    confirmAlert = data.is_favorite ? `agregar` : `quitar`;
-
-                }
-
-            }
-
-            data.show_actions = this.forms.entity.createUpdate.config.show_actions;
-            data.show_only_favorites = this.forms.entity.createUpdate.config.show_only_favorites;
-
-            let el = this;
-
-            const updatePreferences = async () => {
-
-                let form = Utils.cloneJson(data);
-
-                const store = await Requests.patch({route: el.config.entity.routes.store, data: form, id: subSection?.id ?? 0});
-
-                if(Requests.valid({result: store})) {
-
-                    // Alerts.toastrs({type: "success", subtitle: store?.data?.msg});
-
-                    el.config.essential.preferences = window.preferences = store?.data?.preferences || [];
+                    window.dispatchEvent(new CustomEvent(PREFERENCES_UPDATED_EVENT, {
+                        detail: {preferences: window.preferences}
+                    }));
 
                 }else {
 
-                    // Alerts.toastrs({type: "error", subtitle: store?.data?.msg});
+                    this.restoreGlobalPreferences();
 
                 }
 
-            };
+                return isValid;
 
-            if(types.length > 0) {
+            }catch(error) {
 
-                Swal.fire({
-                    html: `<span>${msgAlert}</span>`,
-                    icon: "warning",
-                    allowOutsideClick: false,
-                    showCancelButton: true,
-                    confirmButtonText: `Sí, ${confirmAlert}`,
-                    cancelButtonText: "Cancelar",
-                    customClass: {
-                        confirmButton: "btn btn-primary waves-effect",
-                        cancelButton: "btn btn-secondary waves-effect ms-3"
-                    }
-                })
-                .then(async function(result) {
+                this.restoreGlobalPreferences();
+                console.error("No fue posible guardar las preferencias de Home.", error);
 
-                    if(result.isConfirmed) {
+                return false;
 
-                        await updatePreferences();
+            }finally {
 
-                    }else if(result.isDismissed) {
-
-                        //
-
-                    }
-
-                });
-
-            }else {
-
-                await updatePreferences();
+                this.isSaving = false;
+                this.refreshTooltips();
 
             }
 
         },
-        // Others
-        isDefined({value}) {
+        async saveGlobalPreferences() {
 
-            return Utils.isDefined({value});
+            await this.persistPreferences({});
+
+        },
+        async changeFavorite(section, subSection, event) {
+
+            Alerts.tooltips({show: false});
+            event?.currentTarget?.blur();
+
+            const shouldFavorite = !this.isFavorite(subSection);
+            const confirmation = shouldFavorite
+                ? this.page.confirmations.add
+                : this.page.confirmations.remove;
+
+            const result = await Swal.fire({
+                title: confirmation.title,
+                html: createConfirmationContent(section, subSection, confirmation),
+                icon: shouldFavorite ? "question" : "warning",
+                allowOutsideClick: false,
+                allowEnterKey: false,
+                showCancelButton: true,
+                buttonsStyling: false,
+                confirmButtonText: confirmation.confirmText,
+                cancelButtonText: this.page.confirmations.cancelText,
+                customClass: {
+                    popup: `br-home-confirmation br-home-confirmation--${shouldFavorite ? "question" : "warning"}`,
+                    confirmButton: shouldFavorite
+                        ? "br-btn br-btn-primary"
+                        : "br-btn br-btn-danger",
+                    cancelButton: "br-btn br-btn-outline-secondary ms-2"
+                }
+            });
+
+            if(!result.isConfirmed) {
+
+                this.$nextTick(() => Alerts.tooltips({time: 250}));
+                return;
+
+            }
+
+            await this.persistPreferences(
+                {is_favorite: shouldFavorite},
+                Number(subSection.id)
+            );
 
         }
     },
     computed: {
-        breadcrumbTitles: function() {
+        page() {
 
-            return [this.config.entity.page];
+            return this.config.entity.page;
 
         },
-        preferenceCompaniesSubSection: function() {
+        preferenceCompaniesSubSection() {
 
             return this.config?.essential?.preferences?.config_companies_sub_sections;
 
         },
-        visiblesCompaniesSubSection: function() {
+        availableSubSectionIdSet() {
 
-            let subSectionIds = this.sections.flatMap(e => Array.isArray(e.sub_sections) ? e.sub_sections.map(sub => Number(sub?.id)) : []);
-
-            const valuePreferences   = this.preferenceCompaniesSubSection?.sub_sections ?? [];
-            const visiblePreferences = valuePreferences.filter(e => e?.visible_in_menu).map(e => Number(e?.sub_section_id));
-            const allPreferences     = valuePreferences.map(e => Number(e?.sub_section_id));
-
-            return this.isDefined({value: this.preferenceCompaniesSubSection?.sub_sections}) ?
-                        subSectionIds.filter(e => !allPreferences.includes(e) || visiblePreferences.includes(e)) :
-                        subSectionIds;
+            return new Set(
+                (this.config?.essential?.sections ?? [])
+                    .flatMap(section =>
+                        (section.sub_sections ?? []).map(subSection => Number(subSection.id))
+                    )
+            );
 
         },
-        favoritesCompaniesSubSection: function() {
+        favoriteSubSectionIdSet() {
 
-            let subSectionIds = this.sections.flatMap(e => Array.isArray(e.sub_sections) ? e.sub_sections.map(sub => Number(sub?.id)) : []);
-
-            const valuePreferences    = this.preferenceCompaniesSubSection?.sub_sections ?? [];
-            const favoritePreferences = valuePreferences.filter(e => e?.is_favorite).map(e => Number(e?.sub_section_id));
-            const allPreferences      = valuePreferences.map(e => Number(e?.sub_section_id));
-
-            return this.isDefined({value: this.preferenceCompaniesSubSection?.sub_sections}) ?
-                        subSectionIds.filter(e => favoritePreferences.includes(e)) :
-                        [];
+            return new Set(
+                (this.preferenceCompaniesSubSection?.sub_sections ?? [])
+                    .filter(preference => preference?.is_favorite)
+                    .map(preference => Number(preference.sub_section_id))
+                    .filter(id => this.availableSubSectionIdSet.has(id))
+            );
 
         },
-        sections: function() {
+        sections() {
 
-            let filtered = this.config?.essential?.sections ?? [];
+            const sections = this.config?.essential?.sections ?? [];
+            const query = normalizeSearchValue(this.searchTerm);
+            const onlyFavorites = this.forms.entity.createUpdate.config.show_only_favorites;
 
-            if(this.forms.entity.createUpdate.config.show_only_favorites) {
+            return sections
+                .map(section => {
 
-                filtered = filtered.filter(e => e.sub_sections?.some(sub => this.favoritesCompaniesSubSection.includes(sub.id)));
+                    const sectionMatches = normalizeSearchValue(section?.dom_label).includes(query);
+                    const subSections = (section.sub_sections ?? []).filter(subSection => {
+
+                        const matchesFavorite = !onlyFavorites || this.isFavorite(subSection);
+                        const matchesSearch = !query
+                            || sectionMatches
+                            || normalizeSearchValue(subSection?.dom_label).includes(query)
+                            || normalizeSearchValue(subSection?.description).includes(query);
+
+                        return matchesFavorite && matchesSearch;
+
+                    });
+
+                    return {...section, sub_sections: subSections};
+
+                })
+                .filter(section => section.sub_sections.length > 0);
+
+        },
+        emptyStateText() {
+
+            if(this.searchTerm) {
+
+                return this.page.empty.search;
 
             }
 
-            return filtered;
+            if(this.forms.entity.createUpdate.config.show_only_favorites) {
+
+                return this.page.empty.favorites;
+
+            }
+
+            return this.page.empty.modules;
+
+        }
+    },
+    watch: {
+        searchTerm() {
+
+            this.refreshTooltips();
 
         }
     }

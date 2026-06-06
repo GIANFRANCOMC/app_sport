@@ -285,7 +285,7 @@ export function toastrs({type = "success", options = null, code = null, title = 
  * Controla los tooltips de Bootstrap 5 (misma API que inicializa `main.js` con `bootstrap.Tooltip`).
  *
  * @param {Object} options
- * @param {boolean} [options.show=true] — `false`: oculta todos los tooltips abiertos (instancias siguen vivas); `true`: destruye y vuelve a crear instancias en el DOM actual.
+ * @param {boolean} [options.show=true] — `false`: oculta y destruye tooltips; `true`: limpia residuos y crea instancias en el DOM actual.
  * @param {number} [options.time] — Retraso en ms (0 = inmediato). Si se omite: `10` con `show: true`, `0` con `show: false`.
  * @param {string} [options.selector='[data-bs-toggle="tooltip"]'] — Selectores de disparadores.
  */
@@ -308,8 +308,11 @@ export function tooltips(options = {}) {
 
         if(show) {
 
+            document.querySelectorAll(".tooltip").forEach((tooltip) => tooltip.remove());
+
             triggers.forEach((el) => {
 
+                const currentTitle = el.getAttribute("title") ?? el.getAttribute("data-bs-original-title") ?? "";
                 const existing = Bootstrap.Tooltip.getInstance(el);
 
                 if(existing) {
@@ -318,7 +321,15 @@ export function tooltips(options = {}) {
 
                 }
 
-                new Bootstrap.Tooltip(el);
+                el.removeAttribute("data-bs-original-title");
+
+                if(currentTitle) {
+
+                    el.setAttribute("title", currentTitle);
+
+                }
+
+                new Bootstrap.Tooltip(el, {animation: false});
 
             });
 
@@ -330,11 +341,13 @@ export function tooltips(options = {}) {
 
                 if(existing) {
 
-                    existing.hide();
+                    existing.dispose();
 
                 }
 
             });
+
+            document.querySelectorAll(".tooltip").forEach((tooltip) => tooltip.remove());
 
         }
 
@@ -394,9 +407,11 @@ export function generateAlert({messages = [], type = "warning", headerTitle = nu
 		       allowEscapeKey    : false,
 		       html              : `${formattedMsgContent ?? ""} <div>${tableAlertHtml}</div>`,
                width             : width,
+               buttonsStyling    : false,
                confirmButtonText: "Entendido",
                customClass: {
-                   confirmButton: "btn btn-primary waves-effect"
+                   popup: `br-swal-alert br-swal-alert--${type}`,
+                   confirmButton: "br-btn br-btn-primary"
                }});
 
 }

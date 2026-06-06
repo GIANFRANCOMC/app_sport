@@ -23,6 +23,7 @@ class SubSection extends Model {
         "section_id",
         "slug",
         "name",
+        "description",
         "order",
         "dom_id",
         "dom_label",

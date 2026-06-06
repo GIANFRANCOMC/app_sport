@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\System\Essentials;
 
-use App\Helpers\System\{Utilities};
 use App\Http\Controllers\System\Base\BaseController;
 use Illuminate\Http\{JsonResponse, Request};
 use stdClass;
 
+use App\Http\Requests\System\Essentials\Home\{UpdateHomePreferenceRequest};
 use App\Models\System\Organizations\{UserPreference};
 
 class HomeController extends BaseController {
@@ -57,33 +57,48 @@ class HomeController extends BaseController {
     /**
      * Update user preferences
      *
-     * @param Request $request
+     * @param UpdateHomePreferenceRequest $request
      * @param int $id
      * @return JsonResponse
      */
-    public function update(Request $request, int $id): JsonResponse {
+    public function update(UpdateHomePreferenceRequest $request, int $id): JsonResponse {
 
         try {
 
             $user = $this->getAuthUser();
+            $validated = $request->validated();
 
             $data = [
-                "show_actions"      => $request["show_actions"],
-                "show_only_favorites" => $request["show_only_favorites"],
-                "records"           => [
-                    [
-                        "sub_section_id" => $id,
-                        "visible_in_menu" => $request["visible_in_menu"],
-                        "is_favorite"     => $request["is_favorite"]
-                    ]
-                ]
+                "show_actions"        => $validated["show_actions"],
+                "show_only_favorites" => $validated["show_only_favorites"],
+                "records"             => []
             ];
+
+            if($id > 0) {
+
+                $record = ["sub_section_id" => $id];
+
+                foreach(["is_favorite"] as $field) {
+
+                    if(array_key_exists($field, $validated)) {
+
+                        $record[$field] = $validated[$field];
+
+                    }
+
+                }
+
+                $data["records"][] = $record;
+
+            }
 
             $updateItems = UserPreference::updateItems($user->id, "config_companies_sub_sections", $data);
 
             if($updateItems["bool"]) {
 
-                return $this->successResponse(["preferences" => $user->formatted_preferences], "updated");
+                $user->unsetRelation("preferences");
+
+                return $this->successResponse(["preferences" => $user->fresh()->formatted_preferences], "updated");
 
             }
 

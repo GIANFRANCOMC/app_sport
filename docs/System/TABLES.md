@@ -44,7 +44,9 @@ Relaciones: tiene `sub_sections`.
 
 ### sub_sections
 
-Items de menu. Campos: `section_id`, `slug`, `name`, `order`, `dom_id`, `dom_label`, `dom_icon`, `dom_route`, `status`.
+Items de menú. Campos: `section_id`, `slug`, `name`, `description`, `order`, `dom_id`, `dom_label`, `dom_icon`, `dom_route`, `status`.
+
+`description` contiene un resumen breve del propósito del acceso. Home lo usa para dar contexto, ampliar la búsqueda local y diferenciar módulos con nombres similares.
 
 Relaciones: pertenece a `sections`; se habilita por empresa mediante `companies_sub_sections`.
 
@@ -71,6 +73,16 @@ Relaciones: pertenece a empresa, rol y tipo de documento. Puede vender, crear re
 Preferencias por usuario. Campos: `user_id`, `slug`, `value`, `status`.
 
 Relaciones: pertenece a `users`.
+
+Uso actual en Home:
+
+- Slug `config_companies_sub_sections`.
+- `value` guarda JSON con preferencias globales y configuración por `sub_section_id`.
+- Home permite modificar únicamente `show_only_favorites` e `is_favorite`.
+- `show_actions` se conserva por compatibilidad y Home lo envía como `false`.
+- `visible_in_menu` es un dato heredado que Home ya no modifica.
+- La aplicación consolida una sola preferencia activa por usuario y slug al actualizar.
+- Preferencias activas antiguas duplicadas pasan a `inactive`.
 
 ## Organizacion fisica
 
@@ -207,4 +219,3 @@ Relaciones: pertenece a empresa y sucursal; tiene huellas de clientes.
 Asociacion cliente-huella-dispositivo. Campos: `company_id`, `customer_id`, `biometric_device_id`, `device_user_id`, `finger_index`, `fingerprint_template`, `description`, `status`.
 
 Relaciones: pertenece a empresa, cliente y dispositivo.
-
