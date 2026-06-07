@@ -53,6 +53,24 @@ class ProductService {
         "price"
     ];
 
+    private static function hasInputField(array $data, string $field): bool {
+
+        return array_key_exists($field, $data);
+
+    }
+
+    private static function normalizeOptionalPrice(mixed $value): ?float {
+
+        if($value === null || $value === "" || (is_numeric($value) && (float) $value <= 0)) {
+
+            return null;
+
+        }
+
+        return (float) $value;
+
+    }
+
     /**
      * Get translation with fallback
      *
@@ -86,11 +104,11 @@ class ProductService {
 
         foreach(self::ALLOWED_FIELDS as $field) {
 
-            if(isset($data[$field])) {
+            if(self::hasInputField($data, $field)) {
 
                 if(in_array($field, ["min_price", "max_price"])) {
 
-                    $itemData[$field] = floatval($data[$field]) <= 0 ? null : $data[$field];
+                    $itemData[$field] = self::normalizeOptionalPrice($data[$field]);
 
                 }elseif($field === "see_my_web_price") {
 
@@ -123,13 +141,13 @@ class ProductService {
 
         foreach(self::ALLOWED_FIELDS as $field) {
 
-            if(isset($data[$field])) {
+            if(self::hasInputField($data, $field)) {
 
                 if(in_array($field, ["min_price", "max_price"])) {
 
-                    $value = floatval($data[$field]) <= 0 ? null : $data[$field];
+                    $value = self::normalizeOptionalPrice($data[$field]);
 
-                    if($value !== $item->$field) {
+                    if($value !== ($item->$field === null ? null : (float) $item->$field)) {
 
                         $updateData[$field] = $value;
 

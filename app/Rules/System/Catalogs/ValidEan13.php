@@ -33,7 +33,7 @@ class ValidEan13 implements ValidationRule {
 
         if($checkDigit !== (int) $barcode[12]) {
 
-            $fail("El código de barras EAN-13 no tiene un dígito de control válido.");
+            $fail("El código de barras no tiene un dígito de control válido.");
 
         }
 

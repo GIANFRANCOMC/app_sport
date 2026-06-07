@@ -27,7 +27,7 @@ Aunque productos, servicios y membresías comparten la tabla `items`, este módu
 
 - `items.company_id`: empresa propietaria.
 - `items.internal_code`: código interno único entre productos de la empresa.
-- `items.barcode`: código EAN-13 único entre todos los items de la empresa.
+- `items.barcode`: código de barras único entre todos los items de la empresa; técnicamente se valida con formato EAN-13.
 - `items.name`: nombre comercial.
 - `items.description`: descripción breve.
 - `items.type`: siempre `product`.
@@ -106,7 +106,7 @@ Si un almacén activo no tiene valores explícitos, se crea con cantidad y míni
 ## Interfaz
 
 - Tabla compacta con producto, identificación, precio, inventario, publicación, estado y acción.
-- Código interno y EAN-13 se muestran como identificadores distintos.
+- Código interno y código de barras se muestran como identificadores distintos; el formato EAN-13 se explica únicamente como ayuda técnica en tooltips y documentación.
 - El inventario resume cantidad total y almacenes que alcanzaron su mínimo.
 - Los iconos de publicación distinguen disponibilidad del producto y visibilidad del precio.
 - El formulario se organiza en tres pestañas: Datos y precio, Configuración comercial e Inventario.
@@ -134,7 +134,7 @@ Si un almacén activo no tiene valores explícitos, se crea con cantidad y míni
 
 ## Mejoras aplicadas
 
-- Código de barras EAN-13 generado, editable y validado.
+- Código de barras generado, editable y validado con formato EAN-13.
 - Unicidad de código de barras por empresa.
 - Stock inicial por almacén durante la creación.
 - Stock mínimo por almacén.
@@ -153,26 +153,28 @@ Si un almacén activo no tiene valores explícitos, se crea con cantidad y míni
 - Los selectores binarios o de pocas alternativas pueden reutilizar `br-choice-group` y `br-choice-option`.
 - Los prefijos de moneda reutilizan `br-currency-prefix`, con contraste suave basado en los tokens primarios de marca.
 - El prefijo monetario usa una superficie neutral y tipografía compacta para diferenciar información contextual de acciones azules como generar códigos.
-- El CTA utiliza “Agregar producto” o “Editar producto”; durante el proceso muestra “Agregando...” o “Editando...”.
+- El CTA utiliza “Agregar producto” o “Editar producto”; durante el proceso muestra “Agregando” o “Editando” sin puntos suspensivos.
 - El CTA principal no usa un icono fijo, porque su acción cambia entre agregar y editar.
 - Las acciones reutilizan variantes semánticas: `br-btn-action-search`, `br-btn-action-open-create`, `br-btn-action-create`, `br-btn-action-update` y `br-icon-action-edit`.
-- Buscar usa navy, agregar usa el azul primario y editar usa navy sólido; apertura y confirmación conservan el color correspondiente a su intención.
-- Abrir el alta usa `br-btn-action-open-create` y confirmar el alta usa `br-btn-action-create`, ambos con el azul primario.
+- Buscar usa celeste informativo, agregar usa el azul primario de marca y editar usa el secundario navy; apertura y confirmación conservan el color correspondiente a su intención.
+- Abrir el alta usa `br-btn-action-open-create` y confirmar el alta usa `br-btn-action-create`, ambos con azul primario.
 - Abrir y confirmar una edición usan `br-icon-action-edit` y `br-btn-action-update` respectivamente, ambos con el secundario navy.
 - Agregar y editar se distinguen entre sí por color; apertura y confirmación conservan la semántica cromática de su acción.
 - `FiltersSection` usa la barra reutilizable `br-filter-bar`: controles compactos, etiquetas discretas y acciones alineadas al final.
 - Todos los `vue-select` de System usan un indicador compacto con superficie neutral; al desplegar rota y adopta el azul de marca.
 - Las acciones de la barra se alinean al inicio para evitar espacios muertos después del campo de búsqueda.
 - La tabla usa `table-layout: fixed` y un `colgroup` con proporciones estables; Precio gana espacio y Producto se compacta para separar mejor los importes de Identificación.
-- Identificación diferencia visualmente “Código interno” y “EAN-13” en filas etiquetadas.
+- Identificación diferencia visualmente “Código interno” y “Código de barras” en filas etiquetadas.
 - `StatusBadge` añade automáticamente una clase normalizada desde la BD, como `br-status-active` o `br-status-inactive`, además de la variante semántica existente.
 - Las etiquetas de estado son compactas y se perciben como información, no como botones.
 - La tabla de Productos se adapta al ancho disponible en escritorio; el ancho mínimo y scroll horizontal se reservan para resoluciones de hasta `991.98px`.
 - La barra de filtros no usa divisor inferior para mantener una composición minimalista.
 - Venta, Mínimo y Máximo se alinean en un bloque de tres filas; únicamente los rótulos Mínimo y Máximo usan acentos discretos danger/success.
 - La alerta de stock usa el texto explícito “N almacén/almacenes con stock bajo” en una etiqueta warning compacta.
-- El inventario sin alertas muestra un check verde discreto y el texto singular o plural “Stock saludable en N almacén/almacenes”.
-- Las pestañas sticky cubren completamente la unión con el encabezado para impedir que el contenido desplazado se vea por detrás.
+- El inventario sin alertas muestra un check verde con fondo suave y el texto singular o plural “Stock saludable en N almacén/almacenes”.
+- En la pestaña Inventario, cada almacén muestra una etiqueta sutil: “Stock bajo o en el mínimo” o “Inventario saludable”, usando la misma semántica warning/success del listado.
+- En edición, el stock actual se muestra como lectura con `separatorNumber`; la cantidad se modifica desde Gestión de stock, no desde Productos.
+- Las pestañas sticky cubren completamente la unión con el encabezado para impedir que el contenido desplazado se vea por detrás, y se compactaron en altura para reducir espacio ocupado por navegación.
 - El breadcrumb global es compacto, se alinea a la derecha y resalta únicamente la ubicación actual con el azul de marca.
 - El listado omite la columna Publicación; esa configuración se consulta y modifica dentro del formulario.
 - Los generadores ocultan únicamente su propio tooltip mediante `Alerts.dismissTooltip()`; no destruyen las instancias de otros controles.

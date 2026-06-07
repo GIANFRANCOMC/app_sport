@@ -34,7 +34,7 @@
                     <thead>
                         <tr>
                             <th>Producto</th>
-                            <th>Identificación</th>
+                            <th class="text-center">Identificación</th>
                             <th class="text-end">Precio</th>
                             <th>Inventario</th>
                             <th class="text-center">Estado</th>
@@ -67,7 +67,7 @@
                                             <span class="br-entity-code">{{ record.internal_code }}</span>
                                         </div>
                                         <div class="br-entity-identifier">
-                                            <span class="br-entity-identifier__label">EAN-13</span>
+                                            <span class="br-entity-identifier__label">Código de barras</span>
                                             <span class="br-entity-barcode">
                                                 <i class="fa-solid fa-barcode" aria-hidden="true"></i>
                                                 {{ record.barcode }}
@@ -480,6 +480,16 @@
                                     <div class="br-entity-inventory__warehouse">
                                         <strong>{{ inventory.branch_name }}</strong>
                                         <span>{{ inventory.warehouse_name }}</span>
+                                        <small
+                                            :class="[
+                                                'br-entity-inventory-status',
+                                                inventoryStockStatus(inventory).className
+                                            ]">
+                                            <i
+                                                :class="inventoryStockStatus(inventory).icon"
+                                                aria-hidden="true"></i>
+                                            <span>{{ inventoryStockStatus(inventory).text }}</span>
+                                        </small>
                                     </div>
 
                                     <div class="br-entity-inventory__field">
@@ -657,7 +667,7 @@ const TEXTS = {
     },
     form: {
         internalCode: "Código interno",
-        barcode: "Código de barras EAN-13",
+        barcode: "Código de barras",
         name: "Nombre",
         commercialDescription: "Descripción comercial adicional",
         price: "Precio de venta",
@@ -666,15 +676,15 @@ const TEXTS = {
         categories: "Categorías",
         status: "Estado",
         internalCodeHelp: "Identificador privado que la empresa utiliza para ordenar, buscar y controlar internamente el producto.",
-        barcodeHelp: "Identificador EAN-13 que puede imprimirse en la etiqueta del producto y ser leído por clientes o escáneres.",
+        barcodeHelp: "Código de barras en formato EAN-13 que puede imprimirse en la etiqueta del producto y ser leído por clientes o escáneres.",
         generateInternalCodeTooltip: "Generar un nuevo código interno para uso exclusivo de la empresa",
         generateBarcodeTooltip: "Generar un nuevo código de barras EAN-13 para imprimir en la etiqueta"
     },
     modal: {
         store: "Agregar producto",
         update: "Editar producto",
-        storing: "Agregando...",
-        updating: "Editando..."
+        storing: "Agregando",
+        updating: "Editando"
     }
 };
 
@@ -1049,7 +1059,7 @@ export default {
 
             if(!isValidEan13(formData.barcode)) {
 
-                result.errors.barcode = ["Código de barras: Ingresa un EAN-13 válido o genera uno automáticamente."];
+                result.errors.barcode = ["Código de barras: Ingresa un código válido o genera uno automáticamente."];
                 result.bool = false;
 
             }
@@ -1154,6 +1164,29 @@ export default {
                     item => Number(item.quantity ?? 0) <= Number(item.minimum_stock ?? 0)
                 ).length,
                 warehouses: warehouseItems.length
+            };
+
+        },
+        inventoryStockStatus(inventory) {
+
+            const currentStock = Number(inventory?.initial_stock ?? 0);
+            const minimumStock = Number(inventory?.minimum_stock ?? 0);
+            const isLowStock = currentStock <= minimumStock;
+
+            if(isLowStock) {
+
+                return {
+                    className: "is-alert",
+                    icon: "fa-solid fa-triangle-exclamation",
+                    text: "Stock bajo o en el mínimo"
+                };
+
+            }
+
+            return {
+                className: "is-healthy",
+                icon: "fa-solid fa-circle-check",
+                text: "Inventario saludable"
             };
 
         },
