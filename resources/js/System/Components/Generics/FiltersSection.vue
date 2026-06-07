@@ -1,12 +1,12 @@
 <template>
-    <section class="filters-section mb-4 mb-md-4">
-        <div class="row align-items-end g-3">
+    <section class="br-filter-bar">
+        <div class="row align-items-end g-2">
             <InputSlot
                 hasDiv
                 :title="filterByTitle"
                 :titleClass="titleClass"
                 xl="3"
-                lg="4">
+                lg="3">
                 <template v-slot:input>
                     <v-select
                         :model-value="filterByValue"
@@ -27,31 +27,31 @@
                 :titleClass="titleClass"
                 :placeholder="searchPlaceholder"
                 :disabled="loading"
-                xl="4"
-                lg="4"/>
+                xl="5"
+                lg="5"/>
             <InputSlot
                 hasDiv
                 :isInputGroup="false"
-                :divInputClass="['d-flex flex-wrap justify-content-start gap-2 gap-md-3']"
-                xl="5"
+                :divInputClass="['br-filter-bar__actions']"
+                xl="4"
                 lg="4">
                 <template v-slot:input>
                     <button
                         type="button"
-                        class="btn btn-info-1 waves-effect"
+                        class="br-btn br-btn-sm br-btn-action-search waves-effect"
                         @click="$emit('search')"
                         :disabled="loading">
-                        <i class="fa fa-search"></i>
-                        <span class="ms-2" v-text="searchButtonText"></span>
+                        <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+                        <span v-text="searchButtonText"></span>
                     </button>
                     <button
                         v-if="showAddButton"
                         type="button"
-                        class="btn btn-primary waves-effect"
+                        class="br-btn br-btn-sm br-btn-action-open-create waves-effect"
                         @click="$emit('add')"
                         :disabled="loading">
-                        <i class="fa fa-plus"></i>
-                        <span class="ms-2" v-text="addButtonText"></span>
+                        <i class="fa-solid fa-plus" aria-hidden="true"></i>
+                        <span v-text="addButtonText"></span>
                     </button>
                 </template>
             </InputSlot>

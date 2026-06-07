@@ -1,294 +1,533 @@
 <template>
     <Breadcrumb :list="breadcrumbTitles"/>
 
-    <!-- Filters -->
-    <FiltersSection
-        :filter-by-value="filterByValue"
-        @update:filterByValue="filterByValue = $event"
-        :filter-word-value="filterWordValue"
-        @update:filterWordValue="filterWordValue = $event"
-        :filter-by-options="filterByOptions"
-        :search-placeholder="searchPlaceholder"
-        :loading="entityList.extras.loading"
-        :filter-by-title="MODULE.texts.filters.filterBy"
-        :search-title="MODULE.texts.filters.search"
-        :search-button-text="MODULE.texts.actions.search"
-        :add-button-text="MODULE.texts.actions.add"
-        :show-add-button="true"
-        :title-class="[config.forms.classes.title]"
-        :select-class="config.forms.classes.select2"
-        @search="handleSearch"
-        @add="openModal()"/>
+    <main class="br-entity">
+        <FiltersSection
+            :filter-by-value="filterByValue"
+            @update:filterByValue="filterByValue = $event"
+            :filter-word-value="filterWordValue"
+            @update:filterWordValue="filterWordValue = $event"
+            :filter-by-options="filterByOptions"
+            :search-placeholder="searchPlaceholder"
+            :loading="entityList.extras.loading"
+            :filter-by-title="MODULE.texts.filters.filterBy"
+            :search-title="MODULE.texts.filters.search"
+            :search-button-text="MODULE.texts.actions.search"
+            :add-button-text="MODULE.texts.actions.add"
+            :show-add-button="true"
+            :title-class="[config.forms.classes.title]"
+            :select-class="config.forms.classes.select2"
+            @search="handleSearch"
+            @add="openModal()"/>
 
-    <!-- Records -->
-    <div class="list-section mb-1 mb-md-1 table-responsive">
-        <table class="table table-hover">
-            <thead class="align-middle bg-secondary text-center">
-                <tr>
-                    <th class="text-white" style="width: 20%;">CÓDIGO INTERNO</th>
-                    <th class="text-white" style="width: 30%;" v-text="MODULE.config.pageTitleSingular"></th>
-                    <th class="text-white" style="width: 25%;">PRECIO DE VENTA</th>
-                    <th class="text-white" style="width: 5%;"></th>
-                    <th class="text-white" style="width: 10%;">ESTADO</th>
-                    <th class="text-white" style="width: 10%;">ACCIONES</th>
-                </tr>
-            </thead>
-            <tbody class="table-border-bottom-0 bg-white">
-                <tr v-if="entityList.extras.loading">
-                    <td colspan="99">
-                        <Loader/>
-                    </td>
-                </tr>
-                <template v-else-if="entityList.records.total > 0">
-                    <tr v-for="record in entityList.records.data" :key="record.id">
-                        <td class="text-center">
-                            <span v-text="record.internal_code" class="fw-semibold d-block"></span>
-                        </td>
-                        <td>
-                            <span v-text="record.name" class="fw-semibold d-block"></span>
-                            <small v-if="record.description" v-text="record.description" class="text-muted"></small>
-                        </td>
-                        <td class="text-center">
-                            <span class="fw-semibold d-block">
-                                <span v-text="`${record.currency?.sign} ${separatorNumber(record.price)}`"></span>
-                            </span>
-                            <div v-if="isDefined(record.min_price) || isDefined(record.max_price)" class="d-flex flex-column mt-1">
-                                <small v-if="isDefined(record.min_price)" class="text-muted" v-text="`Min: ${record.currency?.sign} ${separatorNumber(record.min_price)}`"></small>
-                                <small v-if="isDefined(record.max_price)" class="text-muted" v-text="`Max: ${record.currency?.sign} ${separatorNumber(record.max_price)}`"></small>
-                            </div>
-                        </td>
-                        <td class="text-center">
-                            <div class="d-flex justify-content-center align-items-center gap-2">
-                                <i :class="['fa fa-globe cursor-pointer', record.see_my_web ? 'text-success' : 'text-light']" data-bs-toggle="tooltip" data-bs-placement="top" :title="record.see_my_web ? 'Visible en mi página' : 'No visible en mi página'"></i>
-                                <i :class="['fa-solid fa-dollar-sign cursor-pointer', record.see_my_web_price ? 'text-success' : 'text-light']" data-bs-toggle="tooltip" data-bs-placement="top" :title="record.see_my_web_price ? 'Precio visible' : 'Precio no visible'"></i>
-                            </div>
-                        </td>
-                        <td class="text-center">
-                            <StatusBadge class="flex-shrink-none" :status="record.status" :formatted-status="record.formatted_status"/>
-                        </td>
-                        <td class="text-center">
-                            <button type="button" class="btn btn-xs btn-warning waves-effect" @click="openModal(record)">
-                                <span v-text="MODULE.texts.actions.edit"></span>
-                            </button>
-                        </td>
-                    </tr>
-                </template>
-                <tr v-else>
-                    <td colspan="99">
-                        <WithoutData type="image"/>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
+        <section class="br-entity-list" :aria-label="MODULE.texts.table.ariaLabel">
+            <div class="table-responsive">
+                <table class="table br-entity-table mb-0">
+                    <colgroup>
+                        <col class="br-entity-table__col-product">
+                        <col class="br-entity-table__col-identification">
+                        <col class="br-entity-table__col-price">
+                        <col class="br-entity-table__col-inventory">
+                        <col class="br-entity-table__col-status">
+                        <col class="br-entity-table__col-actions">
+                    </colgroup>
+                    <thead>
+                        <tr>
+                            <th>Producto</th>
+                            <th>Identificación</th>
+                            <th class="text-end">Precio</th>
+                            <th>Inventario</th>
+                            <th class="text-center">Estado</th>
+                            <th class="text-center">
+                                <span class="visually-hidden">Acciones</span>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-if="entityList.extras.loading">
+                            <td colspan="6" class="py-4">
+                                <Loader/>
+                            </td>
+                        </tr>
+                        <template v-else-if="entityList.records.total > 0">
+                            <tr v-for="record in entityList.records.data" :key="record.id">
+                                <td>
+                                    <span class="br-entity-table__name">{{ record.name }}</span>
+                                    <span v-if="record.description" class="br-entity-table__description">
+                                        {{ record.description }}
+                                    </span>
+                                    <span v-if="record.category_items?.length" class="br-entity-table__meta">
+                                        {{ record.category_items.length }} {{ record.category_items.length === 1 ? "categoría" : "categorías" }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="br-entity-identifiers">
+                                        <div class="br-entity-identifier">
+                                            <span class="br-entity-identifier__label">Código interno</span>
+                                            <span class="br-entity-code">{{ record.internal_code }}</span>
+                                        </div>
+                                        <div class="br-entity-identifier">
+                                            <span class="br-entity-identifier__label">EAN-13</span>
+                                            <span class="br-entity-barcode">
+                                                <i class="fa-solid fa-barcode" aria-hidden="true"></i>
+                                                {{ record.barcode }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="text-end">
+                                    <div class="br-entity-prices">
+                                        <span class="br-entity-price-row is-sale">
+                                            <span>Venta</span>
+                                            <strong>{{ record.currency?.sign }} {{ separatorNumber(record.price) }}</strong>
+                                        </span>
+                                        <span
+                                            v-if="isDefined(record.min_price)"
+                                            class="br-entity-price-row is-minimum">
+                                            <span>Mínimo</span>
+                                            <strong>{{ record.currency?.sign }} {{ separatorNumber(record.min_price) }}</strong>
+                                        </span>
+                                        <span
+                                            v-if="isDefined(record.max_price)"
+                                            class="br-entity-price-row is-maximum">
+                                            <span>Máximo</span>
+                                            <strong>{{ record.currency?.sign }} {{ separatorNumber(record.max_price) }}</strong>
+                                        </span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="br-entity-stock">
+                                        {{ separatorNumber(stockSummary(record).total) }} unidades
+                                    </span>
+                                    <span
+                                        v-if="stockSummary(record).alerts > 0"
+                                        class="br-entity-stock-alert">
+                                        <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
+                                        <span>
+                                            {{ stockSummary(record).alerts }}
+                                            {{ stockSummary(record).alerts === 1 ? "almacén con stock bajo" : "almacenes con stock bajo" }}
+                                        </span>
+                                    </span>
+                                    <span v-else class="br-entity-stock-healthy">
+                                        <i class="fa-solid fa-circle-check" aria-hidden="true"></i>
+                                        <span>
+                                            Stock saludable en
+                                            {{ stockSummary(record).warehouses }}
+                                            {{ stockSummary(record).warehouses === 1 ? "almacén" : "almacenes" }}
+                                        </span>
+                                    </span>
+                                </td>
+                                <td class="text-center">
+                                    <StatusBadge
+                                        class="flex-shrink-none"
+                                        :status="record.status"
+                                        :formatted-status="record.formatted_status"/>
+                                </td>
+                                <td class="text-center">
+                                    <button
+                                        type="button"
+                                        class="br-icon-action br-icon-action-edit"
+                                        data-bs-toggle="tooltip"
+                                        data-bs-placement="top"
+                                        :title="MODULE.texts.actions.edit"
+                                        :aria-label="`${MODULE.texts.actions.edit} ${record.name}`"
+                                        @click="openModal(record)">
+                                        <i class="fa-solid fa-pen" aria-hidden="true"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        </template>
+                        <tr v-else>
+                            <td colspan="6" class="py-4">
+                                <WithoutData type="image"/>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
 
-    <!-- Pagination -->
-    <nav v-if="!entityList.extras.loading && entityList.records.total > 0" class="d-flex justify-content-center">
-        <Paginator :links="entityList.records.links" @clickPage="listEntity"/>
-    </nav>
+        <nav
+            v-if="!entityList.extras.loading && entityList.records.total > 0"
+            class="d-flex justify-content-center mt-3"
+            aria-label="Paginación de productos">
+            <Paginator :links="entityList.records.links" @clickPage="listEntity"/>
+        </nav>
+    </main>
 
-    <!-- Modal: Create/Update -->
-    <div class="modal fade" :id="forms[entity].createUpdate.extras.modals.default.id" data-bs-backdrop="static" tabindex="-1" role="dialog">
-        <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+    <div
+        class="modal fade br-entity-modal"
+        :id="productForm.extras.modals.default.id"
+        data-bs-backdrop="static"
+        tabindex="-1"
+        role="dialog"
+        aria-modal="true">
+        <div class="modal-dialog modal-dialog-centered modal-xl modal-dialog-scrollable" role="document">
             <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title text-uppercase fw-bold" v-text="modalTitles.createUpdate[isUpdate ? 'update' : 'store']"></h5>
-                    <button type="button" class="btn-header-modal" data-bs-dismiss="modal">
-                        <i class="fa fa-times icon-close-modal"></i>
+                <div class="modal-header br-entity-modal__header">
+                    <div>
+                        <p class="br-entity-modal__eyebrow mb-1">Catálogo comercial</p>
+                        <h2 class="modal-title br-entity-modal__title">
+                            {{ modalTitles.createUpdate[isUpdate ? "update" : "store"] }}
+                        </h2>
+                    </div>
+                    <button
+                        type="button"
+                        class="br-modal-close"
+                        data-bs-dismiss="modal"
+                        aria-label="Cerrar">
+                        <i class="fa-solid fa-xmark" aria-hidden="true"></i>
                     </button>
                 </div>
-                <div class="modal-body">
+
+                <div class="modal-body br-entity-modal__body">
+                    <nav class="br-entity-tabs" aria-label="Secciones del formulario">
+                        <button
+                            v-for="(tab, index) in formTabs"
+                            :key="tab.id"
+                            type="button"
+                            :class="['br-entity-tab', {'is-active': activeFormTab === tab.id}]"
+                            :aria-selected="activeFormTab === tab.id"
+                            :aria-controls="`product-tab-${tab.id}`"
+                            role="tab"
+                            @click="activeFormTab = tab.id">
+                            <span class="br-entity-tab__step">{{ index + 1 }}</span>
+                            <span class="br-entity-tab__content">
+                                <strong>{{ tab.label }}</strong>
+                                <small>{{ tab.description }}</small>
+                            </span>
+                            <span v-if="tabHasErrors(tab.id)" class="br-entity-tab__error" aria-label="Contiene errores">
+                                <i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i>
+                            </span>
+                        </button>
+                    </nav>
+
                     <form @submit.prevent="saveEntity">
-                        <div class="row g-3">
-                            <InputText
-                                v-model="forms[entity].createUpdate.data.internal_code"
-                                hasDiv
-                                :title="MODULE.texts.form.internalCode"
-                                :titleClass="[config.forms.classes.title]"
-                                isRequired
-                                maxlength="50"
-                                :showCharCounter="false"
-                                hasTextBottom
-                                :textBottomInfo="forms[entity].createUpdate.errors?.internal_code"
-                                xl="4"
-                                lg="4">
-                                <template v-slot:inputGroupAppend v-if="!isUpdate">
-                                    <button type="button" :class="['btn waves-effect', isUpdate ? 'btn-warning' : 'btn-primary']" @click="generateCodeAction" data-bs-toggle="tooltip" data-bs-placement="top" :title="MODULE.texts.form.generateCodeTooltip">
-                                        <i class="fa fa-rotate"></i>
-                                    </button>
-                                </template>
-                            </InputText>
-                            <InputText
-                                v-model="forms[entity].createUpdate.data.name"
-                                hasDiv
-                                :title="MODULE.texts.form.name"
-                                :titleClass="[config.forms.classes.title]"
-                                isRequired
-                                maxlength="50"
-                                showCharCounter
-                                hasTextBottom
-                                :textBottomInfo="forms[entity].createUpdate.errors?.name"
-                                xl="8"
-                                lg="8"/>
-                            <InputText
-                                v-model="forms[entity].createUpdate.data.description"
-                                hasDiv
-                                :title="MODULE.texts.form.description"
-                                :titleClass="[config.forms.classes.title]"
-                                maxlength="100"
-                                showCharCounter
-                                hasTextBottom
-                                :textBottomInfo="forms[entity].createUpdate.errors?.description"
-                                xl="12"
-                                lg="12"/>
-                            <InputNumber
-                                v-model="forms[entity].createUpdate.data.price"
-                                hasDiv
-                                :title="MODULE.texts.form.price"
-                                :titleClass="[config.forms.classes.title]"
-                                isRequired
-                                hasTextBottom
-                                :textBottomInfo="forms[entity].createUpdate.errors?.price"
-                                xl="4"
-                                lg="4">
-                                <template v-slot:inputGroupPrepend>
-                                    <span class="input-group-text text-muted">
-                                        <span v-text="forms[entity].createUpdate.data.currency?.data?.sign"></span>
-                                    </span>
-                                </template>
-                            </InputNumber>
-                            <InputNumber
-                                v-model="forms[entity].createUpdate.data.min_price"
-                                hasDiv
-                                :title="MODULE.texts.form.minPrice"
-                                :titleClass="[config.forms.classes.title]"
-                                hasTextBottom
-                                :textBottomInfo="forms[entity].createUpdate.errors?.min_price"
-                                xl="4"
-                                lg="4"
-                                md="6"
-                                sm="6">
-                                <template v-slot:inputGroupPrepend>
-                                    <span class="input-group-text text-muted">
-                                        <span v-text="forms[entity].createUpdate.data.currency?.data?.sign"></span>
-                                    </span>
-                                </template>
-                            </InputNumber>
-                            <InputNumber
-                                v-model="forms[entity].createUpdate.data.max_price"
-                                hasDiv
-                                :title="MODULE.texts.form.maxPrice"
-                                :titleClass="[config.forms.classes.title]"
-                                hasTextBottom
-                                :textBottomInfo="forms[entity].createUpdate.errors?.max_price"
-                                xl="4"
-                                lg="4"
-                                md="6"
-                                sm="6">
-                                <template v-slot:inputGroupPrepend>
-                                    <span class="input-group-text text-muted">
-                                        <span v-text="forms[entity].createUpdate.data.currency?.data?.sign"></span>
-                                    </span>
-                                </template>
-                            </InputNumber>
-                            <InputSlot
-                                v-if="false"
-                                hasDiv
-                                :title="MODULE.texts.form.currency"
-                                :titleClass="[config.forms.classes.title]"
-                                isRequired
-                                hasTextBottom
-                                :textBottomInfo="forms[entity].createUpdate.errors?.currency_id"
-                                xl="3"
-                                lg="3">
-                                <template v-slot:input>
-                                    <v-select
-                                        v-model="forms[entity].createUpdate.data.currency"
-                                        :options="currencies"
-                                        :class="config.forms.classes.select2"
-                                        :clearable="false"
-                                        :searchable="false"/>
-                                </template>
-                            </InputSlot>
-                            <InputSlot
-                                hasDiv
-                                :title="MODULE.texts.form.categories"
-                                :titleClass="[config.forms.classes.title]"
-                                hasTextBottom
-                                :textBottomInfo="forms[entity].createUpdate.errors?.categories"
-                                xl="12"
-                                lg="12">
-                                <template v-slot:input>
-                                    <v-select
-                                        v-model="forms[entity].createUpdate.data.categories"
-                                        :options="categories"
-                                        :class="config.forms.classes.select2"
-                                        :clearable="true"
-                                        :searchable="true"
-                                        :multiple="true"/>
-                                </template>
-                            </InputSlot>
-                            <InputSlot
-                                hasDiv
-                                :title="MODULE.texts.form.status"
-                                :titleClass="[config.forms.classes.title]"
-                                isRequired
-                                hasTextBottom
-                                :textBottomInfo="forms[entity].createUpdate.errors?.status"
-                                xl="4"
-                                lg="4">
-                                <template v-slot:input>
-                                    <v-select
-                                        v-model="forms[entity].createUpdate.data.status"
-                                        :options="statuses"
-                                        :class="config.forms.classes.select2"
-                                        :clearable="false"
-                                        :searchable="false"/>
-                                </template>
-                            </InputSlot>
-                            <InputSlot
-                                v-if="false"
-                                hasDiv
-                                :title="MODULE.texts.form.visibility"
-                                :titleClass="[config.forms.classes.title]"
-                                :isInputGroup="false"
-                                :divInputClass="['d-flex flex-wrap justify-content-center align-items-end gap-4 pt-2']"
-                                xl="8"
-                                lg="8">
-                                <template v-slot:input>
-                                    <div class="form-check form-switch d-flex align-items-start">
-                                        <input class="form-check-input" type="checkbox" role="switch" id="see_my_web" v-model="forms[entity].createUpdate.data.see_my_web"/>
-                                        <label class="form-check-label d-flex align-items-center gap-1 ms-2 cursor-pointer mb-0" for="see_my_web">
-                                            <i :class="['fa', forms[entity].createUpdate.data.see_my_web ? 'fa-globe text-success' : 'fa-globe text-muted']"></i>
-                                            <span v-text="MODULE.texts.form.seeMyWeb"></span>
+                        <section
+                            v-show="activeFormTab === 'general'"
+                            id="product-tab-general"
+                            class="br-entity-form-section"
+                            role="tabpanel">
+                            <div class="row g-3">
+                                <InputText
+                                    v-model="productForm.data.name"
+                                    hasDiv
+                                    :title="MODULE.texts.form.name"
+                                    :titleClass="[config.forms.classes.title]"
+                                    isRequired
+                                    maxlength="50"
+                                    showCharCounter
+                                    hasTextBottom
+                                    :textBottomInfo="productForm.errors?.name"
+                                    xl="4"
+                                    lg="4"/>
+
+                                <InputText
+                                    v-model="productForm.data.internal_code"
+                                    hasDiv
+                                    :title="MODULE.texts.form.internalCode"
+                                    :titleClass="[config.forms.classes.title]"
+                                    isRequired
+                                    maxlength="50"
+                                    :showCharCounter="false"
+                                    hasTextBottom
+                                    :textBottomInfo="productForm.errors?.internal_code"
+                                    xl="4"
+                                    lg="4">
+                                    <template v-slot:defaultAppend>
+                                        <button
+                                            type="button"
+                                            class="br-field-help"
+                                            data-bs-toggle="tooltip"
+                                            data-bs-placement="top"
+                                            :title="MODULE.texts.form.internalCodeHelp"
+                                            aria-label="¿Para qué sirve el código interno?">
+                                            <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
+                                        </button>
+                                    </template>
+                                    <template v-if="!isUpdate" v-slot:inputGroupAppend>
+                                        <button
+                                            type="button"
+                                            class="br-input-action"
+                                            data-bs-toggle="tooltip"
+                                            data-bs-placement="top"
+                                            :title="MODULE.texts.form.generateInternalCodeTooltip"
+                                            :aria-label="MODULE.texts.form.generateInternalCodeTooltip"
+                                            @click="generateInternalCode($event)">
+                                            <i class="fa-solid fa-rotate" aria-hidden="true"></i>
+                                        </button>
+                                    </template>
+                                </InputText>
+
+                                <InputText
+                                    v-model="productForm.data.barcode"
+                                    hasDiv
+                                    :title="MODULE.texts.form.barcode"
+                                    :titleClass="[config.forms.classes.title]"
+                                    isRequired
+                                    maxlength="13"
+                                    :showCharCounter="false"
+                                    hasTextBottom
+                                    :textBottomInfo="productForm.errors?.barcode"
+                                    xl="4"
+                                    lg="4">
+                                    <template v-slot:defaultAppend>
+                                        <button
+                                            type="button"
+                                            class="br-field-help"
+                                            data-bs-toggle="tooltip"
+                                            data-bs-placement="top"
+                                            :title="MODULE.texts.form.barcodeHelp"
+                                            aria-label="¿Para qué sirve el código de barras?">
+                                            <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
+                                        </button>
+                                    </template>
+                                    <template v-slot:inputGroupAppend>
+                                        <button
+                                            type="button"
+                                            class="br-input-action"
+                                            data-bs-toggle="tooltip"
+                                            data-bs-placement="top"
+                                            :title="MODULE.texts.form.generateBarcodeTooltip"
+                                            :aria-label="MODULE.texts.form.generateBarcodeTooltip"
+                                            @click="generateBarcode($event)">
+                                            <i class="fa-solid fa-barcode" aria-hidden="true"></i>
+                                        </button>
+                                    </template>
+                                </InputText>
+
+                                <InputNumber
+                                    v-model="productForm.data.price"
+                                    hasDiv
+                                    :title="MODULE.texts.form.price"
+                                    :titleClass="[config.forms.classes.title]"
+                                    isRequired
+                                    hasTextBottom
+                                    :textBottomInfo="productForm.errors?.price"
+                                    xl="4"
+                                    lg="4">
+                                    <template v-slot:inputGroupPrepend>
+                                        <span class="input-group-text br-currency-prefix">{{ currencySign }}</span>
+                                    </template>
+                                </InputNumber>
+
+                                <InputNumber
+                                    v-model="productForm.data.min_price"
+                                    hasDiv
+                                    :title="MODULE.texts.form.minPrice"
+                                    :titleClass="[config.forms.classes.title]"
+                                    hasTextBottom
+                                    :textBottomInfo="productForm.errors?.min_price"
+                                    xl="4"
+                                    lg="4">
+                                    <template v-slot:inputGroupPrepend>
+                                        <span class="input-group-text br-currency-prefix">{{ currencySign }}</span>
+                                    </template>
+                                </InputNumber>
+
+                                <InputNumber
+                                    v-model="productForm.data.max_price"
+                                    hasDiv
+                                    :title="MODULE.texts.form.maxPrice"
+                                    :titleClass="[config.forms.classes.title]"
+                                    hasTextBottom
+                                    :textBottomInfo="productForm.errors?.max_price"
+                                    xl="4"
+                                    lg="4">
+                                    <template v-slot:inputGroupPrepend>
+                                        <span class="input-group-text br-currency-prefix">{{ currencySign }}</span>
+                                    </template>
+                                </InputNumber>
+
+                                <InputSlot
+                                    hasDiv
+                                    :title="MODULE.texts.form.status"
+                                    :titleClass="[config.forms.classes.title]"
+                                    isRequired
+                                    hasTextBottom
+                                    :textBottomInfo="productForm.errors?.status"
+                                    xl="4"
+                                    lg="6">
+                                    <template v-slot:input>
+                                        <div class="br-choice-group" role="radiogroup" aria-label="Estado del producto">
+                                            <label
+                                                v-for="status in statuses"
+                                                :key="status.code"
+                                                :class="[
+                                                    'br-choice-option',
+                                                    {'is-selected': productForm.data.status?.code === status.code}
+                                                ]">
+                                                <input
+                                                    class="br-choice-option__input"
+                                                    type="radio"
+                                                    name="product_status"
+                                                    :value="status.code"
+                                                    :checked="productForm.data.status?.code === status.code"
+                                                    @change="productForm.data.status = status">
+                                                <span class="br-choice-option__indicator" aria-hidden="true"></span>
+                                                <span>{{ status.label }}</span>
+                                            </label>
+                                        </div>
+                                    </template>
+                                </InputSlot>
+                            </div>
+                        </section>
+
+                        <section
+                            v-show="activeFormTab === 'commercial'"
+                            id="product-tab-commercial"
+                            class="br-entity-form-section"
+                            role="tabpanel">
+                            <div class="row g-3">
+                                <InputSlot
+                                    hasDiv
+                                    :title="MODULE.texts.form.categories"
+                                    :titleClass="[config.forms.classes.title]"
+                                    hasTextBottom
+                                    :textBottomInfo="productForm.errors?.categories"
+                                    xl="12"
+                                    lg="12">
+                                    <template v-slot:input>
+                                        <v-select
+                                            v-model="productForm.data.categories"
+                                            :options="categories"
+                                            :class="config.forms.classes.select2"
+                                            :clearable="true"
+                                            :searchable="true"
+                                            :multiple="true"/>
+                                    </template>
+                                </InputSlot>
+
+                                <InputText
+                                    v-model="productForm.data.description"
+                                    hasDiv
+                                    :title="MODULE.texts.form.commercialDescription"
+                                    :titleClass="[config.forms.classes.title]"
+                                    maxlength="100"
+                                    showCharCounter
+                                    hasTextBottom
+                                    :textBottomInfo="productForm.errors?.description"
+                                    xl="12"
+                                    lg="12"/>
+
+                                <div class="col-12">
+                                    <div class="br-entity-publication-settings">
+                                        <label class="br-entity-switch" for="see_my_web">
+                                            <input
+                                                id="see_my_web"
+                                                v-model="productForm.data.see_my_web"
+                                                class="form-check-input"
+                                                type="checkbox"
+                                                role="switch"
+                                                @change="syncPublicationSettings">
+                                            <span>
+                                                <strong>Publicar producto</strong>
+                                                <small>Permite mostrarlo en el futuro catálogo web o PDF.</small>
+                                            </span>
+                                        </label>
+
+                                        <label
+                                            class="br-entity-switch"
+                                            :class="{'is-disabled': !productForm.data.see_my_web}"
+                                            for="see_my_web_price">
+                                            <input
+                                                id="see_my_web_price"
+                                                v-model="productForm.data.see_my_web_price"
+                                                class="form-check-input"
+                                                type="checkbox"
+                                                role="switch"
+                                                :disabled="!productForm.data.see_my_web">
+                                            <span>
+                                                <strong>Mostrar precio</strong>
+                                                <small>Solo aplica cuando el producto está publicado.</small>
+                                            </span>
                                         </label>
                                     </div>
-                                    <div class="form-check form-switch d-flex align-items-start" :class="{'opacity-50': !forms[entity].createUpdate.data.see_my_web}">
-                                        <input class="form-check-input" type="checkbox" role="switch" id="see_my_web_price" v-model="forms[entity].createUpdate.data.see_my_web_price" :disabled="!forms[entity].createUpdate.data.see_my_web"/>
-                                        <label class="form-check-label d-flex align-items-center gap-1 ms-2 mb-0" :class="[forms[entity].createUpdate.data.see_my_web ? 'cursor-pointer' : 'cursor-not-allowed']" for="see_my_web_price">
-                                            <i :class="['fa-solid', forms[entity].createUpdate.data.see_my_web_price && forms[entity].createUpdate.data.see_my_web ? 'fa-dollar-sign text-success' : 'fa-dollar-sign text-muted']"></i>
-                                            <span v-text="MODULE.texts.form.seeMyWebPrice"></span>
-                                        </label>
+                                </div>
+                            </div>
+                        </section>
+
+                        <section
+                            v-show="activeFormTab === 'inventory'"
+                            id="product-tab-inventory"
+                            class="br-entity-form-section mb-0"
+                            role="tabpanel">
+                            <p class="br-entity-inventory-note">
+                                <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
+                                <span v-if="isUpdate">
+                                    Ajusta el mínimo de alerta. El stock actual se modifica desde Gestión de stock.
+                                </span>
+                                <span v-else>
+                                    Registra el stock de apertura y el mínimo necesario para cada almacén.
+                                </span>
+                            </p>
+
+                            <div v-if="productForm.errors?.inventory" class="alert alert-danger py-2">
+                                {{ firstError(productForm.errors.inventory) }}
+                            </div>
+
+                            <div v-if="productForm.data.inventory.length" class="br-entity-inventory">
+                                <div class="br-entity-inventory__head" aria-hidden="true">
+                                    <span>Almacén</span>
+                                    <span>{{ isUpdate ? "Stock actual" : "Stock inicial" }}</span>
+                                    <span>Stock mínimo</span>
+                                </div>
+
+                                <div
+                                    v-for="(inventory, index) in productForm.data.inventory"
+                                    :key="inventory.warehouse_id"
+                                    class="br-entity-inventory__row">
+                                    <div class="br-entity-inventory__warehouse">
+                                        <strong>{{ inventory.branch_name }}</strong>
+                                        <span>{{ inventory.warehouse_name }}</span>
                                     </div>
-                                </template>
-                            </InputSlot>
-                        </div>
+
+                                    <div class="br-entity-inventory__field">
+                                        <InputNumber
+                                            v-model="inventory.initial_stock"
+                                            :title="isUpdate ? 'Stock actual' : 'Stock inicial'"
+                                            :titleClass="['br-entity-inventory__mobile-label']"
+                                            :minValue="0"
+                                            :decimals="2"
+                                            :disabled="isUpdate"
+                                            hasTextBottom
+                                            :textBottomInfo="inventoryFieldErrors(index, 'initial_stock')"/>
+                                    </div>
+
+                                    <div class="br-entity-inventory__field">
+                                        <InputNumber
+                                            v-model="inventory.minimum_stock"
+                                            title="Stock mínimo"
+                                            :titleClass="['br-entity-inventory__mobile-label']"
+                                            :minValue="0"
+                                            :decimals="2"
+                                            hasTextBottom
+                                            :textBottomInfo="inventoryFieldErrors(index, 'minimum_stock')"/>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div v-else class="br-entity-inventory-empty">
+                                <i class="fa-solid fa-warehouse" aria-hidden="true"></i>
+                                <span>No hay almacenes activos. Crea una sucursal con almacén antes de registrar productos.</span>
+                            </div>
+                        </section>
                     </form>
                 </div>
-                <div class="modal-footer">
+
+                <div class="modal-footer br-entity-modal__footer">
                     <button
                         type="button"
-                        class="btn btn-secondary waves-effect"
-                        data-bs-dismiss="modal"
-                        v-text="MODULE.texts.modal.close">
+                        class="br-btn br-btn-cancel"
+                        data-bs-dismiss="modal">
+                        Cancelar
                     </button>
                     <button
                         type="button"
-                        :class="['btn waves-effect', isUpdate ? 'btn-warning' : 'btn-primary']"
-                        @click="saveEntity"
-                        :disabled="isSaving">
-                        <i class="fa fa-save"></i>
-                        <span class="ms-2" v-text="MODULE.texts.modal.save"></span>
+                        :class="['br-btn', isUpdate ? 'br-btn-action-update' : 'br-btn-action-create']"
+                        :disabled="isSaving || productForm.data.inventory.length === 0"
+                        @click="saveEntity">
+                        <span>{{ submitButtonText }}</span>
                     </button>
                 </div>
             </div>
@@ -298,7 +537,7 @@
 
 <script>
 import * as Alerts from "@System/Helpers/Alerts.js";
-import { initCrudModule } from "@System/Helpers/ModuleFactory.js";
+import {initCrudModule} from "@System/Helpers/ModuleFactory.js";
 import * as Forms from "@System/Helpers/Forms.js";
 import * as Requests from "@System/Helpers/Requests.js";
 import * as Utils from "@System/Helpers/Utils.js";
@@ -312,8 +551,30 @@ const MODULE_CONFIG = {
     perPage: 10
 };
 
+const FORM_TABS = [
+    {
+        id: "general",
+        label: "Datos y precio",
+        description: "Identidad y rango de precios",
+        fields: ["internal_code", "barcode", "name", "price", "min_price", "max_price", "currency", "currency_id", "status"]
+    },
+    {
+        id: "commercial",
+        label: "Configuración comercial",
+        description: "Información adicional y publicación",
+        fields: ["categories", "description", "see_my_web", "see_my_web_price"]
+    },
+    {
+        id: "inventory",
+        label: "Inventario",
+        description: "Stock por almacén",
+        fields: ["inventory"]
+    }
+];
+
 const FORM_FIELDS = {
     internal_code: "",
+    barcode: "",
     name: "",
     description: "",
     price: "",
@@ -321,13 +582,15 @@ const FORM_FIELDS = {
     max_price: "",
     currency: null,
     categories: [],
-    see_my_web: false,
+    see_my_web: true,
     see_my_web_price: false,
+    inventory: [],
     status: null
 };
 
 const FORM_FIELD_CONFIG = {
     internal_code: {trim: true},
+    barcode: {trim: true},
     name: {trim: true},
     description: {normalize: true},
     price: {toNumber: true, minValue: 0},
@@ -342,6 +605,7 @@ const FORM_FIELD_CONFIG = {
 
 const VALIDATION_RULES = {
     internal_code: {required: true},
+    barcode: {required: true},
     name: {required: true},
     description: {required: false},
     price: {required: true, number: true, min: 0},
@@ -351,28 +615,30 @@ const VALIDATION_RULES = {
     categories: {required: false},
     see_my_web: {required: false},
     see_my_web_price: {required: false},
+    inventory: {required: true},
     status: {required: true}
 };
 
 const ERROR_LABELS = {
     internal_code: "Código interno",
+    barcode: "Código de barras",
     name: "Nombre",
-    description: "Descripción",
+    description: "Descripción comercial adicional",
     price: "Precio de venta",
     min_price: "Precio mínimo",
     max_price: "Precio máximo",
     currency: "Moneda",
     categories: "Categorías",
-    see_my_web: "Visualizar en mi página",
-    see_my_web_price: "Visualizar precio",
+    inventory: "Inventario por almacén",
     status: "Estado"
 };
 
 const FILTER_OPTIONS = [
     {code: "all", label: "Todos los filtros"},
     {code: "internal_code", label: "Código interno"},
+    {code: "barcode", label: "Código de barras"},
     {code: "name", label: "Nombre"},
-    {code: "description", label: "Descripción"},
+    {code: "description", label: "Descripción comercial adicional"},
     {code: "price", label: "Precio de venta"}
 ];
 
@@ -383,27 +649,32 @@ const TEXTS = {
     },
     actions: {
         search: "Buscar",
-        add: "Agregar",
-        edit: "Editar"
+        add: "Agregar producto",
+        edit: "Editar producto"
+    },
+    table: {
+        ariaLabel: "Listado de productos"
     },
     form: {
         internalCode: "Código interno",
+        barcode: "Código de barras EAN-13",
         name: "Nombre",
-        description: "Descripción",
+        commercialDescription: "Descripción comercial adicional",
         price: "Precio de venta",
         minPrice: "Precio mínimo",
         maxPrice: "Precio máximo",
-        currency: "Moneda",
         categories: "Categorías",
         status: "Estado",
-        visibility: "Visibilidad web",
-        seeMyWeb: "Visualizar en mi página",
-        seeMyWebPrice: "Visualizar precio",
-        generateCodeTooltip: "Generar aleatoriamente"
+        internalCodeHelp: "Identificador privado que la empresa utiliza para ordenar, buscar y controlar internamente el producto.",
+        barcodeHelp: "Identificador EAN-13 que puede imprimirse en la etiqueta del producto y ser leído por clientes o escáneres.",
+        generateInternalCodeTooltip: "Generar un nuevo código interno para uso exclusivo de la empresa",
+        generateBarcodeTooltip: "Generar un nuevo código de barras EAN-13 para imprimir en la etiqueta"
     },
     modal: {
-        close: "Cerrar",
-        save: "Guardar"
+        store: "Agregar producto",
+        update: "Editar producto",
+        storing: "Agregando...",
+        updating: "Editando..."
     }
 };
 
@@ -417,6 +688,44 @@ const MODULE = {
     filterOptions: FILTER_OPTIONS
 };
 
+function calculateEan13CheckDigit(twelveDigits) {
+
+    const sum = twelveDigits
+        .split("")
+        .reduce((total, digit, index) => total + Number(digit) * (index % 2 === 0 ? 1 : 3), 0);
+
+    return String((10 - (sum % 10)) % 10);
+
+}
+
+function generateEan13() {
+
+    const randomValue = window.crypto?.getRandomValues
+        ? (() => {
+
+            const values = new Uint32Array(1);
+            window.crypto.getRandomValues(values);
+
+            return values[0];
+
+        })()
+        : Math.floor(Math.random() * 1000000000);
+
+    const body = `200${String(randomValue % 1000000000).padStart(9, "0")}`;
+
+    return `${body}${calculateEan13CheckDigit(body)}`;
+
+}
+
+function isValidEan13(value) {
+
+    const barcode = String(value ?? "");
+
+    return /^\d{13}$/.test(barcode)
+        && barcode[12] === calculateEan13CheckDigit(barcode.slice(0, 12));
+
+}
+
 export default {
     name: "ProductsMain",
     data() {
@@ -429,17 +738,18 @@ export default {
         });
 
         crudModule.lists[MODULE.config.entity].filters.filter_by = MODULE.filterOptions[0];
-        crudModule.forms[MODULE.config.entity].createUpdate.data = Forms.initFormData(MODULE.formFields);
+        crudModule.forms[MODULE.config.entity].createUpdate.data =
+            Forms.initFormData(Utils.cloneJson(MODULE.formFields));
 
         return {
             ...crudModule,
-            MODULE: MODULE,
-            isInitialized: false,
+            MODULE,
+            activeFormTab: FORM_TABS[0].id,
             isSaving: false
         };
 
     },
-    mounted: async function() {
+    async mounted() {
 
         Utils.navbarItem("menu-parent-items", {addClass: "open"});
         Utils.navbarItem(this.config.entity.page.menu.id, {});
@@ -448,14 +758,24 @@ export default {
 
         const initParams = await this.initParams();
 
-        this.isInitialized = true;
-
         if(initParams) {
 
             Alerts.swals({show: false});
-            this.listEntity({});
+            await this.listEntity({});
 
         }
+
+        document
+            .getElementById(this.productForm.extras.modals.default.id)
+            ?.addEventListener("hidden.bs.modal", this.resetProductForm);
+
+    },
+    beforeUnmount() {
+
+        Alerts.tooltips({show: false});
+        document
+            .getElementById(this.productForm.extras.modals.default.id)
+            ?.removeEventListener("hidden.bs.modal", this.resetProductForm);
 
     },
     methods: {
@@ -471,41 +791,47 @@ export default {
 
                 this.options.categories = response.data.config.categories;
                 this.options.currencies = response.data.config.currencies;
-                this.options.statuses   = response.data.config.statuses;
+                this.options.statuses = response.data.config.statuses;
+                this.options.warehouses = response.data.config.warehouses;
 
             }
 
             return Requests.valid({result: response});
 
         },
-        // List
         async listEntity(params = null) {
 
-            const entityList   = this.lists[this.entity];
             const emptyRecords = {total: 0, data: [], links: []};
-            const filters      = Utils.cloneJson(entityList.filters);
-            const filterData   = {per_page: this.MODULE.config.perPage, filter_by: filters.filter_by?.code, word: filters.word};
+            const filters = Utils.cloneJson(this.entityList.filters);
+            const filterData = {
+                per_page: this.MODULE.config.perPage,
+                filter_by: filters.filter_by?.code,
+                word: filters.word
+            };
 
-            entityList.extras.loading = true;
+            this.entityList.extras.loading = true;
 
             try {
 
                 const url = this.isDefined(params) && typeof params === "object" ? params.url : params;
-
-                let requestUrl  = url || entityList.extras.route;
+                let requestUrl = url || this.entityList.extras.route;
                 let requestData = {};
 
                 if(this.isDefined(url)) {
 
-                    const urlObj = new URL(url, window.location.origin);
+                    const urlObject = new URL(url, window.location.origin);
 
                     Object.entries(filterData).forEach(([key, value]) => {
 
-                        if(this.isDefined(value) && !urlObj.searchParams.has(key)) urlObj.searchParams.set(key, value);
+                        if(this.isDefined(value) && !urlObject.searchParams.has(key)) {
+
+                            urlObject.searchParams.set(key, value);
+
+                        }
 
                     });
 
-                    requestUrl = `${urlObj.pathname}${urlObj.search}`;
+                    requestUrl = `${urlObject.pathname}${urlObject.search}`;
 
                 }else {
 
@@ -513,17 +839,22 @@ export default {
 
                 }
 
-                const response = await Requests.get({route: requestUrl, data: requestData, showAlert: true});
+                const response = await Requests.get({
+                    route: requestUrl,
+                    data: requestData,
+                    showAlert: true
+                });
 
-                entityList.records = response?.data ?? emptyRecords;
+                this.entityList.records = response?.data ?? emptyRecords;
 
             }catch(error) {
 
-                entityList.records = emptyRecords;
+                this.entityList.records = emptyRecords;
 
             }finally {
 
-                entityList.extras.loading = false;
+                this.entityList.extras.loading = false;
+                this.$nextTick(() => Alerts.tooltips({}));
 
             }
 
@@ -533,107 +864,173 @@ export default {
             this.listEntity({});
 
         },
-        // Forms
         openModal(record = null) {
 
-            const entityForms = this.forms[this.entity].createUpdate;
-
-            entityForms.errors = {};
-            Forms.clearFormData(entityForms.data, this.MODULE.formFields);
+            Alerts.tooltips({show: false});
+            this.resetProductForm();
 
             if(this.isDefined(record)) {
 
-                // Map record data to form
-                const currencyOption = this.currencies.find(e => e.code === record?.currency_id),
-                      categoryItems  = (record?.category_items ?? []).map(e => e?.category_id),
-                      statusOption   = this.statuses.find(e => e.code === record?.status);
+                const categoryIds = (record.category_items ?? []).map(category => category.category_id);
 
-                entityForms.data.id               = record.id;
-                entityForms.data.internal_code    = record.internal_code;
-                entityForms.data.name             = record.name;
-                entityForms.data.description      = record.description;
-                entityForms.data.price            = record.price;
-                entityForms.data.min_price        = record.min_price;
-                entityForms.data.max_price        = record.max_price;
-                entityForms.data.currency         = currencyOption;
-                entityForms.data.categories       = this.categories.filter(e => categoryItems.includes(e.code));
-                entityForms.data.see_my_web       = Boolean(record.see_my_web ?? false);
-                entityForms.data.see_my_web_price = Boolean(record.see_my_web_price ?? false);
-                entityForms.data.status           = statusOption;
+                Object.assign(this.productForm.data, {
+                    id: record.id,
+                    internal_code: record.internal_code,
+                    barcode: record.barcode,
+                    name: record.name,
+                    description: record.description,
+                    price: record.price,
+                    min_price: record.min_price,
+                    max_price: record.max_price,
+                    currency: this.currencies.find(currency => currency.code === record.currency_id) ?? null,
+                    categories: this.categories.filter(category => categoryIds.includes(category.code)),
+                    see_my_web: Boolean(record.see_my_web),
+                    see_my_web_price: Boolean(record.see_my_web && record.see_my_web_price),
+                    inventory: this.buildInventory(record),
+                    status: this.statuses.find(status => status.code === record.status) ?? null
+                });
 
             }else {
 
-                // Set defaults for new record
-                entityForms.data.internal_code = this.generateCode({length: 7});
-                entityForms.data.currency      = this.currencies.length > 0 ? this.currencies[0] : null;
-                entityForms.data.status        = this.statuses.length > 0 ? this.statuses[0] : null;
+                Object.assign(this.productForm.data, {
+                    internal_code: this.generateRandomCode(7),
+                    barcode: generateEan13(),
+                    currency: this.currencies[0] ?? null,
+                    categories: [],
+                    see_my_web: true,
+                    see_my_web_price: false,
+                    inventory: this.buildInventory(),
+                    status: this.statuses[0] ?? null
+                });
 
             }
 
-            Alerts.modals({type: "show", id: entityForms.extras.modals.default.id});
-            Alerts.tooltips({show: true, time: 500});
+            Alerts.modals({type: "show", id: this.productForm.extras.modals.default.id});
+            this.$nextTick(() => Alerts.tooltips({time: 350}));
 
         },
-        generateCodeAction() {
+        resetProductForm() {
 
-            this.forms[this.entity].createUpdate.data.internal_code = this.generateCode({length: 7});
+            const form = this.forms[this.entity].createUpdate;
 
-            Alerts.toastrs({type: "success", subtitle: "Código interno generado correctamente."});
-            Alerts.tooltips({show: false});
+            form.data = Forms.initFormData(Utils.cloneJson(this.MODULE.formFields));
+            form.errors = {};
+            this.activeFormTab = FORM_TABS[0].id;
+
+        },
+        buildInventory(record = null) {
+
+            const warehouseItems = record?.warehouse_items ?? [];
+
+            return this.warehouses.map(warehouse => {
+
+                const warehouseItem = warehouseItems.find(
+                    item => Number(item.warehouse_id) === Number(warehouse.id)
+                );
+
+                return {
+                    warehouse_id: Number(warehouse.id),
+                    branch_name: warehouse.branch?.name ?? "Sucursal",
+                    warehouse_name: warehouse.name,
+                    initial_stock: Number(warehouseItem?.quantity ?? 0),
+                    minimum_stock: Number(warehouseItem?.minimum_stock ?? 0)
+                };
+
+            });
+
+        },
+        generateInternalCode(event) {
+
+            this.productForm.data.internal_code = this.generateRandomCode(7);
+            Alerts.dismissTooltip(event?.currentTarget);
+
+        },
+        generateBarcode(event) {
+
+            this.productForm.data.barcode = generateEan13();
+            Alerts.dismissTooltip(event?.currentTarget);
+
+        },
+        syncPublicationSettings() {
+
+            if(!this.productForm.data.see_my_web) {
+
+                this.productForm.data.see_my_web_price = false;
+
+            }
 
         },
         async saveEntity() {
 
             if(this.isSaving) return;
 
-            const entityForms = this.forms[this.entity].createUpdate;
-
             Alerts.swals({});
-
-            entityForms.errors = {};
+            this.productForm.errors = {};
             this.isSaving = true;
 
             try {
 
-                const formData   = Utils.cloneJson(entityForms.data);
+                const formData = Utils.cloneJson(this.productForm.data);
                 const validation = this.validateFormData(formData);
 
                 if(!validation.bool) {
 
-                    Alerts.generateAlert({messages: Utils.getErrors({errors: validation.errors}), msgContent: this.config.messages.errorValidate});
-                    this.isSaving = false;
+                    this.productForm.errors = validation.errors;
+                    this.focusFirstTabWithErrors(validation.errors);
+                    Alerts.generateAlert({
+                        messages: Utils.getErrors({errors: validation.errors}),
+                        msgContent: this.config.messages.errorValidate
+                    });
                     return;
 
                 }
 
-                const preparedData  = Forms.prepareFormData(formData, this.MODULE.formFieldConfig);
-                const id            = preparedData.id;
-                const isUpdate      = this.isDefined(id);
+                const preparedData = Forms.prepareFormData(formData, this.MODULE.formFieldConfig);
+                preparedData.inventory = preparedData.inventory.map(inventory => ({
+                    warehouse_id: Number(inventory.warehouse_id),
+                    initial_stock: Number(inventory.initial_stock ?? 0),
+                    minimum_stock: Number(inventory.minimum_stock ?? 0)
+                }));
+
+                if(!preparedData.see_my_web) {
+
+                    preparedData.see_my_web_price = false;
+
+                }
+
+                const id = preparedData.id;
+                const isUpdate = this.isDefined(id);
                 const requestMethod = isUpdate ? "patch" : "post";
-                const route         = this.routeActions[isUpdate ? "update" : "store"];
-                const result        = await Requests[requestMethod]({route, data: preparedData, id});
+                const route = this.routeActions[isUpdate ? "update" : "store"];
+                const result = await Requests[requestMethod]({route, data: preparedData, id});
 
                 if(Requests.valid({result})) {
 
-                    Alerts.modals({type: "hide", id: entityForms.extras.modals.default.id});
+                    Alerts.modals({type: "hide", id: this.productForm.extras.modals.default.id});
                     Alerts.generateAlert({type: "success", msgContent: result.data.msg});
 
-                    Forms.clearFormData(entityForms.data, this.MODULE.formFields);
-
-                    const entityList  = this.entityList;
-                    const currentPage = entityList?.records?.current_page ?? 1;
-
-                    this.listEntity({url: `${entityList?.extras?.route || ""}?page=${currentPage}`});
+                    const currentPage = this.entityList?.records?.current_page ?? 1;
+                    await this.listEntity({
+                        url: `${this.entityList?.extras?.route || ""}?page=${currentPage}`
+                    });
 
                 }else {
 
-                    Forms.handleFormResponseErrors({result, formErrorsObject: entityForms.errors, config: this.config});
+                    Forms.handleFormResponseErrors({
+                        result,
+                        formErrorsObject: this.productForm.errors,
+                        config: this.config
+                    });
 
                 }
 
             }catch(error) {
 
-                Alerts.generateAlert({type: "error", messages: [error], msgContent: this.config.messages.catchError});
+                Alerts.generateAlert({
+                    type: "error",
+                    messages: [error],
+                    msgContent: this.config.messages.catchError
+                });
 
             }finally {
 
@@ -644,45 +1041,66 @@ export default {
         },
         validateFormData(formData) {
 
-            const result = Forms.validateFormData(formData, this.validationRules, {isDescriptive: true, errorLabels: this.MODULE.errorLabels});
+            const result = Forms.validateFormData(
+                formData,
+                this.validationRules,
+                {isDescriptive: true, errorLabels: this.MODULE.errorLabels}
+            );
 
-            // Custom validation for price ranges (only if price is valid)
+            if(!isValidEan13(formData.barcode)) {
+
+                result.errors.barcode = ["Código de barras: Ingresa un EAN-13 válido o genera uno automáticamente."];
+                result.bool = false;
+
+            }
+
+            if(!Array.isArray(formData.inventory) || formData.inventory.length === 0) {
+
+                result.errors.inventory = ["Inventario por almacén: Se requiere al menos un almacén activo."];
+                result.bool = false;
+
+            }else {
+
+                formData.inventory.forEach((inventory, index) => {
+
+                    ["initial_stock", "minimum_stock"].forEach(field => {
+
+                        const value = Number(inventory[field]);
+
+                        if(!Number.isFinite(value) || value < 0) {
+
+                            result.errors[`inventory.${index}.${field}`] = [
+                                `${field === "initial_stock" ? "Stock inicial" : "Stock mínimo"}: Debe ser mayor o igual a 0.`
+                            ];
+                            result.bool = false;
+
+                        }
+
+                    });
+
+                });
+
+            }
+
             if(!result.errors.price) {
 
                 const minPrice = parseFloat(formData.min_price) || 0;
                 const maxPrice = parseFloat(formData.max_price) || 0;
-                const price    = parseFloat(formData.price) || 0;
+                const price = parseFloat(formData.price) || 0;
 
-                if(minPrice > 0 && maxPrice > 0) {
+                if(minPrice > 0 && maxPrice > 0 && maxPrice < minPrice) {
 
-                    if(maxPrice < minPrice) {
-
-                        if(!result.errors.max_price) result.errors.max_price = [];
-
-                        result.errors.max_price.push(`${this.MODULE.errorLabels.max_price}: Debe ser mayor o igual al precio mínimo`);
-                        result.bool = false;
-
-                    }else if(price < minPrice || price > maxPrice) {
-
-                        if(!result.errors.price) result.errors.price = [];
-
-                        result.errors.price.push(`${this.MODULE.errorLabels.price}: Debe estar entre ${minPrice} y ${maxPrice}`);
-                        result.bool = false;
-
-                    }
+                    result.errors.max_price = ["Precio máximo: Debe ser mayor o igual al precio mínimo."];
+                    result.bool = false;
 
                 }else if(minPrice > 0 && price < minPrice) {
 
-                    if(!result.errors.price) result.errors.price = [];
-
-                    result.errors.price.push(`${this.MODULE.errorLabels.price}: Debe ser mayor o igual al precio mínimo`);
+                    result.errors.price = ["Precio de venta: Debe ser mayor o igual al precio mínimo."];
                     result.bool = false;
 
                 }else if(maxPrice > 0 && price > maxPrice) {
 
-                    if(!result.errors.price) result.errors.price = [];
-
-                    result.errors.price.push(`${this.MODULE.errorLabels.price}: Debe ser menor o igual al precio máximo`);
+                    result.errors.price = ["Precio de venta: Debe ser menor o igual al precio máximo."];
                     result.bool = false;
 
                 }
@@ -692,13 +1110,59 @@ export default {
             return result;
 
         },
-        // Others
+        inventoryFieldErrors(index, field) {
+
+            const error = this.productForm.errors?.[`inventory.${index}.${field}`];
+
+            return Array.isArray(error) ? error : (error ? [error] : []);
+
+        },
+        tabHasErrors(tabId) {
+
+            const tab = FORM_TABS.find(item => item.id === tabId);
+            const errorFields = Object.keys(this.productForm.errors ?? {});
+
+            return tab?.fields.some(field =>
+                errorFields.some(errorField => errorField === field || errorField.startsWith(`${field}.`))
+            ) ?? false;
+
+        },
+        focusFirstTabWithErrors(errors) {
+
+            const errorFields = Object.keys(errors ?? {});
+            const tab = FORM_TABS.find(item =>
+                item.fields.some(field =>
+                    errorFields.some(errorField => errorField === field || errorField.startsWith(`${field}.`))
+                )
+            );
+
+            this.activeFormTab = tab?.id ?? FORM_TABS[0].id;
+
+        },
+        firstError(error) {
+
+            return Array.isArray(error) ? error[0] : error ?? "";
+
+        },
+        stockSummary(record) {
+
+            const warehouseItems = record?.warehouse_items ?? [];
+
+            return {
+                total: warehouseItems.reduce((total, item) => total + Number(item.quantity ?? 0), 0),
+                alerts: warehouseItems.filter(
+                    item => Number(item.quantity ?? 0) <= Number(item.minimum_stock ?? 0)
+                ).length,
+                warehouses: warehouseItems.length
+            };
+
+        },
         isDefined(value) {
 
             return Utils.isDefined({value});
 
         },
-        generateCode({length}) {
+        generateRandomCode(length) {
 
             return Utils.generateCode({length});
 
@@ -707,12 +1171,22 @@ export default {
 
             return Utils.separatorNumber(value);
 
-        },
+        }
     },
     computed: {
         entity() {
 
             return this.MODULE.config.entity;
+
+        },
+        productForm() {
+
+            return this.forms[this.entity].createUpdate;
+
+        },
+        formTabs() {
+
+            return FORM_TABS;
 
         },
         routeActions() {
@@ -735,28 +1209,60 @@ export default {
         },
         categories() {
 
-            return (this.options?.categories?.records ?? []).map(e => ({code: e.id, label: e.name, data: e}));
+            return (this.options?.categories?.records ?? []).map(category => ({
+                code: category.id,
+                label: category.name,
+                data: category
+            }));
 
         },
         currencies() {
 
-            return (this.options?.currencies?.records ?? []).map(e => ({code: e.id, label: e.plural_name, data: e}));
+            return (this.options?.currencies?.records ?? []).map(currency => ({
+                code: currency.id,
+                label: currency.plural_name,
+                data: currency
+            }));
 
         },
         statuses() {
 
-            return (this.options?.statuses ?? []).map(e => ({code: e.code, label: e.label}));
+            return (this.options?.statuses ?? []).map(status => ({
+                code: status.code,
+                label: status.label
+            }));
+
+        },
+        submitButtonText() {
+
+            if(this.isSaving) {
+
+                return this.MODULE.texts.modal[this.isUpdate ? "updating" : "storing"];
+
+            }
+
+            return this.MODULE.texts.modal[this.isUpdate ? "update" : "store"];
+
+        },
+        warehouses() {
+
+            return this.options?.warehouses?.records ?? [];
+
+        },
+        currencySign() {
+
+            return this.productForm.data.currency?.data?.sign ?? "";
 
         },
         isUpdate() {
 
-            return this.isDefined(this.forms[this.entity].createUpdate.data.id);
+            return this.isDefined(this.productForm.data.id);
 
         },
         modalTitles() {
 
             return {
-                createUpdate: this.forms[this.entity].createUpdate.extras.modals.default.titles
+                createUpdate: this.productForm.extras.modals.default.titles
             };
 
         },
@@ -793,21 +1299,16 @@ export default {
 
             const filterBy = this.entityList.filters.filter_by;
 
-            if(!filterBy) return "Buscar...";
-
-            return `Buscar por ${(filterBy.label || "...").toLowerCase()}`;
+            return filterBy
+                ? `Buscar por ${(filterBy.label || "...").toLowerCase()}`
+                : "Buscar productos";
 
         },
         validationRules() {
 
-            const rules = Utils.cloneJson(this.MODULE.validationRules);
-
-            return rules;
+            return Utils.cloneJson(this.MODULE.validationRules);
 
         }
     }
 };
 </script>
-
-<style scoped>
-</style>

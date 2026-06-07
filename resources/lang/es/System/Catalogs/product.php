@@ -15,8 +15,8 @@ return [
     */
 
     // Mensajes de Éxito
-    "created" => "Producto creado exitosamente.",
-    "updated" => "Producto actualizado exitosamente.",
+    "created" => "Producto agregado exitosamente.",
+    "updated" => "Producto editado exitosamente.",
     "deleted" => "Producto eliminado exitosamente.",
 
     // Mensajes de Error
@@ -35,4 +35,3 @@ return [
     "exception_update" => "Error al actualizar el producto: :message",
     "exception_delete" => "Error al eliminar el producto: :message",
 ];
-

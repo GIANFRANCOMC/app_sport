@@ -108,7 +108,9 @@ Relaciones: pertenece a empresa; se une a items por `category_items`.
 
 ### items
 
-Productos, servicios y membresias de catalogo. Campos: `company_id`, `currency_id`, `internal_code`, `name`, `description`, `price`, `min_price`, `max_price`, `type`, `duration_type`, `duration_value`, `see_my_web`, `see_my_web_price`, `status`.
+Productos, servicios y membresias de catalogo. Campos: `company_id`, `currency_id`, `internal_code`, `barcode`, `name`, `description`, `price`, `min_price`, `max_price`, `type`, `duration_type`, `duration_value`, `see_my_web`, `see_my_web_price`, `status`.
+
+`barcode` almacena un EAN-13 opcional a nivel de tabla y unico por empresa. El modulo Productos lo exige para nuevos productos. `see_my_web` controla la publicacion del item en recursos externos y `see_my_web_price` controla si tambien se expone el precio.
 
 Relaciones: pertenece a empresa y moneda; tiene categorias; usado por ventas, stock y portal publico.
 
@@ -168,9 +170,9 @@ Relaciones: pertenece a sucursal; tiene `warehouse_items`.
 
 ### warehouse_items
 
-Stock por item en almacen. Campos: `warehouse_id`, `item_id`, `quantity`, `status`.
+Stock por item en almacen. Campos: `warehouse_id`, `item_id`, `quantity`, `minimum_stock`, `status`.
 
-Relaciones: une almacenes con items.
+Relaciones: une almacenes con items. La combinacion `warehouse_id + item_id` es unica. `minimum_stock` define la alerta especifica para cada almacen.
 
 ## Activos
 

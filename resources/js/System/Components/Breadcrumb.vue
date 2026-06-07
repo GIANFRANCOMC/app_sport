@@ -1,13 +1,22 @@
 <template>
-    <div class="d-flex justify-content-start flex-wrap mb-4" v-if="list.length > 0">
-        <span class="user-select-none fs-5 text-muted">
-            <i class="fa fa-home fa-2xs"></i>
-        </span>
-        <template v-for="(value, index) in list" :key="index">
-            <span :class="['user-select-none fs-5', value?.active ? 'text-primary' : 'text-muted', 'fw-bold mx-1']">/</span>
-            <span :class="['user-select-none fs-5', value?.active ? 'text-primary' : 'text-muted', 'fw-bold']" v-text="value?.title"></span>
-        </template>
-    </div>
+    <nav
+        v-if="visibleItems.length"
+        class="br-breadcrumb"
+        aria-label="Ubicación actual">
+        <ol class="br-breadcrumb__list">
+            <li class="br-breadcrumb__home" aria-hidden="true">
+                <i class="fa-solid fa-house"></i>
+            </li>
+            <li
+                v-for="(item, index) in visibleItems"
+                :key="`${item.title}-${index}`"
+                :class="['br-breadcrumb__item', {'is-current': item.active || index === visibleItems.length - 1}]"
+                :aria-current="item.active || index === visibleItems.length - 1 ? 'page' : undefined">
+                <i class="fa-solid fa-chevron-right br-breadcrumb__separator" aria-hidden="true"></i>
+                <span>{{ item.title }}</span>
+            </li>
+        </ol>
+    </nav>
 </template>
 
 <script>
@@ -18,11 +27,15 @@ export default {
         list: {
             type: Array,
             required: false,
-            default: []
+            default: () => []
         }
     },
     computed: {
-        //
+        visibleItems() {
+
+            return this.list.filter(item => item?.title);
+
+        }
     },
     methods: {
         //

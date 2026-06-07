@@ -27,6 +27,7 @@ class Item extends Model {
     protected $fillable = [
         "company_id",
         "internal_code",
+        "barcode",
         "name",
         "description",
         "price",

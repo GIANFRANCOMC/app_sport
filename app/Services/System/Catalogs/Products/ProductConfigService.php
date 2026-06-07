@@ -9,6 +9,7 @@ use stdClass;
 
 use App\Models\System\Catalogs\{Category, Item};
 use App\Models\System\General\{Currency};
+use App\Models\System\Warehouses\{Warehouse};
 
 /**
  * Service for managing module configuration and initialization parameters
@@ -30,7 +31,7 @@ class ProductConfigService {
 
         $cacheKey = self::buildCacheKey($companyId);
 
-        return Cache::remember($cacheKey, self::CACHE_TTL, function() use($page, $companyId) {
+        $initParams = Cache::remember($cacheKey, self::CACHE_TTL, function() use($page, $companyId) {
 
             $initParams = new stdClass();
 
@@ -54,6 +55,15 @@ class ProductConfigService {
             return $initParams;
 
         });
+
+        if($page === "main") {
+
+            $initParams->config->warehouses = new stdClass();
+            $initParams->config->warehouses->records = Warehouse::getAll("stock_management", $companyId);
+
+        }
+
+        return $initParams;
 
     }
 

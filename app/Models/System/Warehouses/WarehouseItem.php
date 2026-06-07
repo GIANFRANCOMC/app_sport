@@ -23,6 +23,7 @@ class WarehouseItem extends Model {
         "warehouse_id",
         "item_id",
         "quantity",
+        "minimum_stock",
         "status",
         "created_at",
         "created_by",

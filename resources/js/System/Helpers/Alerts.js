@@ -357,6 +357,31 @@ export function tooltips(options = {}) {
 
 }
 
+/**
+ * Oculta únicamente el tooltip asociado a un disparador y conserva las demás instancias.
+ *
+ * @param {HTMLElement|null} element
+ */
+export function dismissTooltip(element) {
+
+    if(!element) return;
+
+    try {
+
+        const Bootstrap = window.bootstrap;
+        const instance = Bootstrap?.Tooltip?.getInstance(element);
+
+        element.blur();
+        instance?.hide();
+
+    }catch(error) {
+
+        element.removeAttribute("aria-describedby");
+
+    }
+
+}
+
 export function modals({type = "show", id = null, timeout = 0}) {
 
     if(["show"].includes(type)) {

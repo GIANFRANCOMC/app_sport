@@ -21,16 +21,18 @@ Campos importantes:
 - `warehouse_items.warehouse_id`
 - `warehouse_items.item_id`
 - `warehouse_items.quantity`
+- `warehouse_items.minimum_stock`
 
 ## Reglas
 
 - Una venta necesita serie.
 - Una venta de producto necesita almacen de sucursal.
 - Al crear sucursal puede crearse almacen y series por defecto.
+- Al crear un almacén predeterminado se crean relaciones con cantidad y mínimo cero para los productos existentes.
+- Un producto solo puede tener un registro por almacén.
 
 ## Mejoras sugeridas
 
 - Bloquear ventas si no existe serie activa.
 - Bloquear venta si no existe almacen, pero mostrar solucion clara en UI.
 - Agregar historial de correlativos y movimientos.
-

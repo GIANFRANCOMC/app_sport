@@ -17,7 +17,8 @@
  *   :root tokens → tablas thead → layout stack/sidebar venta
  *   → detalle tabla (--br-amount-*, --br-table-footer-*, .br-amount-inline, .br-table-footer-stripe, …)
  *   → .br-memberships-table (modal membresías activas)
- *   → cabecera modal (.br-modal-header) → tap field / observación → prefijo moneda input → botones (.br-btn*) → enlaces (.br-link*) → layout app → dashboard → FAB
+ *   → cabecera y controles modal (.br-modal-header, .br-modal-close) → campos (.br-field-help, .br-input-action)
+ *   → tap field / observación → prefijo moneda input → botones (.br-btn*) → enlaces (.br-link*) → layout app → dashboard → FAB
  *   → .br-status-label / .br-status-surface (indicadores de estado estándar en toda la plataforma)
  */
 
@@ -178,6 +179,163 @@ body.br-layout .table > thead > tr > th.bg-secondary {
 
 body.br-layout .table.table-sm > thead > tr > th {
   font-size: 0.8125rem;
+}
+
+/* -------------------------------------------------------------------------
+ * [br] Breadcrumb compacto
+ * ------------------------------------------------------------------------- */
+.br-breadcrumb {
+  display: flex;
+  justify-content: flex-end;
+  width: 100%;
+  margin-bottom: 0.75rem;
+  color: var(--br-text-muted);
+}
+
+.br-breadcrumb__list {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.75rem;
+  line-height: 1.35;
+}
+
+.br-breadcrumb__home {
+  display: inline-grid;
+  width: 1.4rem;
+  height: 1.4rem;
+  color: var(--br-secondary-muted);
+  font-size: 0.68rem;
+  place-items: center;
+}
+
+.br-breadcrumb__item {
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+  color: var(--br-text-muted);
+  font-weight: 500;
+}
+
+.br-breadcrumb__item span {
+  overflow: hidden;
+  max-width: 15rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.br-breadcrumb__item.is-current {
+  color: var(--br-primary-active);
+  font-weight: 700;
+}
+
+.br-breadcrumb__separator {
+  margin-inline: 0.4rem;
+  color: var(--br-border-strong);
+  font-size: 0.55rem;
+}
+
+@media (max-width: 575.98px) {
+  .br-breadcrumb__item span {
+    max-width: 9rem;
+  }
+}
+
+/* -------------------------------------------------------------------------
+ * [br] Barra compacta de filtros y acciones
+ * ------------------------------------------------------------------------- */
+.br-filter-bar {
+  width: 100%;
+  margin-bottom: 1rem;
+  padding-bottom: 0.35rem;
+}
+
+.br-filter-bar .form-group {
+  margin-bottom: 0;
+}
+
+.br-filter-bar .form-label {
+  margin-bottom: 0.3rem;
+  color: var(--br-text-muted);
+  font-size: 0.75rem !important;
+  font-weight: 600 !important;
+  line-height: 1.25;
+}
+
+.br-filter-bar .form-control,
+.br-filter-bar .vs__dropdown-toggle {
+  min-height: 2.35rem;
+  border-color: var(--br-border);
+  background: var(--br-surface-elevated);
+}
+
+.br-filter-bar .form-control:focus,
+.br-filter-bar .vs--open .vs__dropdown-toggle {
+  border-color: var(--br-primary);
+  box-shadow: var(--br-focus-ring);
+}
+
+.br-layout .v-select .vs__actions {
+  align-items: center;
+  padding: 0 0.4rem 0 0.25rem;
+}
+
+.br-layout .v-select .vs__open-indicator {
+  box-sizing: content-box;
+  width: 0.55rem;
+  height: 0.4rem;
+  padding: 0.28rem;
+  border-radius: var(--br-radius-sm);
+  background: var(--br-neutral-soft);
+  fill: var(--br-text-muted);
+  transform: rotate(0deg);
+  transform-origin: center;
+  transition: var(--br-transition), transform 0.18s ease;
+}
+
+.br-layout .v-select .vs__dropdown-toggle:hover .vs__open-indicator {
+  background: var(--br-primary-soft);
+  fill: var(--br-primary-active);
+}
+
+.br-layout .v-select.vs--open .vs__open-indicator {
+  background: var(--br-primary-soft);
+  fill: var(--br-primary-active);
+  transform: rotate(180deg);
+}
+
+.br-filter-bar__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.br-filter-bar__actions .br-btn {
+  min-height: 2.35rem;
+}
+
+@media (max-width: 991.98px) {
+  .br-filter-bar__actions {
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .br-filter-bar__actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .br-filter-bar__actions .br-btn {
+    width: 100%;
+  }
 }
 
 /* -------------------------------------------------------------------------
@@ -373,14 +531,28 @@ body.br-layout .table.table-sm > thead > tr > th {
  * ------------------------------------------------------------------------- */
 .br-layout .br-status-label {
   display: inline-block;
-  font-size: 0.8125rem;
-  font-weight: 600;
-  line-height: 1.25;
-  padding: 0.35em 0.65em;
-  border-radius: var(--br-radius-sm);
+  min-width: 3.75rem;
+  padding: 0.28em 0.52em;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  line-height: 1.2;
+  border-radius: 0.25rem;
   border: 1px solid transparent;
+  text-align: center;
   vertical-align: baseline;
-  letter-spacing: 0.01em;
+  letter-spacing: 0;
+}
+
+.br-layout .br-status-active {
+  background-color: var(--br-success-soft);
+  color: var(--br-success-hover);
+  border-color: color-mix(in srgb, var(--br-success) 30%, var(--br-border));
+}
+
+.br-layout .br-status-inactive {
+  background-color: var(--br-danger-soft);
+  color: var(--br-danger-hover);
+  border-color: color-mix(in srgb, var(--br-danger) 28%, var(--br-border));
 }
 
 .br-layout .br-status-label--success {
@@ -967,6 +1139,173 @@ body.br-layout .modal-header.br-modal-header .btn-header-modal:focus-visible {
 }
 
 /* -------------------------------------------------------------------------
+ * [br] Controles reutilizables de formularios y modales
+ * ------------------------------------------------------------------------- */
+.br-modal-close {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.85rem;
+  z-index: 2;
+  display: inline-grid;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  border: 0;
+  border-radius: var(--br-radius-sm);
+  background: transparent;
+  color: var(--br-text-muted);
+  place-items: center;
+  transition: var(--br-transition);
+}
+
+.br-modal-close:hover,
+.br-modal-close:focus-visible {
+  background: var(--br-neutral-soft);
+  color: var(--br-secondary);
+}
+
+.br-modal-close:focus-visible {
+  outline: none;
+  box-shadow: var(--br-focus-ring);
+}
+
+.br-modal-close:active {
+  background: var(--br-secondary-soft);
+}
+
+.br-field-help {
+  display: inline-grid;
+  width: 1.15rem;
+  height: 1.15rem;
+  margin-left: 0.3rem;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--br-text-placeholder);
+  font-size: 0.75rem;
+  vertical-align: middle;
+  place-items: center;
+}
+
+.br-field-help:hover,
+.br-field-help:focus-visible {
+  color: var(--br-primary-active);
+}
+
+.br-field-help:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--br-primary-muted);
+}
+
+.br-input-action {
+  display: inline-grid;
+  min-width: 2.6rem;
+  padding: 0 0.75rem;
+  border: 1px solid var(--br-primary-muted);
+  border-left: 0;
+  border-radius: 0 var(--br-radius-sm) var(--br-radius-sm) 0;
+  background: color-mix(in srgb, var(--br-primary-soft) 72%, var(--br-primary-muted));
+  color: var(--br-primary-active);
+  place-items: center;
+  transition: var(--br-transition);
+}
+
+.br-input-action:hover,
+.br-input-action:focus-visible {
+  border-color: var(--br-primary);
+  background: var(--br-primary-muted);
+  color: var(--br-primary-active);
+}
+
+.br-input-action:focus-visible {
+  outline: none;
+  box-shadow: var(--br-focus-ring);
+}
+
+.br-currency-prefix {
+  min-width: 2.5rem;
+  padding-inline: 0.55rem;
+  justify-content: center;
+  border-color: var(--br-border-strong) !important;
+  background: var(--br-neutral-soft) !important;
+  color: var(--br-secondary) !important;
+  font-size: 0.75rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.br-choice-group {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr));
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.25rem;
+  border: 1px solid var(--br-border);
+  border-radius: var(--br-radius);
+  background: var(--br-neutral-soft);
+}
+
+.br-choice-option {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 2.35rem;
+  margin: 0;
+  padding: 0.45rem 0.75rem;
+  border: 1px solid transparent;
+  border-radius: var(--br-radius-sm);
+  background: transparent;
+  color: var(--br-text-muted);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--br-transition);
+}
+
+.br-choice-option:hover {
+  background: var(--br-surface-elevated);
+  color: var(--br-secondary);
+}
+
+.br-choice-option.is-selected {
+  border-color: var(--br-primary-muted);
+  background: var(--br-surface-elevated);
+  color: var(--br-secondary);
+  box-shadow: var(--br-shadow-sm);
+}
+
+.br-choice-option__input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.br-choice-option__indicator {
+  width: 0.65rem;
+  height: 0.65rem;
+  border: 2px solid var(--br-border-strong);
+  border-radius: 50%;
+  background: var(--br-surface-elevated);
+  transition: var(--br-transition);
+}
+
+.br-choice-option.is-selected .br-choice-option__indicator {
+  border-color: var(--br-primary);
+  background: var(--br-primary);
+  box-shadow: inset 0 0 0 2px var(--br-surface-elevated);
+}
+
+.br-choice-option:focus-within {
+  box-shadow: var(--br-focus-ring);
+}
+
+/* -------------------------------------------------------------------------
  * [br] Botones — .br-btn* (.br-btn-sm, .br-btn-xs, .br-btn-lg), variantes de color / outline / ghost
  * ------------------------------------------------------------------------- */
 .br-btn {
@@ -1125,7 +1464,102 @@ body.br-layout .modal-header.br-modal-header .btn-header-modal:focus-visible {
 
 .br-btn-outline-secondary:hover {
   background-color: var(--br-secondary-soft);
+  border-color: var(--br-border-strong);
+  color: var(--br-secondary);
+}
+
+.br-btn.br-btn-cancel {
+  border-color: var(--br-border-strong) !important;
+  background-color: var(--br-surface-elevated);
+  color: var(--br-text-muted);
+  box-shadow: var(--br-shadow-sm);
+}
+
+.br-btn.br-btn-cancel:hover,
+.br-btn.br-btn-cancel:focus-visible {
+  border-color: var(--br-secondary-muted) !important;
+  background-color: var(--br-neutral-soft);
+  color: var(--br-secondary);
+}
+
+.br-btn.br-btn-cancel:active {
+  background-color: var(--br-secondary-soft);
+}
+
+.br-btn-action-search {
   border-color: var(--br-secondary);
+  background: var(--br-secondary);
+  color: var(--br-on-secondary);
+  box-shadow: var(--br-shadow-sm);
+}
+
+.br-btn-action-search:hover,
+.br-btn-action-search:focus-visible {
+  border-color: var(--br-secondary-hover);
+  background: var(--br-secondary-hover);
+  color: var(--br-on-secondary);
+}
+
+.br-btn-action-open-create,
+.br-btn-action-create {
+  border-color: var(--br-primary);
+  background: var(--br-primary);
+  color: var(--br-on-primary);
+  box-shadow: var(--br-shadow-sm);
+}
+
+.br-btn-action-open-create:hover,
+.br-btn-action-open-create:focus-visible,
+.br-btn-action-create:hover,
+.br-btn-action-create:focus-visible {
+  border-color: var(--br-primary-hover);
+  background: var(--br-primary-hover);
+  color: var(--br-on-primary);
+}
+
+.br-btn-action-update {
+  border-color: var(--br-secondary);
+  background: var(--br-secondary);
+  color: var(--br-on-secondary);
+  box-shadow: var(--br-shadow-sm);
+}
+
+.br-btn-action-update:hover,
+.br-btn-action-update:focus-visible {
+  border-color: var(--br-secondary-hover);
+  background: var(--br-secondary-hover);
+  color: var(--br-on-secondary);
+}
+
+.br-icon-action {
+  display: inline-grid;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  border: 1px solid var(--br-border);
+  border-radius: var(--br-radius-sm);
+  background: var(--br-surface-elevated);
+  place-items: center;
+  transition: var(--br-transition);
+}
+
+.br-icon-action:focus-visible {
+  outline: none;
+  box-shadow: var(--br-focus-ring);
+}
+
+.br-icon-action-edit {
+  border-color: var(--br-secondary);
+  background: var(--br-secondary);
+  color: var(--br-on-secondary);
+  box-shadow: var(--br-shadow-sm);
+}
+
+.br-icon-action-edit:hover,
+.br-icon-action-edit:focus-visible {
+  border-color: var(--br-secondary-hover);
+  background: var(--br-secondary-hover);
+  color: var(--br-on-secondary);
 }
 
 /* --- [br] Botón ghost / soft --- */

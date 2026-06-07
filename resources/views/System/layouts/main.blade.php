@@ -251,7 +251,7 @@
                                     aria-label="Abrir favoritos"
                                     aria-expanded="false"
                                     aria-controls="brFabFavoritesPanel">
-                                    <i class="fa-solid fa-star" aria-hidden="true"></i>
+                                    <i class="fa-solid fa-star fa-2xs" aria-hidden="true"></i>
                                     <span class="br-navbar-favorites__label">Favoritos</span>
                                     <span class="br-navbar-favorites__count" id="brFabFavoritesCount">{{ $favoriteMenuGroups->sum(fn($group) => $group['items']->count()) }}</span>
                                 </button>

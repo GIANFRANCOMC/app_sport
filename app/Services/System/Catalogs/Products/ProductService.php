@@ -30,6 +30,7 @@ class ProductService {
      */
     private const ALLOWED_FIELDS = [
         "internal_code",
+        "barcode",
         "name",
         "description",
         "price",
@@ -46,6 +47,7 @@ class ProductService {
      */
     private const SEARCHABLE_FIELDS = [
         "internal_code",
+        "barcode",
         "name",
         "description",
         "price"
@@ -189,7 +191,13 @@ class ProductService {
             $item = Item::create($itemData);
 
             // Create warehouse items for products
-            WarehouseItemService::createForProductInAllWarehouses($item->id, $companyId, $userId);
+            WarehouseItemService::syncProductInventory(
+                $item->id,
+                $companyId,
+                $data["inventory"] ?? [],
+                $userId,
+                true
+            );
 
             // Sync categories
             if(isset($data["categories"]) && is_array($data["categories"])) {
@@ -238,9 +246,17 @@ class ProductService {
 
             }
 
+            WarehouseItemService::syncProductInventory(
+                $item->id,
+                (int) $item->company_id,
+                $data["inventory"] ?? [],
+                $userId,
+                false
+            );
+
         });
 
-        return $item->fresh(["currency", "categoryItems"]);
+        return $item->fresh(["currency", "categoryItems", "warehouseItems.warehouse.branch"]);
 
     }
 
@@ -253,7 +269,7 @@ class ProductService {
      * @param array $relations Relations to eager load
      * @return Item|null
      */
-    public static function findByIdAndCompany(int $id, int $companyId, ?array $statuses = ["active"], array $relations = ["currency", "categoryItems"]): ?Item {
+    public static function findByIdAndCompany(int $id, int $companyId, ?array $statuses = ["active"], array $relations = ["currency", "categoryItems", "warehouseItems.warehouse.branch"]): ?Item {
 
         $query = Item::where("id", $id)
                      ->where("company_id", $companyId)
@@ -287,7 +303,7 @@ class ProductService {
 
         $query = Item::where("company_id", $companyId)
                      ->where("type", "product")
-                     ->with(["currency", "categoryItems"]);
+                     ->with(["currency", "categoryItems", "warehouseItems.warehouse.branch"]);
 
         // Apply filters
         $filterBy = $filters["filter_by"] ?? null;

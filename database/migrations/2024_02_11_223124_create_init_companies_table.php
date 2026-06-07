@@ -77,6 +77,7 @@ return new class extends Migration {
             $table->id();
             $table->unsignedBigInteger("company_id");
             $table->string("internal_code");
+            $table->string("barcode", 13)->nullable();
             $table->string("name");
             $table->text("description")->nullable();
             $table->decimal("price", 10, 2);
@@ -97,6 +98,7 @@ return new class extends Migration {
 
             $table->foreign("company_id")->references("id")->on("companies")->onDelete("cascade");
             $table->foreign("currency_id")->references("id")->on("currencies")->onDelete("cascade");
+            $table->unique(["company_id", "barcode"]);
         });
 
         // ✅
@@ -193,6 +195,7 @@ return new class extends Migration {
             $table->unsignedBigInteger("warehouse_id");
             $table->unsignedBigInteger("item_id");
             $table->decimal("quantity", 10, 2)->default(0);
+            $table->decimal("minimum_stock", 10, 2)->default(0);
             $table->enum("status", ["active", "inactive"])->default("active");
 
             $table->timestamp("created_at")->useCurrent()->nullable();
@@ -202,6 +205,7 @@ return new class extends Migration {
 
             $table->foreign("warehouse_id")->references("id")->on("warehouses")->onDelete("cascade");
             $table->foreign("item_id")->references("id")->on("items")->onDelete("cascade");
+            $table->unique(["warehouse_id", "item_id"]);
         });
 
         // ✅
@@ -291,14 +295,14 @@ return new class extends Migration {
         ]);
 
         DB::table("items")->insert([
-            ["company_id" => 1, "internal_code" => Utilities::generateCode(7), "name" => "Agua", "description" => "", "price" => 1, "currency_id" => 1, "type" => "product", "duration_type" => null, "duration_value" => null],
-            ["company_id" => 1, "internal_code" => Utilities::generateCode(7), "name" => "Proteina", "description" => "", "price" => 120, "currency_id" => 1, "type" => "product", "duration_type" => null, "duration_value" => null],
-            ["company_id" => 1, "internal_code" => Utilities::generateCode(7), "name" => "Tomatodo", "description" => "", "price" => 20, "currency_id" => 1, "type" => "product", "duration_type" => null, "duration_value" => null],
-            ["company_id" => 1, "internal_code" => Utilities::generateCode(7), "name" => "Una hora", "description" => "", "price" => 2, "currency_id" => 1, "type" => "subscription", "duration_type" => "hour", "duration_value" => 1],
-            ["company_id" => 1, "internal_code" => Utilities::generateCode(7), "name" => "Un día", "description" => "", "price" => 10, "currency_id" => 1, "type" => "subscription", "duration_type" => "day", "duration_value" => 1],
-            ["company_id" => 1, "internal_code" => Utilities::generateCode(7), "name" => "Rutina / Día", "description" => "", "price" => 5, "currency_id" => 1, "type" => "subscription", "duration_type" => "today", "duration_value" => 1],
-            ["company_id" => 1, "internal_code" => Utilities::generateCode(7), "name" => "Mes", "description" => "", "price" => 60, "currency_id" => 1, "type" => "subscription", "duration_type" => "month", "duration_value" => 1],
-            ["company_id" => 1, "internal_code" => Utilities::generateCode(7), "name" => "Año", "description" => "", "price" => 400, "currency_id" => 1, "type" => "subscription", "duration_type" => "year", "duration_value" => 1]
+            ["company_id" => 1, "internal_code" => Utilities::generateCode(7), "barcode" => "2000000000015", "name" => "Agua", "description" => "", "price" => 1, "currency_id" => 1, "type" => "product", "duration_type" => null, "duration_value" => null],
+            ["company_id" => 1, "internal_code" => Utilities::generateCode(7), "barcode" => "2000000000022", "name" => "Proteina", "description" => "", "price" => 120, "currency_id" => 1, "type" => "product", "duration_type" => null, "duration_value" => null],
+            ["company_id" => 1, "internal_code" => Utilities::generateCode(7), "barcode" => "2000000000039", "name" => "Tomatodo", "description" => "", "price" => 20, "currency_id" => 1, "type" => "product", "duration_type" => null, "duration_value" => null],
+            ["company_id" => 1, "internal_code" => Utilities::generateCode(7), "barcode" => null, "name" => "Una hora", "description" => "", "price" => 2, "currency_id" => 1, "type" => "subscription", "duration_type" => "hour", "duration_value" => 1],
+            ["company_id" => 1, "internal_code" => Utilities::generateCode(7), "barcode" => null, "name" => "Un día", "description" => "", "price" => 10, "currency_id" => 1, "type" => "subscription", "duration_type" => "day", "duration_value" => 1],
+            ["company_id" => 1, "internal_code" => Utilities::generateCode(7), "barcode" => null, "name" => "Rutina / Día", "description" => "", "price" => 5, "currency_id" => 1, "type" => "subscription", "duration_type" => "today", "duration_value" => 1],
+            ["company_id" => 1, "internal_code" => Utilities::generateCode(7), "barcode" => null, "name" => "Mes", "description" => "", "price" => 60, "currency_id" => 1, "type" => "subscription", "duration_type" => "month", "duration_value" => 1],
+            ["company_id" => 1, "internal_code" => Utilities::generateCode(7), "barcode" => null, "name" => "Año", "description" => "", "price" => 400, "currency_id" => 1, "type" => "subscription", "duration_type" => "year", "duration_value" => 1]
         ]);
 
         DB::table("customers")->insert([

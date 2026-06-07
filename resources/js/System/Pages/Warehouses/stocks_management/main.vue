@@ -72,9 +72,12 @@
                                         <span v-text="isDefined({value: record.description}) ? record.description : 'N/A'" class="ms-2"></span>
                                     </li>
                                 </ul>
-                                <span class="badge bg-danger" v-if="record.stock_quantity <= 0">Sin existencias</span>
-                                <span class="badge bg-warning" v-else-if="record.stock_quantity < 5">Hay pocas existencias</span>
-                                <span class="badge bg-success" v-else-if="record.stock_quantity >= 5">Con existencias disponibles</span>
+                                <span class="badge bg-danger" v-if="Number(record.stock_quantity) <= 0">Sin existencias</span>
+                                <span class="badge bg-warning" v-else-if="Number(record.stock_quantity) <= Number(record.minimum_stock)">Stock mínimo alcanzado</span>
+                                <span class="badge bg-success" v-else>Con existencias disponibles</span>
+                                <small class="d-block text-muted mt-1">
+                                    Mínimo configurado: {{ separatorNumber(record.minimum_stock || 0) }}
+                                </small>
                             </td>
                             <td>
                                 <InputNumber
@@ -318,6 +321,11 @@ export default {
         tooltips({show = true, time = 10}) {
 
             Alerts.tooltips({show, time});
+
+        },
+        separatorNumber(value) {
+
+            return Utils.separatorNumber(value);
 
         }
     },

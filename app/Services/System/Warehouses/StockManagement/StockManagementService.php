@@ -32,6 +32,11 @@ class StockManagementService {
                        $query->where("warehouse_id", $warehouseId);
 
                    }], "quantity")
+                   ->withSum(["warehouseItems as minimum_stock" => function($query) use($warehouseId) {
+
+                       $query->where("warehouse_id", $warehouseId);
+
+                   }], "minimum_stock")
                    ->orderBy("name", "ASC")
                    ->paginate($perPage);
 
@@ -105,4 +110,3 @@ class StockManagementService {
     }
 
 }
-

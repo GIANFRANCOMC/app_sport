@@ -194,6 +194,7 @@ class ProductController extends BaseController {
         return [
             "company_id"       => $this->getCompanyId(),
             "internal_code"    => $request->input("internal_code"),
+            "barcode"          => $request->input("barcode"),
             "name"             => $request->input("name"),
             "description"      => $request->input("description"),
             "price"            => $request->input("price"),
@@ -203,7 +204,8 @@ class ProductController extends BaseController {
             "see_my_web"       => $request->input("see_my_web"),
             "see_my_web_price" => $request->input("see_my_web_price"),
             "status"           => $request->input("status"),
-            "categories"       => $request->input("categories")
+            "categories"       => $request->input("categories"),
+            "inventory"        => $request->input("inventory", [])
         ];
 
     }

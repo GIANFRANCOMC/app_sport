@@ -86,8 +86,8 @@ export const CSS_CLASSES = {
     TITLE: "fw-bold colon-at-end fs-6",
     SELECT2: "bg-white",
     /** @deprecated Preferir STATUS_LABEL_BASE; mismo contenido para compatibilidad */
-    BADGE_BASE: ["br-status-label", "fw-semibold", "text-capitalize"],
-    STATUS_LABEL_BASE: ["br-status-label", "fw-semibold", "text-capitalize"],
+    BADGE_BASE: ["br-status-label", "text-capitalize"],
+    STATUS_LABEL_BASE: ["br-status-label", "text-capitalize"],
     BUTTON_PRIMARY: "btn btn-primary waves-effect",
     BUTTON_SUCCESS: "btn btn-success waves-effect",
     BUTTON_WARNING: "btn btn-warning waves-effect",
@@ -107,7 +107,17 @@ export function getStatusLabelClasses(status, customVariants = {}) {
     const raw = variants[status];
     const mod =
         typeof raw === "string" && STATUS_LABEL_MODIFIERS_ALLOWED.has(raw) ? raw : "secondary";
-    return [...CSS_CLASSES.STATUS_LABEL_BASE, `br-status-label--${mod}`];
+    const statusClass = String(status ?? "unknown")
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9_-]+/g, "-")
+        .replace(/^-+|-+$/g, "") || "unknown";
+
+    return [
+        ...CSS_CLASSES.STATUS_LABEL_BASE,
+        `br-status-${statusClass}`,
+        `br-status-label--${mod}`
+    ];
 }
 
 // Textos comunes
