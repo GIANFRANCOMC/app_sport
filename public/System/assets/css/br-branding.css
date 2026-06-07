@@ -1202,20 +1202,20 @@ body.br-layout .modal-header.br-modal-header .btn-header-modal:focus-visible {
   display: inline-grid;
   min-width: 2.6rem;
   padding: 0 0.75rem;
-  border: 1px solid var(--br-primary-muted);
+  border: 1px solid color-mix(in srgb, var(--br-warning) 24%, var(--br-border));
   border-left: 0;
   border-radius: 0 var(--br-radius-sm) var(--br-radius-sm) 0;
-  background: color-mix(in srgb, var(--br-primary-soft) 72%, var(--br-primary-muted));
-  color: var(--br-primary-active);
+  background: var(--br-warning-soft);
+  color: var(--br-secondary);
   place-items: center;
   transition: var(--br-transition);
 }
 
 .br-input-action:hover,
 .br-input-action:focus-visible {
-  border-color: var(--br-primary);
-  background: var(--br-primary-muted);
-  color: var(--br-primary-active);
+  border-color: color-mix(in srgb, var(--br-warning) 44%, var(--br-border));
+  background: color-mix(in srgb, var(--br-warning-soft) 72%, #ffffff);
+  color: var(--br-secondary-active);
 }
 
 .br-input-action:focus-visible {
@@ -1227,9 +1227,9 @@ body.br-layout .modal-header.br-modal-header .btn-header-modal:focus-visible {
   min-width: 2.5rem;
   padding-inline: 0.55rem;
   justify-content: center;
-  border-color: var(--br-border-strong) !important;
-  background: var(--br-neutral-soft) !important;
-  color: var(--br-secondary) !important;
+  border-color: color-mix(in srgb, var(--br-success) 22%, var(--br-border)) !important;
+  background: var(--br-success-soft) !important;
+  color: color-mix(in srgb, var(--br-success-hover) 68%, var(--br-secondary)) !important;
   font-size: 0.75rem;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
@@ -2207,8 +2207,8 @@ html:not(.layout-menu-collapsed)
 
 .br-layout .form-check-input:checked,
 .br-layout .form-check-input[type="checkbox"]:checked {
-  background-color: var(--br-primary) !important;
-  border-color: var(--br-primary) !important;
+  background-color: var(--br-success) !important;
+  border-color: var(--br-success) !important;
 }
 
 .br-layout .form-range::-webkit-slider-thumb {

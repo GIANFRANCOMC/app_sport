@@ -354,27 +354,14 @@
                                     hasTextBottom
                                     :textBottomInfo="productForm.errors?.status"
                                     xl="4"
-                                    lg="6">
+                                    lg="4">
                                     <template v-slot:input>
-                                        <div class="br-choice-group" role="radiogroup" aria-label="Estado del producto">
-                                            <label
-                                                v-for="status in statuses"
-                                                :key="status.code"
-                                                :class="[
-                                                    'br-choice-option',
-                                                    {'is-selected': productForm.data.status?.code === status.code}
-                                                ]">
-                                                <input
-                                                    class="br-choice-option__input"
-                                                    type="radio"
-                                                    name="product_status"
-                                                    :value="status.code"
-                                                    :checked="productForm.data.status?.code === status.code"
-                                                    @change="productForm.data.status = status">
-                                                <span class="br-choice-option__indicator" aria-hidden="true"></span>
-                                                <span>{{ status.label }}</span>
-                                            </label>
-                                        </div>
+                                        <v-select
+                                            v-model="productForm.data.status"
+                                            :options="statuses"
+                                            :class="config.forms.classes.select2"
+                                            :clearable="false"
+                                            :searchable="false"/>
                                     </template>
                                 </InputSlot>
                             </div>
@@ -446,7 +433,7 @@
                                                 :disabled="!productForm.data.see_my_web">
                                             <span>
                                                 <strong>Mostrar precio</strong>
-                                                <small>Solo aplica cuando el producto está publicado.</small>
+                                                <small>Se mostrará junto al producto solo cuando la publicación esté activa.</small>
                                             </span>
                                         </label>
                                     </div>

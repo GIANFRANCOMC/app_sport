@@ -146,13 +146,19 @@ Si un almacén activo no tiene valores explícitos, se crea con cantidad y míni
 - Alertas de stock basadas en configuración real.
 - UI responsive y alineada al branding.
 - Cierre con una `X` simple y sin borde mediante la clase reutilizable `br-modal-close`.
+- Footer de modal compacto y equilibrado mediante `br-entity-modal__footer`, con padding vertical simétrico y separación prudente entre acciones.
+- Body de modal con `scrollbar-gutter: stable both-edges` para evitar que el scroll reserve más aire visual en el lado derecho.
+- Pestañas con fondo blanco y contenido del formulario en gris suave; las secciones no usan altura mínima fija para evitar scroll innecesario en pestañas cortas.
+- Pestañas sin sombra superior y con fondo blanco; la activa combina fondo azul claro con indicador superior de ancho completo.
+- Switches comerciales con fondo y borde verde suave cuando están activados; el color del checkbox marcado se hereda desde la regla global reutilizable de `br-branding.css`.
+- Encabezados numéricos de inventario centrados para mejorar la lectura de stock inicial y stock mínimo.
 - Tooltips explican que el código interno es privado para la empresa y que el código de barras identifica la etiqueta visible o escaneable del producto.
-- Botones de generación compactos mediante `br-input-action`, con iconografía y contraste azul suave del branding.
+- Botones de generación compactos mediante `br-input-action`, con fondo `warning-soft` reutilizable e icono oscuro para mejorar legibilidad sin competir con los CTA principales.
 - Botón Cancelar con borde gris visible y hover suave mediante `br-btn-cancel`.
 - Las ayudas de campo reutilizan `br-field-help`; los controles compartidos residen en `br-branding.css` y no dependen del módulo Productos.
-- Los selectores binarios o de pocas alternativas pueden reutilizar `br-choice-group` y `br-choice-option`.
-- Los prefijos de moneda reutilizan `br-currency-prefix`, con contraste suave basado en los tokens primarios de marca.
-- El prefijo monetario usa una superficie neutral y tipografía compacta para diferenciar información contextual de acciones azules como generar códigos.
+- El campo Estado se mantiene como select2 no buscable para conservar consistencia con los formularios existentes.
+- Los prefijos de moneda reutilizan `br-currency-prefix`, con contraste suave basado en `--br-success-soft` para diferenciar información monetaria de acciones del formulario.
+- El prefijo monetario usa una superficie verde suave, tipografía compacta y borde discreto para funcionar como información contextual, no como botón de acción.
 - El CTA utiliza “Agregar producto” o “Editar producto”; durante el proceso muestra “Agregando” o “Editando” sin puntos suspensivos.
 - El CTA principal no usa un icono fijo, porque su acción cambia entre agregar y editar.
 - Las acciones reutilizan variantes semánticas: `br-btn-action-search`, `br-btn-action-open-create`, `br-btn-action-create`, `br-btn-action-update` y `br-icon-action-edit`.

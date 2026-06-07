@@ -1417,9 +1417,9 @@ body.br-layout .br-entity-table > thead > tr > th {
 .br-entity-modal__body {
     position: relative;
     overflow-y: auto !important;
-    padding: 0;
+    padding: 0.45rem 0 0;
     background: #f7f8fa;
-    scrollbar-gutter: stable;
+    scrollbar-gutter: stable both-edges;
 }
 
 .br-entity-tabs {
@@ -1430,10 +1430,7 @@ body.br-layout .br-entity-table > thead > tr > th {
     grid-template-columns: repeat(3, minmax(0, 1fr));
     width: 100%;
     padding: 0;
-    background: color-mix(in srgb, var(--br-neutral-soft, #f1f5f9) 58%, #ffffff);
-    box-shadow:
-        0 -3px 0 color-mix(in srgb, var(--br-neutral-soft, #f1f5f9) 58%, #ffffff),
-        0 0.12rem 0.35rem rgba(26, 26, 53, 0.04);
+    background: #ffffff;
 }
 
 .br-entity-tab {
@@ -1446,7 +1443,7 @@ body.br-layout .br-entity-table > thead > tr > th {
     padding: 0.48rem 0.85rem;
     border: 0;
     border-right: 1px solid color-mix(in srgb, var(--br-border, #e2e8f0) 70%, #ffffff);
-    background: transparent;
+    background: #ffffff;
     color: #777e89;
     text-align: left;
     transition: background-color 0.16s ease, border-color 0.16s ease, color 0.16s ease;
@@ -1465,6 +1462,16 @@ body.br-layout .br-entity-table > thead > tr > th {
     background: color-mix(in srgb, var(--br-primary-soft, #e8f4fc) 74%, #ffffff);
     color: var(--br-secondary, #1a1a35);
     box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--br-primary, #2899e5) 12%, transparent);
+}
+
+.br-entity-tab.is-active::before {
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: 0;
+    height: 0.16rem;
+    background: var(--br-primary, #2899e5);
+    content: "";
 }
 
 .br-entity-tab__step {
@@ -1522,9 +1529,9 @@ body.br-layout .br-entity-table > thead > tr > th {
 }
 
 .br-entity-form-section {
-    min-height: 22rem;
+    min-height: 0;
     padding: 1.8rem 1.25rem 1.2rem;
-    background: #ffffff;
+    background: #f7f8fa;
 }
 
 .br-entity-form-section + .br-entity-form-section {
@@ -1568,11 +1575,18 @@ body.br-layout .br-entity-table > thead > tr > th {
     border-radius: 6px;
     background: #fafbfc;
     cursor: pointer;
+    transition: background-color 0.16s ease, border-color 0.16s ease, box-shadow 0.16s ease;
 }
 
 .br-entity-switch.is-disabled {
     opacity: 0.55;
     cursor: not-allowed;
+}
+
+.br-entity-switch:has(.form-check-input:checked) {
+    border-color: color-mix(in srgb, var(--br-success, #10b981) 32%, var(--br-border, #e2e8f0));
+    background: color-mix(in srgb, var(--br-success-soft, #d1fae5) 68%, #ffffff);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--br-success, #10b981) 12%, transparent);
 }
 
 .br-entity-switch .form-check-input {
@@ -1637,6 +1651,11 @@ body.br-layout .br-entity-table > thead > tr > th {
     font-size: 0.7rem;
     font-weight: 700;
     text-transform: uppercase;
+}
+
+.br-entity-inventory__head span:nth-child(2),
+.br-entity-inventory__head span:nth-child(3) {
+    text-align: center;
 }
 
 .br-entity-inventory__row {
@@ -1763,7 +1782,9 @@ body.br-layout .br-entity-table > thead > tr > th {
 }
 
 .br-entity-modal__footer {
-    padding: 0.8rem 1.25rem;
+    align-items: center;
+    gap: 0.65rem;
+    padding: 0.65rem 1.25rem !important;
     border-top: 1px solid #e3e7eb;
     background: #ffffff;
     border-radius: 0 0 7px 7px;
