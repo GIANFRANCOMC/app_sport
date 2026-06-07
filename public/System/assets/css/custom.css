@@ -1301,8 +1301,17 @@ body.br-layout .br-entity-table > thead > tr > th {
     font-weight: 600;
 }
 
+.br-entity-identifier__value {
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.35rem;
+    min-width: 0;
+}
+
 .br-entity-code {
     display: inline-flex;
+    min-width: 0;
     padding: 0.22rem 0.42rem;
     border: 1px solid #dfe5ea;
     border-radius: 4px;
@@ -1329,11 +1338,6 @@ body.br-layout .br-entity-table > thead > tr > th {
     .br-entity-table {
         min-width: 900px;
     }
-}
-
-.br-entity-barcode i {
-    margin-right: 0.3rem;
-    color: var(--br-primary, #2899e5);
 }
 
 .br-entity-stock-alert {

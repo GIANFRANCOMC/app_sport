@@ -36,6 +36,7 @@ Revisar siempre:
 - Inicializar los tooltips con el helper compartido `Alerts.tooltips({})` después de renderizados o actualizados los controles dinámicos.
 - El tooltip debe explicar la acción que ocurrirá, por ejemplo: `Agregar a favoritos` o `Quitar de favoritos`.
 - Mantener estados de foco visibles, áreas de interacción suficientes y navegación por teclado.
+- El paginador compartido debe mostrarse incluso con una sola página: `Anterior` y `Siguiente` quedan deshabilitados, y la página actual permanece visible con contraste alto.
 - Revisar que textos, títulos, confirmaciones y mensajes respeten tildes, puntuación y signos de interrogación.
 - Centralizar títulos, subtítulos, filtros, estados vacíos, tooltips y confirmaciones en `config.entity.page` cuando la página use la estructura de configuración por entidad.
 - Evitar cadenas funcionales repetidas directamente en templates Vue; la vista debe consumir la configuración declarativa.

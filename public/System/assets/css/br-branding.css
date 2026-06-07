@@ -1571,6 +1571,29 @@ body.br-layout .modal-header.br-modal-header .btn-header-modal:focus-visible {
   color: var(--br-on-secondary);
 }
 
+.br-copy-button {
+  display: inline-grid;
+  flex: 0 0 auto;
+  width: 1.42rem;
+  height: 1.42rem;
+  padding: 0;
+  border: 1px solid color-mix(in srgb, var(--br-secondary-muted) 24%, var(--br-border));
+  border-radius: var(--br-radius-sm);
+  background: color-mix(in srgb, var(--br-neutral-soft) 48%, var(--br-surface-elevated));
+  color: color-mix(in srgb, var(--br-secondary) 74%, var(--br-text-muted));
+  font-size: 0.64rem;
+  place-items: center;
+  transition: var(--br-transition);
+}
+
+.br-copy-button:hover,
+.br-copy-button:focus-visible {
+  border-color: color-mix(in srgb, var(--br-primary) 36%, var(--br-border));
+  background: color-mix(in srgb, var(--br-primary-soft) 62%, var(--br-surface-elevated));
+  color: var(--br-primary-active);
+  outline: 0;
+}
+
 /* --- [br] Botón ghost / soft --- */
 .br-btn-ghost-primary {
   background-color: transparent;
@@ -2118,7 +2141,7 @@ html:not(.layout-menu-collapsed)
   box-shadow: inset 0 -1px 0 var(--br-table-thead-edge), var(--br-shadow-sm);
 }
 
-/* Paginación (Laravel / componente Paginator) — acorde al thead de tablas */
+/* Paginación (Laravel / componente Paginator) — legible y sin ambigüedad */
 .br-layout .br-pagination {
   width: 100%;
 }
@@ -2129,61 +2152,57 @@ html:not(.layout-menu-collapsed)
 
 .br-layout .br-pagination .page-link.br-pagination__link {
   border-radius: var(--br-radius-sm);
-  border: 1px solid color-mix(in srgb, var(--br-table-thead-mid-c) 14%, var(--br-border));
-  color: var(--br-text-muted);
-  background-color: color-mix(in srgb, var(--br-secondary-soft) 48%, var(--br-surface));
-  min-width: 2.4rem;
+  border: 1px solid var(--br-border-strong);
+  color: var(--br-secondary);
+  background-color: var(--br-surface-elevated);
+  min-width: 2.45rem;
   text-align: center;
   padding: 0.45rem 0.65rem;
   line-height: 1.25;
-  font-weight: 500;
+  font-weight: 700;
   font-size: 0.8125rem;
   transition: var(--br-transition), box-shadow 0.28s ease-out;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55);
+  box-shadow: var(--br-shadow-sm);
 }
 
 .br-layout .br-pagination .page-item:not(.active):not(.disabled) .page-link.br-pagination__link:hover {
-  border-color: color-mix(in srgb, var(--br-table-thead-mid-b) 38%, var(--br-border)) !important;
-  /* Mismo tono pizarra / violeta-grisáceo que el fondo del ítem activo (--br-table-thead-mid-*) */
-  color: var(--br-table-thead-mid-c) !important;
-  font-weight: 500;
-  background:
-    linear-gradient(
-      180deg,
-      color-mix(in srgb, var(--br-table-thead-mid-a) 7%, white) 0%,
-      color-mix(in srgb, var(--br-secondary-soft) 58%, var(--br-surface)) 100%
-    ) !important;
-  background-color: color-mix(in srgb, var(--br-secondary-soft) 58%, var(--br-surface)) !important;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.62),
-    0 2px 6px rgba(26, 26, 53, 0.05);
+  border-color: var(--br-primary) !important;
+  color: var(--br-primary-active) !important;
+  background-color: var(--br-primary-soft) !important;
+  box-shadow: var(--br-shadow-sm);
 }
 
 .br-layout .br-pagination .page-item:not(.active):not(.disabled) .page-link.br-pagination__link:active {
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.48);
+  border-color: var(--br-primary-active) !important;
+  background-color: color-mix(in srgb, var(--br-primary-soft) 72%, var(--br-primary-muted)) !important;
+  box-shadow: none;
 }
 
 .br-layout .br-pagination .page-item:not(.active):not(.disabled) .page-link.br-pagination__link:focus-visible {
-  border-color: var(--br-table-thead-mid-b) !important;
-  color: var(--br-table-thead-mid-c) !important;
-  background-color: color-mix(in srgb, var(--br-secondary-soft) 78%, var(--br-surface)) !important;
+  border-color: var(--br-primary) !important;
+  color: var(--br-primary-active) !important;
+  background-color: var(--br-primary-soft) !important;
   outline: 0;
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--br-table-thead-mid-a) 28%, transparent);
+  box-shadow: var(--br-focus-ring);
 }
 
 .br-layout .br-pagination .page-item.disabled .page-link.br-pagination__link {
-  opacity: 0.45;
+  opacity: 1;
   pointer-events: none;
   cursor: not-allowed;
+  color: var(--br-text-placeholder);
   box-shadow: none;
-  background-color: color-mix(in srgb, var(--br-secondary-soft) 28%, var(--br-surface));
-  border-color: color-mix(in srgb, var(--br-table-thead-mid-c) 8%, var(--br-border));
+  background-color: var(--br-neutral-soft);
+  border-color: var(--br-border);
 }
 
 .br-layout .br-pagination .page-item.active .page-link.br-pagination__link {
-  font-weight: 600;
-  border-color: var(--br-table-thead-mid-c) !important;
-  box-shadow: inset 0 -1px 0 var(--br-table-thead-edge), 0 2px 10px rgba(26, 26, 53, 0.1);
+  border-color: var(--br-primary) !important;
+  background: var(--br-primary) !important;
+  background-color: var(--br-primary) !important;
+  color: var(--br-on-primary) !important;
+  font-weight: 800;
+  box-shadow: var(--br-shadow-primary);
 }
 
 .br-layout .form-check-input:checked,

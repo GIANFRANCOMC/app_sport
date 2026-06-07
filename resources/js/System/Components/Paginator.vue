@@ -1,7 +1,7 @@
 <template>
     <nav
         v-if="shouldShowPaginator"
-        class="br-pagination my-4"
+        class="br-pagination mt-2"
         role="navigation"
         aria-label="Navegación de páginas">
         <ul class="pagination br-pagination__list d-flex flex-wrap justify-content-center align-items-center mb-0">
@@ -12,11 +12,12 @@
                     <a
                         class="page-link br-pagination__link waves-effect"
                         href="javascript:void(0);"
+                        :aria-label="ariaLabel(link, index)"
                         :aria-current="link.active ? 'page' : undefined"
                         :aria-disabled="ariaDisabled(link) ? 'true' : undefined"
                         :tabindex="navigable(link) ? 0 : -1"
                         @click.prevent="onPageClick(link)"
-                        v-html="link.label"></a>
+                        v-text="displayLabel(link, index)"></a>
                 </li>
             </template>
         </ul>
@@ -52,7 +53,7 @@ export default {
         shouldShowPaginator() {
             if(!Array.isArray(this.links) || this.links.length === 0) return false;
 
-            return this.displayLinks.some(link => link.url && !link.active);
+            return this.displayLinks.some(link => link.active || this.parsePageNumber(link.label) !== null);
         }
     },
     methods: {
@@ -69,6 +70,29 @@ export default {
             const n = parseInt(text, 10);
 
             return Number.isFinite(n) ? n : null;
+        },
+        isPreviousLink(index) {
+            return index === 0;
+        },
+        isNextLink(index) {
+            return index === this.displayLinks.length - 1;
+        },
+        displayLabel(link, index) {
+            const pageNumber = this.parsePageNumber(link?.label);
+
+            if(pageNumber !== null) return String(pageNumber);
+            if(this.isPreviousLink(index)) return "Anterior";
+            if(this.isNextLink(index)) return "Siguiente";
+
+            return this.stripHtml(link?.label ?? "...");
+        },
+        ariaLabel(link, index) {
+            const label = this.displayLabel(link, index);
+
+            if(link?.active) return `Página actual, ${label}`;
+            if(this.ariaDisabled(link)) return `${label} no disponible`;
+
+            return `Ir a ${label.toLowerCase()}`;
         },
         buildPageUrl(baseUrl, page) {
             if(!baseUrl) return null;

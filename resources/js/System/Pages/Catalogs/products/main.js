@@ -16,6 +16,7 @@ import InputTextArea  from "@System/Components/InputTextArea.vue";
 import Paginator      from "@System/Components/Paginator.vue";
 import Loader         from "@System/Components/Loader.vue";
 import WithoutData    from "@System/Components/WithoutData.vue";
+import CopyButton     from "@System/Components/CopyButton.vue";
 import FiltersSection from "@System/Components/Generics/FiltersSection.vue";
 import StatusBadge    from "@System/Components/Generics/StatusBadge.vue";
 
@@ -33,6 +34,7 @@ createApp(App)
 .component("Paginator", Paginator)
 .component("Loader", Loader)
 .component("WithoutData", WithoutData)
+.component("CopyButton", CopyButton)
 .component("FiltersSection", FiltersSection)
 .component("StatusBadge", StatusBadge)
 .mount("#app");

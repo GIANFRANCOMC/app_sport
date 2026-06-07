@@ -165,6 +165,7 @@ Si un almacén activo no tiene valores explícitos, se crea con cantidad y míni
 - Las acciones de la barra se alinean al inicio para evitar espacios muertos después del campo de búsqueda.
 - La tabla usa `table-layout: fixed` y un `colgroup` con proporciones estables; Precio gana espacio y Producto se compacta para separar mejor los importes de Identificación.
 - Identificación diferencia visualmente “Código interno” y “Código de barras” en filas etiquetadas.
+- Código interno y código de barras usan el componente reutilizable `CopyButton`; por defecto muestra `Copiar` y `Copiado`, y puede activar `useLabelInTooltip` para mostrar textos contextuales como `Copiar código interno` y `Código interno copiado`.
 - `StatusBadge` añade automáticamente una clase normalizada desde la BD, como `br-status-active` o `br-status-inactive`, además de la variante semántica existente.
 - Las etiquetas de estado son compactas y se perciben como información, no como botones.
 - La tabla de Productos se adapta al ancho disponible en escritorio; el ancho mínimo y scroll horizontal se reservan para resoluciones de hasta `991.98px`.

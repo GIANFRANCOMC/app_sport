@@ -33,7 +33,7 @@
                     </colgroup>
                     <thead>
                         <tr>
-                            <th>Producto</th>
+                            <th class="text-center">Producto</th>
                             <th class="text-center">Identificación</th>
                             <th class="text-end">Precio</th>
                             <th>Inventario</th>
@@ -64,13 +64,20 @@
                                     <div class="br-entity-identifiers">
                                         <div class="br-entity-identifier">
                                             <span class="br-entity-identifier__label">Código interno</span>
-                                            <span class="br-entity-code">{{ record.internal_code }}</span>
+                                            <span class="br-entity-identifier__value">
+                                                <span class="br-entity-code">{{ record.internal_code }}</span>
+                                                <CopyButton
+                                                    :value="record.internal_code"
+                                                    label="Código interno"/>
+                                            </span>
                                         </div>
                                         <div class="br-entity-identifier">
                                             <span class="br-entity-identifier__label">Código de barras</span>
-                                            <span class="br-entity-barcode">
-                                                <i class="fa-solid fa-barcode" aria-hidden="true"></i>
-                                                {{ record.barcode }}
+                                            <span class="br-entity-identifier__value">
+                                                <span class="br-entity-barcode">{{ record.barcode }}</span>
+                                                <CopyButton
+                                                    :value="record.barcode"
+                                                    label="Código de barras"/>
                                             </span>
                                         </div>
                                     </div>
@@ -84,13 +91,13 @@
                                         <span
                                             v-if="isDefined(record.min_price)"
                                             class="br-entity-price-row is-minimum">
-                                            <span>Mínimo</span>
+                                            <span>Mín.</span>
                                             <strong>{{ record.currency?.sign }} {{ separatorNumber(record.min_price) }}</strong>
                                         </span>
                                         <span
                                             v-if="isDefined(record.max_price)"
                                             class="br-entity-price-row is-maximum">
-                                            <span>Máximo</span>
+                                            <span>Máx.</span>
                                             <strong>{{ record.currency?.sign }} {{ separatorNumber(record.max_price) }}</strong>
                                         </span>
                                     </div>
