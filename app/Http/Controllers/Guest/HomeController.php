@@ -5,9 +5,8 @@ namespace App\Http\Controllers\Guest;
 use App\Helpers\System\Utilities;
 use App\Http\Controllers\Controller;
 use App\Models\Guest\Company;
-use App\Models\Guest\Item;
+use App\Services\Guest\GuestCatalogService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\{Auth, DB};
 use stdClass;
 
 class HomeController extends Controller {
@@ -35,7 +34,7 @@ class HomeController extends Controller {
             $company->ownerApp  = Utilities::getOwnerApp();
 
             $config->items = new stdClass();
-            $config->items->records = Item::getAll("home", $company->id);
+            $config->items->records = GuestCatalogService::publicItems($company->id);
 
             foreach($config->items->records as $record) {
 

@@ -11,6 +11,7 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 
 use App\Http\Requests\System\Catalogs\Categories\{StoreCategoryRequest, UpdateCategoryRequest};
+use App\Services\System\Base\{InitParamsCacheInvalidationService};
 use App\Services\System\Catalogs\Categories\{CategoryConfigService, CategoryService};
 use App\Models\System\Catalogs\{Category};
 
@@ -92,7 +93,10 @@ class CategoryController extends BaseController {
 
             }
 
-            CategoryConfigService::clearAllCache($this->getCompanyId());
+            InitParamsCacheInvalidationService::invalidate(
+                InitParamsCacheInvalidationService::CATEGORIES,
+                $this->getCompanyId()
+            );
 
             return $this->createdResponse($category, "created", "category");
 
@@ -158,7 +162,10 @@ class CategoryController extends BaseController {
 
             }
 
-            CategoryConfigService::clearAllCache($this->getCompanyId());
+            InitParamsCacheInvalidationService::invalidate(
+                InitParamsCacheInvalidationService::CATEGORIES,
+                $this->getCompanyId()
+            );
 
             return $this->updatedResponse($category, "updated", "category");
 

@@ -298,7 +298,7 @@
                                             :title="MODULE.texts.form.generateBarcodeTooltip"
                                             :aria-label="MODULE.texts.form.generateBarcodeTooltip"
                                             @click="generateBarcode($event)">
-                                            <i class="fa-solid fa-barcode" aria-hidden="true"></i>
+                                            <i class="fa-solid fa-rotate" aria-hidden="true"></i>
                                         </button>
                                     </template>
                                 </InputText>
@@ -314,7 +314,9 @@
                                     xl="4"
                                     lg="4">
                                     <template v-slot:inputGroupPrepend>
-                                        <span class="input-group-text br-currency-prefix">{{ currencySign }}</span>
+                                        <span class="input-group-text br-currency-prefix">
+                                            <span class="br-currency-prefix__symbol">{{ currencySign }}</span>
+                                        </span>
                                     </template>
                                 </InputNumber>
 
@@ -328,7 +330,9 @@
                                     xl="4"
                                     lg="4">
                                     <template v-slot:inputGroupPrepend>
-                                        <span class="input-group-text br-currency-prefix">{{ currencySign }}</span>
+                                        <span class="input-group-text br-currency-prefix">
+                                            <span class="br-currency-prefix__symbol">{{ currencySign }}</span>
+                                        </span>
                                     </template>
                                 </InputNumber>
 
@@ -342,7 +346,9 @@
                                     xl="4"
                                     lg="4">
                                     <template v-slot:inputGroupPrepend>
-                                        <span class="input-group-text br-currency-prefix">{{ currencySign }}</span>
+                                        <span class="input-group-text br-currency-prefix">
+                                            <span class="br-currency-prefix__symbol">{{ currencySign }}</span>
+                                        </span>
                                     </template>
                                 </InputNumber>
 
@@ -361,7 +367,23 @@
                                             :options="statuses"
                                             :class="config.forms.classes.select2"
                                             :clearable="false"
-                                            :searchable="false"/>
+                                            :searchable="false"
+                                            append-to-body>
+                                            <template #selected-option="option">
+                                                <span
+                                                    class="br-select-selected-text"
+                                                    :title="getSelectOptionLabel(option)">
+                                                    {{ getSelectOptionLabel(option) }}
+                                                </span>
+                                            </template>
+                                            <template #option="option">
+                                                <span
+                                                    class="br-select-option-text"
+                                                    :title="getSelectOptionLabel(option)">
+                                                    {{ getSelectOptionLabel(option) }}
+                                                </span>
+                                            </template>
+                                        </v-select>
                                     </template>
                                 </InputSlot>
                             </div>
@@ -388,7 +410,23 @@
                                             :class="config.forms.classes.select2"
                                             :clearable="true"
                                             :searchable="true"
-                                            :multiple="true"/>
+                                            :multiple="true"
+                                            append-to-body>
+                                            <template #selected-option="option">
+                                                <span
+                                                    class="br-select-selected-text"
+                                                    :title="getSelectOptionLabel(option)">
+                                                    {{ getSelectOptionLabel(option) }}
+                                                </span>
+                                            </template>
+                                            <template #option="option">
+                                                <span
+                                                    class="br-select-option-text"
+                                                    :title="getSelectOptionLabel(option)">
+                                                    {{ getSelectOptionLabel(option) }}
+                                                </span>
+                                            </template>
+                                        </v-select>
                                     </template>
                                 </InputSlot>
 
@@ -783,6 +821,11 @@ export default {
 
     },
     methods: {
+        getSelectOptionLabel(option) {
+
+            return option?.label ?? option?.name ?? option?.value ?? "";
+
+        },
         async initParams() {
 
             const response = await Requests.get({

@@ -180,8 +180,6 @@ class AssetManagementController extends BaseController {
 
             }
 
-            AssetManagementConfigService::clearAllCache($this->getCompanyId());
-
             return $this->successResponse($information, "assigned_successfully");
 
         }catch(\Exception $e) {
@@ -225,8 +223,6 @@ class AssetManagementController extends BaseController {
                 return $this->errorResponse("unassign_failed");
 
             }
-
-            AssetManagementConfigService::clearAllCache($this->getCompanyId());
 
             return $this->successResponse($information, "unassigned_successfully");
 
@@ -281,8 +277,6 @@ class AssetManagementController extends BaseController {
                 return $this->errorResponse("asset_not_found");
 
             }
-
-            AssetManagementConfigService::clearAllCache($this->getCompanyId());
 
             return $this->successResponse($branchAsset, "updated_successfully");
 
@@ -388,8 +382,6 @@ class AssetManagementController extends BaseController {
 
             }
 
-            AssetManagementConfigService::clearAllCache($this->getCompanyId());
-
             return $this->successResponse($information, "assigned_to_users_successfully");
 
         }catch(\Exception $e) {
@@ -446,8 +438,6 @@ class AssetManagementController extends BaseController {
                 return $this->errorResponse("unassign_failed");
 
             }
-
-            AssetManagementConfigService::clearAllCache($this->getCompanyId());
 
             return $this->successResponse($information, "unassigned_from_users_successfully");
 

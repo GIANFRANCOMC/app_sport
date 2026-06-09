@@ -11,6 +11,7 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 
 use App\Http\Requests\System\Devices\BiometricDevices\{StoreBiometricDeviceRequest, UpdateBiometricDeviceRequest};
+use App\Services\System\Base\{InitParamsCacheInvalidationService};
 use App\Services\System\Devices\BiometricDevices\{BiometricDeviceConfigService, BiometricDeviceService};
 use App\Services\System\Customers\Tracking\{TrackingAttendanceBusinessService};
 use App\Models\System\Devices\{BiometricDevice};
@@ -93,7 +94,10 @@ class BiometricDeviceController extends BaseController {
 
             }
 
-            BiometricDeviceConfigService::clearAllCache($this->getCompanyId());
+            InitParamsCacheInvalidationService::invalidate(
+                InitParamsCacheInvalidationService::BIOMETRIC_DEVICES,
+                $this->getCompanyId()
+            );
 
             return $this->createdResponse($device, "created", "biometric_device");
 
@@ -159,7 +163,10 @@ class BiometricDeviceController extends BaseController {
 
             }
 
-            BiometricDeviceConfigService::clearAllCache($this->getCompanyId());
+            InitParamsCacheInvalidationService::invalidate(
+                InitParamsCacheInvalidationService::BIOMETRIC_DEVICES,
+                $this->getCompanyId()
+            );
 
             return $this->updatedResponse($device, "updated", "biometric_device");
 
@@ -220,4 +227,3 @@ class BiometricDeviceController extends BaseController {
     }
 
 }
-

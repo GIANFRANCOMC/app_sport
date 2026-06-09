@@ -4,81 +4,22 @@ declare(strict_types=1);
 
 namespace App\Services\System\Customers\Tracking;
 
-use Illuminate\Support\Facades\Cache;
 use stdClass;
 
-/**
- * Service for managing Tracking Notification configuration and initialization parameters
- * Implements caching for better performance
- */
-class TrackingNotificationConfigService {
+use App\Services\System\Base\BaseConfigService;
 
-    private const CACHE_PREFIX = "tracking_notification_config";
-    private const CACHE_TTL = 3600; // 1 hour
+final class TrackingNotificationConfigService extends BaseConfigService {
 
-    /**
-     * Get initialization parameters for tracking notification module
-     *
-     * @param int $companyId Company ID
-     * @param string $page Page identifier
-     * @return stdClass
-     */
-    public static function getInitParams(int $companyId, string $page = ""): stdClass {
+    protected static function getCachePrefix(): string {
 
-        $cacheKey = self::buildCacheKey($companyId, $page);
-
-        return Cache::remember($cacheKey, self::CACHE_TTL, function() use($page) {
-
-            $initParams = new stdClass();
-
-            $config = new stdClass();
-
-            if($page === "main") {
-
-                // Tracking notification configuration can be added here if needed
-
-            }
-
-            $initParams->config = $config;
-            $initParams->bool   = true;
-
-            return $initParams;
-
-        });
+        return "tracking_notification";
 
     }
 
-    /**
-     * Clear all cache for tracking notification module
-     *
-     * @param int $companyId Company ID
-     * @return void
-     */
-    public static function clearAllCache(int $companyId): void {
+    protected static function buildConfig(int $companyId, string $page): stdClass {
 
-        $pages = ["main"];
-
-        foreach($pages as $page) {
-
-            $cacheKey = self::buildCacheKey($companyId, $page);
-            Cache::forget($cacheKey);
-
-        }
-
-    }
-
-    /**
-     * Build cache key for tracking notification module
-     *
-     * @param int $companyId Company ID
-     * @param string $page Page identifier
-     * @return string
-     */
-    private static function buildCacheKey(int $companyId, string $page = ""): string {
-
-        return self::CACHE_PREFIX."_{$companyId}_{$page}";
+        return self::data();
 
     }
 
 }
-

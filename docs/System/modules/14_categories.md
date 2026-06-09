@@ -1,8 +1,8 @@
-# 14 - Categorias
+# 14 - Categorías
 
-## Que hace
+## Qué hace
 
-Organiza productos, servicios y membresias.
+Organiza productos, servicios y membresías.
 
 ## Archivos
 
@@ -22,10 +22,19 @@ Organiza productos, servicios y membresias.
 ## Reglas
 
 - Pertenece a una empresa.
-- Puede asociarse con multiples items.
+- Puede asociarse con múltiples items.
+- Solo las categorías activas se muestran en los formularios de catálogo.
+- Después de crear o editar una categoría, `InitParamsCacheInvalidationService` invalida por empresa las cachés de Categorías, Productos, Servicios y Membresías.
+- La invalidación ocurre después de que la operación termina correctamente y no ejecuta una limpieza global de la aplicación.
+
+## Dependencias de `initParams`
+
+- `CategoryConfigService`: estados del propio módulo.
+- `ProductConfigService`: selector de categorías de Productos.
+- `ServiceConfigService`: selector de categorías de Servicios.
+- `SubscriptionConfigService`: selector de categorías de Membresías.
 
 ## Mejoras sugeridas
 
-- Evitar eliminar categorias con items activos.
-- Agregar orden/visibilidad publica si el portal mostrara catalogo agrupado.
-
+- Evitar eliminar categorías con items activos.
+- Agregar orden y visibilidad pública si el portal mostrará el catálogo agrupado.

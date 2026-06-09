@@ -11,6 +11,7 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 
 use App\Http\Requests\System\Organizations\Branches\{StoreBranchRequest, UpdateBranchRequest};
+use App\Services\System\Base\{InitParamsCacheInvalidationService};
 use App\Services\System\Organizations\Branches\{BranchConfigService, BranchService};
 use App\Models\System\Organizations\{Branch};
 
@@ -92,7 +93,10 @@ class BranchController extends BaseController {
 
             }
 
-            BranchConfigService::clearAllCache($this->getCompanyId());
+            InitParamsCacheInvalidationService::invalidate(
+                InitParamsCacheInvalidationService::BRANCHES,
+                $this->getCompanyId()
+            );
 
             return $this->createdResponse($branch, "created", "branch");
 
@@ -158,7 +162,10 @@ class BranchController extends BaseController {
 
             }
 
-            BranchConfigService::clearAllCache($this->getCompanyId());
+            InitParamsCacheInvalidationService::invalidate(
+                InitParamsCacheInvalidationService::BRANCHES,
+                $this->getCompanyId()
+            );
 
             return $this->updatedResponse($branch, "updated", "branch");
 

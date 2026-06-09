@@ -23,16 +23,19 @@ Los favoritos también se muestran en la barra superior de todas las pantallas d
 
 ## Flujo de lectura
 
-1. El layout obtiene las secciones activas de la empresa desde cache.
-2. `window.sections` expone las secciones y subsecciones habilitadas a Vue.
-3. `window.preferences` expone las preferencias activas del usuario.
-4. Vue construye un directorio compacto por sección y accesos por subsección.
-5. Cada subsección muestra `dom_label` como título y `description` como contexto breve.
-6. La búsqueda filtra localmente por sección, subsección o descripción y normaliza tildes.
-7. Si no existe preferencia para una subsección, se considera no favorita.
-8. El layout obtiene las mismas preferencias para construir el menú global de favoritos en la navbar.
-9. Después de guardar, Home emite el evento `br:preferences-updated`.
-10. El layout escucha el evento y actualiza la lista y el contador sin recargar la página.
+1. El layout solicita las secciones activas a `CompanySectionService`.
+2. El servicio resuelve la caché `company_sections:company:{id}` o ejecuta una consulta optimizada.
+3. `window.sections` expone las secciones y subsecciones habilitadas a Vue.
+4. `window.preferences` expone las preferencias activas del usuario.
+5. Vue construye un directorio compacto por sección y accesos por subsección.
+6. Cada subsección muestra `dom_label` como título y `description` como contexto breve.
+7. La búsqueda filtra localmente por sección, subsección o descripción y normaliza tildes.
+8. Si no existe preferencia para una subsección, se considera no favorita.
+9. El layout obtiene las mismas preferencias para construir el menú global de favoritos en la navbar.
+10. Después de guardar, Home emite el evento `br:preferences-updated`.
+11. El layout escucha el evento y actualiza la lista y el contador sin recargar la página.
+
+La caché del menú se invalida automáticamente mediante `CompanySubSectionObserver` cuando cambia la habilitación de módulos para una empresa. Ya no depende de un listener ejecutado al autenticar al usuario.
 
 ## Configuración de interfaz
 

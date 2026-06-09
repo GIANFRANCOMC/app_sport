@@ -1,0 +1,96 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Services\System\Base;
+
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\Cache;
+
+use App\Models\System\General\{Currency, IdentityDocumentType};
+
+/**
+ * Provides active global master data used by module initParams.
+ */
+final class MasterReferenceDataService {
+
+    private const CACHE_TTL = 21600;
+    private const CURRENCIES_CACHE_KEY = "master_reference:currencies:active";
+    private const IDENTITY_DOCUMENTS_CACHE_KEY = "master_reference:identity_documents:active";
+
+    private const DEFAULT_IDENTITY_DOCUMENT_CODES = [
+        "doc.trib.no.dom.sin.ruc",
+        "dni"
+    ];
+
+    private const COMPANY_IDENTITY_DOCUMENT_CODES = [
+        "doc.trib.no.dom.sin.ruc",
+        "ruc"
+    ];
+
+    private const CUSTOMER_IDENTITY_DOCUMENT_CODES = [
+        "doc.trib.no.dom.sin.ruc",
+        "dni",
+        "ruc"
+    ];
+
+    public static function currencies(): Collection {
+
+        return Cache::remember(
+            self::CURRENCIES_CACHE_KEY,
+            self::CACHE_TTL,
+            fn() => Currency::query()
+                            ->where("status", "active")
+                            ->orderBy("code")
+                            ->get()
+        );
+
+    }
+
+    public static function defaultIdentityDocuments(): Collection {
+
+        return self::identityDocuments(self::DEFAULT_IDENTITY_DOCUMENT_CODES);
+
+    }
+
+    public static function companyIdentityDocuments(): Collection {
+
+        return self::identityDocuments(self::COMPANY_IDENTITY_DOCUMENT_CODES);
+
+    }
+
+    public static function customerIdentityDocuments(): Collection {
+
+        return self::identityDocuments(self::CUSTOMER_IDENTITY_DOCUMENT_CODES);
+
+    }
+
+    private static function identityDocuments(array $codes): Collection {
+
+        return self::activeIdentityDocuments()
+                   ->whereIn("code", $codes)
+                   ->values();
+
+    }
+
+    public static function clearCache(): void {
+
+        Cache::forget(self::CURRENCIES_CACHE_KEY);
+        Cache::forget(self::IDENTITY_DOCUMENTS_CACHE_KEY);
+
+    }
+
+    private static function activeIdentityDocuments(): Collection {
+
+        return Cache::remember(
+            self::IDENTITY_DOCUMENTS_CACHE_KEY,
+            self::CACHE_TTL,
+            fn() => IdentityDocumentType::query()
+                                      ->where("status", "active")
+                                      ->orderBy("name")
+                                      ->get()
+        );
+
+    }
+
+}

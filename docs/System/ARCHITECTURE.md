@@ -51,7 +51,40 @@ Estados observados:
 
 ## Cache
 
-Los servicios `*ConfigService` suelen preparar datos de selects, estados y registros iniciales. Cuando se modifiquen catalogos, sucursales, usuarios o configuraciones usadas por initParams, revisar si debe limpiarse cache del modulo.
+Todos los servicios `*ConfigService` heredan de `BaseConfigService`.
+
+- La clave incluye módulo, empresa y página: `init_params:{modulo}:company:{id}:page:{page}`.
+- El TTL predeterminado es una hora.
+- Cada servicio implementa únicamente `getCachePrefix()` y `buildConfig()`.
+- Los módulos con más de una página declaran `cachePages()`; actualmente Ventas usa `main` y `list`.
+- Una página vacía o desconocida se normaliza a la primera página soportada.
+- `clearAllCache($companyId)` elimina todas las páginas declaradas por el módulo.
+- `InitParamsCacheInvalidationService` resuelve dependencias entre recursos y módulos consumidores.
+- No se invalida caché cuando una mutación no modifica datos incluidos en `initParams`.
+
+Los maestros globales activos se reutilizan durante seis horas mediante `MasterReferenceDataService`.
+
+## Datos de referencia para `initParams`
+
+Los modelos no deben exponer métodos genéricos como `getAll($type, $companyId)`. Ese contrato ocultaba filtros tras strings, repetía el identificador de empresa y permitía combinaciones inválidas.
+
+- `CompanyReferenceDataService::for($companyId)` concentra consultas acotadas a una empresa.
+- Sus métodos expresan la intención: `categories()`, `stockWarehouses()`, `branchesWithSeries()`, `activeCustomers()`, `saleItems()`, entre otros.
+- `MasterReferenceDataService` entrega maestros globales activos, como monedas y tipos de documento según su uso.
+- Cada `ConfigService` crea una referencia por empresa y reutiliza esa instancia dentro de su construcción de `initParams`.
+- Los modelos conservan relaciones, accessors, scopes y reglas propias de la entidad; no conocen el contexto de una pantalla.
+- La prueba `ModelGetAllConventionTest` evita reintroducir `Model::getAll(...)`.
+
+## Menú por empresa
+
+`CompanySectionService` consulta y almacena las secciones habilitadas por `companies_sub_sections`.
+
+- El layout solicita las secciones al servicio; no lee claves de caché directamente.
+- La clave es `company_sections:company:{id}` y su TTL es de 30 minutos.
+- La consulta selecciona únicamente los campos requeridos por sidebar, favoritos y Home.
+- `CompanySubSectionObserver` invalida automáticamente la empresa afectada al crear, editar o eliminar una asignación.
+- `Company` ya no contiene `getActiveSections`; la consulta pertenece al servicio que conoce su uso y caché.
+- No se utiliza un listener de autenticación para precargar el menú.
 
 ## Riesgos actuales
 
@@ -69,4 +102,3 @@ No se recomienda reescribir toda la arquitectura. El criterio adecuado es mejora
 - Extraer servicios compartidos si hay duplicacion real.
 - Introducir tests en flujos criticos antes de cambiar reglas sensibles.
 - Mejorar autorizacion y validacion sin romper la estructura existente.
-

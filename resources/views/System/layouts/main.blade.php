@@ -5,12 +5,8 @@
     $user     = Auth::user();
     $company  = $user->company;
     $role     = $user->role;
-    $sections = Cache::get("active_sections_{$company->id}");
+    $sections = \App\Services\System\Organizations\Companies\CompanySectionService::getSections($company->id);
     $preferences = $user->formatted_preferences;
-
-    // Cache data
-    $hasActiveSections  = Cache::get("has_active_sections_{$company->id}");
-    $lastActiveSections = Cache::get("last_active_sections_{$company->id}");
 @endphp
 
 <html
@@ -144,18 +140,6 @@
                                 @endif
                             </li>
                         @endforeach
-                        <li class="menu-item d-none">
-                            <a href="javascript:void(0)" class="menu-link">
-                                <i class="fa fa-check me-3"></i>
-                                <div class="text-white">{{ $hasActiveSections }}</div>
-                            </a>
-                        </li>
-                        <li class="menu-item d-none">
-                            <a href="javascript:void(0)" class="menu-link">
-                                <i class="fa fa-eye me-3"></i>
-                                <div class="text-white">{{ $lastActiveSections }}</div>
-                            </a>
-                        </li>
                         <li class="menu-item br-menu-logout-item">
                             <a href="javascript:void(0)" class="menu-link br-menu-logout" onclick="$('#logout').submit();" role="button" aria-label="Cerrar sesión" title="Cerrar sesión">
                                 <span class="br-menu-logout__inner">

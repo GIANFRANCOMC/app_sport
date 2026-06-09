@@ -11,6 +11,7 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 
 use App\Http\Requests\System\Catalogs\Services\{StoreServiceRequest, UpdateServiceRequest};
+use App\Services\System\Base\{InitParamsCacheInvalidationService};
 use App\Services\System\Catalogs\Services\{ServiceConfigService, ServiceService};
 use App\Models\System\Catalogs\{Item};
 
@@ -92,7 +93,10 @@ class ServiceController extends BaseController {
 
             }
 
-            ServiceConfigService::clearAllCache($this->getCompanyId());
+            InitParamsCacheInvalidationService::invalidate(
+                InitParamsCacheInvalidationService::ITEMS,
+                $this->getCompanyId()
+            );
 
             return $this->createdResponse($item, "created", "item");
 
@@ -158,7 +162,10 @@ class ServiceController extends BaseController {
 
             }
 
-            ServiceConfigService::clearAllCache($this->getCompanyId());
+            InitParamsCacheInvalidationService::invalidate(
+                InitParamsCacheInvalidationService::ITEMS,
+                $this->getCompanyId()
+            );
 
             return $this->updatedResponse($item, "updated", "item");
 

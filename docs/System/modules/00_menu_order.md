@@ -10,7 +10,7 @@ Este archivo es el indice funcional y contrato de navegacion de System. Refleja 
 - Evitar que un cambio de UI altere sin querer la estructura funcional.
 - Servir como punto de entrada antes de revisar el archivo detallado de cada modulo.
 
-Este archivo no controla el menu en ejecucion. El menu real se obtiene de `sections`, `sub_sections` y `companies_sub_sections`. Si cambia el orden funcional o se agrega un modulo, deben actualizarse tanto los datos del sistema como este indice.
+Este archivo no controla el menu en ejecucion. El menu real se obtiene de `sections`, `sub_sections` y `companies_sub_sections` mediante `CompanySectionService`. El layout consume el servicio y no conoce la clave de caché. Si cambia el orden funcional o se agrega un modulo, deben actualizarse tanto los datos del sistema como este indice.
 
 ## Secciones principales
 

@@ -4,95 +4,37 @@ declare(strict_types=1);
 
 namespace App\Services\System\Catalogs\Subscriptions;
 
-use Illuminate\Support\Facades\Cache;
 use stdClass;
 
-use App\Models\System\Catalogs\{Category, Item};
-use App\Models\System\General\{Currency};
+use App\Models\System\Catalogs\Item;
+use App\Services\System\Base\{
+    BaseConfigService,
+    CompanyReferenceDataService,
+    MasterReferenceDataService
+};
 
-/**
- * Service for managing module configuration and initialization parameters
- * Implements caching for better performance
- */
-class SubscriptionConfigService {
+final class SubscriptionConfigService extends BaseConfigService {
 
-    private const CACHE_PREFIX = "subscription_config";
-    private const CACHE_TTL    = 3600; // 1 hour
+    protected static function getCachePrefix(): string {
 
-    /**
-     * Get initialization parameters for module
-     *
-     * @param int $companyId Company
-     * @param string $page Page (only used to determine what data to return, not for cache key)
-     * @return stdClass
-     */
-    public static function getInitParams(int $companyId, string $page = ""): stdClass {
-
-        $cacheKey = self::buildCacheKey($companyId);
-
-        return Cache::remember($cacheKey, self::CACHE_TTL, function() use($page, $companyId) {
-
-            $initParams = new stdClass();
-
-            $config = new stdClass();
-
-            if($page === "main") {
-
-                $config->categories = new stdClass();
-                $config->categories->records = Category::getAll("default", $companyId);
-
-                $config->currencies = new stdClass();
-                $config->currencies->records = Currency::getAll("default", $companyId);
-
-                $config->durationTypes = Item::getDurationTypes();
-                $config->statuses      = Item::getStatuses();
-
-            }
-
-            $initParams->config = $config;
-            $initParams->bool   = true;
-
-            return $initParams;
-
-        });
+        return "subscription";
 
     }
 
-    /**
-     * Build cache key for module configuration
-     *
-     * @param int $companyId Company
-     * @return string
-     */
-    private static function buildCacheKey(int $companyId): string {
+    protected static function buildConfig(int $companyId, string $page): stdClass {
 
-        return self::CACHE_PREFIX."_company_{$companyId}";
+        $references = CompanyReferenceDataService::for($companyId);
 
-    }
-
-    /**
-     * Clear cache for module configuration
-     *
-     * @param int $companyId Company
-     * @return void
-     */
-    public static function clearCache(int $companyId): void {
-
-        $cacheKey = self::buildCacheKey($companyId);
-
-        Cache::forget($cacheKey);
-
-    }
-
-    /**
-     * Clear all module configuration cache for a company
-     *
-     * @param int $companyId Company
-     * @return void
-     */
-    public static function clearAllCache(int $companyId): void {
-
-        self::clearCache($companyId);
+        return self::data([
+            "categories" => self::data([
+                "records" => $references->categories()
+            ]),
+            "currencies" => self::data([
+                "records" => MasterReferenceDataService::currencies()
+            ]),
+            "durationTypes" => Item::getDurationTypes(),
+            "statuses"      => Item::getStatuses()
+        ]);
 
     }
 

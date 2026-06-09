@@ -114,22 +114,6 @@ class Item extends Model {
 
     }
 
-    public static function getAll(string $type = "default", ?int $company_id = null) {
-
-        return Item::where("company_id", $company_id)
-                   ->when(in_array($type, ["home"]), function($query) {
-
-                        $query->where("see_my_web", true)
-                              ->whereIn("status", ["active"])
-                              ->orderBy("type", "DESC")
-                              ->orderBy("name", "ASC");
-
-                   })
-                   ->with(["currency"])
-                   ->get();
-
-    }
-
     // Relationships
     public function company() {
 

@@ -98,8 +98,6 @@ class StockManagementController extends BaseController {
 
             }
 
-            StockManagementConfigService::clearAllCache($this->getCompanyId());
-
             return $this->successResponse(null, "stock_updated_successfully");
 
         }catch(\Exception $e) {

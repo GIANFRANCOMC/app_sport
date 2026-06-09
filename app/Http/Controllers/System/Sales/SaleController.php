@@ -94,8 +94,6 @@ class SaleController extends BaseController {
 
             }
 
-            SaleConfigService::clearAllCache($this->getCompanyId());
-
             return $this->createdResponse($sale, "created", "sale");
 
         }catch(\Exception $e) {
@@ -198,8 +196,6 @@ class SaleController extends BaseController {
                 return $this->errorResponse("cancel_failed");
 
             }
-
-            SaleConfigService::clearAllCache($this->getCompanyId());
 
             return $this->updatedResponse($sale, "canceled", "sale");
 

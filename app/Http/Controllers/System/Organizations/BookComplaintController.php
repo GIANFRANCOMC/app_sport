@@ -136,8 +136,6 @@ class BookComplaintController extends BaseController {
 
             }
 
-            BookComplaintConfigService::clearAllCache($this->getCompanyId());
-
             return $this->updatedResponse($bookComplaint, "updated", "bookComplaint");
 
         }catch(\Exception $e) {

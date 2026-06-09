@@ -4,60 +4,124 @@ declare(strict_types=1);
 
 namespace App\Services\System\Organizations\Companies;
 
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Cache;
-use App\Models\System\Organizations\Company;
+use InvalidArgumentException;
+
+use App\Models\System\General\Section;
 
 /**
- * Service for managing company sections with caching
+ * Resolves and caches the modules enabled for a company.
  */
-class CompanySectionService {
+final class CompanySectionService {
 
-    private const CACHE_TTL = 30; // minutes
-    private const CACHE_PREFIX = "active_sections";
+    private const CACHE_TTL = 1800;
+    private const CACHE_PREFIX = "company_sections";
 
-    /**
-     * Get active sections for company with caching
-     *
-     * @param int $companyId Company ID
-     * @param bool $forceRefresh Force cache refresh
-     * @return mixed
-     */
-    public static function getSections(int $companyId, bool $forceRefresh = false) {
+    public static function getSections(int $companyId, bool $forceRefresh = false): Collection {
 
-        $cacheKey = self::CACHE_PREFIX . "_{$companyId}";
+        self::validateCompanyId($companyId);
 
-        if($forceRefresh || !Cache::has($cacheKey)) {
+        $cacheKey = self::cacheKey($companyId);
 
-            Cache::put("last_{$cacheKey}", now(), now()->addMinutes(self::CACHE_TTL));
+        if($forceRefresh) {
 
-            $sections = Company::getActiveSections($companyId);
-
-            Cache::put($cacheKey, $sections, now()->addMinutes(self::CACHE_TTL));
-
-        }else {
-
-            Cache::put("has_{$cacheKey}", now(), now()->addMinutes(self::CACHE_TTL));
+            Cache::forget($cacheKey);
 
         }
 
-        return Cache::get($cacheKey);
+        return Cache::remember(
+            $cacheKey,
+            self::CACHE_TTL,
+            fn() => self::querySections($companyId)
+        );
 
     }
 
-    /**
-     * Clear sections cache for company
-     *
-     * @param int $companyId Company ID
-     * @return void
-     */
     public static function clearCache(int $companyId): void {
 
-        $cacheKey = self::CACHE_PREFIX . "_{$companyId}";
-        Cache::forget($cacheKey);
-        Cache::forget("last_{$cacheKey}");
-        Cache::forget("has_{$cacheKey}");
+        self::validateCompanyId($companyId);
+
+        Cache::forget(self::cacheKey($companyId));
+
+    }
+
+    public static function cacheKey(int $companyId): string {
+
+        self::validateCompanyId($companyId);
+
+        return self::CACHE_PREFIX.":company:{$companyId}";
+
+    }
+
+    private static function querySections(int $companyId): Collection {
+
+        return Section::query()
+                      ->select([
+                          "id",
+                          "slug",
+                          "name",
+                          "order",
+                          "dom_id",
+                          "dom_label",
+                          "dom_icon",
+                          "has_sub_menu",
+                          "status"
+                      ])
+                      ->where("status", "active")
+                      ->whereHas("subSections.companiesSubSections", function($query) use($companyId) {
+
+                          $query->where("company_id", $companyId);
+
+                      })
+                      ->with(["subSections" => function($query) use($companyId) {
+
+                          $query->select([
+                                    "id",
+                                    "section_id",
+                                    "slug",
+                                    "name",
+                                    "description",
+                                    "order",
+                                    "dom_id",
+                                    "dom_label",
+                                    "dom_icon",
+                                    "dom_route",
+                                    "status"
+                                ])
+                                ->whereHas("companiesSubSections", function($companyQuery) use($companyId) {
+
+                                    $companyQuery->where("company_id", $companyId);
+
+                                })
+                                ->orderBy("order");
+
+                      }])
+                      ->orderBy("order")
+                      ->get()
+                      ->each(function(Section $section) {
+
+                          $section->setAppends([]);
+
+                          $section->subSections->each(function($subSection) {
+
+                              $subSection->setAppends([]);
+                              $subSection->dom_route_url = route($subSection->dom_route);
+
+                          });
+
+                      });
+
+    }
+
+    private static function validateCompanyId(int $companyId): void {
+
+        if($companyId <= 0) {
+
+            throw new InvalidArgumentException("Company ID must be greater than zero.");
+
+        }
 
     }
 
 }
-

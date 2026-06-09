@@ -121,8 +121,6 @@ class TrackingSubscriptionController extends BaseController {
 
             $subscription = TrackingSubscriptionService::cancel($subscription, $request->motive, $this->getUserId());
 
-            TrackingSubscriptionConfigService::clearAllCache($this->getCompanyId());
-
             return $this->updatedResponse($subscription, "canceled", "subscription");
 
         }catch(\Exception $e) {

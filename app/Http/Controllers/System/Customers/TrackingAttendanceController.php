@@ -203,8 +203,6 @@ class TrackingAttendanceController extends BaseController {
 
             $attendance = TrackingAttendanceService::cancel($attendance, $request->motive, $this->getUserId());
 
-            TrackingAttendanceConfigService::clearAllCache($this->getCompanyId());
-
             return $this->updatedResponse($attendance, "canceled", "attendance");
 
         }catch(\Exception $e) {

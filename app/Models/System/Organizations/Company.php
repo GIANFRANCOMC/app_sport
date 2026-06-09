@@ -4,9 +4,8 @@ namespace App\Models\System\Organizations;
 
 use App\Helpers\System\Utilities;
 use Illuminate\Database\Eloquent\Model;
-use Exception;
 
-use App\Models\System\General\{Currency, IdentityDocumentType, Section};
+use App\Models\System\General\{Currency, IdentityDocumentType};
 
 class Company extends Model {
 
@@ -61,73 +60,6 @@ class Company extends Model {
         ];
 
         return Utilities::getValues($statuses, $type, $code);
-
-    }
-
-    public static function getActiveSections($company_id) {
-
-        $sections = collect();
-
-        if(!Utilities::isDefined($company_id)) {
-
-            return $sections;
-
-        }
-
-        try {
-
-            $sections = Section::with(["subSections" => function ($query)use($company_id) {
-
-                                    $query->whereHas("companiesSubSections", function($q) use($company_id) {
-
-                                                $q->where("company_id", $company_id);
-
-                                          })
-                                          ->with(["companiesSubSections" => function ($q) use ($company_id) {
-
-                                                $q->where("company_id", $company_id);
-
-                                          }])
-                                          ->orderBy("order", "ASC"); ;
-
-                               }])
-                               ->whereHas("subSections.companiesSubSections", function($q) use($company_id) {
-
-                                    $q->where("company_id", $company_id);
-
-                               })
-                               ->orderBy("order", "ASC")
-                               ->get()
-                               ->map(function($section) {
-
-                                    $section->subSections->map(function($subSection) {
-
-                                        $subSection->dom_route_url = route($subSection->dom_route);
-
-                                        return $subSection;
-
-                                    });
-
-                                    return $section;
-
-                               });
-
-            $counter = 1;
-
-            foreach($sections as $value) {
-
-                $value->order_company = $counter;
-                $counter++;
-
-            }
-
-        }catch(Exception $e) {
-
-            //
-
-        }
-
-        return $sections;
 
     }
 

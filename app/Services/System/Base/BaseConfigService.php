@@ -5,114 +5,122 @@ declare(strict_types=1);
 namespace App\Services\System\Base;
 
 use Illuminate\Support\Facades\Cache;
+use InvalidArgumentException;
 use stdClass;
 
 /**
- * Base Config Service Class
- * Provides common functionality for all config service classes
+ * Shared cache contract for System module initialization parameters.
  */
 abstract class BaseConfigService {
 
-    /**
-     * Cache TTL in seconds (1 hour default)
-     */
     protected const CACHE_TTL = 3600;
 
-    /**
-     * Cache prefix for the service
-     * Must be defined in child classes
-     *
-     * @return string
-     */
     abstract protected static function getCachePrefix(): string;
 
+    abstract protected static function buildConfig(int $companyId, string $page): stdClass;
+
     /**
-     * Build cache key
+     * Pages whose configuration can be cached by the module.
      *
-     * @param int $companyId Company ID
-     * @param string $page Page identifier
-     * @return string
+     * @return array<int, string>
      */
-    protected static function buildCacheKey(int $companyId, string $page = ""): string {
+    protected static function cachePages(): array {
 
-        $prefix = static::getCachePrefix();
-        $key    = "{$prefix}_{$companyId}";
+        return ["main"];
 
-        if($page !== "") {
+    }
 
-            $key .= "_{$page}";
+    public static function getInitParams(int $companyId, string $page = "main"): stdClass {
+
+        self::validateCompanyId($companyId);
+
+        $page = self::normalizePage($page);
+
+        return Cache::remember(
+            static::cacheKey($companyId, $page),
+            static::CACHE_TTL,
+            fn() => static::createInitParams(static::buildConfig($companyId, $page))
+        );
+
+    }
+
+    public static function clearCache(int $companyId, ?string $page = null): void {
+
+        self::validateCompanyId($companyId);
+
+        $pages = $page === null
+            ? static::cachePages()
+            : [self::normalizePage($page)];
+
+        foreach(array_unique($pages) as $cachePage) {
+
+            Cache::forget(static::cacheKey($companyId, $cachePage));
 
         }
 
-        return $key;
-
     }
 
-    /**
-     * Get cached data or execute callback
-     *
-     * @param string $cacheKey Cache key
-     * @param callable $callback Callback to execute if cache miss
-     * @param int|null $ttl Cache TTL (uses default if null)
-     * @return mixed
-     */
-    protected static function remember(string $cacheKey, callable $callback, ?int $ttl = null) {
-
-        return Cache::remember($cacheKey, $ttl ?? static::CACHE_TTL, $callback);
-
-    }
-
-    /**
-     * Clear cache for company
-     *
-     * @param int $companyId Company ID
-     * @param string $page Page identifier (optional)
-     * @return void
-     */
-    public static function clearCache(int $companyId, string $page = ""): void {
-
-        $cacheKey = static::buildCacheKey($companyId, $page);
-        Cache::forget($cacheKey);
-
-    }
-
-    /**
-     * Clear all cache for company (all pages)
-     *
-     * @param int $companyId Company ID
-     * @return void
-     */
     public static function clearAllCache(int $companyId): void {
 
-        // Clear main cache
         static::clearCache($companyId);
-
-        // Clear page-specific caches (common pages)
-        $pages = ["main", "list", "create", "edit"];
-
-        foreach($pages as $page) {
-
-            static::clearCache($companyId, $page);
-
-        }
 
     }
 
-    /**
-     * Create standard init params structure
-     *
-     * @param stdClass $config Config data
-     * @return stdClass
-     */
-    protected static function createInitParams(stdClass $config): stdClass {
+    public static function cacheKey(int $companyId, string $page = "main"): string {
 
-        $initParams        = new stdClass();
-        $initParams->config = $config;
-        $initParams->bool   = true;
+        self::validateCompanyId($companyId);
 
-        return $initParams;
+        $page = self::normalizePage($page);
+
+        return sprintf(
+            "init_params:%s:company:%d:page:%s",
+            static::getCachePrefix(),
+            $companyId,
+            $page
+        );
+
+    }
+
+    protected static function data(array $attributes = []): stdClass {
+
+        return (object) $attributes;
+
+    }
+
+    private static function createInitParams(stdClass $config): stdClass {
+
+        return self::data([
+            "config" => $config,
+            "bool"   => true
+        ]);
+
+    }
+
+    private static function normalizePage(string $page): string {
+
+        $page = strtolower(trim($page));
+        $pages = static::cachePages();
+
+        if($page === "") {
+
+            return $pages[0] ?? "main";
+
+        }
+
+        return in_array($page, $pages, true)
+            ? $page
+            : ($pages[0] ?? "main");
+
+    }
+
+    private static function validateCompanyId(int $companyId): void {
+
+        if($companyId <= 0) {
+
+            throw new InvalidArgumentException("Company ID must be greater than zero.");
+
+        }
 
     }
 
 }
-

@@ -11,6 +11,7 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 
 use App\Http\Requests\System\Assets\Assets\{StoreAssetRequest, UpdateAssetRequest};
+use App\Services\System\Base\{InitParamsCacheInvalidationService};
 use App\Services\System\Assets\Assets\{AssetConfigService, AssetService};
 use App\Models\System\Assets\{Asset};
 
@@ -92,7 +93,10 @@ class AssetController extends BaseController {
 
             }
 
-            AssetConfigService::clearAllCache($this->getCompanyId());
+            InitParamsCacheInvalidationService::invalidate(
+                InitParamsCacheInvalidationService::ASSETS,
+                $this->getCompanyId()
+            );
 
             return $this->createdResponse($asset, "created", "asset");
 
@@ -158,7 +162,10 @@ class AssetController extends BaseController {
 
             }
 
-            AssetConfigService::clearAllCache($this->getCompanyId());
+            InitParamsCacheInvalidationService::invalidate(
+                InitParamsCacheInvalidationService::ASSETS,
+                $this->getCompanyId()
+            );
 
             return $this->updatedResponse($asset, "updated", "asset");
 

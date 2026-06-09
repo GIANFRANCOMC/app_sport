@@ -19,6 +19,9 @@ Agrupa la estructura de menu y acceso funcional.
 - `companies_sub_sections` habilita modulos por empresa.
 - `roles` clasifica usuarios.
 - `user_preferences` guarda configuracion personal.
+- `CompanySectionService` consulta y cachea únicamente los campos necesarios para navegación.
+- `CompanySubSectionObserver` invalida el menú cuando cambia la habilitación de módulos.
+- El layout consume el servicio; no accede directamente a claves de caché.
 
 ## Mejoras sugeridas
 
@@ -26,4 +29,3 @@ Agrupa la estructura de menu y acceso funcional.
 - Separar visibilidad de menu de autorizacion real.
 - Agregar middleware/policies para acciones sensibles.
 - Crear una pantalla de permisos cuando se active administracion granular.
-

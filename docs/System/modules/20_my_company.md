@@ -34,10 +34,10 @@ Permite configurar datos de la empresa visibles interna y publicamente.
 - Slug debe ser unico.
 - Datos publicos alimentan Guest.
 - Redes sociales deben mantenerse por tipo.
+- `CompanySectionService` administra el menú habilitado y `CompanySubSectionObserver` invalida su caché automáticamente.
 
 ## Mejoras sugeridas
 
 - Validar slug con formato estable.
 - Limpiar imagenes antiguas al reemplazar.
 - Separar configuracion publica, fiscal y operativa.
-

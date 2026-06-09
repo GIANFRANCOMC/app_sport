@@ -1,8 +1,8 @@
-# 13 - Membresias de catalogo
+# 13 - Membresías de catálogo
 
-## Que hace
+## Qué hace
 
-Administra items de tipo `subscription`, que representan planes o membresias vendibles.
+Administra items de tipo `subscription`, que representan planes o membresías vendibles.
 
 ## Archivos
 
@@ -23,13 +23,15 @@ Administra items de tipo `subscription`, que representan planes o membresias ven
 
 ## Reglas
 
+- Categorías y monedas de `initParams` se obtienen mediante los servicios de referencia compartidos.
 - Al venderse, genera registro en `subscriptions`.
-- Debe definir duracion para calcular vigencia.
-- La membresia real queda asociada a cliente y sucursal.
+- Debe definir duración para calcular vigencia.
+- La membresía real queda asociada a cliente y sucursal.
+- Al crear o editar una membresía se invalida el recurso compartido `items`, actualizando también los artículos disponibles en Ventas.
+- Al crear o editar una categoría se limpia la caché de `SubscriptionConfigService`, por lo que el selector se actualiza en la siguiente carga.
 
 ## Mejoras sugeridas
 
-- Agregar limite diario configurable en item de catalogo.
+- Agregar límite diario configurable en item de catálogo.
 - Agregar beneficios o restricciones por plan.
-- Validar que duracion no sea nula si se vendera.
-
+- Validar que duración no sea nula si se venderá.

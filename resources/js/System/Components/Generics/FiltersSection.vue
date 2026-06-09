@@ -15,7 +15,23 @@
                         :class="selectClass"
                         :clearable="false"
                         :searchable="false"
-                        :disabled="loading"/>
+                        :disabled="loading"
+                        append-to-body>
+                        <template #selected-option="option">
+                            <span
+                                class="br-select-selected-text"
+                                :title="getOptionLabel(option)">
+                                {{ getOptionLabel(option) }}
+                            </span>
+                        </template>
+                        <template #option="option">
+                            <span
+                                class="br-select-option-text"
+                                :title="getOptionLabel(option)">
+                                {{ getOptionLabel(option) }}
+                            </span>
+                        </template>
+                    </v-select>
                 </template>
             </InputSlot>
             <InputText
@@ -122,6 +138,13 @@ export default {
             type: String,
             required: false,
             default: "form-select form-select-sm"
+        }
+    },
+    methods: {
+        getOptionLabel(option) {
+
+            return option?.label ?? option?.name ?? option?.value ?? "";
+
         }
     }
 };

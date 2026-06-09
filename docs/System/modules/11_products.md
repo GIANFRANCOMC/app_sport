@@ -128,11 +128,15 @@ Si un almacén activo no tiene valores explícitos, se crea con cantidad y míni
 
 ## Integraciones impactadas
 
+- `ProductConfigService` obtiene categorías y almacenes mediante `CompanyReferenceDataService`, y monedas mediante `MasterReferenceDataService`.
 - Gestión de stock usa `warehouse_items.minimum_stock` y deja de comparar contra el valor fijo `5`.
 - Al crear un almacén predeterminado, `WarehouseService` genera relaciones en cero para todos los productos existentes.
 - El listado de Productos carga `warehouseItems.warehouse.branch` para resumir stock y alertas sin consultas posteriores desde Vue.
 
 ## Mejoras aplicadas
+
+- La caché de `initParams` ya no se invalida de forma aislada. Productos declara una mutación del recurso compartido `items`, por lo que también refresca la configuración de Ventas.
+- Cuando se crea o modifica una categoría, `InitParamsCacheInvalidationService` elimina la caché de Productos para que el selector muestre inmediatamente las categorías activas de la empresa.
 
 - Código de barras generado, editable y validado con formato EAN-13.
 - Unicidad de código de barras por empresa.
@@ -147,18 +151,27 @@ Si un almacén activo no tiene valores explícitos, se crea con cantidad y míni
 - UI responsive y alineada al branding.
 - Cierre con una `X` simple y sin borde mediante la clase reutilizable `br-modal-close`.
 - Footer de modal compacto y equilibrado mediante `br-entity-modal__footer`, con padding vertical simétrico y separación prudente entre acciones.
-- Body de modal con `scrollbar-gutter: stable both-edges` para evitar que el scroll reserve más aire visual en el lado derecho.
+- Footer de modal con superficie gris `#f7f8fa`, configurable mediante `--br-entity-modal-footer-bg`.
+- Body de modal sin reserva lateral fija del scrollbar y con padding horizontal interno reducido mediante variables reutilizables de `br-entity-modal`.
 - Pestañas con fondo blanco y contenido del formulario en gris suave; las secciones no usan altura mínima fija para evitar scroll innecesario en pestañas cortas.
-- Pestañas sin sombra superior y con fondo blanco; la activa combina fondo azul claro con indicador superior de ancho completo.
+- Pestañas sin sombra superior y con fondo blanco; las inactivas mantienen borde superior gris y la activa solo cambia el borde superior y el círculo secuencial a secondary navy.
 - Switches comerciales con fondo y borde verde suave cuando están activados; el color del checkbox marcado se hereda desde la regla global reutilizable de `br-branding.css`.
 - Encabezados numéricos de inventario centrados para mejorar la lectura de stock inicial y stock mínimo.
 - Tooltips explican que el código interno es privado para la empresa y que el código de barras identifica la etiqueta visible o escaneable del producto.
-- Botones de generación compactos mediante `br-input-action`, con fondo `warning-soft` reutilizable e icono oscuro para mejorar legibilidad sin competir con los CTA principales.
+- Botones de generación compactos mediante `br-input-action`, integrados al input como una sola unidad: sin divisor interno, mismo borde del campo, foco compartido en el grupo y hover solo en el icono.
+- `br-input-action` se adapta automáticamente a la altura real del input para mantener bordes superiores e inferiores nivelados.
+- Prefijos de moneda y contadores de caracteres siguen el mismo patrón de control compuesto: sin divisor interno, borde unificado y foco compartido con el input.
+- Los prefijos y contadores compactan el padding del borde compartido para evitar separaciones excesivas entre el addon y el valor editable.
+- Los contadores de caracteres reutilizan `br-character-counter`, con fondo blanco, tamaño reducido y jerarquía visual equivalente a los símbolos e iconos integrados.
+- Los select2 basados en `vue-select` conservan únicamente una flecha de despliegue pequeña, completa en ambos sentidos y sin fondo; su color comunica reposo o apertura sin añadir ruido visual.
+- Estado y Categorías renderizan sus opciones mediante `append-to-body`; el menú queda sobre la modal y su footer, sin aumentar el scroll interno del formulario.
+- El selector reutilizable de filtros conserva una sola línea aunque la opción sea extensa; muestra el contenido completo al mantener el cursor sobre el texto truncado.
+- Los selectores de filtro, Estado y Categorías comparten menú flotante, altura, flecha, colores, elipsis y visualización completa por hover; ninguna opción extensa genera saltos de línea ni scroll horizontal.
 - Botón Cancelar con borde gris visible y hover suave mediante `br-btn-cancel`.
 - Las ayudas de campo reutilizan `br-field-help`; los controles compartidos residen en `br-branding.css` y no dependen del módulo Productos.
 - El campo Estado se mantiene como select2 no buscable para conservar consistencia con los formularios existentes.
-- Los prefijos de moneda reutilizan `br-currency-prefix`, con contraste suave basado en `--br-success-soft` para diferenciar información monetaria de acciones del formulario.
-- El prefijo monetario usa una superficie verde suave, tipografía compacta y borde discreto para funcionar como información contextual, no como botón de acción.
+- Los prefijos de moneda reutilizan `br-currency-prefix`, con fondo blanco integrado al input, símbolo compacto tipo icono, color secondary suavizado y borde compartido.
+- El prefijo monetario usa `br-currency-prefix__symbol` para controlar su escala de forma independiente, con color secondary, peso medio y separación compacta respecto del importe.
 - El CTA utiliza “Agregar producto” o “Editar producto”; durante el proceso muestra “Agregando” o “Editando” sin puntos suspensivos.
 - El CTA principal no usa un icono fijo, porque su acción cambia entre agregar y editar.
 - Las acciones reutilizan variantes semánticas: `br-btn-action-search`, `br-btn-action-open-create`, `br-btn-action-create`, `br-btn-action-update` y `br-icon-action-edit`.

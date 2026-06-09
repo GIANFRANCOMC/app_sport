@@ -11,6 +11,7 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 
 use App\Http\Requests\System\Customers\Customers\{StoreCustomerRequest, UpdateCustomerRequest};
+use App\Services\System\Base\{InitParamsCacheInvalidationService};
 use App\Services\System\Customers\Customers\{CustomerConfigService, CustomerService};
 use App\Services\System\Devices\BiometricDevices\{BiometricDeviceService};
 use App\Models\System\Customers\{Customer, Subscription};
@@ -93,7 +94,10 @@ class CustomerController extends BaseController {
 
             }
 
-            CustomerConfigService::clearAllCache($this->getCompanyId());
+            InitParamsCacheInvalidationService::invalidate(
+                InitParamsCacheInvalidationService::CUSTOMERS,
+                $this->getCompanyId()
+            );
 
             return $this->createdResponse($customer, "created", "customer");
 
@@ -159,7 +163,10 @@ class CustomerController extends BaseController {
 
             }
 
-            CustomerConfigService::clearAllCache($this->getCompanyId());
+            InitParamsCacheInvalidationService::invalidate(
+                InitParamsCacheInvalidationService::CUSTOMERS,
+                $this->getCompanyId()
+            );
 
             return $this->updatedResponse($customer, "updated", "customer");
 

@@ -18,6 +18,8 @@ Guest puede reutilizar servicios de negocio de System cuando la regla es la mism
 
 Regla: reutilizar no significa mezclar responsabilidades. Si el servicio de System depende de usuario autenticado, debe adaptarse o envolverlo con cuidado.
 
+Las consultas públicas específicas de Guest deben vivir en servicios Guest. El catálogo visible se obtiene mediante `GuestCatalogService::publicItems($companyId)`, que aplica publicación, estado, moneda y orden sin reutilizar consultas internas de System.
+
 ## Seguridad publica
 
 Guest debe tratar todo input como no confiable:
@@ -34,4 +36,3 @@ Guest debe tratar todo input como no confiable:
 - Algunas rutas publicas reciben datos sensibles como asistencia sin FormRequest visible.
 - `branch` puede venir codificado en base64; eso no equivale a seguridad.
 - Si se habilitan endpoints biometricos publicos, deben tener autenticacion por token/firma.
-

@@ -117,18 +117,6 @@ class Customer extends Model {
 
     }
 
-    public static function getAll(string $type = "default", ?int $company_id = null) {
-
-        return Customer::where("company_id", $company_id)
-                       ->when(in_array($type, ["sale", "tracking_subscription", "tracking_attendance"]), function($query) {
-
-                            $query->whereIn("status", ["active"]);
-
-                       })
-                       ->get();
-
-    }
-
     // Relationships
     public function company() {
 

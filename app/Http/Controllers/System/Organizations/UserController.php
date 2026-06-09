@@ -11,6 +11,7 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 
 use App\Http\Requests\System\Organizations\Users\{StoreUserRequest, UpdateUserRequest};
+use App\Services\System\Base\{InitParamsCacheInvalidationService};
 use App\Services\System\Organizations\Users\{UserConfigService, UserService};
 use App\Models\System\Organizations\{User};
 
@@ -92,7 +93,10 @@ class UserController extends BaseController {
 
             }
 
-            UserConfigService::clearAllCache($this->getCompanyId());
+            InitParamsCacheInvalidationService::invalidate(
+                InitParamsCacheInvalidationService::USERS,
+                $this->getCompanyId()
+            );
 
             return $this->createdResponse($user, "created", "user");
 
@@ -158,7 +162,10 @@ class UserController extends BaseController {
 
             }
 
-            UserConfigService::clearAllCache($this->getCompanyId());
+            InitParamsCacheInvalidationService::invalidate(
+                InitParamsCacheInvalidationService::USERS,
+                $this->getCompanyId()
+            );
 
             return $this->updatedResponse($user, "updated", "user");
 

@@ -4,93 +4,34 @@ declare(strict_types=1);
 
 namespace App\Services\System\Organizations\BookComplaints;
 
-use App\Models\System\General\IdentityDocumentType;
-use App\Models\System\Organizations\BookComplaint;
-use Illuminate\Support\Facades\{Auth, Cache};
 use stdClass;
 
-/**
- * Service for managing BookComplaint configuration and initialization parameters
- * Implements caching for better performance
- */
-class BookComplaintConfigService {
+use App\Models\System\Organizations\BookComplaint;
+use App\Services\System\Base\{
+    BaseConfigService,
+    MasterReferenceDataService
+};
 
-    private const CACHE_PREFIX = "book_complaint_config";
-    private const CACHE_TTL = 3600; // 1 hour
+final class BookComplaintConfigService extends BaseConfigService {
 
-    /**
-     * Get initialization parameters for book complaint module
-     *
-     * @param int $companyId Company ID
-     * @param string $page Page identifier (only used to determine what data to return, not for cache key)
-     * @return stdClass
-     */
-    public static function getInitParams(int $companyId, string $page = ""): stdClass {
+    protected static function getCachePrefix(): string {
 
-        $cacheKey = self::buildCacheKey($companyId);
-
-        return Cache::remember($cacheKey, self::CACHE_TTL, function() use($companyId, $page) {
-
-            $initParams = new stdClass();
-
-            $config = new stdClass();
-
-            if($page === "main") {
-
-                $config->identity_document_types = new stdClass();
-                $config->identity_document_types->records = IdentityDocumentType::getAll("book_complaint", $companyId);
-
-                $config->book_complaints = new stdClass();
-                $config->book_complaints->types    = BookComplaint::getTypes();
-                $config->book_complaints->statuses = BookComplaint::getStatuses();
-
-            }
-
-            $initParams->config = $config;
-            $initParams->bool   = true;
-
-            return $initParams;
-
-        });
+        return "book_complaint";
 
     }
 
-    /**
-     * Build cache key for book complaint configuration
-     *
-     * @param int $companyId Company ID
-     * @return string
-     */
-    private static function buildCacheKey(int $companyId): string {
+    protected static function buildConfig(int $companyId, string $page): stdClass {
 
-        return self::CACHE_PREFIX."_company_{$companyId}";
-
-    }
-
-    /**
-     * Clear cache for book complaint configuration
-     *
-     * @param int $companyId Company ID
-     * @return void
-     */
-    public static function clearCache(int $companyId): void {
-
-        $cacheKey = self::buildCacheKey($companyId);
-        Cache::forget($cacheKey);
-
-    }
-
-    /**
-     * Clear all book complaint configuration cache for a company
-     *
-     * @param int $companyId Company ID
-     * @return void
-     */
-    public static function clearAllCache(int $companyId): void {
-
-        self::clearCache($companyId);
+        return self::data([
+            "identity_document_types" => self::data([
+                "records" => MasterReferenceDataService::customerIdentityDocuments()
+            ]),
+            "book_complaints" => self::data([
+                "types"    => BookComplaint::getTypes(),
+                "statuses" => BookComplaint::getStatuses()
+            ])
+        ]);
 
     }
 
 }
-

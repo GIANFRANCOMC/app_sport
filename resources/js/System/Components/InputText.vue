@@ -13,13 +13,17 @@
         </template>
         <template #inputGroupPrepend>
             <slot name="inputGroupPrepend"></slot>
-            <span v-if="shouldShowCharCounter && charCounterPosition === 'left'" class="input-group-text character-counter" :class="[isNearLimit ? 'character-counter-warning' : 'character-counter-normal', 'character-counter-left']">
-                <span class="counter-number" :class="{ 'counter-update': isUpdating }" :style="{ minWidth: `${maxlengthDigits}ch` }">{{ currentLength }}</span>/{{ maxlengthValue }}
+            <span v-if="shouldShowCharCounter && charCounterPosition === 'left'" class="input-group-text character-counter br-character-counter" :class="[isNearLimit ? 'character-counter-warning' : 'character-counter-normal', 'character-counter-left']">
+                <span class="br-character-counter__content">
+                    <span class="counter-number" :class="{ 'counter-update': isUpdating }" :style="{ minWidth: `${maxlengthDigits}ch` }">{{ currentLength }}</span>/{{ maxlengthValue }}
+                </span>
             </span>
         </template>
         <template #inputGroupAppend>
-            <span v-if="shouldShowCharCounter && charCounterPosition === 'right'" class="input-group-text character-counter" :class="[isNearLimit ? 'character-counter-warning' : 'character-counter-normal', 'character-counter-right']">
-                <span class="counter-number" :class="{ 'counter-update': isUpdating }" :style="{ minWidth: `${maxlengthDigits}ch` }">{{ currentLength }}</span>/{{ maxlengthValue }}
+            <span v-if="shouldShowCharCounter && charCounterPosition === 'right'" class="input-group-text character-counter br-character-counter" :class="[isNearLimit ? 'character-counter-warning' : 'character-counter-normal', 'character-counter-right']">
+                <span class="br-character-counter__content">
+                    <span class="counter-number" :class="{ 'counter-update': isUpdating }" :style="{ minWidth: `${maxlengthDigits}ch` }">{{ currentLength }}</span>/{{ maxlengthValue }}
+                </span>
             </span>
             <slot name="inputGroupAppend"></slot>
         </template>
@@ -157,20 +161,16 @@ export default {
 <style scoped>
 .character-counter {
     display: inline-flex;
+    align-self: stretch;
     align-items: center;
-    justify-content: flex-end;
-    font-size: 0.7rem;
-    padding: 0.375rem 0.5rem;
-    min-width: 7ch;
+    justify-content: center;
+    min-width: 3.2rem;
+    padding: 0 0.32rem;
     white-space: nowrap;
-    text-align: right;
-    font-weight: 600;
-    line-height: 1.2;
     cursor: default;
     user-select: none;
-    background-color: #f8f9fa;
-    letter-spacing: 0.02em;
-    transition: background-color 0.2s ease, border-color 0.2s ease;
+    background-color: var(--br-surface-elevated, #ffffff);
+    transition: border-color 0.2s ease, color 0.2s ease;
     margin: 0;
     box-sizing: border-box;
 }
@@ -182,22 +182,35 @@ export default {
 }
 
 .character-counter-normal {
-    color: #8e9ba7;
-    border-color: #dee2e6;
-    background-color: #f8f9fa;
+    border-color: var(--bs-border-color, var(--br-border, #dee2e6));
+    background-color: var(--br-surface-elevated, #ffffff);
 }
 
 .character-counter-warning {
-    color: #ff9800;
-    font-weight: 700;
-    border-color: rgba(255, 152, 0, 0.3);
-    background-color: rgba(255, 152, 0, 0.05);
+    border-color: color-mix(in srgb, var(--br-warning, #f59e0b) 32%, var(--br-border, #dee2e6));
+    background-color: var(--br-surface-elevated, #ffffff);
     animation: pulse-subtle 2s ease-in-out infinite;
+}
+
+.br-character-counter__content {
+    display: inline-flex;
+    align-items: baseline;
+    justify-content: center;
+    color: color-mix(in srgb, var(--br-secondary, #1a1a35) 72%, var(--br-text-muted, #64748b));
+    font-size: 0.625rem;
+    font-weight: 600;
+    line-height: 1;
+    letter-spacing: 0;
+}
+
+.character-counter-warning .br-character-counter__content {
+    color: var(--br-warning-hover, #d97706);
+    font-weight: 650;
 }
 
 .counter-number {
     display: inline-block;
-    font-weight: 600;
+    font-weight: inherit;
     transition: opacity 0.15s ease;
     text-align: right;
 }
