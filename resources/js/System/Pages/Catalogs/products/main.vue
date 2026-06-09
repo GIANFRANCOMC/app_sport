@@ -52,10 +52,8 @@
                         <template v-else-if="entityList.records.total > 0">
                             <tr v-for="record in entityList.records.data" :key="record.id">
                                 <td>
-                                    <span class="br-entity-table__name">{{ record.name }}</span>
-                                    <span v-if="record.description" class="br-entity-table__description">
-                                        {{ record.description }}
-                                    </span>
+                                    <span class="br-entity-table__name" v-text="record.name"></span>
+                                    <span v-if="record.description" class="br-entity-table__description" v-text="record.description"></span>
                                     <span v-if="record.category_items?.length" class="br-entity-table__meta">
                                         {{ record.category_items.length }} {{ record.category_items.length === 1 ? "categoría" : "categorías" }}
                                     </span>
@@ -65,7 +63,7 @@
                                         <div class="br-entity-identifier">
                                             <span class="br-entity-identifier__label">Código interno</span>
                                             <span class="br-entity-identifier__value">
-                                                <span class="br-entity-code">{{ record.internal_code }}</span>
+                                                <span class="br-entity-code" v-text="record.internal_code"></span>
                                                 <CopyButton
                                                     :value="record.internal_code"
                                                     label="Código interno"/>
@@ -74,7 +72,7 @@
                                         <div class="br-entity-identifier">
                                             <span class="br-entity-identifier__label">Código de barras</span>
                                             <span class="br-entity-identifier__value">
-                                                <span class="br-entity-barcode">{{ record.barcode }}</span>
+                                                <span class="br-entity-barcode" v-text="record.barcode"></span>
                                                 <CopyButton
                                                     :value="record.barcode"
                                                     label="Código de barras"/>
@@ -198,10 +196,10 @@
                             :aria-controls="`product-tab-${tab.id}`"
                             role="tab"
                             @click="activeFormTab = tab.id">
-                            <span class="br-entity-tab__step">{{ index + 1 }}</span>
+                            <span class="br-entity-tab__step" v-text="index + 1"></span>
                             <span class="br-entity-tab__content">
-                                <strong>{{ tab.label }}</strong>
-                                <small>{{ tab.description }}</small>
+                                <strong v-text="tab.label"></strong>
+                                <small v-text="tab.description"></small>
                             </span>
                             <span v-if="tabHasErrors(tab.id)" class="br-entity-tab__error" aria-label="Contiene errores">
                                 <i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i>
@@ -315,7 +313,7 @@
                                     lg="4">
                                     <template v-slot:inputGroupPrepend>
                                         <span class="input-group-text br-currency-prefix">
-                                            <span class="br-currency-prefix__symbol">{{ currencySign }}</span>
+                                            <span class="br-currency-prefix__symbol" v-text="currencySign"></span>
                                         </span>
                                     </template>
                                 </InputNumber>
@@ -331,7 +329,7 @@
                                     lg="4">
                                     <template v-slot:inputGroupPrepend>
                                         <span class="input-group-text br-currency-prefix">
-                                            <span class="br-currency-prefix__symbol">{{ currencySign }}</span>
+                                            <span class="br-currency-prefix__symbol" v-text="currencySign"></span>
                                         </span>
                                     </template>
                                 </InputNumber>
@@ -347,7 +345,7 @@
                                     lg="4">
                                     <template v-slot:inputGroupPrepend>
                                         <span class="input-group-text br-currency-prefix">
-                                            <span class="br-currency-prefix__symbol">{{ currencySign }}</span>
+                                            <span class="br-currency-prefix__symbol" v-text="currencySign"></span>
                                         </span>
                                     </template>
                                 </InputNumber>
@@ -372,15 +370,15 @@
                                             <template #selected-option="option">
                                                 <span
                                                     class="br-select-selected-text"
-                                                    :title="getSelectOptionLabel(option)">
-                                                    {{ getSelectOptionLabel(option) }}
+                                                    :title="getSelectOptionLabel(option)"
+                                                    v-text="getSelectOptionLabel(option)">
                                                 </span>
                                             </template>
                                             <template #option="option">
                                                 <span
                                                     class="br-select-option-text"
-                                                    :title="getSelectOptionLabel(option)">
-                                                    {{ getSelectOptionLabel(option) }}
+                                                    :title="getSelectOptionLabel(option)"
+                                                    v-text="getSelectOptionLabel(option)">
                                                 </span>
                                             </template>
                                         </v-select>
@@ -415,15 +413,15 @@
                                             <template #selected-option="option">
                                                 <span
                                                     class="br-select-selected-text"
-                                                    :title="getSelectOptionLabel(option)">
-                                                    {{ getSelectOptionLabel(option) }}
+                                                    :title="getSelectOptionLabel(option)"
+                                                    v-text="getSelectOptionLabel(option)">
                                                 </span>
                                             </template>
                                             <template #option="option">
                                                 <span
                                                     class="br-select-option-text"
-                                                    :title="getSelectOptionLabel(option)">
-                                                    {{ getSelectOptionLabel(option) }}
+                                                    :title="getSelectOptionLabel(option)"
+                                                    v-text="getSelectOptionLabel(option)">
                                                 </span>
                                             </template>
                                         </v-select>
@@ -494,9 +492,7 @@
                                 </span>
                             </p>
 
-                            <div v-if="productForm.errors?.inventory" class="alert alert-danger py-2">
-                                {{ firstError(productForm.errors.inventory) }}
-                            </div>
+                            <div v-if="productForm.errors?.inventory" class="alert alert-danger py-2" v-text="firstError(productForm.errors.inventory)"></div>
 
                             <div v-if="productForm.data.inventory.length" class="br-entity-inventory">
                                 <div class="br-entity-inventory__head" aria-hidden="true">
@@ -510,17 +506,12 @@
                                     :key="inventory.warehouse_id"
                                     class="br-entity-inventory__row">
                                     <div class="br-entity-inventory__warehouse">
-                                        <strong>{{ inventory.branch_name }}</strong>
-                                        <span>{{ inventory.warehouse_name }}</span>
+                                        <strong v-text="inventory.branch_name"></strong>
+                                        <span v-text="inventory.warehouse_name"></span>
                                         <small
-                                            :class="[
-                                                'br-entity-inventory-status',
-                                                inventoryStockStatus(inventory).className
-                                            ]">
-                                            <i
-                                                :class="inventoryStockStatus(inventory).icon"
-                                                aria-hidden="true"></i>
-                                            <span>{{ inventoryStockStatus(inventory).text }}</span>
+                                            :class="['br-entity-inventory-status', inventoryStockStatus(inventory).className]">
+                                            <i :class="inventoryStockStatus(inventory).icon" aria-hidden="true"></i>
+                                            <span v-text="inventoryStockStatus(inventory).text"></span>
                                         </small>
                                     </div>
 
@@ -569,7 +560,7 @@
                         :class="['br-btn', isUpdate ? 'br-btn-action-update' : 'br-btn-action-create']"
                         :disabled="isSaving || productForm.data.inventory.length === 0"
                         @click="saveEntity">
-                        <span>{{ submitButtonText }}</span>
+                        <span v-text="submitButtonText"></span>
                     </button>
                 </div>
             </div>
@@ -763,8 +754,7 @@ function isValidEan13(value) {
 
     const barcode = String(value ?? "");
 
-    return /^\d{13}$/.test(barcode)
-        && barcode[12] === calculateEan13CheckDigit(barcode.slice(0, 12));
+    return /^\d{13}$/.test(barcode) && barcode[12] === calculateEan13CheckDigit(barcode.slice(0, 12));
 
 }
 
@@ -807,17 +797,13 @@ export default {
 
         }
 
-        document
-            .getElementById(this.productForm.extras.modals.default.id)
-            ?.addEventListener("hidden.bs.modal", this.resetProductForm);
+        document.getElementById(this.productForm.extras.modals.default.id)?.addEventListener("hidden.bs.modal", this.resetProductForm);
 
     },
     beforeUnmount() {
 
         Alerts.tooltips({show: false});
-        document
-            .getElementById(this.productForm.extras.modals.default.id)
-            ?.removeEventListener("hidden.bs.modal", this.resetProductForm);
+        document.getElementById(this.productForm.extras.modals.default.id)?.removeEventListener("hidden.bs.modal", this.resetProductForm);
 
     },
     methods: {
@@ -838,7 +824,7 @@ export default {
 
                 this.options.categories = response.data.config.categories;
                 this.options.currencies = response.data.config.currencies;
-                this.options.statuses = response.data.config.statuses;
+                this.options.statuses   = response.data.config.statuses;
                 this.options.warehouses = response.data.config.warehouses;
 
             }
@@ -870,11 +856,7 @@ export default {
 
                     Object.entries(filterData).forEach(([key, value]) => {
 
-                        if(this.isDefined(value) && !urlObject.searchParams.has(key)) {
-
-                            urlObject.searchParams.set(key, value);
-
-                        }
+                        if(this.isDefined(value) && !urlObject.searchParams.has(key)) urlObject.searchParams.set(key, value);
 
                     });
 
@@ -971,9 +953,7 @@ export default {
 
             return this.warehouses.map(warehouse => {
 
-                const warehouseItem = warehouseItems.find(
-                    item => Number(item.warehouse_id) === Number(warehouse.id)
-                );
+                const warehouseItem = warehouseItems.find(item => Number(item.warehouse_id) === Number(warehouse.id));
 
                 return {
                     warehouse_id: Number(warehouse.id),
@@ -1000,11 +980,7 @@ export default {
         },
         syncPublicationSettings() {
 
-            if(!this.productForm.data.see_my_web) {
-
-                this.productForm.data.see_my_web_price = false;
-
-            }
+            if(!this.productForm.data.see_my_web) this.productForm.data.see_my_web_price = false;
 
         },
         async saveEntity() {
@@ -1024,10 +1000,7 @@ export default {
 
                     this.productForm.errors = validation.errors;
                     this.focusFirstTabWithErrors(validation.errors);
-                    Alerts.generateAlert({
-                        messages: Utils.getErrors({errors: validation.errors}),
-                        msgContent: this.config.messages.errorValidate
-                    });
+                    Alerts.generateAlert({messages: Utils.getErrors({errors: validation.errors}), msgContent: this.config.messages.errorValidate});
                     return;
 
                 }
@@ -1039,11 +1012,7 @@ export default {
                     minimum_stock: Number(inventory.minimum_stock ?? 0)
                 }));
 
-                if(!preparedData.see_my_web) {
-
-                    preparedData.see_my_web_price = false;
-
-                }
+                if(!preparedData.see_my_web) preparedData.see_my_web_price = false;
 
                 const id = preparedData.id;
                 const isUpdate = this.isDefined(id);
@@ -1057,27 +1026,17 @@ export default {
                     Alerts.generateAlert({type: "success", msgContent: result.data.msg});
 
                     const currentPage = this.entityList?.records?.current_page ?? 1;
-                    await this.listEntity({
-                        url: `${this.entityList?.extras?.route || ""}?page=${currentPage}`
-                    });
+                    await this.listEntity({url: `${this.entityList?.extras?.route || ""}?page=${currentPage}`});
 
                 }else {
 
-                    Forms.handleFormResponseErrors({
-                        result,
-                        formErrorsObject: this.productForm.errors,
-                        config: this.config
-                    });
+                    Forms.handleFormResponseErrors({result, formErrorsObject: this.productForm.errors, config: this.config});
 
                 }
 
             }catch(error) {
 
-                Alerts.generateAlert({
-                    type: "error",
-                    messages: [error],
-                    msgContent: this.config.messages.catchError
-                });
+                Alerts.generateAlert({type: "error", messages: [error], msgContent: this.config.messages.catchError});
 
             }finally {
 
@@ -1088,11 +1047,7 @@ export default {
         },
         validateFormData(formData) {
 
-            const result = Forms.validateFormData(
-                formData,
-                this.validationRules,
-                {isDescriptive: true, errorLabels: this.MODULE.errorLabels}
-            );
+            const result = Forms.validateFormData(formData, this.validationRules, {isDescriptive: true, errorLabels: this.MODULE.errorLabels});
 
             if(!isValidEan13(formData.barcode)) {
 
@@ -1133,7 +1088,7 @@ export default {
 
                 const minPrice = parseFloat(formData.min_price) || 0;
                 const maxPrice = parseFloat(formData.max_price) || 0;
-                const price = parseFloat(formData.price) || 0;
+                const price    = parseFloat(formData.price) || 0;
 
                 if(minPrice > 0 && maxPrice > 0 && maxPrice < minPrice) {
 
@@ -1169,9 +1124,7 @@ export default {
             const tab = FORM_TABS.find(item => item.id === tabId);
             const errorFields = Object.keys(this.productForm.errors ?? {});
 
-            return tab?.fields.some(field =>
-                errorFields.some(errorField => errorField === field || errorField.startsWith(`${field}.`))
-            ) ?? false;
+            return tab?.fields.some(field => errorFields.some(errorField => errorField === field || errorField.startsWith(`${field}.`))) ?? false;
 
         },
         focusFirstTabWithErrors(errors) {
@@ -1197,9 +1150,7 @@ export default {
 
             return {
                 total: warehouseItems.reduce((total, item) => total + Number(item.quantity ?? 0), 0),
-                alerts: warehouseItems.filter(
-                    item => Number(item.quantity ?? 0) <= Number(item.minimum_stock ?? 0)
-                ).length,
+                alerts: warehouseItems.filter(item => Number(item.quantity ?? 0) <= Number(item.minimum_stock ?? 0)).length,
                 warehouses: warehouseItems.length
             };
 
@@ -1305,11 +1256,7 @@ export default {
         },
         submitButtonText() {
 
-            if(this.isSaving) {
-
-                return this.MODULE.texts.modal[this.isUpdate ? "updating" : "storing"];
-
-            }
+            if(this.isSaving) return this.MODULE.texts.modal[this.isUpdate ? "updating" : "storing"];
 
             return this.MODULE.texts.modal[this.isUpdate ? "update" : "store"];
 
@@ -1369,9 +1316,7 @@ export default {
 
             const filterBy = this.entityList.filters.filter_by;
 
-            return filterBy
-                ? `Buscar por ${(filterBy.label || "...").toLowerCase()}`
-                : "Buscar productos";
+            return filterBy ? `Buscar por ${(filterBy.label || "...").toLowerCase()}` : "Buscar productos";
 
         },
         validationRules() {
