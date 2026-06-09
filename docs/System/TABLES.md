@@ -100,6 +100,14 @@ Relaciones: pertenece a sucursal y tipo de documento; usada por ventas.
 
 ## Catalogo comercial
 
+### brands
+
+Marcas comerciales propias de cada empresa. Campos: `company_id`, `internal_code`, `name`, `description`, `status` y auditoría.
+
+Relaciones: pertenece a `companies`; tiene muchos productos mediante `items.brand_id`.
+
+Restricciones: `company_id + internal_code` y `company_id + name` son únicos. El índice `company_id + status + name` optimiza listados y selectores.
+
 ### categories
 
 Categorias comerciales. Campos: `company_id`, `internal_code`, `name`, `description`, `status`.
@@ -108,17 +116,19 @@ Relaciones: pertenece a empresa; se une a items por `category_items`.
 
 ### items
 
-Productos, servicios y membresias de catalogo. Campos: `company_id`, `currency_id`, `internal_code`, `barcode`, `name`, `description`, `price`, `min_price`, `max_price`, `type`, `duration_type`, `duration_value`, `see_my_web`, `see_my_web_price`, `status`.
+Productos, servicios y membresias de catalogo. Campos: `company_id`, `brand_id`, `currency_id`, `internal_code`, `barcode`, `name`, `description`, `price`, `min_price`, `max_price`, `type`, `duration_type`, `duration_value`, `see_my_web`, `see_my_web_price`, `status`.
 
 `barcode` almacena un EAN-13 opcional a nivel de tabla y unico por empresa. El modulo Productos lo exige para nuevos productos. `see_my_web` controla la publicacion del item en recursos externos y `see_my_web_price` controla si tambien se expone el precio.
 
-Relaciones: pertenece a empresa y moneda; tiene categorias; usado por ventas, stock y portal publico.
+Relaciones: pertenece a empresa, moneda y opcionalmente marca; tiene categorias; usado por ventas, stock y portal publico. `brand_id` usa `ON DELETE SET NULL`.
 
 ### category_items
 
 Relacion entre categorias e items. Campos: `category_id`, `item_id`, `status`.
 
 Relaciones: une `categories` con `items`.
+
+Restricción: la combinación `category_id + item_id` es única.
 
 ## Clientes, membresias y asistencias
 

@@ -1,4 +1,4 @@
-# 21 - Colaboradores
+# 22 - Colaboradores
 
 ## Que hace
 
@@ -39,4 +39,3 @@ Administra usuarios internos de la empresa.
 - Agregar bloqueo de usuario sin borrar.
 - Agregar cambio de password separado.
 - Auditar acciones sensibles por usuario.
-

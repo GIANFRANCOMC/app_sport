@@ -40,6 +40,7 @@ Revisar siempre:
 
 Dependencias registradas:
 
+- `brands`: Marcas y Productos.
 - `categories`: Categorías, Productos, Servicios y Membresías.
 - `items`: Productos, Servicios, Membresías y Ventas.
 - `customers`: Clientes, Ventas y seguimientos de asistencia, clientes y membresías.
@@ -53,6 +54,7 @@ Dependencias registradas:
 - No crear ni consumir `Model::getAll($type, $companyId)`.
 - Para datos dependientes de empresa, crear una sola instancia con `CompanyReferenceDataService::for($companyId)` y usar métodos con intención explícita.
 - Para monedas y tipos de documento globales, usar `MasterReferenceDataService`.
+- Si se implementa mantenimiento de monedas o tipos de documento, llamar `MasterReferenceDataService::clearCache()` después de una mutación correcta.
 - Si una pantalla necesita una variante nueva, agregar un método descriptivo al servicio adecuado; no introducir strings como `"default"`, `"sale"` o `"management"` para modificar consultas.
 - Mantener en el método explícito los filtros de estado, orden y relaciones precargadas que necesita el consumidor.
 - Registrar el `ConfigService` consumidor en `InitParamsCacheInvalidationService` cuando la nueva referencia pueda cambiar por una mutación.
@@ -62,6 +64,7 @@ Ejemplo:
 ```php
 $references = CompanyReferenceDataService::for($companyId);
 
+$config->brands->records = $references->brands();
 $config->categories->records = $references->categories();
 $config->warehouses->records = $references->stockWarehouses();
 $config->currencies->records = MasterReferenceDataService::currencies();
@@ -83,6 +86,8 @@ $config->currencies->records = MasterReferenceDataService::currencies();
 - Todo botón que muestre únicamente un icono debe incluir `aria-label` y tooltip descriptivo.
 - Inicializar los tooltips con el helper compartido `Alerts.tooltips({})` después de renderizados o actualizados los controles dinámicos.
 - El tooltip debe explicar la acción que ocurrirá, por ejemplo: `Agregar a favoritos` o `Quitar de favoritos`.
+- Los `vue-select` múltiples reutilizan chips secondary definidos en `br-branding.css`; no crear estilos locales por módulo para sus valores, separación o controles de eliminación.
+- El layout versiona `br-branding.css` con `filemtime`; los cambios visuales globales invalidan la caché del navegador sin agregar versiones manuales.
 - Mantener estados de foco visibles, áreas de interacción suficientes y navegación por teclado.
 - Los formularios deben reutilizar el patrón global de `br-branding.css`: `form-control`, `form-select`, `vue-select`, `select2`, prefijos, contadores y acciones dentro de `input-group` comparten hover/foco con `--br-primary`, borde unificado y sin divisores internos innecesarios.
 - Los botones y addons integrados en `input-group` deben usar altura flexible (`align-self: stretch`) y no alturas fijas, para conservar la alineación vertical con cualquier variante de input.
@@ -136,6 +141,10 @@ Se busca mejorar sin romper el sistema:
 
 - Validar pertenencia a empresa/sucursal.
 - Usar `FormRequest` en mutaciones.
+- Extender `CompanyFormRequest` en nuevos CRUD propiedad de una empresa.
+- Usar `BelongsToCompany` para ids directos; si la empresa depende de otra tabla, configurar joins y columnas calificadas en la misma regla.
+- Normalizar strings mediante `normalizedStringFields()` y no repetir `trim()` en controladores.
+- Reforzar reglas críticas con claves foráneas, índices únicos compuestos y una comprobación de servicio cuando la entidad pueda modificarse fuera del endpoint.
 - No exponer datos de otra empresa en listados o initParams.
 - No confiar en `company_id` enviado desde frontend.
 - Registrar al usuario que crea, actualiza, cancela o elimina.

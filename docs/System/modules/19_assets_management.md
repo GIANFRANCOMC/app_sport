@@ -1,4 +1,4 @@
-# 18 - Gestion de activos
+# 19 - Gestion de activos
 
 ## Que hace
 
@@ -21,10 +21,12 @@ Gestiona asignaciones de activos a sucursales y usuarios.
 - No asignar a usuarios mas cantidad que la disponible en sucursal.
 - Retirar marca como `retired`, no borra fisicamente.
 - Estados: `active`, `maintenance`, `retired`.
+- `AssetManagementConfigService` carga activos, sucursales activas, usuarios y estados de referencia.
+- Las sucursales no precargan series comerciales porque este módulo no las consume.
+- Asignar o retirar activos no invalida `initParams`; los cambios en activos, usuarios o sucursales sí lo hacen mediante la matriz de dependencias.
 
 ## Mejoras sugeridas
 
 - Usar `asset_assignment_logs` en cada movimiento.
 - Bloquear retiro de sucursal si hay usuarios con asignaciones activas.
 - Agregar transferencias entre usuarios/sucursales.
-

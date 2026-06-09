@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\{Builder, Collection};
 use InvalidArgumentException;
 
 use App\Models\System\Assets\Asset;
-use App\Models\System\Catalogs\{Category, Item};
+use App\Models\System\Catalogs\{Brand, Category, Item};
 use App\Models\System\Customers\Customer;
 use App\Models\System\Organizations\{Branch, Role, User};
 use App\Models\System\Warehouses\Warehouse;
@@ -41,6 +41,16 @@ final class CompanyReferenceDataService {
                        ->where("status", "active")
                        ->orderBy("name")
                        ->get();
+
+    }
+
+    public function brands(): Collection {
+
+        return Brand::query()
+                    ->where("company_id", $this->companyId)
+                    ->where("status", "active")
+                    ->orderBy("name")
+                    ->get();
 
     }
 

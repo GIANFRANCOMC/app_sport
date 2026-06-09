@@ -44,6 +44,7 @@ Route::middleware(["web"])
             Route::prefix('/assets_management')->group($systemRoute.'/Assets/AssetManagement.php');
 
             // Catalogs
+            Route::prefix('/brands')->group($systemRoute.'/Catalogs/Brand.php');
             Route::prefix('/categories')->group($systemRoute.'/Catalogs/Category.php');
             Route::prefix('/products')->group($systemRoute.'/Catalogs/Product.php');
             Route::prefix('/services')->group($systemRoute.'/Catalogs/Service.php');

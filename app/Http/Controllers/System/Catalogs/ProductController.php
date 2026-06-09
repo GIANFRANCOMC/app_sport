@@ -200,6 +200,7 @@ class ProductController extends BaseController {
 
         return [
             "company_id"       => $this->getCompanyId(),
+            "brand_id"         => $request->input("brand_id"),
             "internal_code"    => $request->input("internal_code"),
             "barcode"          => $request->input("barcode"),
             "name"             => $request->input("name"),

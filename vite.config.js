@@ -27,6 +27,7 @@ export default defineConfig({
                 'resources/js/System/Pages/Assets/assets_management/main.js',
 
                 // System Pages - Catalogs
+                'resources/js/System/Pages/Catalogs/brands/main.js',
                 'resources/js/System/Pages/Catalogs/categories/main.js',
                 'resources/js/System/Pages/Catalogs/products/main.js',
                 'resources/js/System/Pages/Catalogs/services/main.js',

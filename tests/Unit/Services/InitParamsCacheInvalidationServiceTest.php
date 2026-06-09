@@ -10,6 +10,7 @@ use Tests\TestCase;
 
 use App\Services\System\Assets\AssetManagementConfigService;
 use App\Services\System\Base\InitParamsCacheInvalidationService;
+use App\Services\System\Catalogs\Brands\BrandConfigService;
 use App\Services\System\Catalogs\Categories\CategoryConfigService;
 use App\Services\System\Catalogs\Products\ProductConfigService;
 use App\Services\System\Catalogs\Services\ServiceConfigService;
@@ -39,6 +40,25 @@ class InitParamsCacheInvalidationServiceTest extends TestCase {
 
         InitParamsCacheInvalidationService::invalidate(
             InitParamsCacheInvalidationService::CATEGORIES,
+            $companyId
+        );
+
+        $this->assertCacheKeysWereForgotten($keys);
+
+    }
+
+    public function test_brand_changes_clear_brand_and_product_config_caches(): void {
+
+        $companyId = 90;
+        $keys = [
+            BrandConfigService::cacheKey($companyId),
+            ProductConfigService::cacheKey($companyId)
+        ];
+
+        $this->seedCache($keys);
+
+        InitParamsCacheInvalidationService::invalidate(
+            InitParamsCacheInvalidationService::BRANDS,
             $companyId
         );
 
@@ -108,6 +128,7 @@ class InitParamsCacheInvalidationServiceTest extends TestCase {
             InitParamsCacheInvalidationService::ASSETS,
             InitParamsCacheInvalidationService::BIOMETRIC_DEVICES,
             InitParamsCacheInvalidationService::BRANCHES,
+            InitParamsCacheInvalidationService::BRANDS,
             InitParamsCacheInvalidationService::CATEGORIES,
             InitParamsCacheInvalidationService::CUSTOMERS,
             InitParamsCacheInvalidationService::ITEMS,

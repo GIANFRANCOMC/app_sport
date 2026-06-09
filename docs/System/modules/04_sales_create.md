@@ -22,6 +22,8 @@ Permite crear una venta con productos, servicios o membresias. Una venta puede g
 - Si el detalle es `product`, se descuenta stock.
 - Si el detalle es `subscription`, se crea membresia real para el cliente.
 - Todo se ejecuta dentro de transaccion.
+- `SaleConfigService` obtiene sucursales, clientes e ítems mediante `CompanyReferenceDataService`.
+- La creación de una venta no elimina la caché de configuración: los registros operativos se consultan por endpoints separados.
 
 ## Campos necesarios
 
@@ -40,4 +42,3 @@ Permite crear una venta con productos, servicios o membresias. Una venta puede g
 - Validar que `serie_id` pertenezca a la sucursal seleccionada.
 - Proteger correlativo contra concurrencia.
 - Tipar `extras` de membresia con estructura clara.
-

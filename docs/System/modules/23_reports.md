@@ -1,4 +1,4 @@
-# 22 - Reportes
+# 23 - Reportes
 
 ## Que hace
 
@@ -25,4 +25,3 @@ Genera reportes y exportes de clientes, items, sucursales, ventas, usuarios y co
 - Agregar pruebas de PDF.
 - Controlar memoria/tiempo en exportes grandes.
 - Estandarizar nombres de archivo.
-

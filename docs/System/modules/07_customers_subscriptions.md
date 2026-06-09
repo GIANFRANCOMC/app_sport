@@ -32,6 +32,8 @@ Lista y administra membresias reales asignadas a clientes. Estas pueden originar
 - La membresia debe pertenecer a empresa y sucursal.
 - Cancelar requiere motivo.
 - Si viene de venta, la anulacion de venta tambien la cancela.
+- `TrackingSubscriptionConfigService` carga únicamente sucursales y clientes activos.
+- Cancelar una membresía no invalida `initParams`, porque no modifica esas opciones.
 
 ## Mejoras sugeridas
 
@@ -39,4 +41,3 @@ Lista y administra membresias reales asignadas a clientes. Estas pueden originar
 - Definir regla para `force`.
 - Agregar renovacion desde membresia vencida.
 - Agregar test de membresia vigente por fecha/sucursal.
-

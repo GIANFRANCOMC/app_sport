@@ -1,4 +1,4 @@
-# 19 - Dispositivos biometricos
+# 20 - Dispositivos biometricos
 
 ## Que hace
 
@@ -39,4 +39,3 @@ Administra dispositivos ZKTeco K20 Pro y asociaciones de huella de clientes para
 - Agregar firma/token por dispositivo.
 - Registrar logs de eventos biometricos.
 - Corregir namespace/import si hay inconsistencia con el servicio.
-

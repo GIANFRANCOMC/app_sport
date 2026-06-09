@@ -9,6 +9,7 @@ use InvalidArgumentException;
 use App\Services\System\Assets\{AssetManagementConfigService};
 use App\Services\System\Assets\Assets\{AssetConfigService};
 use App\Services\System\Catalogs\Categories\{CategoryConfigService};
+use App\Services\System\Catalogs\Brands\{BrandConfigService};
 use App\Services\System\Catalogs\Products\{ProductConfigService};
 use App\Services\System\Catalogs\Services\{ServiceConfigService};
 use App\Services\System\Catalogs\Subscriptions\{SubscriptionConfigService};
@@ -32,6 +33,7 @@ final class InitParamsCacheInvalidationService {
     public const ASSETS            = "assets";
     public const BIOMETRIC_DEVICES = "biometric_devices";
     public const BRANCHES          = "branches";
+    public const BRANDS            = "brands";
     public const CATEGORIES        = "categories";
     public const CUSTOMERS         = "customers";
     public const ITEMS             = "items";
@@ -43,6 +45,10 @@ final class InitParamsCacheInvalidationService {
      * @var array<string, array<class-string>>
      */
     private const DEPENDENCIES = [
+        self::BRANDS => [
+            BrandConfigService::class,
+            ProductConfigService::class
+        ],
         self::CATEGORIES => [
             CategoryConfigService::class,
             ProductConfigService::class,

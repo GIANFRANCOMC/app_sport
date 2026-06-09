@@ -26,6 +26,9 @@ final class ProductConfigService extends BaseConfigService {
         $references = CompanyReferenceDataService::for($companyId);
 
         return self::data([
+            "brands" => self::data([
+                "records" => $references->brands()
+            ]),
             "categories" => self::data([
                 "records" => $references->categories()
             ]),

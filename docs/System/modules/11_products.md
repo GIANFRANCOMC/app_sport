@@ -19,13 +19,14 @@ Aunque productos, servicios y membresías comparten la tabla `items`, este módu
 - Modelo: `app/Models/System/Catalogs/Item.php`
 - Vue: `resources/js/System/Pages/Catalogs/products/main.vue`
 - Estilos: `public/System/assets/css/custom.css`, bloque `SYSTEM PRODUCTS`
-- Tablas: `items`, `category_items`, `categories`, `warehouses`, `warehouse_items`
+- Tablas: `items`, `brands`, `category_items`, `categories`, `warehouses`, `warehouse_items`
 
 ## Datos del producto
 
 ### Identificación
 
 - `items.company_id`: empresa propietaria.
+- `items.brand_id`: marca opcional de la empresa; una marca puede agrupar muchos productos.
 - `items.internal_code`: código interno único entre productos de la empresa.
 - `items.barcode`: código de barras único entre todos los items de la empresa; técnicamente se valida con formato EAN-13.
 - `items.name`: nombre comercial.
@@ -93,12 +94,19 @@ Si un almacén activo no tiene valores explícitos, se crea con cantidad y míni
 ## Reglas de negocio
 
 - El producto siempre se guarda con `type = product`.
+- La marca es opcional, debe pertenecer a la empresa y no puede asignarse si está inactiva.
+- Una marca inactiva ya asociada puede conservarse durante una edición para no romper datos históricos.
 - Código interno, código de barras, nombre, precio, moneda y estado son obligatorios.
 - El código interno es único entre productos de la empresa.
 - El código de barras es único entre todos los items de la empresa.
 - Precio, stock inicial y stock mínimo no pueden ser negativos.
 - El precio debe respetar los límites mínimo y máximo configurados.
 - Los almacenes enviados deben estar activos y pertenecer a sucursales activas de la empresa autenticada.
+- Las categorías deben estar activas y pertenecer a la empresa autenticada.
+- La moneda debe existir y estar activa.
+- El precio mínimo no puede superar al precio de venta.
+- El precio máximo no puede ser menor que el precio de venta ni que el precio mínimo.
+- Código interno, código de barras, precios, arreglos y relaciones se vuelven a validar en backend aunque exista validación frontend.
 - No se permite repetir un almacén dentro del formulario.
 - Si `see_my_web` es falso, `see_my_web_price` se fuerza a falso.
 - Crear o editar producto, inventario y categorías ocurre dentro de una transacción.
@@ -114,7 +122,10 @@ Si un almacén activo no tiene valores explícitos, se crea con cantidad y míni
 - El estado se selecciona mediante un grupo segmentado de radios que muestra todas las alternativas sin abrir un desplegable.
 - El selector de estado ocupa cuatro columnas en escritorio para evitar opciones innecesariamente anchas.
 - En resoluciones `lg`, el selector de estado ocupa seis columnas para conservar una proporción cómoda.
+- La primera pestaña contiene también Marca inmediatamente antes de Estado, evitando separar datos básicos de clasificación durante el alta.
 - La segunda pestaña contiene información comercial complementaria: categorías, descripción y publicación.
+- El selector de Marca permite limpiar la relación y muestra únicamente marcas activas.
+- Los selectores reutilizan una `X` tipográfica compacta y centrada ópticamente con la flecha para limpiar valores, evitando deformaciones del SVG y manteniendo un área clicable cómoda.
 - Las tres pestañas ocupan todo el ancho del modal, tienen separación visual y resaltan claramente la sección activa.
 - La barra de pestañas permanece fija mientras se desplaza únicamente el contenido del formulario.
 - Al existir errores, se marca la pestaña afectada y se abre automáticamente la primera que requiere corrección.
@@ -129,6 +140,7 @@ Si un almacén activo no tiene valores explícitos, se crea con cantidad y míni
 ## Integraciones impactadas
 
 - `ProductConfigService` obtiene categorías y almacenes mediante `CompanyReferenceDataService`, y monedas mediante `MasterReferenceDataService`.
+- `ProductConfigService` obtiene también las marcas activas mediante `CompanyReferenceDataService::brands()`.
 - Gestión de stock usa `warehouse_items.minimum_stock` y deja de comparar contra el valor fijo `5`.
 - Al crear un almacén predeterminado, `WarehouseService` genera relaciones en cero para todos los productos existentes.
 - El listado de Productos carga `warehouseItems.warehouse.branch` para resumir stock y alertas sin consultas posteriores desde Vue.
@@ -137,6 +149,9 @@ Si un almacén activo no tiene valores explícitos, se crea con cantidad y míni
 
 - La caché de `initParams` ya no se invalida de forma aislada. Productos declara una mutación del recurso compartido `items`, por lo que también refresca la configuración de Ventas.
 - Cuando se crea o modifica una categoría, `InitParamsCacheInvalidationService` elimina la caché de Productos para que el selector muestre inmediatamente las categorías activas de la empresa.
+- Cuando se crea o modifica una marca, la dependencia `BRANDS` elimina la caché de Marcas y Productos para actualizar el selector sin esperar el TTL.
+- `ProductRequest` extiende `CompanyFormRequest`, normaliza cadenas y usa `BelongsToCompany` tanto para relaciones directas como para almacenes cuya empresa se obtiene mediante sucursal.
+- La base de datos conserva la unicidad de `company_id + barcode`; código interno y relaciones se validan nuevamente en backend antes de persistir.
 
 - Código de barras generado, editable y validado con formato EAN-13.
 - Unicidad de código de barras por empresa.

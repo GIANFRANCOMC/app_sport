@@ -5,60 +5,134 @@ declare(strict_types=1);
 namespace App\Http\Requests\System\Catalogs\Products;
 
 use App\Helpers\System\Utilities;
-use App\Models\System\Catalogs\Category;
-use App\Models\System\Warehouses\Warehouse;
+use App\Http\Requests\System\Base\CompanyFormRequest;
+use App\Models\System\Catalogs\{Brand, Item};
 use App\Rules\System\Catalogs\ValidEan13;
-use App\Rules\System\Defaults\UniqueInCompany;
-use Illuminate\Foundation\Http\FormRequest;
+use App\Rules\System\Defaults\{BelongsToCompany, UniqueInCompany};
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
 
-abstract class ProductRequest extends FormRequest {
-
-    public function authorize(): bool {
-
-        return true;
-
-    }
+abstract class ProductRequest extends CompanyFormRequest {
 
     public function rules(): array {
 
-        $itemId   = $this->route("id") ? (int) $this->route("id") : null;
-        $round    = Utilities::$inputs["round"];
-        $minValue = Utilities::isDefined($this->min_price) && floatval($this->min_price) > 0 ? floatval($this->min_price) : "0.1";
-        $maxValue = Utilities::isDefined($this->max_price) && floatval($this->max_price) > 0 ? floatval($this->max_price) : Utilities::$inputs["maxValue"];
+        $itemId = $this->route("id") ? (int) $this->route("id") : null;
+        $round = Utilities::$inputs["round"];
+        $maxValue = Utilities::$inputs["maxValue"];
 
-        $validations = [
-            "internal_code"              => ["required", "string", "max:50", new UniqueInCompany("items", "internal_code", $itemId, ["type" => "product"], "código interno")],
-            "barcode"                    => ["required", "string", new ValidEan13(), new UniqueInCompany("items", "barcode", $itemId, [], "código de barras")],
-            "name"                       => "required|string|max:50",
-            "description"                => "nullable|string|max:100",
-            "price"                      => "required|numeric|min:$minValue|max:$maxValue|decimal:0,$round",
-            "currency_id"                => "required|integer",
-            "categories"                 => "nullable|array",
-            "categories.*.category_id"   => "required|integer|distinct",
-            "see_my_web"                 => "required|boolean",
-            "see_my_web_price"           => "required|boolean",
-            "inventory"                  => "required|array",
-            "inventory.*.warehouse_id"   => "required|integer|distinct",
-            "inventory.*.initial_stock"  => "required|numeric|min:0|decimal:0,$round",
-            "inventory.*.minimum_stock"  => "required|numeric|min:0|decimal:0,$round",
-            "status"                     => "required|in:active,inactive"
+        return [
+            "internal_code" => [
+                "bail",
+                "required",
+                "string",
+                "max:50",
+                "regex:/^[A-Za-z0-9._-]+$/",
+                new UniqueInCompany("items", "internal_code", $itemId, ["type" => "product"], "código interno")
+            ],
+            "barcode" => [
+                "bail",
+                "required",
+                "string",
+                new ValidEan13(),
+                new UniqueInCompany("items", "barcode", $itemId, [], "código de barras")
+            ],
+            "name" => ["bail", "required", "string", "max:50"],
+            "description" => ["nullable", "string", "max:100"],
+            "brand_id" => [
+                "nullable",
+                "integer",
+                new BelongsToCompany(
+                    "brands",
+                    [],
+                    "La marca seleccionada no pertenece a la empresa."
+                )
+            ],
+            "price" => ["bail", "required", "numeric", "min:0.01", "max:{$maxValue}", "decimal:0,{$round}"],
+            "min_price" => ["nullable", "numeric", "min:0", "max:{$maxValue}", "decimal:0,{$round}"],
+            "max_price" => ["nullable", "numeric", "min:0", "max:{$maxValue}", "decimal:0,{$round}"],
+            "currency_id" => [
+                "bail",
+                "required",
+                "integer",
+                Rule::exists("currencies", "id")->where("status", "active")
+            ],
+            "categories" => ["nullable", "array", "max:50"],
+            "categories.*.category_id" => [
+                "bail",
+                "required",
+                "integer",
+                "distinct",
+                new BelongsToCompany(
+                    "categories",
+                    ["status" => "active"],
+                    "Una o más categorías no pertenecen a la empresa o no están activas."
+                )
+            ],
+            "see_my_web" => ["required", "boolean"],
+            "see_my_web_price" => ["required", "boolean"],
+            "inventory" => ["required", "array", "min:1", "max:200"],
+            "inventory.*.warehouse_id" => [
+                "bail",
+                "required",
+                "integer",
+                "distinct",
+                new BelongsToCompany(
+                    "warehouses",
+                    [
+                        "warehouses.status" => "active",
+                        "branches.status" => "active"
+                    ],
+                    "Uno o más almacenes no pertenecen a la empresa o no están activos.",
+                    [
+                        ["branches", "warehouses.branch_id", "=", "branches.id"]
+                    ],
+                    "branches.company_id",
+                    "warehouses.id"
+                )
+            ],
+            "inventory.*.initial_stock" => [
+                "required",
+                "numeric",
+                "min:0",
+                "max:{$maxValue}",
+                "decimal:0,{$round}"
+            ],
+            "inventory.*.minimum_stock" => [
+                "required",
+                "numeric",
+                "min:0",
+                "max:{$maxValue}",
+                "decimal:0,{$round}"
+            ],
+            "status" => ["required", "in:active,inactive"]
         ];
-
-        if(Utilities::isDefined($this->min_price) && floatval($this->min_price) > 0) {
-
-            $validations["max_price"] = "nullable|numeric|min:$minValue|decimal:0,$round";
-
-        }
-
-        return $validations;
 
     }
 
     public function attributes(): array {
 
         return [
-            "description" => "descripción comercial adicional"
+            "internal_code" => "código interno",
+            "barcode" => "código de barras",
+            "name" => "nombre",
+            "description" => "descripción comercial adicional",
+            "brand_id" => "marca",
+            "price" => "precio de venta",
+            "min_price" => "precio mínimo",
+            "max_price" => "precio máximo",
+            "currency_id" => "moneda",
+            "categories" => "categorías",
+            "inventory" => "inventario por almacén",
+            "status" => "estado"
+        ];
+
+    }
+
+    public function messages(): array {
+
+        return [
+            "internal_code.regex" => "El código interno solo puede contener letras, números, puntos, guiones y guiones bajos.",
+            "inventory.min" => "Debe existir al menos un almacén activo para registrar el producto."
         ];
 
     }
@@ -68,59 +142,119 @@ abstract class ProductRequest extends FormRequest {
         return [
             function(Validator $validator) {
 
-                $warehouseIds = collect($this->input("inventory", []))
-                    ->pluck("warehouse_id")
-                    ->filter()
-                    ->map(fn($id) => (int) $id)
-                    ->unique()
-                    ->values();
-
-                if($warehouseIds->isNotEmpty()) {
-
-                    $validWarehouseIds = Warehouse::whereIn("id", $warehouseIds)
-                        ->where("status", "active")
-                        ->whereHas("branch", function($query) {
-
-                            $query->where("company_id", $this->user()?->company_id)
-                                  ->where("status", "active");
-
-                        })
-                        ->pluck("id");
-
-                    if($validWarehouseIds->count() !== $warehouseIds->count()) {
-
-                        $validator->errors()->add("inventory", "Uno o más almacenes no pertenecen a la empresa o no están activos.");
-
-                    }
-
-                }
-
-                $categoryIds = collect($this->input("categories", []))
-                    ->pluck("category_id")
-                    ->filter()
-                    ->map(fn($id) => (int) $id)
-                    ->unique()
-                    ->values();
-
-                if($categoryIds->isEmpty()) {
-
-                    return;
-
-                }
-
-                $validCategoryIds = Category::whereIn("id", $categoryIds)
-                    ->where("company_id", $this->user()?->company_id)
-                    ->where("status", "active")
-                    ->pluck("id");
-
-                if($validCategoryIds->count() !== $categoryIds->count()) {
-
-                    $validator->errors()->add("categories", "Una o más categorías no pertenecen a la empresa o no están activas.");
-
-                }
+                $this->validatePriceRange($validator);
+                $this->validateBrandStatus($validator);
 
             }
         ];
+
+    }
+
+    protected function normalizedStringFields(): array {
+
+        return [
+            "internal_code",
+            "barcode",
+            "name",
+            "description"
+        ];
+
+    }
+
+    protected function prepareForValidation(): void {
+
+        parent::prepareForValidation();
+
+        $this->merge([
+            "brand_id" => $this->filled("brand_id") ? (int) $this->input("brand_id") : null,
+            "min_price" => $this->normalizeOptionalNumber($this->input("min_price")),
+            "max_price" => $this->normalizeOptionalNumber($this->input("max_price"))
+        ]);
+
+    }
+
+    private function validatePriceRange(Validator $validator): void {
+
+        if($validator->errors()->hasAny(["price", "min_price", "max_price"])) {
+
+            return;
+
+        }
+
+        $price = (float) $this->input("price");
+        $minimum = $this->positiveNumberOrNull($this->input("min_price"));
+        $maximum = $this->positiveNumberOrNull($this->input("max_price"));
+
+        if($minimum !== null && $minimum > $price) {
+
+            $validator->errors()->add("min_price", "El precio mínimo no puede ser mayor que el precio de venta.");
+
+        }
+
+        if($maximum !== null && $maximum < $price) {
+
+            $validator->errors()->add("max_price", "El precio máximo no puede ser menor que el precio de venta.");
+
+        }
+
+        if($minimum !== null && $maximum !== null && $minimum > $maximum) {
+
+            $validator->errors()->add("max_price", "El precio máximo no puede ser menor que el precio mínimo.");
+
+        }
+
+    }
+
+    private function validateBrandStatus(Validator $validator): void {
+
+        if($validator->errors()->has("brand_id") || !$this->filled("brand_id")) {
+
+            return;
+
+        }
+
+        $brand = Brand::query()
+                      ->whereKey((int) $this->input("brand_id"))
+                      ->where("company_id", $this->user()?->company_id)
+                      ->first();
+
+        if(!$brand || $brand->status === "active") {
+
+            return;
+
+        }
+
+        $currentBrandId = Item::query()
+                              ->whereKey((int) $this->route("id"))
+                              ->where("company_id", $this->user()?->company_id)
+                              ->where("type", "product")
+                              ->value("brand_id");
+
+        if((int) $currentBrandId !== (int) $brand->id) {
+
+            $validator->errors()->add("brand_id", "La marca seleccionada está inactiva.");
+
+        }
+
+    }
+
+    private function normalizeOptionalNumber(mixed $value): mixed {
+
+        if($value === null || $value === "") {
+
+            return null;
+
+        }
+
+        return $value;
+
+    }
+
+    private function positiveNumberOrNull(mixed $value): ?float {
+
+        return is_numeric($value) && (float) $value > 0
+            ? (float) $value
+            : null;
 
     }
 

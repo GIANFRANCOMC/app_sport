@@ -57,6 +57,9 @@
                                     <span v-if="record.category_items?.length" class="br-entity-table__meta">
                                         {{ record.category_items.length }} {{ record.category_items.length === 1 ? "categoría" : "categorías" }}
                                     </span>
+                                    <span v-if="record.brand" class="br-entity-table__meta">
+                                        Marca: {{ record.brand.name }}
+                                    </span>
                                 </td>
                                 <td>
                                     <div class="br-entity-identifiers">
@@ -352,6 +355,40 @@
 
                                 <InputSlot
                                     hasDiv
+                                    :title="MODULE.texts.form.brand"
+                                    :titleClass="[config.forms.classes.title]"
+                                    hasTextBottom
+                                    :textBottomInfo="productForm.errors?.brand_id"
+                                    xl="4"
+                                    lg="4">
+                                    <template v-slot:input>
+                                        <v-select
+                                            v-model="productForm.data.brand"
+                                            :options="brands"
+                                            :class="config.forms.classes.select2"
+                                            :clearable="true"
+                                            :searchable="true"
+                                            append-to-body>
+                                            <template #selected-option="option">
+                                                <span
+                                                    class="br-select-selected-text"
+                                                    :title="getSelectOptionLabel(option)"
+                                                    v-text="getSelectOptionLabel(option)">
+                                                </span>
+                                            </template>
+                                            <template #option="option">
+                                                <span
+                                                    class="br-select-option-text"
+                                                    :title="getSelectOptionLabel(option)"
+                                                    v-text="getSelectOptionLabel(option)">
+                                                </span>
+                                            </template>
+                                        </v-select>
+                                    </template>
+                                </InputSlot>
+
+                                <InputSlot
+                                    hasDiv
                                     :title="MODULE.texts.form.status"
                                     :titleClass="[config.forms.classes.title]"
                                     isRequired
@@ -589,7 +626,7 @@ const FORM_TABS = [
         id: "general",
         label: "Datos y precio",
         description: "Identidad y rango de precios",
-        fields: ["internal_code", "barcode", "name", "price", "min_price", "max_price", "currency", "currency_id", "status"]
+        fields: ["internal_code", "barcode", "name", "price", "min_price", "max_price", "currency", "currency_id", "brand", "brand_id", "status"]
     },
     {
         id: "commercial",
@@ -615,6 +652,7 @@ const FORM_FIELDS = {
     max_price: "",
     currency: null,
     categories: [],
+    brand: null,
     see_my_web: true,
     see_my_web_price: false,
     inventory: [],
@@ -631,6 +669,7 @@ const FORM_FIELD_CONFIG = {
     max_price: {toNumber: true, minValue: 0},
     currency: {mapToField: "currency_id"},
     categories: {getArray: {mapTo: "category_id"}},
+    brand: {mapToField: "brand_id"},
     see_my_web: {toBoolean: true},
     see_my_web_price: {toBoolean: true},
     status: {getCode: true}
@@ -646,6 +685,7 @@ const VALIDATION_RULES = {
     max_price: {required: false, number: true, min: 0},
     currency: {required: true},
     categories: {required: false},
+    brand: {required: false},
     see_my_web: {required: false},
     see_my_web_price: {required: false},
     inventory: {required: true},
@@ -662,6 +702,7 @@ const ERROR_LABELS = {
     max_price: "Precio máximo",
     currency: "Moneda",
     categories: "Categorías",
+    brand: "Marca",
     inventory: "Inventario por almacén",
     status: "Estado"
 };
@@ -671,6 +712,7 @@ const FILTER_OPTIONS = [
     {code: "internal_code", label: "Código interno"},
     {code: "barcode", label: "Código de barras"},
     {code: "name", label: "Nombre"},
+    {code: "brand", label: "Marca"},
     {code: "description", label: "Descripción comercial adicional"},
     {code: "price", label: "Precio de venta"}
 ];
@@ -697,6 +739,7 @@ const TEXTS = {
         minPrice: "Precio mínimo",
         maxPrice: "Precio máximo",
         categories: "Categorías",
+        brand: "Marca",
         status: "Estado",
         internalCodeHelp: "Identificador privado que la empresa utiliza para ordenar, buscar y controlar internamente el producto.",
         barcodeHelp: "Código de barras en formato EAN-13 que puede imprimirse en la etiqueta del producto y ser leído por clientes o escáneres.",
@@ -822,6 +865,7 @@ export default {
 
             if(response?.data?.config) {
 
+                this.options.brands     = response.data.config.brands;
                 this.options.categories = response.data.config.categories;
                 this.options.currencies = response.data.config.currencies;
                 this.options.statuses   = response.data.config.statuses;
@@ -913,6 +957,7 @@ export default {
                     max_price: record.max_price,
                     currency: this.currencies.find(currency => currency.code === record.currency_id) ?? null,
                     categories: this.categories.filter(category => categoryIds.includes(category.code)),
+                    brand: this.resolveBrandOption(record),
                     see_my_web: Boolean(record.see_my_web),
                     see_my_web_price: Boolean(record.see_my_web && record.see_my_web_price),
                     inventory: this.buildInventory(record),
@@ -926,6 +971,7 @@ export default {
                     barcode: generateEan13(),
                     currency: this.currencies[0] ?? null,
                     categories: [],
+                    brand: null,
                     see_my_web: true,
                     see_my_web_price: false,
                     inventory: this.buildInventory(),
@@ -964,6 +1010,21 @@ export default {
                 };
 
             });
+
+        },
+        resolveBrandOption(record) {
+
+            const activeBrand = this.brands.find(brand => Number(brand.code) === Number(record?.brand_id));
+
+            if(activeBrand) return activeBrand;
+
+            if(!record?.brand) return null;
+
+            return {
+                code: record.brand.id,
+                label: `${record.brand.name}${record.brand.status === "inactive" ? " (Inactiva)" : ""}`,
+                data: record.brand
+            };
 
         },
         generateInternalCode(event) {
@@ -1234,6 +1295,15 @@ export default {
                 code: category.id,
                 label: category.name,
                 data: category
+            }));
+
+        },
+        brands() {
+
+            return (this.options?.brands?.records ?? []).map(brand => ({
+                code: brand.id,
+                label: brand.name,
+                data: brand
             }));
 
         },

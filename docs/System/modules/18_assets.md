@@ -1,4 +1,4 @@
-# 17 - Activos
+# 18 - Activos
 
 ## Que hace
 
@@ -30,4 +30,3 @@ Catalogo de bienes/activos que la empresa controla.
 - Agregar categoria de activo.
 - Agregar codigo patrimonial o serie fisica.
 - Definir reglas distintas para activos unitarios vs stock.
-

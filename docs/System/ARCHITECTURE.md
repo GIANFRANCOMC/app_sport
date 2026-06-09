@@ -38,6 +38,16 @@ Cuando se reciba un id por request:
 - Validar serie mediante su sucursal si la venta usa `serie_id`.
 - Evitar confiar en ids enviados por frontend.
 
+Las mutaciones nuevas de entidades con `company_id` deben extender `CompanyFormRequest`. Este contrato:
+
+- Autoriza únicamente usuarios con empresa válida.
+- Permite normalizar cadenas antes de ejecutar reglas.
+- Evita repetir autorización básica en cada Store/Update Request.
+
+`BelongsToCompany` valida relaciones directas y también admite joins para entidades cuya empresa se obtiene de otra tabla. Productos lo usa para categorías, marcas y almacenes; en almacenes llega a `branches.company_id` mediante join.
+
+La validación HTTP no reemplaza las restricciones de base de datos ni las comprobaciones del servicio. Para relaciones sensibles se aplican tres niveles: FormRequest, defensa de negocio en Service y claves/índices en migración.
+
 ## Estados
 
 Estados observados:
@@ -62,14 +72,14 @@ Todos los servicios `*ConfigService` heredan de `BaseConfigService`.
 - `InitParamsCacheInvalidationService` resuelve dependencias entre recursos y módulos consumidores.
 - No se invalida caché cuando una mutación no modifica datos incluidos en `initParams`.
 
-Los maestros globales activos se reutilizan durante seis horas mediante `MasterReferenceDataService`.
+Los maestros globales activos se reutilizan durante seis horas mediante `MasterReferenceDataService`. Si monedas o tipos de documento adquieren mantenimiento CRUD, la mutación debe ejecutar `MasterReferenceDataService::clearCache()`.
 
 ## Datos de referencia para `initParams`
 
 Los modelos no deben exponer métodos genéricos como `getAll($type, $companyId)`. Ese contrato ocultaba filtros tras strings, repetía el identificador de empresa y permitía combinaciones inválidas.
 
 - `CompanyReferenceDataService::for($companyId)` concentra consultas acotadas a una empresa.
-- Sus métodos expresan la intención: `categories()`, `stockWarehouses()`, `branchesWithSeries()`, `activeCustomers()`, `saleItems()`, entre otros.
+- Sus métodos expresan la intención: `brands()`, `categories()`, `stockWarehouses()`, `branchesWithSeries()`, `activeCustomers()`, `saleItems()`, entre otros.
 - `MasterReferenceDataService` entrega maestros globales activos, como monedas y tipos de documento según su uso.
 - Cada `ConfigService` crea una referencia por empresa y reutiliza esa instancia dentro de su construcción de `initParams`.
 - Los modelos conservan relaciones, accessors, scopes y reglas propias de la entidad; no conocen el contexto de una pantalla.

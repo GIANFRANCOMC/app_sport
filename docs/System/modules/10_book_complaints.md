@@ -33,6 +33,8 @@ Permite administrar reclamos, quejas y sugerencias recibidas desde System o Gues
 - Estados: `pending`, `in_progress`, `resolved`.
 - Debe poder responderse desde System.
 - Guest puede crear, System administra.
+- `BookComplaintConfigService` contiene tipos, estados y documentos de identidad.
+- Actualizar un reclamo no invalida `initParams`, porque esos maestros no cambian.
 
 ## Mejoras sugeridas
 
@@ -40,4 +42,3 @@ Permite administrar reclamos, quejas y sugerencias recibidas desde System o Gues
 - Agregar fecha de respuesta.
 - Agregar adjuntos multiples si se necesita evidencia.
 - Agregar trazabilidad de cambios de estado.
-

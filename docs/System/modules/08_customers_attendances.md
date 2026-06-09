@@ -31,6 +31,8 @@ Registra check-in y checkout de clientes. Valida cliente, membresia vigente, asi
 - Checkout requiere asistencia activa.
 - Checkout debe ser posterior al ingreso y al menos 2 minutos despues.
 - Tipos: `manual_form`, `qr_camera`, `qr_scanner`, `qr_public`, `biometric`.
+- `TrackingAttendanceConfigService` carga únicamente sucursales y clientes activos.
+- Cancelar una asistencia no invalida `initParams`, porque no modifica esas opciones.
 
 ## Mejoras sugeridas
 
@@ -38,4 +40,3 @@ Registra check-in y checkout de clientes. Valida cliente, membresia vigente, asi
 - Corregir namespace del servicio biometrico si esta inconsistente.
 - Agregar test de check-in/check-out.
 - Definir si la asistencia activa es unica por empresa o por sucursal.
-

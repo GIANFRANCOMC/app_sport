@@ -19,6 +19,8 @@ Lista ventas realizadas, permite filtrar y acceder a detalle, anulacion o impres
 - Listar solo ventas de series pertenecientes a sucursales de la empresa.
 - Filtrar por serie, correlativo, fecha, cliente y estado.
 - Permitir anulacion solo si la venta esta `active`.
+- `SaleConfigService` mantiene cachés separadas para `main` y `list`.
+- Crear o anular ventas no invalida `initParams`, porque esta configuración contiene filtros, maestros y estados, no registros de venta.
 
 ## Campos relevantes
 
@@ -35,4 +37,3 @@ Lista ventas realizadas, permite filtrar y acceder a detalle, anulacion o impres
 - Agregar filtros por rango de fechas.
 - Agregar columna de sucursal en listado si no esta visible.
 - Agregar test de listado multiempresa.
-

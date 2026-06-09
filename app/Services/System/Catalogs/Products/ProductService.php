@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Builder;
 
 use App\Services\System\Catalogs\Categories\{CategoryItemService};
 use App\Services\System\Warehouses\Warehouses\{WarehouseItemService};
-use App\Models\System\Catalogs\{Item};
+use App\Models\System\Catalogs\{Brand, Item};
 
 /**
  * Service class for managing module operations
@@ -31,6 +31,7 @@ class ProductService {
     private const ALLOWED_FIELDS = [
         "internal_code",
         "barcode",
+        "brand_id",
         "name",
         "description",
         "price",
@@ -202,6 +203,8 @@ class ProductService {
 
             $userId = $userId ?? $userAuth->id ?? null;
 
+            self::assertBrandCanBeAssigned($data["brand_id"] ?? null, $companyId);
+
             // Prepare data with only allowed fields
             $itemData = self::prepareProductDataForCreate($data, $companyId, $userId);
 
@@ -245,6 +248,12 @@ class ProductService {
             $userAuth = Auth::user();
             $userId   = $userId ?? $userAuth->id ?? null;
 
+            self::assertBrandCanBeAssigned(
+                $data["brand_id"] ?? null,
+                (int) $item->company_id,
+                $item
+            );
+
             // Prepare update data with only changed fields
             $updateData = self::prepareProductDataForUpdate($item, $data);
 
@@ -274,7 +283,7 @@ class ProductService {
 
         });
 
-        return $item->fresh(["currency", "categoryItems", "warehouseItems.warehouse.branch"]);
+        return $item->fresh(["brand", "currency", "categoryItems", "warehouseItems.warehouse.branch"]);
 
     }
 
@@ -287,7 +296,7 @@ class ProductService {
      * @param array $relations Relations to eager load
      * @return Item|null
      */
-    public static function findByIdAndCompany(int $id, int $companyId, ?array $statuses = ["active"], array $relations = ["currency", "categoryItems", "warehouseItems.warehouse.branch"]): ?Item {
+    public static function findByIdAndCompany(int $id, int $companyId, ?array $statuses = ["active"], array $relations = ["brand", "currency", "categoryItems", "warehouseItems.warehouse.branch"]): ?Item {
 
         $query = Item::where("id", $id)
                      ->where("company_id", $companyId)
@@ -321,7 +330,7 @@ class ProductService {
 
         $query = Item::where("company_id", $companyId)
                      ->where("type", "product")
-                     ->with(["currency", "categoryItems", "warehouseItems.warehouse.branch"]);
+                     ->with(["brand", "currency", "categoryItems", "warehouseItems.warehouse.branch"]);
 
         // Apply filters
         $filterBy = $filters["filter_by"] ?? null;
@@ -351,6 +360,20 @@ class ProductService {
 
                     }
 
+                    $q->orWhereHas("brand", function(Builder $brandQuery) use($searchTerm) {
+
+                        $brandQuery->where("name", "like", $searchTerm);
+
+                    });
+
+                });
+
+            }elseif($filterBy === "brand") {
+
+                $query->whereHas("brand", function(Builder $brandQuery) use($searchTerm) {
+
+                    $brandQuery->where("name", "like", $searchTerm);
+
                 });
 
             }elseif(in_array($filterBy, self::SEARCHABLE_FIELDS, true)) {
@@ -364,6 +387,31 @@ class ProductService {
 
         return $query->orderBy("name", "ASC")
                      ->paginate($perPage);
+
+    }
+
+    private static function assertBrandCanBeAssigned(?int $brandId, int $companyId, ?Item $currentItem = null): void {
+
+        if(!$brandId) {
+
+            return;
+
+        }
+
+        $brand = Brand::query()
+                      ->whereKey($brandId)
+                      ->where("company_id", $companyId)
+                      ->first();
+
+        $keepsCurrentInactiveBrand = $brand
+            && $brand->status === "inactive"
+            && (int) ($currentItem?->brand_id ?? 0) === (int) $brand->id;
+
+        if(!$brand || ($brand->status !== "active" && !$keepsCurrentInactiveBrand)) {
+
+            throw new \InvalidArgumentException("La marca seleccionada no está disponible para la empresa.");
+
+        }
 
     }
 

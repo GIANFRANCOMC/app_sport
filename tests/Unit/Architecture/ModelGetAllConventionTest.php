@@ -83,4 +83,23 @@ class ModelGetAllConventionTest extends TestCase {
 
     }
 
+    public function test_new_company_catalog_requests_use_the_shared_request_contract(): void {
+
+        $requestFiles = [
+            app_path("Http/Requests/System/Catalogs/Brands/BrandRequest.php"),
+            app_path("Http/Requests/System/Catalogs/Products/ProductRequest.php")
+        ];
+
+        foreach($requestFiles as $requestFile) {
+
+            $this->assertStringContainsString(
+                "extends CompanyFormRequest",
+                File::get($requestFile),
+                "Company-owned catalog requests must extend CompanyFormRequest."
+            );
+
+        }
+
+    }
+
 }

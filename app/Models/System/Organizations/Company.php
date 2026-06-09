@@ -5,6 +5,7 @@ namespace App\Models\System\Organizations;
 use App\Helpers\System\Utilities;
 use Illuminate\Database\Eloquent\Model;
 
+use App\Models\System\Catalogs\Brand;
 use App\Models\System\General\{Currency, IdentityDocumentType};
 
 class Company extends Model {
@@ -80,6 +81,12 @@ class Company extends Model {
 
         return $this->hasMany(Branch::class, "company_id", "id")
                     ->whereIn("status", ["active"]);
+
+    }
+
+    public function brands() {
+
+        return $this->hasMany(Brand::class, "company_id", "id");
 
     }
 

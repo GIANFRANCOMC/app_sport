@@ -1,4 +1,4 @@
-# 15 - Gestion de stock
+# 16 - Gestion de stock
 
 ## Qué hace
 
@@ -26,6 +26,8 @@ Administra cantidades de productos por almacén y sucursal. Muestra el mínimo c
 - Ventas de productos descuentan stock.
 - El estado de stock mínimo compara `quantity <= minimum_stock`; ya no utiliza un umbral fijo.
 - El stock mínimo se configura desde Productos y puede ser diferente por almacén.
+- `StockManagementConfigService` contiene únicamente almacenes activos de la empresa.
+- Modificar cantidades no invalida `initParams`; al crear o editar una sucursal sí se actualiza esta caché.
 
 ## Mejoras sugeridas
 
