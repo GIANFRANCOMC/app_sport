@@ -267,6 +267,10 @@ body.br-layout .table.table-sm > thead > tr > th {
   line-height: 1.25;
 }
 
+body.br-layout .form-label {
+  margin-bottom: 1px;
+}
+
 .br-filter-bar .form-control,
 .br-filter-bar .vs__dropdown-toggle {
   height: 2.35rem;
@@ -1866,6 +1870,188 @@ body.br-layout .modal-header.br-modal-header .btn-header-modal:focus-visible {
   background: color-mix(in srgb, var(--br-primary-soft) 62%, var(--br-surface-elevated));
   color: var(--br-primary-active);
   outline: 0;
+}
+
+/* --- [br-quick-create] Alta contextual reutilizable --- */
+.br-quick-create-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.22rem;
+  margin-left: 0.42rem;
+  padding: 0.08rem 0.22rem;
+  border: 0;
+  border-radius: var(--br-radius-sm);
+  background: transparent;
+  color: var(--br-primary-active);
+  font-family: inherit;
+  font-size: 0.68rem;
+  font-weight: 700;
+  line-height: 1.2;
+  text-decoration: none;
+  vertical-align: baseline;
+  cursor: pointer;
+  transition: var(--br-transition);
+}
+
+.br-quick-create-trigger i {
+  font-size: 0.58rem;
+}
+
+.br-quick-create-trigger:hover,
+.br-quick-create-trigger:focus-visible {
+  background: color-mix(in srgb, var(--br-primary-soft) 58%, transparent);
+  color: var(--br-primary-active);
+  text-decoration: none;
+  outline: 0;
+}
+
+.br-quick-create-trigger:focus-visible {
+  box-shadow: var(--br-focus-ring);
+}
+
+.br-quick-create-trigger[disabled],
+.br-quick-create-trigger[aria-disabled="true"] {
+  color: var(--br-text-muted);
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.br-quick-create-trigger--icon {
+  width: 1.65rem;
+  height: 1.65rem;
+  margin-left: 0.3rem;
+  padding: 0;
+}
+
+.br-quick-create-trigger--button {
+  padding: 0.35rem 0.58rem;
+  border: 1px solid color-mix(in srgb, var(--br-primary) 28%, var(--br-border));
+  background: var(--br-surface-elevated);
+}
+
+.br-quick-create-dialog {
+  width: min(36rem, calc(100vw - 1rem));
+  max-width: 36rem;
+  max-height: calc(100dvh - 1rem);
+  margin: auto;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  border-radius: var(--br-radius-md);
+  background: var(--br-surface-elevated);
+  color: var(--br-secondary);
+  font-family: inherit;
+  box-shadow: 0 1.2rem 3rem rgba(26, 26, 53, 0.22);
+}
+
+.br-quick-create-dialog[open] {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+}
+
+.br-quick-create-dialog::backdrop {
+  background: rgba(26, 26, 53, 0.38);
+  -webkit-backdrop-filter: blur(2px);
+  backdrop-filter: blur(2px);
+}
+
+.br-quick-create-dialog__header {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.15rem 0.9rem;
+  border-bottom: 1px solid var(--br-border);
+  background: var(--br-surface-elevated);
+}
+
+.br-quick-create-dialog__eyebrow,
+.br-quick-create-dialog__title,
+.br-quick-create-dialog__subtitle {
+  margin: 0;
+}
+
+.br-quick-create-dialog__eyebrow {
+  color: var(--br-primary-active);
+  font-size: 0.68rem;
+  font-weight: 700;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.br-quick-create-dialog__title {
+  margin-top: 0.2rem;
+  color: var(--br-secondary);
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.br-quick-create-dialog__subtitle {
+  margin-top: 0.25rem;
+  color: var(--br-text-muted);
+  font-size: 0.74rem;
+  line-height: 1.35;
+}
+
+.br-quick-create-dialog__form {
+  overflow-y: auto;
+  padding: 1rem 1.15rem 1.1rem;
+  background: var(--br-neutral-soft);
+}
+
+.br-quick-create-dialog__alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.45rem;
+  margin-bottom: 0.85rem;
+  padding: 0.55rem 0.65rem;
+  border: 1px solid color-mix(in srgb, var(--br-danger) 22%, var(--br-border));
+  border-radius: var(--br-radius-sm);
+  background: var(--br-danger-soft);
+  color: var(--br-danger);
+  font-size: 0.75rem;
+  line-height: 1.35;
+}
+
+.br-quick-create-dialog__note {
+  display: flex;
+  align-items: center;
+  gap: 0.38rem;
+  margin: 0.8rem 0 0;
+  color: var(--br-success-hover);
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+.br-quick-create-dialog__footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.6rem;
+  padding: 0.65rem 1.15rem;
+  border-top: 1px solid var(--br-border);
+  background: #f7f8fa;
+}
+
+@media (max-width: 575.98px) {
+  .br-quick-create-dialog {
+    width: calc(100vw - 0.75rem);
+    max-height: calc(100dvh - 0.75rem);
+  }
+
+  .br-quick-create-dialog__header,
+  .br-quick-create-dialog__form {
+    padding-right: 0.9rem;
+    padding-left: 0.9rem;
+  }
+
+  .br-quick-create-dialog__footer {
+    padding-right: 0.9rem;
+    padding-left: 0.9rem;
+  }
 }
 
 /* --- [br] Botón ghost / soft --- */

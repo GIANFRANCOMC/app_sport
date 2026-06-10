@@ -98,7 +98,7 @@ return new class extends Migration {
 
             $table->foreign("company_id")->references("id")->on("companies")->onDelete("cascade");
             $table->foreign("currency_id")->references("id")->on("currencies")->onDelete("cascade");
-            $table->unique(["company_id", "barcode"]);
+            $table->index(["company_id", "barcode"]);
         });
 
         // ✅

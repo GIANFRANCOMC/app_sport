@@ -94,6 +94,15 @@ Esto limpia:
 - Generación opcional de código interno con tooltip.
 - Select de estado con el mismo comportamiento y menú flotante que el resto de System.
 
+## Alta rápida reutilizable
+
+- `resources/js/System/Components/Catalogs/AddBrand.vue` permite crear una Marca desde cualquier formulario sin abandonar el flujo actual.
+- Reutiliza `QuickCreateCatalogEntity.vue`, conserva las reglas de longitud del backend y valida el patrón `^[A-Za-z0-9._-]+$` del código interno antes de enviar.
+- El disparador admite los modos `link`, `button` e `icon`, con texto, icono, título, clases y estado deshabilitado configurables mediante propiedades.
+- Emite `created` con `{record, response}` y `postAction` con la respuesta completa. Productos usa el registro emitido para actualizar el selector y elegir automáticamente la nueva marca.
+- La ventana rápida usa un `dialog` nativo teletransportado a `body`; puede abrirse sobre Producto sin cerrar su modal ni perder datos.
+- La Marca rápida se crea activa y muestra errores de validación dentro de su propio formulario, sin SweetAlert.
+
 ## Criterios para crecer
 
 - No agregar columnas específicas de proveedor a `brands`; proveedor y marca son conceptos distintos.

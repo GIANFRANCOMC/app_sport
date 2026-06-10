@@ -28,7 +28,7 @@ Aunque productos, servicios y membresías comparten la tabla `items`, este módu
 - `items.company_id`: empresa propietaria.
 - `items.brand_id`: marca opcional de la empresa; una marca puede agrupar muchos productos.
 - `items.internal_code`: código interno único entre productos de la empresa.
-- `items.barcode`: código de barras único entre todos los items de la empresa; técnicamente se valida con formato EAN-13.
+- `items.barcode`: código de barras validado como único entre todos los items de la empresa desde el backend; técnicamente usa formato EAN-13.
 - `items.name`: nombre comercial.
 - `items.description`: descripción breve.
 - `items.type`: siempre `product`.
@@ -43,7 +43,7 @@ Aunque productos, servicios y membresías comparten la tabla `items`, este módu
 
 ### Publicación
 
-- `items.see_my_web`: control principal para exponer el producto en un futuro catálogo web, PDF u otro recurso público.
+- `items.see_my_web`: control principal para exponer el producto en el catálogo comercial.
 - `items.see_my_web_price`: permite exponer el precio únicamente cuando `see_my_web` está activo.
 
 El nombre histórico de estas columnas se conserva por compatibilidad. La interfaz utiliza los conceptos “Publicar producto” y “Mostrar precio” para no limitar su uso futuro exclusivamente a una página web.
@@ -117,17 +117,21 @@ Si un almacén activo no tiene valores explícitos, se crea con cantidad y míni
 - Código interno y código de barras se muestran como identificadores distintos; el formato EAN-13 se explica únicamente como ayuda técnica en tooltips y documentación.
 - El inventario resume cantidad total y almacenes que alcanzaron su mínimo.
 - Los iconos de publicación distinguen disponibilidad del producto y visibilidad del precio.
-- El formulario se organiza en tres pestañas: Datos y precio, Configuración comercial e Inventario.
+- El formulario se organiza en tres pestañas: Datos y precio, Información comercial e Inventario.
 - La primera pestaña agrupa nombre, código interno y código de barras en una fila; precio de venta, precio mínimo y precio máximo en otra.
-- El estado se selecciona mediante un grupo segmentado de radios que muestra todas las alternativas sin abrir un desplegable.
+- El estado se selecciona mediante el selector reutilizable `vue-select`, con las mismas reglas visuales y de interacción que el resto de selectores del sistema.
 - El selector de estado ocupa cuatro columnas en escritorio para evitar opciones innecesariamente anchas.
 - En resoluciones `lg`, el selector de estado ocupa seis columnas para conservar una proporción cómoda.
 - La primera pestaña contiene también Marca inmediatamente antes de Estado, evitando separar datos básicos de clasificación durante el alta.
-- La segunda pestaña contiene información comercial complementaria: categorías, descripción y publicación.
+- La segunda pestaña presenta primero la descripción comercial adicional, luego las categorías y finalmente la publicación, respetando el orden natural de lectura y clasificación.
+- Los controles de publicación asumen la existencia del catálogo comercial: `Publicar producto` indica su visibilidad y `Mostrar precio` expone el importe únicamente cuando la publicación está activa.
+- Marca y Categorías incluyen una acción contextual `Agregar` junto al label. Cada acción abre un modal rápido sin cerrar ni limpiar el formulario de Producto.
+- Al crear una Marca, el nuevo registro se incorpora al catálogo local y queda seleccionado automáticamente. Al crear una Categoría, se incorpora y añade a la selección múltiple existente.
+- Las altas rápidas no vuelven a solicitar todo `initParams`: actualizan de forma reactiva `options.brands.records` u `options.categories.records`; el backend ya invalida `ProductConfigService` para futuras cargas.
 - El selector de Marca permite limpiar la relación y muestra únicamente marcas activas.
 - Los selectores reutilizan una `X` tipográfica compacta y centrada ópticamente con la flecha para limpiar valores, evitando deformaciones del SVG y manteniendo un área clicable cómoda.
 - Las tres pestañas ocupan todo el ancho del modal, tienen separación visual y resaltan claramente la sección activa.
-- La barra de pestañas permanece fija mientras se desplaza únicamente el contenido del formulario.
+- El modal utiliza el desplazamiento natural de Bootstrap, sin `modal-dialog-scrollable`; la navegación `nav-pills` permanece en el flujo del formulario para impedir que los campos pasen visualmente por detrás.
 - Al existir errores, se marca la pestaña afectada y se abre automáticamente la primera que requiere corrección.
 - Cada apertura reemplaza completamente los datos del formulario y genera nuevos códigos al crear, evitando mezclar información entre creación y edición.
 - El cierre, Cancelar y el evento `hidden.bs.modal` limpian datos, errores y pestaña activa.
@@ -151,7 +155,9 @@ Si un almacén activo no tiene valores explícitos, se crea con cantidad y míni
 - Cuando se crea o modifica una categoría, `InitParamsCacheInvalidationService` elimina la caché de Productos para que el selector muestre inmediatamente las categorías activas de la empresa.
 - Cuando se crea o modifica una marca, la dependencia `BRANDS` elimina la caché de Marcas y Productos para actualizar el selector sin esperar el TTL.
 - `ProductRequest` extiende `CompanyFormRequest`, normaliza cadenas y usa `BelongsToCompany` tanto para relaciones directas como para almacenes cuya empresa se obtiene mediante sucursal.
-- La base de datos conserva la unicidad de `company_id + barcode`; código interno y relaciones se validan nuevamente en backend antes de persistir.
+- La base de datos conserva un índice no único `company_id + barcode` para búsquedas eficientes, pero la regla de negocio de unicidad se aplica en backend mediante `UniqueInCompany`.
+- La migración incremental reemplaza de forma condicional el índice único anterior, por lo que funciona tanto en instalaciones existentes como después de un `migrate:fresh`.
+- `UniqueInCompany` cuenta con pruebas para empresa autenticada, duplicados, exclusión durante edición y filtros adicionales como `type`.
 
 - Código de barras generado, editable y validado con formato EAN-13.
 - Unicidad de código de barras por empresa.
@@ -209,7 +215,19 @@ Si un almacén activo no tiene valores explícitos, se crea con cantidad y míni
 - El inventario sin alertas muestra un check verde con fondo suave y el texto singular o plural “Stock saludable en N almacén/almacenes”.
 - En la pestaña Inventario, cada almacén muestra una etiqueta sutil: “Stock bajo o en el mínimo” o “Inventario saludable”, usando la misma semántica warning/success del listado.
 - En edición, el stock actual se muestra como lectura con `separatorNumber`; la cantidad se modifica desde Gestión de stock, no desde Productos.
-- Las pestañas sticky cubren completamente la unión con el encabezado para impedir que el contenido desplazado se vea por detrás, y se compactaron en altura para reducir espacio ocupado por navegación.
+- Las pestañas reutilizan `nav-pills`, tienen una separación superior más amplia respecto al encabezado y márgenes laterales alineados con los campos del formulario.
+- La navegación ya no usa posición sticky ni desenfoque: forma parte del flujo normal del modal, evitando superposiciones y filtraciones de texto durante el desplazamiento.
+- En escritorio, las pestañas reducen su separación y mantienen las tres etapas visibles; en móvil se presenta únicamente la etapa activa con su título y descripción completos, acompañada por controles anterior/siguiente accesibles y alineados al branding.
+- Todas las etapas móviles conservan una altura fija independientemente de la longitud del título o la descripción; admiten hasta dos líneas por texto sin alterar la estructura. Las flechas son controles compactos y sutiles, centrados verticalmente, con énfasis azul únicamente en hover o foco.
+- Los márgenes horizontales de la navegación y del contenido comparten la variable `--br-entity-modal-content-space-x`, ampliada para mejorar la respiración del formulario y ajustada de forma responsive.
+- La separación superior entre el encabezado del modal y la navegación se controla mediante `--br-entity-modal-body-space-y`, incrementada para mejorar la jerarquía y respiración visual.
+- La distancia entre navegación y campos se controla de manera independiente con `--br-entity-modal-tabs-content-space-y`; es más compacta que la separación superior y se reduce adicionalmente en móvil.
+- Las pestañas mantienen una separación intermedia de `0.28rem`, suficiente para distinguir cada etapa sin fragmentar visualmente el flujo.
+- En pantallas de hasta `767.98px`, `br-entity-modal` elimina el límite intermedio de Bootstrap y usa casi todo el ancho disponible, dejando únicamente `0.375rem` por lado.
+- `AddCategory` y `AddBrand` reutilizan `QuickCreateCatalogEntity` y `QuickCreateTrigger`. El disparador admite modos `link`, `button` e `icon`, además de texto, icono, título, clases y estado deshabilitado parametrizables.
+- El modal rápido usa `dialog.showModal()`: aparece en la capa superior nativa, mantiene intacta la modal de Producto y devuelve el foco al contexto anterior al cerrarse.
+- Los errores de validación se muestran dentro del modal rápido y bajo sus campos, sin SweetAlert ni recargas invasivas.
+- `custom.css` utiliza versionado por fecha de modificación en el layout System para evitar que el navegador conserve estilos anteriores durante las mejoras visuales.
 - El breadcrumb global es compacto, se alinea a la derecha y resalta únicamente la ubicación actual con el azul de marca.
 - El listado omite la columna Publicación; esa configuración se consulta y modifica dentro del formulario.
 - Los generadores ocultan únicamente su propio tooltip mediante `Alerts.dismissTooltip()`; no destruyen las instancias de otros controles.

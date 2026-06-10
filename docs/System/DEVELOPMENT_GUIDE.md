@@ -144,7 +144,9 @@ Se busca mejorar sin romper el sistema:
 - Extender `CompanyFormRequest` en nuevos CRUD propiedad de una empresa.
 - Usar `BelongsToCompany` para ids directos; si la empresa depende de otra tabla, configurar joins y columnas calificadas en la misma regla.
 - Normalizar strings mediante `normalizedStringFields()` y no repetir `trim()` en controladores.
-- Reforzar reglas críticas con claves foráneas, índices únicos compuestos y una comprobación de servicio cuando la entidad pueda modificarse fuera del endpoint.
+- Reforzar invariantes estructurales con claves foráneas e índices únicos cuando la regla sea permanente.
+- Cuando una unicidad pueda cambiar por lógica comercial, usar una regla backend reutilizable como `UniqueInCompany` y conservar un índice no único para que la validación siga siendo eficiente.
+- Añadir una comprobación de servicio cuando la entidad pueda modificarse fuera del `FormRequest` del endpoint.
 - No exponer datos de otra empresa en listados o initParams.
 - No confiar en `company_id` enviado desde frontend.
 - Registrar al usuario que crea, actualiza, cancela o elimina.

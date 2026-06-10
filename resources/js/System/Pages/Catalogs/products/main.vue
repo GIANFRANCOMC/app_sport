@@ -170,7 +170,7 @@
         tabindex="-1"
         role="dialog"
         aria-modal="true">
-        <div class="modal-dialog modal-dialog-centered modal-xl modal-dialog-scrollable" role="document">
+        <div class="modal-dialog modal-dialog-centered modal-xl" role="document">
             <div class="modal-content">
                 <div class="modal-header br-entity-modal__header">
                     <div>
@@ -189,26 +189,48 @@
                 </div>
 
                 <div class="modal-body br-entity-modal__body">
-                    <nav class="br-entity-tabs" aria-label="Secciones del formulario">
+                    <div class="br-entity-tabs-shell">
                         <button
-                            v-for="(tab, index) in formTabs"
-                            :key="tab.id"
                             type="button"
-                            :class="['br-entity-tab', {'is-active': activeFormTab === tab.id}]"
-                            :aria-selected="activeFormTab === tab.id"
-                            :aria-controls="`product-tab-${tab.id}`"
-                            role="tab"
-                            @click="activeFormTab = tab.id">
-                            <span class="br-entity-tab__step" v-text="index + 1"></span>
-                            <span class="br-entity-tab__content">
-                                <strong v-text="tab.label"></strong>
-                                <small v-text="tab.description"></small>
-                            </span>
-                            <span v-if="tabHasErrors(tab.id)" class="br-entity-tab__error" aria-label="Contiene errores">
-                                <i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i>
-                            </span>
+                            class="br-entity-tabs-nav br-entity-tabs-nav--previous"
+                            :disabled="!hasPreviousFormTab"
+                            :aria-label="previousFormTabLabel"
+                            :title="previousFormTabLabel"
+                            @click="moveFormTab(-1)">
+                            <i class="fa-solid fa-chevron-left" aria-hidden="true"></i>
                         </button>
-                    </nav>
+
+                        <nav class="nav nav-pills nav-fill br-entity-tabs" aria-label="Secciones del formulario">
+                            <button
+                                v-for="(tab, index) in formTabs"
+                                :key="tab.id"
+                                type="button"
+                                :class="['nav-link', 'br-entity-tab', {'active is-active': activeFormTab === tab.id}]"
+                                :aria-selected="activeFormTab === tab.id"
+                                :aria-controls="`product-tab-${tab.id}`"
+                                role="tab"
+                                @click="activeFormTab = tab.id">
+                                <span class="br-entity-tab__step" v-text="index + 1"></span>
+                                <span class="br-entity-tab__content">
+                                    <strong v-text="tab.label"></strong>
+                                    <small v-text="tab.description"></small>
+                                </span>
+                                <span v-if="tabHasErrors(tab.id)" class="br-entity-tab__error" aria-label="Contiene errores">
+                                    <i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i>
+                                </span>
+                            </button>
+                        </nav>
+
+                        <button
+                            type="button"
+                            class="br-entity-tabs-nav br-entity-tabs-nav--next"
+                            :disabled="!hasNextFormTab"
+                            :aria-label="nextFormTabLabel"
+                            :title="nextFormTabLabel"
+                            @click="moveFormTab(1)">
+                            <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
+                        </button>
+                    </div>
 
                     <form @submit.prevent="saveEntity">
                         <section
@@ -361,6 +383,14 @@
                                     :textBottomInfo="productForm.errors?.brand_id"
                                     xl="4"
                                     lg="4">
+                                    <template #defaultAppend>
+                                        <AddBrand
+                                            trigger-mode="link"
+                                            trigger-text="Agregar"
+                                            trigger-title="Agregar una nueva marca"
+                                            :disabled="isSaving"
+                                            @created="handleBrandCreated"/>
+                                    </template>
                                     <template v-slot:input>
                                         <v-select
                                             v-model="productForm.data.brand"
@@ -430,6 +460,18 @@
                             class="br-entity-form-section"
                             role="tabpanel">
                             <div class="row g-3">
+                                <InputText
+                                    v-model="productForm.data.description"
+                                    hasDiv
+                                    :title="MODULE.texts.form.commercialDescription"
+                                    :titleClass="[config.forms.classes.title]"
+                                    maxlength="100"
+                                    showCharCounter
+                                    hasTextBottom
+                                    :textBottomInfo="productForm.errors?.description"
+                                    xl="12"
+                                    lg="12"/>
+
                                 <InputSlot
                                     hasDiv
                                     :title="MODULE.texts.form.categories"
@@ -438,6 +480,14 @@
                                     :textBottomInfo="productForm.errors?.categories"
                                     xl="12"
                                     lg="12">
+                                    <template #defaultAppend>
+                                        <AddCategory
+                                            trigger-mode="link"
+                                            trigger-text="Agregar"
+                                            trigger-title="Agregar una nueva categoría"
+                                            :disabled="isSaving"
+                                            @created="handleCategoryCreated"/>
+                                    </template>
                                     <template v-slot:input>
                                         <v-select
                                             v-model="productForm.data.categories"
@@ -465,18 +515,6 @@
                                     </template>
                                 </InputSlot>
 
-                                <InputText
-                                    v-model="productForm.data.description"
-                                    hasDiv
-                                    :title="MODULE.texts.form.commercialDescription"
-                                    :titleClass="[config.forms.classes.title]"
-                                    maxlength="100"
-                                    showCharCounter
-                                    hasTextBottom
-                                    :textBottomInfo="productForm.errors?.description"
-                                    xl="12"
-                                    lg="12"/>
-
                                 <div class="col-12">
                                     <div class="br-entity-publication-settings">
                                         <label class="br-entity-switch" for="see_my_web">
@@ -486,10 +524,11 @@
                                                 class="form-check-input"
                                                 type="checkbox"
                                                 role="switch"
+                                                aria-describedby="see_my_web_help"
                                                 @change="syncPublicationSettings">
                                             <span>
                                                 <strong>Publicar producto</strong>
-                                                <small>Permite mostrarlo en el futuro catálogo web o PDF.</small>
+                                                <small id="see_my_web_help">Muestra el producto en el catálogo comercial.</small>
                                             </span>
                                         </label>
 
@@ -503,10 +542,11 @@
                                                 class="form-check-input"
                                                 type="checkbox"
                                                 role="switch"
+                                                aria-describedby="see_my_web_price_help"
                                                 :disabled="!productForm.data.see_my_web">
                                             <span>
                                                 <strong>Mostrar precio</strong>
-                                                <small>Se mostrará junto al producto solo cuando la publicación esté activa.</small>
+                                                <small id="see_my_web_price_help">Muestra el precio junto al producto cuando la publicación está activa.</small>
                                             </span>
                                         </label>
                                     </div>
@@ -611,6 +651,8 @@ import {initCrudModule} from "@System/Helpers/ModuleFactory.js";
 import * as Forms from "@System/Helpers/Forms.js";
 import * as Requests from "@System/Helpers/Requests.js";
 import * as Utils from "@System/Helpers/Utils.js";
+import AddBrand from "@System/Components/Catalogs/AddBrand.vue";
+import AddCategory from "@System/Components/Catalogs/AddCategory.vue";
 
 const MODULE_CONFIG = {
     entity: "products",
@@ -630,9 +672,9 @@ const FORM_TABS = [
     },
     {
         id: "commercial",
-        label: "Configuración comercial",
-        description: "Información adicional y publicación",
-        fields: ["categories", "description", "see_my_web", "see_my_web_price"]
+        label: "Información comercial",
+        description: "Descripción, categorías y publicación",
+        fields: ["description", "categories", "see_my_web", "see_my_web_price"]
     },
     {
         id: "inventory",
@@ -803,6 +845,10 @@ function isValidEan13(value) {
 
 export default {
     name: "ProductsMain",
+    components: {
+        AddBrand,
+        AddCategory
+    },
     data() {
 
         const crudModule = initCrudModule({
@@ -853,6 +899,63 @@ export default {
         getSelectOptionLabel(option) {
 
             return option?.label ?? option?.name ?? option?.value ?? "";
+
+        },
+        upsertReferenceOption(reference, record) {
+
+            if(!record?.id) return null;
+
+            if(!this.options[reference]) {
+                this.options[reference] = {records: []};
+            }
+
+            if(!Array.isArray(this.options[reference].records)) {
+                this.options[reference].records = [];
+            }
+
+            const records = this.options[reference].records;
+            const recordIndex = records.findIndex(item => Number(item.id) === Number(record.id));
+
+            if(recordIndex >= 0) {
+                records.splice(recordIndex, 1, record);
+            }else {
+                records.push(record);
+            }
+
+            records.sort((first, second) =>
+                String(first.name ?? "").localeCompare(String(second.name ?? ""), "es", {sensitivity: "base"})
+            );
+
+            return {
+                code: record.id,
+                label: record.name,
+                data: record
+            };
+
+        },
+        handleBrandCreated({record}) {
+
+            const option = this.upsertReferenceOption("brands", record);
+
+            if(option) {
+                this.productForm.data.brand = option;
+            }
+
+        },
+        handleCategoryCreated({record}) {
+
+            const option = this.upsertReferenceOption("categories", record);
+
+            if(!option) return;
+
+            const selectedCategories = this.productForm.data.categories ?? [];
+            const isSelected = selectedCategories.some(category =>
+                Number(category.code) === Number(option.code)
+            );
+
+            if(!isSelected) {
+                this.productForm.data.categories = [...selectedCategories, option];
+            }
 
         },
         async initParams() {
@@ -1188,6 +1291,15 @@ export default {
             return tab?.fields.some(field => errorFields.some(errorField => errorField === field || errorField.startsWith(`${field}.`))) ?? false;
 
         },
+        moveFormTab(direction) {
+
+            const targetTab = this.formTabs[this.activeFormTabIndex + direction];
+
+            if (targetTab) {
+                this.activeFormTab = targetTab.id;
+            }
+
+        },
         focusFirstTabWithErrors(errors) {
 
             const errorFields = Object.keys(errors ?? {});
@@ -1269,6 +1381,35 @@ export default {
         formTabs() {
 
             return FORM_TABS;
+
+        },
+        activeFormTabIndex() {
+
+            return this.formTabs.findIndex(tab => tab.id === this.activeFormTab);
+
+        },
+        hasPreviousFormTab() {
+
+            return this.activeFormTabIndex > 0;
+
+        },
+        hasNextFormTab() {
+
+            return this.activeFormTabIndex < this.formTabs.length - 1;
+
+        },
+        previousFormTabLabel() {
+
+            const previousTab = this.formTabs[this.activeFormTabIndex - 1];
+
+            return previousTab ? `Ir a ${previousTab.label}` : "No hay una pestaña anterior";
+
+        },
+        nextFormTabLabel() {
+
+            const nextTab = this.formTabs[this.activeFormTabIndex + 1];
+
+            return nextTab ? `Ir a ${nextTab.label}` : "No hay una pestaña siguiente";
 
         },
         routeActions() {
