@@ -116,6 +116,8 @@ Si un almacén activo no tiene valores explícitos, se crea con cantidad y míni
 - Tabla compacta con producto, identificación, precio, inventario, publicación, estado y acción.
 - Código interno y código de barras se muestran como identificadores distintos; el formato EAN-13 se explica únicamente como ayuda técnica en tooltips y documentación.
 - El inventario resume cantidad total y almacenes que alcanzaron su mínimo.
+- La marca aparece inmediatamente debajo del nombre en una cápsula compacta de azul suave, con icono y nombre. Se diferencia del código interno sin añadir otra columna; el icono muestra el tooltip `Marca`.
+- Cuando existe descripción, se conserva una separación adicional después de la marca para que ambos datos puedan leerse como niveles distintos.
 - Los iconos de publicación distinguen disponibilidad del producto y visibilidad del precio.
 - El formulario se organiza en tres pestañas: Datos y precio, Información comercial e Inventario.
 - La primera pestaña agrupa nombre, código interno y código de barras en una fila; precio de venta, precio mínimo y precio máximo en otra.
@@ -125,7 +127,7 @@ Si un almacén activo no tiene valores explícitos, se crea con cantidad y míni
 - La primera pestaña contiene también Marca inmediatamente antes de Estado, evitando separar datos básicos de clasificación durante el alta.
 - La segunda pestaña presenta primero la descripción comercial adicional, luego las categorías y finalmente la publicación, respetando el orden natural de lectura y clasificación.
 - Los controles de publicación asumen la existencia del catálogo comercial: `Publicar producto` indica su visibilidad y `Mostrar precio` expone el importe únicamente cuando la publicación está activa.
-- Marca y Categorías incluyen una acción contextual `Agregar` junto al label. Cada acción abre un modal rápido sin cerrar ni limpiar el formulario de Producto.
+- Marca y Categorías incluyen una acción contextual `Agregar` junto al label, acompañada por un icono circular de suma para reconocerla con rapidez sin competir visualmente con el campo. Cada acción abre un modal rápido sin cerrar ni limpiar el formulario de Producto.
 - Al crear una Marca, el nuevo registro se incorpora al catálogo local y queda seleccionado automáticamente. Al crear una Categoría, se incorpora y añade a la selección múltiple existente.
 - Las altas rápidas no vuelven a solicitar todo `initParams`: actualizan de forma reactiva `options.brands.records` u `options.categories.records`; el backend ya invalida `ProductConfigService` para futuras cargas.
 - El selector de Marca permite limpiar la relación y muestra únicamente marcas activas.
@@ -155,8 +157,8 @@ Si un almacén activo no tiene valores explícitos, se crea con cantidad y míni
 - Cuando se crea o modifica una categoría, `InitParamsCacheInvalidationService` elimina la caché de Productos para que el selector muestre inmediatamente las categorías activas de la empresa.
 - Cuando se crea o modifica una marca, la dependencia `BRANDS` elimina la caché de Marcas y Productos para actualizar el selector sin esperar el TTL.
 - `ProductRequest` extiende `CompanyFormRequest`, normaliza cadenas y usa `BelongsToCompany` tanto para relaciones directas como para almacenes cuya empresa se obtiene mediante sucursal.
-- La base de datos conserva un índice no único `company_id + barcode` para búsquedas eficientes, pero la regla de negocio de unicidad se aplica en backend mediante `UniqueInCompany`.
-- La migración incremental reemplaza de forma condicional el índice único anterior, por lo que funciona tanto en instalaciones existentes como después de un `migrate:fresh`.
+- `items.barcode` no declara índices únicos ni índices compuestos adicionales en la migración base. La regla de negocio de unicidad se aplica en backend mediante `UniqueInCompany`.
+- La tabla `items`, su relación opcional con `brands` y el menú de Marcas se definen directamente en las migraciones iniciales. Mientras el proyecto permita reiniciar el esquema, no se crean migraciones incrementales para modificar estas tablas existentes.
 - `UniqueInCompany` cuenta con pruebas para empresa autenticada, duplicados, exclusión durante edición y filtros adicionales como `type`.
 
 - Código de barras generado, editable y validado con formato EAN-13.
@@ -214,7 +216,11 @@ Si un almacén activo no tiene valores explícitos, se crea con cantidad y míni
 - La alerta de stock usa el texto explícito “N almacén/almacenes con stock bajo” en una etiqueta warning compacta.
 - El inventario sin alertas muestra un check verde con fondo suave y el texto singular o plural “Stock saludable en N almacén/almacenes”.
 - En la pestaña Inventario, cada almacén muestra una etiqueta sutil: “Stock bajo o en el mínimo” o “Inventario saludable”, usando la misma semántica warning/success del listado.
-- En edición, el stock actual se muestra como lectura con `separatorNumber`; la cantidad se modifica desde Gestión de stock, no desde Productos.
+- La nota general de inventario fue retirada para reducir ruido visual. Los encabezados `Stock inicial` o `Stock actual` y `Stock mínimo` incluyen ayudas contextuales reutilizables mediante `br-field-help`.
+- El encabezado de inventario reutiliza `br-table-header-surface`, la misma regla mate aplicada al encabezado del listado, sin degradados alternativos ni bordes inferiores adicionales. `br-label-with-help` centra ópticamente texto e icono.
+- Los tooltips de Marca e inventario usan la variante global compacta `br-tooltip`, con fondo secondary y aparición inmediata, sin animación.
+- En edición, el stock actual conserva su comportamiento de solo lectura y se presenta mediante un `span` neutral formateado con `separatorNumber`; no se renderiza como un control deshabilitado porque la cantidad se modifica desde Gestión de stock, no desde Productos. En creación se conserva `InputNumber` para registrar el stock inicial.
+- Las pestañas reutilizables mantienen una separación visual moderada entre opciones para facilitar el escaneo sin incrementar su altura.
 - Las pestañas reutilizan `nav-pills`, tienen una separación superior más amplia respecto al encabezado y márgenes laterales alineados con los campos del formulario.
 - La navegación ya no usa posición sticky ni desenfoque: forma parte del flujo normal del modal, evitando superposiciones y filtraciones de texto durante el desplazamiento.
 - En escritorio, las pestañas reducen su separación y mantienen las tres etapas visibles; en móvil se presenta únicamente la etapa activa con su título y descripción completos, acompañada por controles anterior/siguiente accesibles y alineados al branding.

@@ -20,11 +20,19 @@ Revisar siempre:
 - Servicio de configuración.
 - FormRequests de store/update.
 - Modelo y relaciones.
-- Migración si hay nuevos campos.
+- Migración base correspondiente si hay cambios de esquema.
 - Vista Blade si cambia entrada Vite.
 - Pagina Vue y componentes usados.
 - Traducciones y mensajes si aplica.
 - Caché de `initParams` si el cambio afecta selects o configuración.
+
+## Política de migraciones durante la etapa reiniciable
+
+- Mientras el proyecto permita ejecutar `migrate:fresh`, modificar directamente la migración base propietaria de la tabla.
+- No crear migraciones incrementales para añadir, retirar o alterar campos, relaciones, restricciones o índices de tablas existentes.
+- Las tablas nuevas relacionadas con un módulo existente deben incorporarse en la migración base del dominio y respetar el orden de sus claves foráneas.
+- Registrar menús y asignaciones iniciales en la migración maestra correspondiente, no en una migración de parche.
+- Solo adoptar migraciones incrementales cuando el proyecto entre en una etapa con datos persistentes que no puedan reiniciarse, o cuando se solicite explícitamente.
 
 ## Caché de `initParams` y dependencias
 
@@ -84,8 +92,13 @@ $config->currencies->records = MasterReferenceDataService::currencies();
 - Evitar colores aislados que no pertenezcan al branding vigente.
 - Usar iconos conocidos para acciones compactas y texto visible para comandos que puedan ser ambiguos.
 - Todo botón que muestre únicamente un icono debe incluir `aria-label` y tooltip descriptivo.
+- Usar `br-table-header-surface` cuando una grilla o matriz interna deba compartir exactamente la superficie mate, contraste y acento de los encabezados de tablas.
+- Usar `br-label-with-help` junto con `br-field-help` para alinear títulos e iconos de ayuda sin introducir alertas de bloque.
+- Los atributos secundarios relevantes de un registro pueden mostrarse con `br-entity-table__attribute`: icono contextual con tooltip y valor compacto, sin crear columnas innecesarias.
 - Inicializar los tooltips con el helper compartido `Alerts.tooltips({})` después de renderizados o actualizados los controles dinámicos.
 - El tooltip debe explicar la acción que ocurrirá, por ejemplo: `Agregar a favoritos` o `Quitar de favoritos`.
+- Los tooltips usan globalmente `br-tooltip`: superficie secondary oscura, tipografía compacta y sombra ligera, sin animación ni retraso. No crear variantes grandes por módulo.
+- Los estados `disabled` y `readonly` de `form-control`, `form-select`, addons, acciones de `input-group` y `vue-select` reutilizan la superficie neutral de `br-branding.css`; deben conservar contraste, opacidad completa, cursor no permitido y cambio visual inmediato.
 - Los `vue-select` múltiples reutilizan chips secondary definidos en `br-branding.css`; no crear estilos locales por módulo para sus valores, separación o controles de eliminación.
 - El layout versiona `br-branding.css` con `filemtime`; los cambios visuales globales invalidan la caché del navegador sin agregar versiones manuales.
 - Mantener estados de foco visibles, áreas de interacción suficientes y navegación por teclado.
@@ -144,8 +157,8 @@ Se busca mejorar sin romper el sistema:
 - Extender `CompanyFormRequest` en nuevos CRUD propiedad de una empresa.
 - Usar `BelongsToCompany` para ids directos; si la empresa depende de otra tabla, configurar joins y columnas calificadas en la misma regla.
 - Normalizar strings mediante `normalizedStringFields()` y no repetir `trim()` en controladores.
-- Reforzar invariantes estructurales con claves foráneas e índices únicos cuando la regla sea permanente.
-- Cuando una unicidad pueda cambiar por lógica comercial, usar una regla backend reutilizable como `UniqueInCompany` y conservar un índice no único para que la validación siga siendo eficiente.
+- Reforzar relaciones estructurales con claves foráneas.
+- Mantener las reglas comerciales de unicidad en backend mediante una regla reutilizable como `UniqueInCompany`; no añadir restricciones únicas o índices compuestos solo para representar esa validación.
 - Añadir una comprobación de servicio cuando la entidad pueda modificarse fuera del `FormRequest` del endpoint.
 - No exponer datos de otra empresa en listados o initParams.
 - No confiar en `company_id` enviado desde frontend.

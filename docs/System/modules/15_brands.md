@@ -24,7 +24,8 @@ La relación elegida es uno a muchos:
 - Entrada Vite: `resources/js/System/Pages/Catalogs/brands/main.js`
 - Blade: `resources/views/System/general/Catalogs/brands/main.blade.php`
 - Traducciones: `resources/lang/es/System/Catalogs/brand.php`
-- Migración: `database/migrations/2026_06_08_000001_create_brands_and_add_brand_to_items.php`
+- Migración base: `database/migrations/2024_02_11_223124_create_init_companies_table.php`
+- Registro de menú: `database/migrations/2024_01_11_223124_create_init_masters_table.php`
 - Tablas: `brands`, `items`
 
 ## Tabla `brands`
@@ -33,20 +34,17 @@ Campos:
 
 - `id`: identificador.
 - `company_id`: empresa propietaria.
-- `internal_code`: código interno, único dentro de la empresa.
-- `name`: nombre comercial, único dentro de la empresa.
+- `internal_code`: código interno; su unicidad dentro de la empresa se valida en backend.
+- `name`: nombre comercial; su unicidad dentro de la empresa se valida en backend.
 - `description`: descripción opcional de hasta 250 caracteres en la API.
 - `status`: `active` o `inactive`.
 - Auditoría: `created_at`, `created_by`, `updated_at`, `updated_by`.
 
-Restricciones:
+Restricciones estructurales:
 
 - Clave foránea `company_id -> companies.id` con eliminación en cascada.
-- Único compuesto `company_id + internal_code`.
-- Único compuesto `company_id + name`.
-- Índice `company_id + status + name` para listados y selectores.
 
-La migración es incremental: crea el esquema, añade `items.brand_id`, registra la subsección de menú y la habilita para empresas activas sin requerir `migrate:fresh`.
+La tabla `brands`, la relación `items.brand_id`, la subsección de menú y su habilitación inicial se consolidan en las migraciones base. En la etapa actual del proyecto, los cambios sobre tablas existentes se realizan directamente en esos archivos y se aplican mediante reinicio de migraciones.
 
 ## Relación con Productos
 
@@ -65,7 +63,8 @@ La migración es incremental: crea el esquema, añade `items.brand_id`, registra
 - Código interno y nombre se recortan antes de validar.
 - Las cadenas vacías se convierten a `null`.
 - El código interno solo admite letras, números, punto, guion y guion bajo.
-- Código interno y nombre son únicos por empresa tanto en FormRequest como en base de datos.
+- Código interno y nombre son únicos por empresa mediante `UniqueInCompany` en el FormRequest.
+- La tabla no declara restricciones únicas ni índices compuestos para estos campos; la regla permanece en backend para poder evolucionar sin acoplarla a MySQL.
 - El estado solo admite `active` o `inactive`.
 - El servicio vuelve a comprobar el `company_id` al editar, evitando actualizaciones cruzadas aunque se invoque fuera del controlador.
 - El frontend valida campos obligatorios, pero el backend mantiene la autoridad final.

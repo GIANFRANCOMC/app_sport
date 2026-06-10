@@ -273,7 +273,8 @@ return new class extends Migration {
             ["id" => 51, "section_id" => 5, "slug" => "sc_items-services", "name" => "items-services", "description" => "Configura los servicios ofrecidos por la empresa.", "order" => 2, "dom_id" => "menu-items-services", "dom_label" => "Servicios", "dom_route" => "services.index"],
             ["id" => 52, "section_id" => 5, "slug" => "sc_items-subscriptions", "name" => "items-subscriptions", "description" => "Define planes de membresía, duración y precio de venta.", "order" => 3, "dom_id" => "menu-items-subscriptions", "dom_label" => "Membresías", "dom_route" => "subscriptions.index"],
             ["id" => 53, "section_id" => 5, "slug" => "sc_items-categories", "name" => "items-categories", "description" => "Organiza productos y servicios mediante categorías.", "order" => 4, "dom_id" => "menu-items-categories", "dom_label" => "Categorías", "dom_route" => "categories.index"],
-            ["id" => 54, "section_id" => 5, "slug" => "sc_items-stocks_management", "name" => "items-stocks_management", "description" => "Supervisa existencias y movimientos de inventario.", "order" => 5, "dom_id" => "menu-items-stocks_management", "dom_label" => "Gestión de stock", "dom_route" => "stocks_management.index"],
+            ["id" => 55, "section_id" => 5, "slug" => "sc_items-brands", "name" => "items-brands", "description" => "Administra las marcas utilizadas para identificar y agrupar productos.", "order" => 5, "dom_id" => "menu-items-brands", "dom_label" => "Marcas", "dom_route" => "brands.index"],
+            ["id" => 54, "section_id" => 5, "slug" => "sc_items-stocks_management", "name" => "items-stocks_management", "description" => "Supervisa existencias y movimientos de inventario.", "order" => 6, "dom_id" => "menu-items-stocks_management", "dom_label" => "Gestión de stock", "dom_route" => "stocks_management.index"],
 
             // Infrastructure
             ["id" => 60, "section_id" => 6, "slug" => "sc_infrastructure-branches", "name" => "infrastructure-branches", "description" => "Administra sedes, datos de contacto y capacidad.", "order" => 1, "dom_id" => "menu-infrastructure-branches", "dom_label" => "Sucursales", "dom_route" => "branches.index"],
@@ -304,6 +305,7 @@ return new class extends Migration {
             ["company_id" => 1, "sub_section_id" => 51],
             ["company_id" => 1, "sub_section_id" => 52],
             ["company_id" => 1, "sub_section_id" => 53],
+            ["company_id" => 1, "sub_section_id" => 55],
             // ["company_id" => 1, "sub_section_id" => 54],
             ["company_id" => 1, "sub_section_id" => 60],
             ["company_id" => 1, "sub_section_id" => 61],

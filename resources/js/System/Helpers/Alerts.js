@@ -329,7 +329,16 @@ export function tooltips(options = {}) {
 
                 }
 
-                new Bootstrap.Tooltip(el, {animation: false});
+                new Bootstrap.Tooltip(el, {
+                    animation: false,
+                    boundary: "viewport",
+                    customClass: "br-tooltip",
+                    delay: {
+                        show: 0,
+                        hide: 0
+                    },
+                    trigger: "hover focus"
+                });
 
             });
 

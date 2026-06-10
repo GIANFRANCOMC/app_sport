@@ -55,6 +55,28 @@ class UniqueInCompanyTest extends TestCase {
 
     }
 
+    public function test_it_rejects_a_duplicate_brand_name_within_the_company(): void {
+
+        Auth::shouldReceive("user")
+            ->once()
+            ->andReturn((object) ["company_id" => 7]);
+
+        $query = $this->mockQuery(exists: true);
+
+        DB::shouldReceive("table")
+            ->once()
+            ->with("brands")
+            ->andReturn($query);
+
+        $query->shouldReceive("where")->once()->with("name", "HP")->andReturnSelf();
+        $query->shouldReceive("where")->once()->with("company_id", 7)->andReturnSelf();
+
+        $rule = new UniqueInCompany("brands", "name", null, [], "nombre");
+
+        $this->assertNotSame([], $this->validateRule($rule, "name", "HP"));
+
+    }
+
     public function test_it_supports_type_scopes_and_excludes_the_current_record(): void {
 
         Auth::shouldReceive("user")

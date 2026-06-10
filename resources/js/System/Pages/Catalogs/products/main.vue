@@ -31,7 +31,7 @@
                         <col class="br-entity-table__col-status">
                         <col class="br-entity-table__col-actions">
                     </colgroup>
-                    <thead>
+                    <thead class="br-table-header-surface">
                         <tr>
                             <th class="text-center">Producto</th>
                             <th class="text-center">Identificación</th>
@@ -53,12 +53,21 @@
                             <tr v-for="record in entityList.records.data" :key="record.id">
                                 <td>
                                     <span class="br-entity-table__name" v-text="record.name"></span>
+                                    <span v-if="record.brand" class="br-entity-table__attribute">
+                                        <span
+                                            class="br-entity-table__attribute-icon"
+                                            data-bs-toggle="tooltip"
+                                            data-bs-placement="top"
+                                            title="Marca"
+                                            aria-label="Marca"
+                                            tabindex="0">
+                                            <i class="fa-solid fa-tag" aria-hidden="true"></i>
+                                        </span>
+                                        <strong v-text="record.brand.name"></strong>
+                                    </span>
                                     <span v-if="record.description" class="br-entity-table__description" v-text="record.description"></span>
                                     <span v-if="record.category_items?.length" class="br-entity-table__meta">
                                         {{ record.category_items.length }} {{ record.category_items.length === 1 ? "categoría" : "categorías" }}
-                                    </span>
-                                    <span v-if="record.brand" class="br-entity-table__meta">
-                                        Marca: {{ record.brand.name }}
                                     </span>
                                 </td>
                                 <td>
@@ -559,23 +568,39 @@
                             id="product-tab-inventory"
                             class="br-entity-form-section mb-0"
                             role="tabpanel">
-                            <p class="br-entity-inventory-note">
-                                <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
-                                <span v-if="isUpdate">
-                                    Ajusta el mínimo de alerta. El stock actual se modifica desde Gestión de stock.
-                                </span>
-                                <span v-else>
-                                    Registra el stock de apertura y el mínimo necesario para cada almacén.
-                                </span>
-                            </p>
-
                             <div v-if="productForm.errors?.inventory" class="alert alert-danger py-2" v-text="firstError(productForm.errors.inventory)"></div>
 
                             <div v-if="productForm.data.inventory.length" class="br-entity-inventory">
-                                <div class="br-entity-inventory__head" aria-hidden="true">
+                                <div class="br-entity-inventory__head br-table-header-surface">
                                     <span>Almacén</span>
-                                    <span>{{ isUpdate ? "Stock actual" : "Stock inicial" }}</span>
-                                    <span>Stock mínimo</span>
+                                    <span class="br-label-with-help">
+                                        <span>{{ isUpdate ? "Stock actual" : "Stock inicial" }}</span>
+                                        <button
+                                            type="button"
+                                            class="br-field-help"
+                                            data-bs-toggle="tooltip"
+                                            data-bs-placement="top"
+                                            :title="isUpdate
+                                                ? 'Cantidad disponible actualmente en el almacén. Se modifica desde Gestión de stock.'
+                                                : 'Cantidad disponible al registrar el producto en este almacén.'"
+                                            :aria-label="isUpdate
+                                                ? 'Ayuda sobre stock actual'
+                                                : 'Ayuda sobre stock inicial'">
+                                            <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
+                                        </button>
+                                    </span>
+                                    <span class="br-label-with-help">
+                                        <span>Stock mínimo</span>
+                                        <button
+                                            type="button"
+                                            class="br-field-help"
+                                            data-bs-toggle="tooltip"
+                                            data-bs-placement="top"
+                                            title="Cantidad mínima requerida en el almacén. Al alcanzarla, el sistema muestra una alerta de stock."
+                                            aria-label="Ayuda sobre stock mínimo">
+                                            <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
+                                        </button>
+                                    </span>
                                 </div>
 
                                 <div
@@ -593,13 +618,21 @@
                                     </div>
 
                                     <div class="br-entity-inventory__field">
+                                        <span
+                                            v-if="isUpdate"
+                                            class="br-entity-readonly-metric"
+                                            aria-label="Stock actual">
+                                            <span class="br-entity-inventory__mobile-label">Stock actual</span>
+                                            <strong v-text="separatorNumber(inventory.initial_stock)"></strong>
+                                            <small>unidades</small>
+                                        </span>
                                         <InputNumber
+                                            v-else
                                             v-model="inventory.initial_stock"
-                                            :title="isUpdate ? 'Stock actual' : 'Stock inicial'"
+                                            title="Stock inicial"
                                             :titleClass="['br-entity-inventory__mobile-label']"
                                             :minValue="0"
                                             :decimals="2"
-                                            :disabled="isUpdate"
                                             hasTextBottom
                                             :textBottomInfo="inventoryFieldErrors(index, 'initial_stock')"/>
                                     </div>

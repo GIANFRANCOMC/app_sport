@@ -106,7 +106,7 @@ Marcas comerciales propias de cada empresa. Campos: `company_id`, `internal_code
 
 Relaciones: pertenece a `companies`; tiene muchos productos mediante `items.brand_id`.
 
-Restricciones: `company_id + internal_code` y `company_id + name` son únicos. El índice `company_id + status + name` optimiza listados y selectores.
+Reglas backend: `company_id + internal_code` y `company_id + name` se validan como únicos mediante `UniqueInCompany`. La tabla no declara restricciones únicas ni índices compuestos adicionales para estos campos.
 
 ### categories
 
@@ -118,7 +118,7 @@ Relaciones: pertenece a empresa; se une a items por `category_items`.
 
 Productos, servicios y membresias de catalogo. Campos: `company_id`, `brand_id`, `currency_id`, `internal_code`, `barcode`, `name`, `description`, `price`, `min_price`, `max_price`, `type`, `duration_type`, `duration_value`, `see_my_web`, `see_my_web_price`, `status`.
 
-`barcode` almacena un EAN-13 opcional a nivel de tabla. La base de datos mantiene un índice no único `company_id + barcode` para acelerar búsquedas; la unicidad por empresa es una regla de negocio validada en backend mediante `UniqueInCompany`. El módulo Productos lo exige para nuevos productos. `see_my_web` controla la publicación del item en el catálogo comercial y `see_my_web_price` controla si también se expone el precio.
+`barcode` almacena un EAN-13 opcional a nivel de tabla. No declara un índice único ni un índice compuesto adicional; la unicidad por empresa es una regla de negocio validada en backend mediante `UniqueInCompany`. El módulo Productos lo exige para nuevos productos. `see_my_web` controla la publicación del item en el catálogo comercial y `see_my_web_price` controla si también se expone el precio.
 
 Relaciones: pertenece a empresa, moneda y opcionalmente marca; tiene categorias; usado por ventas, stock y portal publico. `brand_id` usa `ON DELETE SET NULL`.
 

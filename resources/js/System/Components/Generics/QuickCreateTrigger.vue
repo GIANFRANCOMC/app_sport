@@ -48,7 +48,7 @@ export default {
         },
         icon: {
             type: String,
-            default: "fa-solid fa-plus"
+            default: "fa-solid fa-circle-plus"
         },
         disabled: {
             type: Boolean,

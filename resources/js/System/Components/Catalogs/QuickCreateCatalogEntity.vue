@@ -173,7 +173,7 @@ export default {
         },
         triggerIcon: {
             type: String,
-            default: "fa-solid fa-plus"
+            default: "fa-solid fa-circle-plus"
         },
         triggerClass: {
             type: [String, Array, Object],
