@@ -13,31 +13,31 @@ export function validateField(value, rules, fieldName = "") {
     const errors = [];
 
     if (rules.required && !Utils.isDefined({ value })) {
-        errors.push(`${fieldName ? `${fieldName}: ` : ""}Es obligatorio`);
+        errors.push("Campo obligatorio.");
     }
 
     if (rules.email && Utils.isDefined({ value }) && !Utils.isValidEmail(value)) {
-        errors.push(`${fieldName ? `${fieldName}: ` : ""}Formato de correo inválido`);
+        errors.push("Ingrese un correo válido.");
     }
 
     if (rules.url && Utils.isDefined({ value }) && !Utils.isValidUrl(value)) {
-        errors.push(`${fieldName ? `${fieldName}: ` : ""}URL inválida`);
+        errors.push("Ingrese una URL válida.");
     }
 
     if (rules.ip && Utils.isDefined({ value }) && !Utils.isValidIp(value)) {
-        errors.push(`${fieldName ? `${fieldName}: ` : ""}IP inválida`);
+        errors.push("Ingrese una dirección IP válida.");
     }
 
     if (rules.number && Utils.isDefined({ value }) && !Utils.isNumber({ value, minValue: rules.min ?? 0 })) {
-        errors.push(`${fieldName ? `${fieldName}: ` : ""}Debe ser un número válido`);
+        errors.push("Ingrese un número válido.");
     }
 
-    if (rules.min && Utils.isDefined({ value }) && Number(value) < rules.min) {
-        errors.push(`${fieldName ? `${fieldName}: ` : ""}Debe ser al menos ${rules.min}`);
+    if (rules.min !== undefined && rules.min !== null && Utils.isDefined({ value }) && Number(value) < rules.min) {
+        errors.push(`El valor mínimo permitido es ${rules.min}.`);
     }
 
-    if (rules.max && Utils.isDefined({ value }) && Number(value) > rules.max) {
-        errors.push(`${fieldName ? `${fieldName}: ` : ""}No debe ser mayor que ${rules.max}`);
+    if (rules.max !== undefined && rules.max !== null && Utils.isDefined({ value }) && Number(value) > rules.max) {
+        errors.push(`El valor máximo permitido es ${rules.max}.`);
     }
 
     // Ejecutar validación custom primero, ya que si falla el formato básico,
@@ -53,11 +53,11 @@ export function validateField(value, rules, fieldName = "") {
 
     // Solo validar longitud si no hay error custom (formato básico correcto)
     if (rules.minLength && Utils.isDefined({ value }) && String(value).length < rules.minLength) {
-        errors.push(`${fieldName ? `${fieldName}: ` : ""}Debe tener al menos ${rules.minLength} caracteres`);
+        errors.push(`Debe tener al menos ${rules.minLength} caracteres.`);
     }
 
     if (rules.maxLength && Utils.isDefined({ value }) && String(value).length > rules.maxLength) {
-        errors.push(`${fieldName ? `${fieldName}: ` : ""}No debe exceder ${rules.maxLength} caracteres`);
+        errors.push(`Debe tener como máximo ${rules.maxLength} caracteres.`);
     }
 
     // Retornar solo el primer error si hay múltiples
@@ -122,5 +122,3 @@ export const CommonValidationRules = {
     numberRange: (min, max) => ({ required: true, number: true, min, max }),
     onlyDigits: (fieldName = "") => ({ custom: (value) => validateOnlyDigits(value, fieldName) })
 };
-
-

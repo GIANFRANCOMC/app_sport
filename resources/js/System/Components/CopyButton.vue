@@ -13,6 +13,8 @@
 </template>
 
 <script>
+import {createTooltip} from "../Helpers/Alerts.js";
+
 export default {
     name: "CopyButton",
     props: {
@@ -164,19 +166,8 @@ export default {
         refreshTooltip() {
 
             const button = this.$refs.button;
-            const Bootstrap = window.bootstrap;
 
-            if(!button || !Bootstrap?.Tooltip) return null;
-
-            const currentTitle = this.tooltipText;
-            const existing = Bootstrap.Tooltip.getInstance(button);
-
-            existing?.dispose();
-            button.setAttribute("title", currentTitle);
-            button.removeAttribute("data-bs-original-title");
-            button.removeAttribute("aria-describedby");
-
-            return new Bootstrap.Tooltip(button, {animation: false});
+            return createTooltip(button, this.tooltipText);
 
         },
         disposeTooltip() {

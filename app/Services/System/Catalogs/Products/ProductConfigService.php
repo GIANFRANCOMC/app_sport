@@ -12,6 +12,7 @@ use App\Services\System\Base\{
     CompanyReferenceDataService,
     MasterReferenceDataService
 };
+use App\Services\System\Organizations\Companies\CompanySettingService;
 
 final class ProductConfigService extends BaseConfigService {
 
@@ -38,6 +39,10 @@ final class ProductConfigService extends BaseConfigService {
             "warehouses" => self::data([
                 "records" => $references->stockWarehouses()
             ]),
+            "internal_code_prefixes" => CompanySettingService::group(
+                $companyId,
+                CompanySettingService::INTERNAL_CODE_PREFIXES
+            ),
             "statuses" => Item::getStatuses()
         ]);
 

@@ -270,12 +270,17 @@ body.br-layout .table.table-sm > thead > tr > th {
 
 body.br-layout .form-label {
   margin-bottom: 1px;
+  color: color-mix(in srgb, var(--br-secondary) 72%, var(--br-text-muted));
+  font-size: 0.78rem !important;
+  font-weight: 600 !important;
+  line-height: 1.2;
+  letter-spacing: 0;
 }
 
 /* -------------------------------------------------------------------------
  * [br] Tooltips compactos
  * ------------------------------------------------------------------------- */
-.br-layout .tooltip.br-tooltip {
+.br-layout .tooltip {
   --bs-tooltip-max-width: 13rem;
   --bs-tooltip-padding-x: 0.45rem;
   --bs-tooltip-padding-y: 0.28rem;
@@ -286,7 +291,11 @@ body.br-layout .form-label {
   pointer-events: none;
 }
 
-.br-layout .tooltip.br-tooltip .tooltip-inner {
+.br-layout .tooltip.fade {
+  transition: none !important;
+}
+
+.br-layout .tooltip .tooltip-inner {
   max-width: var(--bs-tooltip-max-width);
   padding: var(--bs-tooltip-padding-y) var(--bs-tooltip-padding-x);
   border-radius: 0.25rem;
@@ -1595,6 +1604,51 @@ body.br-layout .modal-header.br-modal-header .btn-header-modal:focus-visible {
   color: var(--br-text-muted) !important;
 }
 
+.br-layout .br-form-control-group {
+  border-radius: var(--br-radius-sm);
+  transition: box-shadow 0.16s ease;
+}
+
+.br-layout .br-form-control-group:hover:not(.is-invalid):not(:focus-within) {
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--br-primary) 24%, transparent);
+}
+
+.br-layout .br-form-control-group:hover:not(.is-invalid):not(:focus-within) .form-control,
+.br-layout .br-form-control-group:hover:not(.is-invalid):not(:focus-within) .form-select,
+.br-layout .br-form-control-group:hover:not(.is-invalid):not(:focus-within) .input-group-text,
+.br-layout .br-form-control-group:hover:not(.is-invalid):not(:focus-within) .br-input-action,
+.br-layout .br-form-control-group:hover:not(.is-invalid):not(:focus-within) .vs__dropdown-toggle,
+.br-layout .br-form-control-group:hover:not(.is-invalid):not(:focus-within) .select2-selection {
+  border-color: color-mix(in srgb, var(--br-primary) 32%, var(--br-border)) !important;
+}
+
+.br-layout .br-form-control-group.is-invalid {
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--br-danger) 16%, transparent);
+}
+
+.br-layout .br-form-control-group.is-invalid .form-control,
+.br-layout .br-form-control-group.is-invalid .form-select,
+.br-layout .br-form-control-group.is-invalid .input-group-text,
+.br-layout .br-form-control-group.is-invalid .br-input-action,
+.br-layout .br-form-control-group.is-invalid .vs__dropdown-toggle,
+.br-layout .br-form-control-group.is-invalid .select2-selection {
+  border-color: var(--br-danger) !important;
+  box-shadow: none !important;
+}
+
+.br-layout .br-form-control-group.is-invalid:focus-within {
+  box-shadow: 0 0 0 0.16rem color-mix(in srgb, var(--br-danger) 17%, transparent);
+}
+
+.br-layout .br-form-error {
+  display: block;
+  margin-top: 0.16rem;
+  color: var(--br-danger) !important;
+  font-size: 0.66rem;
+  font-weight: 500;
+  line-height: 1.25;
+}
+
 .br-input-action:hover,
 .br-input-action:focus-visible {
   color: var(--br-primary-active);
@@ -2009,37 +2063,48 @@ body.br-layout .modal-header.br-modal-header .btn-header-modal:focus-visible {
   justify-content: center;
   gap: 0.28rem;
   margin-left: 0.42rem;
-  padding: 0.1rem 0.3rem;
+  padding: 0;
   border: 0;
-  border-radius: var(--br-radius-sm);
+  border-radius: 0;
   background: transparent;
-  color: var(--br-secondary);
+  color: var(--br-primary);
   font-family: inherit;
   font-size: 0.7rem;
-  font-weight: 700;
-  line-height: 1.2;
+  font-weight: 600;
+  line-height: 1;
   text-decoration: none;
-  vertical-align: baseline;
+  vertical-align: middle;
   cursor: pointer;
   transition: var(--br-transition);
 }
 
 .br-quick-create-trigger i {
-  color: var(--br-primary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: currentColor;
   font-size: 0.68rem;
+  line-height: 1;
+}
+
+.br-quick-create-trigger span {
+  display: inline-flex;
+  align-items: center;
+  line-height: 1;
 }
 
 .br-quick-create-trigger:hover,
 .br-quick-create-trigger:focus-visible {
-  background: color-mix(in srgb, var(--br-primary-soft) 58%, transparent);
+  background: transparent;
   color: var(--br-primary-active);
-  text-decoration: none;
+  text-decoration: underline;
+  text-underline-offset: 0.12rem;
   outline: 0;
 }
 
 .br-quick-create-trigger:hover i,
 .br-quick-create-trigger:focus-visible i {
-  color: var(--br-primary-active);
+  color: currentColor;
 }
 
 .br-quick-create-trigger:focus-visible {
@@ -2172,6 +2237,43 @@ body.br-layout .modal-header.br-modal-header .btn-header-modal:focus-visible {
   background: #f7f8fa;
 }
 
+.br-quick-create-modal {
+  z-index: 1095 !important;
+}
+
+body:has(.br-quick-create-modal.show) .modal-backdrop:last-of-type {
+  z-index: 1090;
+}
+
+.br-quick-create-modal .modal-dialog {
+  width: min(36rem, calc(100vw - 1rem));
+  max-width: 36rem;
+}
+
+.br-quick-create-modal .modal-content {
+  overflow: hidden;
+}
+
+.br-quick-create-modal .modal-body.br-quick-create-modal__body {
+  padding: 1rem 1.15rem 1.1rem !important;
+  background: var(--br-neutral-soft);
+}
+
+.br-internal-code-prefix {
+  min-width: 2.85rem;
+  justify-content: center;
+  padding-inline: 0.42rem;
+  background: var(--br-surface-elevated) !important;
+  color: var(--br-secondary);
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+.swal2-container {
+  z-index: 30000 !important;
+}
+
 @media (max-width: 575.98px) {
   .br-quick-create-dialog {
     width: calc(100vw - 0.75rem);
@@ -2187,6 +2289,16 @@ body.br-layout .modal-header.br-modal-header .btn-header-modal:focus-visible {
   .br-quick-create-dialog__footer {
     padding-right: 0.9rem;
     padding-left: 0.9rem;
+  }
+
+  .br-quick-create-modal .modal-dialog {
+    width: calc(100vw - 0.75rem);
+    margin-inline: auto;
+  }
+
+  .br-quick-create-modal .modal-body.br-quick-create-modal__body {
+    padding-right: 0.9rem !important;
+    padding-left: 0.9rem !important;
   }
 }
 
@@ -2801,10 +2913,38 @@ html:not(.layout-menu-collapsed)
   box-shadow: var(--br-shadow-primary);
 }
 
-.br-layout .form-check-input:checked,
-.br-layout .form-check-input[type="checkbox"]:checked {
+body.br-layout .form-check-input {
+  accent-color: var(--br-success);
+}
+
+body.br-layout .form-check-input:not(:checked) {
+  border-color: var(--br-border-strong) !important;
+  background-color: var(--br-surface-elevated) !important;
+  box-shadow: none !important;
+}
+
+body.br-layout .form-check-input:checked,
+body.br-layout .form-check-input[type="checkbox"]:checked {
   background-color: var(--br-success) !important;
   border-color: var(--br-success) !important;
+  box-shadow: none !important;
+}
+
+body.br-layout .form-check-input:focus,
+body.br-layout .form-check-input:focus-visible {
+  border-color: var(--br-success) !important;
+  box-shadow: 0 0 0 0.16rem color-mix(in srgb, var(--br-success) 18%, transparent) !important;
+  outline: 0;
+}
+
+body.br-layout .form-check-input:active {
+  filter: none !important;
+}
+
+body.br-layout .form-check-input:disabled {
+  border-color: var(--br-border) !important;
+  background-color: var(--br-neutral-soft) !important;
+  box-shadow: none !important;
 }
 
 .br-layout .form-range::-webkit-slider-thumb {

@@ -119,16 +119,16 @@ Si un almacén activo no tiene valores explícitos, se crea con cantidad y míni
 - La marca aparece inmediatamente debajo del nombre en una cápsula compacta de azul suave, con icono y nombre. Se diferencia del código interno sin añadir otra columna; el icono muestra el tooltip `Marca`.
 - Cuando existe descripción, se conserva una separación adicional después de la marca para que ambos datos puedan leerse como niveles distintos.
 - Los iconos de publicación distinguen disponibilidad del producto y visibilidad del precio.
-- El formulario se organiza en tres pestañas: Datos y precio, Información comercial e Inventario.
+- El formulario se organiza en tres pestañas: Datos y precio, Inventario e Información adicional.
 - La primera pestaña agrupa nombre, código interno y código de barras en una fila; precio de venta, precio mínimo y precio máximo en otra.
 - El estado se selecciona mediante el selector reutilizable `vue-select`, con las mismas reglas visuales y de interacción que el resto de selectores del sistema.
 - El selector de estado ocupa cuatro columnas en escritorio para evitar opciones innecesariamente anchas.
 - En resoluciones `lg`, el selector de estado ocupa seis columnas para conservar una proporción cómoda.
 - La primera pestaña contiene también Marca inmediatamente antes de Estado, evitando separar datos básicos de clasificación durante el alta.
-- La segunda pestaña presenta primero la descripción comercial adicional, luego las categorías y finalmente la publicación, respetando el orden natural de lectura y clasificación.
-- Los controles de publicación asumen la existencia del catálogo comercial: `Publicar producto` indica su visibilidad y `Mostrar precio` expone el importe únicamente cuando la publicación está activa.
-- Marca y Categorías incluyen una acción contextual `Agregar` junto al label, acompañada por un icono circular de suma para reconocerla con rapidez sin competir visualmente con el campo. Cada acción abre un modal rápido sin cerrar ni limpiar el formulario de Producto.
-- Al crear una Marca, el nuevo registro se incorpora al catálogo local y queda seleccionado automáticamente. Al crear una Categoría, se incorpora y añade a la selección múltiple existente.
+- La segunda pestaña corresponde a Inventario y la tercera, `Información adicional`, presenta primero la descripción comercial, luego las categorías y finalmente la visibilidad para clientes.
+- La sección `Visibilidad para clientes` explica expresamente que publicar el producto o mostrar su precio controla la información visible fuera de la plataforma y no modifica el estado interno Activo o Inactivo.
+- Marca y Categorías incluyen una acción contextual `Agregar` presentada como enlace azul primary, acompañada por un icono circular de suma alineado verticalmente con el texto. Cada acción abre un modal rápido sin cerrar ni limpiar el formulario de Producto.
+- Al crear una Marca o Categoría, el registro se incorpora a las opciones disponibles sin reemplazar ni ampliar automáticamente la selección actual del producto.
 - Las altas rápidas no vuelven a solicitar todo `initParams`: actualizan de forma reactiva `options.brands.records` u `options.categories.records`; el backend ya invalida `ProductConfigService` para futuras cargas.
 - El selector de Marca permite limpiar la relación y muestra únicamente marcas activas.
 - Los selectores reutilizan una `X` tipográfica compacta y centrada ópticamente con la flecha para limpiar valores, evitando deformaciones del SVG y manteniendo un área clicable cómoda.
@@ -140,6 +140,7 @@ Si un almacén activo no tiene valores explícitos, se crea con cantidad y míni
 - Los campos de stock reutilizan el componente `InputNumber`.
 - Las sucursales y almacenes se muestran juntos para evitar ambigüedad.
 - En móvil, cada fila de inventario pasa a disposición vertical.
+- En móvil, al ocultarse el encabezado tabular, cada control conserva su label visible (`Stock inicial`, `Stock actual` o `Stock mínimo`) y se agrupa en una superficie neutral para mantener el contexto.
 - Los controles y estados usan los tokens `--br-*` del branding.
 - Los botones de generación y edición usan iconos con tooltip.
 
@@ -194,6 +195,10 @@ Si un almacén activo no tiene valores explícitos, se crea con cantidad y míni
 - Las ayudas de campo reutilizan `br-field-help`; los controles compartidos residen en `br-branding.css` y no dependen del módulo Productos.
 - El campo Estado se mantiene como select2 no buscable para conservar consistencia con los formularios existentes.
 - Los prefijos de moneda reutilizan `br-currency-prefix`, con fondo blanco integrado al input, símbolo compacto tipo icono, color secondary suavizado y borde compartido.
+- El código interno usa `company_settings.internal_code_prefixes.product` (`PRO` por defecto). El prefijo se presenta integrado al inicio del input y el backend lo normaliza mediante `InternalCodeService`.
+- Las altas rápidas de Marca y Categoría usan modales Bootstrap reales. El loader SweetAlert se muestra por encima de toda la interfaz y bloquea la interacción durante el guardado.
+- Los errores inline son breves; los resúmenes frontend/backend muestran el nombre del campo mediante `Forms.getDescriptiveErrors`.
+- El listado muestra nombre, marca y descripción. Se retiró la cantidad de categorías para reducir ruido visual.
 - El prefijo monetario usa `br-currency-prefix__symbol` para controlar su escala de forma independiente, con color secondary, peso medio y separación compacta respecto del importe.
 - El CTA utiliza “Agregar producto” o “Editar producto”; durante el proceso muestra “Agregando” o “Editando” sin puntos suspensivos.
 - El CTA principal no usa un icono fijo, porque su acción cambia entre agregar y editar.
@@ -219,6 +224,8 @@ Si un almacén activo no tiene valores explícitos, se crea con cantidad y míni
 - La nota general de inventario fue retirada para reducir ruido visual. Los encabezados `Stock inicial` o `Stock actual` y `Stock mínimo` incluyen ayudas contextuales reutilizables mediante `br-field-help`.
 - El encabezado de inventario reutiliza `br-table-header-surface`, la misma regla mate aplicada al encabezado del listado, sin degradados alternativos ni bordes inferiores adicionales. `br-label-with-help` centra ópticamente texto e icono.
 - Los tooltips de Marca e inventario usan la variante global compacta `br-tooltip`, con fondo secondary y aparición inmediata, sin animación.
+- `CopyButton` conserva esa variante compacta al alternar entre `Copiar` y `Copiado`, porque recrea su instancia mediante la configuración centralizada de `Alerts.createTooltip`.
+- Los switches `Publicar producto` y `Mostrar precio` usan verde success al seleccionarse, foco verde suave y estado neutral al desmarcarse o deshabilitarse, sin heredar el morado del tema base.
 - En edición, el stock actual conserva su comportamiento de solo lectura y se presenta mediante un `span` neutral formateado con `separatorNumber`; no se renderiza como un control deshabilitado porque la cantidad se modifica desde Gestión de stock, no desde Productos. En creación se conserva `InputNumber` para registrar el stock inicial.
 - Las pestañas reutilizables mantienen una separación visual moderada entre opciones para facilitar el escaneo sin incrementar su altura.
 - Las pestañas reutilizan `nav-pills`, tienen una separación superior más amplia respecto al encabezado y márgenes laterales alineados con los campos del formulario.
@@ -228,11 +235,16 @@ Si un almacén activo no tiene valores explícitos, se crea con cantidad y míni
 - Los márgenes horizontales de la navegación y del contenido comparten la variable `--br-entity-modal-content-space-x`, ampliada para mejorar la respiración del formulario y ajustada de forma responsive.
 - La separación superior entre el encabezado del modal y la navegación se controla mediante `--br-entity-modal-body-space-y`, incrementada para mejorar la jerarquía y respiración visual.
 - La distancia entre navegación y campos se controla de manera independiente con `--br-entity-modal-tabs-content-space-y`; es más compacta que la separación superior y se reduce adicionalmente en móvil.
-- Las pestañas mantienen una separación intermedia de `0.28rem`, suficiente para distinguir cada etapa sin fragmentar visualmente el flujo.
+- Las pestañas mantienen una separación intermedia de `0.48rem`, suficiente para distinguir cada etapa sin fragmentar visualmente el flujo.
 - En pantallas de hasta `767.98px`, `br-entity-modal` elimina el límite intermedio de Bootstrap y usa casi todo el ancho disponible, dejando únicamente `0.375rem` por lado.
 - `AddCategory` y `AddBrand` reutilizan `QuickCreateCatalogEntity` y `QuickCreateTrigger`. El disparador admite modos `link`, `button` e `icon`, además de texto, icono, título, clases y estado deshabilitado parametrizables.
+- El alta rápida solicita únicamente Nombre y Descripción. El código interno no se expone: se genera automáticamente con los prefijos `MAR-` o `CAT-`, y una nota informa que el registro se creará activo.
+- Presionar Enter desde Nombre o Descripción ejecuta el alta. Al completarse, un SweetAlert success confirma que el registro quedó activo y disponible para seleccionarlo, sin alterar la selección existente.
+- Mientras se registra una Marca o Categoría, el loader global bloquea el resto de acciones y el botón permanece deshabilitado para evitar solicitudes duplicadas.
+- Los errores frontend y backend usan mensajes breves sin repetir el nombre del campo. `Campo obligatorio.` es el estándar para obligatoriedad.
+- Los inputs inválidos muestran un contorno rojo sobre el control completo, incluyendo moneda, contadores, botones anexos y `vue-select`; el texto de error usa una escala menor que el label.
 - El modal rápido usa `dialog.showModal()`: aparece en la capa superior nativa, mantiene intacta la modal de Producto y devuelve el foco al contexto anterior al cerrarse.
-- Los errores de validación se muestran dentro del modal rápido y bajo sus campos, sin SweetAlert ni recargas invasivas.
+- Los errores de validación se muestran dentro del modal rápido y bajo sus campos. SweetAlert se reserva para confirmar una creación exitosa.
 - `custom.css` utiliza versionado por fecha de modificación en el layout System para evitar que el navegador conserve estilos anteriores durante las mejoras visuales.
 - El breadcrumb global es compacto, se alinea a la derecha y resalta únicamente la ubicación actual con el azul de marca.
 - El listado omite la columna Publicación; esa configuración se consulta y modifica dentro del formulario.

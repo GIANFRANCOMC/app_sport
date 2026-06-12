@@ -37,11 +37,15 @@ Organiza productos, servicios y membresías.
 ## Alta rápida reutilizable
 
 - `resources/js/System/Components/Catalogs/AddCategory.vue` expone el flujo de creación de Categoría para cualquier formulario que necesite ampliar el catálogo sin abandonar su tarea.
-- El componente reutiliza `QuickCreateCatalogEntity.vue`, conserva los límites del backend (`name` 50, `description` 100 e `internal_code` 50) y crea el registro con estado `active`.
+- El componente reutiliza `QuickCreateCatalogEntity.vue`, conserva los límites del backend y crea el registro con estado `active`.
 - El disparador se configura mediante `triggerMode`, `triggerText`, `triggerTitle`, `triggerIcon` y `triggerClass`; puede representarse como enlace, botón con texto o control solo con icono.
-- Emite `created` con `{record, response}` y `postAction` con la respuesta completa. Productos utiliza `created` para añadir y seleccionar inmediatamente la nueva categoría.
+- El formulario rápido solicita Nombre y Descripción. `internal_code` se oculta y se genera automáticamente con el prefijo configurado en `company_settings`; `CAT-` es el valor predeterminado.
+- La creación contextual utiliza una modal Bootstrap reutilizable y un SweetAlert de carga por encima de toda la interfaz.
+- Nombre y Descripción aceptan Enter para registrar. Un SweetAlert success confirma que la categoría quedó activa y disponible.
+- Durante el registro se muestra el loader global para impedir otras acciones; los errores mantienen el modal abierto y se presentan bajo el campo correspondiente.
+- Emite `created` con `{record, response}` y `postAction` con la respuesta completa. Productos utiliza `created` para actualizar sus opciones sin seleccionar automáticamente la nueva categoría.
 - El modal se implementa con `dialog.showModal()` y se teletransporta a `body`, evitando conflictos al abrirse desde otra modal.
-- Los errores frontend y HTTP `422` permanecen dentro del formulario rápido, sin cerrar el contexto principal ni mostrar alertas invasivas.
+- Los errores frontend y HTTP `422` permanecen dentro del formulario rápido sin cerrar el contexto principal; SweetAlert se usa únicamente después de una creación exitosa.
 
 ## Mejoras sugeridas
 

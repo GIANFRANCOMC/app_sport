@@ -12,6 +12,23 @@ return new class extends Migration {
      */
     public function up(): void {
 
+        Schema::create("company_settings", function(Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger("company_id");
+            $table->string("group");
+            $table->string("key");
+            $table->text("value")->nullable();
+            $table->enum("value_type", ["string", "boolean", "integer", "decimal", "json"])->default("string");
+            $table->enum("status", ["active", "inactive"])->default("active");
+
+            $table->timestamp("created_at")->useCurrent()->nullable();
+            $table->integer("created_by")->nullable();
+            $table->timestamp("updated_at")->nullable();
+            $table->integer("updated_by")->nullable();
+
+            $table->foreign("company_id")->references("id")->on("companies")->onDelete("cascade");
+        });
+
         // ✅
         Schema::create("company_socials_media", function(Blueprint $table) {
             $table->id();
@@ -297,6 +314,16 @@ return new class extends Migration {
         });
 
         // Inserts
+        DB::table("company_settings")->insert([
+            ["company_id" => 1, "group" => "internal_code_prefixes", "key" => "product", "value" => "PRO"],
+            ["company_id" => 1, "group" => "internal_code_prefixes", "key" => "service", "value" => "SER"],
+            ["company_id" => 1, "group" => "internal_code_prefixes", "key" => "subscription", "value" => "MEM"],
+            ["company_id" => 1, "group" => "internal_code_prefixes", "key" => "brand", "value" => "MAR"],
+            ["company_id" => 1, "group" => "internal_code_prefixes", "key" => "category", "value" => "CAT"],
+            ["company_id" => 1, "group" => "internal_code_prefixes", "key" => "branch", "value" => "SUC"],
+            ["company_id" => 1, "group" => "internal_code_prefixes", "key" => "asset", "value" => "ACT"]
+        ]);
+
         DB::table("company_socials_media")->insert([
             ["company_id" => 1, "type" => "facebook", "link" => "https://www.facebook.com/GianfrancoMC"],
             ["company_id" => 1, "type" => "instagram", "link" => "https://www.instagram.com/gianfrancomc"],
@@ -304,7 +331,7 @@ return new class extends Migration {
         ]);
 
         DB::table("branches")->insert([
-            ["id" => 1, "internal_code" => Utilities::generateCode(5), "company_id" => 1, "name" => "Sede Principal"]
+            ["id" => 1, "internal_code" => "SUC-" . Utilities::generateCode(5), "company_id" => 1, "name" => "Sede Principal"]
         ]);
 
         DB::table("series")->insert([
@@ -313,14 +340,14 @@ return new class extends Migration {
         ]);
 
         DB::table("items")->insert([
-            ["company_id" => 1, "internal_code" => Utilities::generateCode(7), "barcode" => "2000000000015", "name" => "Agua", "description" => "", "price" => 1, "currency_id" => 1, "type" => "product", "duration_type" => null, "duration_value" => null],
-            ["company_id" => 1, "internal_code" => Utilities::generateCode(7), "barcode" => "2000000000022", "name" => "Proteina", "description" => "", "price" => 120, "currency_id" => 1, "type" => "product", "duration_type" => null, "duration_value" => null],
-            ["company_id" => 1, "internal_code" => Utilities::generateCode(7), "barcode" => "2000000000039", "name" => "Tomatodo", "description" => "", "price" => 20, "currency_id" => 1, "type" => "product", "duration_type" => null, "duration_value" => null],
-            ["company_id" => 1, "internal_code" => Utilities::generateCode(7), "barcode" => null, "name" => "Una hora", "description" => "", "price" => 2, "currency_id" => 1, "type" => "subscription", "duration_type" => "hour", "duration_value" => 1],
-            ["company_id" => 1, "internal_code" => Utilities::generateCode(7), "barcode" => null, "name" => "Un día", "description" => "", "price" => 10, "currency_id" => 1, "type" => "subscription", "duration_type" => "day", "duration_value" => 1],
-            ["company_id" => 1, "internal_code" => Utilities::generateCode(7), "barcode" => null, "name" => "Rutina / Día", "description" => "", "price" => 5, "currency_id" => 1, "type" => "subscription", "duration_type" => "today", "duration_value" => 1],
-            ["company_id" => 1, "internal_code" => Utilities::generateCode(7), "barcode" => null, "name" => "Mes", "description" => "", "price" => 60, "currency_id" => 1, "type" => "subscription", "duration_type" => "month", "duration_value" => 1],
-            ["company_id" => 1, "internal_code" => Utilities::generateCode(7), "barcode" => null, "name" => "Año", "description" => "", "price" => 400, "currency_id" => 1, "type" => "subscription", "duration_type" => "year", "duration_value" => 1]
+            ["company_id" => 1, "internal_code" => "PRO-" . Utilities::generateCode(7), "barcode" => "2000000000015", "name" => "Agua", "description" => "", "price" => 1, "currency_id" => 1, "type" => "product", "duration_type" => null, "duration_value" => null],
+            ["company_id" => 1, "internal_code" => "PRO-" . Utilities::generateCode(7), "barcode" => "2000000000022", "name" => "Proteina", "description" => "", "price" => 120, "currency_id" => 1, "type" => "product", "duration_type" => null, "duration_value" => null],
+            ["company_id" => 1, "internal_code" => "PRO-" . Utilities::generateCode(7), "barcode" => "2000000000039", "name" => "Tomatodo", "description" => "", "price" => 20, "currency_id" => 1, "type" => "product", "duration_type" => null, "duration_value" => null],
+            ["company_id" => 1, "internal_code" => "MEM-" . Utilities::generateCode(7), "barcode" => null, "name" => "Una hora", "description" => "", "price" => 2, "currency_id" => 1, "type" => "subscription", "duration_type" => "hour", "duration_value" => 1],
+            ["company_id" => 1, "internal_code" => "MEM-" . Utilities::generateCode(7), "barcode" => null, "name" => "Un día", "description" => "", "price" => 10, "currency_id" => 1, "type" => "subscription", "duration_type" => "day", "duration_value" => 1],
+            ["company_id" => 1, "internal_code" => "MEM-" . Utilities::generateCode(7), "barcode" => null, "name" => "Rutina / Día", "description" => "", "price" => 5, "currency_id" => 1, "type" => "subscription", "duration_type" => "today", "duration_value" => 1],
+            ["company_id" => 1, "internal_code" => "MEM-" . Utilities::generateCode(7), "barcode" => null, "name" => "Mes", "description" => "", "price" => 60, "currency_id" => 1, "type" => "subscription", "duration_type" => "month", "duration_value" => 1],
+            ["company_id" => 1, "internal_code" => "MEM-" . Utilities::generateCode(7), "barcode" => null, "name" => "Año", "description" => "", "price" => 400, "currency_id" => 1, "type" => "subscription", "duration_type" => "year", "duration_value" => 1]
         ]);
 
         DB::table("customers")->insert([
@@ -360,6 +387,7 @@ return new class extends Migration {
         Schema::dropIfExists("series");
         Schema::dropIfExists("branches");
         Schema::dropIfExists("company_socials_media");
+        Schema::dropIfExists("company_settings");
 
     }
 

@@ -2,33 +2,32 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Requests\System\Catalogs\Brands;
+namespace App\Http\Requests\System\Catalogs\Categories;
 
 use App\Http\Requests\System\Base\CompanyFormRequest;
 use App\Rules\System\Defaults\UniqueInCompany;
 use App\Services\System\Base\InternalCodeService;
 
-abstract class BrandRequest extends CompanyFormRequest {
+abstract class CategoryRequest extends CompanyFormRequest {
 
     public function rules(): array {
 
-        $brandId = $this->route("id") ? (int) $this->route("id") : null;
+        $categoryId = $this->route("id") ? (int) $this->route("id") : null;
 
         return [
             "internal_code" => [
                 "required",
                 "string",
                 "max:50",
-                "regex:/^[A-Za-z0-9._-]+$/",
-                new UniqueInCompany("brands", "internal_code", $brandId, [], "código interno")
+                new UniqueInCompany("categories", "internal_code", $categoryId, [], "código interno")
             ],
             "name" => [
                 "required",
                 "string",
-                "max:100",
-                new UniqueInCompany("brands", "name", $brandId, [], "nombre")
+                "max:50",
+                new UniqueInCompany("categories", "name", $categoryId, [], "nombre")
             ],
-            "description" => ["nullable", "string", "max:250"],
+            "description" => ["nullable", "string", "max:100"],
             "status" => ["required", "in:active,inactive"]
         ];
 
@@ -42,14 +41,6 @@ abstract class BrandRequest extends CompanyFormRequest {
             "description" => "descripción",
             "status" => "estado"
         ];
-
-    }
-
-    public function messages(): array {
-
-        return array_merge(parent::messages(), [
-            "internal_code.regex" => "El código interno solo puede contener letras, números, puntos, guiones y guiones bajos."
-        ]);
 
     }
 
@@ -70,7 +61,7 @@ abstract class BrandRequest extends CompanyFormRequest {
         $this->merge([
             "internal_code" => InternalCodeService::applyPrefix(
                 (int) $this->user()?->company_id,
-                "brand",
+                "category",
                 $this->input("internal_code")
             )
         ]);

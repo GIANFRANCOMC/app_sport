@@ -16,7 +16,7 @@ export const generalConfig = {
     },
     forms: {
         classes: {
-            title: "form-label fw-bold colon-at-end fs-6",
+            title: "form-label colon-at-end",
             select2: "bg-white"
         },
         inputs: {
@@ -43,7 +43,7 @@ export const generalConfig = {
                 }
             },
             labels: {
-                required: "Es obligatorio",
+                required: "Campo obligatorio.",
                 min_number_0: "Debe ser mayor a 0",
                 min_equal_number_0: "Debe ser mayor o igual a 0",
                 not_valid_extension: "Extensión no válida"

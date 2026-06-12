@@ -9,6 +9,7 @@ use App\Http\Requests\System\Base\CompanyFormRequest;
 use App\Models\System\Catalogs\{Brand, Item};
 use App\Rules\System\Catalogs\ValidEan13;
 use App\Rules\System\Defaults\{BelongsToCompany, UniqueInCompany};
+use App\Services\System\Base\InternalCodeService;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
 
@@ -21,89 +22,32 @@ abstract class ProductRequest extends CompanyFormRequest {
         $maxValue = Utilities::$inputs["maxValue"];
 
         return [
-            "internal_code" => [
-                "bail",
-                "required",
-                "string",
-                "max:50",
-                "regex:/^[A-Za-z0-9._-]+$/",
-                new UniqueInCompany("items", "internal_code", $itemId, ["type" => "product"], "código interno")
-            ],
-            "barcode" => [
-                "bail",
-                "required",
-                "string",
-                new ValidEan13(),
-                new UniqueInCompany("items", "barcode", $itemId, [], "código de barras")
-            ],
+            "internal_code" => ["bail", "required", "string", "max:50", "regex:/^[A-Za-z0-9._-]+$/", new UniqueInCompany("items", "internal_code", $itemId, ["type" => "product"], "código interno")],
+            "barcode" => ["bail", "required", "string", new ValidEan13(), new UniqueInCompany("items", "barcode", $itemId, [], "código de barras")],
             "name" => ["bail", "required", "string", "max:50"],
             "description" => ["nullable", "string", "max:100"],
-            "brand_id" => [
-                "nullable",
-                "integer",
-                new BelongsToCompany(
-                    "brands",
-                    [],
-                    "La marca seleccionada no pertenece a la empresa."
-                )
-            ],
+            "brand_id" => ["nullable", "integer", new BelongsToCompany("brands", [], "La marca seleccionada no pertenece a la empresa.")],
             "price" => ["bail", "required", "numeric", "min:0.01", "max:{$maxValue}", "decimal:0,{$round}"],
             "min_price" => ["nullable", "numeric", "min:0", "max:{$maxValue}", "decimal:0,{$round}"],
             "max_price" => ["nullable", "numeric", "min:0", "max:{$maxValue}", "decimal:0,{$round}"],
-            "currency_id" => [
-                "bail",
-                "required",
-                "integer",
-                Rule::exists("currencies", "id")->where("status", "active")
-            ],
+            "currency_id" => ["bail", "required", "integer", Rule::exists("currencies", "id")->where("status", "active")],
             "categories" => ["nullable", "array", "max:50"],
-            "categories.*.category_id" => [
-                "bail",
-                "required",
-                "integer",
-                "distinct",
-                new BelongsToCompany(
-                    "categories",
-                    ["status" => "active"],
-                    "Una o más categorías no pertenecen a la empresa o no están activas."
-                )
-            ],
+            "categories.*.category_id" => ["bail", "required", "integer", "distinct", new BelongsToCompany("categories", ["status" => "active"], "Una o más categorías no pertenecen a la empresa o no están activas.")],
             "see_my_web" => ["required", "boolean"],
             "see_my_web_price" => ["required", "boolean"],
             "inventory" => ["required", "array", "min:1", "max:200"],
-            "inventory.*.warehouse_id" => [
-                "bail",
-                "required",
-                "integer",
-                "distinct",
+            "inventory.*.warehouse_id" => ["bail", "required", "integer", "distinct",
                 new BelongsToCompany(
                     "warehouses",
-                    [
-                        "warehouses.status" => "active",
-                        "branches.status" => "active"
-                    ],
+                    ["warehouses.status" => "active", "branches.status" => "active"],
                     "Uno o más almacenes no pertenecen a la empresa o no están activos.",
-                    [
-                        ["branches", "warehouses.branch_id", "=", "branches.id"]
-                    ],
+                    [["branches", "warehouses.branch_id", "=", "branches.id"]],
                     "branches.company_id",
                     "warehouses.id"
                 )
             ],
-            "inventory.*.initial_stock" => [
-                "required",
-                "numeric",
-                "min:0",
-                "max:{$maxValue}",
-                "decimal:0,{$round}"
-            ],
-            "inventory.*.minimum_stock" => [
-                "required",
-                "numeric",
-                "min:0",
-                "max:{$maxValue}",
-                "decimal:0,{$round}"
-            ],
+            "inventory.*.initial_stock" => ["required", "numeric", "min:0", "max:{$maxValue}", "decimal:0,{$round}"],
+            "inventory.*.minimum_stock" => ["required", "numeric", "min:0", "max:{$maxValue}", "decimal:0,{$round}"],
             "status" => ["required", "in:active,inactive"]
         ];
 
@@ -130,10 +74,10 @@ abstract class ProductRequest extends CompanyFormRequest {
 
     public function messages(): array {
 
-        return [
+        return array_merge(parent::messages(), [
             "internal_code.regex" => "El código interno solo puede contener letras, números, puntos, guiones y guiones bajos.",
             "inventory.min" => "Debe existir al menos un almacén activo para registrar el producto."
-        ];
+        ]);
 
     }
 
@@ -166,6 +110,11 @@ abstract class ProductRequest extends CompanyFormRequest {
         parent::prepareForValidation();
 
         $this->merge([
+            "internal_code" => InternalCodeService::applyPrefix(
+                (int) $this->user()?->company_id,
+                "product",
+                $this->input("internal_code")
+            ),
             "brand_id" => $this->filled("brand_id") ? (int) $this->input("brand_id") : null,
             "min_price" => $this->normalizeOptionalNumber($this->input("min_price")),
             "max_price" => $this->normalizeOptionalNumber($this->input("max_price"))
@@ -187,19 +136,19 @@ abstract class ProductRequest extends CompanyFormRequest {
 
         if($minimum !== null && $minimum > $price) {
 
-            $validator->errors()->add("min_price", "El precio mínimo no puede ser mayor que el precio de venta.");
+            $validator->errors()->add("min_price", "No puede ser mayor que el precio de venta.");
 
         }
 
         if($maximum !== null && $maximum < $price) {
 
-            $validator->errors()->add("max_price", "El precio máximo no puede ser menor que el precio de venta.");
+            $validator->errors()->add("max_price", "No puede ser menor que el precio de venta.");
 
         }
 
         if($minimum !== null && $maximum !== null && $minimum > $maximum) {
 
-            $validator->errors()->add("max_price", "El precio máximo no puede ser menor que el precio mínimo.");
+            $validator->errors()->add("max_price", "No puede ser menor que el precio mínimo.");
 
         }
 
@@ -252,9 +201,7 @@ abstract class ProductRequest extends CompanyFormRequest {
 
     private function positiveNumberOrNull(mixed $value): ?float {
 
-        return is_numeric($value) && (float) $value > 0
-            ? (float) $value
-            : null;
+        return is_numeric($value) && (float) $value > 0 ? (float) $value : null;
 
     }
 

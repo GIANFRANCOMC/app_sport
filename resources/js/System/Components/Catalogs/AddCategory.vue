@@ -3,6 +3,7 @@
         entity="categories"
         resource-key="category"
         singular-label="Categoría"
+        :internal-code-prefix="internalCodePrefix"
         :name-maxlength="50"
         :description-maxlength="100"
         v-bind="$attrs"
@@ -19,6 +20,12 @@ export default {
         QuickCreateCatalogEntity
     },
     inheritAttrs: false,
-    emits: ["created", "postAction"]
+    emits: ["created", "postAction"],
+    props: {
+        internalCodePrefix: {
+            type: String,
+            default: "CAT"
+        }
+    }
 };
 </script>

@@ -66,9 +66,6 @@
                                         <strong v-text="record.brand.name"></strong>
                                     </span>
                                     <span v-if="record.description" class="br-entity-table__description" v-text="record.description"></span>
-                                    <span v-if="record.category_items?.length" class="br-entity-table__meta">
-                                        {{ record.category_items.length }} {{ record.category_items.length === 1 ? "categoría" : "categorías" }}
-                                    </span>
                                 </td>
                                 <td>
                                     <div class="br-entity-identifiers">
@@ -254,7 +251,7 @@
                                     :title="MODULE.texts.form.name"
                                     :titleClass="[config.forms.classes.title]"
                                     isRequired
-                                    maxlength="50"
+                                    :maxlength="internalCodeEditableMaxlength"
                                     showCharCounter
                                     hasTextBottom
                                     :textBottomInfo="productForm.errors?.name"
@@ -273,6 +270,9 @@
                                     :textBottomInfo="productForm.errors?.internal_code"
                                     xl="4"
                                     lg="4">
+                                    <template v-if="internalCodePrefixLabel" v-slot:inputGroupPrepend>
+                                        <span class="input-group-text br-internal-code-prefix" v-text="internalCodePrefixLabel"></span>
+                                    </template>
                                     <template v-slot:defaultAppend>
                                         <button
                                             type="button"
@@ -397,6 +397,7 @@
                                             trigger-mode="link"
                                             trigger-text="Agregar"
                                             trigger-title="Agregar una nueva marca"
+                                            :internal-code-prefix="internalCodePrefixes.brand"
                                             :disabled="isSaving"
                                             @created="handleBrandCreated"/>
                                     </template>
@@ -494,6 +495,7 @@
                                             trigger-mode="link"
                                             trigger-text="Agregar"
                                             trigger-title="Agregar una nueva categoría"
+                                            :internal-code-prefix="internalCodePrefixes.category"
                                             :disabled="isSaving"
                                             @created="handleCategoryCreated"/>
                                     </template>
@@ -525,6 +527,12 @@
                                 </InputSlot>
 
                                 <div class="col-12">
+                                    <div class="br-entity-publication-intro">
+                                        <strong>Visibilidad para clientes</strong>
+                                        <small>
+                                            Define qué información se mostrará fuera de la plataforma. Esta configuración es independiente del estado Activo o Inactivo del producto.
+                                        </small>
+                                    </div>
                                     <div class="br-entity-publication-settings">
                                         <label class="br-entity-switch" for="see_my_web">
                                             <input
@@ -537,7 +545,9 @@
                                                 @change="syncPublicationSettings">
                                             <span>
                                                 <strong>Publicar producto</strong>
-                                                <small id="see_my_web_help">Muestra el producto en el catálogo comercial.</small>
+                                                <small id="see_my_web_help">
+                                                    Permite que los clientes vean este producto en el catálogo. No cambia su estado Activo o Inactivo dentro de la plataforma.
+                                                </small>
                                             </span>
                                         </label>
 
@@ -555,7 +565,9 @@
                                                 :disabled="!productForm.data.see_my_web">
                                             <span>
                                                 <strong>Mostrar precio</strong>
-                                                <small id="see_my_web_price_help">Muestra el precio junto al producto cuando la publicación está activa.</small>
+                                                <small id="see_my_web_price_help">
+                                                    Permite que los clientes vean el precio en el catálogo. Solo funciona cuando Publicar producto está activado.
+                                                </small>
                                             </span>
                                         </label>
                                     </div>
@@ -704,16 +716,16 @@ const FORM_TABS = [
         fields: ["internal_code", "barcode", "name", "price", "min_price", "max_price", "currency", "currency_id", "brand", "brand_id", "status"]
     },
     {
-        id: "commercial",
-        label: "Información comercial",
-        description: "Descripción, categorías y publicación",
-        fields: ["description", "categories", "see_my_web", "see_my_web_price"]
-    },
-    {
         id: "inventory",
         label: "Inventario",
         description: "Stock por almacén",
         fields: ["inventory"]
+    },
+    {
+        id: "commercial",
+        label: "Información adicional",
+        description: "Descripción, categorías y visibilidad",
+        fields: ["description", "categories", "see_my_web", "see_my_web_price"]
     }
 ];
 
@@ -968,27 +980,12 @@ export default {
         },
         handleBrandCreated({record}) {
 
-            const option = this.upsertReferenceOption("brands", record);
-
-            if(option) {
-                this.productForm.data.brand = option;
-            }
+            this.upsertReferenceOption("brands", record);
 
         },
         handleCategoryCreated({record}) {
 
-            const option = this.upsertReferenceOption("categories", record);
-
-            if(!option) return;
-
-            const selectedCategories = this.productForm.data.categories ?? [];
-            const isSelected = selectedCategories.some(category =>
-                Number(category.code) === Number(option.code)
-            );
-
-            if(!isSelected) {
-                this.productForm.data.categories = [...selectedCategories, option];
-            }
+            this.upsertReferenceOption("categories", record);
 
         },
         async initParams() {
@@ -1006,6 +1003,7 @@ export default {
                 this.options.currencies = response.data.config.currencies;
                 this.options.statuses   = response.data.config.statuses;
                 this.options.warehouses = response.data.config.warehouses;
+                this.options.internal_code_prefixes = response.data.config.internal_code_prefixes ?? {};
 
             }
 
@@ -1084,7 +1082,7 @@ export default {
 
                 Object.assign(this.productForm.data, {
                     id: record.id,
-                    internal_code: record.internal_code,
+                    internal_code: this.stripInternalCodePrefix(record.internal_code),
                     barcode: record.barcode,
                     name: record.name,
                     description: record.description,
@@ -1197,7 +1195,11 @@ export default {
 
                     this.productForm.errors = validation.errors;
                     this.focusFirstTabWithErrors(validation.errors);
-                    Alerts.generateAlert({messages: Utils.getErrors({errors: validation.errors}), msgContent: this.config.messages.errorValidate});
+                    Alerts.generateAlert({
+                        type: "error",
+                        messages: Forms.getDescriptiveErrors(validation.errors, this.MODULE.errorLabels),
+                        msgContent: this.config.messages.errorValidate
+                    });
                     return;
 
                 }
@@ -1227,7 +1229,12 @@ export default {
 
                 }else {
 
-                    Forms.handleFormResponseErrors({result, formErrorsObject: this.productForm.errors, config: this.config});
+                    Forms.handleFormResponseErrors({
+                        result,
+                        formErrorsObject: this.productForm.errors,
+                        config: this.config,
+                        errorLabels: this.MODULE.errorLabels
+                    });
 
                 }
 
@@ -1248,14 +1255,14 @@ export default {
 
             if(!isValidEan13(formData.barcode)) {
 
-                result.errors.barcode = ["Código de barras: Ingresa un código válido o genera uno automáticamente."];
+                result.errors.barcode = ["Ingrese un código válido o genere uno automáticamente."];
                 result.bool = false;
 
             }
 
             if(!Array.isArray(formData.inventory) || formData.inventory.length === 0) {
 
-                result.errors.inventory = ["Inventario por almacén: Se requiere al menos un almacén activo."];
+                result.errors.inventory = ["Se requiere al menos un almacén activo."];
                 result.bool = false;
 
             }else {
@@ -1269,7 +1276,7 @@ export default {
                         if(!Number.isFinite(value) || value < 0) {
 
                             result.errors[`inventory.${index}.${field}`] = [
-                                `${field === "initial_stock" ? "Stock inicial" : "Stock mínimo"}: Debe ser mayor o igual a 0.`
+                                "Debe ser mayor o igual a 0."
                             ];
                             result.bool = false;
 
@@ -1289,17 +1296,17 @@ export default {
 
                 if(minPrice > 0 && maxPrice > 0 && maxPrice < minPrice) {
 
-                    result.errors.max_price = ["Precio máximo: Debe ser mayor o igual al precio mínimo."];
+                    result.errors.max_price = ["Debe ser mayor o igual al precio mínimo."];
                     result.bool = false;
 
                 }else if(minPrice > 0 && price < minPrice) {
 
-                    result.errors.price = ["Precio de venta: Debe ser mayor o igual al precio mínimo."];
+                    result.errors.price = ["Debe ser mayor o igual al precio mínimo."];
                     result.bool = false;
 
                 }else if(maxPrice > 0 && price > maxPrice) {
 
-                    result.errors.price = ["Precio de venta: Debe ser menor o igual al precio máximo."];
+                    result.errors.price = ["Debe ser menor o igual al precio máximo."];
                     result.bool = false;
 
                 }
@@ -1392,6 +1399,16 @@ export default {
         generateRandomCode(length) {
 
             return Utils.generateCode({length});
+
+        },
+        stripInternalCodePrefix(value) {
+
+            const code = String(value ?? "");
+            const prefix = this.internalCodePrefixLabel;
+
+            return prefix && code.toUpperCase().startsWith(prefix.toUpperCase())
+                ? code.slice(prefix.length)
+                : code;
 
         },
         separatorNumber(value) {
@@ -1496,6 +1513,23 @@ export default {
                 code: status.code,
                 label: status.label
             }));
+
+        },
+        internalCodePrefixes() {
+
+            return this.options?.internal_code_prefixes ?? {};
+
+        },
+        internalCodePrefixLabel() {
+
+            const prefix = String(this.internalCodePrefixes.product ?? "").trim().replace(/-+$/, "");
+
+            return prefix ? `${prefix}-` : "";
+
+        },
+        internalCodeEditableMaxlength() {
+
+            return Math.max(1, 50 - this.internalCodePrefixLabel.length);
 
         },
         submitButtonText() {

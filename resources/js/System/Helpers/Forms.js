@@ -169,14 +169,37 @@ export function handleFormErrors(errors, formErrorsObject) {
                 if (!formErrorsObject[field]) {
                     formErrorsObject[field] = [];
                 }
-                formErrorsObject[field].push(error.message || error);
+                formErrorsObject[field].push(normalizeFieldError(error.message || error));
             }
         });
     } else if (typeof errors === "object" && errors !== null) {
-        Object.assign(formErrorsObject, errors);
+        Object.entries(errors).forEach(([field, messages]) => {
+            const fieldMessages = Array.isArray(messages) ? messages : [messages];
+            formErrorsObject[field] = fieldMessages.map(normalizeFieldError);
+        });
     }
 }
 
+export function normalizeFieldError(message) {
+    const normalized = String(message ?? "").trim();
+
+    if(!normalized) return "";
+
+    return normalized.replace(/^[^:]{1,80}:\s*/, "");
+}
+
+export function getDescriptiveErrors(errors = {}, errorLabels = {}) {
+    return Object.entries(errors ?? {}).flatMap(([field, messages]) => {
+        const baseField = String(field).split(".")[0];
+        const label = errorLabels[field] || errorLabels[baseField] || baseField;
+        const fieldMessages = Array.isArray(messages) ? messages : [messages];
+
+        return fieldMessages
+            .map(normalizeFieldError)
+            .filter(Boolean)
+            .map(message => `${label}: ${message}`);
+    });
+}
 
 /**
  * Valida un formulario completo usando reglas de validación
@@ -211,28 +234,38 @@ export function validateFormData(formData, validationRules = {}, config = {}) {
 
 /**
  * Maneja errores de respuesta de formulario de forma centralizada
- * @param {Object} options - {result: Object, formErrorsObject: Object, config: Object, setErrors: boolean, showAlert: boolean}
+ * @param {Object} options - Includes errorLabels for contextual alert summaries.
  * @param {Object} options.result - Resultado de la petición con code, errors, data
  * @param {Object} options.formErrorsObject - Objeto donde se almacenarán los errores (ej: entityForms.errors)
  * @param {Object} options.config - Configuración con mensajes (ej: this.config.messages)
  * @param {boolean} options.setErrors - Si se deben establecer los errores en el objeto (default: true)
  * @param {boolean} options.showAlert - Si se debe mostrar una alerta (default: true)
  */
-export function handleFormResponseErrors({result, formErrorsObject, config = {}, setErrors = true, showAlert = true}) {
+export function handleFormResponseErrors({
+    result,
+    formErrorsObject,
+    config = {},
+    errorLabels = {},
+    setErrors = true,
+    showAlert = true
+}) {
     const isValidationError = result?.code === 422;
     const hasFieldErrors = result?.errors && Object.keys(result.errors).length > 0;
     const errorMessage = result?.data?.msg || config.messages?.errorValidate || "Por favor, revisar el formulario para continuar.";
 
     if(setErrors && formErrorsObject) {
-        Object.assign(formErrorsObject, result?.errors ?? {});
+        handleFormErrors(result?.errors ?? {}, formErrorsObject);
     }
 
     if(showAlert) {
+        const messages = isValidationError && hasFieldErrors
+            ? getDescriptiveErrors(result.errors, errorLabels)
+            : [];
         const msgContent = (isValidationError && hasFieldErrors)
             ? (config.messages?.errorValidateFields || "El formulario contiene errores de validación. Por favor, revise los campos marcados en rojo y corrija la información según se indique.")
             : errorMessage;
 
-        Alerts.generateAlert({type: "error", msgContent});
+        Alerts.generateAlert({type: "error", messages, msgContent});
     }
 }
 

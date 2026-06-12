@@ -83,7 +83,7 @@ export const FILTER_BY_OPTIONS = {
 
 // Clases CSS comunes
 export const CSS_CLASSES = {
-    TITLE: "fw-bold colon-at-end fs-6",
+    TITLE: "form-label colon-at-end",
     SELECT2: "bg-white",
     /** @deprecated Preferir STATUS_LABEL_BASE; mismo contenido para compatibilidad */
     BADGE_BASE: ["br-status-label", "text-capitalize"],

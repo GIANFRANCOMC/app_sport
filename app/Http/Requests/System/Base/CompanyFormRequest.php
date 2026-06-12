@@ -59,4 +59,25 @@ abstract class CompanyFormRequest extends FormRequest {
 
     }
 
+    public function messages(): array {
+
+        return [
+            "required" => "Campo obligatorio.",
+            "string" => "Ingrese un texto válido.",
+            "numeric" => "Ingrese un número válido.",
+            "integer" => "Ingrese un número entero válido.",
+            "boolean" => "Seleccione una opción válida.",
+            "array" => "Seleccione una opción válida.",
+            "in" => "Seleccione una opción válida.",
+            "distinct" => "No repita la misma opción.",
+            "min.numeric" => "El valor mínimo permitido es :min.",
+            "max.numeric" => "El valor máximo permitido es :max.",
+            "min.array" => "Seleccione al menos :min opción.",
+            "max.array" => "Seleccione como máximo :max opciones.",
+            "max.string" => "Debe tener como máximo :max caracteres.",
+            "decimal" => "Use como máximo :decimal decimales."
+        ];
+
+    }
+
 }

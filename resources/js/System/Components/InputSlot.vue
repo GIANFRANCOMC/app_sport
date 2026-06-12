@@ -5,13 +5,13 @@
             <label v-if="!!title" v-text="title" :class="[...titleClass]"></label>
             <label v-if="isRequired" v-text="requiredLabel" :class="[...requiredClass]"></label>
             <slot name="defaultAppend"></slot>
-            <div :class="[isInputGroup ? 'input-group' : '', ...divInputClass]">
+            <div :class="[isInputGroup ? 'input-group' : '', 'br-form-control-group', {'is-invalid': hasError}, ...divInputClass]">
                 <slot name="inputGroupPrepend"></slot>
                 <slot name="input"></slot>
                 <slot name="inputGroupAppend"></slot>
             </div>
             <div v-if="hasTextBottom">
-                <small v-if="textBottomType === 'first'" :class="[...textBottomClass]" v-text="textBottom"></small>
+                <small v-if="textBottomType === 'first'" :class="[...textBottomClass, 'br-form-error']" v-text="textBottom"></small>
             </div>
         </div>
     </template>
@@ -20,13 +20,13 @@
         <label v-if="!!title" v-text="title" :class="[...titleClass]"></label>
         <label v-if="isRequired" v-text="requiredLabel" :class="[...requiredClass]"></label>
         <slot name="defaultAppend"></slot>
-        <div :class="[isInputGroup ? 'input-group' : '', ...divInputClass]">
+        <div :class="[isInputGroup ? 'input-group' : '', 'br-form-control-group', {'is-invalid': hasError}, ...divInputClass]">
             <slot name="inputGroupPrepend"></slot>
             <slot name="input"></slot>
             <slot name="inputGroupAppend"></slot>
         </div>
         <div v-if="hasTextBottom">
-            <small v-if="textBottomType === 'first'" :class="[...textBottomClass]" v-text="textBottom"></small>
+            <small v-if="textBottomType === 'first'" :class="[...textBottomClass, 'br-form-error']" v-text="textBottom"></small>
         </div>
     </template>
 </template>
@@ -151,6 +151,11 @@ export default {
         }
     },
     computed: {
+        hasError() {
+
+            return Boolean(this.textBottom);
+
+        },
         textBottom() {
 
             try {

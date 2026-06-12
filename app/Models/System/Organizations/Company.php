@@ -90,6 +90,12 @@ class Company extends Model {
 
     }
 
+    public function settings() {
+
+        return $this->hasMany(CompanySetting::class, "company_id", "id");
+
+    }
+
     public function companySubSections() {
 
         return $this->hasMany(CompanySubSection::class, "company_id", "id")

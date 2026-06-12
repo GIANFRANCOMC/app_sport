@@ -7,122 +7,109 @@
         :icon="triggerIcon"
         :custom-class="triggerClass"
         :disabled="disabled"
-        @click="openDialog"/>
+        @click="openModal"/>
 
     <Teleport to="body">
-        <dialog
-            ref="dialog"
-            :id="resolvedDialogId"
-            class="br-quick-create-dialog"
-            :aria-labelledby="`${resolvedDialogId}-title`"
-            @cancel="handleCancel"
-            @close="handleClose">
-            <header class="br-quick-create-dialog__header">
-                <div>
-                    <p class="br-quick-create-dialog__eyebrow" v-text="eyebrow"></p>
-                    <h2
-                        :id="`${resolvedDialogId}-title`"
-                        class="br-quick-create-dialog__title"
-                        v-text="`Agregar ${singularLabel.toLowerCase()}`">
-                    </h2>
-                    <p class="br-quick-create-dialog__subtitle">
-                        Se añadirá y seleccionará sin salir del producto.
-                    </p>
+        <div
+            ref="modal"
+            :id="resolvedModalId"
+            class="modal fade br-entity-modal br-quick-create-modal"
+            data-bs-backdrop="static"
+            tabindex="-1"
+            role="dialog"
+            aria-modal="true"
+            :aria-labelledby="`${resolvedModalId}-title`"
+            @keydown.esc.prevent="closeModal">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-header br-entity-modal__header">
+                        <div>
+                            <p class="br-entity-modal__eyebrow mb-1" v-text="eyebrow"></p>
+                            <h2
+                                :id="`${resolvedModalId}-title`"
+                                class="modal-title br-entity-modal__title"
+                                v-text="`Agregar ${singularLabel.toLowerCase()}`">
+                            </h2>
+                        </div>
+
+                        <button
+                            type="button"
+                            class="br-modal-close"
+                            aria-label="Cerrar"
+                            @click="closeModal">
+                            <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+                        </button>
+                    </div>
+
+                    <form
+                        class="modal-body br-entity-modal__body br-quick-create-modal__body"
+                        @submit.prevent="saveEntity">
+                        <div v-if="generalError" class="br-quick-create-dialog__alert" role="alert">
+                            <i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i>
+                            <span v-text="generalError"></span>
+                        </div>
+
+                        <div class="row g-3">
+                            <InputText
+                                ref="nameInput"
+                                v-model="form.name"
+                                hasDiv
+                                title="Nombre"
+                                :titleClass="labelClasses"
+                                isRequired
+                                :maxlength="nameMaxlength"
+                                showCharCounter
+                                hasTextBottom
+                                :textBottomInfo="errors.name"
+                                autocomplete="off"
+                                xl="12"
+                                lg="12"
+                                @enterKeyPressed="saveEntity"/>
+
+                            <InputText
+                                v-model="form.description"
+                                hasDiv
+                                title="Descripción"
+                                :titleClass="labelClasses"
+                                :maxlength="descriptionMaxlength"
+                                showCharCounter
+                                hasTextBottom
+                                :textBottomInfo="errors.description"
+                                autocomplete="off"
+                                xl="12"
+                                lg="12"
+                                @enterKeyPressed="saveEntity"/>
+                        </div>
+
+                        <p class="br-quick-create-dialog__note">
+                            <i class="fa-solid fa-circle-check" aria-hidden="true"></i>
+                            <span>
+                                Se generará automáticamente un código interno asociado y se registrará con estado activo.
+                            </span>
+                        </p>
+                    </form>
+
+                    <div class="modal-footer br-entity-modal__footer">
+                        <button type="button" class="br-btn br-btn-cancel" @click="closeModal">
+                            Cancelar
+                        </button>
+                        <button
+                            type="button"
+                            class="br-btn br-btn-action-create"
+                            :disabled="isSaving"
+                            @click="saveEntity">
+                            <span v-text="isSaving ? 'Agregando' : `Agregar ${singularLabel.toLowerCase()}`"></span>
+                        </button>
+                    </div>
                 </div>
-
-                <button
-                    type="button"
-                    class="br-modal-close"
-                    aria-label="Cerrar"
-                    @click="closeDialog">
-                    <i class="fa-solid fa-xmark" aria-hidden="true"></i>
-                </button>
-            </header>
-
-            <form class="br-quick-create-dialog__form" @submit.prevent="saveEntity">
-                <div v-if="generalError" class="br-quick-create-dialog__alert" role="alert">
-                    <i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i>
-                    <span v-text="generalError"></span>
-                </div>
-
-                <div class="row g-3">
-                    <InputText
-                        ref="nameInput"
-                        v-model="form.name"
-                        hasDiv
-                        title="Nombre"
-                        :titleClass="labelClasses"
-                        isRequired
-                        :maxlength="nameMaxlength"
-                        showCharCounter
-                        hasTextBottom
-                        :textBottomInfo="errors.name"
-                        autocomplete="off"
-                        xl="7"
-                        lg="7"/>
-
-                    <InputText
-                        v-model="form.internal_code"
-                        hasDiv
-                        title="Código interno"
-                        :titleClass="labelClasses"
-                        isRequired
-                        :maxlength="internalCodeMaxlength"
-                        hasTextBottom
-                        :textBottomInfo="errors.internal_code"
-                        autocomplete="off"
-                        xl="5"
-                        lg="5">
-                        <template #inputGroupAppend>
-                            <button
-                                type="button"
-                                class="br-input-action"
-                                :title="`Generar código interno para ${singularLabel.toLowerCase()}`"
-                                :aria-label="`Generar código interno para ${singularLabel.toLowerCase()}`"
-                                @click="generateInternalCode">
-                                <i class="fa-solid fa-rotate" aria-hidden="true"></i>
-                            </button>
-                        </template>
-                    </InputText>
-
-                    <InputText
-                        v-model="form.description"
-                        hasDiv
-                        title="Descripción"
-                        :titleClass="labelClasses"
-                        :maxlength="descriptionMaxlength"
-                        showCharCounter
-                        hasTextBottom
-                        :textBottomInfo="errors.description"
-                        autocomplete="off"
-                        xl="12"
-                        lg="12"/>
-                </div>
-
-                <p class="br-quick-create-dialog__note">
-                    <i class="fa-solid fa-circle-check" aria-hidden="true"></i>
-                    <span>Se creará con estado activo.</span>
-                </p>
-            </form>
-
-            <footer class="br-quick-create-dialog__footer">
-                <button type="button" class="br-btn br-btn-cancel" @click="closeDialog">
-                    Cancelar
-                </button>
-                <button
-                    type="button"
-                    class="br-btn br-btn-action-create"
-                    :disabled="isSaving"
-                    @click="saveEntity">
-                    <span v-text="isSaving ? 'Agregando' : `Agregar ${singularLabel.toLowerCase()}`"></span>
-                </button>
-            </footer>
-        </dialog>
+            </div>
+        </div>
     </Teleport>
 </template>
 
 <script>
 import QuickCreateTrigger from "@System/Components/Generics/QuickCreateTrigger.vue";
+import * as Alerts from "@System/Helpers/Alerts.js";
 import * as Forms from "@System/Helpers/Forms.js";
 import * as Requests from "@System/Helpers/Requests.js";
 import * as Utils from "@System/Helpers/Utils.js";
@@ -203,6 +190,10 @@ export default {
             type: String,
             default: "El código interno contiene caracteres no permitidos."
         },
+        internalCodePrefix: {
+            type: String,
+            default: ""
+        },
         disabled: {
             type: Boolean,
             default: false
@@ -222,7 +213,7 @@ export default {
 
     },
     computed: {
-        resolvedDialogId() {
+        resolvedModalId() {
 
             return this.dialogId || `br-quick-create-${this.entity}-${this.instanceId}`;
 
@@ -234,7 +225,16 @@ export default {
         },
         labelClasses() {
 
-            return ["form-label", "fw-bold", "colon-at-end", "fs-6"];
+            return ["form-label", "colon-at-end"];
+
+        },
+        errorLabels() {
+
+            return {
+                internal_code: "Código interno",
+                name: "Nombre",
+                description: "Descripción"
+            };
 
         },
         validationRules() {
@@ -265,41 +265,33 @@ export default {
 
         }
     },
+    mounted() {
+
+        this.$refs.modal?.addEventListener("hidden.bs.modal", this.handleClose);
+        this.$refs.modal?.addEventListener("shown.bs.modal", this.focusNameInput);
+
+    },
     beforeUnmount() {
 
-        if(this.$refs.dialog?.open) {
-            this.$refs.dialog.close();
-        }
+        this.$refs.modal?.removeEventListener("hidden.bs.modal", this.handleClose);
+        this.$refs.modal?.removeEventListener("shown.bs.modal", this.focusNameInput);
+        Alerts.modals({type: "hide", id: this.resolvedModalId});
 
     },
     methods: {
-        openDialog() {
+        openModal() {
 
-            if(this.disabled || this.$refs.dialog?.open) return;
+            if(this.disabled || this.isSaving) return;
 
             this.resetForm();
-            this.$refs.dialog?.showModal();
-
-            this.$nextTick(() => {
-
-                this.$refs.dialog?.querySelector("input")?.focus();
-
-            });
+            Alerts.modals({type: "show", id: this.resolvedModalId});
 
         },
-        closeDialog() {
+        closeModal() {
 
             if(this.isSaving) return;
 
-            if(this.$refs.dialog?.open) {
-                this.$refs.dialog.close();
-            }
-
-        },
-        handleCancel(event) {
-
-            event.preventDefault();
-            this.closeDialog();
+            Alerts.modals({type: "hide", id: this.resolvedModalId});
 
         },
         handleClose() {
@@ -307,21 +299,42 @@ export default {
             this.errors = {};
             this.generalError = "";
 
+            if(document.querySelector(".modal.show")) {
+                document.body.classList.add("modal-open");
+            }
+
+        },
+        focusNameInput() {
+
+            this.$nextTick(() => this.$refs.modal?.querySelector("input")?.focus());
+
         },
         resetForm() {
 
             this.form = {
                 ...Utils.cloneJson(FORM_DEFAULTS),
-                internal_code: Utils.generateCode({length: 7})
+                internal_code: this.buildInternalCode()
             };
             this.errors = {};
             this.generalError = "";
 
         },
-        generateInternalCode(event) {
+        buildInternalCode() {
 
-            this.form.internal_code = Utils.generateCode({length: 7});
-            event?.currentTarget?.blur();
+            const code = Utils.generateCode({length: 7});
+            const prefix = String(this.internalCodePrefix ?? "").trim().toUpperCase();
+
+            return prefix ? `${prefix}-${code}` : code;
+
+        },
+        showValidationSummary(errors) {
+
+            Alerts.generateAlert({
+                type: "error",
+                messages: Forms.getDescriptiveErrors(errors, this.errorLabels),
+                msgContent: "Revise los campos indicados para continuar.",
+                width: 430
+            });
 
         },
         async saveEntity() {
@@ -335,23 +348,21 @@ export default {
                 this.form,
                 this.validationRules,
                 {
-                    isDescriptive: true,
-                    errorLabels: {
-                        internal_code: "Código interno",
-                        name: "Nombre",
-                        description: "Descripción"
-                    }
+                    isDescriptive: false,
+                    errorLabels: this.errorLabels
                 }
             );
 
             if(!validation.bool) {
 
                 this.errors = validation.errors;
+                this.showValidationSummary(validation.errors);
                 return;
 
             }
 
             this.isSaving = true;
+            Alerts.swals({});
 
             try {
 
@@ -369,20 +380,30 @@ export default {
                     data
                 });
 
+                Alerts.swals({show: false});
+
                 if(Requests.valid({result})) {
 
                     const record = result.data?.[this.resourceKey] ?? null;
 
                     this.$emit("created", {record, response: result});
                     this.$emit("postAction", {response: result});
-                    this.$refs.dialog?.close();
+                    Alerts.modals({type: "hide", id: this.resolvedModalId});
+
+                    Alerts.generateAlert({
+                        type: "success",
+                        headerTitle: `${this.singularLabel} agregada`,
+                        msgContent: `${this.singularLabel} se registró con estado activo y ya está disponible para seleccionarla.`,
+                        width: 430
+                    });
 
                 }else {
 
                     Forms.handleFormResponseErrors({
                         result,
                         formErrorsObject: this.errors,
-                        showAlert: false
+                        errorLabels: this.errorLabels,
+                        showAlert: true
                     });
 
                     if(!Object.keys(this.errors).length) {
@@ -395,6 +416,7 @@ export default {
 
             }catch(error) {
 
+                Alerts.swals({show: false});
                 this.generalError = error?.message || "No fue posible completar el registro.";
 
             }finally {

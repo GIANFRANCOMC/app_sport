@@ -28,6 +28,12 @@ Relaciones: usado por empresas, items, ventas, activos y asignaciones.
 
 Empresa o tenant funcional. Campos: `slug`, `internal_code`, documento, razon social, nombre comercial, moneda, tagline, descripcion, direccion, telefono, email, token externo, imagenes y `status`.
 
+### `company_settings`
+
+Configuración extensible por empresa. Cada registro usa `company_id`, `group`, `key`, `value`, `value_type` y `status`. `value` puede ser nulo y `value_type` permite interpretarlo como `string`, `boolean`, `integer`, `decimal` o `json`.
+
+El primer grupo es `internal_code_prefixes`, con claves `product`, `service`, `subscription`, `brand`, `category`, `branch` y `asset`. Un valor nulo o vacío desactiva el prefijo. La misma tabla está preparada para reglas futuras, como permitir ventas con stock negativo.
+
 Relaciones: tiene sucursales, usuarios, clientes, items, activos, redes sociales, subsecciones habilitadas, dispositivos biometricos.
 
 ### company_socials_media

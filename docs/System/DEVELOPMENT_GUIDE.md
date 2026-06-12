@@ -91,6 +91,13 @@ $config->currencies->records = MasterReferenceDataService::currencies();
 - Reutilizar los tokens `--br-*` y colocar los estilos del sistema en `public/System/assets/css/custom.css`.
 - Evitar colores aislados que no pertenezcan al branding vigente.
 - Usar iconos conocidos para acciones compactas y texto visible para comandos que puedan ser ambiguos.
+- Los `form-label` deben usar la clase global sin `fs-6`: tamaño compacto, peso medio y color secundario suavizado. Evitar labels grandes o excesivamente oscuros en formularios operativos.
+- Las altas rápidas relacionadas a un selector no deben modificar la selección actual salvo que el flujo lo solicite expresamente. Deben refrescar las opciones y confirmar el resultado.
+- Si un código técnico puede generarse de forma segura, ocultarlo al usuario y explicar brevemente que se creará automáticamente con el estado inicial correspondiente.
+- Las altas rápidas que persisten datos deben bloquear temporalmente la interacción mediante el loader global; el botón también permanece deshabilitado para impedir envíos duplicados.
+- Los mensajes bajo un campo no repiten su label. Usar textos breves como `Campo obligatorio.` y normalizar respuestas HTTP mediante `Forms.handleFormErrors`.
+- Los componentes compartidos aplican `br-form-control-group` y `br-form-error`: el estado inválido bordea como una sola unidad el input, sus addons, botones, contadores y selectores.
+- Hover, foco y error deben afectar el control compuesto completo. No resaltar únicamente el elemento editable cuando forma parte de un `input-group`.
 - Todo botón que muestre únicamente un icono debe incluir `aria-label` y tooltip descriptivo.
 - Usar `br-table-header-surface` cuando una grilla o matriz interna deba compartir exactamente la superficie mate, contraste y acento de los encabezados de tablas.
 - Usar `br-label-with-help` junto con `br-field-help` para alinear títulos e iconos de ayuda sin introducir alertas de bloque.
@@ -106,6 +113,10 @@ $config->currencies->records = MasterReferenceDataService::currencies();
 - Los botones y addons integrados en `input-group` deben usar altura flexible (`align-self: stretch`) y no alturas fijas, para conservar la alineación vertical con cualquier variante de input.
 - Los addons anteriores o posteriores compactan únicamente el padding del campo en el borde compartido. El valor queda próximo al addon sin perder el espacio exterior normal del control.
 - Los símbolos monetarios usan el elemento interno reutilizable `br-currency-prefix__symbol`: color `--br-secondary`, peso medio y escala independiente de `.input-group-text`, sin competir visualmente con el importe.
+- Los códigos internos configurables muestran su prefijo con `br-internal-code-prefix`. El usuario edita la parte variable y `InternalCodeService` compone el valor definitivo.
+- Las configuraciones particulares de empresa deben almacenarse en `company_settings`; no crear una tabla específica para cada bandera cuando pertenece al mismo dominio de configuración.
+- Los errores bajo el campo deben ser breves. Los resúmenes deben recuperar el contexto mediante `Forms.getDescriptiveErrors`.
+- Las altas contextuales usan una modal Bootstrap teletransportada al `body`; SweetAlert debe conservar la capa superior durante operaciones persistentes.
 - `InputText` presenta sus límites mediante `br-character-counter`: fondo blanco integrado, ancho compacto y contenido tipográfico secundario; el estado cercano al límite cambia únicamente a warning.
 - Los indicadores de `vue-select` muestran únicamente una flecha compacta: sin cápsula, borde ni fondo; conservan un lienzo SVG suficiente para no recortarse al rotar y usan secondary en reposo y primary al interactuar.
 - Los `vue-select` ubicados dentro de modales deben usar `append-to-body`. Su menú reutiliza la capa global `body > .vs__dropdown-menu`, superior a Bootstrap, para no alterar el scroll del modal.

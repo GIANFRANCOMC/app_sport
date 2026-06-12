@@ -3,6 +3,7 @@
         entity="brands"
         resource-key="brand"
         singular-label="Marca"
+        :internal-code-prefix="internalCodePrefix"
         internal-code-pattern="^[A-Za-z0-9._-]+$"
         internal-code-pattern-message="El código interno solo puede contener letras, números, puntos, guiones y guiones bajos."
         :name-maxlength="100"
@@ -21,6 +22,12 @@ export default {
         QuickCreateCatalogEntity
     },
     inheritAttrs: false,
-    emits: ["created", "postAction"]
+    emits: ["created", "postAction"],
+    props: {
+        internalCodePrefix: {
+            type: String,
+            default: "MAR"
+        }
+    }
 };
 </script>

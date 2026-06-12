@@ -96,11 +96,15 @@ Esto limpia:
 ## Alta rápida reutilizable
 
 - `resources/js/System/Components/Catalogs/AddBrand.vue` permite crear una Marca desde cualquier formulario sin abandonar el flujo actual.
-- Reutiliza `QuickCreateCatalogEntity.vue`, conserva las reglas de longitud del backend y valida el patrón `^[A-Za-z0-9._-]+$` del código interno antes de enviar.
+- El prefijo se obtiene desde `company_settings`; `MAR-` es el valor predeterminado y el backend lo normaliza mediante `InternalCodeService`.
+- La creación contextual utiliza una modal Bootstrap reutilizable y un SweetAlert de carga por encima de toda la interfaz.
+- Reutiliza `QuickCreateCatalogEntity.vue`, conserva las reglas de longitud del backend y genera internamente un código válido con prefijo `MAR-`.
 - El disparador admite los modos `link`, `button` e `icon`, con texto, icono, título, clases y estado deshabilitado configurables mediante propiedades.
-- Emite `created` con `{record, response}` y `postAction` con la respuesta completa. Productos usa el registro emitido para actualizar el selector y elegir automáticamente la nueva marca.
+- El formulario rápido solicita únicamente Nombre y Descripción; ambos campos aceptan Enter para registrar.
+- Emite `created` con `{record, response}` y `postAction` con la respuesta completa. Productos usa el registro emitido para actualizar el selector sin sustituir la marca ya elegida.
 - La ventana rápida usa un `dialog` nativo teletransportado a `body`; puede abrirse sobre Producto sin cerrar su modal ni perder datos.
-- La Marca rápida se crea activa y muestra errores de validación dentro de su propio formulario, sin SweetAlert.
+- La Marca rápida se crea activa, mantiene sus errores dentro del formulario y muestra un SweetAlert success únicamente al completarse.
+- Durante el registro se muestra el loader global para impedir otras acciones; los mensajes de campo son breves y no repiten el label.
 
 ## Criterios para crecer
 

@@ -227,6 +227,9 @@ export function swals({show = true, type = "default", timeout = 0}) {
         Swal.fire({
             html: buildSwalLoadingHtml({message, logoSrc: getLogomarkSrc()}),
             allowOutsideClick: false,
+            allowEscapeKey: false,
+            allowEnterKey: false,
+            stopKeydownPropagation: true,
             showConfirmButton: false,
             customClass: {
                 popup: "br-swal-load-popup",
@@ -289,6 +292,50 @@ export function toastrs({type = "success", options = null, code = null, title = 
  * @param {number} [options.time] — Retraso en ms (0 = inmediato). Si se omite: `10` con `show: true`, `0` con `show: false`.
  * @param {string} [options.selector='[data-bs-toggle="tooltip"]'] — Selectores de disparadores.
  */
+function bootstrapTooltipOptions() {
+
+    return {
+        animation: false,
+        boundary: "viewport",
+        customClass: "br-tooltip",
+        delay: {
+            show: 0,
+            hide: 0
+        },
+        trigger: "hover focus"
+    };
+
+}
+
+/**
+ * Recrea un tooltip con la configuración visual global.
+ *
+ * @param {HTMLElement|null} element
+ * @param {string|null} title
+ * @returns {Object|null}
+ */
+export function createTooltip(element, title = null) {
+
+    const Bootstrap = window.bootstrap;
+
+    if(!element || !Bootstrap?.Tooltip) return null;
+
+    const currentTitle = title
+        ?? element.getAttribute("title")
+        ?? element.getAttribute("data-bs-original-title")
+        ?? "";
+    const existing = Bootstrap.Tooltip.getInstance(element);
+
+    existing?.dispose();
+    element.removeAttribute("data-bs-original-title");
+    element.removeAttribute("aria-describedby");
+
+    if(currentTitle) element.setAttribute("title", currentTitle);
+
+    return new Bootstrap.Tooltip(element, bootstrapTooltipOptions());
+
+}
+
 export function tooltips(options = {}) {
 
     const {show = true, selector = "[data-bs-toggle=\"tooltip\"]"} = options;
@@ -313,32 +360,8 @@ export function tooltips(options = {}) {
             triggers.forEach((el) => {
 
                 const currentTitle = el.getAttribute("title") ?? el.getAttribute("data-bs-original-title") ?? "";
-                const existing = Bootstrap.Tooltip.getInstance(el);
 
-                if(existing) {
-
-                    existing.dispose();
-
-                }
-
-                el.removeAttribute("data-bs-original-title");
-
-                if(currentTitle) {
-
-                    el.setAttribute("title", currentTitle);
-
-                }
-
-                new Bootstrap.Tooltip(el, {
-                    animation: false,
-                    boundary: "viewport",
-                    customClass: "br-tooltip",
-                    delay: {
-                        show: 0,
-                        hide: 0
-                    },
-                    trigger: "hover focus"
-                });
+                createTooltip(el, currentTitle);
 
             });
 
