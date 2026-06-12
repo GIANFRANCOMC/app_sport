@@ -114,9 +114,14 @@ $config->currencies->records = MasterReferenceDataService::currencies();
 - Los addons anteriores o posteriores compactan únicamente el padding del campo en el borde compartido. El valor queda próximo al addon sin perder el espacio exterior normal del control.
 - Los símbolos monetarios usan el elemento interno reutilizable `br-currency-prefix__symbol`: color `--br-secondary`, peso medio y escala independiente de `.input-group-text`, sin competir visualmente con el importe.
 - Los códigos internos configurables muestran su prefijo con `br-internal-code-prefix`. El usuario edita la parte variable y `InternalCodeService` compone el valor definitivo.
+- `br-internal-code-prefix` debe integrarse al control como moneda, contador o acción: sin divisor interno, foco compartido, jerarquía tipográfica compacta y borde exterior único.
+- Los listados reutilizan `Loader.vue` y las clases globales `br-loader*`; no crear spinners grandes o colores locales por módulo.
+- El loader global de SweetAlert conserva el logomark y una órbita compacta con primary/secondary; el mensaje debe ser breve, bloqueante y legible sin competir con la acción principal.
+- Los módulos con código interno deben declarar `internalCodeEntity`, cargar `internal_code_prefixes` desde su `ConfigService` y reutilizar `InternalCodePrefixMixin`; no calcular prefijos dentro de cada página Vue.
+- Los FormRequests equivalentes deben extender `CompanyFormRequest` y reutilizar `AppliesInternalCodePrefix`. La interfaz es una ayuda visual; el backend siempre normaliza el valor.
 - Las configuraciones particulares de empresa deben almacenarse en `company_settings`; no crear una tabla específica para cada bandera cuando pertenece al mismo dominio de configuración.
 - Los errores bajo el campo deben ser breves. Los resúmenes deben recuperar el contexto mediante `Forms.getDescriptiveErrors`.
-- Las altas contextuales usan una modal Bootstrap teletransportada al `body`; SweetAlert debe conservar la capa superior durante operaciones persistentes.
+- Las altas contextuales usan una modal Bootstrap teletransportada al `body`; su backdrop debe identificarse de forma explícita y SweetAlert debe usar `br-swal-top-layer` durante operaciones persistentes.
 - `InputText` presenta sus límites mediante `br-character-counter`: fondo blanco integrado, ancho compacto y contenido tipográfico secundario; el estado cercano al límite cambia únicamente a warning.
 - Los indicadores de `vue-select` muestran únicamente una flecha compacta: sin cápsula, borde ni fondo; conservan un lienzo SVG suficiente para no recortarse al rotar y usan secondary en reposo y primary al interactuar.
 - Los `vue-select` ubicados dentro de modales deben usar `append-to-body`. Su menú reutiliza la capa global `body > .vs__dropdown-menu`, superior a Bootstrap, para no alterar el scroll del modal.

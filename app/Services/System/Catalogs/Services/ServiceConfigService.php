@@ -32,6 +32,7 @@ final class ServiceConfigService extends BaseConfigService {
             "currencies" => self::data([
                 "records" => MasterReferenceDataService::currencies()
             ]),
+            "internal_code_prefixes" => self::internalCodePrefixes($companyId),
             "statuses" => Item::getStatuses()
         ]);
 

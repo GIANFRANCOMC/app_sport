@@ -7,6 +7,7 @@ namespace App\Services\System\Base;
 use Illuminate\Support\Facades\Cache;
 use InvalidArgumentException;
 use stdClass;
+use App\Services\System\Organizations\Companies\CompanySettingService;
 
 /**
  * Shared cache contract for System module initialization parameters.
@@ -84,6 +85,15 @@ abstract class BaseConfigService {
     protected static function data(array $attributes = []): stdClass {
 
         return (object) $attributes;
+
+    }
+
+    protected static function internalCodePrefixes(int $companyId): array {
+
+        return CompanySettingService::group(
+            $companyId,
+            CompanySettingService::INTERNAL_CODE_PREFIXES
+        );
 
     }
 

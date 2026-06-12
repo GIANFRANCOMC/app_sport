@@ -196,6 +196,7 @@ Si un almacén activo no tiene valores explícitos, se crea con cantidad y míni
 - El campo Estado se mantiene como select2 no buscable para conservar consistencia con los formularios existentes.
 - Los prefijos de moneda reutilizan `br-currency-prefix`, con fondo blanco integrado al input, símbolo compacto tipo icono, color secondary suavizado y borde compartido.
 - El código interno usa `company_settings.internal_code_prefixes.product` (`PRO` por defecto). El prefijo se presenta integrado al inicio del input y el backend lo normaliza mediante `InternalCodeService`.
+- Al crear, stock inicial y stock mínimo comienzan vacíos para permitir escritura directa; el payload normaliza los campos no informados a cero. Mientras ambos estén vacíos, el almacén muestra el estado neutral `Pendiente de registrar`.
 - Las altas rápidas de Marca y Categoría usan modales Bootstrap reales. El loader SweetAlert se muestra por encima de toda la interfaz y bloquea la interacción durante el guardado.
 - Los errores inline son breves; los resúmenes frontend/backend muestran el nombre del campo mediante `Forms.getDescriptiveErrors`.
 - El listado muestra nombre, marca y descripción. Se retiró la cantidad de categorías para reducir ruido visual.
@@ -243,7 +244,7 @@ Si un almacén activo no tiene valores explícitos, se crea con cantidad y míni
 - Mientras se registra una Marca o Categoría, el loader global bloquea el resto de acciones y el botón permanece deshabilitado para evitar solicitudes duplicadas.
 - Los errores frontend y backend usan mensajes breves sin repetir el nombre del campo. `Campo obligatorio.` es el estándar para obligatoriedad.
 - Los inputs inválidos muestran un contorno rojo sobre el control completo, incluyendo moneda, contadores, botones anexos y `vue-select`; el texto de error usa una escala menor que el label.
-- El modal rápido usa `dialog.showModal()`: aparece en la capa superior nativa, mantiene intacta la modal de Producto y devuelve el foco al contexto anterior al cerrarse.
+- El modal rápido usa Bootstrap y se teletransporta a `body`. Su backdrop se identifica con `br-quick-create-backdrop`, conserva la modal de Producto debajo y devuelve el foco al contexto anterior al cerrarse.
 - Los errores de validación se muestran dentro del modal rápido y bajo sus campos. SweetAlert se reserva para confirmar una creación exitosa.
 - `custom.css` utiliza versionado por fecha de modificación en el layout System para evitar que el navegador conserve estilos anteriores durante las mejoras visuales.
 - El breadcrumb global es compacto, se alinea a la derecha y resalta únicamente la ubicación actual con el azul de marca.

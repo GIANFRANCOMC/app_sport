@@ -268,13 +268,13 @@ export default {
     mounted() {
 
         this.$refs.modal?.addEventListener("hidden.bs.modal", this.handleClose);
-        this.$refs.modal?.addEventListener("shown.bs.modal", this.focusNameInput);
+        this.$refs.modal?.addEventListener("shown.bs.modal", this.handleShown);
 
     },
     beforeUnmount() {
 
         this.$refs.modal?.removeEventListener("hidden.bs.modal", this.handleClose);
-        this.$refs.modal?.removeEventListener("shown.bs.modal", this.focusNameInput);
+        this.$refs.modal?.removeEventListener("shown.bs.modal", this.handleShown);
         Alerts.modals({type: "hide", id: this.resolvedModalId});
 
     },
@@ -298,10 +298,20 @@ export default {
 
             this.errors = {};
             this.generalError = "";
+            document.querySelectorAll(".br-quick-create-backdrop").forEach(backdrop => backdrop.remove());
 
             if(document.querySelector(".modal.show")) {
                 document.body.classList.add("modal-open");
             }
+
+        },
+        handleShown() {
+
+            const backdrops = document.querySelectorAll(".modal-backdrop");
+            const backdrop = backdrops[backdrops.length - 1];
+
+            backdrop?.classList.add("br-quick-create-backdrop");
+            this.focusNameInput();
 
         },
         focusNameInput() {

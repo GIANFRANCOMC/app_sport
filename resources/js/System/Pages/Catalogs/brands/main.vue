@@ -147,11 +147,14 @@
                                     title="Código interno"
                                     :titleClass="[config.forms.classes.title]"
                                     isRequired
-                                    maxlength="50"
+                                    :maxlength="internalCodeEditableMaxlength"
                                     hasTextBottom
                                     :textBottomInfo="brandForm.errors?.internal_code"
                                     xl="5"
                                     lg="5">
+                                    <template v-if="internalCodePrefixLabel" #inputGroupPrepend>
+                                        <span class="input-group-text br-internal-code-prefix" v-text="internalCodePrefixLabel"></span>
+                                    </template>
                                     <template v-if="!isUpdate" #inputGroupAppend>
                                         <button
                                             type="button"
@@ -240,12 +243,14 @@ import {initCrudModule} from "@System/Helpers/ModuleFactory.js";
 import * as Forms from "@System/Helpers/Forms.js";
 import * as Requests from "@System/Helpers/Requests.js";
 import * as Utils from "@System/Helpers/Utils.js";
+import InternalCodePrefixMixin from "@System/Mixins/InternalCodePrefixMixin.js";
 
 const MODULE = {
     entity: "brands",
     menuId: "menu-items-brands",
     pageTitle: "Marcas",
     pageTitleSingular: "Marca",
+    internalCodeEntity: "brand",
     breadcrumbParent: "Catálogo comercial",
     perPage: 10,
     fields: {
@@ -282,6 +287,7 @@ const MODULE = {
 
 export default {
     name: "BrandsMain",
+    mixins: [InternalCodePrefixMixin],
     data() {
 
         const crudModule = initCrudModule({
@@ -334,7 +340,10 @@ export default {
                 showAlert: true
             });
 
-            if(response?.data?.config) this.options.statuses = response.data.config.statuses;
+            if(response?.data?.config) {
+                this.options.statuses = response.data.config.statuses;
+                this.options.internal_code_prefixes = response.data.config.internal_code_prefixes ?? {};
+            }
 
             return Requests.valid({result: response});
 
@@ -405,7 +414,7 @@ export default {
 
                 Object.assign(this.brandForm.data, {
                     id: record.id,
-                    internal_code: record.internal_code,
+                    internal_code: this.stripInternalCodePrefix(record.internal_code),
                     name: record.name,
                     description: record.description,
                     status: this.statuses.find(status => status.code === record.status) ?? null
@@ -462,7 +471,7 @@ export default {
 
                     this.brandForm.errors = validation.errors;
                     Alerts.generateAlert({
-                        messages: Utils.getErrors({errors: validation.errors}),
+                        messages: Forms.getDescriptiveErrors(validation.errors, this.MODULE.errorLabels),
                         msgContent: this.config.messages.errorValidate
                     });
                     return;
@@ -489,7 +498,8 @@ export default {
                     Forms.handleFormResponseErrors({
                         result,
                         formErrorsObject: this.brandForm.errors,
-                        config: this.config
+                        config: this.config,
+                        errorLabels: this.MODULE.errorLabels
                     });
 
                 }

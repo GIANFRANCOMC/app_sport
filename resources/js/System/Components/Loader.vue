@@ -1,6 +1,14 @@
 <template>
-    <div v-if="['default'].includes(type)" class="d-flex flex-column justify-content-center align-items-center">
-        <i class="fas fa-spinner fa-spin fa-3x my-3"></i>
+    <div
+        v-if="type === 'default'"
+        class="br-loader"
+        role="status"
+        aria-live="polite"
+        :aria-label="label">
+        <span class="br-loader__indicator" aria-hidden="true">
+            <span></span>
+        </span>
+        <span v-if="showLabel" class="br-loader__label" v-text="label"></span>
     </div>
 </template>
 
@@ -13,13 +21,17 @@ export default {
             type: String,
             required: false,
             default: "default"
+        },
+        label: {
+            type: String,
+            required: false,
+            default: "Cargando información"
+        },
+        showLabel: {
+            type: Boolean,
+            required: false,
+            default: true
         }
-    },
-    computed: {
-        //
-    },
-    methods: {
-        //
     }
 };
 </script>

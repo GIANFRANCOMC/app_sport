@@ -4,18 +4,31 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\System\Organizations\Branches;
 
-use App\Helpers\System\Utilities;
-use Illuminate\Foundation\Http\FormRequest;
+use App\Http\Requests\System\Base\CompanyFormRequest;
+use App\Http\Requests\System\Concerns\AppliesInternalCodePrefix;
 use App\Rules\System\Defaults\{UniqueInCompany};
 
-class UpdateBranchRequest extends FormRequest {
+class UpdateBranchRequest extends CompanyFormRequest {
 
-    /**
-     * Determine if the user is authorized to make this request.
-     */
-    public function authorize(): bool {
+    use AppliesInternalCodePrefix;
 
-        return true;
+    protected function internalCodeEntity(): string {
+
+        return "branch";
+
+    }
+
+    protected function normalizedStringFields(): array {
+
+        return [
+            "internal_code",
+            "name",
+            "address",
+            "reference",
+            "telephone",
+            "email",
+            "map_url"
+        ];
 
     }
 

@@ -4,18 +4,23 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\System\Assets\Assets;
 
-use App\Helpers\System\Utilities;
-use Illuminate\Foundation\Http\FormRequest;
+use App\Http\Requests\System\Base\CompanyFormRequest;
+use App\Http\Requests\System\Concerns\AppliesInternalCodePrefix;
 use App\Rules\System\Defaults\{UniqueInCompany};
 
-class StoreAssetRequest extends FormRequest {
+class StoreAssetRequest extends CompanyFormRequest {
 
-    /**
-     * Determine if the user is authorized to make this request.
-     */
-    public function authorize(): bool {
+    use AppliesInternalCodePrefix;
 
-        return true;
+    protected function internalCodeEntity(): string {
+
+        return "asset";
+
+    }
+
+    protected function normalizedStringFields(): array {
+
+        return ["internal_code", "name", "description"];
 
     }
 

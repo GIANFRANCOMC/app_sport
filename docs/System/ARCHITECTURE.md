@@ -74,6 +74,28 @@ Todos los servicios `*ConfigService` heredan de `BaseConfigService`.
 
 Los maestros globales activos se reutilizan durante seis horas mediante `MasterReferenceDataService`. Si monedas o tipos de documento adquieren mantenimiento CRUD, la mutación debe ejecutar `MasterReferenceDataService::clearCache()`.
 
+## Configuración por empresa
+
+`company_settings` concentra valores configurables que pertenecen a una empresa y que no justifican una tabla funcional independiente.
+
+- Cada valor se identifica por `company_id`, `group` y `key`.
+- `value_type` permite interpretar strings, booleanos, enteros, decimales o JSON.
+- El grupo inicial `internal_code_prefixes` define prefijos para productos, servicios, membresías, marcas, categorías, sucursales y activos.
+- `CompanySettingService` entrega valores por grupo y mantiene defaults de compatibilidad.
+- `BaseConfigService::internalCodePrefixes()` expone el mismo contrato a los módulos que lo requieren.
+- `InternalCodeService` es la autoridad para aplicar el prefijo en backend. La presentación Vue no reemplaza esta validación.
+- `AppliesInternalCodePrefix` evita repetir la preparación del código en los FormRequests equivalentes.
+- Un valor nulo o vacío desactiva el prefijo para esa entidad y empresa.
+
+La tabla está preparada para futuras reglas empresariales, como permitir ventas con stock negativo. La interfaz administrativa permanece pendiente hasta definir permisos, auditoría e invalidación de caché.
+
+## Errores de formulario
+
+- Los mensajes inline deben describir únicamente la corrección, por ejemplo `Campo obligatorio.`.
+- Los resúmenes de modal o SweetAlert deben añadir el label, por ejemplo `Precio de venta: Campo obligatorio.`.
+- `Forms.getDescriptiveErrors` resuelve el contexto frontend.
+- `Forms.handleFormResponseErrors` conserva el error bajo el campo y genera un resumen contextual para respuestas backend, incluidos los `422` de FormRequest.
+
 ## Datos de referencia para `initParams`
 
 Los modelos no deben exponer métodos genéricos como `getAll($type, $companyId)`. Ese contrato ocultaba filtros tras strings, repetía el identificador de empresa y permitía combinaciones inválidas.

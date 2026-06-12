@@ -89,12 +89,15 @@
                                 :title="MODULE.texts.form.internalCode"
                                 :titleClass="[config.forms.classes.title]"
                                 isRequired
-                                maxlength="50"
+                                :maxlength="internalCodeEditableMaxlength"
                                 :showCharCounter="false"
                                 hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.errors?.internal_code"
                                 xl="4"
                                 lg="4">
+                                <template v-if="internalCodePrefixLabel" v-slot:inputGroupPrepend>
+                                    <span class="input-group-text br-internal-code-prefix" v-text="internalCodePrefixLabel"></span>
+                                </template>
                                 <template v-slot:inputGroupAppend v-if="!isUpdate">
                                     <button type="button" :class="['btn waves-effect', isUpdate ? 'btn-warning' : 'btn-primary']" @click="generateCodeAction" data-bs-toggle="tooltip" data-bs-placement="top" :title="MODULE.texts.form.generateCodeTooltip">
                                         <i class="fa fa-rotate"></i>
@@ -172,12 +175,14 @@ import { initCrudModule } from "@System/Helpers/ModuleFactory.js";
 import * as Forms from "@System/Helpers/Forms.js";
 import * as Requests from "@System/Helpers/Requests.js";
 import * as Utils from "@System/Helpers/Utils.js";
+import InternalCodePrefixMixin from "@System/Mixins/InternalCodePrefixMixin.js";
 
 const MODULE_CONFIG = {
     entity: "categories",
     menuId: "menu-items-categories",
     pageTitle: "Categorías",
     pageTitleSingular: "Categoría",
+    internalCodeEntity: "category",
     breadcrumbParent: "Catálogo comercial",
     perPage: 10
 };
@@ -252,6 +257,7 @@ const MODULE = {
 
 export default {
     name: "CategoriesMain",
+    mixins: [InternalCodePrefixMixin],
     data() {
 
         const crudModule = initCrudModule({
@@ -303,6 +309,7 @@ export default {
             if(response?.data?.config) {
 
                 this.options.statuses = response.data.config.statuses;
+                this.options.internal_code_prefixes = response.data.config.internal_code_prefixes ?? {};
 
             }
 
@@ -378,7 +385,7 @@ export default {
                 const statusOption = this.statuses.find(e => e.code === record?.status);
 
                 entityForms.data.id            = record.id;
-                entityForms.data.internal_code = record.internal_code;
+                entityForms.data.internal_code = this.stripInternalCodePrefix(record.internal_code);
                 entityForms.data.name          = record.name;
                 entityForms.data.description   = record.description;
                 entityForms.data.status        = statusOption;
@@ -421,7 +428,11 @@ export default {
 
                 if(!validation.bool) {
 
-                    Alerts.generateAlert({messages: Utils.getErrors({errors: validation.errors}), msgContent: this.config.messages.errorValidate});
+                    Alerts.generateAlert({
+                        type: "error",
+                        messages: Forms.getDescriptiveErrors(validation.errors, this.MODULE.errorLabels),
+                        msgContent: this.config.messages.errorValidate
+                    });
                     this.isSaving = false;
                     return;
 
@@ -448,7 +459,12 @@ export default {
 
                 }else {
 
-                    Forms.handleFormResponseErrors({result, formErrorsObject: entityForms.errors, config: this.config});
+                    Forms.handleFormResponseErrors({
+                        result,
+                        formErrorsObject: entityForms.errors,
+                        config: this.config,
+                        errorLabels: this.MODULE.errorLabels
+                    });
 
                 }
 

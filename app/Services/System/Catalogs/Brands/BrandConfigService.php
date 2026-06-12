@@ -19,6 +19,7 @@ final class BrandConfigService extends BaseConfigService {
     protected static function buildConfig(int $companyId, string $page): stdClass {
 
         return self::data([
+            "internal_code_prefixes" => self::internalCodePrefixes($companyId),
             "statuses" => Brand::getStatuses()
         ]);
 

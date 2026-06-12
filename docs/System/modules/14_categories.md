@@ -44,8 +44,10 @@ Organiza productos, servicios y membresías.
 - Nombre y Descripción aceptan Enter para registrar. Un SweetAlert success confirma que la categoría quedó activa y disponible.
 - Durante el registro se muestra el loader global para impedir otras acciones; los errores mantienen el modal abierto y se presentan bajo el campo correspondiente.
 - Emite `created` con `{record, response}` y `postAction` con la respuesta completa. Productos utiliza `created` para actualizar sus opciones sin seleccionar automáticamente la nueva categoría.
-- El modal se implementa con `dialog.showModal()` y se teletransporta a `body`, evitando conflictos al abrirse desde otra modal.
+- El alta rápida usa una modal Bootstrap teletransportada a `body`. El backdrop contextual y el loader global tienen capas explícitas para mantenerse por encima de la modal de Producto.
 - Los errores frontend y HTTP `422` permanecen dentro del formulario rápido sin cerrar el contexto principal; SweetAlert se usa únicamente después de una creación exitosa.
+- El formulario completo muestra `CAT-` integrado al código interno cuando `company_settings.internal_code_prefixes.category` tiene valor. El usuario edita únicamente la parte variable y el backend compone el código definitivo.
+- Un valor nulo o vacío en la configuración elimina tanto el addon visual como la aplicación del prefijo.
 
 ## Mejoras sugeridas
 

@@ -29,4 +29,11 @@ Catalogo de bienes/activos que la empresa controla.
 
 - Agregar categoria de activo.
 - Agregar codigo patrimonial o serie fisica.
+
+## Configuración y validación compartida
+
+- El código interno usa `company_settings.internal_code_prefixes.asset`; `ACT` es el valor inicial.
+- El formulario muestra el prefijo como parte visual del mismo control y conserva separada la porción editable.
+- `InternalCodeService` compone el código definitivo en backend. Un valor nulo o vacío permite códigos sin prefijo.
+- Store y Update extienden `CompanyFormRequest`; los errores inline no repiten el label y el resumen sí identifica el campo.
 - Definir reglas distintas para activos unitarios vs stock.

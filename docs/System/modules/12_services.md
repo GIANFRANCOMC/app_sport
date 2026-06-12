@@ -29,3 +29,11 @@ Los mismos de `items`, con `type = service`.
 
 - Permitir duración estimada del servicio si el negocio agenda citas.
 - Definir si servicios pueden tener comisiones por vendedor.
+
+## Configuración y validación compartida
+
+- El código interno usa `company_settings.internal_code_prefixes.service`; `SER` es el valor inicial.
+- Vue presenta `SER-` como addon integrado y permite editar únicamente la parte variable. `InternalCodeService` aplica el valor definitivo en backend.
+- Si la configuración de la empresa es nula o vacía, el servicio se guarda sin prefijo y el addon no se muestra.
+- Store y Update extienden `CompanyFormRequest`, normalizan cadenas y aplican `AppliesInternalCodePrefix`.
+- Los errores bajo cada campo son breves. El resumen de validación agrega el nombre del campo tanto para errores frontend como para respuestas HTTP `422`.

@@ -32,9 +32,9 @@ Empresa o tenant funcional. Campos: `slug`, `internal_code`, documento, razon so
 
 Configuración extensible por empresa. Cada registro usa `company_id`, `group`, `key`, `value`, `value_type` y `status`. `value` puede ser nulo y `value_type` permite interpretarlo como `string`, `boolean`, `integer`, `decimal` o `json`.
 
-El primer grupo es `internal_code_prefixes`, con claves `product`, `service`, `subscription`, `brand`, `category`, `branch` y `asset`. Un valor nulo o vacío desactiva el prefijo. La misma tabla está preparada para reglas futuras, como permitir ventas con stock negativo.
+El primer grupo es `internal_code_prefixes`, con claves `product`, `service`, `subscription`, `brand`, `category`, `branch` y `asset`. Sus valores iniciales son `PRO`, `SER`, `MEM`, `MAR`, `CAT`, `SUC` y `ACT`. Un valor nulo o vacío desactiva el prefijo. La misma tabla está preparada para reglas futuras, como permitir ventas con stock negativo.
 
-Relaciones: tiene sucursales, usuarios, clientes, items, activos, redes sociales, subsecciones habilitadas, dispositivos biometricos.
+Relaciones: cada configuración pertenece a `companies` mediante `company_id`.
 
 ### company_socials_media
 

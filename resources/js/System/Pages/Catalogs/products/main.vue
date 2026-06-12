@@ -698,12 +698,14 @@ import * as Requests from "@System/Helpers/Requests.js";
 import * as Utils from "@System/Helpers/Utils.js";
 import AddBrand from "@System/Components/Catalogs/AddBrand.vue";
 import AddCategory from "@System/Components/Catalogs/AddCategory.vue";
+import InternalCodePrefixMixin from "@System/Mixins/InternalCodePrefixMixin.js";
 
 const MODULE_CONFIG = {
     entity: "products",
     menuId: "menu-items-products",
     pageTitle: "Productos",
     pageTitleSingular: "Producto",
+    internalCodeEntity: "product",
     breadcrumbParent: "Catálogo comercial",
     perPage: 10
 };
@@ -890,6 +892,7 @@ function isValidEan13(value) {
 
 export default {
     name: "ProductsMain",
+    mixins: [InternalCodePrefixMixin],
     components: {
         AddBrand,
         AddCategory
@@ -1139,8 +1142,10 @@ export default {
                     warehouse_id: Number(warehouse.id),
                     branch_name: warehouse.branch?.name ?? "Sucursal",
                     warehouse_name: warehouse.name,
-                    initial_stock: Number(warehouseItem?.quantity ?? 0),
-                    minimum_stock: Number(warehouseItem?.minimum_stock ?? 0)
+                    initial_stock: record ? Number(warehouseItem?.quantity ?? 0) : "",
+                    minimum_stock: record && warehouseItem?.minimum_stock != null
+                        ? Number(warehouseItem.minimum_stock)
+                        : ""
                 };
 
             });
@@ -1370,6 +1375,19 @@ export default {
         },
         inventoryStockStatus(inventory) {
 
+            const hasCurrentStock = inventory?.initial_stock !== "" && inventory?.initial_stock !== null;
+            const hasMinimumStock = inventory?.minimum_stock !== "" && inventory?.minimum_stock !== null;
+
+            if(!hasCurrentStock && !hasMinimumStock) {
+
+                return {
+                    className: "is-pending",
+                    icon: "fa-regular fa-circle",
+                    text: "Pendiente de registrar"
+                };
+
+            }
+
             const currentStock = Number(inventory?.initial_stock ?? 0);
             const minimumStock = Number(inventory?.minimum_stock ?? 0);
             const isLowStock = currentStock <= minimumStock;
@@ -1399,16 +1417,6 @@ export default {
         generateRandomCode(length) {
 
             return Utils.generateCode({length});
-
-        },
-        stripInternalCodePrefix(value) {
-
-            const code = String(value ?? "");
-            const prefix = this.internalCodePrefixLabel;
-
-            return prefix && code.toUpperCase().startsWith(prefix.toUpperCase())
-                ? code.slice(prefix.length)
-                : code;
 
         },
         separatorNumber(value) {
@@ -1513,23 +1521,6 @@ export default {
                 code: status.code,
                 label: status.label
             }));
-
-        },
-        internalCodePrefixes() {
-
-            return this.options?.internal_code_prefixes ?? {};
-
-        },
-        internalCodePrefixLabel() {
-
-            const prefix = String(this.internalCodePrefixes.product ?? "").trim().replace(/-+$/, "");
-
-            return prefix ? `${prefix}-` : "";
-
-        },
-        internalCodeEditableMaxlength() {
-
-            return Math.max(1, 50 - this.internalCodePrefixLabel.length);
 
         },
         submitButtonText() {

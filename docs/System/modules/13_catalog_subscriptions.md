@@ -34,4 +34,12 @@ Administra items de tipo `subscription`, que representan planes o membresías ve
 
 - Agregar límite diario configurable en item de catálogo.
 - Agregar beneficios o restricciones por plan.
+
+## Configuración y validación compartida
+
+- El código interno usa `company_settings.internal_code_prefixes.subscription`; `MEM` es el valor inicial.
+- El formulario integra `MEM-` al inicio del control, mientras el usuario mantiene únicamente la parte variable.
+- `InternalCodeService` aplica el prefijo en backend y evita duplicarlo cuando recibe un código ya normalizado.
+- Un valor nulo o vacío desactiva el prefijo para esa empresa.
+- Store y Update extienden `CompanyFormRequest`; los errores inline son breves y el resumen identifica el campo que requiere corrección.
 - Validar que duración no sea nula si se venderá.

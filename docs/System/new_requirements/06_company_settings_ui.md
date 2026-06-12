@@ -21,3 +21,18 @@ La misma infraestructura admitirá configuraciones tipadas de otros grupos, por 
 - Invalidar los `initParams` afectados al cambiar una configuración.
 - Mantener auditoría con `created_by` y `updated_by`.
 - Incorporar permisos específicos antes de habilitar la edición.
+
+## Base técnica ya implementada
+
+- `company_settings` admite valores tipados y configuraciones por empresa.
+- `CompanySettingService` resuelve grupos y valores.
+- `InternalCodeService` aplica los prefijos en backend.
+- Productos, servicios, membresías, marcas, categorías, sucursales y activos consumen el mismo contrato.
+- Un valor nulo o vacío desactiva el prefijo sin modificar código.
+
+## Pendiente de interfaz
+
+- Diseñar la pantalla dentro de Mi empresa.
+- Definir permisos separados de lectura y edición.
+- Invalidar únicamente los `ConfigService` que consuman el grupo modificado.
+- Incorporar posteriormente otros grupos, como reglas de venta e inventario negativo, sin convertir `company_settings` en un contenedor de lógica no relacionada.

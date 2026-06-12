@@ -91,25 +91,27 @@ function getSwalLoadStaticPrefix() {
         styleAndTicks: `
                 <style>
                     .br-swal-load-popup.swal2-popup {
-                        padding: 0.95rem 1.2rem;
-                        width: auto;
-                        max-width: min(22.5rem, calc(100vw - 1.5rem));
+                        width: min(20rem, calc(100vw - 1.25rem));
+                        padding: 1.2rem 1.35rem 1.1rem;
+                        border-top: 3px solid ${SWAL_BR.primary};
+                        border-radius: 0.5rem;
+                        box-shadow: 0 1rem 2.6rem rgba(26, 26, 53, 0.2);
                     }
                     .br-swal-load-popup .swal2-html-container {
                         margin: 0;
                         padding: 0;
                     }
                     .br-swal-load__wrap {
-                        padding: 0.3rem 0.5rem 0.6rem;
+                        padding: 0.15rem 0.25rem 0.25rem;
                         text-align: center;
                         font-family: inherit;
                     }
                     .br-swal-load {
-                        --br-swal-orbit: ${orbitPx}px;
+                        --br-swal-orbit: 31px;
                         position: relative;
-                        width: 92px;
-                        height: 92px;
-                        margin: 0 auto 0.85rem;
+                        width: 72px;
+                        height: 72px;
+                        margin: 0 auto 0.75rem;
                     }
                     .br-swal-load__orbit {
                         position: absolute;
@@ -119,9 +121,9 @@ function getSwalLoadStaticPrefix() {
                         position: absolute;
                         left: 50%;
                         top: 50%;
-                        width: 8px;
-                        height: 3px;
-                        margin: -1.5px 0 0 -4px;
+                        width: 6px;
+                        height: 2px;
+                        margin: -1px 0 0 -3px;
                         border-radius: 2px;
                         background: ${SWAL_BR.primary};
                         transform: rotate(var(--br-t)) translateY(calc(-1 * var(--br-swal-orbit)));
@@ -134,41 +136,41 @@ function getSwalLoadStaticPrefix() {
                         top: 50%;
                         transform: translate(-50%, -50%);
                         z-index: 1;
-                        width: 76px;
-                        height: 76px;
+                        width: 58px;
+                        height: 58px;
                         border-radius: 50%;
                         background: ${SWAL_BR.surface};
                         box-shadow: ${SWAL_BR.shadow};
                         display: flex;
                         align-items: center;
                         justify-content: center;
-                        padding: 5px;
+                        padding: 4px;
                     }
                     .br-swal-load__logo {
                         width: 100%;
                         height: 100%;
-                        max-width: 52px;
-                        max-height: 52px;
+                        max-width: 39px;
+                        max-height: 39px;
                         object-fit: contain;
                         display: block;
-                        transform: scale(1.22);
+                        transform: scale(1.12);
                         transform-origin: center center;
                     }
                     .br-swal-load-msg__title {
-                        margin: 0 0 0.5rem;
-                        font-size: 1.175rem;
+                        margin: 0 0 0.3rem;
+                        font-size: 0.98rem;
                         font-weight: 700;
                         line-height: 1.35;
                         color: ${SWAL_BR.secondary};
-                        letter-spacing: -0.01em;
+                        letter-spacing: 0;
                     }
                     .br-swal-load-msg__hint {
                         margin: 0;
-                        font-size: 0.95rem;
-                        font-weight: 500;
-                        line-height: 1.45;
+                        font-size: 0.76rem;
+                        font-weight: 400;
+                        line-height: 1.4;
                         color: ${SWAL_BR.textMuted};
-                        max-width: 21rem;
+                        max-width: 17rem;
                         margin-inline: auto;
                     }
                     ${keyframes}
@@ -197,7 +199,7 @@ function buildSwalLoadingHtml({message, logoSrc}) {
     const titleHtml = titleLine ? `<p class="br-swal-load-msg__title">${titleLine}</p>` : "";
 
     return `${styleAndTicks}<img src="${logoSrc}" alt="" class="br-swal-load__logo" width="52" height="52" decoding="async">${logoSuffix}${titleHtml}
-                        <p class="br-swal-load-msg__hint">Este proceso puede tomar unos segundos. Por favor espere.</p>
+                        <p class="br-swal-load-msg__hint">Estamos procesando la información. No cierres esta ventana.</p>
                     </div>
                 </div>
             `;
@@ -225,6 +227,7 @@ export function swals({show = true, type = "default", timeout = 0}) {
         }
 
         Swal.fire({
+            target: document.body,
             html: buildSwalLoadingHtml({message, logoSrc: getLogomarkSrc()}),
             allowOutsideClick: false,
             allowEscapeKey: false,
@@ -232,8 +235,16 @@ export function swals({show = true, type = "default", timeout = 0}) {
             stopKeydownPropagation: true,
             showConfirmButton: false,
             customClass: {
+                container: "br-swal-top-layer",
                 popup: "br-swal-load-popup",
                 htmlContainer: "br-swal-load-html"
+            },
+            didOpen: () => {
+
+                const container = Swal.getContainer();
+
+                container?.style.setProperty("z-index", "2147483647", "important");
+
             }
         });
 

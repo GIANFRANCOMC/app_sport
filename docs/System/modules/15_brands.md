@@ -102,9 +102,11 @@ Esto limpia:
 - El disparador admite los modos `link`, `button` e `icon`, con texto, icono, título, clases y estado deshabilitado configurables mediante propiedades.
 - El formulario rápido solicita únicamente Nombre y Descripción; ambos campos aceptan Enter para registrar.
 - Emite `created` con `{record, response}` y `postAction` con la respuesta completa. Productos usa el registro emitido para actualizar el selector sin sustituir la marca ya elegida.
-- La ventana rápida usa un `dialog` nativo teletransportado a `body`; puede abrirse sobre Producto sin cerrar su modal ni perder datos.
+- La ventana rápida usa una modal Bootstrap teletransportada a `body`; puede abrirse sobre Producto sin cerrar su modal ni perder datos.
 - La Marca rápida se crea activa, mantiene sus errores dentro del formulario y muestra un SweetAlert success únicamente al completarse.
 - Durante el registro se muestra el loader global para impedir otras acciones; los mensajes de campo son breves y no repiten el label.
+- El formulario completo muestra `MAR-` integrado al código interno cuando `company_settings.internal_code_prefixes.brand` tiene valor. El backend aplica el mismo contrato aunque la petición no provenga de la interfaz.
+- Un valor nulo o vacío desactiva el prefijo sin requerir cambios de código.
 
 ## Criterios para crecer
 
