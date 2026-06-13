@@ -328,11 +328,33 @@ class ProductService {
      */
     public static function getPaginatedList(int $companyId, array $filters = [], int $perPage = 15): LengthAwarePaginator {
 
-        $query = Item::where("company_id", $companyId)
-                     ->where("type", "product")
-                     ->with(["brand", "currency", "categoryItems", "warehouseItems.warehouse.branch"]);
+        return self::getFilteredListQuery($companyId, $filters)
+                   ->paginate($perPage);
 
-        // Apply filters
+    }
+
+    /**
+     * Build the shared Products listing query.
+     *
+     * Pagination and exports must use this method so filters, relationships
+     * and ordering cannot drift between the screen and downloaded reports.
+     *
+     * @param int $companyId Company
+     * @param array $filters Filter parameters (filter_by, word)
+     * @return Builder
+     */
+    public static function getFilteredListQuery(int $companyId, array $filters = []): Builder {
+
+        $query = Item::query()
+                     ->where("company_id", $companyId)
+                     ->where("type", "product")
+                     ->with([
+                         "brand",
+                         "currency",
+                         "categoryItems.category",
+                         "warehouseItems.warehouse.branch"
+                     ]);
+
         $filterBy = $filters["filter_by"] ?? null;
         $word     = $filters["word"] ?? null;
 
@@ -385,8 +407,7 @@ class ProductService {
 
         }
 
-        return $query->orderBy("name", "ASC")
-                     ->paginate($perPage);
+        return $query->orderBy("name", "ASC");
 
     }
 

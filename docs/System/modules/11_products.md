@@ -11,6 +11,7 @@ Aunque productos, servicios y membresías comparten la tabla `items`, este módu
 - Ruta: `routes/System/Catalogs/Product.php`
 - Controlador: `app/Http/Controllers/System/Catalogs/ProductController.php`
 - Servicio principal: `app/Services/System/Catalogs/Products/ProductService.php`
+- Exportador Excel: `app/Exports/System/Catalogs/Products/ProductListExport.php`
 - Configuración: `app/Services/System/Catalogs/Products/ProductConfigService.php`
 - Servicio de inventario: `app/Services/System/Warehouses/Warehouses/WarehouseItemService.php`
 - Request base: `app/Http/Requests/System/Catalogs/Products/ProductRequest.php`
@@ -20,6 +21,29 @@ Aunque productos, servicios y membresías comparten la tabla `items`, este módu
 - Vue: `resources/js/System/Pages/Catalogs/products/main.vue`
 - Estilos: `public/System/assets/css/custom.css`, bloque `SYSTEM PRODUCTS`
 - Tablas: `items`, `brands`, `category_items`, `categories`, `warehouses`, `warehouse_items`
+
+## Exportación Excel
+
+La barra de filtros permite usar `Descargar Excel` junto a `Agregar producto`. La acción está habilitada en la configuración del módulo mediante `hasDownloadRecords: true`; el componente reutilizable `FiltersSection` mantiene `showDownloadButton: false` por defecto para no mostrarla en módulos que todavía no ofrecen exportación.
+
+El endpoint `GET /products/export` recibe `filter_by` y `word`, exactamente los mismos parámetros del listado. No recibe `page` ni `per_page`: descarga todos los registros que coinciden con el filtro actual y conserva el orden alfabético por producto.
+
+La consulta no se duplica. `ProductService::getFilteredListQuery()` centraliza empresa, tipo de item, filtros, relaciones y orden; `getPaginatedList()` agrega únicamente la paginación y `ProductListExport` consume la consulta completa mediante `FromQuery`.
+
+El archivo incluye:
+
+- código interno y código de barras preservados como texto;
+- producto, marca, categorías y descripción comercial;
+- moneda, precio de venta, mínimo y máximo;
+- stock total, cantidad de almacenes y almacenes con stock bajo;
+- estado y detalle del inventario por sucursal/almacén;
+- visibilidad para clientes, visibilidad del precio y estado del producto.
+
+El encabezado utiliza secondary navy y un acento primary. Las filas con inventario que requiere atención resaltan las columnas de alerta con fondo rojo suave; el inventario saludable usa verde suave. La primera fila queda fija y el reporte incorpora autofiltro.
+
+La descarga frontend usa `Requests.download()`, helper genérico que solicita un `blob`, respeta el nombre enviado por `Content-Disposition`, libera el objeto temporal del navegador y normaliza respuestas de error JSON aunque lleguen como `Blob`.
+
+Esta exportación vive exclusivamente bajo `System/Catalogs/Products`, porque contiene información operativa de la empresa autenticada. `Guest` no comparte la ruta, consulta ni exportador.
 
 ## Datos del producto
 
@@ -199,6 +223,9 @@ Si un almacén activo no tiene valores explícitos, se crea con cantidad y míni
 - Al crear, stock inicial y stock mínimo comienzan vacíos para permitir escritura directa; el payload normaliza los campos no informados a cero. Mientras ambos estén vacíos, el almacén muestra el estado neutral `Pendiente de registrar`.
 - Las altas rápidas de Marca y Categoría usan modales Bootstrap reales. El loader SweetAlert se muestra por encima de toda la interfaz y bloquea la interacción durante el guardado.
 - Los errores inline son breves; los resúmenes frontend/backend muestran el nombre del campo mediante `Forms.getDescriptiveErrors`.
+- La validación frontend se ejecuta antes de abrir el loader global. Los errores locales aparecen inmediatamente; el bloqueo visual se reserva para la petición asíncrona al backend.
+- Ante errores en otra pestaña, el resumen se muestra primero y el formulario cambia a la primera sección afectada solo después de cerrar el aviso. Así se evita movimiento visual detrás de SweetAlert.
+- El contenido de las pestañas usa una transición de entrada de `120ms`, limitada a opacidad y dos píxeles de desplazamiento.
 - El listado muestra nombre, marca y descripción. Se retiró la cantidad de categorías para reducir ruido visual.
 - El prefijo monetario usa `br-currency-prefix__symbol` para controlar su escala de forma independiente, con color secondary, peso medio y separación compacta respecto del importe.
 - El CTA utiliza “Agregar producto” o “Editar producto”; durante el proceso muestra “Agregando” o “Editando” sin puntos suspensivos.
@@ -213,6 +240,10 @@ Si un almacén activo no tiene valores explícitos, se crea con cantidad y míni
 - Las acciones de la barra se alinean al inicio para evitar espacios muertos después del campo de búsqueda.
 - La tabla usa `table-layout: fixed` y un `colgroup` con proporciones estables; Precio gana espacio y Producto se compacta para separar mejor los importes de Identificación.
 - Identificación diferencia visualmente “Código interno” y “Código de barras” en filas etiquetadas.
+- Identificación usa siempre las etiquetas compactas `Cód. interno` y `Cód. barras`, evitando abreviaciones variables o elipsis confusas.
+- Ambos valores utilizan cápsulas equivalentes; el código de barras incorpora un borde y fondo primary muy suaves para diferenciarlo del código interno sin competir visualmente.
+- Solo las etiquetas abreviadas de identificación muestran su nombre completo mediante el tooltip global; los valores no generan tooltips.
+- El loading de persistencia informa la acción actual: `Agregando producto` o `Editando producto`.
 - Código interno y código de barras usan el componente reutilizable `CopyButton`; por defecto muestra `Copiar` y `Copiado`, y puede activar `useLabelInTooltip` para mostrar textos contextuales como `Copiar código interno` y `Código interno copiado`.
 - `StatusBadge` añade automáticamente una clase normalizada desde la BD, como `br-status-active` o `br-status-inactive`, además de la variante semántica existente.
 - Las etiquetas de estado son compactas y se perciben como información, no como botones.

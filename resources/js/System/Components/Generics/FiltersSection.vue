@@ -69,6 +69,15 @@
                         <i class="fa-solid fa-plus" aria-hidden="true"></i>
                         <span v-text="addButtonText"></span>
                     </button>
+                    <button
+                        v-if="showDownloadButton"
+                        type="button"
+                        class="br-btn br-btn-sm br-btn-action-export waves-effect"
+                        @click="$emit('download')"
+                        :disabled="loading || downloading">
+                        <i class="fa-solid fa-file-excel" aria-hidden="true"></i>
+                        <span v-text="downloadButtonText"></span>
+                    </button>
                 </template>
             </InputSlot>
         </div>
@@ -78,7 +87,7 @@
 <script>
 export default {
     name: "FiltersSection",
-    emits: ["search", "add", "update:filterByValue", "update:filterWordValue"],
+    emits: ["search", "add", "download", "update:filterByValue", "update:filterWordValue"],
     props: {
         filterByValue: {
             type: Object,
@@ -128,6 +137,21 @@ export default {
             type: Boolean,
             required: false,
             default: true
+        },
+        showDownloadButton: {
+            type: Boolean,
+            required: false,
+            default: false
+        },
+        downloadButtonText: {
+            type: String,
+            required: false,
+            default: "Descargar Excel"
+        },
+        downloading: {
+            type: Boolean,
+            required: false,
+            default: false
         },
         titleClass: {
             type: Array,

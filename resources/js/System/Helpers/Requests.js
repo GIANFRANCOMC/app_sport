@@ -74,6 +74,105 @@ export function get({route = "", data = {}, showAlert = false}) {
 
 }
 
+export async function download({
+    route = "",
+    data = {},
+    fileName = "reporte.xlsx",
+    showAlert = false
+}) {
+
+    try {
+
+        const response = await axios.get(route, {
+            params: {...data},
+            responseType: "blob"
+        });
+        const objectUrl = window.URL.createObjectURL(response.data);
+        const link = document.createElement("a");
+
+        link.href = objectUrl;
+        link.download = resolveDownloadFileName(response.headers?.["content-disposition"], fileName);
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.URL.revokeObjectURL(objectUrl);
+
+        return {data: response.data, bool: true};
+
+    }catch(error) {
+
+        const status = error?.response?.status;
+        const errorMessage = await resolveBlobErrorMessage(error);
+
+        if(showAlert) {
+
+            Alerts.toastrs({
+                type: "error",
+                subtitle: errorMessage || "No fue posible descargar el archivo."
+            });
+
+        }
+
+        return {
+            data: {msg: errorMessage},
+            bool: false,
+            code: status
+        };
+
+    }finally {
+
+        Alerts.tooltips({});
+
+    }
+
+}
+
+function resolveDownloadFileName(contentDisposition, fallback) {
+
+    if(!contentDisposition) return fallback;
+
+    const utf8Match = contentDisposition.match(/filename\*=UTF-8''([^;]+)/i);
+    const basicMatch = contentDisposition.match(/filename="?([^";]+)"?/i);
+    const encodedName = utf8Match?.[1] ?? basicMatch?.[1];
+
+    if(!encodedName) return fallback;
+
+    try {
+
+        return decodeURIComponent(encodedName);
+
+    }catch(error) {
+
+        return encodedName;
+
+    }
+
+}
+
+async function resolveBlobErrorMessage(error) {
+
+    const responseData = error?.response?.data;
+
+    if(responseData instanceof Blob) {
+
+        try {
+
+            const payload = JSON.parse(await responseData.text());
+
+            return payload?.msg || payload?.message || error?.message;
+
+        }catch(parseError) {
+
+            return error?.message;
+
+        }
+
+    }
+
+    return responseData?.msg || responseData?.message || error?.message;
+
+}
+
 export function post({route = "", data = {}, id = "", formData = null}) {
 
 	return new Promise((resolve, reject) => {
@@ -250,6 +349,7 @@ export function generateRoutes({entity, requestRoute}) {
     const baseRoutes = {
         consult: `${requestRoute}/${entity}`,
         list: `${requestRoute}/${entity}/list`,
+        export: `${requestRoute}/${entity}/export`,
         get: `${requestRoute}/${entity}/get`,
         create: `${requestRoute}/${entity}/create`,
         store: `${requestRoute}/${entity}`,

@@ -8,7 +8,7 @@ export const generalConfig = {
     },
     essential: Utils.getEssential(),
     messages: {
-        withoutResults: "Sin registros",
+        withoutResults: "No hay registros disponibles",
         errorValidate: "Por favor, revisar el formulario para continuar.",
         errorSearchValidate: "Para realizar la búsqueda, complete los siguientes campos:",
         catchError: "Ha ocurrido un error al realizar la acción.",

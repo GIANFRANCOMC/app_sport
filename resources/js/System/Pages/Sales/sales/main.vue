@@ -1176,7 +1176,7 @@ export default {
                     this.forms[this.entity].createUpdate.extras.modals.finished.data = {...sale, extras, whatsapp, email};
 
                     Alerts.swals({show: false});
-                    Alerts.modals({type: "show", id: this.forms[this.entity].createUpdate.extras.modals.finished.id, timeout: 300});
+                    Alerts.modals({type: "show", id: this.forms[this.entity].createUpdate.extras.modals.finished.id, timeout: 1});
 
                     this.clearForm({functionName});
 

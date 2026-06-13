@@ -1325,31 +1325,39 @@ body.br-layout .br-entity-table > thead > tr > th {
 }
 
 .br-entity-identifier {
-    display: flex;
+    display: grid;
+    grid-template-columns: minmax(3rem, 0.7fr) minmax(0, 1.3fr);
     align-items: center;
-    justify-content: space-between;
-    gap: 0.7rem;
-    min-width: 0;
-}
-
-.br-entity-identifier__label {
-    flex: 0 0 auto;
-    color: var(--br-text-muted, #64748b);
-    font-size: 0.68rem;
-    font-weight: 600;
-}
-
-.br-entity-identifier__value {
-    display: inline-flex;
-    align-items: center;
-    justify-content: flex-end;
     gap: 0.35rem;
     min-width: 0;
 }
 
-.br-entity-code {
-    display: inline-flex;
+.br-entity-identifier__label {
+    display: inline-block;
+    width: fit-content;
+    max-width: 100%;
     min-width: 0;
+    overflow: hidden;
+    color: var(--br-text-muted, #64748b);
+    font-size: 0.68rem;
+    font-weight: 600;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.br-entity-identifier__value {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 0.3rem;
+    min-width: 0;
+}
+
+.br-entity-code {
+    display: block;
+    min-width: 0;
+    max-width: 100%;
+    overflow: hidden;
     padding: 0.22rem 0.42rem;
     border: 1px solid #dfe5ea;
     border-radius: 4px;
@@ -1358,18 +1366,42 @@ body.br-layout .br-entity-table > thead > tr > th {
     font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
     font-size: 0.75rem;
     font-weight: 700;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .br-entity-barcode {
-    display: inline-flex;
-    align-items: center;
+    display: block;
     min-width: 0;
+    max-width: 100%;
+    overflow: hidden;
+    padding: 0.22rem 0.42rem;
+    border: 1px solid color-mix(in srgb, var(--br-primary, #2899e5) 25%, #dfe5ea);
+    border-radius: 4px;
+    background: color-mix(in srgb, var(--br-primary-soft, #e8f4fc) 32%, #ffffff);
     color: var(--br-secondary, #1a1a35);
     font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
     font-size: 0.75rem;
     font-weight: 600;
-    overflow-wrap: anywhere;
-    white-space: normal;
+    font-variant-numeric: tabular-nums;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+@media (max-width: 1199.98px) {
+    .br-entity-identifier {
+        grid-template-columns: minmax(3.65rem, 0.68fr) minmax(0, 1.32fr);
+        gap: 0.25rem;
+    }
+
+    .br-entity-identifier__label {
+        font-size: 0.62rem;
+    }
+
+    .br-entity-code,
+    .br-entity-barcode {
+        font-size: 0.67rem;
+    }
 }
 
 @media (max-width: 991.98px) {
@@ -1591,6 +1623,25 @@ body.br-layout .br-entity-table > thead > tr > th {
         var(--br-entity-modal-content-space-x)
         1.2rem;
     background: #f7f8fa;
+    animation: brEntityTabContentIn 0.12s ease-out;
+}
+
+@keyframes brEntityTabContentIn {
+    from {
+        opacity: 0.82;
+        transform: translateY(2px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .br-entity-form-section {
+        animation: none;
+    }
 }
 
 .br-entity-form-section + .br-entity-form-section {

@@ -725,7 +725,7 @@ export default {
             }
 
             Alerts.swals({show: false});
-            Alerts.modals({type: "show", id: this.forms.entity.assignToUser.extras.modals.default.id, timeout: 300});
+            Alerts.modals({type: "show", id: this.forms.entity.assignToUser.extras.modals.default.id, timeout: 1});
             this.tooltips({show: true, time: 500});
 
         },

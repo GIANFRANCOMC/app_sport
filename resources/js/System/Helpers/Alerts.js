@@ -18,6 +18,18 @@ const SWAL_BR = {
     shadow: "0 4px 18px rgba(26, 26, 53, 0.1)"
 };
 
+const SWAL_INSTANT_TRANSITION = Object.freeze({
+    animation: false,
+    showClass: {
+        popup: "",
+        icon: ""
+    },
+    hideClass: {
+        popup: "",
+        icon: ""
+    }
+});
+
 /** Layout y tiempos del loader circular (solo `buildSwalLoadingHtml`). */
 const SWAL_LOAD = Object.freeze({
     segments: 20,
@@ -81,19 +93,16 @@ function getSwalLoadStaticPrefix() {
 
     }
 
-    const {segments, chaseCycleS, orbitPx} = SWAL_LOAD;
-    const step = 360 / segments;
-    const primaryRgb = swalBrPrimaryRgbCsv();
-    const keyframes = buildSwalAccumKeyframes(segments, primaryRgb);
-    const ticks = Array.from({length: segments}, (_, i) => `<span class="br-swal-load__tick" style="--br-t:${i * step}deg;animation:brSwalAccum${i} ${chaseCycleS}s linear infinite;"></span>`).join("");
+    const keyframes = "";
+    const ticks = "";
 
     swalLoadStaticPrefix = {
         styleAndTicks: `
                 <style>
                     .br-swal-load-popup.swal2-popup {
-                        width: min(20rem, calc(100vw - 1.25rem));
-                        padding: 1.2rem 1.35rem 1.1rem;
-                        border-top: 3px solid ${SWAL_BR.primary};
+                        width: min(21rem, calc(100vw - 1.25rem));
+                        padding: 1.35rem 1.5rem 1.2rem;
+                        border-top: 3px solid ${SWAL_BR.secondary};
                         border-radius: 0.5rem;
                         box-shadow: 0 1rem 2.6rem rgba(26, 26, 53, 0.2);
                     }
@@ -107,54 +116,53 @@ function getSwalLoadStaticPrefix() {
                         font-family: inherit;
                     }
                     .br-swal-load {
-                        --br-swal-orbit: 31px;
                         position: relative;
-                        width: 72px;
-                        height: 72px;
-                        margin: 0 auto 0.75rem;
+                        display: grid;
+                        place-items: center;
+                        width: 88px;
+                        height: 88px;
+                        margin: 0 auto 0.9rem;
                     }
                     .br-swal-load__orbit {
                         position: absolute;
-                        inset: 0;
+                        inset: 1px;
+                        border: 3px solid transparent;
+                        border-top-color: ${SWAL_BR.primary};
+                        border-right-color: rgba(40, 153, 229, 0.32);
+                        border-radius: 50%;
+                        animation: brSwalOrbitPrimary 0.9s linear infinite;
+                    }
+                    .br-swal-load__orbit::after {
+                        content: "";
+                        position: absolute;
+                        inset: 7px;
+                        border: 2px solid transparent;
+                        border-bottom-color: ${SWAL_BR.secondary};
+                        border-left-color: rgba(26, 26, 53, 0.25);
+                        border-radius: 50%;
+                        animation: brSwalOrbitSecondary 1.25s linear infinite;
                     }
                     .br-swal-load__tick {
-                        position: absolute;
-                        left: 50%;
-                        top: 50%;
-                        width: 6px;
-                        height: 2px;
-                        margin: -1px 0 0 -3px;
-                        border-radius: 2px;
-                        background: ${SWAL_BR.primary};
-                        transform: rotate(var(--br-t)) translateY(calc(-1 * var(--br-swal-orbit)));
-                        transform-origin: center center;
-                        pointer-events: none;
+                        display: none;
                     }
                     .br-swal-load__logo-wrap {
-                        position: absolute;
-                        left: 50%;
-                        top: 50%;
-                        transform: translate(-50%, -50%);
                         z-index: 1;
-                        width: 58px;
-                        height: 58px;
+                        display: grid;
+                        place-items: center;
+                        width: 62px;
+                        height: 62px;
                         border-radius: 50%;
                         background: ${SWAL_BR.surface};
-                        box-shadow: ${SWAL_BR.shadow};
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                        padding: 4px;
+                        box-shadow: ${SWAL_BR.shadow}, 0 0 0 1px rgba(26, 26, 53, 0.06);
+                        animation: brSwalLogoBreathe 1.8s ease-in-out infinite;
                     }
                     .br-swal-load__logo {
-                        width: 100%;
-                        height: 100%;
-                        max-width: 39px;
-                        max-height: 39px;
+                        width: 43px;
+                        height: 43px;
                         object-fit: contain;
                         display: block;
-                        transform: scale(1.12);
                         transform-origin: center center;
+                        animation: brSwalLogoFloat 1.8s ease-in-out infinite;
                     }
                     .br-swal-load-msg__title {
                         margin: 0 0 0.3rem;
@@ -172,6 +180,55 @@ function getSwalLoadStaticPrefix() {
                         color: ${SWAL_BR.textMuted};
                         max-width: 17rem;
                         margin-inline: auto;
+                    }
+                    .br-swal-load__progress {
+                        display: inline-flex;
+                        align-items: center;
+                        justify-content: center;
+                        gap: 0.3rem;
+                        margin-top: 0.8rem;
+                    }
+                    .br-swal-load__progress span {
+                        width: 0.34rem;
+                        height: 0.34rem;
+                        border-radius: 50%;
+                        background: ${SWAL_BR.primary};
+                        opacity: 0.28;
+                        animation: brSwalProgress 1.1s ease-in-out infinite;
+                    }
+                    .br-swal-load__progress span:nth-child(2) {
+                        animation-delay: 0.16s;
+                    }
+                    .br-swal-load__progress span:nth-child(3) {
+                        background: ${SWAL_BR.secondary};
+                        animation-delay: 0.32s;
+                    }
+                    @keyframes brSwalOrbitPrimary {
+                        to { transform: rotate(360deg); }
+                    }
+                    @keyframes brSwalOrbitSecondary {
+                        to { transform: rotate(-360deg); }
+                    }
+                    @keyframes brSwalLogoBreathe {
+                        0%, 100% { box-shadow: ${SWAL_BR.shadow}, 0 0 0 1px rgba(26, 26, 53, 0.06); }
+                        50% { box-shadow: 0 6px 20px rgba(40, 153, 229, 0.18), 0 0 0 4px rgba(40, 153, 229, 0.08); }
+                    }
+                    @keyframes brSwalLogoFloat {
+                        0%, 100% { transform: translateY(0) scale(1); }
+                        50% { transform: translateY(-1px) scale(1.035); }
+                    }
+                    @keyframes brSwalProgress {
+                        0%, 100% { opacity: 0.24; transform: translateY(0) scale(0.86); }
+                        50% { opacity: 1; transform: translateY(-2px) scale(1); }
+                    }
+                    @media (prefers-reduced-motion: reduce) {
+                        .br-swal-load__orbit,
+                        .br-swal-load__orbit::after,
+                        .br-swal-load__logo-wrap,
+                        .br-swal-load__logo,
+                        .br-swal-load__progress span {
+                            animation-duration: 2.4s;
+                        }
                     }
                     ${keyframes}
                 </style>
@@ -194,19 +251,79 @@ function getSwalLoadStaticPrefix() {
 /** HTML del Swal de carga (solo lo usa `swals()`). */
 function buildSwalLoadingHtml({message, logoSrc}) {
 
+    const resolvedTitle = message.trim().replace(/\.\s*$/, "") || "Preparando informaci\u00f3n";
+
+    return `
+        <div class="br-swal-load__wrap" role="status" aria-live="polite" aria-busy="true">
+            <div class="br-swal-load__logo-stage" aria-hidden="true">
+                <img
+                    src="${logoSrc}"
+                    alt=""
+                    class="br-swal-load__logo"
+                    width="52"
+                    height="52"
+                    decoding="async">
+            </div>
+            <div class="br-swal-load-msg">
+                <p class="br-swal-load-msg__title">${resolvedTitle}</p>
+                <p class="br-swal-load-msg__hint">Espera un momento, por favor.</p>
+                <div class="br-swal-load__progress" aria-hidden="true">
+                    <span></span><span></span><span></span>
+                </div>
+            </div>
+        </div>
+    `;
+
+    /*
+     * Legacy markup kept temporarily below for compatibility auditing.
+     * The early return above is the active implementation.
+     */
     const {styleAndTicks, logoSuffix} = getSwalLoadStaticPrefix();
-    const titleLine = message.trim().replace(/\.\s*$/, "");
-    const titleHtml = titleLine ? `<p class="br-swal-load-msg__title">${titleLine}</p>` : "";
+    const titleLine = message.trim().replace(/\.\s*$/, "") || "Preparando información";
+    const titleHtml = `<p class="br-swal-load-msg__title">${titleLine}</p>`;
 
     return `${styleAndTicks}<img src="${logoSrc}" alt="" class="br-swal-load__logo" width="52" height="52" decoding="async">${logoSuffix}${titleHtml}
                         <p class="br-swal-load-msg__hint">Estamos procesando la información. No cierres esta ventana.</p>
+                        <div class="br-swal-load__progress" aria-hidden="true">
+                            <span></span><span></span><span></span>
+                        </div>
                     </div>
                 </div>
-            `;
+            `.replace(/\u00c3\u00b3/g, "\u00f3");
 
 }
 
-export function swals({show = true, type = "default", timeout = 0}) {
+function resolveSwalLoadingTitle({type, title, entity}) {
+
+    if(title) return String(title).trim();
+
+    const entityName = String(entity ?? "").trim();
+    const actionTitles = {
+        add: "Agregando",
+        create: "Agregando",
+        edit: "Editando",
+        update: "Editando",
+        delete: "Eliminando",
+        remove: "Eliminando",
+        save: "Guardando",
+        search: "Buscando",
+        consult: "Consultando informaci\u00f3n",
+        initParams: "Preparando informaci\u00f3n",
+        default: "Cargando"
+    };
+    const actionTitle = actionTitles[type] ?? actionTitles.default;
+
+    return entityName ? `${actionTitle} ${entityName}` : actionTitle;
+
+}
+
+export function swals({
+    show = true,
+    type = "default",
+    timeout = 0,
+    title = null,
+    entity = null
+}) {
 
     if(show) {
 
@@ -226,7 +343,10 @@ export function swals({show = true, type = "default", timeout = 0}) {
                 break;
         }
 
+        message = resolveSwalLoadingTitle({type, title, entity});
+
         Swal.fire({
+            ...SWAL_INSTANT_TRANSITION,
             target: document.body,
             html: buildSwalLoadingHtml({message, logoSrc: getLogomarkSrc()}),
             allowOutsideClick: false,
@@ -427,16 +547,23 @@ export function dismissTooltip(element) {
 
 export function modals({type = "show", id = null, timeout = 0}) {
 
-    if(["show"].includes(type)) {
+    const modalAction = () => {
 
-        timeout > 0 ? setTimeout(() => $(`#${id}`).modal("show"), timeout) : $(`#${id}`).modal("show");
+        const modal = $(`#${id}`);
 
+        if(["show"].includes(type)) {
 
-    }else if(["hide"].includes(type)) {
+            modal.modal("show");
 
-        timeout > 0 ? setTimeout(() => $(`#${id}`).modal("hide"), timeout) : $(`#${id}`).modal("hide");
+        }else if(["hide"].includes(type)) {
 
-    }
+            modal.modal("hide");
+
+        }
+
+    };
+
+    timeout > 0 ? window.requestAnimationFrame(modalAction) : modalAction();
 
 }
 
@@ -469,7 +596,8 @@ export function generateAlert({messages = [], type = "warning", headerTitle = nu
 
 	}
 
-	Swal.fire({title             : headerTitle,
+	return Swal.fire({...SWAL_INSTANT_TRANSITION,
+               title             : headerTitle,
                icon              : type,
 		       allowOutsideClick : false,
 		       allowEscapeKey    : false,
@@ -478,6 +606,7 @@ export function generateAlert({messages = [], type = "warning", headerTitle = nu
                buttonsStyling    : false,
                confirmButtonText: "Entendido",
                customClass: {
+                   container: "br-swal-backdrop",
                    popup: `br-swal-alert br-swal-alert--${type}`,
                    confirmButton: "br-btn br-btn-primary"
                }});

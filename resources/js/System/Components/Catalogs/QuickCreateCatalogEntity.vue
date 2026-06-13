@@ -372,7 +372,10 @@ export default {
             }
 
             this.isSaving = true;
-            Alerts.swals({});
+            Alerts.swals({
+                type: "create",
+                entity: this.singularLabel.toLowerCase()
+            });
 
             try {
 

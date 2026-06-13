@@ -15,10 +15,14 @@
             :search-button-text="MODULE.texts.actions.search"
             :add-button-text="MODULE.texts.actions.add"
             :show-add-button="true"
+            :show-download-button="MODULE.config.hasDownloadRecords"
+            :download-button-text="MODULE.texts.actions.download"
+            :downloading="isExporting"
             :title-class="[config.forms.classes.title]"
             :select-class="config.forms.classes.select2"
             @search="handleSearch"
-            @add="openModal()"/>
+            @add="openModal()"
+            @download="downloadRecords"/>
 
         <section class="br-entity-list" :aria-label="MODULE.texts.table.ariaLabel">
             <div class="table-responsive">
@@ -70,18 +74,30 @@
                                 <td>
                                     <div class="br-entity-identifiers">
                                         <div class="br-entity-identifier">
-                                            <span class="br-entity-identifier__label">Código interno</span>
+                                            <span
+                                                class="br-entity-identifier__label"
+                                                data-bs-toggle="tooltip"
+                                                data-bs-placement="top"
+                                                title="Código interno">Cód. interno</span>
                                             <span class="br-entity-identifier__value">
-                                                <span class="br-entity-code" v-text="record.internal_code"></span>
+                                                <span
+                                                    class="br-entity-code"
+                                                    v-text="record.internal_code"></span>
                                                 <CopyButton
                                                     :value="record.internal_code"
                                                     label="Código interno"/>
                                             </span>
                                         </div>
                                         <div class="br-entity-identifier">
-                                            <span class="br-entity-identifier__label">Código de barras</span>
+                                            <span
+                                                class="br-entity-identifier__label"
+                                                data-bs-toggle="tooltip"
+                                                data-bs-placement="top"
+                                                title="Código de barras">Cód. barras</span>
                                             <span class="br-entity-identifier__value">
-                                                <span class="br-entity-barcode" v-text="record.barcode"></span>
+                                                <span
+                                                    class="br-entity-barcode"
+                                                    v-text="record.barcode"></span>
                                                 <CopyButton
                                                     :value="record.barcode"
                                                     label="Código de barras"/>
@@ -707,7 +723,8 @@ const MODULE_CONFIG = {
     pageTitleSingular: "Producto",
     internalCodeEntity: "product",
     breadcrumbParent: "Catálogo comercial",
-    perPage: 10
+    perPage: 10,
+    hasDownloadRecords: true
 };
 
 const FORM_TABS = [
@@ -814,7 +831,8 @@ const TEXTS = {
     actions: {
         search: "Buscar",
         add: "Agregar producto",
-        edit: "Editar producto"
+        edit: "Editar producto",
+        download: "Descargar Excel"
     },
     table: {
         ariaLabel: "Listado de productos"
@@ -914,7 +932,8 @@ export default {
             ...crudModule,
             MODULE,
             activeFormTab: FORM_TABS[0].id,
-            isSaving: false
+            isSaving: false,
+            isExporting: false
         };
 
     },
@@ -1016,12 +1035,7 @@ export default {
         async listEntity(params = null) {
 
             const emptyRecords = {total: 0, data: [], links: []};
-            const filters = Utils.cloneJson(this.entityList.filters);
-            const filterData = {
-                per_page: this.MODULE.config.perPage,
-                filter_by: filters.filter_by?.code,
-                word: filters.word
-            };
+            const filterData = this.getListFilters({includePagination: true});
 
             this.entityList.extras.loading = true;
 
@@ -1072,6 +1086,50 @@ export default {
         handleSearch() {
 
             this.listEntity({});
+
+        },
+        getListFilters({includePagination = false} = {}) {
+
+            const filters = Utils.cloneJson(this.entityList.filters);
+            const filterData = {
+                filter_by: filters.filter_by?.code,
+                word: filters.word
+            };
+
+            if(includePagination) {
+
+                filterData.per_page = this.MODULE.config.perPage;
+
+            }
+
+            return filterData;
+
+        },
+        async downloadRecords() {
+
+            if(this.isExporting) return;
+
+            this.isExporting = true;
+            Alerts.swals({
+                type: "default",
+                title: "Preparando reporte de productos"
+            });
+
+            try {
+
+                await Requests.download({
+                    route: this.routeActions.export,
+                    data: this.getListFilters(),
+                    fileName: "productos.xlsx",
+                    showAlert: true
+                });
+
+            }finally {
+
+                Alerts.swals({show: false});
+                this.isExporting = false;
+
+            }
 
         },
         openModal(record = null) {
@@ -1187,9 +1245,7 @@ export default {
 
             if(this.isSaving) return;
 
-            Alerts.swals({});
             this.productForm.errors = {};
-            this.isSaving = true;
 
             try {
 
@@ -1199,12 +1255,12 @@ export default {
                 if(!validation.bool) {
 
                     this.productForm.errors = validation.errors;
-                    this.focusFirstTabWithErrors(validation.errors);
-                    Alerts.generateAlert({
+                    await Alerts.generateAlert({
                         type: "error",
                         messages: Forms.getDescriptiveErrors(validation.errors, this.MODULE.errorLabels),
                         msgContent: this.config.messages.errorValidate
                     });
+                    this.focusFirstTabWithErrors(validation.errors);
                     return;
 
                 }
@@ -1222,6 +1278,13 @@ export default {
                 const isUpdate = this.isDefined(id);
                 const requestMethod = isUpdate ? "patch" : "post";
                 const route = this.routeActions[isUpdate ? "update" : "store"];
+
+                this.isSaving = true;
+                Alerts.swals({
+                    type: isUpdate ? "update" : "create",
+                    entity: "producto"
+                });
+
                 const result = await Requests[requestMethod]({route, data: preparedData, id});
 
                 if(Requests.valid({result})) {

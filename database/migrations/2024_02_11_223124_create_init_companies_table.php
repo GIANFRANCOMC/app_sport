@@ -339,17 +339,6 @@ return new class extends Migration {
             ["branch_id" => 1, "document_type_id" => 2, "code" => "FA", "number" => 1, "init" => 1]
         ]);
 
-        DB::table("items")->insert([
-            ["company_id" => 1, "internal_code" => "PRO-" . Utilities::generateCode(7), "barcode" => "2000000000015", "name" => "Agua", "description" => "", "price" => 1, "currency_id" => 1, "type" => "product", "duration_type" => null, "duration_value" => null],
-            ["company_id" => 1, "internal_code" => "PRO-" . Utilities::generateCode(7), "barcode" => "2000000000022", "name" => "Proteina", "description" => "", "price" => 120, "currency_id" => 1, "type" => "product", "duration_type" => null, "duration_value" => null],
-            ["company_id" => 1, "internal_code" => "PRO-" . Utilities::generateCode(7), "barcode" => "2000000000039", "name" => "Tomatodo", "description" => "", "price" => 20, "currency_id" => 1, "type" => "product", "duration_type" => null, "duration_value" => null],
-            ["company_id" => 1, "internal_code" => "MEM-" . Utilities::generateCode(7), "barcode" => null, "name" => "Una hora", "description" => "", "price" => 2, "currency_id" => 1, "type" => "subscription", "duration_type" => "hour", "duration_value" => 1],
-            ["company_id" => 1, "internal_code" => "MEM-" . Utilities::generateCode(7), "barcode" => null, "name" => "Un día", "description" => "", "price" => 10, "currency_id" => 1, "type" => "subscription", "duration_type" => "day", "duration_value" => 1],
-            ["company_id" => 1, "internal_code" => "MEM-" . Utilities::generateCode(7), "barcode" => null, "name" => "Rutina / Día", "description" => "", "price" => 5, "currency_id" => 1, "type" => "subscription", "duration_type" => "today", "duration_value" => 1],
-            ["company_id" => 1, "internal_code" => "MEM-" . Utilities::generateCode(7), "barcode" => null, "name" => "Mes", "description" => "", "price" => 60, "currency_id" => 1, "type" => "subscription", "duration_type" => "month", "duration_value" => 1],
-            ["company_id" => 1, "internal_code" => "MEM-" . Utilities::generateCode(7), "barcode" => null, "name" => "Año", "description" => "", "price" => 400, "currency_id" => 1, "type" => "subscription", "duration_type" => "year", "duration_value" => 1]
-        ]);
-
         DB::table("customers")->insert([
             ["company_id" => 1, "identity_document_type_id" => 1, "document_number" => "999999999", "name" => "Cliente varios", "phone_number" => ""],
             ["company_id" => 1, "identity_document_type_id" => 2, "document_number" => "71883137", "name" => "Gianfranco Mejia Carhuajulca", "phone_number" => "51987057624"],
@@ -358,12 +347,6 @@ return new class extends Migration {
 
         DB::table("warehouses")->insert([
             ["branch_id" => 1, "name" => "Almacén - Sede principal"]
-        ]);
-
-        DB::table("warehouse_items")->insert([
-            ["warehouse_id" => 1, "item_id" => 1],
-            ["warehouse_id" => 1, "item_id" => 2],
-            ["warehouse_id" => 1, "item_id" => 3]
         ]);
 
     }

@@ -115,8 +115,22 @@ $config->currencies->records = MasterReferenceDataService::currencies();
 - Los símbolos monetarios usan el elemento interno reutilizable `br-currency-prefix__symbol`: color `--br-secondary`, peso medio y escala independiente de `.input-group-text`, sin competir visualmente con el importe.
 - Los códigos internos configurables muestran su prefijo con `br-internal-code-prefix`. El usuario edita la parte variable y `InternalCodeService` compone el valor definitivo.
 - `br-internal-code-prefix` debe integrarse al control como moneda, contador o acción: sin divisor interno, foco compartido, jerarquía tipográfica compacta y borde exterior único.
-- Los listados reutilizan `Loader.vue` y las clases globales `br-loader*`; no crear spinners grandes o colores locales por módulo.
-- El loader global de SweetAlert conserva el logomark y una órbita compacta con primary/secondary; el mensaje debe ser breve, bloqueante y legible sin competir con la acción principal.
+- Los disparadores reutilizables `br-quick-create-trigger` mantienen apariencia de acción compacta sin subrayado en reposo, hover o foco.
+- Los listados reutilizan `Loader.vue` y las clases globales `br-loader*`; el indicador orbital combina primary y secondary sin crear spinners o colores locales por módulo.
+- `Loader` y `WithoutData` comparten `br-feedback-state`: misma jerarquía de título, descripción, espaciado y alineación. El estado vacío usa un SVG inline basado en primary/secondary y no depende de ilustraciones externas.
+- Los prefijos integrados usan `letter-spacing: 0.04em`; la unidad relativa conserva legibilidad al cambiar la escala del formulario.
+- El loader global de SweetAlert no usa bordes decorativos ni órbitas. Mantiene el logomark centrado con respiración sutil y pulsos primary/secondary como único indicador de actividad. Su HTML vive en `Alerts.js` y toda la presentación reutilizable en `br-branding.css`.
+- `Alerts.swals()` acepta `type`, `entity` y `title`. Preferir acciones semánticas como `{type: "create", entity: "producto"}` o `{type: "update", entity: "producto"}`; usar `title` únicamente cuando el proceso requiera un texto específico.
+- Para exportes filtrados, reutilizar la consulta del listado y añadir únicamente la estrategia de salida. `FiltersSection` expone `showDownloadButton` desactivado por defecto, `downloadButtonText`, `downloading` y el evento `download`; cada módulo decide si habilita la capacidad mediante su configuración.
+- Las descargas autenticadas de archivos deben usar `Requests.download()`: centraliza `responseType: "blob"`, nombre de archivo, liberación de URL temporal y lectura de errores JSON devueltos como blob.
+- Los textos truncables deben usar el tooltip global de Bootstrap mediante `data-bs-toggle="tooltip"` y conservar el contenido completo en `title`.
+- El espacio entre logomark, título y mensaje debe ser compacto; el texto secundario utiliza una indicación breve y amable: `Espera un momento, por favor.`
+- Modales y SweetAlert deben responder inmediatamente. No introducir `setTimeout` para coordinar overlays: usar el helper `Alerts.modals`, que abre de inmediato o en el siguiente frame cuando recibe `timeout`.
+- Las modales usan una transición global breve de `80ms`; SweetAlert no utiliza animaciones de entrada o salida para evitar esperas artificiales.
+- SweetAlert conserva un backdrop navy semitransparente inmediato. Al desactivar animaciones no se debe retirar la clase de backdrop, porque también controla la opacidad del fondo.
+- Ejecutar validaciones frontend antes de `Alerts.swals({})`; el loader global se muestra únicamente al comenzar trabajo asíncrono o una petición HTTP.
+- `Alerts.generateAlert()` devuelve la promesa de SweetAlert. Cuando una acción posterior cambie pestañas, enfoque o scroll, esperar su cierre con `await` para impedir movimientos detrás del aviso.
+- Las secciones `br-entity-form-section` reutilizan una transición de entrada de `120ms`; no añadir `setTimeout` ni animaciones de altura para navegar entre pestañas.
 - Los módulos con código interno deben declarar `internalCodeEntity`, cargar `internal_code_prefixes` desde su `ConfigService` y reutilizar `InternalCodePrefixMixin`; no calcular prefijos dentro de cada página Vue.
 - Los FormRequests equivalentes deben extender `CompanyFormRequest` y reutilizar `AppliesInternalCodePrefix`. La interfaz es una ayuda visual; el backend siempre normaliza el valor.
 - Las configuraciones particulares de empresa deben almacenarse en `company_settings`; no crear una tabla específica para cada bandera cuando pertenece al mismo dominio de configuración.

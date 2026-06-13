@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\System\Catalogs;
 
+use App\Exports\System\Catalogs\Products\ProductListExport;
 use App\Http\Controllers\System\Base\BaseController;
 use App\Helpers\System\{Utilities};
 use Illuminate\Http\{JsonResponse, Request};
-use Carbon\Carbon;
-use Illuminate\Support\Facades\Log;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Maatwebsite\Excel\Facades\Excel;
 
 use App\Http\Requests\System\Catalogs\Products\{StoreProductRequest, UpdateProductRequest};
 use App\Services\System\Base\{InitParamsCacheInvalidationService};
@@ -48,6 +49,20 @@ class ProductController extends BaseController {
         $perPage = $this->getPerPage($request, Utilities::$per_page_default);
 
         return ProductService::getPaginatedList($this->getCompanyId(), $filters, $perPage);
+
+    }
+
+    /**
+     * Download every product matching the current list filters.
+     */
+    public function export(Request $request): BinaryFileResponse {
+
+        $fileName = "productos_" . now()->format("Y-m-d_His") . ".xlsx";
+
+        return Excel::download(
+            new ProductListExport($this->getCompanyId(), $this->getFilters($request)),
+            $fileName
+        );
 
     }
 
