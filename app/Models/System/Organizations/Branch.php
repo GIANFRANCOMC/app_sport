@@ -39,7 +39,9 @@ class Branch extends Model {
     // Appends
     public function getFormattedStatusAttribute() {
 
-        return self::getStatuses("first", $this->attributes["status"])["label"] ?? "";
+        $status = $this->attributes["status"] ?? null;
+
+        return $status ? (self::getStatuses("first", $status)["label"] ?? "") : "";
 
     }
 

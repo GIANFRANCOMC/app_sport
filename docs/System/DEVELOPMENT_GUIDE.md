@@ -146,6 +146,10 @@ $config->currencies->records = MasterReferenceDataService::currencies();
 - Los `vue-select` simples mantienen una sola línea mediante elipsis. Cuando el texto seleccionado sea largo, debe exponerse completo con `title` sobre `br-select-selected-text`, sin modificar la altura del formulario.
 - Filtros y modales deben compartir el mismo contrato de `vue-select`: `append-to-body`, altura estable, opciones sin scroll horizontal, elipsis mediante `br-select-option-text` y contenido completo disponible con `title`.
 - Las modales CRUD reutilizan `br-entity-modal` y sus variables de espaciado/superficie; ajustar `--br-entity-modal-body-space-y`, `--br-entity-modal-content-space-x` o `--br-entity-modal-footer-bg` antes de crear variantes específicas por módulo.
+- Toda modal System se prepara mediante `Alerts.modals` o el listener global de `Alerts.js`: backdrop `static`, teclado deshabilitado y clase `br-modal-standard`. No debe cerrarse al hacer clic fuera ni al presionar Escape.
+- Los bodies sin navegación por pestañas reutilizan `br-modal-standard__body`; no crear padding horizontal por módulo. Header, body y footer comparten `--br-modal-space-x`, con su ajuste responsive.
+- `Alerts.generateAlert()` usa un popup compacto y clases semánticas por tipo: borde e icono comparten color; error/success confirman con primary, warning con danger y question con secondary.
+- Los accessors incluidos en `$appends` deben tolerar columnas ausentes mediante `?? null`. Si dependen de una relación, comprobar `relationLoaded()` y no disparar lazy loading durante la serialización de consultas parciales.
 - El paginador compartido debe mostrarse incluso con una sola página: `Anterior` y `Siguiente` quedan deshabilitados, y la página actual permanece visible con contraste alto.
 - Revisar que textos, títulos, confirmaciones y mensajes respeten tildes, puntuación y signos de interrogación.
 - Centralizar títulos, subtítulos, filtros, estados vacíos, tooltips y confirmaciones en `config.entity.page` cuando la página use la estructura de configuración por entidad.

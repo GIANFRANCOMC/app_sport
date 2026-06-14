@@ -16,6 +16,9 @@
             :add-button-text="MODULE.texts.actions.add"
             :show-add-button="true"
             :show-download-button="MODULE.config.hasDownloadRecords"
+            :show-import-button="MODULE.config.hasImportRecords"
+            :import-button-text="MODULE.texts.actions.import"
+            :import-button-tooltip="MODULE.texts.actions.import"
             :download-button-text="MODULE.texts.actions.download"
             :download-button-tooltip="MODULE.texts.actions.download"
             :download-icon-only-on-desktop="true"
@@ -24,7 +27,15 @@
             :select-class="config.forms.classes.select2"
             @search="handleSearch"
             @add="openModal()"
+            @import="openImportModal"
             @download="downloadRecords"/>
+
+        <ProductImportModal
+            ref="productImportModal"
+            :import-route="routeActions.import"
+            :template-route="routeActions.importTemplate"
+            :warehouses="warehouses"
+            @imported="handleProductsImported"/>
 
         <section class="br-entity-list" :aria-label="MODULE.texts.table.ariaLabel">
             <div class="table-responsive">
@@ -734,6 +745,7 @@ import AddBrand from "@System/Components/Catalogs/AddBrand.vue";
 import AddCategory from "@System/Components/Catalogs/AddCategory.vue";
 import BarcodeDownloadButton from "@System/Components/BarcodeDownloadButton.vue";
 import SelectNoOptions from "@System/Components/Generics/SelectNoOptions.vue";
+import ProductImportModal from "@System/Components/Catalogs/Products/ProductImportModal.vue";
 import InternalCodePrefixMixin from "@System/Mixins/InternalCodePrefixMixin.js";
 
 const MODULE_CONFIG = {
@@ -744,7 +756,8 @@ const MODULE_CONFIG = {
     internalCodeEntity: "product",
     breadcrumbParent: "Catálogo comercial",
     perPage: 10,
-    hasDownloadRecords: true
+    hasDownloadRecords: true,
+    hasImportRecords: true
 };
 
 const FORM_TABS = [
@@ -852,6 +865,7 @@ const TEXTS = {
         search: "Buscar",
         add: "Agregar producto",
         edit: "Editar producto",
+        import: "Carga masiva",
         download: "Descargar Excel"
     },
     table: {
@@ -935,7 +949,8 @@ export default {
         AddBrand,
         AddCategory,
         BarcodeDownloadButton,
-        SelectNoOptions
+        SelectNoOptions,
+        ProductImportModal
     },
     data() {
 
@@ -1154,6 +1169,17 @@ export default {
             }
 
         },
+        openImportModal() {
+
+            Alerts.tooltips({show: false});
+            this.$refs.productImportModal?.open();
+
+        },
+        async handleProductsImported() {
+
+            await this.listEntity({});
+
+        },
         openModal(record = null) {
 
             Alerts.tooltips({show: false});
@@ -1288,16 +1314,17 @@ export default {
                 }
 
                 const preparedData = Forms.prepareFormData(formData, this.MODULE.formFieldConfig);
-                preparedData.inventory = preparedData.inventory.map(inventory => ({
-                    warehouse_id: Number(inventory.warehouse_id),
-                    initial_stock: Number(inventory.initial_stock ?? 0),
-                    minimum_stock: Number(inventory.minimum_stock ?? 0)
-                }));
-
                 if(!preparedData.see_my_web) preparedData.see_my_web_price = false;
 
                 const id = preparedData.id;
                 const isUpdate = this.isDefined(id);
+                preparedData.inventory = preparedData.inventory.map(inventory => ({
+                    warehouse_id: Number(inventory.warehouse_id),
+                    ...(isUpdate ? {} : {
+                        initial_stock: Number(inventory.initial_stock ?? 0)
+                    }),
+                    minimum_stock: Number(inventory.minimum_stock ?? 0)
+                }));
                 const requestMethod = isUpdate ? "patch" : "post";
                 const route = this.routeActions[isUpdate ? "update" : "store"];
 
@@ -1359,7 +1386,11 @@ export default {
 
                 formData.inventory.forEach((inventory, index) => {
 
-                    ["initial_stock", "minimum_stock"].forEach(field => {
+                    const inventoryFields = this.isUpdate
+                        ? ["minimum_stock"]
+                        : ["initial_stock", "minimum_stock"];
+
+                    inventoryFields.forEach(field => {
 
                         const value = Number(inventory[field]);
 

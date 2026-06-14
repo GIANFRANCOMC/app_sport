@@ -358,7 +358,7 @@ export default {
                 customClass: {
                     popup: `br-home-confirmation br-home-confirmation--${shouldFavorite ? "question" : "warning"}`,
                     confirmButton: shouldFavorite
-                        ? "br-btn br-btn-primary"
+                        ? "br-btn br-btn-secondary"
                         : "br-btn br-btn-danger",
                     cancelButton: "br-btn br-btn-outline-secondary ms-2"
                 }

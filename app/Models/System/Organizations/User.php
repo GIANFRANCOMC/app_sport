@@ -75,19 +75,29 @@ class User extends Authenticatable {
     // Appends
     public function getFormattedGenderAttribute() {
 
-        return self::getGenders("first", $this->attributes["gender"])["label"] ?? "";
+        $gender = $this->attributes["gender"] ?? null;
+
+        return $gender ? (self::getGenders("first", $gender)["label"] ?? "") : "";
 
     }
 
     public function getFormattedStatusAttribute() {
 
-        return self::getStatuses("first", $this->attributes["status"])["label"] ?? "";
+        $status = $this->attributes["status"] ?? null;
+
+        return $status ? (self::getStatuses("first", $status)["label"] ?? "") : "";
 
     }
 
     public function getFormattedPreferencesAttribute() {
 
-        return $this->preferences
+        if(!$this->relationLoaded("preferences")) {
+
+            return [];
+
+        }
+
+        return $this->getRelation("preferences")
                     ->mapWithKeys(function ($e) {
 
                         return [$e->slug => json_decode($e->value)];

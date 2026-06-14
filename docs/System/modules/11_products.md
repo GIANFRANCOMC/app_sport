@@ -108,6 +108,7 @@ Si un almacén activo no tiene valores explícitos, se crea con cantidad y míni
 - El stock actual se muestra como solo lectura.
 - La cantidad existente no se modifica desde Productos; debe cambiarse desde Inventario para no mezclar catálogo con operaciones de inventario.
 - El stock inicial informado al crear un producto genera una entrada `product_opening` en `inventory_movements`, con saldo anterior y resultante por almacén.
+- En edición, `initial_stock` no se valida ni se envía al backend. El formulario guarda únicamente `minimum_stock` por almacén; el saldo actual puede ser negativo y es informativo.
 - Si aparece un almacén nuevo, se crea automáticamente la relación faltante con cantidad cero.
 
 ## Código de barras
@@ -273,6 +274,26 @@ Si un almacén activo no tiene valores explícitos, se crea con cantidad y míni
 - `CopyButton` conserva esa variante compacta al alternar entre `Copiar` y `Copiado`, porque recrea su instancia mediante la configuración centralizada de `Alerts.createTooltip`.
 - Los switches `Publicar producto` y `Mostrar precio` usan verde success al seleccionarse, foco verde suave y estado neutral al desmarcarse o deshabilitarse, sin heredar el morado del tema base.
 - En edición, el stock actual conserva su comportamiento de solo lectura y se presenta mediante un `span` neutral formateado con `separatorNumber`; no se renderiza como un control deshabilitado porque la cantidad se modifica desde Inventario, no desde Productos. En creación se conserva `InputNumber` para registrar el stock inicial.
+
+## Carga masiva básica
+
+Productos incorpora una acción compacta **Carga masiva** junto a Descargar Excel.
+
+- La modal permite descargar la plantilla oficial.
+- Descargar la plantilla muestra un loading global mientras se genera el archivo y lo cierra al finalizar.
+- Columnas: `Nombre`, `Precio`, `Código interno`, `Código de barras`, `Descripción`, `Stock inicial` y `Stock mínimo`.
+- `Nombre` y `Precio` son obligatorios.
+- Código interno y código de barras son opcionales; si están vacíos se generan automáticamente.
+- El usuario selecciona el almacén al que corresponden el stock inicial y mínimo.
+- Los demás almacenes se crean con saldo y mínimo en cero.
+- Los productos importados se crean activos, no publicados para clientes y con la moneda principal de la empresa.
+- No se solicitan IDs, marca ni categorías para mantener el flujo comprensible.
+- El archivo admite hasta 500 productos y 5 MB.
+- La importación es transaccional: una fila inválida evita una carga parcial y muestra fila, campo y motivo.
+- Cada stock inicial mayor que cero genera su movimiento `product_opening`.
+- Al terminar se invalida la referencia compartida de items, incluyendo la configuración de Inventario.
+- El botón de carga masiva usa una acción ámbar sólida para diferenciarse visualmente de agregar, buscar y exportar.
+- La modal usa espaciado lateral propio y consistente en escritorio y móvil.
 - Las pestañas reutilizables mantienen una separación visual moderada entre opciones para facilitar el escaneo sin incrementar su altura.
 - Las pestañas reutilizan `nav-pills`, tienen una separación superior más amplia respecto al encabezado y márgenes laterales alineados con los campos del formulario.
 - La navegación ya no usa posición sticky ni desenfoque: forma parte del flujo normal del modal, evitando superposiciones y filtraciones de texto durante el desplazamiento.

@@ -59,7 +59,8 @@ final class InitParamsCacheInvalidationService {
             ProductConfigService::class,
             ServiceConfigService::class,
             SubscriptionConfigService::class,
-            SaleConfigService::class
+            SaleConfigService::class,
+            StockManagementConfigService::class
         ],
         self::CUSTOMERS => [
             CustomerConfigService::class,

@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Http\Controllers\System\Catalogs;
 
 use App\Exports\System\Catalogs\Products\ProductListExport;
+use App\Exports\System\Catalogs\Products\ProductImportTemplateExport;
+use App\Imports\System\Catalogs\Products\ProductBasicImport;
 use App\Http\Controllers\System\Base\BaseController;
 use App\Helpers\System\{Utilities};
 use Illuminate\Http\{JsonResponse, Request};
@@ -15,6 +17,9 @@ use App\Http\Requests\System\Catalogs\Products\{StoreProductRequest, UpdateProdu
 use App\Services\System\Base\{InitParamsCacheInvalidationService};
 use App\Services\System\Catalogs\Products\{ProductConfigService, ProductService};
 use App\Models\System\Catalogs\{Item};
+use App\Models\System\Organizations\Company;
+use App\Services\System\Warehouses\StockManagement\StockManagementService;
+use Illuminate\Validation\ValidationException;
 
 class ProductController extends BaseController {
 
@@ -63,6 +68,79 @@ class ProductController extends BaseController {
             new ProductListExport($this->getCompanyId(), $this->getFilters($request)),
             $fileName
         );
+
+    }
+
+    public function importTemplate(): BinaryFileResponse {
+
+        return Excel::download(
+            new ProductImportTemplateExport(),
+            "plantilla_productos.xlsx"
+        );
+
+    }
+
+    public function import(Request $request): JsonResponse {
+
+        $request->validate([
+            "file"         => ["required", "file", "mimes:xlsx,xls,csv", "max:5120"],
+            "warehouse_id" => ["required", "integer"]
+        ], [
+            "required" => "Campo obligatorio.",
+            "file"     => "Selecciona un archivo válido.",
+            "mimes"    => "Usa un archivo Excel o CSV.",
+            "max"      => "El archivo no debe superar 5 MB."
+        ]);
+
+        try {
+
+            $warehouse = StockManagementService::validateWarehouse(
+                (int) $request->input("warehouse_id"),
+                $this->getCompanyId()
+            );
+
+            if(!$warehouse) {
+
+                return response()->json([
+                    "bool" => false,
+                    "msg"  => "El almacén seleccionado no está disponible."
+                ], 422);
+
+            }
+
+            $currencyId = (int) Company::whereKey($this->getCompanyId())->value("currency_id");
+            $import = new ProductBasicImport(
+                $this->getCompanyId(),
+                $currencyId,
+                (int) $warehouse->id,
+                $this->getUserId()
+            );
+
+            Excel::import($import, $request->file("file"));
+
+            InitParamsCacheInvalidationService::invalidate(
+                InitParamsCacheInvalidationService::ITEMS,
+                $this->getCompanyId()
+            );
+
+            return response()->json([
+                "bool" => true,
+                "msg"  => "{$import->importedCount()} productos importados correctamente.",
+                "data" => ["imported" => $import->importedCount()]
+            ]);
+
+        }catch(ValidationException $e) {
+
+            throw $e;
+
+        }catch(\Throwable $e) {
+
+            return response()->json([
+                "bool" => false,
+                "msg"  => $e->getMessage()
+            ], 422);
+
+        }
 
     }
 

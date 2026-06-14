@@ -13,6 +13,7 @@ class InventoryMovement extends Model {
 
     protected $table = "inventory_movements";
     public $timestamps = false;
+    protected $appends = ["reference"];
 
     protected $fillable = [
         "company_id",
@@ -37,6 +38,12 @@ class InventoryMovement extends Model {
         "metadata"        => "array",
         "created_at"      => "datetime"
     ];
+
+    public function getReferenceAttribute(): ?string {
+
+        return ($this->metadata ?? [])["reference"] ?? null;
+
+    }
 
     public function company() {
 

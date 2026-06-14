@@ -338,6 +338,14 @@ const ENTITY_SPECIAL_ROUTES = {
     reports: {
         sale: "sale"
     },
+    stocks_management: {
+        movements: "movements",
+        transfers: "transfers"
+    },
+    products: {
+        import: "import",
+        importTemplate: "import-template"
+    },
     helpers: {
         searchDocumentNumber: "searchDocumentNumber",
         sendEmail: "sendEmail"

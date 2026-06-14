@@ -66,7 +66,34 @@ El usuario registra el saldo físico contado. El backend calcula la diferencia c
 - **Existencias** muestra saldo actual, stock mínimo y situación por producto.
 - **Registrar movimiento** abre un formulario contextual del producto seleccionado.
 - **Kardex** muestra fecha, usuario, producto, tipo, variación, saldo anterior/resultante, motivo y origen.
+- **Traslados** mueve uno o varios productos entre almacenes de la misma empresa mediante salidas y entradas atómicas.
 - El almacén seleccionado limita tanto existencias como kardex.
+- Los selectores muestran sucursal y almacén porque una sucursal puede administrar varios almacenes.
+
+## Traslados entre almacenes
+
+- El almacén seleccionado en la cabecera funciona como origen.
+- El destino debe ser distinto y pertenecer a la misma empresa.
+- Cada operación admite entre 1 y 100 productos sin duplicados.
+- Cada producto debe estar activo y ser de tipo `product`.
+- Cada cantidad debe ser mayor que cero y no puede superar el saldo disponible del producto en el origen.
+- El motivo es obligatorio.
+- El traslado usa una referencia común y genera, por cada producto, dos movimientos:
+  - `transfer_out`: salida del almacén de origen.
+  - `transfer_in`: entrada al almacén de destino.
+- Todos los productos se procesan dentro de una sola transacción. Si falla cualquier movimiento, ningún saldo del traslado se modifica.
+- El traslado no altera el stock mínimo configurado en ninguno de los almacenes.
+- La interfaz permite agregar y quitar filas, evita seleccionar el mismo producto dos veces y conserva errores asociados a cada fila.
+
+## Modales y alertas
+
+- Las modales System aplican globalmente backdrop estático y teclado deshabilitado. El usuario solo puede cerrarlas mediante la `X`, el botón de cierre del footer o una acción programática posterior a un resultado válido.
+- El preparador interno de `Alerts.js` agrega la estructura reutilizable `br-modal-standard`; los bodies sin navegación por pestañas reciben espaciado horizontal uniforme mediante `br-modal-standard__body`.
+- La modal Registrar movimiento reutiliza el mismo header, body y footer de `br-entity-modal`, sin crear medidas locales.
+- Los SweetAlert compactos conservan el color semántico en borde e icono. Sus acciones usan primary para error/success, danger para warning y secondary para question.
+- El kardex puede cargar relaciones parciales de sucursal sin exigir `status`; el accessor de `Branch` tolera atributos no seleccionados.
+- La relación de usuario del kardex solicita únicamente `id` y `name`. Los accessors de `User` toleran que `gender` o `status` no hayan sido seleccionados y `formatted_preferences` no ejecuta lazy loading: solo transforma preferencias cuando la relación fue cargada explícitamente.
+- `Branch`, `Warehouse`, `Item` y `User`, modelos relacionados con el kardex, soportan selecciones parciales sin acceder directamente a claves ausentes.
 
 ## Integración
 
@@ -80,6 +107,7 @@ El usuario registra el saldo físico contado. El backend calcula la diferencia c
 
 - Cada producto vendido genera una salida con referencia al detalle de venta.
 - Anular una venta genera la entrada inversa y conserva ambos eventos.
+- La ruta frontend `stocks_management.movements` está declarada como ruta especial. Sin este mapeo el movimiento existía en base de datos, pero el Kardex no podía consultarlo.
 
 ### Compras
 
@@ -87,7 +115,6 @@ La arquitectura reconoce `purchase` y `purchase_cancellation`, pero no se conect
 
 ## Pendientes
 
-- Traslados entre almacenes mediante dos movimientos enlazados.
 - Configuración por empresa para permitir o bloquear ventas con saldo negativo.
 - Exportación del kardex a Excel.
 - Alertas y notificaciones automáticas al alcanzar stock mínimo.

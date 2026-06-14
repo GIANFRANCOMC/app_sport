@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services\System\Warehouses\StockManagement;
 
 use stdClass;
+use App\Models\System\Catalogs\Item;
 
 use App\Services\System\Base\{
     BaseConfigService,
@@ -15,7 +16,7 @@ final class StockManagementConfigService extends BaseConfigService {
 
     protected static function getCachePrefix(): string {
 
-        return "stock_management";
+        return "inventory_v2";
 
     }
 
@@ -24,6 +25,15 @@ final class StockManagementConfigService extends BaseConfigService {
         return self::data([
             "warehouses" => self::data([
                 "records" => CompanyReferenceDataService::for($companyId)->stockWarehouses()
+            ]),
+            "products" => self::data([
+                "records" => Item::query()
+                    ->where("company_id", $companyId)
+                    ->where("type", "product")
+                    ->where("status", "active")
+                    ->select(["id", "internal_code", "name"])
+                    ->orderBy("name")
+                    ->get()
             ])
         ]);
 

@@ -42,6 +42,15 @@
                 <i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i>
                 <span>Kardex</span>
             </button>
+            <button
+                type="button"
+                :class="['br-inventory__view', { 'is-active': activeView === 'transfers' }]"
+                role="tab"
+                :aria-selected="activeView === 'transfers'"
+                @click="changeView('transfers')">
+                <i class="fa-solid fa-truck-ramp-box" aria-hidden="true"></i>
+                <span>Traslados</span>
+            </button>
         </div>
 
         <div v-if="activeView === 'stock'" class="table-responsive br-inventory__table-wrap">
@@ -104,7 +113,7 @@
             </table>
         </div>
 
-        <div v-else class="br-inventory__kardex">
+        <div v-else-if="activeView === 'kardex'" class="br-inventory__kardex">
             <div class="br-inventory__kardex-filters">
                 <div>
                     <label for="movementType" class="form-label">Tipo de movimiento</label>
@@ -115,6 +124,32 @@
                         :class="config.forms.classes.select2"
                         :clearable="false"
                         :searchable="false"/>
+                </div>
+                <div>
+                    <label for="kardexProduct" class="form-label">Producto</label>
+                    <v-select
+                        id="kardexProduct"
+                        v-model="filters.kardexProduct"
+                        :options="kardexProducts"
+                        :clearable="false"
+                        :searchable="true"
+                        append-to-body/>
+                </div>
+                <div>
+                    <label for="kardexDateFrom" class="form-label">Desde</label>
+                    <input
+                        id="kardexDateFrom"
+                        v-model="filters.dateFrom"
+                        type="date"
+                        class="form-control">
+                </div>
+                <div>
+                    <label for="kardexDateTo" class="form-label">Hasta</label>
+                    <input
+                        id="kardexDateTo"
+                        v-model="filters.dateTo"
+                        type="date"
+                        class="form-control">
                 </div>
                 <button
                     type="button"
@@ -176,6 +211,9 @@
                                     <strong>{{ movement.reason }}</strong>
                                     <span class="br-inventory__meta">
                                         {{ originLabel(movement.origin_type) }}
+                                        <template v-if="movement.reference">
+                                            · {{ movement.reference }}
+                                        </template>
                                     </span>
                                 </td>
                             </tr>
@@ -188,14 +226,134 @@
             </div>
         </div>
 
-        <div class="d-flex justify-content-center mt-3" v-if="currentRecords.links">
+        <div v-else class="br-inventory-transfer">
+            <div class="br-inventory-transfer__intro">
+                <div>
+                    <span>Almacén de origen</span>
+                    <strong>{{ filters.warehouse?.label }}</strong>
+                </div>
+                <p>
+                    Mueve uno o varios productos al destino en una sola operación trazable.
+                </p>
+            </div>
+
+            <div class="br-inventory-transfer__form">
+                <div class="br-inventory-transfer__destination">
+                    <label for="transferDestination" class="form-label">Almacén de destino</label>
+                    <v-select
+                        id="transferDestination"
+                        v-model="transferForm.destination"
+                        :options="destinationWarehouses"
+                        :clearable="false"
+                        :searchable="true"
+                        append-to-body/>
+                    <small v-if="transferErrors.destination_warehouse_id" class="text-danger">
+                        {{ firstError(transferErrors.destination_warehouse_id) }}
+                    </small>
+                </div>
+
+                <div class="br-inventory-transfer__items">
+                    <div class="br-inventory-transfer__items-header">
+                        <div>
+                            <strong>Productos del traslado</strong>
+                            <small>Agrega hasta 100 productos con su cantidad.</small>
+                        </div>
+                        <button
+                            type="button"
+                            class="br-btn br-btn-sm br-btn-outline-secondary"
+                            :disabled="savingTransfer || transferForm.items.length >= 100"
+                            @click="addTransferItem">
+                            <i class="fa-solid fa-plus" aria-hidden="true"></i>
+                            <span>Agregar producto</span>
+                        </button>
+                    </div>
+
+                    <div
+                        v-for="(item, index) in transferForm.items"
+                        :key="item.key"
+                        class="br-inventory-transfer__item-row">
+                        <div>
+                            <label :for="`transferProduct-${item.key}`" class="form-label">
+                                Producto {{ index + 1 }}
+                            </label>
+                            <v-select
+                                :id="`transferProduct-${item.key}`"
+                                v-model="item.product"
+                                :options="transferProductOptions(index)"
+                                :clearable="false"
+                                :searchable="true"
+                                append-to-body/>
+                            <small v-if="transferItemError(index, 'item_id')" class="text-danger">
+                                {{ transferItemError(index, "item_id") }}
+                            </small>
+                        </div>
+
+                        <div>
+                            <label :for="`transferQuantity-${item.key}`" class="form-label">Cantidad</label>
+                            <InputNumber
+                                :id="`transferQuantity-${item.key}`"
+                                v-model="item.quantity"
+                                :hasNegative="false"/>
+                            <small v-if="transferItemError(index, 'quantity')" class="text-danger">
+                                {{ transferItemError(index, "quantity") }}
+                            </small>
+                        </div>
+
+                        <button
+                            type="button"
+                            class="br-icon-action br-inventory-transfer__remove"
+                            :disabled="savingTransfer || transferForm.items.length === 1"
+                            :aria-label="`Quitar producto ${index + 1}`"
+                            title="Quitar producto"
+                            @click="removeTransferItem(index)">
+                            <i class="fa-solid fa-trash-can" aria-hidden="true"></i>
+                        </button>
+                    </div>
+
+                    <small v-if="transferErrors.items" class="text-danger">
+                        {{ firstError(transferErrors.items) }}
+                    </small>
+                </div>
+
+                <div class="br-inventory-transfer__reason">
+                    <label for="transferReason" class="form-label">Motivo</label>
+                    <textarea
+                        id="transferReason"
+                        v-model.trim="transferForm.reason"
+                        class="form-control"
+                        rows="2"
+                        maxlength="255"
+                        placeholder="Ejemplo: reposición de stock para la sede norte"></textarea>
+                    <small v-if="transferErrors.reason" class="text-danger">
+                        {{ firstError(transferErrors.reason) }}
+                    </small>
+                </div>
+
+                <div class="br-inventory-transfer__submit">
+                    <button
+                        type="button"
+                        class="br-btn br-btn-primary"
+                        :disabled="savingTransfer"
+                        @click="saveTransfer">
+                        <i class="fa-solid fa-arrow-right-arrow-left" aria-hidden="true"></i>
+                        <span>Registrar traslado</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div
+            class="d-flex justify-content-center mt-3"
+            v-if="activeView !== 'transfers' && currentRecords.links">
             <Paginator :links="currentRecords.links" @clickPage="listCurrentView"/>
         </div>
     </section>
 
     <div
         id="inventoryMovementModal"
-        class="modal fade br-entity-modal"
+        class="modal fade br-entity-modal br-modal-standard"
+        data-bs-backdrop="static"
+        data-bs-keyboard="false"
         tabindex="-1"
         aria-labelledby="inventoryMovementModalTitle"
         aria-hidden="true">
@@ -213,7 +371,7 @@
                     </button>
                 </div>
 
-                <div class="modal-body br-entity-modal__body">
+                <div class="modal-body br-entity-modal__body br-modal-standard__body">
                     <div class="br-inventory__selected-product">
                         <span>Producto</span>
                         <strong>{{ movementForm.item?.name }}</strong>
@@ -334,11 +492,15 @@ export default {
             loadingStock: false,
             loadingKardex: false,
             savingMovement: false,
+            savingTransfer: false,
             stockRecords: { total: 0, data: [] },
             kardexRecords: { total: 0, data: [] },
             filters: {
                 warehouse: null,
-                movementType: MOVEMENT_TYPES[0]
+                movementType: MOVEMENT_TYPES[0],
+                kardexProduct: {code: "", label: "Todos los productos"},
+                dateFrom: "",
+                dateTo: ""
             },
             movementForm: {
                 item: null,
@@ -348,8 +510,19 @@ export default {
                 reason: ""
             },
             movementErrors: {},
+            transferForm: {
+                destination: null,
+                items: [{
+                    key: "initial-transfer-item",
+                    product: null,
+                    quantity: ""
+                }],
+                reason: ""
+            },
+            transferErrors: {},
             options: {
-                warehouses: []
+                warehouses: [],
+                products: []
             },
             config: {
                 ...Constants.generalConfig,
@@ -373,6 +546,7 @@ export default {
             });
 
             this.options.warehouses = result.data?.config?.warehouses?.records || [];
+            this.options.products = result.data?.config?.products?.records || [];
             return Requests.valid({ result });
         },
         async listStock({ url = null } = {}) {
@@ -394,7 +568,10 @@ export default {
                 route: url || Requests.config({ entity: "stocks_management", type: "movements" }),
                 data: {
                     warehouse_id: this.filters.warehouse.code,
-                    movement_type: this.filters.movementType?.code || ""
+                    movement_type: this.filters.movementType?.code || "",
+                    item_id: this.filters.kardexProduct?.code || "",
+                    date_from: this.filters.dateFrom,
+                    date_to: this.filters.dateTo
                 }
             });
             this.kardexRecords = result?.data || { total: 0, data: [] };
@@ -406,11 +583,16 @@ export default {
             if(view === "kardex" && !this.kardexRecords.data.length) {
                 this.listKardex({});
             }
+
+            if(view === "transfers" && !this.transferForm.destination) {
+                this.transferForm.destination = this.destinationWarehouses[0] ?? null;
+            }
         },
         listCurrentView({ url = null } = {}) {
-            return this.activeView === "stock"
-                ? this.listStock({ url })
-                : this.listKardex({ url });
+            if(this.activeView === "stock") return this.listStock({ url });
+            if(this.activeView === "kardex") return this.listKardex({ url });
+
+            return Promise.resolve();
         },
         prepareMovement(record) {
             this.movementForm = {
@@ -421,6 +603,32 @@ export default {
                 reason: ""
             };
             this.movementErrors = {};
+        },
+        newTransferItem() {
+            return {
+                key: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
+                product: null,
+                quantity: ""
+            };
+        },
+        addTransferItem() {
+            if(this.transferForm.items.length >= 100) return;
+            this.transferForm.items.push(this.newTransferItem());
+        },
+        removeTransferItem(index) {
+            if(this.transferForm.items.length === 1) return;
+            this.transferForm.items.splice(index, 1);
+        },
+        transferProductOptions(currentIndex) {
+            const selectedCodes = this.transferForm.items
+                .filter((item, index) => index !== currentIndex)
+                .map(item => Number(item.product?.code))
+                .filter(Boolean);
+
+            return this.products.filter(product => !selectedCodes.includes(Number(product.code)));
+        },
+        transferItemError(index, field) {
+            return this.firstError(this.transferErrors[`items.${index}.${field}`]);
         },
         async saveMovement() {
             this.savingMovement = true;
@@ -456,6 +664,51 @@ export default {
             this.movementErrors = result?.errors || result?.data?.errors || {};
             Alerts.generateAlert({
                 messages: [result?.data?.msg || "No se pudo registrar el movimiento."]
+            });
+        },
+        async saveTransfer() {
+            this.transferErrors = {};
+            this.savingTransfer = true;
+            Alerts.swals({type: "loading", message: "Registrando traslado"});
+
+            const result = await Requests.post({
+                route: Requests.config({entity: "stocks_management", type: "transfers"}),
+                data: {
+                    source_warehouse_id: this.filters.warehouse?.code,
+                    destination_warehouse_id: this.transferForm.destination?.code,
+                    items: this.transferForm.items.map(item => ({
+                        item_id: item.product?.code,
+                        quantity: item.quantity
+                    })),
+                    reason: this.transferForm.reason
+                }
+            });
+
+            this.savingTransfer = false;
+            Alerts.swals({show: false});
+
+            if(Requests.valid({result})) {
+                Alerts.generateAlert({
+                    type: "success",
+                    msgContent: result.data.msg
+                });
+                this.transferForm = {
+                    destination: this.destinationWarehouses[0] ?? null,
+                    items: [this.newTransferItem()],
+                    reason: ""
+                };
+                await Promise.all([this.listStock({}), this.listKardex({})]);
+                return;
+            }
+
+            this.transferErrors = result?.errors ?? result?.data?.errors ?? {};
+            const messages = Object.values(this.transferErrors).flat();
+
+            Alerts.generateAlert({
+                type: "error",
+                messages: messages.length
+                    ? messages
+                    : [result?.data?.msg || "No se pudo registrar el traslado."]
             });
         },
         stockStatus(record) {
@@ -494,7 +747,9 @@ export default {
                 sale: "Venta",
                 sale_cancellation: "Anulación de venta",
                 purchase: "Compra",
-                purchase_cancellation: "Anulación de compra"
+                purchase_cancellation: "Anulación de compra",
+                transfer_out: "Traslado enviado",
+                transfer_in: "Traslado recibido"
             };
             return labels[origin] || origin;
         },
@@ -526,6 +781,23 @@ export default {
                 label: `${record.branch?.name ? `${record.branch.name} - ` : ""}${record.name}`
             }));
         },
+        destinationWarehouses() {
+            return this.warehouses.filter(warehouse =>
+                Number(warehouse.code) !== Number(this.filters.warehouse?.code)
+            );
+        },
+        products() {
+            return (this.options.products || []).map(product => ({
+                code: product.id,
+                label: `${product.name} · ${product.internal_code}`
+            }));
+        },
+        kardexProducts() {
+            return [
+                {code: "", label: "Todos los productos"},
+                ...this.products
+            ];
+        },
         movementTypes() {
             return MOVEMENT_TYPES;
         },
@@ -542,6 +814,7 @@ export default {
                 this.stockRecords = { total: 0, data: [] };
                 this.kardexRecords = { total: 0, data: [] };
                 this.listCurrentView({});
+                this.transferForm.destination = this.destinationWarehouses[0] ?? null;
             }
         }
     }

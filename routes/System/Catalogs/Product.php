@@ -11,6 +11,8 @@ Route::get("",            [ProductController::class, "index"])->name("$entity.in
 Route::get("/initParams", [ProductController::class, "initParams"])->name("$entity.initParams");
 Route::get("/list",       [ProductController::class, "list"])->name("$entity.list");
 Route::get("/export",     [ProductController::class, "export"])->name("$entity.export");
+Route::get("/import-template", [ProductController::class, "importTemplate"])->name("$entity.import-template");
+Route::post("/import",    [ProductController::class, "import"])->name("$entity.import");
 Route::get("/create",     [ProductController::class, "create"])->name("$entity.create");
 Route::post("",           [ProductController::class, "store"])->name("$entity.store");
 Route::get("/{id}/edit",  [ProductController::class, "edit"])->name("$entity.edit");

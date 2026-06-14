@@ -7,6 +7,7 @@ namespace App\Services\System\Warehouses\Inventory;
 use DomainException;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 use App\Models\System\Catalogs\Item;
 use App\Models\System\Warehouses\{InventoryMovement, Warehouse, WarehouseItem};
@@ -23,6 +24,8 @@ final class InventoryMovementService {
     public const ORIGIN_SALE_CANCELLATION    = "sale_cancellation";
     public const ORIGIN_PURCHASE             = "purchase";
     public const ORIGIN_PURCHASE_CANCELLATION = "purchase_cancellation";
+    public const ORIGIN_TRANSFER_OUT         = "transfer_out";
+    public const ORIGIN_TRANSFER_IN          = "transfer_in";
 
     private const MOVEMENT_TYPES = [
         self::TYPE_ENTRY,
@@ -102,6 +105,14 @@ final class InventoryMovementService {
                 "updated_by" => $data["user_id"] ?? null
             ]);
 
+            $metadata = $data["metadata"] ?? [];
+
+            if(!empty($data["reference"])) {
+
+                $metadata["reference"] = $data["reference"];
+
+            }
+
             return InventoryMovement::create([
                 "company_id"      => $companyId,
                 "warehouse_id"    => $warehouseId,
@@ -114,9 +125,119 @@ final class InventoryMovementService {
                 "quantity_change" => $quantityChange,
                 "quantity_after"  => $quantityAfter,
                 "reason"          => $reason,
-                "metadata"        => $data["metadata"] ?? null,
+                "metadata"        => $metadata ?: null,
                 "created_at"      => now()
             ]);
+
+        });
+
+    }
+
+    public static function transfer(array $data): array {
+
+        return DB::transaction(function() use($data) {
+
+            $companyId = (int) ($data["company_id"] ?? 0);
+            $sourceWarehouseId = (int) ($data["source_warehouse_id"] ?? 0);
+            $destinationWarehouseId = (int) ($data["destination_warehouse_id"] ?? 0);
+            $items = is_array($data["items"] ?? null) ? $data["items"] : [];
+            $reason = trim((string) ($data["reason"] ?? ""));
+
+            if($sourceWarehouseId === $destinationWarehouseId) {
+
+                throw new DomainException("Selecciona almacenes diferentes para el traslado.");
+
+            }
+
+            if(empty($items)) {
+
+                throw new DomainException("Agrega al menos un producto al traslado.");
+
+            }
+
+            if(count($items) > 100) {
+
+                throw new DomainException("Puedes trasladar hasta 100 productos por operación.");
+
+            }
+
+            if($reason === "") {
+
+                throw new DomainException("El motivo del traslado es obligatorio.");
+
+            }
+
+            $reference = "TRF-" . strtoupper(Str::random(12));
+            $movements = [];
+            $processedItemIds = [];
+
+            foreach($items as $item) {
+
+                $itemId = (int) ($item["item_id"] ?? 0);
+                $quantity = round((float) ($item["quantity"] ?? 0), 2);
+
+                if($quantity <= 0) {
+
+                    throw new DomainException("Todas las cantidades deben ser mayores que cero.");
+
+                }
+
+                if(in_array($itemId, $processedItemIds, true)) {
+
+                    throw new DomainException("No repitas un producto en el mismo traslado.");
+
+                }
+
+                $processedItemIds[] = $itemId;
+
+                self::assertWarehouseAndItemBelongToCompany($sourceWarehouseId, $itemId, $companyId);
+                self::assertWarehouseAndItemBelongToCompany($destinationWarehouseId, $itemId, $companyId);
+
+                $metadata = [
+                    "reference"                 => $reference,
+                    "source_warehouse_id"      => $sourceWarehouseId,
+                    "destination_warehouse_id" => $destinationWarehouseId
+                ];
+
+                $exit = self::apply([
+                    "company_id"     => $companyId,
+                    "warehouse_id"   => $sourceWarehouseId,
+                    "item_id"        => $itemId,
+                    "user_id"        => $data["user_id"] ?? null,
+                    "movement_type"  => self::TYPE_EXIT,
+                    "origin_type"    => self::ORIGIN_TRANSFER_OUT,
+                    "quantity"       => $quantity,
+                    "reason"         => $reason,
+                    "reference"      => $reference,
+                    "metadata"       => $metadata
+                ]);
+
+                $entry = self::apply([
+                    "company_id"     => $companyId,
+                    "warehouse_id"   => $destinationWarehouseId,
+                    "item_id"        => $itemId,
+                    "user_id"        => $data["user_id"] ?? null,
+                    "movement_type"  => self::TYPE_ENTRY,
+                    "origin_type"    => self::ORIGIN_TRANSFER_IN,
+                    "quantity"       => $quantity,
+                    "reason"         => $reason,
+                    "reference"      => $reference,
+                    "metadata"       => $metadata
+                ]);
+
+                $movements[] = [
+                    "item_id" => $itemId,
+                    "exit"    => $exit,
+                    "entry"   => $entry
+                ];
+
+            }
+
+            return [
+                "reference"   => $reference,
+                "items_count" => count($movements),
+                "movements"   => $movements
+            ];
 
         });
 
@@ -131,7 +252,7 @@ final class InventoryMovementService {
         $query = InventoryMovement::query()
             ->where("company_id", $companyId)
             ->with([
-                "warehouse.branch:id,name",
+                "warehouse.branch:id,name,status",
                 "item:id,internal_code,name",
                 "user:id,name"
             ]);

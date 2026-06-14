@@ -73,6 +73,19 @@
                         <span v-text="addButtonText"></span>
                     </button>
                     <button
+                        v-if="showImportButton"
+                        type="button"
+                        class="br-btn br-btn-sm br-btn-action-import waves-effect"
+                        @click="$emit('import')"
+                        :disabled="loading || importing"
+                        data-bs-toggle="tooltip"
+                        data-bs-placement="top"
+                        :title="importButtonTooltip"
+                        :aria-label="importButtonTooltip">
+                        <i class="fa-solid fa-file-arrow-up" aria-hidden="true"></i>
+                        <span class="br-btn-action-import__label" v-text="importButtonText"></span>
+                    </button>
+                    <button
                         v-if="showDownloadButton"
                         type="button"
                         :class="[
@@ -105,7 +118,7 @@ export default {
     components: {
         SelectNoOptions
     },
-    emits: ["search", "add", "download", "update:filterByValue", "update:filterWordValue"],
+    emits: ["search", "add", "import", "download", "update:filterByValue", "update:filterWordValue"],
     props: {
         filterByValue: {
             type: Object,
@@ -157,6 +170,26 @@ export default {
             default: true
         },
         showDownloadButton: {
+            type: Boolean,
+            required: false,
+            default: false
+        },
+        showImportButton: {
+            type: Boolean,
+            required: false,
+            default: false
+        },
+        importButtonText: {
+            type: String,
+            required: false,
+            default: "Carga masiva"
+        },
+        importButtonTooltip: {
+            type: String,
+            required: false,
+            default: "Carga masiva"
+        },
+        importing: {
             type: Boolean,
             required: false,
             default: false

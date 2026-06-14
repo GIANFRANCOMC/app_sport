@@ -10,6 +10,7 @@ Route::get('/initParams', [StockManagementController::class, 'initParams'])->nam
 Route::get('/list',       [StockManagementController::class, 'list'])->name("$entity.list");
 Route::get('/movements',  [StockManagementController::class, 'movements'])->name("$entity.movements");
 Route::post('/movements', [StockManagementController::class, 'storeMovement'])->name("$entity.movements.store");
+Route::post('/transfers', [StockManagementController::class, 'storeTransfer'])->name("$entity.transfers.store");
 Route::get('/create',     [StockManagementController::class, 'create'])->name("$entity.create");
 Route::post('',           [StockManagementController::class, 'store'])->name("$entity.store");
 Route::get('/{id}/edit',  [StockManagementController::class, 'edit'])->name("$entity.edit");

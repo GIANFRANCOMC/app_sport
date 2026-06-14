@@ -142,4 +142,10 @@ class StockManagementService {
 
     }
 
+    public static function transfer(array $data) {
+
+        return InventoryMovementService::transfer($data);
+
+    }
+
 }

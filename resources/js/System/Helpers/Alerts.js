@@ -30,6 +30,48 @@ const SWAL_INSTANT_TRANSITION = Object.freeze({
     }
 });
 
+function prepareModal(modalElement) {
+
+    if(!(modalElement instanceof HTMLElement)) return;
+
+    modalElement.setAttribute("data-bs-backdrop", "static");
+    modalElement.setAttribute("data-bs-keyboard", "false");
+    modalElement.classList.add("br-modal-standard");
+
+    const modalBody = modalElement.querySelector(".modal-body");
+
+    if(modalBody && !modalBody.querySelector(".br-entity-tabs-shell")) {
+
+        modalBody.classList.add("br-modal-standard__body");
+
+    }
+
+    const instance = window.bootstrap?.Modal?.getInstance(modalElement);
+
+    if(instance?._config) {
+
+        instance._config.backdrop = "static";
+        instance._config.keyboard = false;
+
+    }
+
+}
+
+if(typeof document !== "undefined") {
+
+    document.addEventListener("click", event => {
+
+        const trigger = event.target.closest?.('[data-bs-toggle="modal"]');
+        const selector = trigger?.getAttribute("data-bs-target") || trigger?.getAttribute("href");
+
+        if(selector?.startsWith("#")) prepareModal(document.querySelector(selector));
+
+    }, true);
+
+    document.addEventListener("show.bs.modal", event => prepareModal(event.target), true);
+
+}
+
 /** Layout y tiempos del loader circular (solo `buildSwalLoadingHtml`). */
 const SWAL_LOAD = Object.freeze({
     segments: 20,
@@ -549,10 +591,12 @@ export function modals({type = "show", id = null, timeout = 0}) {
 
     const modalAction = () => {
 
-        const modal = $(`#${id}`);
+        const modalElement = document.getElementById(id);
+        const modal = $(modalElement);
 
         if(["show"].includes(type)) {
 
+            prepareModal(modalElement);
             modal.modal("show");
 
         }else if(["hide"].includes(type)) {
@@ -576,7 +620,7 @@ export function modals({type = "show", id = null, timeout = 0}) {
  * @param {Array} keys - Claves para la tabla de mensajes
  * @param {Number} width - Ancho del alert
  */
-export function generateAlert({messages = [], type = "warning", headerTitle = null, msgContent = null, keys = [], width = 550}) {
+export function generateAlert({messages = [], type = "warning", headerTitle = null, msgContent = null, keys = [], width = 500}) {
 
 	let tableAlertHtml = messages.length > 0 ? generateTableAlert({messages, type, keys}) : "";
 
@@ -608,7 +652,7 @@ export function generateAlert({messages = [], type = "warning", headerTitle = nu
                customClass: {
                    container: "br-swal-backdrop",
                    popup: `br-swal-alert br-swal-alert--${type}`,
-                   confirmButton: "br-btn br-btn-primary"
+                   confirmButton: `br-btn br-swal-alert__confirm br-swal-alert__confirm--${type}`
                }});
 
 }

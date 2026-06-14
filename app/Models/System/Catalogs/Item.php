@@ -50,18 +50,23 @@ class Item extends Model {
     // Appends
     public function getFormattedTypeAttribute() {
 
-        return self::getTypes("first", $this->attributes["type"])["label"] ?? "";
+        $type = $this->attributes["type"] ?? null;
+
+        return $type ? (self::getTypes("first", $type)["label"] ?? "") : "";
 
     }
 
     public function getFormattedDurationAttribute() {
 
-        if(Utilities::isDefined($this->duration_type) && Utilities::isDefined($this->duration_value)) {
+        $durationType = $this->attributes["duration_type"] ?? null;
+        $durationValue = $this->attributes["duration_value"] ?? null;
 
-            $prop = $this->duration_value > 1 ? "plural" : "label";
-            $durationType = self::getDurationTypes("first", $this->attributes["duration_type"])[$prop] ?? "";
+        if(Utilities::isDefined($durationType) && Utilities::isDefined($durationValue)) {
 
-            return "{$this->duration_value} {$durationType}";
+            $prop = $durationValue > 1 ? "plural" : "label";
+            $durationLabel = self::getDurationTypes("first", $durationType)[$prop] ?? "";
+
+            return "{$durationValue} {$durationLabel}";
 
         }
 
@@ -71,7 +76,9 @@ class Item extends Model {
 
     public function getFormattedStatusAttribute() {
 
-        return self::getStatuses("first", $this->attributes["status"])["label"] ?? "";
+        $status = $this->attributes["status"] ?? null;
+
+        return $status ? (self::getStatuses("first", $status)["label"] ?? "") : "";
 
     }
 

@@ -990,14 +990,14 @@ input.input-number-no-range[type=number] {
 
 .swal2-popup.br-home-confirmation--warning .swal2-icon.swal2-warning {
     border-color: var(--br-warning, #f59e0b);
-    color: var(--br-warning-hover, #d97706);
+    color: var(--br-warning, #f59e0b);
 }
 
 .swal2-popup.br-swal-alert {
     box-sizing: border-box;
-    width: min(34rem, calc(100vw - 2rem)) !important;
+    width: min(31rem, calc(100vw - 2rem)) !important;
     max-width: calc(100vw - 2rem);
-    padding-inline: 1.25rem;
+    padding: 0 1.05rem 1rem;
     border-radius: var(--br-radius, 0.5rem);
     grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
 }
@@ -1021,7 +1021,10 @@ input.input-number-no-range[type=number] {
 .swal2-popup.br-swal-alert .swal2-icon {
     grid-column: 1 / 4 !important;
     justify-self: center;
-    margin-inline: auto;
+    width: 4rem;
+    height: 4rem;
+    margin: 1.35rem auto 0.4rem;
+    font-size: 0.82rem;
 }
 
 .swal2-popup.br-swal-alert .swal2-title {
@@ -1032,7 +1035,7 @@ input.input-number-no-range[type=number] {
     width: 100%;
     max-width: 100%;
     margin: 0 auto !important;
-    padding: 0.75rem 1.25rem 0;
+    padding: 0.45rem 1rem 0;
     color: var(--br-secondary, #1a1a35);
     text-align: center !important;
 }
@@ -1051,6 +1054,7 @@ input.input-number-no-range[type=number] {
 .swal2-popup.br-swal-alert .swal2-actions {
     grid-column: 1 / 4 !important;
     justify-self: center;
+    margin-top: 1rem;
 }
 
 .swal2-popup.br-swal-alert--info .swal2-icon.swal2-info {
@@ -1060,7 +1064,7 @@ input.input-number-no-range[type=number] {
 
 .swal2-popup.br-swal-alert--warning .swal2-icon.swal2-warning {
     border-color: var(--br-warning, #f59e0b);
-    color: var(--br-warning-hover, #d97706);
+    color: var(--br-warning, #f59e0b);
 }
 
 .swal2-popup.br-swal-alert--success .swal2-icon.swal2-success {
@@ -1068,9 +1072,70 @@ input.input-number-no-range[type=number] {
     color: var(--br-success, #10b981);
 }
 
+.swal2-popup.br-swal-alert--success .swal2-success-ring {
+    border-color: color-mix(in srgb, var(--br-success, #10b981) 38%, transparent);
+}
+
+.swal2-popup.br-swal-alert--success [class^="swal2-success-line"] {
+    background-color: var(--br-success, #10b981) !important;
+}
+
 .swal2-popup.br-swal-alert--error .swal2-icon.swal2-error {
     border-color: var(--br-danger, #ef4444);
     color: var(--br-danger, #ef4444);
+}
+
+.swal2-popup.br-swal-alert--error [class^="swal2-x-mark-line"] {
+    background-color: var(--br-danger, #ef4444);
+}
+
+.swal2-popup.br-swal-alert--question {
+    border-top: 4px solid var(--br-primary, #2899e5);
+}
+
+.swal2-popup.br-swal-alert--question .swal2-icon.swal2-question {
+    border-color: var(--br-primary, #2899e5);
+    color: var(--br-primary, #2899e5);
+}
+
+.br-swal-alert__confirm--error,
+.br-swal-alert__confirm--success,
+.br-swal-alert__confirm--info {
+    border-color: var(--br-primary);
+    background: var(--br-primary);
+    color: var(--br-on-primary);
+}
+
+.br-swal-alert__confirm--warning {
+    border-color: var(--br-danger);
+    background: var(--br-danger);
+    color: var(--br-on-danger);
+}
+
+.br-swal-alert__confirm--question {
+    border-color: var(--br-secondary);
+    background: var(--br-secondary);
+    color: var(--br-on-secondary);
+}
+
+.br-swal-alert__confirm--error:hover,
+.br-swal-alert__confirm--success:hover,
+.br-swal-alert__confirm--info:hover {
+    border-color: var(--br-primary-hover);
+    background: var(--br-primary-hover);
+    color: var(--br-on-primary);
+}
+
+.br-swal-alert__confirm--warning:hover {
+    border-color: var(--br-danger-hover);
+    background: var(--br-danger-hover);
+    color: var(--br-on-danger);
+}
+
+.br-swal-alert__confirm--question:hover {
+    border-color: var(--br-secondary-hover);
+    background: var(--br-secondary-hover);
+    color: var(--br-on-secondary);
 }
 
 @media (max-width: 991.98px) {
@@ -1938,6 +2003,24 @@ body.br-layout .br-entity-table > thead > tr > th {
     border-radius: 0 0 7px 7px;
 }
 
+/* Estructura compartida para modales System sin formulario por pestañas. */
+.br-modal-standard {
+    --br-modal-space-x: 1.25rem;
+}
+
+.br-modal-standard .modal-header {
+    padding-inline: var(--br-modal-space-x) !important;
+}
+
+.br-modal-standard .modal-body.br-modal-standard__body {
+    padding: 1.15rem var(--br-modal-space-x) !important;
+}
+
+.br-modal-standard .modal-footer {
+    padding: 0.75rem var(--br-modal-space-x) !important;
+    background-color: #f7f8fa;
+}
+
 /* --- [br-inventory] Existencias, movimientos manuales y kardex --- */
 .br-inventory {
     overflow: hidden;
@@ -2086,7 +2169,8 @@ body.br-layout .br-entity-table > thead > tr > th {
 }
 
 .br-inventory__kardex-filters {
-    display: flex;
+    display: grid;
+    grid-template-columns: minmax(12rem, 1fr) minmax(14rem, 1.25fr) minmax(9rem, 0.7fr) minmax(9rem, 0.7fr) auto;
     align-items: flex-end;
     gap: 0.65rem;
     padding: 0.75rem 1.25rem 0;
@@ -2094,7 +2178,7 @@ body.br-layout .br-entity-table > thead > tr > th {
 }
 
 .br-inventory__kardex-filters > div {
-    width: min(20rem, 100%);
+    min-width: 0;
 }
 
 .br-inventory__kardex-table th:nth-child(1) { width: 17%; }
@@ -2125,6 +2209,163 @@ body.br-layout .br-entity-table > thead > tr > th {
     color: var(--br-secondary);
 }
 
+.br-inventory-transfer {
+    padding: 0.85rem 1.25rem 1.25rem;
+    background: #ffffff;
+}
+
+.br-inventory-transfer__intro {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.75rem 0.85rem;
+    border: 1px solid var(--br-border);
+    border-radius: var(--br-radius-sm);
+    background: var(--br-neutral-soft);
+}
+
+.br-inventory-transfer__intro > div {
+    display: grid;
+    gap: 0.12rem;
+}
+
+.br-inventory-transfer__intro span {
+    color: var(--br-text-muted);
+    font-size: 0.7rem;
+}
+
+.br-inventory-transfer__intro strong {
+    color: var(--br-secondary);
+    font-size: 0.88rem;
+}
+
+.br-inventory-transfer__intro p {
+    max-width: 34rem;
+    margin: 0;
+    color: var(--br-text-muted);
+    font-size: 0.76rem;
+}
+
+.br-inventory-transfer__form {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(8rem, 0.45fr);
+    gap: 0.85rem;
+    margin-top: 1rem;
+}
+
+.br-inventory-transfer__destination {
+    grid-column: 1 / 3;
+}
+
+.br-inventory-transfer__items {
+    grid-column: 1 / -1;
+    display: grid;
+    gap: 0.65rem;
+}
+
+.br-inventory-transfer__items-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.br-inventory-transfer__items-header > div {
+    display: grid;
+    gap: 0.08rem;
+}
+
+.br-inventory-transfer__items-header strong {
+    color: var(--br-secondary);
+    font-size: 0.82rem;
+}
+
+.br-inventory-transfer__items-header small {
+    color: var(--br-text-muted);
+    font-size: 0.69rem;
+}
+
+.br-inventory-transfer__item-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(8rem, 0.3fr) 2.25rem;
+    align-items: end;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    border: 1px solid var(--br-border);
+    border-radius: var(--br-radius-sm);
+    background: var(--br-neutral-soft);
+}
+
+.br-inventory-transfer__remove {
+    margin-bottom: 0.05rem;
+    color: var(--br-danger);
+}
+
+.br-inventory-transfer__remove:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+}
+
+.br-inventory-transfer__reason {
+    grid-column: 1 / -1;
+}
+
+.br-inventory-transfer__submit {
+    grid-column: 1 / -1;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.br-btn-action-import {
+    border-color: #d97706;
+    background: #d97706;
+    color: #ffffff;
+    box-shadow: 0 0.16rem 0.38rem rgba(217, 119, 6, 0.18);
+}
+
+.br-btn-action-import:hover,
+.br-btn-action-import:focus-visible {
+    border-color: #b45309;
+    background: #b45309;
+    color: #ffffff;
+}
+
+.br-btn-action-import__label {
+    display: none;
+}
+
+.br-import-products__intro {
+    margin: 0;
+    color: var(--br-text-muted);
+    font-size: 0.82rem;
+    line-height: 1.5;
+}
+
+.br-import-products__template {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-top: 0.8rem;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--br-primary-active);
+    font-size: 0.78rem;
+    font-weight: 650;
+}
+
+.br-import-products__template:hover {
+    color: var(--br-secondary);
+}
+
+.br-import-products__help {
+    display: block;
+    margin-top: 0.28rem;
+    color: var(--br-text-muted);
+    font-size: 0.68rem;
+}
+
 @media (max-width: 767.98px) {
     .br-inventory__header {
         align-items: stretch;
@@ -2150,8 +2391,8 @@ body.br-layout .br-entity-table > thead > tr > th {
     }
 
     .br-inventory__kardex-filters {
+        grid-template-columns: 1fr;
         align-items: stretch;
-        flex-direction: column;
         padding-inline: 1rem;
     }
 
@@ -2159,12 +2400,62 @@ body.br-layout .br-entity-table > thead > tr > th {
     .br-inventory__kardex-filters .br-btn {
         width: 100%;
     }
+
+    .br-inventory-transfer {
+        padding-inline: 1rem;
+    }
+
+    .br-inventory-transfer__intro {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .br-inventory-transfer__form {
+        grid-template-columns: 1fr;
+    }
+
+    .br-inventory-transfer__reason,
+    .br-inventory-transfer__destination,
+    .br-inventory-transfer__items,
+    .br-inventory-transfer__submit {
+        grid-column: auto;
+    }
+
+    .br-inventory-transfer__items-header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .br-inventory-transfer__item-row {
+        grid-template-columns: minmax(0, 1fr) 2.25rem;
+    }
+
+    .br-inventory-transfer__item-row > div:first-child {
+        grid-column: 1 / -1;
+    }
+
+    .br-inventory-transfer__remove {
+        grid-column: 2;
+    }
+
+    .br-inventory-transfer__submit .br-btn {
+        width: 100%;
+    }
+
+    .br-btn-action-import__label {
+        display: inline;
+    }
+
 }
 
 @media (max-width: 767.98px) {
     .br-entity-modal {
         --br-entity-modal-content-space-x: 1rem;
         --br-entity-modal-tabs-content-space-y: 1rem;
+    }
+
+    .br-modal-standard {
+        --br-modal-space-x: 1rem;
     }
 
     .br-entity-modal .modal-dialog {

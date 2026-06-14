@@ -219,6 +219,68 @@ class StockManagementController extends BaseController {
 
     }
 
+    public function storeTransfer(Request $request): JsonResponse {
+
+        $validator = Validator::make($request->all(), [
+            "source_warehouse_id"      => ["required", "integer", "different:destination_warehouse_id"],
+            "destination_warehouse_id" => ["required", "integer"],
+            "items"                    => ["required", "array", "min:1", "max:100"],
+            "items.*.item_id"          => ["required", "integer", "distinct"],
+            "items.*.quantity"         => ["required", "numeric", "gt:0"],
+            "reason"                   => ["required", "string", "max:255"]
+        ], [
+            "required"  => "Campo obligatorio.",
+            "array"     => "Agrega al menos un producto.",
+            "items.min" => "Agrega al menos un producto.",
+            "items.max" => "Puedes trasladar hasta 100 productos por operación.",
+            "distinct"  => "No repitas un producto en el mismo traslado.",
+            "integer"   => "Selecciona una opción válida.",
+            "different" => "Selecciona un almacén de destino diferente.",
+            "numeric"   => "Ingresa un número válido.",
+            "gt"        => "La cantidad debe ser mayor que cero.",
+            "max"       => "El motivo no debe superar 255 caracteres."
+        ]);
+
+        if($validator->fails()) {
+
+            return response()->json([
+                "bool"   => false,
+                "msg"    => "Revisa los datos del traslado.",
+                "errors" => $validator->errors()
+            ], 422);
+
+        }
+
+        try {
+
+            $transfer = StockManagementService::transfer([
+                "company_id"              => $this->getCompanyId(),
+                "source_warehouse_id"     => (int) $request->input("source_warehouse_id"),
+                "destination_warehouse_id" => (int) $request->input("destination_warehouse_id"),
+                "items"                   => $request->input("items", []),
+                "reason"                  => (string) $request->input("reason"),
+                "user_id"                 => $this->getUserId()
+            ]);
+
+            return response()->json([
+                "bool" => true,
+                "msg"  => count($request->input("items", [])) === 1
+                    ? "Traslado registrado correctamente."
+                    : "Productos trasladados correctamente.",
+                "data" => $transfer
+            ]);
+
+        }catch(\Throwable $e) {
+
+            return response()->json([
+                "bool" => false,
+                "msg"  => $e->getMessage()
+            ], 422);
+
+        }
+
+    }
+
     /**
      * Display the specified stock management record
      * (Not used, but kept for REST compliance)

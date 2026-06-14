@@ -206,6 +206,7 @@ Reglas:
 - No se edita ni elimina como parte del flujo operativo.
 - Una anulación o corrección crea un nuevo movimiento compensatorio.
 - `warehouse_items.quantity` debe coincidir con el último `quantity_after` del almacén y producto.
+- Los traslados generan una salida `transfer_out` y una entrada `transfer_in`; la referencia compartida se guarda en `metadata.reference` y se expone como atributo `reference` del modelo.
 
 ## Activos
 

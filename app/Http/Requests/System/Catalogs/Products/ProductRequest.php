@@ -46,7 +46,9 @@ abstract class ProductRequest extends CompanyFormRequest {
                     "warehouses.id"
                 )
             ],
-            "inventory.*.initial_stock" => ["required", "numeric", "min:0", "max:{$maxValue}", "decimal:0,{$round}"],
+            "inventory.*.initial_stock" => $this->isMethod("PATCH")
+                ? ["exclude"]
+                : ["required", "numeric", "min:0", "max:{$maxValue}", "decimal:0,{$round}"],
             "inventory.*.minimum_stock" => ["required", "numeric", "min:0", "max:{$maxValue}", "decimal:0,{$round}"],
             "status" => ["required", "in:active,inactive"]
         ];
