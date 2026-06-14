@@ -40,7 +40,7 @@ Este archivo no controla el menu en ejecucion. El menu real se obtiene de `secti
 13. `subscriptions.index` - Membresías de catálogo, gestión de membresías para vender y varía el periodo
 14. `categories.index` - Categorias, estas categorias ayudan a la clasificacion de productos, servicios y membresias para su mejor agrupacion y busqueda
 15. `brands.index` - Marcas, catálogo propio de cada empresa para identificar y agrupar productos
-16. `stocks_management.index` - Gestion de stock, es el alcamen visualizando el stock actual por cada producto del catalogo comercial, todo que sea contabilizable, esto se puede modificar directamente
+16. `stocks_management.index` - Inventario: consulta existencias por almacén, registra entradas, salidas y correcciones manuales, y muestra el kardex completo.
 17. `branches.index` - Sucursales, gestion de sucursales por empresa, la cual puede tener x sucursales, junto a sus series comprobantes de venta, almacenes, etc
 18. `assets.index` - Activos, formulario para agregar, modificar activos para las sucursales
 19. `assets_management.index` - Gestion de activos, gestion de activos, asignacion de activo a usuarios, asignacion de activo a sucursales, informacion por unidad solamente por el momento, es decir depende del management_type solamente se maneja que se trata por unidad, tambien hay que se gestione por stock como un todo pero sera para otro momento

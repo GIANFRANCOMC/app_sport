@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use App\Models\System\General\{Currency};
 use App\Models\System\Organizations\{Company};
 use App\Models\System\Sales\{SaleBody};
-use App\Models\System\Warehouses\{WarehouseItem};
+use App\Models\System\Warehouses\{InventoryMovement, WarehouseItem};
 
 class Item extends Model {
 
@@ -157,6 +157,12 @@ class Item extends Model {
 
         return $this->hasMany(WarehouseItem::class, "item_id", "id")
                     ->whereIn("status", ["active"]);
+
+    }
+
+    public function inventoryMovements() {
+
+        return $this->hasMany(InventoryMovement::class, "item_id", "id");
 
     }
 

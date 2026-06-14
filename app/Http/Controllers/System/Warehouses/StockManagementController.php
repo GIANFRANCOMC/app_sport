@@ -7,8 +7,12 @@ namespace App\Http\Controllers\System\Warehouses;
 use App\Http\Controllers\System\Base\BaseController;
 use App\Helpers\System\{Utilities};
 use Illuminate\Http\{JsonResponse, Request};
+use Illuminate\Support\Facades\Validator;
 
-use App\Services\System\Warehouses\{StockManagementConfigService, StockManagementService};
+use App\Services\System\Warehouses\StockManagement\{
+    StockManagementConfigService,
+    StockManagementService
+};
 
 class StockManagementController extends BaseController {
 
@@ -103,6 +107,113 @@ class StockManagementController extends BaseController {
         }catch(\Exception $e) {
 
             return $this->handleException($e, "update");
+
+        }
+
+    }
+
+    public function movements(Request $request) {
+
+        $perPage = $this->getPerPage($request, Utilities::$per_page_max);
+
+        return StockManagementService::getKardex(
+            $this->getCompanyId(),
+            $request->only([
+                "warehouse_id",
+                "item_id",
+                "movement_type",
+                "date_from",
+                "date_to"
+            ]),
+            $perPage
+        );
+
+    }
+
+    public function storeMovement(Request $request): JsonResponse {
+
+        $validator = Validator::make($request->all(), [
+            "warehouse_id"     => ["required", "integer"],
+            "item_id"          => ["required", "integer"],
+            "movement_type"    => ["required", "in:entry,exit,correction"],
+            "quantity"         => ["nullable", "numeric", "gt:0"],
+            "resulting_balance" => ["nullable", "numeric", "min:0"],
+            "reason"           => ["required", "string", "max:255"]
+        ], [
+            "required" => "Campo obligatorio.",
+            "in"       => "Selecciona una opción válida.",
+            "numeric"  => "Ingresa un número válido.",
+            "gt"       => "La cantidad debe ser mayor que cero.",
+            "min"      => "El saldo no puede ser negativo.",
+            "max"      => "El motivo no debe superar 255 caracteres."
+        ]);
+
+        $validator->after(function($validator) use($request) {
+
+            if($request->input("movement_type") === "correction"
+                && !$request->filled("resulting_balance")) {
+
+                $validator->errors()->add("resulting_balance", "Campo obligatorio.");
+
+            }
+
+            if(in_array($request->input("movement_type"), ["entry", "exit"], true)
+                && !$request->filled("quantity")) {
+
+                $validator->errors()->add("quantity", "Campo obligatorio.");
+
+            }
+
+        });
+
+        if($validator->fails()) {
+
+            return response()->json([
+                "bool"   => false,
+                "msg"    => "Revisa los datos del movimiento.",
+                "errors" => $validator->errors()
+            ], 422);
+
+        }
+
+        try {
+
+            $warehouse = StockManagementService::validateWarehouse(
+                (int) $request->input("warehouse_id"),
+                $this->getCompanyId()
+            );
+
+            if(!$warehouse) {
+
+                return $this->errorResponse("warehouse_not_available");
+
+            }
+
+            $movement = StockManagementService::createManualMovement(
+                $this->getCompanyId(),
+                (int) $warehouse->id,
+                (int) $request->input("item_id"),
+                (string) $request->input("movement_type"),
+                $request->filled("quantity") ? (float) $request->input("quantity") : null,
+                $request->filled("resulting_balance")
+                    ? (float) $request->input("resulting_balance")
+                    : null,
+                (string) $request->input("reason"),
+                $this->getUserId()
+            );
+
+            return response()->json([
+                "bool" => true,
+                "msg"  => "Movimiento registrado correctamente.",
+                "data" => $movement
+            ]);
+
+        }catch(\Throwable $e) {
+
+            return response()->json([
+                "bool" => false,
+                "msg"  => $e->getMessage()
+            ], 422);
 
         }
 

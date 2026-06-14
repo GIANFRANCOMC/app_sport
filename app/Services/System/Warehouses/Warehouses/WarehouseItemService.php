@@ -6,6 +6,7 @@ namespace App\Services\System\Warehouses\Warehouses;
 
 use App\Models\System\Catalogs\{Item};
 use App\Models\System\Warehouses\{Warehouse, WarehouseItem};
+use App\Services\System\Warehouses\Inventory\InventoryMovementService;
 
 class WarehouseItemService {
 
@@ -41,9 +42,7 @@ class WarehouseItemService {
 
             if($isNew) {
 
-                $warehouseItem->quantity   = $setInitialStock
-                    ? (float) ($inventoryRecord["initial_stock"] ?? 0)
-                    : 0;
+                $warehouseItem->quantity   = 0;
                 $warehouseItem->created_at = now();
                 $warehouseItem->created_by = $userId;
 
@@ -62,6 +61,24 @@ class WarehouseItemService {
             }
 
             $warehouseItem->save();
+
+            $initialStock = round((float) ($inventoryRecord["initial_stock"] ?? 0), 2);
+
+            if($isNew && $setInitialStock && $initialStock > 0) {
+
+                InventoryMovementService::apply([
+                    "company_id"    => $companyId,
+                    "warehouse_id"  => (int) $warehouse->id,
+                    "item_id"       => $itemId,
+                    "user_id"       => $userId,
+                    "movement_type" => InventoryMovementService::TYPE_ENTRY,
+                    "origin_type"   => InventoryMovementService::ORIGIN_PRODUCT_OPENING,
+                    "origin_id"     => $itemId,
+                    "quantity"      => $initialStock,
+                    "reason"        => "Stock inicial registrado al crear el producto."
+                ]);
+
+            }
 
         }
 
@@ -94,4 +111,3 @@ class WarehouseItemService {
     }
 
 }
-

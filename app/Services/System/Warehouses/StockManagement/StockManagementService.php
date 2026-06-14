@@ -7,6 +7,7 @@ namespace App\Services\System\Warehouses\StockManagement;
 use App\Helpers\System\Utilities;
 use App\Models\System\Catalogs\Item;
 use App\Models\System\Warehouses\{Warehouse, WarehouseItem};
+use App\Services\System\Warehouses\Inventory\InventoryMovementService;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -73,39 +74,71 @@ class StockManagementService {
 
         DB::transaction(function() use($warehouseId, $items, $userId) {
 
+            $warehouse = Warehouse::with("branch:id,company_id")
+                ->findOrFail($warehouseId);
+
             foreach($items as $item) {
 
                 $warehouseItem = WarehouseItem::where("warehouse_id", $warehouseId)
                                               ->where("item_id", $item["id"])
                                               ->first();
 
-                if($warehouseItem) {
+                $currentQuantity = round((float) ($warehouseItem?->quantity ?? 0), 2);
+                $resultingBalance = round((float) ($item["stock_quantity"] ?? 0), 2);
 
-                    $warehouseItem->update([
-                        "quantity"   => floatval($item["stock_quantity"]),
-                        "status"     => "active",
-                        "updated_at" => now(),
-                        "updated_by" => $userId
-                    ]);
+                if(abs($currentQuantity - $resultingBalance) < 0.00001) {
 
-                }else {
-
-                    WarehouseItem::create([
-                        "warehouse_id" => $warehouseId,
-                        "item_id"      => $item["id"],
-                        "quantity"     => floatval($item["stock_quantity"]),
-                        "status"       => "active",
-                        "created_at"   => now(),
-                        "created_by"   => $userId
-                    ]);
+                    continue;
 
                 }
+
+                InventoryMovementService::apply([
+                    "company_id"       => (int) $warehouse->branch->company_id,
+                    "warehouse_id"     => $warehouseId,
+                    "item_id"          => (int) $item["id"],
+                    "user_id"          => $userId,
+                    "movement_type"    => InventoryMovementService::TYPE_CORRECTION,
+                    "origin_type"      => InventoryMovementService::ORIGIN_MANUAL,
+                    "resulting_balance" => $resultingBalance,
+                    "reason"           => "Corrección manual desde Inventario."
+                ]);
 
             }
 
         });
 
         return true;
+
+    }
+
+    public static function createManualMovement(
+        int $companyId,
+        int $warehouseId,
+        int $itemId,
+        string $movementType,
+        ?float $quantity,
+        ?float $resultingBalance,
+        string $reason,
+        ?int $userId = null
+    ) {
+
+        return InventoryMovementService::apply([
+            "company_id"       => $companyId,
+            "warehouse_id"     => $warehouseId,
+            "item_id"          => $itemId,
+            "user_id"          => $userId,
+            "movement_type"    => $movementType,
+            "origin_type"      => InventoryMovementService::ORIGIN_MANUAL,
+            "quantity"         => $quantity,
+            "resulting_balance" => $resultingBalance,
+            "reason"           => $reason
+        ]);
+
+    }
+
+    public static function getKardex(int $companyId, array $filters, int $perPage) {
+
+        return InventoryMovementService::getPaginatedKardex($companyId, $filters, $perPage);
 
     }
 

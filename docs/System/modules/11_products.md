@@ -19,6 +19,7 @@ Aunque productos, servicios y membresías comparten la tabla `items`, este módu
 - Regla EAN-13: `app/Rules/System/Catalogs/ValidEan13.php`
 - Modelo: `app/Models/System/Catalogs/Item.php`
 - Vue: `resources/js/System/Pages/Catalogs/products/main.vue`
+- Generador PNG reutilizable: `resources/js/System/Components/BarcodeDownloadButton.vue`
 - Estilos: `public/System/assets/css/custom.css`, bloque `SYSTEM PRODUCTS`
 - Tablas: `items`, `brands`, `category_items`, `categories`, `warehouses`, `warehouse_items`
 
@@ -44,6 +45,8 @@ El encabezado utiliza secondary navy y un acento primary. Las filas con inventar
 La descarga frontend usa `Requests.download()`, helper genérico que solicita un `blob`, respeta el nombre enviado por `Content-Disposition`, libera el objeto temporal del navegador y normaliza respuestas de error JSON aunque lleguen como `Blob`.
 
 Esta exportación vive exclusivamente bajo `System/Catalogs/Products`, porque contiene información operativa de la empresa autenticada. `Guest` no comparte la ruta, consulta ni exportador.
+
+En escritorio, la descarga se presenta como un botón verde compacto con el icono de Excel y el tooltip `Descargar Excel`; por debajo de `992px` recupera icono y texto para que la acción sea explícita y fácil de pulsar. Este comportamiento se activa mediante `downloadIconOnlyOnDesktop`, deshabilitado por defecto en `FiltersSection`.
 
 ## Datos del producto
 
@@ -103,7 +106,8 @@ Si un almacén activo no tiene valores explícitos, se crea con cantidad y míni
 
 - Se pueden actualizar datos comerciales, código de barras, publicación, estado y stock mínimo.
 - El stock actual se muestra como solo lectura.
-- La cantidad existente no se modifica desde Productos; debe cambiarse desde Gestión de stock para no mezclar catálogo con operaciones de inventario.
+- La cantidad existente no se modifica desde Productos; debe cambiarse desde Inventario para no mezclar catálogo con operaciones de inventario.
+- El stock inicial informado al crear un producto genera una entrada `product_opening` en `inventory_movements`, con saldo anterior y resultante por almacén.
 - Si aparece un almacén nuevo, se crea automáticamente la relación faltante con cantidad cero.
 
 ## Código de barras
@@ -114,6 +118,9 @@ Si un almacén activo no tiene valores explícitos, se crea con cantidad y míni
 - Puede escribirse o leerse con escáner.
 - El botón con icono de código de barras genera un EAN-13 con prefijo interno `200`, evitando competir con rangos comerciales GS1.
 - La generación frontend mejora la experiencia, pero el backend siempre vuelve a validar formato y unicidad.
+- Desde el listado, `BarcodeDownloadButton` renderiza el EAN-13 mediante `JsBarcode` y descarga una etiqueta PNG sin solicitar otra respuesta al backend.
+- La imagen contiene únicamente las barras EAN-13 y su valor legible. El archivo usa el patrón `codigo-barras-{codigo-interno}.png`.
+- El PNG se genera con fondo transparente y barras negras para poder superponerlo sobre distintos diseños de etiqueta o superficies de impresión. La validez del símbolo depende del EAN-13 ya validado al guardar el producto.
 
 ## Reglas de negocio
 
@@ -167,12 +174,13 @@ Si un almacén activo no tiene valores explícitos, se crea con cantidad y míni
 - En móvil, al ocultarse el encabezado tabular, cada control conserva su label visible (`Stock inicial`, `Stock actual` o `Stock mínimo`) y se agrupa en una superficie neutral para mantener el contexto.
 - Los controles y estados usan los tokens `--br-*` del branding.
 - Los botones de generación y edición usan iconos con tooltip.
+- Los generadores de código interno y código de barras permanecen disponibles tanto al agregar como al editar. Esto evita exigir que el usuario conozca los formatos válidos; al utilizarlos, reemplazan el valor actual y las reglas backend vuelven a comprobar formato y unicidad.
 
 ## Integraciones impactadas
 
 - `ProductConfigService` obtiene categorías y almacenes mediante `CompanyReferenceDataService`, y monedas mediante `MasterReferenceDataService`.
 - `ProductConfigService` obtiene también las marcas activas mediante `CompanyReferenceDataService::brands()`.
-- Gestión de stock usa `warehouse_items.minimum_stock` y deja de comparar contra el valor fijo `5`.
+- Inventario usa `warehouse_items.minimum_stock` y deja de comparar contra el valor fijo `5`.
 - Al crear un almacén predeterminado, `WarehouseService` genera relaciones en cero para todos los productos existentes.
 - El listado de Productos carga `warehouseItems.warehouse.branch` para resumir stock y alertas sin consultas posteriores desde Vue.
 
@@ -215,6 +223,7 @@ Si un almacén activo no tiene valores explícitos, se crea con cantidad y míni
 - Estado y Categorías renderizan sus opciones mediante `append-to-body`; el menú queda sobre la modal y su footer, sin aumentar el scroll interno del formulario.
 - El selector reutilizable de filtros conserva una sola línea aunque la opción sea extensa; muestra el contenido completo al mantener el cursor sobre el texto truncado.
 - Los selectores de filtro, Estado y Categorías comparten menú flotante, altura, flecha, colores, elipsis y visualización completa por hover; ninguna opción extensa genera saltos de línea ni scroll horizontal.
+- Los selectores de Productos reutilizan `SelectNoOptions` para comunicar `No hay opciones disponibles.` en español con un estado compacto. `br-branding.css` ofrece el mismo texto como cobertura visual para selectores System todavía no migrados al slot reutilizable.
 - Botón Cancelar con borde gris visible y hover suave mediante `br-btn-cancel`.
 - Las ayudas de campo reutilizan `br-field-help`; los controles compartidos residen en `br-branding.css` y no dependen del módulo Productos.
 - El campo Estado se mantiene como select2 no buscable para conservar consistencia con los formularios existentes.
@@ -245,6 +254,10 @@ Si un almacén activo no tiene valores explícitos, se crea con cantidad y míni
 - Solo las etiquetas abreviadas de identificación muestran su nombre completo mediante el tooltip global; los valores no generan tooltips.
 - El loading de persistencia informa la acción actual: `Agregando producto` o `Editando producto`.
 - Código interno y código de barras usan el componente reutilizable `CopyButton`; por defecto muestra `Copiar` y `Copiado`, y puede activar `useLabelInTooltip` para mostrar textos contextuales como `Copiar código interno` y `Código interno copiado`.
+- El código de barras incorpora además `BarcodeDownloadButton`, una acción con fondo celeste primary suave e icono secondary navy que genera y descarga su etiqueta. No usa verde para evitar confundirse con estados como `Activo`; sigue diferenciándose de `CopyButton`, que conserva una superficie neutral. El tooltip comunica `Descargar` y confirma `Descargado`.
+- Las filas de identificación reservan una columna uniforme para acciones alineada desde la izquierda. Copiar ocupa siempre la primera posición; Código de barras añade Descargar como segunda acción sin alterar la alineación de los valores.
+- En pantallas pequeñas, los identificadores conservan su contenido completo y nunca usan puntos suspensivos. La tabla prioriza exactitud mediante desplazamiento horizontal antes que recortar un código interno o código de barras.
+- El valor y sus acciones ocupan columnas independientes con ancho reservado; los botones Copiar y Descargar no pueden superponerse sobre los identificadores.
 - `StatusBadge` añade automáticamente una clase normalizada desde la BD, como `br-status-active` o `br-status-inactive`, además de la variante semántica existente.
 - Las etiquetas de estado son compactas y se perciben como información, no como botones.
 - La tabla de Productos se adapta al ancho disponible en escritorio; el ancho mínimo y scroll horizontal se reservan para resoluciones de hasta `991.98px`.
@@ -253,12 +266,13 @@ Si un almacén activo no tiene valores explícitos, se crea con cantidad y míni
 - La alerta de stock usa el texto explícito “N almacén/almacenes con stock bajo” en una etiqueta warning compacta.
 - El inventario sin alertas muestra un check verde con fondo suave y el texto singular o plural “Stock saludable en N almacén/almacenes”.
 - En la pestaña Inventario, cada almacén muestra una etiqueta sutil: “Stock bajo o en el mínimo” o “Inventario saludable”, usando la misma semántica warning/success del listado.
+- Cuando el stock actual alcanza o queda por debajo del mínimo, únicamente los controles de stock adoptan fondo y contorno warning suaves. La fila mantiene fondo blanco para evitar una alerta visual excesiva; el badge conserva el contexto del problema.
 - La nota general de inventario fue retirada para reducir ruido visual. Los encabezados `Stock inicial` o `Stock actual` y `Stock mínimo` incluyen ayudas contextuales reutilizables mediante `br-field-help`.
 - El encabezado de inventario reutiliza `br-table-header-surface`, la misma regla mate aplicada al encabezado del listado, sin degradados alternativos ni bordes inferiores adicionales. `br-label-with-help` centra ópticamente texto e icono.
 - Los tooltips de Marca e inventario usan la variante global compacta `br-tooltip`, con fondo secondary y aparición inmediata, sin animación.
 - `CopyButton` conserva esa variante compacta al alternar entre `Copiar` y `Copiado`, porque recrea su instancia mediante la configuración centralizada de `Alerts.createTooltip`.
 - Los switches `Publicar producto` y `Mostrar precio` usan verde success al seleccionarse, foco verde suave y estado neutral al desmarcarse o deshabilitarse, sin heredar el morado del tema base.
-- En edición, el stock actual conserva su comportamiento de solo lectura y se presenta mediante un `span` neutral formateado con `separatorNumber`; no se renderiza como un control deshabilitado porque la cantidad se modifica desde Gestión de stock, no desde Productos. En creación se conserva `InputNumber` para registrar el stock inicial.
+- En edición, el stock actual conserva su comportamiento de solo lectura y se presenta mediante un `span` neutral formateado con `separatorNumber`; no se renderiza como un control deshabilitado porque la cantidad se modifica desde Inventario, no desde Productos. En creación se conserva `InputNumber` para registrar el stock inicial.
 - Las pestañas reutilizables mantienen una separación visual moderada entre opciones para facilitar el escaneo sin incrementar su altura.
 - Las pestañas reutilizan `nav-pills`, tienen una separación superior más amplia respecto al encabezado y márgenes laterales alineados con los campos del formulario.
 - La navegación ya no usa posición sticky ni desenfoque: forma parte del flujo normal del modal, evitando superposiciones y filtraciones de texto durante el desplazamiento.
@@ -273,6 +287,7 @@ Si un almacén activo no tiene valores explícitos, se crea con cantidad y míni
 - El alta rápida solicita únicamente Nombre y Descripción. El código interno no se expone: se genera automáticamente con los prefijos `MAR-` o `CAT-`, y una nota informa que el registro se creará activo.
 - Presionar Enter desde Nombre o Descripción ejecuta el alta. Al completarse, un SweetAlert success confirma que el registro quedó activo y disponible para seleccionarlo, sin alterar la selección existente.
 - Mientras se registra una Marca o Categoría, el loader global bloquea el resto de acciones y el botón permanece deshabilitado para evitar solicitudes duplicadas.
+- Los SweetAlert de validación y resultado usan la capa global máxima `br-swal-backdrop`, por encima de la modal rápida de Marca o Categoría y de la modal principal de Producto.
 - Los errores frontend y backend usan mensajes breves sin repetir el nombre del campo. `Campo obligatorio.` es el estándar para obligatoriedad.
 - Los inputs inválidos muestran un contorno rojo sobre el control completo, incluyendo moneda, contadores, botones anexos y `vue-select`; el texto de error usa una escala menor que el label.
 - El modal rápido usa Bootstrap y se teletransporta a `body`. Su backdrop se identifica con `br-quick-create-backdrop`, conserva la modal de Producto debajo y devuelve el foco al contexto anterior al cerrarse.
@@ -289,7 +304,7 @@ Si un almacén activo no tiene valores explícitos, se crea con cantidad y míni
 
 - Crear una tabla de movimientos de inventario con motivo, usuario, origen y saldo resultante.
 - Definir si se bloquearán ventas con stock insuficiente o se permitirá stock negativo.
-- Incorporar impresión de etiquetas con código de barras.
+- Incorporar impresión masiva y plantillas configurables de etiquetas; la descarga PNG individual ya está disponible.
 - Añadir lector de código de barras al flujo de ventas.
 - Agregar pruebas de integración para creación multi-almacén, EAN duplicado y aislamiento entre empresas.
 - Diseñar el catálogo web/PDF que consumirá `see_my_web` y `see_my_web_price`.

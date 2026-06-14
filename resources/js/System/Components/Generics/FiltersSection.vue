@@ -31,6 +31,9 @@
                                 {{ getOptionLabel(option) }}
                             </span>
                         </template>
+                        <template #no-options>
+                            <SelectNoOptions/>
+                        </template>
                     </v-select>
                 </template>
             </InputSlot>
@@ -72,11 +75,21 @@
                     <button
                         v-if="showDownloadButton"
                         type="button"
-                        class="br-btn br-btn-sm br-btn-action-export waves-effect"
+                        :class="[
+                            'br-btn',
+                            'br-btn-sm',
+                            'br-btn-action-export',
+                            'waves-effect',
+                            {'br-btn-action-export--desktop-icon': downloadIconOnlyOnDesktop}
+                        ]"
                         @click="$emit('download')"
-                        :disabled="loading || downloading">
+                        :disabled="loading || downloading"
+                        data-bs-toggle="tooltip"
+                        data-bs-placement="top"
+                        :title="downloadButtonTooltip"
+                        :aria-label="downloadButtonTooltip">
                         <i class="fa-solid fa-file-excel" aria-hidden="true"></i>
-                        <span v-text="downloadButtonText"></span>
+                        <span class="br-btn-action-export__label" v-text="downloadButtonText"></span>
                     </button>
                 </template>
             </InputSlot>
@@ -85,8 +98,13 @@
 </template>
 
 <script>
+import SelectNoOptions from "@System/Components/Generics/SelectNoOptions.vue";
+
 export default {
     name: "FiltersSection",
+    components: {
+        SelectNoOptions
+    },
     emits: ["search", "add", "download", "update:filterByValue", "update:filterWordValue"],
     props: {
         filterByValue: {
@@ -152,6 +170,16 @@ export default {
             type: Boolean,
             required: false,
             default: false
+        },
+        downloadIconOnlyOnDesktop: {
+            type: Boolean,
+            required: false,
+            default: false
+        },
+        downloadButtonTooltip: {
+            type: String,
+            required: false,
+            default: "Descargar Excel"
         },
         titleClass: {
             type: Array,

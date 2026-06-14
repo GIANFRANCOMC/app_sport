@@ -11,7 +11,8 @@ use stdClass;
 
 use App\Models\System\Customers\Subscription;
 use App\Models\System\Sales\{SaleBody, SaleHeader};
-use App\Models\System\Warehouses\{Warehouse, WarehouseItem};
+use App\Models\System\Warehouses\Warehouse;
+use App\Services\System\Warehouses\Inventory\InventoryMovementService;
 
 /**
  * Service class for managing Sale operations
@@ -134,31 +135,21 @@ class SaleService {
 
         }
 
-        $warehouseItem = WarehouseItem::where("warehouse_id", $warehouse->id)
-                                      ->where("item_id", $saleBody->item_id)
-                                      ->first();
-
-        if($warehouseItem) {
-
-            $warehouseItem->update([
-                "quantity"   => floatval($warehouseItem->quantity) - floatval($saleBody->quantity),
-                "status"     => "active",
-                "updated_at" => now(),
-                "updated_by" => $userId
-            ]);
-
-        }else {
-
-            WarehouseItem::create([
-                "warehouse_id" => $warehouse->id,
-                "item_id"      => $saleBody->item_id,
-                "quantity"     => floatval(0) - floatval($saleBody->quantity),
-                "status"       => "active",
-                "created_at"   => now(),
-                "created_by"   => $userId
-            ]);
-
-        }
+        InventoryMovementService::apply([
+            "company_id"     => (int) $warehouse->branch->company_id,
+            "warehouse_id"   => (int) $warehouse->id,
+            "item_id"        => (int) $saleBody->item_id,
+            "user_id"        => $userId,
+            "movement_type"  => InventoryMovementService::TYPE_EXIT,
+            "origin_type"    => InventoryMovementService::ORIGIN_SALE,
+            "origin_id"      => (int) $saleBody->id,
+            "quantity"       => (float) $saleBody->quantity,
+            "reason"         => "Salida generada por venta.",
+            "allow_negative" => true,
+            "metadata"       => [
+                "sale_header_id" => (int) $saleBody->sale_header_id
+            ]
+        ]);
 
     }
 
@@ -299,6 +290,40 @@ class SaleService {
             if(!in_array($saleHeader->status, ["active"])) {
 
                 throw new Exception("La venta no puede ser anulada.");
+
+            }
+
+            $saleHeader->loadMissing(["serie.branch.warehouses", "allPositions"]);
+            $warehouse = $saleHeader->serie?->branch?->warehouses?->first();
+
+            if(!$warehouse) {
+
+                throw new Exception("No se encontró el almacén asociado a la venta.");
+
+            }
+
+            foreach($saleHeader->allPositions as $saleBody) {
+
+                if($saleBody->type !== "product") {
+
+                    continue;
+
+                }
+
+                InventoryMovementService::apply([
+                    "company_id"    => (int) $userAuth->company_id,
+                    "warehouse_id"  => (int) $warehouse->id,
+                    "item_id"       => (int) $saleBody->item_id,
+                    "user_id"       => $userId,
+                    "movement_type" => InventoryMovementService::TYPE_ENTRY,
+                    "origin_type"   => InventoryMovementService::ORIGIN_SALE_CANCELLATION,
+                    "origin_id"     => (int) $saleBody->id,
+                    "quantity"      => (float) $saleBody->quantity,
+                    "reason"        => "Reposición de stock por anulación de venta.",
+                    "metadata"      => [
+                        "sale_header_id" => (int) $saleHeader->id
+                    ]
+                ]);
 
             }
 

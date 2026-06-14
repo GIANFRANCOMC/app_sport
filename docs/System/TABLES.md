@@ -190,6 +190,23 @@ Stock por item en almacen. Campos: `warehouse_id`, `item_id`, `quantity`, `minim
 
 Relaciones: une almacenes con items. La combinacion `warehouse_id + item_id` es unica. `minimum_stock` define la alerta especifica para cada almacen.
 
+`quantity` es un saldo materializado para consultas rápidas. No debe modificarse directamente desde controladores o módulos: toda variación pasa por `InventoryMovementService`.
+
+### inventory_movements
+
+Kardex inmutable de productos por almacén. Campos principales: `company_id`, `warehouse_id`, `item_id`, `user_id`, `movement_type`, `origin_type`, `origin_id`, `quantity_before`, `quantity_change`, `quantity_after`, `reason`, `metadata` y `created_at`.
+
+`movement_type` admite `entry`, `exit` y `correction`. `origin_type` es extensible para integrar productos, ventas, anulaciones, operaciones manuales y el futuro módulo Compras sin cambiar la tabla. `origin_id` referencia lógicamente el registro que produjo el movimiento; no usa clave foránea porque puede apuntar a entidades de módulos distintos.
+
+Relaciones: pertenece a empresa, almacén, producto y opcionalmente usuario. Sus índices por empresa/fecha, almacén/producto/fecha y origen mejoran consultas; no representan reglas de unicidad.
+
+Reglas:
+
+- Guarda saldo anterior, variación firmada y saldo resultante.
+- No se edita ni elimina como parte del flujo operativo.
+- Una anulación o corrección crea un nuevo movimiento compensatorio.
+- `warehouse_items.quantity` debe coincidir con el último `quantity_after` del almacén y producto.
+
 ## Activos
 
 ### assets

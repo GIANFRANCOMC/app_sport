@@ -55,4 +55,10 @@ class Warehouse extends Model {
 
     }
 
+    public function inventoryMovements() {
+
+        return $this->hasMany(InventoryMovement::class, "warehouse_id", "id");
+
+    }
+
 }

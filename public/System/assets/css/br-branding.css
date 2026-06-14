@@ -556,6 +556,45 @@ body.br-layout .form-label {
   text-overflow: ellipsis;
 }
 
+.br-select-empty {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.42rem;
+  width: 100%;
+  min-height: 2.2rem;
+  color: var(--br-text-muted);
+  font-size: 0.76rem;
+  font-weight: 500;
+  line-height: 1.3;
+  text-align: center;
+}
+
+.br-select-empty i {
+  color: color-mix(in srgb, var(--br-primary) 70%, var(--br-text-muted));
+  font-size: 0.72rem;
+}
+
+.br-layout .vs__no-options,
+body > .vs__dropdown-menu .vs__no-options {
+  padding: 0.45rem 0.65rem;
+}
+
+.br-layout .vs__no-options:not(:has(.br-select-empty)),
+body > .vs__dropdown-menu .vs__no-options:not(:has(.br-select-empty)) {
+  color: transparent;
+  font-size: 0;
+}
+
+.br-layout .vs__no-options:not(:has(.br-select-empty))::after,
+body > .vs__dropdown-menu .vs__no-options:not(:has(.br-select-empty))::after {
+  content: "No hay opciones disponibles.";
+  color: var(--br-text-muted);
+  font-size: 0.76rem;
+  font-weight: 500;
+  line-height: 1.3;
+}
+
 /* Menú flotante de vue-select: fuera de modales y contenedores con scroll. */
 .br-layout .vs__dropdown-menu,
 body > .vs__dropdown-menu {
@@ -2014,6 +2053,19 @@ body.br-layout .modal-header.br-modal-header .btn-header-modal:focus-visible {
   color: var(--br-on-success);
 }
 
+@media (min-width: 992px) {
+  .br-btn-action-export--desktop-icon {
+    width: 2.35rem;
+    min-width: 2.35rem;
+    padding-right: 0;
+    padding-left: 0;
+  }
+
+  .br-btn-action-export--desktop-icon .br-btn-action-export__label {
+    display: none;
+  }
+}
+
 .br-btn-action-update {
   border-color: var(--br-secondary);
   background: var(--br-secondary);
@@ -2063,7 +2115,8 @@ body.br-layout .modal-header.br-modal-header .btn-header-modal:focus-visible {
   color: var(--br-on-secondary);
 }
 
-.br-copy-button {
+.br-copy-button,
+.br-barcode-download-button {
   display: inline-grid;
   flex: 0 0 auto;
   width: 1.42rem;
@@ -2079,11 +2132,32 @@ body.br-layout .modal-header.br-modal-header .btn-header-modal:focus-visible {
 }
 
 .br-copy-button:hover,
-.br-copy-button:focus-visible {
+.br-copy-button:focus-visible,
+.br-barcode-download-button:hover,
+.br-barcode-download-button:focus-visible {
   border-color: color-mix(in srgb, var(--br-primary) 36%, var(--br-border));
   background: color-mix(in srgb, var(--br-primary-soft) 62%, var(--br-surface-elevated));
   color: var(--br-primary-active);
   outline: 0;
+}
+
+.br-barcode-download-button {
+  border-color: color-mix(in srgb, var(--br-primary) 28%, var(--br-border));
+  background: color-mix(in srgb, var(--br-primary-soft) 72%, var(--br-surface-elevated));
+  color: var(--br-secondary);
+}
+
+.br-barcode-download-button:hover,
+.br-barcode-download-button:focus-visible {
+  border-color: color-mix(in srgb, var(--br-primary) 45%, var(--br-secondary));
+  background: color-mix(in srgb, var(--br-primary-soft) 58%, var(--br-surface-elevated));
+  color: var(--br-primary-active);
+}
+
+.br-copy-button:disabled,
+.br-barcode-download-button:disabled {
+  opacity: 0.48;
+  cursor: not-allowed;
 }
 
 /* --- [br-quick-create] Alta contextual reutilizable --- */
@@ -2525,7 +2599,11 @@ body.br-layout .modal-header.br-modal-header .btn-header-modal:focus-visible {
 }
 
 .swal2-container.br-swal-top-layer {
-  z-index: 30000 !important;
+  z-index: 2147483647 !important;
+}
+
+.swal2-container.br-swal-backdrop {
+  z-index: 2147483647 !important;
 }
 
 .br-swal-load-popup.swal2-popup {

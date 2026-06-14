@@ -188,6 +188,7 @@ export const ENTITY_ROUTES = {
     TRACKING_SUBSCRIPTIONS: "tracking_subscriptions",
     TRACKING_NOTIFICATIONS: "tracking_notifications",
     STOCKS_MANAGEMENT: "stocks_management",
+    INVENTORY: "stocks_management",
     REPORTS: "reports"
 };
 

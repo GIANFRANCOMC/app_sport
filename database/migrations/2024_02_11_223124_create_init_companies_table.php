@@ -229,8 +229,8 @@ return new class extends Migration {
             $table->id();
             $table->unsignedBigInteger("warehouse_id");
             $table->unsignedBigInteger("item_id");
-            $table->decimal("quantity", 10, 2)->default(0);
-            $table->decimal("minimum_stock", 10, 2)->default(0);
+            $table->decimal("quantity", 12, 2)->default(0);
+            $table->decimal("minimum_stock", 12, 2)->default(0);
             $table->enum("status", ["active", "inactive"])->default("active");
 
             $table->timestamp("created_at")->useCurrent()->nullable();
@@ -241,6 +241,33 @@ return new class extends Migration {
             $table->foreign("warehouse_id")->references("id")->on("warehouses")->onDelete("cascade");
             $table->foreign("item_id")->references("id")->on("items")->onDelete("cascade");
             $table->unique(["warehouse_id", "item_id"]);
+        });
+
+        // Historial inmutable de entradas, salidas y correcciones de inventario.
+        Schema::create("inventory_movements", function(Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger("company_id");
+            $table->unsignedBigInteger("warehouse_id");
+            $table->unsignedBigInteger("item_id");
+            $table->unsignedBigInteger("user_id")->nullable();
+            $table->string("movement_type", 30);
+            $table->string("origin_type", 50);
+            $table->unsignedBigInteger("origin_id")->nullable();
+            $table->decimal("quantity_before", 12, 2);
+            $table->decimal("quantity_change", 12, 2);
+            $table->decimal("quantity_after", 12, 2);
+            $table->string("reason", 255);
+            $table->json("metadata")->nullable();
+            $table->timestamp("created_at")->useCurrent();
+
+            $table->foreign("company_id")->references("id")->on("companies")->onDelete("cascade");
+            $table->foreign("warehouse_id")->references("id")->on("warehouses")->onDelete("cascade");
+            $table->foreign("item_id")->references("id")->on("items")->onDelete("cascade");
+            $table->foreign("user_id")->references("id")->on("users")->nullOnDelete();
+
+            $table->index(["company_id", "created_at"]);
+            $table->index(["warehouse_id", "item_id", "created_at"]);
+            $table->index(["origin_type", "origin_id"]);
         });
 
         // ✅
@@ -359,6 +386,7 @@ return new class extends Migration {
         Schema::dropIfExists("asset_assignment_logs");
         Schema::dropIfExists("asset_assignments");
         Schema::dropIfExists("branch_assets");
+        Schema::dropIfExists("inventory_movements");
         Schema::dropIfExists("warehouse_items");
         Schema::dropIfExists("warehouses");
         Schema::dropIfExists("customers");

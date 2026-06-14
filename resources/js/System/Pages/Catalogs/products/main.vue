@@ -17,6 +17,8 @@
             :show-add-button="true"
             :show-download-button="MODULE.config.hasDownloadRecords"
             :download-button-text="MODULE.texts.actions.download"
+            :download-button-tooltip="MODULE.texts.actions.download"
+            :download-icon-only-on-desktop="true"
             :downloading="isExporting"
             :title-class="[config.forms.classes.title]"
             :select-class="config.forms.classes.select2"
@@ -83,9 +85,11 @@
                                                 <span
                                                     class="br-entity-code"
                                                     v-text="record.internal_code"></span>
-                                                <CopyButton
-                                                    :value="record.internal_code"
-                                                    label="Código interno"/>
+                                                <span class="br-entity-identifier__actions">
+                                                    <CopyButton
+                                                        :value="record.internal_code"
+                                                        label="Código interno"/>
+                                                </span>
                                             </span>
                                         </div>
                                         <div class="br-entity-identifier">
@@ -98,9 +102,14 @@
                                                 <span
                                                     class="br-entity-barcode"
                                                     v-text="record.barcode"></span>
-                                                <CopyButton
-                                                    :value="record.barcode"
-                                                    label="Código de barras"/>
+                                                <span class="br-entity-identifier__actions">
+                                                    <CopyButton
+                                                        :value="record.barcode"
+                                                        label="Código de barras"/>
+                                                    <BarcodeDownloadButton
+                                                        :value="record.barcode"
+                                                        :file-name="record.internal_code"/>
+                                                </span>
                                             </span>
                                         </div>
                                     </div>
@@ -300,7 +309,7 @@
                                             <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
                                         </button>
                                     </template>
-                                    <template v-if="!isUpdate" v-slot:inputGroupAppend>
+                                    <template v-slot:inputGroupAppend>
                                         <button
                                             type="button"
                                             class="br-input-action"
@@ -439,6 +448,9 @@
                                                     v-text="getSelectOptionLabel(option)">
                                                 </span>
                                             </template>
+                                            <template #no-options>
+                                                <SelectNoOptions/>
+                                            </template>
                                         </v-select>
                                     </template>
                                 </InputSlot>
@@ -473,6 +485,9 @@
                                                     :title="getSelectOptionLabel(option)"
                                                     v-text="getSelectOptionLabel(option)">
                                                 </span>
+                                            </template>
+                                            <template #no-options>
+                                                <SelectNoOptions/>
                                             </template>
                                         </v-select>
                                     </template>
@@ -537,6 +552,9 @@
                                                     :title="getSelectOptionLabel(option)"
                                                     v-text="getSelectOptionLabel(option)">
                                                 </span>
+                                            </template>
+                                            <template #no-options>
+                                                <SelectNoOptions/>
                                             </template>
                                         </v-select>
                                     </template>
@@ -609,7 +627,7 @@
                                             data-bs-toggle="tooltip"
                                             data-bs-placement="top"
                                             :title="isUpdate
-                                                ? 'Cantidad disponible actualmente en el almacén. Se modifica desde Gestión de stock.'
+                                                ? 'Cantidad disponible actualmente en el almacén. Se modifica desde Inventario.'
                                                 : 'Cantidad disponible al registrar el producto en este almacén.'"
                                             :aria-label="isUpdate
                                                 ? 'Ayuda sobre stock actual'
@@ -634,7 +652,7 @@
                                 <div
                                     v-for="(inventory, index) in productForm.data.inventory"
                                     :key="inventory.warehouse_id"
-                                    class="br-entity-inventory__row">
+                                    :class="['br-entity-inventory__row', inventoryStockStatus(inventory).className]">
                                     <div class="br-entity-inventory__warehouse">
                                         <strong v-text="inventory.branch_name"></strong>
                                         <span v-text="inventory.warehouse_name"></span>
@@ -714,6 +732,8 @@ import * as Requests from "@System/Helpers/Requests.js";
 import * as Utils from "@System/Helpers/Utils.js";
 import AddBrand from "@System/Components/Catalogs/AddBrand.vue";
 import AddCategory from "@System/Components/Catalogs/AddCategory.vue";
+import BarcodeDownloadButton from "@System/Components/BarcodeDownloadButton.vue";
+import SelectNoOptions from "@System/Components/Generics/SelectNoOptions.vue";
 import InternalCodePrefixMixin from "@System/Mixins/InternalCodePrefixMixin.js";
 
 const MODULE_CONFIG = {
@@ -850,8 +870,8 @@ const TEXTS = {
         status: "Estado",
         internalCodeHelp: "Identificador privado que la empresa utiliza para ordenar, buscar y controlar internamente el producto.",
         barcodeHelp: "Código de barras en formato EAN-13 que puede imprimirse en la etiqueta del producto y ser leído por clientes o escáneres.",
-        generateInternalCodeTooltip: "Generar un nuevo código interno para uso exclusivo de la empresa",
-        generateBarcodeTooltip: "Generar un nuevo código de barras EAN-13 para imprimir en la etiqueta"
+        generateInternalCodeTooltip: "Generar y reemplazar por un código interno válido",
+        generateBarcodeTooltip: "Generar y reemplazar por un código de barras EAN-13 válido"
     },
     modal: {
         store: "Agregar producto",
@@ -913,7 +933,9 @@ export default {
     mixins: [InternalCodePrefixMixin],
     components: {
         AddBrand,
-        AddCategory
+        AddCategory,
+        BarcodeDownloadButton,
+        SelectNoOptions
     },
     data() {
 
