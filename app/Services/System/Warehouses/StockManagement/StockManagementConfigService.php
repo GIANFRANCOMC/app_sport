@@ -31,7 +31,7 @@ final class StockManagementConfigService extends BaseConfigService {
                     ->where("company_id", $companyId)
                     ->where("type", "product")
                     ->where("status", "active")
-                    ->select(["id", "internal_code", "name"])
+                    ->select(["id", "internal_code", "barcode", "name"])
                     ->orderBy("name")
                     ->get()
             ])

@@ -26,6 +26,10 @@ class InventoryMovement extends Model {
         "quantity_before",
         "quantity_change",
         "quantity_after",
+        "unit_cost",
+        "value_before",
+        "value_change",
+        "value_after",
         "reason",
         "metadata",
         "created_at"
@@ -35,6 +39,10 @@ class InventoryMovement extends Model {
         "quantity_before" => "decimal:2",
         "quantity_change" => "decimal:2",
         "quantity_after"  => "decimal:2",
+        "unit_cost"       => "decimal:4",
+        "value_before"    => "decimal:2",
+        "value_change"    => "decimal:2",
+        "value_after"     => "decimal:2",
         "metadata"        => "array",
         "created_at"      => "datetime"
     ];

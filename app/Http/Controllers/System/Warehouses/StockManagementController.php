@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\System\Warehouses;
 
+use App\Exports\System\Warehouses\InventoryReportExport;
 use App\Http\Controllers\System\Base\BaseController;
 use App\Helpers\System\{Utilities};
 use Illuminate\Http\{JsonResponse, Request};
 use Illuminate\Support\Facades\Validator;
+use Maatwebsite\Excel\Facades\Excel;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 use App\Services\System\Warehouses\StockManagement\{
     StockManagementConfigService,
@@ -45,7 +48,21 @@ class StockManagementController extends BaseController {
         $warehouseId = intval($request->input("warehouse_id"));
         $perPage     = $this->getPerPage($request, Utilities::$per_page_max);
 
-        return StockManagementService::getPaginatedList($this->getCompanyId(), $warehouseId, $perPage);
+        if(!StockManagementService::validateWarehouse($warehouseId, $this->getCompanyId())) {
+
+            return response()->json([
+                "data" => [],
+                "total" => 0
+            ]);
+
+        }
+
+        return StockManagementService::getPaginatedList(
+            $this->getCompanyId(),
+            $warehouseId,
+            $perPage,
+            (string) $request->input("product_search", "")
+        );
 
     }
 
@@ -122,10 +139,135 @@ class StockManagementController extends BaseController {
                 "warehouse_id",
                 "item_id",
                 "movement_type",
+                "product_search",
                 "date_from",
                 "date_to"
             ]),
             $perPage
+        );
+
+    }
+
+    public function storeOperations(Request $request): JsonResponse {
+
+        $validator = Validator::make($request->all(), [
+            "warehouse_id"             => ["required", "integer"],
+            "movement_type"            => ["required", "in:entry,exit,correction"],
+            "origin_type"              => [
+                "required",
+                "in:manual,replenishment,customer_return,supplier_return,physical_count"
+            ],
+            "items"                    => ["required", "array", "min:1", "max:100"],
+            "items.*.item_id"          => ["required", "integer", "distinct"],
+            "items.*.quantity"         => ["nullable", "numeric", "gt:0"],
+            "items.*.resulting_balance" => ["nullable", "numeric", "min:0"],
+            "items.*.unit_cost"        => ["nullable", "numeric", "min:0"],
+            "reason"                   => ["required", "string", "max:255"]
+        ], [
+            "required" => "Campo obligatorio.",
+            "items.min" => "Agrega al menos un producto.",
+            "items.max" => "Puedes registrar hasta 100 productos por operación.",
+            "distinct" => "No repitas un producto en la misma operación.",
+            "in" => "Selecciona una opción válida.",
+            "numeric" => "Ingresa un número válido.",
+            "gt" => "La cantidad debe ser mayor que cero.",
+            "min" => "El saldo no puede ser negativo.",
+            "max" => "El motivo no debe superar 255 caracteres."
+        ]);
+
+        $validator->after(function($validator) use($request) {
+
+            foreach($request->input("items", []) as $index => $item) {
+
+                $field = $request->input("movement_type") === "correction"
+                    ? "resulting_balance"
+                    : "quantity";
+
+                if(!array_key_exists($field, $item) || $item[$field] === null || $item[$field] === "") {
+
+                    $validator->errors()->add("items.{$index}.{$field}", "Campo obligatorio.");
+
+                }
+
+            }
+
+        });
+
+        if($validator->fails()) {
+
+            return response()->json([
+                "bool" => false,
+                "msg" => "Revisa los datos de la operación.",
+                "errors" => $validator->errors()
+            ], 422);
+
+        }
+
+        try {
+
+            $warehouse = StockManagementService::validateWarehouse(
+                (int) $request->input("warehouse_id"),
+                $this->getCompanyId()
+            );
+
+            if(!$warehouse) {
+
+                return $this->errorResponse("warehouse_not_available");
+
+            }
+
+            $movements = StockManagementService::createManualMovements(
+                $this->getCompanyId(),
+                (int) $warehouse->id,
+                (string) $request->input("movement_type"),
+                (string) $request->input("origin_type"),
+                $request->input("items", []),
+                (string) $request->input("reason"),
+                $this->getUserId()
+            );
+
+            return response()->json([
+                "bool" => true,
+                "msg" => count($movements) === 1
+                    ? "Operación registrada correctamente."
+                    : "Operación registrada para todos los productos.",
+                "data" => $movements
+            ]);
+
+        }catch(\Throwable $e) {
+
+            return response()->json([
+                "bool" => false,
+                "msg" => $e->getMessage()
+            ], 422);
+
+        }
+
+    }
+
+    public function export(Request $request): BinaryFileResponse {
+
+        $view = in_array($request->input("view"), ["stock", "kardex", "transfers", "valued"], true)
+            ? (string) $request->input("view")
+            : "stock";
+        $filters = $request->only([
+            "warehouse_id",
+            "item_id",
+            "movement_type",
+            "product_search",
+            "date_from",
+            "date_to"
+        ]);
+
+        StockManagementService::validateWarehouse(
+            (int) ($filters["warehouse_id"] ?? 0),
+            $this->getCompanyId()
+        ) ?? abort(404, "El almacén seleccionado no está disponible.");
+        $fileName = "inventario_{$view}_" . now()->format("Y-m-d_His") . ".xlsx";
+
+        return Excel::download(
+            new InventoryReportExport($this->getCompanyId(), $view, $filters),
+            $fileName
         );
 
     }
@@ -136,6 +278,10 @@ class StockManagementController extends BaseController {
             "warehouse_id"     => ["required", "integer"],
             "item_id"          => ["required", "integer"],
             "movement_type"    => ["required", "in:entry,exit,correction"],
+            "origin_type"      => [
+                "required",
+                "in:manual,replenishment,customer_return,supplier_return,physical_count"
+            ],
             "quantity"         => ["nullable", "numeric", "gt:0"],
             "resulting_balance" => ["nullable", "numeric", "min:0"],
             "reason"           => ["required", "string", "max:255"]
@@ -199,6 +345,7 @@ class StockManagementController extends BaseController {
                     ? (float) $request->input("resulting_balance")
                     : null,
                 (string) $request->input("reason"),
+                (string) $request->input("origin_type"),
                 $this->getUserId()
             );
 

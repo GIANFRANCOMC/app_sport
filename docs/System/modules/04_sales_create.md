@@ -38,7 +38,7 @@ Permite crear una venta con productos, servicios o membresias. Una venta puede g
 ## Mejoras sugeridas
 
 - Evitar stock negativo si la empresa no lo permite.
-- Revertir stock al anular venta con productos.
+- La anulación aplica `company_settings.inventory.restore_stock_on_sale_cancellation`; por defecto no repone productos automáticamente.
 - Validar que `serie_id` pertenezca a la sucursal seleccionada.
 - Proteger correlativo contra concurrencia.
 - Tipar `extras` de membresia con estructura clara.

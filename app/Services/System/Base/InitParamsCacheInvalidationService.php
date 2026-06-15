@@ -23,6 +23,7 @@ use App\Services\System\Devices\BiometricDevices\{BiometricDeviceConfigService};
 use App\Services\System\Organizations\Branches\{BranchConfigService};
 use App\Services\System\Organizations\Users\{UserConfigService};
 use App\Services\System\Sales\{SaleConfigService};
+use App\Services\System\Purchases\{PurchaseConfigService};
 use App\Services\System\Warehouses\StockManagement\{StockManagementConfigService};
 
 /**
@@ -38,6 +39,7 @@ final class InitParamsCacheInvalidationService {
     public const CUSTOMERS         = "customers";
     public const ITEMS             = "items";
     public const USERS             = "users";
+    public const SUPPLIERS         = "suppliers";
 
     /**
      * Config services affected when a shared resource changes.
@@ -60,7 +62,8 @@ final class InitParamsCacheInvalidationService {
             ServiceConfigService::class,
             SubscriptionConfigService::class,
             SaleConfigService::class,
-            StockManagementConfigService::class
+            StockManagementConfigService::class,
+            PurchaseConfigService::class
         ],
         self::CUSTOMERS => [
             CustomerConfigService::class,
@@ -77,7 +80,8 @@ final class InitParamsCacheInvalidationService {
             TrackingSubscriptionConfigService::class,
             BiometricDeviceConfigService::class,
             AssetManagementConfigService::class,
-            StockManagementConfigService::class
+            StockManagementConfigService::class,
+            PurchaseConfigService::class
         ],
         self::ASSETS => [
             AssetConfigService::class,
@@ -90,6 +94,9 @@ final class InitParamsCacheInvalidationService {
         self::BIOMETRIC_DEVICES => [
             BiometricDeviceConfigService::class,
             CustomerConfigService::class
+        ],
+        self::SUPPLIERS => [
+            PurchaseConfigService::class
         ]
     ];
 

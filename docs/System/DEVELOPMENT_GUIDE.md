@@ -61,6 +61,10 @@ Dependencias registradas:
 
 - No crear ni consumir `Model::getAll($type, $companyId)`.
 - Para datos dependientes de empresa, crear una sola instancia con `CompanyReferenceDataService::for($companyId)` y usar métodos con intención explícita.
+- Los módulos documentales que afecten inventario deben separar documento y ejecución física. Compras registra intención comercial; la recepción es el evento que mueve stock.
+- Ningún módulo actualiza `warehouse_items.quantity`, `average_cost` o `inventory_value` directamente. Debe invocar `InventoryMovementService`.
+- Las operaciones con cabecera, detalles y movimientos se ejecutan dentro de una única transacción.
+- La valorización usa costos de entrada y promedio ponderado por almacén; nunca reutiliza el precio de venta.
 - Para monedas y tipos de documento globales, usar `MasterReferenceDataService`.
 - Si se implementa mantenimiento de monedas o tipos de documento, llamar `MasterReferenceDataService::clearCache()` después de una mutación correcta.
 - Si una pantalla necesita una variante nueva, agregar un método descriptivo al servicio adecuado; no introducir strings como `"default"`, `"sale"` o `"management"` para modificar consultas.
@@ -150,6 +154,7 @@ $config->currencies->records = MasterReferenceDataService::currencies();
 - Los bodies sin navegación por pestañas reutilizan `br-modal-standard__body`; no crear padding horizontal por módulo. Header, body y footer comparten `--br-modal-space-x`, con su ajuste responsive.
 - `Alerts.generateAlert()` usa un popup compacto y clases semánticas por tipo: borde e icono comparten color; error/success confirman con primary, warning con danger y question con secondary.
 - Los accessors incluidos en `$appends` deben tolerar columnas ausentes mediante `?? null`. Si dependen de una relación, comprobar `relationLoaded()` y no disparar lazy loading durante la serialización de consultas parciales.
+- Anular un documento comercial y devolver inventario son acciones distintas. Las reposiciones automáticas deben depender de una política tipada en `company_settings`; cuando existan varios almacenes, deben recuperar el almacén del movimiento original y no asumir el primero de la sucursal.
 - El paginador compartido debe mostrarse incluso con una sola página: `Anterior` y `Siguiente` quedan deshabilitados, y la página actual permanece visible con contraste alto.
 - Revisar que textos, títulos, confirmaciones y mensajes respeten tildes, puntuación y signos de interrogación.
 - Centralizar títulos, subtítulos, filtros, estados vacíos, tooltips y confirmaciones en `config.entity.page` cuando la página use la estructura de configuración por entidad.

@@ -231,6 +231,8 @@ return new class extends Migration {
             $table->unsignedBigInteger("item_id");
             $table->decimal("quantity", 12, 2)->default(0);
             $table->decimal("minimum_stock", 12, 2)->default(0);
+            $table->decimal("average_cost", 14, 4)->default(0);
+            $table->decimal("inventory_value", 14, 2)->default(0);
             $table->enum("status", ["active", "inactive"])->default("active");
 
             $table->timestamp("created_at")->useCurrent()->nullable();
@@ -256,6 +258,10 @@ return new class extends Migration {
             $table->decimal("quantity_before", 12, 2);
             $table->decimal("quantity_change", 12, 2);
             $table->decimal("quantity_after", 12, 2);
+            $table->decimal("unit_cost", 14, 4)->default(0);
+            $table->decimal("value_before", 14, 2)->default(0);
+            $table->decimal("value_change", 14, 2)->default(0);
+            $table->decimal("value_after", 14, 2)->default(0);
             $table->string("reason", 255);
             $table->json("metadata")->nullable();
             $table->timestamp("created_at")->useCurrent();
@@ -342,13 +348,27 @@ return new class extends Migration {
 
         // Inserts
         DB::table("company_settings")->insert([
-            ["company_id" => 1, "group" => "internal_code_prefixes", "key" => "product", "value" => "PRO"],
-            ["company_id" => 1, "group" => "internal_code_prefixes", "key" => "service", "value" => "SER"],
-            ["company_id" => 1, "group" => "internal_code_prefixes", "key" => "subscription", "value" => "MEM"],
-            ["company_id" => 1, "group" => "internal_code_prefixes", "key" => "brand", "value" => "MAR"],
-            ["company_id" => 1, "group" => "internal_code_prefixes", "key" => "category", "value" => "CAT"],
-            ["company_id" => 1, "group" => "internal_code_prefixes", "key" => "branch", "value" => "SUC"],
-            ["company_id" => 1, "group" => "internal_code_prefixes", "key" => "asset", "value" => "ACT"]
+            ["company_id" => 1, "group" => "internal_code_prefixes", "key" => "product", "value" => "PRO", "value_type" => "string"],
+            ["company_id" => 1, "group" => "internal_code_prefixes", "key" => "service", "value" => "SER", "value_type" => "string"],
+            ["company_id" => 1, "group" => "internal_code_prefixes", "key" => "subscription", "value" => "MEM", "value_type" => "string"],
+            ["company_id" => 1, "group" => "internal_code_prefixes", "key" => "brand", "value" => "MAR", "value_type" => "string"],
+            ["company_id" => 1, "group" => "internal_code_prefixes", "key" => "category", "value" => "CAT", "value_type" => "string"],
+            ["company_id" => 1, "group" => "internal_code_prefixes", "key" => "branch", "value" => "SUC", "value_type" => "string"],
+            ["company_id" => 1, "group" => "internal_code_prefixes", "key" => "asset", "value" => "ACT", "value_type" => "string"],
+            [
+                "company_id" => 1,
+                "group" => "inventory",
+                "key" => "restore_stock_on_sale_cancellation",
+                "value" => "false",
+                "value_type" => "boolean"
+            ],
+            [
+                "company_id" => 1,
+                "group" => "inventory",
+                "key" => "valuation_method",
+                "value" => "weighted_average",
+                "value_type" => "string"
+            ]
         ]);
 
         DB::table("company_socials_media")->insert([

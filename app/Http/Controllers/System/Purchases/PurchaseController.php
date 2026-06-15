@@ -1,0 +1,153 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Http\Controllers\System\Purchases;
+
+use App\Exports\System\Purchases\PurchaseListExport;
+use App\Helpers\System\Utilities;
+use App\Http\Controllers\System\Base\BaseController;
+use App\Http\Requests\System\Purchases\{ReceivePurchaseRequest, StorePurchaseRequest};
+use App\Services\System\Purchases\{PurchaseConfigService, PurchaseService};
+use Illuminate\Http\{JsonResponse, Request};
+use Maatwebsite\Excel\Facades\Excel;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
+
+final class PurchaseController extends BaseController {
+
+    private const TRANSLATION_NAMESPACE = "System.Purchases.purchase";
+
+    public function index() {
+
+        return view("System/general/Purchases/purchases/main");
+
+    }
+
+    public function initParams(Request $request) {
+
+        return PurchaseConfigService::getInitParams(
+            $this->getCompanyId(),
+            $this->getPage($request)
+        );
+
+    }
+
+    public function list(Request $request) {
+
+        return PurchaseService::getFilteredQuery(
+            $this->getCompanyId(),
+            [
+                "word" => $request->input("word"),
+                "status" => $request->input("status")
+            ]
+        )->paginate($this->getPerPage($request, Utilities::$per_page_default));
+
+    }
+
+    public function store(StorePurchaseRequest $request): JsonResponse {
+
+        try {
+
+            $purchase = PurchaseService::create(
+                $this->getCompanyId(),
+                $this->getUserId(),
+                $request->validated()
+            );
+
+            return response()->json([
+                "bool" => true,
+                "msg" => "Compra registrada. El stock se actualizará cuando recibas la mercadería.",
+                "data" => $purchase
+            ], 201);
+
+        }catch(\Throwable $exception) {
+
+            return response()->json([
+                "bool" => false,
+                "msg" => $exception->getMessage()
+            ], 422);
+
+        }
+
+    }
+
+    public function show(int $id): JsonResponse {
+
+        return response()->json(PurchaseService::find($this->getCompanyId(), $id));
+
+    }
+
+    public function receive(ReceivePurchaseRequest $request, int $id): JsonResponse {
+
+        try {
+
+            $receipt = PurchaseService::receive(
+                $this->getCompanyId(),
+                $id,
+                $this->getUserId(),
+                $request->validated()
+            );
+
+            return response()->json([
+                "bool" => true,
+                "msg" => "Recepción registrada. Las existencias y el costo promedio fueron actualizados.",
+                "data" => $receipt
+            ]);
+
+        }catch(\Throwable $exception) {
+
+            return response()->json([
+                "bool" => false,
+                "msg" => $exception->getMessage()
+            ], 422);
+
+        }
+
+    }
+
+    public function cancel(int $id): JsonResponse {
+
+        try {
+
+            $purchase = PurchaseService::cancel(
+                $this->getCompanyId(),
+                $id,
+                $this->getUserId()
+            );
+
+            return response()->json([
+                "bool" => true,
+                "msg" => "Compra anulada. No se modificó el inventario porque no tenía recepciones.",
+                "data" => $purchase
+            ]);
+
+        }catch(\Throwable $exception) {
+
+            return response()->json([
+                "bool" => false,
+                "msg" => $exception->getMessage()
+            ], 422);
+
+        }
+
+    }
+
+    public function export(Request $request): BinaryFileResponse {
+
+        return Excel::download(
+            new PurchaseListExport($this->getCompanyId(), [
+                "word" => $request->input("word"),
+                "status" => $request->input("status")
+            ]),
+            "compras_" . now()->format("Y-m-d_His") . ".xlsx"
+        );
+
+    }
+
+    protected function getTranslationNamespace(): string {
+
+        return self::TRANSLATION_NAMESPACE;
+
+    }
+
+}

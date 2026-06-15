@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Schema;
 final class CompanySettingService {
 
     public const INTERNAL_CODE_PREFIXES = "internal_code_prefixes";
+    public const INVENTORY_POLICIES = "inventory";
 
     private const DEFAULT_INTERNAL_CODE_PREFIXES = [
         "product" => "PRO",
@@ -21,11 +22,18 @@ final class CompanySettingService {
         "asset" => "ACT"
     ];
 
+    private const DEFAULT_INVENTORY_POLICIES = [
+        "restore_stock_on_sale_cancellation" => false,
+        "valuation_method" => "weighted_average"
+    ];
+
     public static function group(int $companyId, string $group): array {
 
-        $values = $group === self::INTERNAL_CODE_PREFIXES
-            ? self::DEFAULT_INTERNAL_CODE_PREFIXES
-            : [];
+        $values = match($group) {
+            self::INTERNAL_CODE_PREFIXES => self::DEFAULT_INTERNAL_CODE_PREFIXES,
+            self::INVENTORY_POLICIES => self::DEFAULT_INVENTORY_POLICIES,
+            default => []
+        };
 
         if(!Schema::hasTable("company_settings")) {
 

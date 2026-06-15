@@ -19,6 +19,11 @@ Lista ventas realizadas, permite filtrar y acceder a detalle, anulacion o impres
 - Listar solo ventas de series pertenecientes a sucursales de la empresa.
 - Filtrar por serie, correlativo, fecha, cliente y estado.
 - Permitir anulacion solo si la venta esta `active`.
+- Anular una venta no implica necesariamente recibir productos de vuelta.
+- `company_settings.inventory.restore_stock_on_sale_cancellation` controla la reposición automática y es `false` por defecto.
+- Con la política desactivada, la respuesta recuerda registrar una devolución desde Inventario si la mercancía fue recibida.
+- Con la política activa, cada producto genera una entrada `sale_cancellation` en el almacén asociado y la respuesta confirma la reposición.
+- Las membresías vinculadas se anulan independientemente de la política de inventario.
 - `SaleConfigService` mantiene cachés separadas para `main` y `list`.
 - Crear o anular ventas no invalida `initParams`, porque esta configuración contiene filtros, maestros y estados, no registros de venta.
 

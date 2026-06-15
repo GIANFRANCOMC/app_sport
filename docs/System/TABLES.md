@@ -32,7 +32,9 @@ Empresa o tenant funcional. Campos: `slug`, `internal_code`, documento, razon so
 
 Configuración extensible por empresa. Cada registro usa `company_id`, `group`, `key`, `value`, `value_type` y `status`. `value` puede ser nulo y `value_type` permite interpretarlo como `string`, `boolean`, `integer`, `decimal` o `json`.
 
-El primer grupo es `internal_code_prefixes`, con claves `product`, `service`, `subscription`, `brand`, `category`, `branch` y `asset`. Sus valores iniciales son `PRO`, `SER`, `MEM`, `MAR`, `CAT`, `SUC` y `ACT`. Un valor nulo o vacío desactiva el prefijo. La misma tabla está preparada para reglas futuras, como permitir ventas con stock negativo.
+El grupo `internal_code_prefixes` contiene las claves `product`, `service`, `subscription`, `brand`, `category`, `branch` y `asset`. Sus valores iniciales son `PRO`, `SER`, `MEM`, `MAR`, `CAT`, `SUC` y `ACT`. Un valor nulo o vacío desactiva el prefijo.
+
+El grupo `inventory` contiene `restore_stock_on_sale_cancellation`, booleano con valor predeterminado `false`. Cuando está desactivado, anular una venta no modifica existencias; una devolución física se registra posteriormente desde Inventario. Cuando está activo, la anulación repone automáticamente los productos en el almacén asociado a la venta.
 
 Relaciones: cada configuración pertenece a `companies` mediante `company_id`.
 
@@ -186,7 +188,7 @@ Relaciones: pertenece a sucursal; tiene `warehouse_items`.
 
 ### warehouse_items
 
-Stock por item en almacen. Campos: `warehouse_id`, `item_id`, `quantity`, `minimum_stock`, `status`.
+Stock por item en almacen. Campos: `warehouse_id`, `item_id`, `quantity`, `minimum_stock`, `average_cost`, `inventory_value`, `status`.
 
 Relaciones: une almacenes con items. La combinacion `warehouse_id + item_id` es unica. `minimum_stock` define la alerta especifica para cada almacen.
 
@@ -194,9 +196,9 @@ Relaciones: une almacenes con items. La combinacion `warehouse_id + item_id` es 
 
 ### inventory_movements
 
-Kardex inmutable de productos por almacén. Campos principales: `company_id`, `warehouse_id`, `item_id`, `user_id`, `movement_type`, `origin_type`, `origin_id`, `quantity_before`, `quantity_change`, `quantity_after`, `reason`, `metadata` y `created_at`.
+Kardex inmutable de productos por almacén. Campos principales: `company_id`, `warehouse_id`, `item_id`, `user_id`, `movement_type`, `origin_type`, `origin_id`, `quantity_before`, `quantity_change`, `quantity_after`, `unit_cost`, `value_before`, `value_change`, `value_after`, `reason`, `metadata` y `created_at`.
 
-`movement_type` admite `entry`, `exit` y `correction`. `origin_type` es extensible para integrar productos, ventas, anulaciones, operaciones manuales y el futuro módulo Compras sin cambiar la tabla. `origin_id` referencia lógicamente el registro que produjo el movimiento; no usa clave foránea porque puede apuntar a entidades de módulos distintos.
+`movement_type` admite `entry`, `exit` y `correction`. `origin_type` integra productos, ventas, compras, anulaciones, traslados y operaciones manuales sin cambiar la tabla. `origin_id` referencia lógicamente el registro que produjo el movimiento; no usa clave foránea porque puede apuntar a entidades de módulos distintos.
 
 Relaciones: pertenece a empresa, almacén, producto y opcionalmente usuario. Sus índices por empresa/fecha, almacén/producto/fecha y origen mejoran consultas; no representan reglas de unicidad.
 
@@ -207,6 +209,36 @@ Reglas:
 - Una anulación o corrección crea un nuevo movimiento compensatorio.
 - `warehouse_items.quantity` debe coincidir con el último `quantity_after` del almacén y producto.
 - Los traslados generan una salida `transfer_out` y una entrada `transfer_in`; la referencia compartida se guarda en `metadata.reference` y se expone como atributo `reference` del modelo.
+
+## Compras
+
+### suppliers
+
+Proveedores por empresa. Campos: `company_id`, documento, nombre, contacto, teléfono, correo, dirección, `status` y auditoría.
+
+### purchase_headers
+
+Cabecera de orden o factura de compra. Relaciona empresa, proveedor, almacén y moneda; guarda documento, fechas, totales, observación y estado.
+
+### purchase_items
+
+Detalle solicitado. Guarda producto, nombre histórico, cantidad, cantidad recibida, costo unitario, subtotal y estado de recepción.
+
+### purchase_receipts
+
+Evento físico de recepción. Una compra puede tener varias recepciones parciales. Guarda almacén, referencia, fecha, observación y responsable.
+
+### purchase_receipt_items
+
+Detalle recibido. Relaciona el detalle de compra, producto y `inventory_movement_id`; conserva cantidad, costo unitario y costo total.
+
+Reglas:
+
+- Registrar una compra no cambia existencias.
+- Cada detalle recibido genera una entrada `purchase`.
+- La recepción y sus movimientos se confirman en una sola transacción.
+- El costo actualiza el promedio ponderado por producto y almacén.
+- Una compra con recepción no se anula; se compensa mediante devolución a proveedor.
 
 ## Activos
 

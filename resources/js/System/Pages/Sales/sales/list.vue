@@ -373,6 +373,7 @@ export default {
                                 <p class="br-sale-cancel-hint__body">
                                     <span class="br-sale-cancel-hint__label">Importante.</span>
                                     Si esta venta incluye <span class="br-sale-cancel-hint__term">membresías</span>, estas serán <span class="br-sale-cancel-hint__risk">anuladas</span> automáticamente.
+                                    El inventario se actualizará según la política configurada para la empresa; revisa el mensaje final para confirmar si hubo devolución de stock.
                                 </p>
                             </div>`,
                     icon: "warning",
@@ -388,7 +389,7 @@ export default {
 
                     if(result.isConfirmed) {
 
-                        Alerts.swals({});
+                        Alerts.swals({type: "update", entity: "venta"});
 
                         let cancel = await Requests.patch({route: el.config.entity.routes.cancel, id: form.id});
 

@@ -197,7 +197,22 @@ class SaleController extends BaseController {
 
             }
 
-            return $this->updatedResponse($sale, "canceled", "sale");
+            $stockRestored = (bool) ($sale->stock_restored_on_cancellation ?? false);
+            $restorePolicyEnabled = (bool) ($sale->restore_stock_policy_enabled ?? false);
+            $message = match(true) {
+                $stockRestored =>
+                    "Venta anulada correctamente. Los productos fueron devueltos al stock del almacén correspondiente.",
+                $restorePolicyEnabled =>
+                    "Venta anulada correctamente. La venta no contenía productos que devolver al inventario.",
+                default =>
+                    "Venta anulada correctamente. El stock no fue modificado. Si recibes productos devueltos, registra la devolución desde Inventario."
+            };
+
+            return response()->json([
+                "bool" => true,
+                "msg"  => $message,
+                "sale" => $sale
+            ]);
 
         }catch(\Exception $e) {
 

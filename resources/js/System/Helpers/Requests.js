@@ -340,7 +340,12 @@ const ENTITY_SPECIAL_ROUTES = {
     },
     stocks_management: {
         movements: "movements",
+        operations: "operations",
         transfers: "transfers"
+    },
+    purchases: {
+        receive: "receive",
+        cancel: "cancel"
     },
     products: {
         import: "import",

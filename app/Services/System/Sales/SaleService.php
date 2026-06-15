@@ -11,7 +11,8 @@ use stdClass;
 
 use App\Models\System\Customers\Subscription;
 use App\Models\System\Sales\{SaleBody, SaleHeader};
-use App\Models\System\Warehouses\Warehouse;
+use App\Models\System\Warehouses\{InventoryMovement, Warehouse};
+use App\Services\System\Organizations\Companies\CompanySettingService;
 use App\Services\System\Warehouses\Inventory\InventoryMovementService;
 
 /**
@@ -282,10 +283,25 @@ class SaleService {
      */
     public static function cancel(SaleHeader $saleHeader, ?int $userId = null): SaleHeader {
 
-        DB::transaction(function() use($saleHeader, $userId) {
+        $stockRestored = false;
+        $restoreStockPolicyEnabled = false;
+
+        DB::transaction(function() use(
+            $saleHeader,
+            $userId,
+            &$stockRestored,
+            &$restoreStockPolicyEnabled
+        ) {
 
             $userAuth = Auth::user();
             $userId   = $userId ?? $userAuth->id;
+            $companyId = (int) $userAuth->company_id;
+            $restoreStockPolicyEnabled = (bool) CompanySettingService::value(
+                $companyId,
+                CompanySettingService::INVENTORY_POLICIES,
+                "restore_stock_on_sale_cancellation",
+                false
+            );
 
             if(!in_array($saleHeader->status, ["active"])) {
 
@@ -293,37 +309,76 @@ class SaleService {
 
             }
 
-            $saleHeader->loadMissing(["serie.branch.warehouses", "allPositions"]);
-            $warehouse = $saleHeader->serie?->branch?->warehouses?->first();
+            $saleHeader->loadMissing(
+                $restoreStockPolicyEnabled
+                    ? ["serie.branch.warehouses", "allPositions"]
+                    : ["allPositions"]
+            );
 
-            if(!$warehouse) {
+            $productPositions = $saleHeader->allPositions
+                ->where("type", "product");
+            $fallbackWarehouse = $restoreStockPolicyEnabled && $productPositions->isNotEmpty()
+                ? $saleHeader->serie?->branch?->warehouses?->first()
+                : null;
+
+            $saleMovements = $restoreStockPolicyEnabled && $productPositions->isNotEmpty()
+                ? InventoryMovement::query()
+                    ->where("company_id", $companyId)
+                    ->where("origin_type", InventoryMovementService::ORIGIN_SALE)
+                    ->whereIn("origin_id", $productPositions->pluck("id"))
+                    ->orderByDesc("id")
+                    ->get(["id", "warehouse_id", "origin_id", "unit_cost"])
+                    ->unique("origin_id")
+                    ->keyBy("origin_id")
+                : collect();
+
+            if($restoreStockPolicyEnabled
+                && $productPositions->isNotEmpty()
+                && !$fallbackWarehouse
+                && $saleMovements->count() !== $productPositions->count()) {
 
                 throw new Exception("No se encontró el almacén asociado a la venta.");
 
             }
 
-            foreach($saleHeader->allPositions as $saleBody) {
+            if($restoreStockPolicyEnabled && $productPositions->isNotEmpty()) {
 
-                if($saleBody->type !== "product") {
+                foreach($productPositions as $saleBody) {
 
-                    continue;
+                    $warehouseId = (int) (
+                        $saleMovements->get($saleBody->id)?->warehouse_id
+                        ?? $fallbackWarehouse?->id
+                        ?? 0
+                    );
+
+                    if($warehouseId <= 0) {
+
+                        throw new Exception("No se encontró el almacén original de uno de los productos.");
+
+                    }
+
+                    InventoryMovementService::apply([
+                        "company_id"    => $companyId,
+                        "warehouse_id"  => $warehouseId,
+                        "item_id"       => (int) $saleBody->item_id,
+                        "user_id"       => $userId,
+                        "movement_type" => InventoryMovementService::TYPE_ENTRY,
+                        "origin_type"   => InventoryMovementService::ORIGIN_SALE_CANCELLATION,
+                        "origin_id"     => (int) $saleBody->id,
+                        "quantity"      => (float) $saleBody->quantity,
+                        "unit_cost"     => (float) (
+                            $saleMovements->get($saleBody->id)?->unit_cost ?? 0
+                        ),
+                        "reason"        => "Devolución automática por anulación de venta.",
+                        "metadata"      => [
+                            "sale_header_id" => (int) $saleHeader->id,
+                            "automatic_return" => true
+                        ]
+                    ]);
 
                 }
 
-                InventoryMovementService::apply([
-                    "company_id"    => (int) $userAuth->company_id,
-                    "warehouse_id"  => (int) $warehouse->id,
-                    "item_id"       => (int) $saleBody->item_id,
-                    "user_id"       => $userId,
-                    "movement_type" => InventoryMovementService::TYPE_ENTRY,
-                    "origin_type"   => InventoryMovementService::ORIGIN_SALE_CANCELLATION,
-                    "origin_id"     => (int) $saleBody->id,
-                    "quantity"      => (float) $saleBody->quantity,
-                    "reason"        => "Reposición de stock por anulación de venta.",
-                    "metadata"      => [
-                        "sale_header_id" => (int) $saleHeader->id
-                    ]
-                ]);
+                $stockRestored = true;
 
             }
 
@@ -349,7 +404,7 @@ class SaleService {
             // Cancel subscriptions
             $motive = "Por la anulación de la venta.";
 
-            Subscription::where("company_id", $userAuth->company_id)
+            Subscription::where("company_id", $companyId)
                        ->where("sale_header_id", $saleHeader->id)
                        ->whereIn("type", ["sale"])
                        ->whereIn("status", ["active"])
@@ -364,7 +419,11 @@ class SaleService {
 
         });
 
-        return $saleHeader->fresh();
+        $sale = $saleHeader->fresh();
+        $sale->setAttribute("restore_stock_policy_enabled", $restoreStockPolicyEnabled);
+        $sale->setAttribute("stock_restored_on_cancellation", $stockRestored);
+
+        return $sale;
 
     }
 

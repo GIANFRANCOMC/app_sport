@@ -6,6 +6,7 @@ namespace App\Services\System\Warehouses\Inventory;
 
 use DomainException;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
@@ -26,6 +27,10 @@ final class InventoryMovementService {
     public const ORIGIN_PURCHASE_CANCELLATION = "purchase_cancellation";
     public const ORIGIN_TRANSFER_OUT         = "transfer_out";
     public const ORIGIN_TRANSFER_IN          = "transfer_in";
+    public const ORIGIN_REPLENISHMENT        = "replenishment";
+    public const ORIGIN_CUSTOMER_RETURN      = "customer_return";
+    public const ORIGIN_SUPPLIER_RETURN      = "supplier_return";
+    public const ORIGIN_PHYSICAL_COUNT       = "physical_count";
 
     private const MOVEMENT_TYPES = [
         self::TYPE_ENTRY,
@@ -70,6 +75,8 @@ final class InventoryMovementService {
                     "item_id"      => $itemId,
                     "quantity"     => 0,
                     "minimum_stock" => 0,
+                    "average_cost" => 0,
+                    "inventory_value" => 0,
                     "status"       => "active",
                     "created_at"   => now(),
                     "created_by"   => $data["user_id"] ?? null
@@ -85,6 +92,8 @@ final class InventoryMovementService {
             $quantityBefore = round((float) $warehouseItem->quantity, 2);
             $quantityChange = self::resolveQuantityChange($type, $quantityBefore, $data);
             $quantityAfter  = round($quantityBefore + $quantityChange, 2);
+            $valueBefore = round((float) ($warehouseItem->inventory_value ?? 0), 2);
+            $currentAverageCost = round((float) ($warehouseItem->average_cost ?? 0), 4);
 
             if(abs($quantityChange) < 0.00001) {
 
@@ -98,8 +107,22 @@ final class InventoryMovementService {
 
             }
 
+            $unitCost = self::resolveUnitCost($type, $quantityChange, $currentAverageCost, $data);
+            $valueChange = round($quantityChange * $unitCost, 2);
+            $valueAfter = round($valueBefore + $valueChange, 2);
+            $averageCost = self::resolveAverageCost(
+                $type,
+                $quantityBefore,
+                $quantityAfter,
+                $valueAfter,
+                $currentAverageCost,
+                $unitCost
+            );
+
             $warehouseItem->update([
                 "quantity"   => $quantityAfter,
+                "average_cost" => $averageCost,
+                "inventory_value" => $valueAfter,
                 "status"     => "active",
                 "updated_at" => now(),
                 "updated_by" => $data["user_id"] ?? null
@@ -124,6 +147,10 @@ final class InventoryMovementService {
                 "quantity_before" => $quantityBefore,
                 "quantity_change" => $quantityChange,
                 "quantity_after"  => $quantityAfter,
+                "unit_cost"       => $unitCost,
+                "value_before"    => $valueBefore,
+                "value_change"    => $valueChange,
+                "value_after"     => $valueAfter,
                 "reason"          => $reason,
                 "metadata"        => $metadata ?: null,
                 "created_at"      => now()
@@ -220,6 +247,7 @@ final class InventoryMovementService {
                     "movement_type"  => self::TYPE_ENTRY,
                     "origin_type"    => self::ORIGIN_TRANSFER_IN,
                     "quantity"       => $quantity,
+                    "unit_cost"      => (float) $exit->unit_cost,
                     "reason"         => $reason,
                     "reference"      => $reference,
                     "metadata"       => $metadata
@@ -249,11 +277,22 @@ final class InventoryMovementService {
         int $perPage = 15
     ): LengthAwarePaginator {
 
+        return self::getKardexQuery($companyId, $filters)
+            ->orderByDesc("id")
+            ->paginate($perPage);
+
+    }
+
+    public static function getKardexQuery(
+        int $companyId,
+        array $filters = []
+    ): Builder {
+
         $query = InventoryMovement::query()
             ->where("company_id", $companyId)
             ->with([
                 "warehouse.branch:id,name,status",
-                "item:id,internal_code,name",
+                "item:id,internal_code,barcode,name",
                 "user:id,name"
             ]);
 
@@ -275,6 +314,30 @@ final class InventoryMovementService {
 
         }
 
+        if(!empty($filters["origin_types"]) && is_array($filters["origin_types"])) {
+
+            $query->whereIn("origin_type", $filters["origin_types"]);
+
+        }
+
+        $productSearch = trim((string) ($filters["product_search"] ?? ""));
+
+        if($productSearch !== "") {
+
+            $query->whereHas("item", function($query) use($productSearch) {
+
+                $query->where(function($query) use($productSearch) {
+
+                    $query->where("name", "like", "%{$productSearch}%")
+                        ->orWhere("internal_code", "like", "%{$productSearch}%")
+                        ->orWhere("barcode", "like", "%{$productSearch}%");
+
+                });
+
+            });
+
+        }
+
         if(!empty($filters["date_from"])) {
 
             $query->whereDate("created_at", ">=", $filters["date_from"]);
@@ -287,7 +350,7 @@ final class InventoryMovementService {
 
         }
 
-        return $query->orderByDesc("id")->paginate($perPage);
+        return $query;
 
     }
 
@@ -326,6 +389,68 @@ final class InventoryMovementService {
         }
 
         return $type === self::TYPE_ENTRY ? $quantity : -$quantity;
+
+    }
+
+    private static function resolveUnitCost(
+        string $type,
+        float $quantityChange,
+        float $currentAverageCost,
+        array $data
+    ): float {
+
+        if($type === self::TYPE_EXIT || $quantityChange < 0) {
+
+            return $currentAverageCost;
+
+        }
+
+        if(array_key_exists("unit_cost", $data) && $data["unit_cost"] !== null) {
+
+            $unitCost = round((float) $data["unit_cost"], 4);
+
+            if($unitCost < 0) {
+
+                throw new DomainException("El costo unitario no puede ser negativo.");
+
+            }
+
+            return $unitCost;
+
+        }
+
+        return $currentAverageCost;
+
+    }
+
+    private static function resolveAverageCost(
+        string $type,
+        float $quantityBefore,
+        float $quantityAfter,
+        float $valueAfter,
+        float $currentAverageCost,
+        float $unitCost
+    ): float {
+
+        if(abs($quantityAfter) < 0.00001) {
+
+            return 0;
+
+        }
+
+        if($type === self::TYPE_ENTRY && $quantityAfter > 0) {
+
+            return round($valueAfter / $quantityAfter, 4);
+
+        }
+
+        if($quantityBefore <= 0 && $quantityAfter > 0) {
+
+            return $unitCost;
+
+        }
+
+        return $currentAverageCost;
 
     }
 

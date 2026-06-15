@@ -8,6 +8,8 @@ use App\Helpers\System\Utilities;
 use App\Models\System\Catalogs\Item;
 use App\Models\System\Warehouses\{Warehouse, WarehouseItem};
 use App\Services\System\Warehouses\Inventory\InventoryMovementService;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -24,22 +26,62 @@ class StockManagementService {
      * @param int $perPage Items per page
      * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator
      */
-    public static function getPaginatedList(int $companyId, int $warehouseId, int $perPage) {
+    public static function getPaginatedList(
+        int $companyId,
+        int $warehouseId,
+        int $perPage,
+        string $search = ""
+    ) {
 
-        return Item::where("company_id", $companyId)
-                   ->whereIn("type", ["product"])
-                   ->withSum(["warehouseItems as stock_quantity" => function($query) use($warehouseId) {
+        return self::stockQuery($companyId, $warehouseId, $search)->paginate($perPage);
 
-                       $query->where("warehouse_id", $warehouseId);
+    }
 
-                   }], "quantity")
-                   ->withSum(["warehouseItems as minimum_stock" => function($query) use($warehouseId) {
+    public static function getStockReport(
+        int $companyId,
+        int $warehouseId,
+        string $search = ""
+    ): Collection {
 
-                       $query->where("warehouse_id", $warehouseId);
+        return self::stockQuery($companyId, $warehouseId, $search)->get();
 
-                   }], "minimum_stock")
-                   ->orderBy("name", "ASC")
-                   ->paginate($perPage);
+    }
+
+    private static function stockQuery(
+        int $companyId,
+        int $warehouseId,
+        string $search = ""
+    ): Builder {
+
+        $query = Item::query()
+            ->where("company_id", $companyId)
+            ->where("type", "product")
+            ->withSum(["warehouseItems as stock_quantity" => function($query) use($warehouseId) {
+
+                $query->where("warehouse_id", $warehouseId);
+
+            }], "quantity")
+            ->withSum(["warehouseItems as minimum_stock" => function($query) use($warehouseId) {
+
+                $query->where("warehouse_id", $warehouseId);
+
+            }], "minimum_stock");
+
+        $search = trim($search);
+
+        if($search !== "") {
+
+            $query->where(function($query) use($search) {
+
+                $query->where("name", "like", "%{$search}%")
+                    ->orWhere("internal_code", "like", "%{$search}%")
+                    ->orWhere("barcode", "like", "%{$search}%");
+
+            });
+
+        }
+
+        return $query->orderBy("name");
 
     }
 
@@ -98,7 +140,7 @@ class StockManagementService {
                     "item_id"          => (int) $item["id"],
                     "user_id"          => $userId,
                     "movement_type"    => InventoryMovementService::TYPE_CORRECTION,
-                    "origin_type"      => InventoryMovementService::ORIGIN_MANUAL,
+                    "origin_type"      => InventoryMovementService::ORIGIN_PHYSICAL_COUNT,
                     "resulting_balance" => $resultingBalance,
                     "reason"           => "Corrección manual desde Inventario."
                 ]);
@@ -119,7 +161,9 @@ class StockManagementService {
         ?float $quantity,
         ?float $resultingBalance,
         string $reason,
-        ?int $userId = null
+        string $originType = InventoryMovementService::ORIGIN_MANUAL,
+        ?int $userId = null,
+        ?float $unitCost = null
     ) {
 
         return InventoryMovementService::apply([
@@ -128,17 +172,75 @@ class StockManagementService {
             "item_id"          => $itemId,
             "user_id"          => $userId,
             "movement_type"    => $movementType,
-            "origin_type"      => InventoryMovementService::ORIGIN_MANUAL,
+            "origin_type"      => $originType,
             "quantity"         => $quantity,
             "resulting_balance" => $resultingBalance,
+            "unit_cost"        => $unitCost,
             "reason"           => $reason
         ]);
+
+    }
+
+    public static function createManualMovements(
+        int $companyId,
+        int $warehouseId,
+        string $movementType,
+        string $originType,
+        array $items,
+        string $reason,
+        ?int $userId = null
+    ): array {
+
+        return DB::transaction(function() use(
+            $companyId,
+            $warehouseId,
+            $movementType,
+            $originType,
+            $items,
+            $reason,
+            $userId
+        ) {
+
+            $movements = [];
+
+            foreach($items as $item) {
+
+                $movements[] = self::createManualMovement(
+                    $companyId,
+                    $warehouseId,
+                    (int) $item["item_id"],
+                    $movementType,
+                    isset($item["quantity"]) ? (float) $item["quantity"] : null,
+                    isset($item["resulting_balance"])
+                        ? (float) $item["resulting_balance"]
+                        : null,
+                    $reason,
+                    $originType,
+                    $userId,
+                    isset($item["unit_cost"]) && $item["unit_cost"] !== ""
+                        ? (float) $item["unit_cost"]
+                        : null
+                );
+
+            }
+
+            return $movements;
+
+        });
 
     }
 
     public static function getKardex(int $companyId, array $filters, int $perPage) {
 
         return InventoryMovementService::getPaginatedKardex($companyId, $filters, $perPage);
+
+    }
+
+    public static function getKardexReport(int $companyId, array $filters): Collection {
+
+        return InventoryMovementService::getKardexQuery($companyId, $filters)
+            ->orderByDesc("id")
+            ->get();
 
     }
 

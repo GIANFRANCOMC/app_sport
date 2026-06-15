@@ -24,11 +24,20 @@ class WarehouseItem extends Model {
         "item_id",
         "quantity",
         "minimum_stock",
+        "average_cost",
+        "inventory_value",
         "status",
         "created_at",
         "created_by",
         "updated_at",
         "updated_by"
+    ];
+
+    protected $casts = [
+        "quantity" => "decimal:2",
+        "minimum_stock" => "decimal:2",
+        "average_cost" => "decimal:4",
+        "inventory_value" => "decimal:2"
     ];
 
     // Appends
