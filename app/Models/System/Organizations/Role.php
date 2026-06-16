@@ -23,6 +23,7 @@ class Role extends Model {
         "company_id",
         "slug",
         "name",
+        "is_full_access",
         "status",
         "created_at",
         "created_by",
@@ -33,7 +34,9 @@ class Role extends Model {
     // Appends
     public function getFormattedStatusAttribute() {
 
-        return self::getStatuses("first", $this->attributes["status"])["label"] ?? "";
+        $status = $this->attributes["status"] ?? null;
+
+        return $status ? (self::getStatuses("first", $status)["label"] ?? "") : "";
 
     }
 
@@ -60,6 +63,24 @@ class Role extends Model {
 
         return $this->hasMany(User::class, "role_id", "id")
                     ->whereIn("status", ["active"]);
+
+    }
+
+    public function roleSubSections() {
+
+        return $this->hasMany(RoleSubSection::class, "role_id", "id")
+                    ->whereIn("status", ["active"]);
+
+    }
+
+    public function subSections() {
+
+        return $this->belongsToMany(
+            \App\Models\System\General\SubSection::class,
+            "role_sub_sections",
+            "role_id",
+            "sub_section_id"
+        )->wherePivot("status", "active");
 
     }
 

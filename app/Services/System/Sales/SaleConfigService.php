@@ -66,6 +66,12 @@ final class SaleConfigService extends BaseConfigService {
                 "durationTypes" => Item::getDurationTypes(),
                 "records"       => $references->saleItems()
             ]),
+            "taxes" => self::data([
+                "records" => $references->taxesFor("sale")
+            ]),
+            "paymentMethods" => self::data([
+                "records" => $references->paymentMethodsFor("sale")
+            ]),
             "salesHeader" => self::data([
                 "statuses" => SaleHeader::getStatuses()
             ])

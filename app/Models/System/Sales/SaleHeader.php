@@ -36,6 +36,8 @@ class SaleHeader extends Model {
         "seller_id",
         "currency_id",
         "issue_date",
+        "subtotal",
+        "tax",
         "total",
         "observation",
         "status",
@@ -184,6 +186,20 @@ class SaleHeader extends Model {
     public function allPositions() {
 
         return $this->hasMany(SaleBody::class, "sale_header_id", "id");
+
+    }
+
+    public function taxes() {
+
+        return $this->hasMany(SaleTax::class, "sale_header_id", "id")
+                    ->whereIn("status", ["active"]);
+
+    }
+
+    public function payments() {
+
+        return $this->hasMany(SalePayment::class, "sale_header_id", "id")
+                    ->whereIn("status", ["active"]);
 
     }
 

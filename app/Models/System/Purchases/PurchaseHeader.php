@@ -106,4 +106,18 @@ final class PurchaseHeader extends Model {
 
     }
 
+    public function taxes() {
+
+        return $this->hasMany(PurchaseTax::class, "purchase_header_id")
+                    ->whereIn("status", ["active"]);
+
+    }
+
+    public function payments() {
+
+        return $this->hasMany(PurchasePayment::class, "purchase_header_id")
+                    ->whereIn("status", ["active"]);
+
+    }
+
 }

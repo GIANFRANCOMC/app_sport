@@ -9,6 +9,7 @@
 - No hacer refactors globales si el requerimiento solo toca un módulo.
 - Mantener nombres técnicos en inglés y textos de UI en español, con tildes y signos de apertura correctos.
 - Aplicar la misma estructura de rutas, controladores, requests, servicios, Vue, CSS y documentación en módulos equivalentes.
+- Los entries Vue de módulos CRUD deben usar `mountEntityApp(App)` desde `resources/js/System/Helpers/MountEntityApp.js` para registrar componentes compartidos como `Breadcrumb`, `InputText`, `Paginator`, `Loader`, `WithoutData`, `FiltersSection`, `StatusBadge`, `CopyButton` y `vue-select` sin repetir imports por módulo.
 
 ## Al modificar un módulo CRUD
 
@@ -55,6 +56,7 @@ Dependencias registradas:
 - `branches`: Sucursales, Productos, Ventas, seguimientos, dispositivos biométricos, asignación de activos y gestión de stock.
 - `assets`: Activos y asignación de activos.
 - `users`: Usuarios y asignación de activos.
+- `roles`: Roles y Colaboradores.
 - `biometric_devices`: Dispositivos biométricos y Clientes.
 
 ## Consultas compartidas de `initParams`
@@ -85,8 +87,12 @@ $config->currencies->records = MasterReferenceDataService::currencies();
 ## Secciones y menú
 
 - Obtener módulos habilitados mediante `CompanySectionService::getSections($companyId)`.
+- Obtener módulos visibles para un colaborador mediante `CompanySectionService::getSections($companyId, $roleId)`.
+- Las rutas internas usan `module.permission`; todo módulo nuevo debe registrar `sub_sections.dom_route` con el mismo prefijo de ruta que sus endpoints.
+- Los permisos actuales son por módulo. La futura granularidad por acción debe extender el contrato sin romper `role_sub_sections`.
 - No leer ni escribir manualmente la clave de caché desde controladores, listeners o Blade.
 - Las mutaciones de `CompanySubSection` invalidan el menú mediante `CompanySubSectionObserver`.
+- Las mutaciones de `Role` o `RoleSubSection` invalidan menú por rol y permisos mediante sus observers.
 - Si se incorpora administración de `sections` o `sub_sections`, debe invalidarse el menú de las empresas impactadas.
 
 ## Interfaz y experiencia de usuario

@@ -10,6 +10,7 @@ use InvalidArgumentException;
 use App\Models\System\Assets\Asset;
 use App\Models\System\Catalogs\{Brand, Category, Item};
 use App\Models\System\Customers\Customer;
+use App\Models\System\Finance\{PaymentMethod, Tax};
 use App\Models\System\Organizations\{Branch, Role, User};
 use App\Models\System\Warehouses\Warehouse;
 
@@ -119,6 +120,30 @@ final class CompanyReferenceDataService {
                    ->where("status", "active")
                    ->orderBy("name")
                    ->get();
+
+    }
+
+    public function taxesFor(string $scope): Collection {
+
+        return Tax::query()
+                  ->where("company_id", $this->companyId)
+                  ->whereIn("scope", [$scope, "both"])
+                  ->where("status", "active")
+                  ->orderByDesc("is_default")
+                  ->orderBy("name")
+                  ->get();
+
+    }
+
+    public function paymentMethodsFor(string $scope): Collection {
+
+        return PaymentMethod::query()
+                            ->where("company_id", $this->companyId)
+                            ->whereIn("scope", [$scope, "both"])
+                            ->where("status", "active")
+                            ->orderByDesc("is_default")
+                            ->orderBy("name")
+                            ->get();
 
     }
 

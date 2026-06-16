@@ -50,7 +50,8 @@ Este archivo no controla el menu en ejecucion. El menu real se obtiene de `secti
 22. `biometric_devices.index` - Dispositivos biometricos, registro de dispositivos biometricos que seran usados para registrar asistencias
 23. `companies.index` - Mi empresa, gestion de informacion principal y esencial de la empresa
 24. `users.index` - Colaboradores, gestion de usuario para tener acceso a la plataforma
-25. `reports.index` - Reportes, gestion de reportes filtrando por campos
+25. `roles.index` - Perfiles de acceso, configuracion de acceso por modulo para colaboradores
+26. `reports.index` - Reportes, gestion de reportes filtrando por campos
 
 ## Modulos tecnicos de soporte
 
@@ -60,7 +61,7 @@ Ademas del menu visible, System usa entidades tecnicas que tambien deben tratars
 - Tipos de documento comercial.
 - Monedas.
 - Secciones y subsecciones.
-- Roles.
+- Roles y permisos por modulo.
 - Preferencias de usuario.
 - Series.
 - Almacenes.

@@ -20,6 +20,8 @@ return new class extends Migration {
             $table->unsignedBigInteger("seller_id");
             $table->unsignedBigInteger("currency_id");
             $table->date("issue_date");
+            $table->decimal("subtotal", 10, 2)->default(0);
+            $table->decimal("tax", 10, 2)->default(0);
             $table->decimal("total", 10, 2);
             $table->text("observation")->nullable();
             $table->enum("status", ["active", "canceled", "inactive"])->default("active");
@@ -66,6 +68,44 @@ return new class extends Migration {
             $table->foreign("customer_id")->references("id")->on("customers")->onDelete("cascade");
         });
 
+        Schema::create("sale_taxes", function(Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger("sale_header_id");
+            $table->unsignedBigInteger("tax_id")->nullable();
+            $table->string("name");
+            $table->decimal("rate", 7, 4)->default(0);
+            $table->decimal("base_amount", 10, 2)->default(0);
+            $table->decimal("amount", 10, 2)->default(0);
+            $table->enum("status", ["active", "canceled", "inactive"])->default("active");
+
+            $table->timestamp("created_at")->useCurrent()->nullable();
+            $table->integer("created_by")->nullable();
+            $table->timestamp("updated_at")->nullable();
+            $table->integer("updated_by")->nullable();
+
+            $table->foreign("sale_header_id")->references("id")->on("sales_header")->onDelete("cascade");
+            $table->foreign("tax_id")->references("id")->on("taxes")->nullOnDelete();
+        });
+
+        Schema::create("sale_payments", function(Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger("sale_header_id");
+            $table->unsignedBigInteger("payment_method_id")->nullable();
+            $table->string("name");
+            $table->decimal("amount", 10, 2)->default(0);
+            $table->string("reference", 100)->nullable();
+            $table->text("note")->nullable();
+            $table->enum("status", ["active", "canceled", "inactive"])->default("active");
+
+            $table->timestamp("created_at")->useCurrent()->nullable();
+            $table->integer("created_by")->nullable();
+            $table->timestamp("updated_at")->nullable();
+            $table->integer("updated_by")->nullable();
+
+            $table->foreign("sale_header_id")->references("id")->on("sales_header")->onDelete("cascade");
+            $table->foreign("payment_method_id")->references("id")->on("payment_methods")->nullOnDelete();
+        });
+
     }
 
     /**
@@ -73,6 +113,8 @@ return new class extends Migration {
      */
     public function down(): void {
 
+        Schema::dropIfExists("sale_payments");
+        Schema::dropIfExists("sale_taxes");
         Schema::dropIfExists("sales_body");
         Schema::dropIfExists("sales_header");
 

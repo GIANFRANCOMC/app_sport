@@ -1,0 +1,100 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Http\Controllers\System\Organizations;
+
+use App\Helpers\System\Utilities;
+use App\Http\Controllers\System\Base\BaseController;
+use App\Http\Requests\System\Organizations\Roles\StoreRoleRequest;
+use App\Services\System\Base\InitParamsCacheInvalidationService;
+use App\Services\System\Organizations\Roles\{RoleConfigService, RolePermissionService, RoleService};
+use Illuminate\Http\{JsonResponse, Request};
+
+class RoleController extends BaseController {
+
+    private const TRANSLATION_NAMESPACE = "System.Organizations.role";
+
+    public function index() {
+
+        return view("System/general/Organizations/roles/main");
+
+    }
+
+    public function initParams(Request $request) {
+
+        return RoleConfigService::getInitParams($this->getCompanyId(), $this->getPage($request));
+
+    }
+
+    public function list(Request $request) {
+
+        return RoleService::query(
+            $this->getCompanyId(),
+            (string) $request->input("word", "")
+        )->paginate($this->getPerPage($request, Utilities::$per_page_default));
+
+    }
+
+    public function show(int $id): JsonResponse {
+
+        return response()->json(RoleService::find($this->getCompanyId(), $id));
+
+    }
+
+    public function store(StoreRoleRequest $request): JsonResponse {
+
+        $role = RoleService::create(
+            $this->getCompanyId(),
+            $this->getUserId(),
+            $request->validated()
+        );
+
+        $this->invalidate();
+
+        return response()->json([
+            "bool" => true,
+            "msg" => "Perfil agregado correctamente.",
+            "data" => $role
+        ], 201);
+
+    }
+
+    public function update(StoreRoleRequest $request, int $id): JsonResponse {
+
+        $role = RoleService::update(
+            $this->getCompanyId(),
+            $id,
+            $this->getUserId(),
+            $request->validated()
+        );
+
+        $this->invalidate();
+
+        return response()->json([
+            "bool" => true,
+            "msg" => "Perfil actualizado correctamente.",
+            "data" => $role
+        ]);
+
+    }
+
+    private function invalidate(): void {
+
+        RolePermissionService::clearCompanyCache($this->getCompanyId());
+        \App\Services\System\Organizations\Companies\CompanySectionService::clearCompanyCache($this->getCompanyId());
+        RoleConfigService::clearAllCache($this->getCompanyId());
+        InitParamsCacheInvalidationService::invalidate(
+            InitParamsCacheInvalidationService::ROLES,
+            $this->getCompanyId()
+        );
+
+    }
+
+    protected function getTranslationNamespace(): string {
+
+        return self::TRANSLATION_NAMESPACE;
+
+    }
+
+}

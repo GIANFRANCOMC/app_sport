@@ -10,8 +10,9 @@ use Illuminate\Support\Facades\{Auth, DB};
 use stdClass;
 
 use App\Models\System\Customers\Subscription;
-use App\Models\System\Sales\{SaleBody, SaleHeader};
+use App\Models\System\Sales\{SaleBody, SaleHeader, SalePayment, SaleTax};
 use App\Models\System\Warehouses\{InventoryMovement, Warehouse};
+use App\Services\System\Finance\CommercialDocumentSettlementService;
 use App\Services\System\Organizations\Companies\CompanySettingService;
 use App\Services\System\Warehouses\Inventory\InventoryMovementService;
 
@@ -236,8 +237,24 @@ class SaleService {
 
             }
 
-            // Calculate total
-            $total = self::calculateTotal($data["details"]);
+            // Calculate totals
+            $subtotal = self::calculateTotal($data["details"]);
+            $taxLines = CommercialDocumentSettlementService::taxes(
+                (int) $companyId,
+                "sale",
+                (float) $subtotal,
+                $data["taxes"] ?? [],
+                (int) $userId
+            );
+            $taxTotal = Utilities::round((float) $taxLines->sum("amount"));
+            $total = Utilities::round($subtotal + $taxTotal);
+            $paymentLines = CommercialDocumentSettlementService::payments(
+                (int) $companyId,
+                "sale",
+                (float) $total,
+                $data["payments"] ?? [],
+                (int) $userId
+            );
 
             // Create sale header
             $saleHeader = new SaleHeader();
@@ -247,12 +264,30 @@ class SaleService {
             $saleHeader->seller_id   = $userId;
             $saleHeader->currency_id = $data["currency_id"];
             $saleHeader->issue_date  = $data["issue_date"];
+            $saleHeader->subtotal    = $subtotal;
+            $saleHeader->tax         = $taxTotal;
             $saleHeader->total       = $total;
             $saleHeader->observation = $data["observation"] ?? "";
             $saleHeader->status      = "active";
             $saleHeader->created_at  = now();
             $saleHeader->created_by  = $userId;
             $saleHeader->save();
+
+            if($taxLines->isNotEmpty()) {
+
+                SaleTax::insert($taxLines
+                    ->map(fn($tax) => ["sale_header_id" => $saleHeader->id] + $tax)
+                    ->all());
+
+            }
+
+            if($paymentLines->isNotEmpty()) {
+
+                SalePayment::insert($paymentLines
+                    ->map(fn($payment) => ["sale_header_id" => $saleHeader->id] + $payment)
+                    ->all());
+
+            }
 
             // Create sale bodies and process details
             foreach($data["details"] as $detail) {
@@ -456,7 +491,7 @@ class SaleService {
         $serieIds = $branches->pluck("series.*.id")->flatten();
 
         $query = SaleHeader::whereIn("serie_id", $serieIds)
-                           ->with(["serie.documentType", "holder", "currency"]);
+                           ->with(["serie.documentType", "holder", "currency", "taxes", "payments"]);
 
         // Apply filters
         self::applyFilters($query, $filters);

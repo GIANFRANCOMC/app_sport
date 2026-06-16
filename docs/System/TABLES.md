@@ -66,9 +66,24 @@ Relaciones: une `companies` con `sub_sections`.
 
 ### roles
 
-Roles internos. Campos: `slug`, `name`, `status`.
+Roles internos por empresa. Campos: `company_id`, `slug`, `name`, `is_full_access`, `status` y auditoria.
 
-Relaciones: usado por `users`.
+`is_full_access` indica que el perfil puede ingresar a todos los modulos habilitados para la empresa. El rol administrador inicial se crea con este valor activo.
+
+Relaciones: usado por `users`; tiene permisos por modulo mediante `role_sub_sections`.
+
+### role_sub_sections
+
+Permisos de modulo por rol. Campos: `role_id`, `sub_section_id`, `status` y auditoria.
+
+Relaciones: une `roles` con `sub_sections`. La combinacion `role_id + sub_section_id` es unica para evitar duplicidad de permisos activos o inactivos sobre el mismo modulo.
+
+Reglas:
+
+- Solo se usa cuando `roles.is_full_access` es falso.
+- Define visibilidad de menu y acceso backend por prefijo de ruta.
+- Se cachea por empresa y rol mediante `RolePermissionService`.
+- Al cambiar un permiso se invalida el menu cacheado de ese rol.
 
 ### users
 

@@ -114,10 +114,46 @@ return new class extends Migration {
             $table->index(["purchase_receipt_id", "item_id"]);
         });
 
+        Schema::create("purchase_taxes", function(Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger("purchase_header_id");
+            $table->unsignedBigInteger("tax_id")->nullable();
+            $table->string("name");
+            $table->decimal("rate", 7, 4)->default(0);
+            $table->decimal("base_amount", 14, 2)->default(0);
+            $table->decimal("amount", 14, 2)->default(0);
+            $table->enum("status", ["active", "canceled", "inactive"])->default("active");
+            $table->timestamp("created_at")->useCurrent()->nullable();
+            $table->integer("created_by")->nullable();
+            $table->timestamp("updated_at")->nullable();
+            $table->integer("updated_by")->nullable();
+            $table->foreign("purchase_header_id")->references("id")->on("purchase_headers")->onDelete("cascade");
+            $table->foreign("tax_id")->references("id")->on("taxes")->nullOnDelete();
+        });
+
+        Schema::create("purchase_payments", function(Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger("purchase_header_id");
+            $table->unsignedBigInteger("payment_method_id")->nullable();
+            $table->string("name");
+            $table->decimal("amount", 14, 2)->default(0);
+            $table->string("reference", 100)->nullable();
+            $table->text("note")->nullable();
+            $table->enum("status", ["active", "canceled", "inactive"])->default("active");
+            $table->timestamp("created_at")->useCurrent()->nullable();
+            $table->integer("created_by")->nullable();
+            $table->timestamp("updated_at")->nullable();
+            $table->integer("updated_by")->nullable();
+            $table->foreign("purchase_header_id")->references("id")->on("purchase_headers")->onDelete("cascade");
+            $table->foreign("payment_method_id")->references("id")->on("payment_methods")->nullOnDelete();
+        });
+
     }
 
     public function down(): void {
 
+        Schema::dropIfExists("purchase_payments");
+        Schema::dropIfExists("purchase_taxes");
         Schema::dropIfExists("purchase_receipt_items");
         Schema::dropIfExists("purchase_receipts");
         Schema::dropIfExists("purchase_items");

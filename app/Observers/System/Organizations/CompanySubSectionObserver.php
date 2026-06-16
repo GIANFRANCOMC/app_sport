@@ -18,7 +18,7 @@ final class CompanySubSectionObserver {
 
         foreach(array_unique(array_filter($companyIds)) as $companyId) {
 
-            CompanySectionService::clearCache($companyId);
+            CompanySectionService::clearCompanyCache($companyId);
 
         }
 
@@ -26,7 +26,7 @@ final class CompanySubSectionObserver {
 
     public function deleted(CompanySubSection $companySubSection): void {
 
-        CompanySectionService::clearCache((int) $companySubSection->company_id);
+        CompanySectionService::clearCompanyCache((int) $companySubSection->company_id);
 
     }
 

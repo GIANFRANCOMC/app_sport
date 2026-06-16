@@ -46,6 +46,12 @@ final class PurchaseConfigService extends BaseConfigService {
                     ->select(["id", "internal_code", "barcode", "name"])
                     ->orderBy("name")
                     ->get()
+            ]),
+            "taxes" => self::data([
+                "records" => CompanyReferenceDataService::for($companyId)->taxesFor("purchase")
+            ]),
+            "paymentMethods" => self::data([
+                "records" => CompanyReferenceDataService::for($companyId)->paymentMethodsFor("purchase")
             ])
         ]);
 

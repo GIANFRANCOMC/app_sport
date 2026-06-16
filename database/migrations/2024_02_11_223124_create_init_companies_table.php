@@ -29,6 +29,42 @@ return new class extends Migration {
             $table->foreign("company_id")->references("id")->on("companies")->onDelete("cascade");
         });
 
+        Schema::create("taxes", function(Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger("company_id");
+            $table->string("code", 30);
+            $table->string("name");
+            $table->decimal("rate", 7, 4)->default(0);
+            $table->enum("scope", ["sale", "purchase", "both"])->default("both");
+            $table->boolean("is_default")->default(false);
+            $table->enum("status", ["active", "inactive"])->default("active");
+
+            $table->timestamp("created_at")->useCurrent()->nullable();
+            $table->integer("created_by")->nullable();
+            $table->timestamp("updated_at")->nullable();
+            $table->integer("updated_by")->nullable();
+
+            $table->foreign("company_id")->references("id")->on("companies")->onDelete("cascade");
+        });
+
+        Schema::create("payment_methods", function(Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger("company_id");
+            $table->string("code", 30);
+            $table->string("name");
+            $table->enum("scope", ["sale", "purchase", "both"])->default("both");
+            $table->boolean("requires_reference")->default(false);
+            $table->boolean("is_default")->default(false);
+            $table->enum("status", ["active", "inactive"])->default("active");
+
+            $table->timestamp("created_at")->useCurrent()->nullable();
+            $table->integer("created_by")->nullable();
+            $table->timestamp("updated_at")->nullable();
+            $table->integer("updated_by")->nullable();
+
+            $table->foreign("company_id")->references("id")->on("companies")->onDelete("cascade");
+        });
+
         // ✅
         Schema::create("company_socials_media", function(Blueprint $table) {
             $table->id();
@@ -371,6 +407,17 @@ return new class extends Migration {
             ]
         ]);
 
+        DB::table("taxes")->insert([
+            ["company_id" => 1, "code" => "SALE-GEN", "name" => "Impuesto venta general", "rate" => 10, "scope" => "sale", "is_default" => false],
+            ["company_id" => 1, "code" => "PUR-GEN", "name" => "Impuesto compra general", "rate" => 8, "scope" => "purchase", "is_default" => false]
+        ]);
+
+        DB::table("payment_methods")->insert([
+            ["company_id" => 1, "code" => "CASH", "name" => "Efectivo", "scope" => "both", "requires_reference" => false, "is_default" => true],
+            ["company_id" => 1, "code" => "CARD", "name" => "Tarjeta", "scope" => "sale", "requires_reference" => true, "is_default" => false],
+            ["company_id" => 1, "code" => "TRANSFER", "name" => "Transferencia", "scope" => "both", "requires_reference" => true, "is_default" => false]
+        ]);
+
         DB::table("company_socials_media")->insert([
             ["company_id" => 1, "type" => "facebook", "link" => "https://www.facebook.com/GianfrancoMC"],
             ["company_id" => 1, "type" => "instagram", "link" => "https://www.instagram.com/gianfrancomc"],
@@ -418,6 +465,8 @@ return new class extends Migration {
         Schema::dropIfExists("series");
         Schema::dropIfExists("branches");
         Schema::dropIfExists("company_socials_media");
+        Schema::dropIfExists("payment_methods");
+        Schema::dropIfExists("taxes");
         Schema::dropIfExists("company_settings");
 
     }

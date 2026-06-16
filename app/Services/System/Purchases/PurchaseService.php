@@ -13,10 +13,13 @@ use App\Models\System\Catalogs\Item;
 use App\Models\System\Purchases\{
     PurchaseHeader,
     PurchaseItem,
+    PurchasePayment,
     PurchaseReceipt,
     PurchaseReceiptItem,
+    PurchaseTax,
     Supplier
 };
+use App\Services\System\Finance\CommercialDocumentSettlementService;
 use App\Services\System\Warehouses\Inventory\InventoryMovementService;
 use App\Services\System\Warehouses\StockManagement\StockManagementService;
 
@@ -30,7 +33,9 @@ final class PurchaseService {
                 "supplier:id,name,document_number",
                 "warehouse:id,name",
                 "currency:id,code,sign",
-                "items.item:id,internal_code,barcode,name"
+                "items.item:id,internal_code,barcode,name",
+                "taxes",
+                "payments"
             ]);
 
         $word = trim((string) ($filters["word"] ?? ""));
@@ -120,7 +125,22 @@ final class PurchaseService {
             $subtotal = collect($data["items"])->sum(fn($item) =>
                 round((float) $item["quantity"] * (float) $item["unit_cost"], 2)
             );
-            $tax = round((float) ($data["tax"] ?? 0), 2);
+            $taxLines = CommercialDocumentSettlementService::taxes(
+                $companyId,
+                "purchase",
+                (float) $subtotal,
+                $data["taxes"] ?? [],
+                $userId
+            );
+            $tax = round((float) $taxLines->sum("amount"), 2);
+            $total = round($subtotal + $tax, 2);
+            $paymentLines = CommercialDocumentSettlementService::payments(
+                $companyId,
+                "purchase",
+                (float) $total,
+                $data["payments"] ?? [],
+                $userId
+            );
 
             $purchase = PurchaseHeader::create([
                 "company_id" => $companyId,
@@ -133,12 +153,28 @@ final class PurchaseService {
                 "expected_date" => $data["expected_date"] ?? null,
                 "subtotal" => $subtotal,
                 "tax" => $tax,
-                "total" => round($subtotal + $tax, 2),
+                "total" => $total,
                 "observation" => $data["observation"] ?? null,
                 "status" => "confirmed",
                 "created_at" => now(),
                 "created_by" => $userId
             ]);
+
+            if($taxLines->isNotEmpty()) {
+
+                PurchaseTax::insert($taxLines
+                    ->map(fn($tax) => ["purchase_header_id" => $purchase->id] + $tax)
+                    ->all());
+
+            }
+
+            if($paymentLines->isNotEmpty()) {
+
+                PurchasePayment::insert($paymentLines
+                    ->map(fn($payment) => ["purchase_header_id" => $purchase->id] + $payment)
+                    ->all());
+
+            }
 
             foreach($data["items"] as $detail) {
 
@@ -339,6 +375,8 @@ final class PurchaseService {
                 "warehouse.branch",
                 "currency",
                 "items.item",
+                "taxes",
+                "payments",
                 "receipts.items.item"
             ])
             ->findOrFail($purchaseId);

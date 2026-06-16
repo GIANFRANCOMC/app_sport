@@ -150,6 +150,7 @@ return new class extends Migration {
             $table->unsignedBigInteger("company_id");
             $table->string("slug");
             $table->string("name");
+            $table->boolean("is_full_access")->default(false);
             $table->enum("status", ["active", "inactive"])->default("active");
 
             $table->timestamp("created_at")->useCurrent()->nullable();
@@ -158,6 +159,23 @@ return new class extends Migration {
             $table->integer("updated_by")->nullable();
 
             $table->foreign("company_id")->references("id")->on("companies")->onDelete("cascade");
+        });
+
+        // ✅
+        Schema::create("role_sub_sections", function(Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger("role_id");
+            $table->unsignedBigInteger("sub_section_id");
+            $table->enum("status", ["active", "inactive"])->default("active");
+
+            $table->timestamp("created_at")->useCurrent()->nullable();
+            $table->integer("created_by")->nullable();
+            $table->timestamp("updated_at")->nullable();
+            $table->integer("updated_by")->nullable();
+
+            $table->foreign("role_id")->references("id")->on("roles")->onDelete("cascade");
+            $table->foreign("sub_section_id")->references("id")->on("sub_sections")->onDelete("cascade");
+            $table->unique(["role_id", "sub_section_id"]);
         });
 
         // ✅
@@ -290,6 +308,7 @@ return new class extends Migration {
             // Configuration
             ["id" => 70, "section_id" => 7, "slug" => "sc_configuration-my_company", "name" => "configuration-my_company", "description" => "Actualiza la identidad y los datos generales de la empresa.", "order" => 1, "dom_id" => "menu-configuration-my_company", "dom_label" => "Mi empresa", "dom_route" => "companies.index"],
             ["id" => 71, "section_id" => 7, "slug" => "sc_configuration-users", "name" => "configuration-users", "description" => "Administra usuarios internos, roles y accesos.", "order" => 2, "dom_id" => "menu-configuration-users", "dom_label" => "Colaboradores", "dom_route" => "users.index"],
+            ["id" => 72, "section_id" => 7, "slug" => "sc_configuration-roles", "name" => "configuration-roles", "description" => "Define perfiles de acceso y módulos disponibles para cada colaborador.", "order" => 3, "dom_id" => "menu-configuration-roles", "dom_label" => "Perfiles de acceso", "dom_route" => "roles.index"],
 
             // Reports
             ["id" => 80, "section_id" => 8, "slug" => "sc_reports", "name" => "reports", "description" => "Genera consultas y reportes para análisis operativo.", "order" => 1, "dom_id" => "menu-reports", "dom_label" => "Reportes", "dom_route" => "reports.index"],
@@ -320,12 +339,25 @@ return new class extends Migration {
             ["company_id" => 1, "sub_section_id" => 63],
             ["company_id" => 1, "sub_section_id" => 70],
             ["company_id" => 1, "sub_section_id" => 71],
+            ["company_id" => 1, "sub_section_id" => 72],
             // ["company_id" => 1, "sub_section_id" => 80]
         ]);
 
         DB::table("roles")->insert([
-            ["id" => 1, "company_id" => 1, "slug" => Utilities::generateCode(), "name" => "Administrador"],
-            ["id" => 2, "company_id" => 1, "slug" => Utilities::generateCode(), "name" => "Vendedor"]
+            ["id" => 1, "company_id" => 1, "slug" => Utilities::generateCode(), "name" => "Administrador", "is_full_access" => true],
+            ["id" => 2, "company_id" => 1, "slug" => Utilities::generateCode(), "name" => "Vendedor", "is_full_access" => false]
+        ]);
+
+        DB::table("role_sub_sections")->insert([
+            ["role_id" => 2, "sub_section_id" => 20],
+            ["role_id" => 2, "sub_section_id" => 30],
+            ["role_id" => 2, "sub_section_id" => 31],
+            ["role_id" => 2, "sub_section_id" => 40],
+            ["role_id" => 2, "sub_section_id" => 50],
+            ["role_id" => 2, "sub_section_id" => 51],
+            ["role_id" => 2, "sub_section_id" => 52],
+            ["role_id" => 2, "sub_section_id" => 53],
+            ["role_id" => 2, "sub_section_id" => 55]
         ]);
 
         DB::table("users")->insert([
@@ -342,6 +374,7 @@ return new class extends Migration {
 
         Schema::dropIfExists("user_preferences");
         Schema::dropIfExists("users");
+        Schema::dropIfExists("role_sub_sections");
         Schema::dropIfExists("roles");
         Schema::dropIfExists("companies_sub_sections");
         Schema::dropIfExists("sub_sections");

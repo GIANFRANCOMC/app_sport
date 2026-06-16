@@ -51,6 +51,7 @@ export default defineConfig({
                 'resources/js/System/Pages/Organizations/book_complaints/main.js',
                 'resources/js/System/Pages/Organizations/branches/main.js',
                 'resources/js/System/Pages/Organizations/companies/main.js',
+                'resources/js/System/Pages/Organizations/roles/main.js',
                 'resources/js/System/Pages/Organizations/users/main.js',
 
                 // System Pages - Sales

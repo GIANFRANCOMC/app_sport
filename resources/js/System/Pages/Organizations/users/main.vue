@@ -25,7 +25,7 @@
         <table class="table table-hover">
             <thead class="align-middle bg-secondary text-center">
                 <tr>
-                    <th class="text-white" style="width: 15%;">ROL</th>
+                    <th class="text-white" style="width: 18%;">PERFIL DE ACCESO</th>
                     <th class="text-white" style="width: 35%;" v-text="MODULE.config.pageTitleSingular"></th>
                     <th class="text-white" style="width: 30%;">CONTACTO</th>
                     <th class="text-white" style="width: 10%;">ESTADO</th>
@@ -41,7 +41,7 @@
                 <template v-else-if="entityList.records.total > 0">
                     <tr v-for="record in entityList.records.data" :key="record.id">
                         <td class="text-center">
-                            <span v-text="record?.role?.name" class="d-block"></span>
+                            <span class="br-users-profile-label" v-text="record?.role?.name || 'Sin perfil'"></span>
                         </td>
                         <td>
                             <div class="mb-1">
@@ -102,19 +102,29 @@
                                 :title="MODULE.texts.form.role"
                                 :titleClass="[config.forms.classes.title]"
                                 isRequired
-                                :isInputGroup="false"
-                                :divInputClass="['d-flex flex-wrap justify-content-start align-items-end gap-2 gap-md-3']"
                                 hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.errors?.role_id"
                                 xl="12"
                                 lg="12">
                                 <template v-slot:input>
-                                    <div v-for="option in roles" :key="option.code" class="form-check">
-                                        <label class="cursor-pointer">
-                                            <input class="form-check-input" type="radio" :value="option" v-model="forms[entity].createUpdate.data.role"/>
-                                            <span  v-text="option.label"></span>
-                                        </label>
-                                    </div>
+                                    <v-select
+                                        v-model="forms[entity].createUpdate.data.role"
+                                        :options="roles"
+                                        :class="config.forms.classes.select2"
+                                        :clearable="false"
+                                        :searchable="roles.length > 6"
+                                        append-to-body
+                                        @close="tooltips({show: true, time: 500})">
+                                        <template #option="{label, data}">
+                                            <span class="br-select-option-text" :title="label">
+                                                {{ label }}
+                                                <small v-if="data?.is_full_access" class="br-users-profile-option">Acceso total</small>
+                                            </span>
+                                        </template>
+                                        <template #selected-option="{label}">
+                                            <span class="br-select-selected-text" :title="label">{{ label }}</span>
+                                        </template>
+                                    </v-select>
                                 </template>
                             </InputSlot>
                             <InputSlot
@@ -329,8 +339,8 @@ const VALIDATION_RULES = {
 };
 
 const ERROR_LABELS = {
-    role: "Rol",
-    role_id: "Rol",
+    role: "Perfil de acceso",
+    role_id: "Perfil de acceso",
     identity_document_type: "Tipo de documento",
     identity_document_type_id: "Tipo de documento",
     document_number: "Número de documento",
@@ -362,7 +372,7 @@ const TEXTS = {
         edit: "Editar"
     },
     form: {
-        role: "Rol",
+        role: "Perfil de acceso",
         identityDocumentType: "Tipo de documento",
         documentNumber: "Número de documento",
         name: "Nombre",
@@ -544,7 +554,7 @@ export default {
             }else {
 
                 // Set defaults for new record
-                entityForms.data.role                   = this.roles.length > 1 ? this.roles[0] : null;
+                entityForms.data.role                   = this.roles.length > 0 ? this.roles[0] : null;
                 entityForms.data.identity_document_type = this.identityDocumentTypes.length > 1 ? this.identityDocumentTypes[1] : null;
                 entityForms.data.gender                 = this.genders.length > 0 ? this.genders[0] : null;
                 entityForms.data.status                 = this.statuses.length > 0 ? this.statuses[0] : null;

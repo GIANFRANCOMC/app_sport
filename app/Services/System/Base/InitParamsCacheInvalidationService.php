@@ -21,6 +21,7 @@ use App\Services\System\Customers\Tracking\{
 };
 use App\Services\System\Devices\BiometricDevices\{BiometricDeviceConfigService};
 use App\Services\System\Organizations\Branches\{BranchConfigService};
+use App\Services\System\Organizations\Roles\{RoleConfigService};
 use App\Services\System\Organizations\Users\{UserConfigService};
 use App\Services\System\Sales\{SaleConfigService};
 use App\Services\System\Purchases\{PurchaseConfigService};
@@ -40,6 +41,7 @@ final class InitParamsCacheInvalidationService {
     public const ITEMS             = "items";
     public const USERS             = "users";
     public const SUPPLIERS         = "suppliers";
+    public const ROLES             = "roles";
 
     /**
      * Config services affected when a shared resource changes.
@@ -90,6 +92,10 @@ final class InitParamsCacheInvalidationService {
         self::USERS => [
             UserConfigService::class,
             AssetManagementConfigService::class
+        ],
+        self::ROLES => [
+            RoleConfigService::class,
+            UserConfigService::class
         ],
         self::BIOMETRIC_DEVICES => [
             BiometricDeviceConfigService::class,

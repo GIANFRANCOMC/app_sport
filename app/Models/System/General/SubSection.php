@@ -5,7 +5,7 @@ namespace App\Models\System\General;
 use App\Helpers\System\Utilities;
 use Illuminate\Database\Eloquent\Model;
 
-use App\Models\System\Organizations\{CompanySubSection};
+use App\Models\System\Organizations\{CompanySubSection, RoleSubSection};
 
 class SubSection extends Model {
 
@@ -65,6 +65,13 @@ class SubSection extends Model {
     public function companiesSubSections() {
 
         return $this->hasMany(CompanySubSection::class, "sub_section_id", "id")
+                    ->whereIn("status", ["active"]);
+
+    }
+
+    public function roleSubSections() {
+
+        return $this->hasMany(RoleSubSection::class, "sub_section_id", "id")
                     ->whereIn("status", ["active"]);
 
     }

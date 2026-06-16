@@ -47,9 +47,9 @@
       "_vue-select-DeqGIEky.js"
     ]
   },
-  "_InputSelect2-!~{00L}~.js": {
+  "_InputSelect2-!~{00M}~.js": {
     "file": "assets/InputSelect2-LpYsL7Wg.css",
-    "src": "_InputSelect2-!~{00L}~.js"
+    "src": "_InputSelect2-!~{00M}~.js"
   },
   "_InputSelect2-D5nabi9r.js": {
     "file": "assets/InputSelect2-D5nabi9r.js",
@@ -84,9 +84,9 @@
       "_vue-select-DeqGIEky.js"
     ]
   },
-  "_StatusBadge-!~{00G}~.js": {
+  "_StatusBadge-!~{00H}~.js": {
     "file": "assets/StatusBadge-C9RLqcL3.css",
-    "src": "_StatusBadge-!~{00G}~.js"
+    "src": "_StatusBadge-!~{00H}~.js"
   },
   "_StatusBadge-DzPqz4Ko.js": {
     "file": "assets/StatusBadge-DzPqz4Ko.js",
@@ -106,9 +106,9 @@
       "_Constants-u44NO9PL.js"
     ]
   },
-  "_WithoutData-!~{00J}~.js": {
+  "_WithoutData-!~{00K}~.js": {
     "file": "assets/WithoutData-tn35iQ5W.css",
-    "src": "_WithoutData-!~{00J}~.js"
+    "src": "_WithoutData-!~{00K}~.js"
   },
   "_WithoutData-MKVFMozz.js": {
     "file": "assets/WithoutData-MKVFMozz.js",
@@ -136,9 +136,9 @@
       "__commonjsHelpers-Cpj98o6Y.js"
     ]
   },
-  "_vue-select-!~{00C}~.js": {
+  "_vue-select-!~{00F}~.js": {
     "file": "assets/vue-select-DARUaxu_.css",
-    "src": "_vue-select-!~{00C}~.js"
+    "src": "_vue-select-!~{00F}~.js"
   },
   "_vue-select-DeqGIEky.js": {
     "file": "assets/vue-select-DeqGIEky.js",
@@ -557,8 +557,25 @@
       "assets/main-DBY4XFLQ.css"
     ]
   },
+  "resources/js/System/Pages/Organizations/roles/main.js": {
+    "file": "assets/main-Cww65rk3.js",
+    "name": "main",
+    "src": "resources/js/System/Pages/Organizations/roles/main.js",
+    "isEntry": true,
+    "imports": [
+      "resources/js/System/Helpers/Constants.js",
+      "_Constants-u44NO9PL.js",
+      "_vue-select-DeqGIEky.js",
+      "_StatusBadge-DzPqz4Ko.js",
+      "_InputSelect2-D5nabi9r.js",
+      "_InputTextArea-BFShiTGO.js",
+      "_CopyButton-DRDZQvKM.js",
+      "_FiltersSection-qHfwXuPM.js",
+      "_axios-CCb-kr4I.js"
+    ]
+  },
   "resources/js/System/Pages/Organizations/users/main.js": {
-    "file": "assets/main-DWFP40W-.js",
+    "file": "assets/main-Dy4dlURp.js",
     "name": "main",
     "src": "resources/js/System/Pages/Organizations/users/main.js",
     "isEntry": true,

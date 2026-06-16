@@ -225,14 +225,35 @@
                             <textarea v-model.trim="purchaseForm.observation" class="form-control" rows="2" maxlength="1000"></textarea>
                         </div>
                         <div class="col-lg-4">
-                            <InputNumber v-model="purchaseForm.tax" title="Impuesto adicional" :titleClass="[config.forms.classes.title]" :hasNegative="false">
-                                <template #inputGroupPrepend>
-                                    <span class="input-group-text br-currency-prefix">{{ purchaseForm.currency?.sign || "S/" }}</span>
-                                </template>
-                            </InputNumber>
-                            <div class="br-purchases__total">
-                                <span>Total</span>
-                                <strong>{{ purchaseForm.currency?.sign }} {{ separatorNumber(purchaseTotal) }}</strong>
+                            <div class="br-document-settlement">
+                                <div>
+                                    <label class="form-label">Impuestos</label>
+                                    <v-select
+                                        v-model="purchaseForm.taxes"
+                                        :options="purchaseTaxes"
+                                        multiple
+                                        :clearable="true"
+                                        :searchable="true"
+                                        append-to-body/>
+                                </div>
+                                <div>
+                                    <label class="form-label">Métodos de pago</label>
+                                    <v-select
+                                        v-model="purchaseForm.payments"
+                                        :options="purchasePaymentMethods"
+                                        multiple
+                                        :clearable="false"
+                                        :searchable="true"
+                                        append-to-body/>
+                                </div>
+                                <div class="br-purchases__total">
+                                    <span>Subtotal</span>
+                                    <strong>{{ purchaseForm.currency?.sign }} {{ separatorNumber(purchaseSubtotal) }}</strong>
+                                    <span>Impuestos</span>
+                                    <strong>{{ purchaseForm.currency?.sign }} {{ separatorNumber(purchaseTaxTotal) }}</strong>
+                                    <span>Total</span>
+                                    <strong>{{ purchaseForm.currency?.sign }} {{ separatorNumber(purchaseTotal) }}</strong>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -322,7 +343,7 @@ export default {
                 word: "",
                 status: {code: "", label: "Todos los estados"}
             },
-            options: {suppliers: [], warehouses: [], currencies: [], products: []},
+            options: {suppliers: [], warehouses: [], currencies: [], products: [], taxes: [], paymentMethods: []},
             purchaseForm: {},
             receiptForm: {purchase: null, items: [], receivedAt: "", observation: ""},
             config: {
@@ -368,7 +389,8 @@ export default {
                 documentNumber: "",
                 issueDate: new Date().toISOString().slice(0, 10),
                 expectedDate: "",
-                tax: "",
+                taxes: this.purchaseTaxes.filter(tax => tax.data?.is_default),
+                payments: this.purchasePaymentMethods.filter(method => method.data?.is_default),
                 observation: "",
                 items: [this.newPurchaseItem()]
             };
@@ -402,7 +424,12 @@ export default {
                     document_number: this.purchaseForm.documentNumber,
                     issue_date: this.purchaseForm.issueDate,
                     expected_date: this.purchaseForm.expectedDate || null,
-                    tax: this.purchaseForm.tax || 0,
+                    tax: this.purchaseTaxTotal,
+                    taxes: this.purchaseForm.taxes.map(tax => ({
+                        tax_id: tax.code,
+                        rate: tax.data?.rate
+                    })),
+                    payments: this.purchasePaymentPayload,
                     observation: this.purchaseForm.observation,
                     items: this.purchaseForm.items.map(item => ({
                         item_id: item.product?.code,
@@ -570,8 +597,46 @@ export default {
         purchaseSubtotal() {
             return (this.purchaseForm.items || []).reduce((total, detail) => total + this.lineTotal(detail), 0);
         },
+        purchaseTaxTotal() {
+            return (this.purchaseForm.taxes || []).reduce((total, tax) => {
+                return total + (this.purchaseSubtotal * (Number(tax.data?.rate || 0) / 100));
+            }, 0);
+        },
         purchaseTotal() {
-            return this.purchaseSubtotal + Number(this.purchaseForm.tax || 0);
+            return this.purchaseSubtotal + this.purchaseTaxTotal;
+        },
+        purchaseTaxes() {
+            return (this.options.taxes?.records || []).map(tax => ({
+                code: tax.id,
+                label: `${tax.name} (${Number(tax.rate).toFixed(2)}%)`,
+                data: tax
+            }));
+        },
+        purchasePaymentMethods() {
+            return (this.options.paymentMethods?.records || []).map(method => ({
+                code: method.id,
+                label: method.name,
+                data: method
+            }));
+        },
+        purchasePaymentPayload() {
+            const selected = this.purchaseForm.payments || [];
+
+            if(selected.length === 0) return [];
+
+            const amount = Number((this.purchaseTotal / selected.length).toFixed(2));
+            let remainder = Number((this.purchaseTotal - (amount * selected.length)).toFixed(2));
+
+            return selected.map((method, index) => {
+                const lineAmount = index === 0 ? amount + remainder : amount;
+
+                return {
+                    payment_method_id: method.code,
+                    amount: lineAmount,
+                    reference: null,
+                    note: null
+                };
+            });
         }
     }
 };

@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Cache;
 use InvalidArgumentException;
 
 use App\Models\System\General\Section;
+use App\Services\System\Organizations\Roles\RolePermissionService;
 
 /**
  * Resolves and caches the modules enabled for a company.
@@ -18,11 +19,11 @@ final class CompanySectionService {
     private const CACHE_TTL = 1800;
     private const CACHE_PREFIX = "company_sections";
 
-    public static function getSections(int $companyId, bool $forceRefresh = false): Collection {
+    public static function getSections(int $companyId, ?int $roleId = null, bool $forceRefresh = false): Collection {
 
         self::validateCompanyId($companyId);
 
-        $cacheKey = self::cacheKey($companyId);
+        $cacheKey = self::cacheKey($companyId, $roleId);
 
         if($forceRefresh) {
 
@@ -33,30 +34,46 @@ final class CompanySectionService {
         return Cache::remember(
             $cacheKey,
             self::CACHE_TTL,
-            fn() => self::querySections($companyId)
+            fn() => self::querySections($companyId, $roleId)
         );
 
     }
 
-    public static function clearCache(int $companyId): void {
+    public static function clearCache(int $companyId, ?int $roleId = null): void {
 
         self::validateCompanyId($companyId);
 
-        Cache::forget(self::cacheKey($companyId));
+        Cache::forget(self::cacheKey($companyId, $roleId));
 
     }
 
-    public static function cacheKey(int $companyId): string {
+    public static function clearCompanyCache(int $companyId): void {
+
+        self::clearCache($companyId);
+
+        \App\Models\System\Organizations\Role::query()
+            ->where("company_id", $companyId)
+            ->pluck("id")
+            ->each(fn($roleId) => self::clearCache($companyId, (int) $roleId));
+
+    }
+
+    public static function cacheKey(int $companyId, ?int $roleId = null): string {
 
         self::validateCompanyId($companyId);
 
-        return self::CACHE_PREFIX.":company:{$companyId}";
+        return self::CACHE_PREFIX.":company:{$companyId}:role:".($roleId ?: "all");
 
     }
 
-    private static function querySections(int $companyId): Collection {
+    private static function querySections(int $companyId, ?int $roleId = null): Collection {
 
-        return Section::query()
+        $mustFilterByRole = $roleId && !RolePermissionService::isFullAccess($companyId, $roleId);
+        $allowedSubSectionIds = $mustFilterByRole
+            ? RolePermissionService::allowedSubSectionIds($companyId, $roleId)
+            : [];
+
+        $query = Section::query()
                       ->select([
                           "id",
                           "slug",
@@ -73,8 +90,19 @@ final class CompanySectionService {
 
                           $query->where("company_id", $companyId);
 
-                      })
-                      ->with(["subSections" => function($query) use($companyId) {
+                      });
+
+        if($mustFilterByRole) {
+
+            $query->whereHas("subSections", function($subQuery) use($allowedSubSectionIds) {
+
+                $subQuery->whereIn("id", $allowedSubSectionIds);
+
+            });
+
+        }
+
+        return $query->with(["subSections" => function($query) use($companyId, $allowedSubSectionIds, $mustFilterByRole) {
 
                           $query->select([
                                     "id",
@@ -93,7 +121,15 @@ final class CompanySectionService {
 
                                     $companyQuery->where("company_id", $companyId);
 
-                                })
+                                });
+
+                          if($mustFilterByRole) {
+
+                              $query->whereIn("id", $allowedSubSectionIds);
+
+                          }
+
+                          $query
                                 ->orderBy("order");
 
                       }])

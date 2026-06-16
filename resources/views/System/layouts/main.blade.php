@@ -5,7 +5,7 @@
     $user     = Auth::user();
     $company  = $user->company;
     $role     = $user->role;
-    $sections = \App\Services\System\Organizations\Companies\CompanySectionService::getSections($company->id);
+    $sections = \App\Services\System\Organizations\Companies\CompanySectionService::getSections($company->id, $role?->id);
     $preferences = $user->formatted_preferences;
 @endphp
 
