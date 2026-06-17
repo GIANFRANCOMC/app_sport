@@ -55,6 +55,7 @@ class StoreSaleRequest extends FormRequest {
             "details.*.name" => "required|string|max:255",
             "details.*.quantity" => "required|numeric|min:0.1|max:$maxValue|decimal:0,$round",
             "details.*.price" => "required|numeric|min:0.1|max:$maxValue|decimal:0,$round",
+            "details.*.price_includes_tax" => "nullable|boolean",
             "details.*.observation" => "nullable|string|max:300"
         ];
 

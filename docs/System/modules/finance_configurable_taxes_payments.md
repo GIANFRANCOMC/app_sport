@@ -6,8 +6,8 @@ Permitir que cada empresa configure impuestos y métodos de pago de forma indepe
 
 ## Alcance funcional
 
-- Una venta puede aplicar uno o más impuestos configurados para `sale` o `both`.
-- Una compra puede aplicar uno o más impuestos configurados para `purchase` o `both`.
+- Una venta aplica automáticamente todos los impuestos activos configurados para `sale` o `both`.
+- Una compra aplica automáticamente todos los impuestos activos configurados para `purchase` o `both`.
 - Una venta puede registrar uno o más métodos de pago configurados para `sale` o `both`.
 - Una compra puede registrar uno o más métodos de pago configurados para `purchase` o `both`.
 - Los métodos de pago pueden exigir referencia, por ejemplo tarjeta, transferencia o billetera digital.
@@ -58,9 +58,10 @@ Se guarda `name`, `amount`, `reference` y `note` para conservar trazabilidad aun
 ## Reglas de negocio
 
 - Los impuestos se calculan sobre el subtotal del documento.
+- Los impuestos no se seleccionan desde el documento: se aplican todos los activos del alcance correspondiente.
 - Los impuestos múltiples se suman de forma independiente sobre la misma base.
 - Los métodos de pago seleccionados deben pertenecer a la empresa y estar activos.
-- Los impuestos seleccionados deben pertenecer a la empresa y estar activos.
+- Cada método de pago debe indicar su importe.
 - Si un método requiere referencia, el backend debe rechazar el documento si no se envía.
 - Si se envían pagos manuales, la suma debe coincidir con el total del documento.
 - Si no se envían pagos y existe un método por defecto, el backend puede registrar un pago automático por el total.

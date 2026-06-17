@@ -31,6 +31,7 @@ class SaleBody extends Model {
         "name",
         "quantity",
         "price",
+        "price_includes_tax",
         "total",
         "customer_id",
         "type",

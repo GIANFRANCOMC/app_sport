@@ -271,6 +271,89 @@
                     :class="config.forms.errors.styles.default"
                     v-html="observationErrorsDisplay"></p>
             </div>
+            <div class="br-document-settlement br-sale-settlement mb-2 mb-md-3">
+                <div>
+                    <label class="form-label">Impuestos aplicados</label>
+                    <div class="br-document-settlement__taxes" v-if="saleTaxes.length">
+                        <span v-for="tax in saleTaxes" :key="tax.code">
+                            {{ tax.data.name }} · {{ Number(tax.data.rate || 0).toFixed(2) }}%
+                        </span>
+                    </div>
+                    <p v-else class="br-document-settlement__empty mb-0">Sin impuestos activos para ventas.</p>
+                </div>
+                <div>
+                    <label class="form-label">Métodos de pago</label>
+                    <div class="br-document-payments">
+                        <div
+                            v-for="(payment, index) in forms[entity].createUpdate.data.payments"
+                            :key="payment.key"
+                            class="br-document-payment-row">
+                            <v-select
+                                v-model="payment.method"
+                                :options="salePaymentMethods"
+                                :clearable="false"
+                                :searchable="true"
+                                append-to-body/>
+                            <div class="input-group">
+                                <span class="input-group-text br-currency-prefix">{{ forms[entity].createUpdate.data.currency?.data?.sign ?? '' }}</span>
+                                <input
+                                    v-model.number="payment.amount"
+                                    type="number"
+                                    min="0"
+                                    step="0.01"
+                                    class="form-control"
+                                    :placeholder="separatorNumber(total)">
+                            </div>
+                            <input
+                                v-if="payment.method?.data?.requires_reference"
+                                v-model.trim="payment.reference"
+                                type="text"
+                                class="form-control"
+                                maxlength="100"
+                                placeholder="Referencia">
+                            <button
+                                type="button"
+                                class="br-icon-action"
+                                :disabled="forms[entity].createUpdate.data.payments.length <= 1"
+                                title="Quitar método"
+                                @click="removeSalePayment(index)">
+                                <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+                            </button>
+                        </div>
+                        <button type="button" class="br-document-payment-add" @click="addSalePayment">
+                            <i class="fa-solid fa-circle-plus" aria-hidden="true"></i>
+                            <span>Agregar método</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="br-document-settlement__summary">
+                    <span>Subtotal</span>
+                    <strong>
+                        {{ forms[entity].createUpdate.data.currency?.data?.sign ?? '' }}
+                        {{ separatorNumber(saleSubtotal) }}
+                    </strong>
+                    <span>Impuestos</span>
+                    <strong>
+                        {{ forms[entity].createUpdate.data.currency?.data?.sign ?? '' }}
+                        {{ separatorNumber(saleTaxTotal) }}
+                    </strong>
+                    <span>Total</span>
+                    <strong>
+                        {{ forms[entity].createUpdate.data.currency?.data?.sign ?? '' }}
+                        {{ separatorNumber(total) }}
+                    </strong>
+                    <span>Pagado</span>
+                    <strong>
+                        {{ forms[entity].createUpdate.data.currency?.data?.sign ?? '' }}
+                        {{ separatorNumber(salePaidTotal) }}
+                    </strong>
+                    <span>Diferencia</span>
+                    <strong :class="Number(salePaymentDifference) === 0 ? 'text-success' : 'text-danger'">
+                        {{ forms[entity].createUpdate.data.currency?.data?.sign ?? '' }}
+                        {{ separatorNumber(salePaymentDifference) }}
+                    </strong>
+                </div>
+            </div>
             <div class="br-sale-sidebar-actions">
                 <div class="br-sale-sidebar-actions__pair">
                     <button type="button" class="br-btn br-btn-sm br-btn-primary waves-effect" @click="modalAddDetail({})">
@@ -846,6 +929,7 @@ export default {
                 holder: null,
                 currency: null,
                 observation: "",
+                payments: [],
                 status: "",
                 details: []
             },
@@ -890,6 +974,8 @@ export default {
             this.options.statuses             = initParams.data?.config?.statuses;
             this.options.items                = initParams.data?.config?.items;
             this.options.salesHeader = initParams.data?.config?.salesHeader;
+            this.options.taxes = initParams.data?.config?.taxes;
+            this.options.paymentMethods = initParams.data?.config?.paymentMethods;
 
             return Requests.valid({result: initParams});
 
@@ -902,6 +988,7 @@ export default {
                 this.forms[this.entity].createUpdate.data.issue_date = Utils.getCurrentDate();
                 this.forms[this.entity].createUpdate.data.holder     = (this.holders).length > 0 ? this.holders[0] : null;
                 this.forms[this.entity].createUpdate.data.currency   = (this.currencies).length > 0 ? this.currencies[0] : null;
+                this.forms[this.entity].createUpdate.data.payments   = [this.newSalePayment({amount: this.total})];
 
                 resolve(true);
 
@@ -929,6 +1016,31 @@ export default {
             this.forms[this.entity].createUpdate.data.observation = draft == null ? "" : String(draft);
 
             Alerts.modals({type: "hide", id: this.forms[this.entity].createUpdate.extras.modals.observations.id});
+
+        },
+        newSalePayment({amount = ""} = {}) {
+
+            return {
+                key: Utils.uuid(),
+                method: this.salePaymentMethods.find(method => method.data?.is_default) || this.salePaymentMethods[0] || null,
+                amount,
+                reference: "",
+                note: ""
+            };
+
+        },
+        addSalePayment() {
+
+            const pending = this.salePaymentDifference > 0 ? this.salePaymentDifference : "";
+
+            this.forms[this.entity].createUpdate.data.payments.push(this.newSalePayment({amount: pending}));
+
+        },
+        removeSalePayment(index) {
+
+            if(this.forms[this.entity].createUpdate.data.payments.length <= 1) return;
+
+            this.forms[this.entity].createUpdate.data.payments.splice(index, 1);
 
         },
         // Actions modal detail
@@ -1145,6 +1257,7 @@ export default {
                 form.serie_id    = form?.serie?.code;
                 form.holder_id   = form?.holder?.code;
                 form.currency_id = form?.currency?.code;
+                form.payments = this.salePaymentPayload;
 
                 delete form.branch;
                 delete form.serie;
@@ -1153,6 +1266,7 @@ export default {
 
                 form.details.forEach(detail => {
 
+                    detail.price_includes_tax = Boolean(detail?.item?.data?.price_includes_tax ?? detail?.price_includes_tax ?? true);
                     detail.item_id = detail?.item?.code;
                     detail.currency_id = detail?.currency?.id;
 
@@ -1222,6 +1336,7 @@ export default {
                     // this.forms[this.entity].createUpdate.data.holder      = null;
                     this.forms[this.entity].createUpdate.data.observation = "";
                     this.forms[this.entity].createUpdate.extras.modals.observations.draft = "";
+                    this.forms[this.entity].createUpdate.data.payments   = [this.newSalePayment({amount: this.total})];
                     this.forms[this.entity].createUpdate.data.status      = "";
                     this.forms[this.entity].createUpdate.data.details     = [];
                     break;
@@ -1643,7 +1758,25 @@ export default {
             return this.options?.items?.records.map(e => ({code: e.id, label: e.name, data: e}));
 
         },
-        total: function() {
+        saleTaxes() {
+
+            return (this.options?.taxes?.records || []).map(tax => ({
+                code: tax.id,
+                label: `${tax.name} (${Number(tax.rate || 0).toFixed(2)}%)`,
+                data: tax
+            }));
+
+        },
+        salePaymentMethods() {
+
+            return (this.options?.paymentMethods?.records || []).map(method => ({
+                code: method.id,
+                label: method.name,
+                data: method
+            }));
+
+        },
+        saleSubtotal: function() {
 
             let total = 0;
 
@@ -1654,6 +1787,48 @@ export default {
             }
 
             return this.fixedNumber(total);
+
+        },
+        saleTaxTotal() {
+
+            const subtotal = Number(this.saleSubtotal || 0);
+
+            return this.fixedNumber((this.saleTaxes || []).reduce((total, tax) => {
+                return total + (subtotal * (Number(tax.data?.rate || 0) / 100));
+            }, 0));
+
+        },
+        total: function() {
+
+            return this.fixedNumber(Number(this.saleSubtotal || 0) + Number(this.saleTaxTotal || 0));
+
+        },
+        salePaymentPayload() {
+
+            const selected = this.forms[this.entity].createUpdate.data.payments || [];
+
+            if(selected.length === 0) return [];
+
+            return selected
+                .filter(payment => payment.method?.code)
+                .map(payment => ({
+                    payment_method_id: payment.method.code,
+                    amount: Number(payment.amount || 0),
+                    reference: payment.reference || null,
+                    note: payment.note || null
+                }));
+
+        },
+        salePaidTotal() {
+
+            return this.fixedNumber((this.forms[this.entity].createUpdate.data.payments || []).reduce((total, payment) => {
+                return total + Number(payment.amount || 0);
+            }, 0));
+
+        },
+        salePaymentDifference() {
+
+            return this.fixedNumber(Number(this.total || 0) - Number(this.salePaidTotal || 0));
 
         },
         saleDetailEmptyImageUrl() {
@@ -1751,6 +1926,17 @@ export default {
         "forms.sales.createUpdate.data.observation"() {
 
             this.observationPreviewExpanded = false;
+
+        },
+        total(value) {
+
+            const payments = this.forms[this.entity].createUpdate.data.payments || [];
+
+            if(payments.length === 1) {
+
+                payments[0].amount = Number(value || 0);
+
+            }
 
         },
         "forms.sales.createUpdate.data.branch"() {

@@ -42,3 +42,14 @@ Permite crear una venta con productos, servicios o membresias. Una venta puede g
 - Validar que `serie_id` pertenezca a la sucursal seleccionada.
 - Proteger correlativo contra concurrencia.
 - Tipar `extras` de membresia con estructura clara.
+
+## Actualizacion: impuestos y pagos configurables
+
+- La venta ahora aplica automaticamente todos los impuestos activos desde `taxes`, filtrados por alcance `sale` o `both`.
+- La venta ahora puede recibir multiples metodos de pago desde `payment_methods`, filtrados por alcance `sale` o `both`, indicando el monto pagado por cada metodo.
+- El backend recalcula subtotal, impuestos, total y pagos para mantener la consistencia del documento.
+- Los impuestos aplicados se guardan como foto del documento en `sale_taxes`.
+- Los pagos aplicados se guardan como foto del documento en `sale_payments`.
+- La vista `resources/js/System/Pages/Sales/sales/main.vue` muestra un bloque lateral de liquidacion con impuestos aplicados automaticamente, metodos de pago, subtotal, impuestos, total, pagado y diferencia.
+- Si solo hay un metodo de pago, el importe se sincroniza con el total para facilitar el registro.
+- Pendiente: crear pantalla administrativa para impuestos y metodos de pago por empresa.

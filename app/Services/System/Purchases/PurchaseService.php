@@ -129,7 +129,6 @@ final class PurchaseService {
                 $companyId,
                 "purchase",
                 (float) $subtotal,
-                $data["taxes"] ?? [],
                 $userId
             );
             $tax = round((float) $taxLines->sum("amount"), 2);

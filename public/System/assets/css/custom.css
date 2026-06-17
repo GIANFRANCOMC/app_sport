@@ -2951,15 +2951,175 @@ body.br-layout .br-entity-table > thead > tr > th {
 }
 
 .br-purchases__line-total span,
-.br-purchases__total span {
+.br-purchases__total span,
+.br-document-settlement__summary span {
     color: var(--br-text-muted);
     font-size: 0.66rem;
 }
 
 .br-purchases__line-total strong,
-.br-purchases__total strong {
+.br-purchases__total strong,
+.br-document-settlement__summary strong {
     color: var(--br-secondary);
     font-size: 0.82rem;
+}
+
+.br-document-settlement {
+    display: grid;
+    gap: 0.68rem;
+    padding: 0.78rem;
+    border: 1px solid var(--br-border);
+    border-radius: var(--br-radius-sm);
+    background: #f7f8fa;
+}
+
+.br-document-settlement .form-label {
+    margin-bottom: 0.16rem;
+    color: var(--br-text-muted);
+    font-size: 0.72rem;
+    font-weight: 700;
+}
+
+.br-document-settlement .v-select {
+    background: var(--br-surface-elevated);
+}
+
+.br-document-settlement__summary,
+.br-purchases__total {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 0.28rem 0.8rem;
+    padding: 0.6rem 0.68rem;
+    border: 1px solid color-mix(in srgb, var(--br-secondary) 10%, var(--br-border));
+    border-radius: var(--br-radius-sm);
+    background: var(--br-secondary-soft);
+}
+
+.br-document-settlement__summary strong,
+.br-purchases__total strong {
+    text-align: right;
+}
+
+.br-document-settlement__taxes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+}
+
+.br-document-settlement__taxes span {
+    display: inline-flex;
+    align-items: center;
+    min-height: 1.55rem;
+    padding: 0.22rem 0.48rem;
+    border: 1px solid color-mix(in srgb, var(--br-primary) 22%, var(--br-border));
+    border-radius: var(--br-radius-sm);
+    background: color-mix(in srgb, var(--br-primary-soft) 62%, #ffffff);
+    color: var(--br-secondary);
+    font-size: 0.68rem;
+    font-weight: 700;
+}
+
+.br-document-settlement__empty {
+    color: var(--br-text-muted);
+    font-size: 0.72rem;
+}
+
+.br-document-payments {
+    display: grid;
+    gap: 0.45rem;
+}
+
+.br-document-payment-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(6.5rem, 0.55fr) auto;
+    gap: 0.38rem;
+    align-items: start;
+}
+
+.br-document-payment-row:has(input[placeholder="Referencia"]) {
+    grid-template-columns: minmax(0, 1fr) minmax(6.5rem, 0.5fr) minmax(0, 0.72fr) auto;
+}
+
+.br-document-payment-row .br-icon-action {
+    width: 2.25rem;
+    height: 2.25rem;
+}
+
+.br-document-payment-row .br-icon-action:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+.br-document-payment-add {
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 0.32rem;
+    width: fit-content;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--br-primary);
+    font-size: 0.72rem;
+    font-weight: 800;
+    line-height: 1;
+}
+
+.br-document-payment-add:hover,
+.br-document-payment-add:focus-visible {
+    color: var(--br-primary-active);
+    text-decoration: none;
+    outline: 0;
+}
+
+.br-entity-modebar {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-bottom: 0.8rem;
+    padding: 0.22rem;
+    border: 1px solid var(--br-border);
+    border-radius: var(--br-radius-sm);
+    background: #ffffff;
+}
+
+.br-entity-modebar__item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.38rem;
+    min-height: 2.15rem;
+    padding: 0.42rem 0.72rem;
+    border: 0;
+    border-radius: var(--br-radius-sm);
+    background: transparent;
+    color: var(--br-text-muted);
+    font-size: 0.78rem;
+    font-weight: 800;
+    transition: var(--br-transition);
+}
+
+.br-entity-modebar__item.is-active {
+    background: var(--br-secondary);
+    color: var(--br-on-secondary);
+}
+
+.br-entity-modebar__item:not(.is-active):hover,
+.br-entity-modebar__item:not(.is-active):focus-visible {
+    background: var(--br-primary-soft);
+    color: var(--br-primary-active);
+    outline: 0;
+}
+
+@media (max-width: 767.98px) {
+    .br-document-payment-row,
+    .br-document-payment-row:has(input[placeholder="Referencia"]) {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .br-document-payment-row .br-icon-action {
+        justify-self: start;
+    }
 }
 
 .br-purchases__remove {
@@ -2967,15 +3127,7 @@ body.br-layout .br-entity-table > thead > tr > th {
 }
 
 .br-purchases__total {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 1rem;
     margin-top: 0.55rem;
-    padding: 0.58rem 0.68rem;
-    border: 1px solid var(--br-border);
-    border-radius: var(--br-radius-sm);
-    background: var(--br-secondary-soft);
 }
 
 .br-purchases__receipt-summary {

@@ -2,6 +2,21 @@
     <Breadcrumb :list="breadcrumbTitles"/>
 
     <main class="br-entity br-purchases">
+        <section class="br-entity-modebar">
+            <button type="button" class="br-entity-modebar__item is-active">
+                <i class="fa-solid fa-list" aria-hidden="true"></i>
+                <span>Listado</span>
+            </button>
+            <button
+                type="button"
+                class="br-entity-modebar__item"
+                data-bs-toggle="modal"
+                data-bs-target="#purchaseModal"
+                @click="preparePurchase">
+                <i class="fa-solid fa-plus" aria-hidden="true"></i>
+                <span>Nuevo</span>
+            </button>
+        </section>
         <section class="br-filter-bar">
             <div class="row align-items-end g-2">
                 <InputText
@@ -34,7 +49,7 @@
                             data-bs-target="#purchaseModal"
                             @click="preparePurchase">
                             <i class="fa-solid fa-plus" aria-hidden="true"></i>
-                            <span>Registrar compra</span>
+                            <span>Nuevo</span>
                         </button>
                         <button
                             type="button"
@@ -227,24 +242,58 @@
                         <div class="col-lg-4">
                             <div class="br-document-settlement">
                                 <div>
-                                    <label class="form-label">Impuestos</label>
-                                    <v-select
-                                        v-model="purchaseForm.taxes"
-                                        :options="purchaseTaxes"
-                                        multiple
-                                        :clearable="true"
-                                        :searchable="true"
-                                        append-to-body/>
+                                    <label class="form-label">Impuestos aplicados</label>
+                                    <div class="br-document-settlement__taxes" v-if="purchaseTaxes.length">
+                                        <span v-for="tax in purchaseTaxes" :key="tax.code">
+                                            {{ tax.data.name }} · {{ Number(tax.data.rate || 0).toFixed(2) }}%
+                                        </span>
+                                    </div>
+                                    <p v-else class="br-document-settlement__empty mb-0">Sin impuestos activos para compras.</p>
                                 </div>
                                 <div>
                                     <label class="form-label">Métodos de pago</label>
-                                    <v-select
-                                        v-model="purchaseForm.payments"
-                                        :options="purchasePaymentMethods"
-                                        multiple
-                                        :clearable="false"
-                                        :searchable="true"
-                                        append-to-body/>
+                                    <div class="br-document-payments">
+                                        <div
+                                            v-for="(payment, index) in purchaseForm.payments"
+                                            :key="payment.key"
+                                            class="br-document-payment-row">
+                                            <v-select
+                                                v-model="payment.method"
+                                                :options="purchasePaymentMethods"
+                                                :clearable="false"
+                                                :searchable="true"
+                                                append-to-body/>
+                                            <div class="input-group">
+                                                <span class="input-group-text br-currency-prefix">{{ purchaseForm.currency?.sign }}</span>
+                                                <input
+                                                    v-model.number="payment.amount"
+                                                    type="number"
+                                                    min="0"
+                                                    step="0.01"
+                                                    class="form-control"
+                                                    :placeholder="separatorNumber(purchaseTotal)">
+                                            </div>
+                                            <input
+                                                v-if="payment.method?.data?.requires_reference"
+                                                v-model.trim="payment.reference"
+                                                type="text"
+                                                class="form-control"
+                                                maxlength="100"
+                                                placeholder="Referencia">
+                                            <button
+                                                type="button"
+                                                class="br-icon-action"
+                                                :disabled="purchaseForm.payments.length <= 1"
+                                                title="Quitar método"
+                                                @click="removePurchasePayment(index)">
+                                                <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+                                            </button>
+                                        </div>
+                                        <button type="button" class="br-document-payment-add" @click="addPurchasePayment">
+                                            <i class="fa-solid fa-circle-plus" aria-hidden="true"></i>
+                                            <span>Agregar método</span>
+                                        </button>
+                                    </div>
                                 </div>
                                 <div class="br-purchases__total">
                                     <span>Subtotal</span>
@@ -253,6 +302,12 @@
                                     <strong>{{ purchaseForm.currency?.sign }} {{ separatorNumber(purchaseTaxTotal) }}</strong>
                                     <span>Total</span>
                                     <strong>{{ purchaseForm.currency?.sign }} {{ separatorNumber(purchaseTotal) }}</strong>
+                                    <span>Pagado</span>
+                                    <strong>{{ purchaseForm.currency?.sign }} {{ separatorNumber(purchasePaidTotal) }}</strong>
+                                    <span>Diferencia</span>
+                                    <strong :class="Number(purchasePaymentDifference) === 0 ? 'text-success' : 'text-danger'">
+                                        {{ purchaseForm.currency?.sign }} {{ separatorNumber(purchasePaymentDifference) }}
+                                    </strong>
                                 </div>
                             </div>
                         </div>
@@ -367,6 +422,8 @@ export default {
             this.options.warehouses = config.warehouses?.records || [];
             this.options.currencies = config.currencies?.records || [];
             this.options.products = config.products?.records || [];
+            this.options.taxes = config.taxes || {records: []};
+            this.options.paymentMethods = config.paymentMethods || {records: []};
         },
         async listPurchases({url = null} = {}) {
             this.loading = true;
@@ -380,6 +437,23 @@ export default {
         newPurchaseItem() {
             return {key: `${Date.now()}-${Math.random()}`, product: null, quantity: "", unitCost: ""};
         },
+        newPurchasePayment({amount = ""} = {}) {
+            return {
+                key: `${Date.now()}-${Math.random()}`,
+                method: this.purchasePaymentMethods.find(method => method.data?.is_default) || this.purchasePaymentMethods[0] || null,
+                amount,
+                reference: "",
+                note: ""
+            };
+        },
+        addPurchasePayment() {
+            const pending = this.purchasePaymentDifference > 0 ? this.purchasePaymentDifference : "";
+            this.purchaseForm.payments.push(this.newPurchasePayment({amount: pending}));
+        },
+        removePurchasePayment(index) {
+            if(this.purchaseForm.payments.length <= 1) return;
+            this.purchaseForm.payments.splice(index, 1);
+        },
         preparePurchase() {
             this.purchaseForm = {
                 supplier: this.suppliers[0] || null,
@@ -389,8 +463,7 @@ export default {
                 documentNumber: "",
                 issueDate: new Date().toISOString().slice(0, 10),
                 expectedDate: "",
-                taxes: this.purchaseTaxes.filter(tax => tax.data?.is_default),
-                payments: this.purchasePaymentMethods.filter(method => method.data?.is_default),
+                payments: [this.newPurchasePayment({amount: this.purchaseTotal})],
                 observation: "",
                 items: [this.newPurchaseItem()]
             };
@@ -425,10 +498,6 @@ export default {
                     issue_date: this.purchaseForm.issueDate,
                     expected_date: this.purchaseForm.expectedDate || null,
                     tax: this.purchaseTaxTotal,
-                    taxes: this.purchaseForm.taxes.map(tax => ({
-                        tax_id: tax.code,
-                        rate: tax.data?.rate
-                    })),
                     payments: this.purchasePaymentPayload,
                     observation: this.purchaseForm.observation,
                     items: this.purchaseForm.items.map(item => ({
@@ -598,7 +667,7 @@ export default {
             return (this.purchaseForm.items || []).reduce((total, detail) => total + this.lineTotal(detail), 0);
         },
         purchaseTaxTotal() {
-            return (this.purchaseForm.taxes || []).reduce((total, tax) => {
+            return (this.purchaseTaxes || []).reduce((total, tax) => {
                 return total + (this.purchaseSubtotal * (Number(tax.data?.rate || 0) / 100));
             }, 0);
         },
@@ -624,19 +693,31 @@ export default {
 
             if(selected.length === 0) return [];
 
-            const amount = Number((this.purchaseTotal / selected.length).toFixed(2));
-            let remainder = Number((this.purchaseTotal - (amount * selected.length)).toFixed(2));
+            return selected
+                .filter(payment => payment.method?.code)
+                .map(payment => ({
+                    payment_method_id: payment.method.code,
+                    amount: Number(payment.amount || 0),
+                    reference: payment.reference || null,
+                    note: payment.note || null
+                }));
+        },
+        purchasePaidTotal() {
+            return (this.purchaseForm.payments || []).reduce((total, payment) => {
+                return total + Number(payment.amount || 0);
+            }, 0);
+        },
+        purchasePaymentDifference() {
+            return Number((this.purchaseTotal - this.purchasePaidTotal).toFixed(2));
+        }
+    },
+    watch: {
+        purchaseTotal(value) {
+            const payments = this.purchaseForm.payments || [];
 
-            return selected.map((method, index) => {
-                const lineAmount = index === 0 ? amount + remainder : amount;
-
-                return {
-                    payment_method_id: method.code,
-                    amount: lineAmount,
-                    reference: null,
-                    note: null
-                };
-            });
+            if(payments.length === 1) {
+                payments[0].amount = Number(value || 0);
+            }
         }
     }
 };

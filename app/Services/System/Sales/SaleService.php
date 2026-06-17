@@ -56,6 +56,24 @@ class SaleService {
 
     }
 
+    private static function calculateAdditionalTaxBase(array $details): float {
+
+        return array_reduce($details, function($carry, $detail) {
+
+            $priceIncludesTax = filter_var($detail["price_includes_tax"] ?? true, FILTER_VALIDATE_BOOL);
+
+            if($priceIncludesTax) {
+
+                return $carry;
+
+            }
+
+            return $carry + Utilities::round(floatval($detail["quantity"]) * floatval($detail["price"]));
+
+        }, 0);
+
+    }
+
     /**
      * Prepare sale body extras for subscription
      *
@@ -107,6 +125,7 @@ class SaleService {
         $saleBody->name           = $detail["name"];
         $saleBody->quantity       = $detail["quantity"];
         $saleBody->price          = $detail["price"];
+        $saleBody->price_includes_tax = filter_var($detail["price_includes_tax"] ?? true, FILTER_VALIDATE_BOOL);
         $saleBody->total          = Utilities::round((floatval($saleBody->quantity) * floatval($saleBody->price)));
         $saleBody->customer_id    = $saleHeader->holder_id;
         $saleBody->type           = $detail["type"];
@@ -239,11 +258,11 @@ class SaleService {
 
             // Calculate totals
             $subtotal = self::calculateTotal($data["details"]);
+            $additionalTaxBase = self::calculateAdditionalTaxBase($data["details"]);
             $taxLines = CommercialDocumentSettlementService::taxes(
                 (int) $companyId,
                 "sale",
-                (float) $subtotal,
-                $data["taxes"] ?? [],
+                (float) $additionalTaxBase,
                 (int) $userId
             );
             $taxTotal = Utilities::round((float) $taxLines->sum("amount"));

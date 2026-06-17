@@ -15,16 +15,11 @@ final class CommercialDocumentSettlementService {
         int $companyId,
         string $scope,
         float $baseAmount,
-        array $selectedTaxes,
         int $userId
     ): Collection {
 
-        $taxes = self::taxCatalog($companyId, $scope, $selectedTaxes)
-            ->keyBy("id");
-
-        return collect($selectedTaxes)
-            ->map(fn($taxData) => self::taxLine($taxes, $taxData, $baseAmount, $userId))
-            ->filter()
+        return self::activeTaxCatalog($companyId, $scope)
+            ->map(fn(Tax $tax) => self::taxLine($tax, $baseAmount, $userId))
             ->values();
 
     }
@@ -78,31 +73,15 @@ final class CommercialDocumentSettlementService {
 
     }
 
-    private static function taxCatalog(int $companyId, string $scope, array $selectedTaxes): Collection {
+    private static function activeTaxCatalog(int $companyId, string $scope): Collection {
 
-        $ids = collect($selectedTaxes)
-            ->pluck("tax_id")
-            ->filter()
-            ->map(fn($id) => (int) $id)
-            ->unique()
-            ->values();
-
-        if($ids->isEmpty()) return collect();
-
-        $taxes = Tax::query()
+        return Tax::query()
             ->where("company_id", $companyId)
             ->whereIn("scope", [$scope, "both"])
             ->where("status", "active")
-            ->whereIn("id", $ids)
+            ->orderByDesc("is_default")
+            ->orderBy("name")
             ->get();
-
-        if($taxes->count() !== $ids->count()) {
-
-            throw new DomainException("Uno de los impuestos no está disponible para este documento.");
-
-        }
-
-        return $taxes;
 
     }
 
@@ -134,21 +113,15 @@ final class CommercialDocumentSettlementService {
 
     }
 
-    private static function taxLine(Collection $taxes, array $taxData, float $baseAmount, int $userId): ?array {
+    private static function taxLine(Tax $tax, float $baseAmount, int $userId): array {
 
-        $taxId = (int) ($taxData["tax_id"] ?? 0);
-        if($taxId <= 0) return null;
-
-        $tax = $taxes->get($taxId);
-        $rate = round((float) ($taxData["rate"] ?? $tax?->rate ?? 0), 4);
-        $base = round((float) ($taxData["base_amount"] ?? $baseAmount), 2);
-        $amount = array_key_exists("amount", $taxData)
-            ? round((float) $taxData["amount"], 2)
-            : round($base * ($rate / 100), 2);
+        $rate = round((float) $tax->rate, 4);
+        $base = round($baseAmount, 2);
+        $amount = round($base * ($rate / 100), 2);
 
         return [
-            "tax_id" => $tax?->id,
-            "name" => (string) ($taxData["name"] ?? $tax?->name),
+            "tax_id" => $tax->id,
+            "name" => (string) $tax->name,
             "rate" => $rate,
             "base_amount" => $base,
             "amount" => $amount,

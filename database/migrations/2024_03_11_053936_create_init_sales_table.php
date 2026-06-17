@@ -48,6 +48,7 @@ return new class extends Migration {
             $table->string("name");
             $table->decimal("quantity", 10, 2);
             $table->decimal("price", 10, 2);
+            $table->boolean("price_includes_tax")->default(true);
             $table->decimal("total", 10, 2);
             $table->unsignedBigInteger("customer_id");
             $table->enum("type", ["product", "service", "subscription"])->default("product");

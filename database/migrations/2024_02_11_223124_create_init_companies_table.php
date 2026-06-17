@@ -152,6 +152,7 @@ return new class extends Migration {
             $table->string("name");
             $table->text("description")->nullable();
             $table->decimal("price", 10, 2);
+            $table->boolean("price_includes_tax")->default(true);
             $table->decimal("min_price", 10, 2)->nullable();
             $table->decimal("max_price", 10, 2)->nullable();
             $table->unsignedBigInteger("currency_id");

@@ -42,6 +42,7 @@ class UpdateServiceRequest extends CompanyFormRequest {
             "name"          => "required|string|max:50",
             "description"   => "nullable|string|max:100",
             "price"         => "required|numeric|min:$minValue|max:$maxValue|decimal:0,$round",
+            "price_includes_tax" => "nullable|boolean",
             "currency_id"   => "required|integer",
             "status"        => "required|in:active,inactive"
         ];

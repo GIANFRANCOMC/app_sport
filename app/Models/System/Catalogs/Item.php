@@ -32,6 +32,7 @@ class Item extends Model {
         "name",
         "description",
         "price",
+        "price_includes_tax",
         "min_price",
         "max_price",
         "currency_id",

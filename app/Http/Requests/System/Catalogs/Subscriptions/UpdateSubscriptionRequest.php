@@ -44,6 +44,7 @@ class UpdateSubscriptionRequest extends CompanyFormRequest {
             "duration_value" => "required|integer|min:1|max:$maxValue|decimal:0",
             "duration_type"  => "required|in:hour,day,today,month,year",
             "price"          => "required|numeric|min:$minValue|max:$maxValue|decimal:0,$round",
+            "price_includes_tax" => "nullable|boolean",
             "currency_id"    => "required|integer",
             "status"         => "required|in:active,inactive"
         ];

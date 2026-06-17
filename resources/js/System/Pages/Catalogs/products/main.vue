@@ -420,6 +420,24 @@
                                     </template>
                                 </InputNumber>
 
+                                <div class="form-group col-xl-4 col-lg-4 col-md-12 col-sm-12">
+                                    <label class="form-label fw-bold colon-at-end fs-6">Precio incluye IGV</label>
+                                    <div class="br-entity-publication-settings br-tax-inclusion-control">
+                                        <label class="br-entity-switch" for="product_price_includes_tax">
+                                            <input
+                                                id="product_price_includes_tax"
+                                                v-model="productForm.data.price_includes_tax"
+                                                class="form-check-input"
+                                                type="checkbox"
+                                                role="switch">
+                                            <span>
+                                                <strong>Incluye IGV</strong>
+                                                <small>Si está activo, el precio de venta ya contiene el impuesto y no incrementará el total al vender.</small>
+                                            </span>
+                                        </label>
+                                    </div>
+                                </div>
+
                                 <InputSlot
                                     hasDiv
                                     :title="MODULE.texts.form.brand"
@@ -787,6 +805,7 @@ const FORM_FIELDS = {
     name: "",
     description: "",
     price: "",
+    price_includes_tax: true,
     min_price: "",
     max_price: "",
     currency: null,
@@ -804,6 +823,7 @@ const FORM_FIELD_CONFIG = {
     name: {trim: true},
     description: {normalize: true},
     price: {toNumber: true, minValue: 0},
+    price_includes_tax: {toBoolean: true},
     min_price: {toNumber: true, minValue: 0},
     max_price: {toNumber: true, minValue: 0},
     currency: {mapToField: "currency_id"},
@@ -820,6 +840,7 @@ const VALIDATION_RULES = {
     name: {required: true},
     description: {required: false},
     price: {required: true, number: true, min: 0},
+    price_includes_tax: {required: false},
     min_price: {required: false, number: true, min: 0},
     max_price: {required: false, number: true, min: 0},
     currency: {required: true},
@@ -837,6 +858,7 @@ const ERROR_LABELS = {
     name: "Nombre",
     description: "Descripción comercial adicional",
     price: "Precio de venta",
+    price_includes_tax: "Precio incluye IGV",
     min_price: "Precio mínimo",
     max_price: "Precio máximo",
     currency: "Moneda",
@@ -1196,6 +1218,7 @@ export default {
                     name: record.name,
                     description: record.description,
                     price: record.price,
+                    price_includes_tax: Boolean(record.price_includes_tax ?? true),
                     min_price: record.min_price,
                     max_price: record.max_price,
                     currency: this.currencies.find(currency => currency.code === record.currency_id) ?? null,
@@ -1215,6 +1238,7 @@ export default {
                     currency: this.currencies[0] ?? null,
                     categories: [],
                     brand: null,
+                    price_includes_tax: true,
                     see_my_web: true,
                     see_my_web_price: false,
                     inventory: this.buildInventory(),
