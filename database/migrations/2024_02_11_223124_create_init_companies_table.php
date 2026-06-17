@@ -262,6 +262,102 @@ return new class extends Migration {
         });
 
         // ✅
+        Schema::create("cash_registers", function(Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger("company_id");
+            $table->unsignedBigInteger("branch_id");
+            $table->string("code", 30)->nullable();
+            $table->string("name");
+            $table->enum("status", ["active", "inactive"])->default("active");
+
+            $table->timestamp("created_at")->useCurrent()->nullable();
+            $table->integer("created_by")->nullable();
+            $table->timestamp("updated_at")->nullable();
+            $table->integer("updated_by")->nullable();
+
+            $table->foreign("company_id")->references("id")->on("companies")->onDelete("cascade");
+            $table->foreign("branch_id")->references("id")->on("branches")->onDelete("cascade");
+        });
+
+        Schema::create("cash_sessions", function(Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger("company_id");
+            $table->unsignedBigInteger("branch_id");
+            $table->unsignedBigInteger("cash_register_id");
+            $table->unsignedBigInteger("opened_by");
+            $table->unsignedBigInteger("closed_by")->nullable();
+            $table->timestamp("opened_at")->useCurrent();
+            $table->timestamp("closed_at")->nullable();
+            $table->decimal("opening_amount", 10, 2)->default(0);
+            $table->decimal("expected_amount", 10, 2)->default(0);
+            $table->decimal("counted_amount", 10, 2)->default(0);
+            $table->decimal("difference_amount", 10, 2)->default(0);
+            $table->text("observation")->nullable();
+            $table->enum("status", ["open", "closed", "canceled"])->default("open");
+
+            $table->timestamp("created_at")->useCurrent()->nullable();
+            $table->integer("created_by")->nullable();
+            $table->timestamp("updated_at")->nullable();
+            $table->integer("updated_by")->nullable();
+
+            $table->foreign("company_id")->references("id")->on("companies")->onDelete("cascade");
+            $table->foreign("branch_id")->references("id")->on("branches")->onDelete("cascade");
+            $table->foreign("cash_register_id")->references("id")->on("cash_registers")->onDelete("cascade");
+            $table->foreign("opened_by")->references("id")->on("users")->onDelete("cascade");
+            $table->foreign("closed_by")->references("id")->on("users")->nullOnDelete();
+        });
+
+        Schema::create("cash_session_payments", function(Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger("cash_session_id");
+            $table->unsignedBigInteger("payment_method_id")->nullable();
+            $table->string("payment_method_name");
+            $table->decimal("expected_amount", 10, 2)->default(0);
+            $table->decimal("counted_amount", 10, 2)->default(0);
+            $table->decimal("difference_amount", 10, 2)->default(0);
+            $table->text("note")->nullable();
+            $table->enum("status", ["active", "canceled", "inactive"])->default("active");
+
+            $table->timestamp("created_at")->useCurrent()->nullable();
+            $table->integer("created_by")->nullable();
+            $table->timestamp("updated_at")->nullable();
+            $table->integer("updated_by")->nullable();
+
+            $table->foreign("cash_session_id")->references("id")->on("cash_sessions")->onDelete("cascade");
+            $table->foreign("payment_method_id")->references("id")->on("payment_methods")->nullOnDelete();
+        });
+
+        Schema::create("cash_movements", function(Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger("company_id");
+            $table->unsignedBigInteger("branch_id");
+            $table->unsignedBigInteger("cash_session_id")->nullable();
+            $table->unsignedBigInteger("payment_method_id")->nullable();
+            $table->unsignedBigInteger("user_id");
+            $table->enum("movement_type", ["opening", "sale", "purchase", "expense", "income", "withdrawal", "adjustment", "closing"])->default("sale");
+            $table->string("origin_type", 60)->nullable();
+            $table->unsignedBigInteger("origin_id")->nullable();
+            $table->decimal("amount", 10, 2)->default(0);
+            $table->string("reference", 100)->nullable();
+            $table->text("note")->nullable();
+            $table->timestamp("occurred_at")->useCurrent();
+            $table->enum("status", ["active", "canceled", "inactive"])->default("active");
+
+            $table->timestamp("created_at")->useCurrent()->nullable();
+            $table->integer("created_by")->nullable();
+            $table->timestamp("updated_at")->nullable();
+            $table->integer("updated_by")->nullable();
+
+            $table->foreign("company_id")->references("id")->on("companies")->onDelete("cascade");
+            $table->foreign("branch_id")->references("id")->on("branches")->onDelete("cascade");
+            $table->foreign("cash_session_id")->references("id")->on("cash_sessions")->nullOnDelete();
+            $table->foreign("payment_method_id")->references("id")->on("payment_methods")->nullOnDelete();
+            $table->foreign("user_id")->references("id")->on("users")->onDelete("cascade");
+
+            $table->index(["company_id", "branch_id", "occurred_at"]);
+            $table->index(["origin_type", "origin_id"]);
+        });
+
         Schema::create("warehouse_items", function(Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger("warehouse_id");
@@ -416,7 +512,10 @@ return new class extends Migration {
         DB::table("payment_methods")->insert([
             ["company_id" => 1, "code" => "CASH", "name" => "Efectivo", "scope" => "both", "requires_reference" => false, "is_default" => true],
             ["company_id" => 1, "code" => "CARD", "name" => "Tarjeta", "scope" => "sale", "requires_reference" => true, "is_default" => false],
-            ["company_id" => 1, "code" => "TRANSFER", "name" => "Transferencia", "scope" => "both", "requires_reference" => true, "is_default" => false]
+            ["company_id" => 1, "code" => "TRANSFER", "name" => "Transferencia", "scope" => "both", "requires_reference" => true, "is_default" => false],
+            ["company_id" => 1, "code" => "DIGITAL_WALLET", "name" => "Billetera digital", "scope" => "both", "requires_reference" => true, "is_default" => false],
+            ["company_id" => 1, "code" => "YAPE", "name" => "Yape", "scope" => "both", "requires_reference" => true, "is_default" => false],
+            ["company_id" => 1, "code" => "PLIN", "name" => "Plin", "scope" => "both", "requires_reference" => true, "is_default" => false]
         ]);
 
         DB::table("company_socials_media")->insert([
@@ -444,6 +543,10 @@ return new class extends Migration {
             ["branch_id" => 1, "name" => "Almacén - Sede principal"]
         ]);
 
+        DB::table("cash_registers")->insert([
+            ["company_id" => 1, "branch_id" => 1, "code" => "CAJ-" . Utilities::generateCode(5), "name" => "Caja principal"]
+        ]);
+
     }
 
     /**
@@ -456,6 +559,10 @@ return new class extends Migration {
         Schema::dropIfExists("branch_assets");
         Schema::dropIfExists("inventory_movements");
         Schema::dropIfExists("warehouse_items");
+        Schema::dropIfExists("cash_movements");
+        Schema::dropIfExists("cash_session_payments");
+        Schema::dropIfExists("cash_sessions");
+        Schema::dropIfExists("cash_registers");
         Schema::dropIfExists("warehouses");
         Schema::dropIfExists("customers");
         Schema::dropIfExists("category_items");

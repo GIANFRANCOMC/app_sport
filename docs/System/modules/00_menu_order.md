@@ -53,6 +53,12 @@ Este archivo no controla el menu en ejecucion. El menu real se obtiene de `secti
 25. `roles.index` - Perfiles de acceso, configuracion de acceso por modulo para colaboradores
 26. `reports.index` - Reportes, gestion de reportes filtrando por campos
 
+## Actualizaciones recientes
+
+- `sales.pos` - Ventas / Venta POS: acceso rapido de mostrador que reutiliza el flujo de nueva venta con titulo y menu propios.
+- `cash_registers.index` - Caja: apertura, cierre, arqueo, resumen por metodo de pago y movimientos.
+- `sc_cash_registers` queda como seccion propia para no mezclar reglas de caja con ventas, compras o inventario.
+
 ## Modulos tecnicos de soporte
 
 Ademas del menu visible, System usa entidades tecnicas que tambien deben tratarse como modulos/documentacion:

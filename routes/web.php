@@ -78,6 +78,9 @@ Route::middleware(["web"])
             // Sales
             Route::prefix('/sales')->group($systemRoute.'/Sales/Sale.php');
 
+            // Finance
+            Route::prefix('/cash_registers')->group($systemRoute.'/Finance/CashRegister.php');
+
             // Purchases
             Route::prefix('/purchases')->group($systemRoute.'/Purchases/Purchase.php');
             Route::prefix('/suppliers')->group($systemRoute.'/Purchases/Supplier.php');

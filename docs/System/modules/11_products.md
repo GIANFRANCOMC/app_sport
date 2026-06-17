@@ -65,6 +65,7 @@ En escritorio, la descarga se presenta como un botón verde compacto con el icon
 
 - `items.currency_id`: moneda.
 - `items.price`: precio de venta.
+- `items.price_includes_tax`: indica si el precio de venta ya incluye IGV. Por defecto queda activo para venta al público.
 - `items.min_price`: límite inferior opcional.
 - `items.max_price`: límite superior opcional.
 
@@ -132,6 +133,7 @@ Si un almacén activo no tiene valores explícitos, se crea con cantidad y míni
 - El código interno es único entre productos de la empresa.
 - El código de barras es único entre todos los items de la empresa.
 - Precio, stock inicial y stock mínimo no pueden ser negativos.
+- `price_includes_tax` se guarda como booleano y se usa en ventas para decidir si los impuestos configurados incrementan o no el total del detalle.
 - El precio debe respetar los límites mínimo y máximo configurados.
 - Los almacenes enviados deben estar activos y pertenecer a sucursales activas de la empresa autenticada.
 - Las categorías deben estar activas y pertenecer a la empresa autenticada.

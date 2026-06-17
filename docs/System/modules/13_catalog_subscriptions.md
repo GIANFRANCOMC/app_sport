@@ -43,3 +43,10 @@ Administra items de tipo `subscription`, que representan planes o membresías ve
 - Un valor nulo o vacío desactiva el prefijo para esa empresa.
 - Store y Update extienden `CompanyFormRequest`; los errores inline son breves y el resumen identifica el campo que requiere corrección.
 - Validar que duración no sea nula si se venderá.
+
+## Actualizacion: IGV incluido
+
+- Las membresias usan `items.price_includes_tax` igual que productos y servicios.
+- En el formulario se muestra `Precio incluye IGV`, activo por defecto.
+- Cuando se vende una membresia con IGV incluido, los impuestos configurados de venta no aumentan el total de ese detalle.
+- Cuando se vende una membresia sin IGV incluido, todos los impuestos activos de alcance `sale` o `both` se calculan sobre el precio del detalle.

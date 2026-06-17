@@ -53,3 +53,16 @@ Permite crear una venta con productos, servicios o membresias. Una venta puede g
 - La vista `resources/js/System/Pages/Sales/sales/main.vue` muestra un bloque lateral de liquidacion con impuestos aplicados automaticamente, metodos de pago, subtotal, impuestos, total, pagado y diferencia.
 - Si solo hay un metodo de pago, el importe se sincroniza con el total para facilitar el registro.
 - Pendiente: crear pantalla administrativa para impuestos y metodos de pago por empresa.
+
+## Actualizacion: IGV incluido, almacen de venta y caja
+
+- `items.price_includes_tax` define si el precio de venta del producto, servicio o membresia ya contiene IGV.
+- La venta envia `details.*.price_includes_tax` y guarda la foto del valor en `sales_body.price_includes_tax`.
+- Si el precio incluye IGV, los impuestos configurados para venta no incrementan el total de ese detalle.
+- Si el precio no incluye IGV, todos los impuestos activos de alcance `sale` o `both` se calculan sobre ese detalle y aumentan el total.
+- `sales_header.warehouse_id` guarda el almacen afectado por la venta.
+- El frontend muestra el selector de almacen junto a Sucursal y Tipo de comprobante. Si la sucursal solo tiene un almacen, lo selecciona automaticamente.
+- `SaleService::resolveWarehouse()` valida que el almacen pertenezca a la sucursal y a la empresa autenticada. Si hay varios almacenes y no se envia uno, el backend rechaza la venta con un mensaje accionable.
+- `sales_header.cash_session_id` permite vincular la venta con una caja abierta cuando el modulo de caja este activo.
+- Si la venta incluye `cash_session_id`, cada pago genera un registro en `cash_movements`, manteniendo trazabilidad por metodo de pago para apertura, cierre, arqueo y resumen de caja.
+- Los metodos de pago iniciales incluyen `Efectivo`, `Tarjeta`, `Transferencia`, `Billetera digital`, `Yape` y `Plin`; todos siguen siendo configurables por empresa y por alcance (`sale`, `purchase`, `both`).

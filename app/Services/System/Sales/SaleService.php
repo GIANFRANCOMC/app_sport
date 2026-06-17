@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\{Auth, DB};
 use stdClass;
 
 use App\Models\System\Customers\Subscription;
+use App\Models\System\Finance\CashMovement;
 use App\Models\System\Sales\{SaleBody, SaleHeader, SalePayment, SaleTax};
 use App\Models\System\Warehouses\{InventoryMovement, Warehouse};
 use App\Services\System\Finance\CommercialDocumentSettlementService;
@@ -220,6 +221,87 @@ class SaleService {
 
     }
 
+    private static function resolveWarehouse(array $data, int $companyId): Warehouse {
+
+        $warehouseQuery = Warehouse::query()
+            ->with("branch")
+            ->where("branch_id", $data["branch_id"])
+            ->whereHas("branch", function($query) use($companyId) {
+
+                $query->where("company_id", $companyId)
+                      ->where("status", "active");
+
+            })
+            ->where("status", "active");
+
+        if(Utilities::isDefined($data["warehouse_id"] ?? null)) {
+
+            $warehouse = (clone $warehouseQuery)
+                ->where("id", $data["warehouse_id"])
+                ->first();
+
+            if(!$warehouse) {
+
+                throw new Exception("El almacén seleccionado no pertenece a la sucursal de la venta.");
+
+            }
+
+            return $warehouse;
+
+        }
+
+        $warehouses = $warehouseQuery->get();
+
+        if($warehouses->count() === 1) {
+
+            return $warehouses->first();
+
+        }
+
+        if($warehouses->isEmpty()) {
+
+            throw new Exception("La sucursal seleccionada no cuenta con almacén activo.");
+
+        }
+
+        throw new Exception("Seleccione el almacén que será afectado por la venta.");
+
+    }
+
+    private static function createCashMovements(SaleHeader $saleHeader, $paymentLines, int $companyId, int $branchId, int $userId): void {
+
+        if(!Utilities::isDefined($saleHeader->cash_session_id) || $paymentLines->isEmpty()) {
+
+            return;
+
+        }
+
+        CashMovement::insert($paymentLines
+            ->map(function($payment) use($saleHeader, $companyId, $branchId, $userId) {
+
+                return [
+                    "company_id" => $companyId,
+                    "branch_id" => $branchId,
+                    "cash_session_id" => $saleHeader->cash_session_id,
+                    "payment_method_id" => $payment["payment_method_id"] ?? null,
+                    "user_id" => $userId,
+                    "movement_type" => "sale",
+                    "origin_type" => "sale",
+                    "origin_id" => $saleHeader->id,
+                    "amount" => $payment["amount"] ?? 0,
+                    "reference" => $payment["reference"] ?? null,
+                    "note" => $payment["note"] ?? null,
+                    "occurred_at" => now(),
+                    "status" => "active",
+                    "created_at" => now(),
+                    "created_by" => $userId
+                ];
+
+            })
+            ->all());
+
+    }
+
     /**
      * Create a new sale
      *
@@ -238,14 +320,7 @@ class SaleService {
             $userId    = $userId ?? $userAuth->id;
             $companyId = $userAuth->company_id;
 
-            // Validate warehouse exists
-            $warehouse = Warehouse::where("branch_id", $data["branch_id"])->first();
-
-            if(!$warehouse) {
-
-                throw new Exception("La sucursal seleccionada no cuenta con almacén.");
-
-            }
+            $warehouse = self::resolveWarehouse($data, (int) $companyId);
 
             // Get new sequential number
             $newSequential = SaleHeader::getNewSequential($data["serie_id"]);
@@ -282,6 +357,8 @@ class SaleService {
             $saleHeader->holder_id   = $data["holder_id"];
             $saleHeader->seller_id   = $userId;
             $saleHeader->currency_id = $data["currency_id"];
+            $saleHeader->warehouse_id = $warehouse->id;
+            $saleHeader->cash_session_id = $data["cash_session_id"] ?? null;
             $saleHeader->issue_date  = $data["issue_date"];
             $saleHeader->subtotal    = $subtotal;
             $saleHeader->tax         = $taxTotal;
@@ -305,6 +382,8 @@ class SaleService {
                 SalePayment::insert($paymentLines
                     ->map(fn($payment) => ["sale_header_id" => $saleHeader->id] + $payment)
                     ->all());
+
+                self::createCashMovements($saleHeader, $paymentLines, (int) $companyId, (int) $data["branch_id"], (int) $userId);
 
             }
 
@@ -510,7 +589,7 @@ class SaleService {
         $serieIds = $branches->pluck("series.*.id")->flatten();
 
         $query = SaleHeader::whereIn("serie_id", $serieIds)
-                           ->with(["serie.documentType", "holder", "currency", "taxes", "payments"]);
+                           ->with(["serie.documentType", "holder", "currency", "warehouse", "taxes", "payments"]);
 
         // Apply filters
         self::applyFilters($query, $filters);

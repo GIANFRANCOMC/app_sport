@@ -263,6 +263,7 @@ return new class extends Migration {
             ["id" => 9, "slug" => "sc_purchases", "name" => "purchases", "order" => 4, "dom_id" => "menu-parent-purchases", "dom_label" => "Compras", "dom_icon" => "fa-solid fa-cart-flatbed", "has_sub_menu" => true],
             ["id" => 4, "slug" => "sc_customers", "name" => "customers", "order" => 5, "dom_id" => "menu-parent-customers", "dom_label" => "Gestión de clientes", "dom_icon" => "fa fa-user", "has_sub_menu" => true],
             ["id" => 5, "slug" => "sc_items", "name" => "items", "order" => 6, "dom_id" => "menu-parent-items", "dom_label" => "Catálogo comercial", "dom_icon" => "fa fa-book", "has_sub_menu" => true],
+            ["id" => 10, "slug" => "sc_cash_registers", "name" => "cash_registers", "order" => 7, "dom_id" => "menu-parent-cash-registers", "dom_label" => "Caja", "dom_icon" => "fa-solid fa-vault", "has_sub_menu" => true],
             ["id" => 6, "slug" => "sc_infrastructure", "name" => "infrastructure", "order" => 8, "dom_id" => "menu-parent-infrastructure", "dom_label" => "Infraestructura", "dom_icon" => "fa-solid fa-industry", "has_sub_menu" => true],
             ["id" => 7, "slug" => "sc_configuration", "name" => "configuration", "order" => 10, "dom_id" => "menu-parent-configuration", "dom_label" => "Configuración", "dom_icon" => "fa fa-gear", "has_sub_menu" => true],
             ["id" => 8, "slug" => "sc_reports", "name" => "reports", "order" => 11, "dom_id" => "menu-parent-reports", "dom_label" => "Reportes", "dom_icon" => "fa fa-print", "has_sub_menu" => false]
@@ -278,6 +279,8 @@ return new class extends Migration {
             // Sales
             ["id" => 30, "section_id" => 3, "slug" => "sc_sales-list", "name" => "sales-list", "description" => "Revisa las ventas registradas y consulta sus detalles.", "order" => 1, "dom_id" => "menu-sales-list", "dom_label" => "Listado", "dom_route" => "sales.index"],
             ["id" => 31, "section_id" => 3, "slug" => "sc_sales-create", "name" => "sales-create", "description" => "Registra una nueva venta de productos, servicios o membresías.", "order" => 2, "dom_id" => "menu-sales-create", "dom_label" => "Nuevo", "dom_route" => "sales.create"],
+
+            ["id" => 32, "section_id" => 3, "slug" => "sc_sales-pos", "name" => "sales-pos", "description" => "Venta rÃ¡pida para mostrador, vinculada a almacÃ©n y caja activa.", "order" => 3, "dom_id" => "menu-sales-pos", "dom_label" => "Venta POS", "dom_route" => "sales.pos"],
 
             // Purchases
             ["id" => 90, "section_id" => 9, "slug" => "sc_purchases-list", "name" => "purchases-list", "description" => "Registra órdenes y facturas, controla recepciones y costos de inventario.", "order" => 1, "dom_id" => "menu-purchases-list", "dom_label" => "Compras", "dom_route" => "purchases.index"],
@@ -299,6 +302,9 @@ return new class extends Migration {
             ["id" => 55, "section_id" => 5, "slug" => "sc_items-brands", "name" => "items-brands", "description" => "Administra las marcas utilizadas para identificar y agrupar productos.", "order" => 5, "dom_id" => "menu-items-brands", "dom_label" => "Marcas", "dom_route" => "brands.index"],
             ["id" => 54, "section_id" => 5, "slug" => "sc_items-stocks_management", "name" => "items-stocks_management", "description" => "Consulta existencias, registra ajustes y revisa el kardex por almacén.", "order" => 6, "dom_id" => "menu-items-stocks_management", "dom_label" => "Inventario", "dom_route" => "stocks_management.index"],
 
+            // Cash registers
+            ["id" => 100, "section_id" => 10, "slug" => "sc_cash-registers", "name" => "cash-registers", "description" => "Gestiona aperturas, cierres, arqueos, resumen por mÃ©todo de pago y movimientos de caja.", "order" => 1, "dom_id" => "menu-cash-registers", "dom_label" => "Caja", "dom_route" => "cash_registers.index"],
+
             // Infrastructure
             ["id" => 60, "section_id" => 6, "slug" => "sc_infrastructure-branches", "name" => "infrastructure-branches", "description" => "Administra sedes, datos de contacto y capacidad.", "order" => 1, "dom_id" => "menu-infrastructure-branches", "dom_label" => "Sucursales", "dom_route" => "branches.index"],
             ["id" => 61, "section_id" => 6, "slug" => "sc_infrastructure-assets", "name" => "infrastructure-assets", "description" => "Mantén el catálogo de equipos y bienes de la empresa.", "order" => 2, "dom_id" => "menu-infrastructure-assets", "dom_label" => "Activos", "dom_route" => "assets.index"],
@@ -319,6 +325,7 @@ return new class extends Migration {
             ["company_id" => 1, "sub_section_id" => 20],
             ["company_id" => 1, "sub_section_id" => 30],
             ["company_id" => 1, "sub_section_id" => 31],
+            ["company_id" => 1, "sub_section_id" => 32],
             ["company_id" => 1, "sub_section_id" => 90],
             ["company_id" => 1, "sub_section_id" => 91],
             ["company_id" => 1, "sub_section_id" => 40],
@@ -333,6 +340,7 @@ return new class extends Migration {
             ["company_id" => 1, "sub_section_id" => 53],
             ["company_id" => 1, "sub_section_id" => 55],
             ["company_id" => 1, "sub_section_id" => 54],
+            ["company_id" => 1, "sub_section_id" => 100],
             ["company_id" => 1, "sub_section_id" => 60],
             ["company_id" => 1, "sub_section_id" => 61],
             ["company_id" => 1, "sub_section_id" => 62],
@@ -352,12 +360,14 @@ return new class extends Migration {
             ["role_id" => 2, "sub_section_id" => 20],
             ["role_id" => 2, "sub_section_id" => 30],
             ["role_id" => 2, "sub_section_id" => 31],
+            ["role_id" => 2, "sub_section_id" => 32],
             ["role_id" => 2, "sub_section_id" => 40],
             ["role_id" => 2, "sub_section_id" => 50],
             ["role_id" => 2, "sub_section_id" => 51],
             ["role_id" => 2, "sub_section_id" => 52],
             ["role_id" => 2, "sub_section_id" => 53],
-            ["role_id" => 2, "sub_section_id" => 55]
+            ["role_id" => 2, "sub_section_id" => 55],
+            ["role_id" => 2, "sub_section_id" => 100]
         ]);
 
         DB::table("users")->insert([

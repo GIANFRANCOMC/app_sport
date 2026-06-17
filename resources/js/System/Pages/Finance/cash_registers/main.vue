@@ -1,0 +1,588 @@
+<template>
+    <Breadcrumb :list="breadcrumbTitles"/>
+
+    <section class="br-cash">
+        <div class="br-cash__context">
+            <div class="br-cash__heading">
+                <p class="br-cash__eyebrow mb-1">Operación de caja</p>
+                <h1 class="br-cash__title mb-0">Caja</h1>
+            </div>
+            <div class="br-cash__selector">
+                <label class="form-label">Caja de trabajo</label>
+                <v-select
+                    v-model="selectedRegister"
+                    :options="registerOptions"
+                    class="bg-white"
+                    :clearable="false"
+                    :searchable="false"
+                    placeholder="Seleccione una caja"
+                    @option:selected="refreshAll"/>
+            </div>
+        </div>
+
+        <nav class="nav nav-pills nav-fill br-entity-tabs br-cash__tabs" aria-label="Secciones de caja">
+            <button
+                v-for="view in views"
+                :key="view.id"
+                type="button"
+                class="nav-link br-entity-tab"
+                :class="{active: activeView === view.id, 'is-active': activeView === view.id}"
+                :aria-selected="activeView === view.id"
+                @click="setView(view.id)">
+                <span class="br-entity-tab__step"><i :class="view.icon" aria-hidden="true"></i></span>
+                <span class="br-entity-tab__content">
+                    <strong>{{ view.label }}</strong>
+                    <small>{{ view.description }}</small>
+                </span>
+            </button>
+        </nav>
+
+        <section class="br-filter-bar br-cash__toolbar">
+            <div class="br-filter-bar__field">
+                <label class="form-label">Búsqueda</label>
+                <InputText
+                    v-model="filters.search"
+                    hasDiv
+                    title=""
+                    placeholder="Buscar caja, responsable o referencia"
+                    @keyup.enter="refreshActiveView"/>
+            </div>
+            <div class="br-filter-bar__actions">
+                <button type="button" class="br-btn br-btn-action-search" @click="refreshActiveView">
+                    <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+                    <span>Buscar</span>
+                </button>
+                <button
+                    type="button"
+                    class="br-btn br-btn-primary"
+                    data-bs-toggle="tooltip"
+                    title="Registrar apertura de caja"
+                    :disabled="!selectedRegister || selectedRegister.is_open"
+                    @click="openModal('open')">
+                    <i class="fa-solid fa-door-open" aria-hidden="true"></i>
+                    <span>Abrir caja</span>
+                </button>
+                <button
+                    type="button"
+                    class="br-btn br-btn-secondary"
+                    data-bs-toggle="tooltip"
+                    title="Cerrar caja y registrar arqueo"
+                    :disabled="!currentSession"
+                    @click="openModal('close')">
+                    <i class="fa-solid fa-scale-balanced" aria-hidden="true"></i>
+                    <span>Cerrar caja</span>
+                </button>
+            </div>
+        </section>
+
+        <section v-if="activeView === 'registers'" class="br-cash__panel">
+            <Loader v-if="loading.registers"/>
+            <div v-else-if="registers.length" class="table-responsive">
+                <table class="table br-entity-table mb-0">
+                    <thead>
+                        <tr>
+                            <th>Caja</th>
+                            <th>Sucursal</th>
+                            <th>Sesión actual</th>
+                            <th class="text-end">Esperado</th>
+                            <th class="text-center">Estado</th>
+                            <th class="text-center"><span class="visually-hidden">Acciones</span></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="register in registers" :key="register.id">
+                            <td>
+                                <strong>{{ register.name }}</strong>
+                                <span class="br-cash__muted d-block">{{ register.code }}</span>
+                            </td>
+                            <td>{{ register.branch?.name || 'Sin sucursal' }}</td>
+                            <td>
+                                <span v-if="register.is_open" class="br-status br-status-active">Abierta</span>
+                                <span v-else class="br-status br-status-inactive">Sin apertura</span>
+                            </td>
+                            <td class="text-end fw-semibold">S/ {{ separatorNumber(register.current_amount) }}</td>
+                            <td class="text-center">
+                                <span :class="['br-status-label', register.status === 'active' ? 'br-status-active' : 'br-status-inactive']">
+                                    {{ register.status === 'active' ? 'Activa' : 'Inactiva' }}
+                                </span>
+                            </td>
+                            <td class="text-center">
+                                <button
+                                    v-if="register.is_open"
+                                    type="button"
+                                    class="br-icon-action br-icon-action-edit"
+                                    data-bs-toggle="tooltip"
+                                    title="Cerrar caja"
+                                    @click="openModal('close', register)">
+                                    <i class="fa-solid fa-scale-balanced" aria-hidden="true"></i>
+                                </button>
+                                <button
+                                    v-else
+                                    type="button"
+                                    class="br-icon-action br-icon-action-primary"
+                                    data-bs-toggle="tooltip"
+                                    title="Abrir caja"
+                                    @click="openModal('open', register)">
+                                    <i class="fa-solid fa-door-open" aria-hidden="true"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <WithoutData v-else/>
+        </section>
+
+        <section v-if="activeView === 'sessions'" class="br-cash__panel">
+            <Loader v-if="loading.sessions"/>
+            <div v-else-if="sessions.data?.length" class="table-responsive">
+                <table class="table br-entity-table mb-0">
+                    <thead>
+                        <tr>
+                            <th>Caja</th>
+                            <th>Apertura</th>
+                            <th>Cierre</th>
+                            <th class="text-end">Esperado</th>
+                            <th class="text-end">Contado</th>
+                            <th class="text-end">Diferencia</th>
+                            <th class="text-center">Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="session in sessions.data" :key="session.id">
+                            <td>
+                                <strong>{{ session.register?.name }}</strong>
+                                <span class="br-cash__muted d-block">{{ session.branch?.name }}</span>
+                            </td>
+                            <td>{{ formatDateTime(session.opened_at) }}</td>
+                            <td>{{ session.closed_at ? formatDateTime(session.closed_at) : 'En curso' }}</td>
+                            <td class="text-end">S/ {{ separatorNumber(session.expected_amount) }}</td>
+                            <td class="text-end">S/ {{ separatorNumber(session.counted_amount) }}</td>
+                            <td class="text-end" :class="differenceClass(session.difference_amount)">
+                                S/ {{ separatorNumber(session.difference_amount) }}
+                            </td>
+                            <td class="text-center">
+                                <span :class="['br-status-label', session.status === 'open' ? 'br-status-active' : 'br-status-inactive']">
+                                    {{ session.status === 'open' ? 'Abierta' : 'Cerrada' }}
+                                </span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <Paginator :links="sessions.links" @clickPage="getSessions"/>
+            </div>
+            <WithoutData v-else/>
+        </section>
+
+        <section v-if="activeView === 'summary'" class="br-cash__panel">
+            <Loader v-if="loading.summary"/>
+            <div v-else class="br-cash-summary">
+                <article class="br-cash-summary__card">
+                    <span>Fondo inicial</span>
+                    <strong>S/ {{ separatorNumber(summary.totals.opening) }}</strong>
+                </article>
+                <article class="br-cash-summary__card">
+                    <span>Esperado</span>
+                    <strong>S/ {{ separatorNumber(summary.totals.expected) }}</strong>
+                </article>
+                <article class="br-cash-summary__card">
+                    <span>Contado</span>
+                    <strong>S/ {{ separatorNumber(summary.totals.counted) }}</strong>
+                </article>
+                <article class="br-cash-summary__card">
+                    <span>Diferencia</span>
+                    <strong :class="differenceClass(summary.totals.difference)">S/ {{ separatorNumber(summary.totals.difference) }}</strong>
+                </article>
+            </div>
+            <div v-if="summary.payments.length" class="table-responsive mt-3">
+                <table class="table br-entity-table mb-0">
+                    <thead>
+                        <tr>
+                            <th>Método de pago</th>
+                            <th class="text-end">Importe</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="payment in summary.payments" :key="payment.payment_method_id || 'opening'">
+                            <td>{{ payment.payment_method?.name || 'Efectivo / apertura' }}</td>
+                            <td class="text-end fw-semibold">S/ {{ separatorNumber(payment.amount) }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section v-if="activeView === 'movements'" class="br-cash__panel">
+            <Loader v-if="loading.movements"/>
+            <div v-else-if="movements.data?.length" class="table-responsive">
+                <table class="table br-entity-table mb-0">
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Caja</th>
+                            <th>Tipo</th>
+                            <th>Método</th>
+                            <th>Referencia</th>
+                            <th class="text-end">Importe</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="movement in movements.data" :key="movement.id">
+                            <td>{{ formatDateTime(movement.occurred_at) }}</td>
+                            <td>{{ movement.cash_session?.register?.name || '-' }}</td>
+                            <td>{{ movementTypeLabel(movement.movement_type) }}</td>
+                            <td>{{ movement.payment_method?.name || 'Efectivo / caja' }}</td>
+                            <td>
+                                <strong>{{ movement.reference || '-' }}</strong>
+                                <span v-if="movement.user?.name" class="br-cash__muted d-block">{{ movement.user.name }}</span>
+                            </td>
+                            <td class="text-end fw-semibold">S/ {{ separatorNumber(movement.amount) }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <Paginator :links="movements.links" @clickPage="getMovements"/>
+            </div>
+            <WithoutData v-else/>
+        </section>
+    </section>
+
+    <div class="modal fade" id="cashOpenModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content br-entity-modal">
+                <div class="modal-header br-entity-modal__header">
+                    <div>
+                        <p class="br-entity-modal__eyebrow mb-1">Caja</p>
+                        <h5 class="modal-title">Abrir caja</h5>
+                    </div>
+                    <button type="button" class="br-modal-close" data-bs-dismiss="modal" aria-label="Cerrar">
+                        <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+                    </button>
+                </div>
+                <div class="modal-body br-entity-modal__body">
+                    <InputSlot hasDiv title="Caja" :titleClass="['form-label']" isRequired hasTextBottom :textBottomInfo="errors.cash_register_id">
+                        <template v-slot:input>
+                            <v-select
+                                v-model="forms.open.cash_register"
+                                :options="registerOptions"
+                                class="bg-white"
+                                :clearable="false"
+                                :searchable="false"
+                                placeholder="Seleccione una caja"/>
+                        </template>
+                    </InputSlot>
+                    <InputNumber
+                        v-model="forms.open.opening_amount"
+                        hasDiv
+                        title="Fondo inicial"
+                        :titleClass="['form-label']"
+                        hasTextBottom
+                        :textBottomInfo="errors.opening_amount"/>
+                    <InputText
+                        v-model="forms.open.observation"
+                        hasDiv
+                        title="Observación"
+                        :titleClass="['form-label']"
+                        maxlength="300"/>
+                </div>
+                <div class="modal-footer br-entity-modal__footer">
+                    <button type="button" class="br-btn br-btn-cancel" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="br-btn br-btn-primary" :disabled="saving" @click="submitOpen">Abrir caja</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="cashCloseModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content br-entity-modal">
+                <div class="modal-header br-entity-modal__header">
+                    <div>
+                        <p class="br-entity-modal__eyebrow mb-1">Arqueo</p>
+                        <h5 class="modal-title">Cerrar caja</h5>
+                    </div>
+                    <button type="button" class="br-modal-close" data-bs-dismiss="modal" aria-label="Cerrar">
+                        <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+                    </button>
+                </div>
+                <div class="modal-body br-entity-modal__body">
+                    <div class="br-cash-close-summary">
+                        <span>Esperado</span>
+                        <strong>S/ {{ separatorNumber(forms.close.expected_amount) }}</strong>
+                    </div>
+                    <div class="row g-3">
+                        <InputNumber
+                            v-for="payment in forms.close.payments"
+                            :key="payment.payment_method_id || 'opening'"
+                            v-model="payment.counted_amount"
+                            hasDiv
+                            :title="payment.label"
+                            :titleClass="['form-label']"
+                            xl="6"
+                            lg="6"/>
+                    </div>
+                    <InputText
+                        v-model="forms.close.observation"
+                        hasDiv
+                        title="Observación"
+                        :titleClass="['form-label']"
+                        maxlength="300"/>
+                </div>
+                <div class="modal-footer br-entity-modal__footer">
+                    <button type="button" class="br-btn br-btn-cancel" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="br-btn br-btn-secondary" :disabled="saving" @click="submitClose">Cerrar caja</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
+
+<script>
+import * as Alerts from "@System/Helpers/Alerts.js";
+import * as Requests from "@System/Helpers/Requests.js";
+import * as Utils from "@System/Helpers/Utils.js";
+
+const MODULE = {
+    entity: "cash_registers",
+    pageTitle: "Caja",
+    breadcrumbParent: "Operación"
+};
+
+export default {
+    data() {
+        return {
+            config: Requests.config({entity: MODULE.entity}),
+            registers: [],
+            sessions: {data: [], links: []},
+            movements: {data: [], links: []},
+            summary: {sessions: [], payments: [], totals: {opening: 0, expected: 0, counted: 0, difference: 0}},
+            selectedRegister: null,
+            activeView: "registers",
+            filters: {search: ""},
+            options: {
+                registers: [],
+                branches: [],
+                paymentMethods: [],
+                statuses: [],
+                movementTypes: []
+            },
+            forms: {
+                open: {cash_register: null, opening_amount: "", observation: ""},
+                close: {cash_session_id: null, expected_amount: 0, payments: [], observation: ""}
+            },
+            errors: {},
+            saving: false,
+            loading: {
+                init: false,
+                registers: false,
+                sessions: false,
+                movements: false,
+                summary: false
+            },
+            views: [
+                {id: "registers", label: "Cajas", description: "Apertura y estado", icon: "fa-solid fa-vault"},
+                {id: "sessions", label: "Aperturas y cierres", description: "Turnos y arqueos", icon: "fa-solid fa-clock-rotate-left"},
+                {id: "summary", label: "Resumen", description: "Métodos de pago", icon: "fa-solid fa-chart-pie"},
+                {id: "movements", label: "Movimientos", description: "Trazabilidad", icon: "fa-solid fa-right-left"}
+            ]
+        };
+    },
+    computed: {
+        breadcrumbTitles() {
+            return [{title: MODULE.breadcrumbParent}, {title: MODULE.pageTitle, active: true}];
+        },
+        registerOptions() {
+            return this.options.registers.map(register => ({
+                ...register,
+                label: `${register.name} - ${register.branch?.name || 'Sin sucursal'}`
+            }));
+        },
+        currentSession() {
+            return this.selectedRegister?.open_session ?? null;
+        }
+    },
+    mounted() {
+        Utils.navbarItem("menu-parent-cash-registers", {addClass: "open"});
+        Utils.navbarItem("menu-cash-registers", {addClass: "active"});
+        this.initParams();
+    },
+    methods: {
+        async initParams() {
+            this.loading.init = true;
+            const result = await Requests.get({route: this.config.routes.initParams});
+            this.loading.init = false;
+
+            if(!Requests.valid({result})) return;
+
+            const data = result.data.config;
+            this.options.registers = data.registers || [];
+            this.options.branches = data.branches || [];
+            this.options.paymentMethods = data.paymentMethods || [];
+            this.options.statuses = data.statuses || [];
+            this.options.movementTypes = data.movementTypes || [];
+            this.selectedRegister = this.registerOptions[0] || null;
+
+            await this.refreshAll();
+        },
+        async refreshAll() {
+            await this.getRegisters();
+            await this.refreshActiveView();
+            Alerts.tooltips({});
+        },
+        async refreshActiveView(pageUrl = null) {
+            if(this.activeView === "sessions") return this.getSessions(pageUrl);
+            if(this.activeView === "movements") return this.getMovements(pageUrl);
+            if(this.activeView === "summary") return this.getSummary();
+
+            return this.getRegisters();
+        },
+        setView(view) {
+            this.activeView = view;
+            this.$nextTick(() => this.refreshActiveView());
+        },
+        baseFilters() {
+            return {
+                filter: {
+                    cash_register_id: this.selectedRegister?.id || null,
+                    search: this.filters.search || null
+                }
+            };
+        },
+        async getRegisters() {
+            this.loading.registers = true;
+            const result = await Requests.get({route: this.config.routes.list});
+            this.loading.registers = false;
+
+            if(!Requests.valid({result})) return;
+
+            this.registers = result.data.data || [];
+            this.options.registers = this.registers;
+
+            if(this.selectedRegister) {
+                this.selectedRegister = this.registerOptions.find(register => register.id === this.selectedRegister.id) || this.selectedRegister;
+            }
+        },
+        async getSessions(pageUrl = null) {
+            this.loading.sessions = true;
+            const result = await Requests.get({
+                route: pageUrl || this.config.routes.sessions,
+                data: this.baseFilters()
+            });
+            this.loading.sessions = false;
+
+            if(Requests.valid({result})) this.sessions = result.data.data;
+        },
+        async getMovements(pageUrl = null) {
+            this.loading.movements = true;
+            const result = await Requests.get({
+                route: pageUrl || this.config.routes.movements,
+                data: this.baseFilters()
+            });
+            this.loading.movements = false;
+
+            if(Requests.valid({result})) this.movements = result.data.data;
+        },
+        async getSummary() {
+            this.loading.summary = true;
+            const result = await Requests.get({
+                route: this.config.routes.summary,
+                data: this.baseFilters()
+            });
+            this.loading.summary = false;
+
+            if(Requests.valid({result})) this.summary = result.data.data;
+        },
+        openModal(type, register = null) {
+            if(register) this.selectedRegister = this.registerOptions.find(item => item.id === register.id) || register;
+            this.errors = {};
+
+            if(type === "open") {
+                this.forms.open = {cash_register: this.selectedRegister, opening_amount: "", observation: ""};
+                this.showModal("cashOpenModal");
+                return;
+            }
+
+            const session = register?.open_session || this.currentSession;
+            this.forms.close = {
+                cash_session_id: session?.id,
+                expected_amount: session?.expected_amount || 0,
+                observation: "",
+                payments: this.closePaymentRows()
+            };
+            this.showModal("cashCloseModal");
+        },
+        closePaymentRows() {
+            const rows = this.options.paymentMethods.map(method => ({
+                payment_method_id: method.id,
+                label: method.name,
+                counted_amount: ""
+            }));
+
+            return [{payment_method_id: null, label: "Efectivo / fondo", counted_amount: ""}, ...rows];
+        },
+        async submitOpen() {
+            this.saving = true;
+            const result = await Requests.post({
+                route: this.config.routes.open,
+                data: {
+                    cash_register_id: this.forms.open.cash_register?.id,
+                    opening_amount: this.forms.open.opening_amount,
+                    observation: this.forms.open.observation
+                }
+            });
+            this.saving = false;
+
+            if(!Requests.valid({result})) return this.handleError(result);
+
+            this.hideModal("cashOpenModal");
+            Alerts.toastrs({type: "success", subtitle: result.data.msg});
+            await this.refreshAll();
+        },
+        async submitClose() {
+            this.saving = true;
+            const result = await Requests.post({
+                route: this.config.routes.close,
+                data: this.forms.close
+            });
+            this.saving = false;
+
+            if(!Requests.valid({result})) return this.handleError(result);
+
+            this.hideModal("cashCloseModal");
+            Alerts.toastrs({type: "success", subtitle: result.data.msg});
+            await this.refreshAll();
+        },
+        handleError(result) {
+            this.errors = result.errors || {};
+            Alerts.toastrs({
+                type: "error",
+                subtitle: result.data?.msg || "No fue posible completar la acción."
+            });
+        },
+        showModal(id) {
+            const element = document.getElementById(id);
+            window.bootstrap.Modal.getOrCreateInstance(element, {backdrop: "static", keyboard: false}).show();
+        },
+        hideModal(id) {
+            const element = document.getElementById(id);
+            window.bootstrap.Modal.getOrCreateInstance(element).hide();
+        },
+        separatorNumber(value) {
+            const number = Number(value || 0);
+            return number.toLocaleString("es-PE", {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        },
+        formatDateTime(value) {
+            if(!value) return "-";
+            return new Date(value).toLocaleString("es-PE");
+        },
+        differenceClass(value) {
+            const amount = Number(value || 0);
+            if(amount > 0) return "text-success";
+            if(amount < 0) return "text-danger";
+            return "text-muted";
+        },
+        movementTypeLabel(type) {
+            return this.options.movementTypes.find(item => item.id === type)?.label || type || "-";
+        }
+    }
+};
+</script>

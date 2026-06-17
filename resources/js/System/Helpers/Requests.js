@@ -343,6 +343,13 @@ const ENTITY_SPECIAL_ROUTES = {
         operations: "operations",
         transfers: "transfers"
     },
+    cash_registers: {
+        sessions: "sessions",
+        movements: "movements",
+        summary: "summary",
+        open: "open",
+        close: "close"
+    },
     purchases: {
         receive: "receive",
         cancel: "cancel"

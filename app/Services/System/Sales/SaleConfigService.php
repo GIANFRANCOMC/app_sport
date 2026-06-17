@@ -53,6 +53,9 @@ final class SaleConfigService extends BaseConfigService {
             "branches" => self::data([
                 "records" => $references->branchesWithSeries()
             ]),
+            "warehouses" => self::data([
+                "records" => $references->stockWarehouses()
+            ]),
             "currencies" => self::data([
                 "records" => MasterReferenceDataService::currencies()
             ]),

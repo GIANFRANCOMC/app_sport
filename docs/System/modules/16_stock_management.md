@@ -197,3 +197,10 @@ Requieren módulos documentales independientes y permanecen pendientes:
 - Guías de entrada y salida, con numeración, estado y detalle.
 - App de almaceneros, con permisos y experiencia móvil propia.
 - Reportes consolidados de inventario y stock mínimo/máximo entre varios almacenes.
+## Actualizacion: ventas por almacen y caja
+
+- Las ventas ahora guardan `sales_header.warehouse_id`, de modo que el descuento de stock ocurre en el almacen seleccionado por el usuario y no en el primero disponible.
+- Si una sucursal tiene varios almacenes, el backend exige indicar el almacen afectado para evitar salidas ambiguas.
+- Los movimientos por venta siguen registrandose en `inventory_movements` con origen `sale`, usando el almacen de la cabecera de venta.
+- La caja se modela por separado con `cash_registers`, `cash_sessions`, `cash_session_payments` y `cash_movements`.
+- Cuando una venta se asocia a `cash_session_id`, sus pagos generan movimientos de caja por metodo de pago. Esto prepara apertura, cierre, arqueo y resumen por metodo sin mezclar trazabilidad financiera con Kardex fisico.

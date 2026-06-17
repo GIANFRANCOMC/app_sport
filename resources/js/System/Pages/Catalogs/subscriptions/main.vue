@@ -227,6 +227,23 @@
                                     </span>
                                 </template>
                             </InputNumber>
+                            <div class="form-group col-xl-4 col-lg-4 col-md-12 col-sm-12">
+                                <label class="form-label fw-bold colon-at-end fs-6">Precio incluye IGV</label>
+                                <div class="br-entity-publication-settings br-tax-inclusion-control">
+                                    <label class="br-entity-switch" for="subscription_price_includes_tax">
+                                        <input
+                                            id="subscription_price_includes_tax"
+                                            v-model="forms[entity].createUpdate.data.price_includes_tax"
+                                            class="form-check-input"
+                                            type="checkbox"
+                                            role="switch">
+                                        <span>
+                                            <strong>Incluye IGV</strong>
+                                            <small>Si está activo, el precio de venta ya contiene el impuesto y no incrementará el total al vender.</small>
+                                        </span>
+                                    </label>
+                                </div>
+                            </div>
                             <InputSlot
                                 v-if="false"
                                 hasDiv
@@ -357,6 +374,7 @@ const FORM_FIELDS = {
     duration_value: "",
     duration_type: null,
     price: "",
+    price_includes_tax: true,
     min_price: "",
     max_price: "",
     currency: null,
@@ -373,6 +391,7 @@ const FORM_FIELD_CONFIG = {
     duration_value: {toNumber: true, minValue: 1},
     duration_type: {getCode: true},
     price: {toNumber: true, minValue: 0},
+    price_includes_tax: {toBoolean: true},
     min_price: {toNumber: true, minValue: 0},
     max_price: {toNumber: true, minValue: 0},
     currency: {mapToField: "currency_id"},
@@ -389,6 +408,7 @@ const VALIDATION_RULES = {
     duration_value: {required: true, number: true, min: 1},
     duration_type: {required: true},
     price: {required: true, number: true, min: 0},
+    price_includes_tax: {required: false},
     min_price: {required: false, number: true, min: 0},
     max_price: {required: false, number: true, min: 0},
     currency: {required: true},
@@ -405,6 +425,7 @@ const ERROR_LABELS = {
     duration_value: "Duración (valor)",
     duration_type: "Duración (tipo)",
     price: "Precio de venta",
+    price_includes_tax: "Precio incluye IGV",
     min_price: "Precio mínimo",
     max_price: "Precio máximo",
     currency: "Moneda",
@@ -607,6 +628,7 @@ export default {
                 entityForms.data.duration_value   = record.duration_value;
                 entityForms.data.duration_type    = durationTypeOption;
                 entityForms.data.price            = record.price;
+                entityForms.data.price_includes_tax = Boolean(record.price_includes_tax ?? true);
                 entityForms.data.min_price        = record.min_price;
                 entityForms.data.max_price        = record.max_price;
                 entityForms.data.currency         = currencyOption;
@@ -622,6 +644,7 @@ export default {
                 entityForms.data.duration_value = 1;
                 entityForms.data.duration_type  = this.durationTypes.length > 0 ? this.durationTypes[0] : null;
                 entityForms.data.currency       = this.currencies.length > 0 ? this.currencies[0] : null;
+                entityForms.data.price_includes_tax = true;
                 entityForms.data.status         = this.statuses.length > 0 ? this.statuses[0] : null;
 
             }

@@ -14,8 +14,8 @@
                             isRequired
                             hasTextBottom
                             :textBottomInfo="forms[entity].createUpdate.errors?.branch_id"
-                            xl="7"
-                            lg="12">
+                            xl="4"
+                            lg="4">
                             <template v-slot:input>
                                 <v-select
                                     v-model="forms[entity].createUpdate.data.branch"
@@ -33,12 +33,31 @@
                             isRequired
                             hasTextBottom
                             :textBottomInfo="forms[entity].createUpdate.errors?.serie_id"
-                            xl="5"
-                            lg="6">
+                            xl="4"
+                            lg="4">
                             <template v-slot:input>
                                 <v-select
                                     v-model="forms[entity].createUpdate.data.serie"
                                     :options="series"
+                                    :class="config.forms.classes.select2"
+                                    :clearable="false"
+                                    :searchable="false"
+                                    placeholder="Seleccione"/>
+                            </template>
+                        </InputSlot>
+                        <InputSlot
+                            hasDiv
+                            :title="MODULE.texts.form.warehouse"
+                            :titleClass="[config.forms.classes.title]"
+                            isRequired
+                            hasTextBottom
+                            :textBottomInfo="forms[entity].createUpdate.errors?.warehouse"
+                            xl="4"
+                            lg="4">
+                            <template v-slot:input>
+                                <v-select
+                                    v-model="forms[entity].createUpdate.data.warehouse"
+                                    :options="warehouses"
                                     :class="config.forms.classes.select2"
                                     :clearable="false"
                                     :searchable="false"
@@ -780,10 +799,12 @@ import { initCrudModule }  from "@System/Helpers/ModuleFactory.js";
 import * as Requests       from "@System/Helpers/Requests.js";
 import * as Utils          from "@System/Helpers/Utils.js";
 
+const IS_POS_MODE = window.location.pathname.split("?")[0].endsWith("/sales/pos");
+
 const MODULE_CONFIG = {
     entity: "sales",
-    menuId: "menu-sales-create",
-    pageTitle: "Nueva venta",
+    menuId: IS_POS_MODE ? "menu-sales-pos" : "menu-sales-create",
+    pageTitle: IS_POS_MODE ? "Venta POS" : "Nueva venta",
     breadcrumbParent: "Ventas"
 };
 
@@ -798,6 +819,7 @@ const TEXTS = {
     form: {
         branch: "Sucursal",
         serie: "Tipo de comprobante",
+        warehouse: "Almacén",
         issueDate: "Fecha de emisión",
         holder: "Cliente",
         observation: "Observaciones",
@@ -925,6 +947,7 @@ export default {
                 id: null,
                 branch: null,
                 serie: null,
+                warehouse: null,
                 issue_date: "",
                 holder: null,
                 currency: null,
@@ -968,6 +991,7 @@ export default {
             const initParams = await Requests.get({route: this.config.entity.routes.initParams, data: {page: "main"}, showAlert: true});
 
             this.options.branches             = initParams.data?.config?.branches;
+            this.options.warehouses           = initParams.data?.config?.warehouses;
             this.options.currencies           = initParams.data?.config?.currencies;
             this.options.holders              = {subscriptions: {}, ...initParams.data?.config?.customers};
             this.options.customers            = initParams.data?.config?.customers;
@@ -985,6 +1009,7 @@ export default {
             return new Promise(resolve => {
 
                 this.forms[this.entity].createUpdate.data.branch     = (this.branches).length > 0 ? this.branches[0] : null;
+                this.forms[this.entity].createUpdate.data.warehouse  = (this.warehouses).length > 0 ? this.warehouses[0] : null;
                 this.forms[this.entity].createUpdate.data.issue_date = Utils.getCurrentDate();
                 this.forms[this.entity].createUpdate.data.holder     = (this.holders).length > 0 ? this.holders[0] : null;
                 this.forms[this.entity].createUpdate.data.currency   = (this.currencies).length > 0 ? this.currencies[0] : null;
@@ -1255,12 +1280,14 @@ export default {
 
                 form.branch_id   = form?.branch?.code;
                 form.serie_id    = form?.serie?.code;
+                form.warehouse_id = form?.warehouse?.code;
                 form.holder_id   = form?.holder?.code;
                 form.currency_id = form?.currency?.code;
                 form.payments = this.salePaymentPayload;
 
                 delete form.branch;
                 delete form.serie;
+                delete form.warehouse;
                 delete form.holder;
                 delete form.currency;
 
@@ -1335,6 +1362,7 @@ export default {
                     // this.forms[this.entity].createUpdate.data.issue_date  = Utils.getCurrentDate();
                     // this.forms[this.entity].createUpdate.data.holder      = null;
                     this.forms[this.entity].createUpdate.data.observation = "";
+                    this.forms[this.entity].createUpdate.data.warehouse   = (this.warehouses).length > 0 ? this.warehouses[0] : null;
                     this.forms[this.entity].createUpdate.extras.modals.observations.draft = "";
                     this.forms[this.entity].createUpdate.data.payments   = [this.newSalePayment({amount: this.total})];
                     this.forms[this.entity].createUpdate.data.status      = "";
@@ -1485,6 +1513,7 @@ export default {
 
                 result.branch      = [];
                 result.serie       = [];
+                result.warehouse   = [];
                 result.issue_date  = [];
                 result.holder      = [];
                 result.currency    = [];
@@ -1504,6 +1533,13 @@ export default {
                 if(!this.isDefined({value: form?.serie})) {
 
                     result.serie.push(`${isDescriptive ? "Tipo de comprobante:" : ""} ${this.config.forms.errors.labels.required}`);
+                    result.bool = false;
+
+                }
+
+                if(!this.isDefined({value: form?.warehouse})) {
+
+                    result.warehouse.push(`${isDescriptive ? "Almacén:" : ""} ${this.config.forms.errors.labels.required}`);
                     result.bool = false;
 
                 }
@@ -1743,6 +1779,19 @@ export default {
             return [];
 
         },
+        warehouses: function() {
+
+            const branchId = this.forms[this.entity].createUpdate.data.branch?.code;
+
+            return (this.options?.warehouses?.records ?? [])
+                .filter(e => !branchId || e?.branch_id == branchId)
+                .map(e => ({
+                    code: e.id,
+                    label: `${e?.branch?.name ?? "Sucursal"} - ${e.name}`,
+                    data: e
+                }));
+
+        },
         holders: function() {
 
             return this.options?.holders?.records.map(e => ({code: e.id, label: `${e.document_number} - ${e.name}`, data: e}));
@@ -1791,10 +1840,23 @@ export default {
         },
         saleTaxTotal() {
 
-            const subtotal = Number(this.saleSubtotal || 0);
+            const subtotal = Number(this.saleAdditionalTaxBase || 0);
 
             return this.fixedNumber((this.saleTaxes || []).reduce((total, tax) => {
                 return total + (subtotal * (Number(tax.data?.rate || 0) / 100));
+            }, 0));
+
+        },
+        saleAdditionalTaxBase() {
+
+            return this.fixedNumber((this.forms[this.entity].createUpdate.data.details || []).reduce((total, detail) => {
+
+                const priceIncludesTax = Boolean(detail?.item?.data?.price_includes_tax ?? detail?.price_includes_tax ?? true);
+
+                if(priceIncludesTax) return total;
+
+                return total + Number(this.calculateTotal({item: detail}));
+
             }, 0));
 
         },
@@ -1942,6 +2004,7 @@ export default {
         "forms.sales.createUpdate.data.branch"() {
 
             this.forms[this.entity].createUpdate.data.serie = (this.series).length > 0 ? this.series[0] : null;
+            this.forms[this.entity].createUpdate.data.warehouse = (this.warehouses).length > 0 ? this.warehouses[0] : null;
 
         },
         "forms.sales.createUpdate.data.holder": async function(newValue) {

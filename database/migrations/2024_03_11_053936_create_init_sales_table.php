@@ -19,6 +19,8 @@ return new class extends Migration {
             $table->unsignedBigInteger("holder_id");
             $table->unsignedBigInteger("seller_id");
             $table->unsignedBigInteger("currency_id");
+            $table->unsignedBigInteger("warehouse_id")->nullable();
+            $table->unsignedBigInteger("cash_session_id")->nullable();
             $table->date("issue_date");
             $table->decimal("subtotal", 10, 2)->default(0);
             $table->decimal("tax", 10, 2)->default(0);
@@ -37,6 +39,8 @@ return new class extends Migration {
             $table->foreign("holder_id")->references("id")->on("customers")->onDelete("cascade");
             $table->foreign("seller_id")->references("id")->on("users")->onDelete("cascade");
             $table->foreign("currency_id")->references("id")->on("currencies")->onDelete("cascade");
+            $table->foreign("warehouse_id")->references("id")->on("warehouses")->nullOnDelete();
+            $table->foreign("cash_session_id")->references("id")->on("cash_sessions")->nullOnDelete();
         });
 
         // ✅

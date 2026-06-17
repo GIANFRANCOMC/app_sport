@@ -37,3 +37,10 @@ Los mismos de `items`, con `type = service`.
 - Si la configuración de la empresa es nula o vacía, el servicio se guarda sin prefijo y el addon no se muestra.
 - Store y Update extienden `CompanyFormRequest`, normalizan cadenas y aplican `AppliesInternalCodePrefix`.
 - Los errores bajo cada campo son breves. El resumen de validación agrega el nombre del campo tanto para errores frontend como para respuestas HTTP `422`.
+
+## Actualizacion: IGV incluido
+
+- Los servicios usan `items.price_includes_tax` igual que productos y membresias.
+- En el formulario se muestra `Precio incluye IGV`, activo por defecto.
+- Cuando se vende un servicio con IGV incluido, los impuestos configurados de venta no aumentan el total de ese detalle.
+- Cuando se vende un servicio sin IGV incluido, todos los impuestos activos de alcance `sale` o `both` se calculan sobre el precio del detalle.

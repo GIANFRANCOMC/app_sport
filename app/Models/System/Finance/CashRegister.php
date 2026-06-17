@@ -1,0 +1,46 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Models\System\Finance;
+
+use Illuminate\Database\Eloquent\Model;
+use App\Models\System\Organizations\Branch;
+
+final class CashRegister extends Model {
+
+    protected $table = "cash_registers";
+
+    protected $fillable = [
+        "company_id",
+        "branch_id",
+        "code",
+        "name",
+        "status",
+        "created_at",
+        "created_by",
+        "updated_at",
+        "updated_by"
+    ];
+
+    public function branch() {
+
+        return $this->belongsTo(Branch::class, "branch_id", "id");
+
+    }
+
+    public function sessions() {
+
+        return $this->hasMany(CashSession::class, "cash_register_id", "id");
+
+    }
+
+    public function openSession() {
+
+        return $this->hasOne(CashSession::class, "cash_register_id", "id")
+                    ->where("status", "open")
+                    ->latest("opened_at");
+
+    }
+
+}

@@ -36,6 +36,8 @@ class StoreSaleRequest extends FormRequest {
             "serie_id"    => "required|integer",
             "holder_id"   => "required|integer",
             "currency_id" => "required|integer",
+            "warehouse_id" => "nullable|integer",
+            "cash_session_id" => "nullable|integer",
             "issue_date"  => "required|date",
             "observation" => "nullable|string|max:300",
             "taxes" => "nullable|array|max:20",
@@ -69,6 +71,7 @@ class StoreSaleRequest extends FormRequest {
         $fieldMappings = [
             "branch_id"   => "branch",
             "serie_id"    => "serie",
+            "warehouse_id" => "warehouse",
             "holder_id"   => "holder",
             "currency_id" => "currency"
         ];

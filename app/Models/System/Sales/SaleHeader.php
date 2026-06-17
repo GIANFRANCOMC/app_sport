@@ -11,6 +11,8 @@ use App\Models\System\Organizations\{User};
 use App\Models\System\Customers\{Customer};
 use App\Models\System\General\{Currency};
 use App\Models\System\Organizations\{Serie};
+use App\Models\System\Finance\{CashSession};
+use App\Models\System\Warehouses\{Warehouse};
 
 class SaleHeader extends Model {
 
@@ -35,6 +37,8 @@ class SaleHeader extends Model {
         "holder_id",
         "seller_id",
         "currency_id",
+        "warehouse_id",
+        "cash_session_id",
         "issue_date",
         "subtotal",
         "tax",
@@ -173,6 +177,18 @@ class SaleHeader extends Model {
     public function currency() {
 
         return $this->belongsTo(Currency::class, "currency_id", "id");
+
+    }
+
+    public function warehouse() {
+
+        return $this->belongsTo(Warehouse::class, "warehouse_id", "id");
+
+    }
+
+    public function cashSession() {
+
+        return $this->belongsTo(CashSession::class, "cash_session_id", "id");
 
     }
 
