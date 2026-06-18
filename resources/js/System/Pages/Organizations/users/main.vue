@@ -42,6 +42,7 @@
                     <tr v-for="record in entityList.records.data" :key="record.id">
                         <td class="text-center">
                             <span class="br-users-profile-label" v-text="record?.role?.name || 'Sin perfil'"></span>
+                            <small class="br-users-branches-label" v-text="branchAccessLabel(record)"></small>
                         </td>
                         <td>
                             <div class="mb-1">
@@ -120,6 +121,34 @@
                                                 {{ label }}
                                                 <small v-if="data?.is_full_access" class="br-users-profile-option">Acceso total</small>
                                             </span>
+                                        </template>
+                                        <template #selected-option="{label}">
+                                            <span class="br-select-selected-text" :title="label">{{ label }}</span>
+                                        </template>
+                                    </v-select>
+                                </template>
+                            </InputSlot>
+                            <InputSlot
+                                hasDiv
+                                :title="MODULE.texts.form.branches"
+                                :titleClass="[config.forms.classes.title]"
+                                hasTextBottom
+                                :textBottomInfo="forms[entity].createUpdate.errors?.branch_ids || MODULE.texts.form.branchesHint"
+                                xl="12"
+                                lg="12">
+                                <template v-slot:input>
+                                    <v-select
+                                        v-model="forms[entity].createUpdate.data.branches"
+                                        :options="branches"
+                                        :class="config.forms.classes.select2"
+                                        :clearable="true"
+                                        :searchable="branches.length > 6"
+                                        multiple
+                                        append-to-body
+                                        placeholder="Todas las sucursales"
+                                        @close="tooltips({show: true, time: 500})">
+                                        <template #option="{label}">
+                                            <span class="br-select-option-text" :title="label">{{ label }}</span>
                                         </template>
                                         <template #selected-option="{label}">
                                             <span class="br-select-selected-text" :title="label">{{ label }}</span>
@@ -301,6 +330,7 @@ const MODULE_CONFIG = {
 
 const FORM_FIELDS = {
     role: null,
+    branches: [],
     identity_document_type: null,
     document_number: "",
     name: "",
@@ -314,6 +344,7 @@ const FORM_FIELDS = {
 
 const FORM_FIELD_CONFIG = {
     role: {mapToField: "role_id"},
+    branches: {removeIfEmpty: false},
     identity_document_type: {mapToField: "identity_document_type_id"},
     document_number: {trim: true},
     name: {trim: true},
@@ -327,6 +358,7 @@ const FORM_FIELD_CONFIG = {
 
 const VALIDATION_RULES = {
     role: {required: true},
+    branches: {required: false},
     identity_document_type: {required: true},
     document_number: {required: true},
     name: {required: true},
@@ -341,6 +373,8 @@ const VALIDATION_RULES = {
 const ERROR_LABELS = {
     role: "Perfil de acceso",
     role_id: "Perfil de acceso",
+    branches: "Sucursales permitidas",
+    branch_ids: "Sucursales permitidas",
     identity_document_type: "Tipo de documento",
     identity_document_type_id: "Tipo de documento",
     document_number: "Número de documento",
@@ -373,6 +407,8 @@ const TEXTS = {
     },
     form: {
         role: "Perfil de acceso",
+        branches: "Sucursales permitidas",
+        branchesHint: "Deja vacío para permitir ventas y operaciones en todas las sucursales.",
         identityDocumentType: "Tipo de documento",
         documentNumber: "Número de documento",
         name: "Nombre",
@@ -456,6 +492,7 @@ export default {
                 this.options.genders               = response.data.config.genders;
                 this.options.identityDocumentTypes = response.data.config.identityDocumentTypes;
                 this.options.roles                 = response.data.config.roles;
+                this.options.branches              = response.data.config.branches;
                 this.options.statuses              = response.data.config.statuses;
 
             }
@@ -537,10 +574,12 @@ export default {
                 const genderOption               = this.genders.find(g => g.code === record?.gender),
                       identityDocumentTypeOption = this.identityDocumentTypes.find(e => e.code === record?.identity_document_type_id),
                       roleOption                 = this.roles.find(e => e.code === record?.role_id),
+                      branchOptions              = this.branches.filter(branch => (record?.branches || []).some(recordBranch => Number(recordBranch.id) === Number(branch.code))),
                       statusOption               = this.statuses.find(s => s.code === record?.status);
 
                 entityForms.data.id                     = record.id;
                 entityForms.data.role                   = roleOption;
+                entityForms.data.branches               = branchOptions;
                 entityForms.data.identity_document_type = identityDocumentTypeOption;
                 entityForms.data.document_number        = record.document_number;
                 entityForms.data.name                   = record.name;
@@ -555,6 +594,7 @@ export default {
 
                 // Set defaults for new record
                 entityForms.data.role                   = this.roles.length > 0 ? this.roles[0] : null;
+                entityForms.data.branches               = [];
                 entityForms.data.identity_document_type = this.identityDocumentTypes.length > 1 ? this.identityDocumentTypes[1] : null;
                 entityForms.data.gender                 = this.genders.length > 0 ? this.genders[0] : null;
                 entityForms.data.status                 = this.statuses.length > 0 ? this.statuses[0] : null;
@@ -591,6 +631,8 @@ export default {
                 }
 
                 const preparedData  = Forms.prepareFormData(formData, this.MODULE.formFieldConfig);
+                preparedData.branch_ids = (formData.branches || []).map(branch => branch?.code ?? branch).filter(Boolean);
+                delete preparedData.branches;
                 const id            = preparedData.id;
                 const isUpdate      = this.isDefined(id);
                 const requestMethod = isUpdate ? "patch" : "post";
@@ -716,6 +758,17 @@ export default {
 
             Alerts.tooltips({show, time});
 
+        },
+        branchAccessLabel(record) {
+
+            const branches = record?.branches || [];
+
+            if(!branches.length) return "Todas las sucursales";
+
+            if(branches.length === 1) return branches[0]?.name || "1 sucursal";
+
+            return `${branches.length} sucursales`;
+
         }
     },
     computed: {
@@ -745,6 +798,11 @@ export default {
         roles() {
 
             return (this.options?.roles?.records ?? []).map(e => ({code: e.id, label: e.name, data: e}));
+
+        },
+        branches() {
+
+            return (this.options?.branches?.records ?? []).map(e => ({code: e.id, label: e.name, data: e}));
 
         },
         identityDocumentTypes() {

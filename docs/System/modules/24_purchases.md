@@ -56,3 +56,8 @@ El método inicial es promedio ponderado por producto y almacén. Los impuestos 
 - Aprobación de órdenes antes de confirmar.
 - Devoluciones ligadas directamente a una recepción de compra.
 - Numeración interna configurable para órdenes y recepciones.
+## Productos disponibles
+
+- Compras solo lista productos con estado `active`.
+- Un producto `inactive` no puede seleccionarse para nuevas órdenes o facturas de compra; primero debe reactivarse desde Catálogo comercial.
+- Los almacenes disponibles respetan las sucursales permitidas del colaborador.

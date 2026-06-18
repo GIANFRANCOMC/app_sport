@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\System\Base;
 
-use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\{Auth, Cache};
 use InvalidArgumentException;
 use stdClass;
 use App\Services\System\Organizations\Companies\CompanySettingService;
@@ -19,6 +19,12 @@ abstract class BaseConfigService {
     abstract protected static function getCachePrefix(): string;
 
     abstract protected static function buildConfig(int $companyId, string $page): stdClass;
+
+    protected static function usesUserScopedCache(): bool {
+
+        return false;
+
+    }
 
     /**
      * Pages whose configuration can be cached by the module.
@@ -73,12 +79,20 @@ abstract class BaseConfigService {
 
         $page = self::normalizePage($page);
 
-        return sprintf(
+        $cacheKey = sprintf(
             "init_params:%s:company:%d:page:%s",
             static::getCachePrefix(),
             $companyId,
             $page
         );
+
+        if(static::usesUserScopedCache()) {
+
+            $cacheKey .= sprintf(":user:%d", (int) Auth::id());
+
+        }
+
+        return $cacheKey;
 
     }
 

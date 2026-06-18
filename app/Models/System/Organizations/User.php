@@ -143,6 +143,14 @@ class User extends Authenticatable {
 
     }
 
+    public function branches() {
+
+        return $this->belongsToMany(Branch::class, "user_branches", "user_id", "branch_id")
+                    ->withPivot(["company_id", "status", "created_by", "updated_by"])
+                    ->wherePivot("status", "active");
+
+    }
+
     public function identityDocumentType() {
 
         return $this->belongsTo(IdentityDocumentType::class, "identity_document_type_id", "id");

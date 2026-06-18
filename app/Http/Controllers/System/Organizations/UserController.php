@@ -208,7 +208,12 @@ class UserController extends BaseController {
             "phone_number"              => $request->input("phone_number"),
             "gender"                    => $request->input("gender"),
             "birthdate"                 => $request->input("birthdate"),
-            "status"                    => $request->input("status")
+            "status"                    => $request->input("status"),
+            "branch_ids"                => collect($request->input("branch_ids", []))
+                                            ->filter()
+                                            ->map(fn($branchId) => (int) $branchId)
+                                            ->values()
+                                            ->all()
         ];
 
         // Only include password if provided

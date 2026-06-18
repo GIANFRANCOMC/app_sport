@@ -21,14 +21,25 @@ final class UserConfigService extends BaseConfigService {
 
     }
 
+    protected static function usesUserScopedCache(): bool {
+
+        return true;
+
+    }
+
     protected static function buildConfig(int $companyId, string $page): stdClass {
+
+        $references = CompanyReferenceDataService::for($companyId);
 
         return self::data([
             "identityDocumentTypes" => self::data([
                 "records" => MasterReferenceDataService::defaultIdentityDocuments()
             ]),
             "roles" => self::data([
-                "records" => CompanyReferenceDataService::for($companyId)->roles()
+                "records" => $references->roles()
+            ]),
+            "branches" => self::data([
+                "records" => $references->activeBranches()
             ]),
             "genders"  => User::getGenders(),
             "statuses" => User::getStatuses()

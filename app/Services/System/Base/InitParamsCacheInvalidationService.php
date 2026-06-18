@@ -20,6 +20,7 @@ use App\Services\System\Customers\Tracking\{
     TrackingSubscriptionConfigService
 };
 use App\Services\System\Devices\BiometricDevices\{BiometricDeviceConfigService};
+use App\Services\System\Finance\{CashRegisterConfigService};
 use App\Services\System\Organizations\Branches\{BranchConfigService};
 use App\Services\System\Organizations\Roles\{RoleConfigService};
 use App\Services\System\Organizations\Users\{UserConfigService};
@@ -76,6 +77,8 @@ final class InitParamsCacheInvalidationService {
         ],
         self::BRANCHES => [
             BranchConfigService::class,
+            UserConfigService::class,
+            CashRegisterConfigService::class,
             ProductConfigService::class,
             SaleConfigService::class,
             TrackingAttendanceConfigService::class,

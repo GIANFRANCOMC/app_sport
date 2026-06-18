@@ -22,7 +22,15 @@ final class PurchaseConfigService extends BaseConfigService {
 
     }
 
+    protected static function usesUserScopedCache(): bool {
+
+        return true;
+
+    }
+
     protected static function buildConfig(int $companyId, string $page): stdClass {
+
+        $references = CompanyReferenceDataService::for($companyId);
 
         return self::data([
             "suppliers" => self::data([
@@ -33,7 +41,7 @@ final class PurchaseConfigService extends BaseConfigService {
                     ->get()
             ]),
             "warehouses" => self::data([
-                "records" => CompanyReferenceDataService::for($companyId)->stockWarehouses()
+                "records" => $references->stockWarehouses()
             ]),
             "currencies" => self::data([
                 "records" => MasterReferenceDataService::currencies()
@@ -48,10 +56,10 @@ final class PurchaseConfigService extends BaseConfigService {
                     ->get()
             ]),
             "taxes" => self::data([
-                "records" => CompanyReferenceDataService::for($companyId)->taxesFor("purchase")
+                "records" => $references->taxesFor("purchase")
             ]),
             "paymentMethods" => self::data([
-                "records" => CompanyReferenceDataService::for($companyId)->paymentMethodsFor("purchase")
+                "records" => $references->paymentMethodsFor("purchase")
             ])
         ]);
 

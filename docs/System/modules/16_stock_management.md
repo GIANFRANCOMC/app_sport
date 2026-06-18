@@ -204,3 +204,9 @@ Requieren módulos documentales independientes y permanecen pendientes:
 - Los movimientos por venta siguen registrandose en `inventory_movements` con origen `sale`, usando el almacen de la cabecera de venta.
 - La caja se modela por separado con `cash_registers`, `cash_sessions`, `cash_session_payments` y `cash_movements`.
 - Cuando una venta se asocia a `cash_session_id`, sus pagos generan movimientos de caja por metodo de pago. Esto prepara apertura, cierre, arqueo y resumen por metodo sin mezclar trazabilidad financiera con Kardex fisico.
+## Alcance operativo por sucursal
+
+- Inventario carga almacenes desde `CompanyReferenceDataService::stockWarehouses()`, por lo que respeta las sucursales permitidas del colaborador.
+- Si el colaborador no tiene restricciones en `user_branches`, puede operar todos los almacenes activos de la empresa.
+- Si tiene sucursales asignadas, solo verá almacenes pertenecientes a esas sucursales.
+- Los productos con estado `inactive` no se ofrecen para movimientos, compras ni ventas; permanecen visibles en catálogo para edición y auditoría, pero no deben participar en operaciones nuevas.

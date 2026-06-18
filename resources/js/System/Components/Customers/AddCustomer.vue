@@ -10,23 +10,30 @@
         <span v-if="triggerLabel" v-text="triggerLabel"></span>
     </a>
 
-    <!-- Modal Create -->
-    <div
-        class="modal fade"
-        :id="forms[entity].createUpdate.extras.modals.default.id"
-        data-bs-backdrop="static"
-        tabindex="-1"
-        aria-hidden="true"
-        role="dialog">
-        <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
-            <div class="modal-content">
-                <div class="modal-header br-modal-header">
-                    <h5 class="modal-title text-uppercase fw-bold mb-0" v-text="modalTitles.createUpdate[isUpdate ? 'update' : 'store']"></h5>
-                    <button type="button" class="btn-header-modal" data-bs-dismiss="modal" :aria-label="MODULE.texts.modal.close">
-                        <i class="fa fa-times icon-close-modal" aria-hidden="true"></i>
+    <Teleport to="body">
+        <!-- Modal Create -->
+        <div
+            class="modal fade br-entity-modal br-quick-create-modal"
+            :id="forms[entity].createUpdate.extras.modals.default.id"
+            data-bs-backdrop="static"
+            tabindex="-1"
+            aria-hidden="true"
+            role="dialog"
+            aria-modal="true"
+            @hidden.bs.modal="handleClose"
+            @shown.bs.modal="handleShown">
+            <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+                <div class="modal-content">
+                <div class="modal-header br-entity-modal__header">
+                    <div>
+                        <p class="br-entity-modal__eyebrow mb-1">Gestión de clientes</p>
+                        <h2 class="modal-title br-entity-modal__title" v-text="modalTitles.createUpdate[isUpdate ? 'update' : 'store']"></h2>
+                    </div>
+                    <button type="button" class="br-modal-close" :aria-label="MODULE.texts.modal.close" @click="closeModal">
+                        <i class="fa-solid fa-xmark" aria-hidden="true"></i>
                     </button>
                 </div>
-                <div class="modal-body">
+                <div class="modal-body br-entity-modal__body br-quick-create-modal__body">
                     <form @submit.prevent="saveEntity">
                         <div class="row g-3">
                             <InputSlot
@@ -150,25 +157,25 @@
                         </div>
                     </form>
                 </div>
-                <div class="modal-footer">
+                <div class="modal-footer br-entity-modal__footer">
                     <button
                         type="button"
-                        class="btn btn-secondary waves-effect"
-                        data-bs-dismiss="modal"
+                        class="br-btn br-btn-cancel"
+                        @click="closeModal"
                         v-text="MODULE.texts.modal.close">
                     </button>
                     <button
                         type="button"
-                        :class="['btn', 'waves-effect', isUpdate ? 'btn-warning' : 'btn-primary']"
+                        :class="['br-btn', isUpdate ? 'br-btn-action-edit' : 'br-btn-action-create']"
                         @click="saveEntity"
                         :disabled="isSaving">
-                        <i class="fa fa-save" aria-hidden="true"></i>
-                        <span class="ms-2" v-text="MODULE.texts.modal.save"></span>
+                        <span v-text="isSaving ? 'Agregando' : MODULE.texts.modal.save"></span>
                     </button>
+                </div>
                 </div>
             </div>
         </div>
-    </div>
+    </Teleport>
 
 </template>
 
@@ -247,7 +254,7 @@ const TEXTS = {
     },
     modal: {
         close: "Cerrar",
-        save: "Guardar"
+        save: "Agregar cliente"
     }
 };
 
@@ -428,6 +435,30 @@ export default {
             Alerts.tooltips({show: true, time: 500});
 
         },
+        closeModal(force = false) {
+
+            if(this.isSaving && force !== true) return;
+
+            Alerts.modals({type: "hide", id: this.forms[this.entity].createUpdate.extras.modals.default.id});
+
+        },
+        handleClose() {
+
+            document.querySelectorAll(".br-quick-create-backdrop").forEach(backdrop => backdrop.remove());
+
+            if(document.querySelector(".modal.show")) {
+                document.body.classList.add("modal-open");
+            }
+
+        },
+        handleShown() {
+
+            const backdrops = document.querySelectorAll(".modal-backdrop");
+            const backdrop = backdrops[backdrops.length - 1];
+
+            backdrop?.classList.add("br-quick-create-backdrop");
+
+        },
         async saveEntity() {
 
             if(this.isSaving) return;
@@ -462,7 +493,7 @@ export default {
 
                 if(Requests.valid({result})) {
 
-                    Alerts.modals({type: "hide", id: entityForms.extras.modals.default.id});
+                    this.closeModal(true);
                     Alerts.generateAlert({type: "success", msgContent: result.data.msg});
 
                     Forms.clearFormData(entityForms.data, this.MODULE.formFields);

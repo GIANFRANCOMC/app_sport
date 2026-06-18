@@ -69,19 +69,31 @@ Permite crear una venta con productos, servicios o membresias. Una venta puede g
 # Venta POS
 
 - `sales.pos` usa una vista propia tipo mostrador: categorias superiores, buscador de productos, cards de productos y ticket lateral.
-- Las categorias son chips/cards minimalistas sin iconos, con fondos suaves y nombre priorizado.
+- Las categorias son chips/cards minimalistas sin iconos, con fondos suaves y nombre priorizado en mayusculas para facilitar lectura rapida.
 - Las cards de productos, servicios y membresias no agregan al tocar el contenido; solo agregan mediante el boton `+`.
+- Cada card muestra una accion de detalle para abrir una modal con nombre, tipo, descripcion, marca, categorias, codigos, precio y configuracion de IGV cuando el espacio del card no alcance.
 - Si no existen cajas abiertas, POS muestra una alerta roja dentro del panel de detalle y oculta cliente, pagos, limpiar venta y generar venta.
 - Si existe una sola caja abierta, POS muestra caja y sucursal como texto de contexto; si existen varias, permite seleccionar la caja.
 - El buscador se ubica debajo de categorias para mantener primero el contexto visual de navegacion.
 - El panel derecho sigue el orden operativo: caja/sucursal/cliente, detalle de subtotal e impuestos, total, resumen de pagos y detalle de venta.
+- La caja activa se muestra como contexto superior del ticket con fondo anaranjado para que el cajero identifique rapidamente caja y sucursal.
 - La pantalla POS reutiliza `sales.store` para generar la venta, por lo que conserva validaciones y trazabilidad del modulo de ventas.
 - El ticket lateral prioriza total, items agregados, impuestos y detalle de productos.
 - La caja abierta es el selector principal del POS y muestra a que sucursal pertenece. La sucursal se deriva desde la caja.
 - El almacen solo se muestra cuando la sucursal tiene mas de un almacen disponible; si solo existe uno, se selecciona automaticamente.
 - Los metodos de pago son multiples. Por defecto se agrega efectivo por el total de la venta; el editor queda oculto para no cargar la vista y se muestra con `Cambiar metodo de pago`.
+- Cuando el editor de pagos esta abierto se muestran solo inputs editables; cuando se oculta, se muestra solo el resumen por metodo de pago.
 - El selector de metodo de pago es buscable para agilizar caja cuando hay varios metodos configurados.
+- La venta se confirma en dos pasos: el boton `Revisar venta` abre una modal con subtotal, impuestos, total y metodos de pago editables; luego `Confirmar venta` registra la venta.
 - POS permite agregar un cliente desde el campo Cliente reutilizando `AddCustomer`; al crear el cliente se agrega a la lista y queda disponible para seleccion.
+- El boton `Generar venta` se oculta hasta que la caja, cliente, pagos y detalle esten completos, evitando una accion visualmente disponible cuando todavia falta informacion.
 - Al abrir o cerrar una caja, `CashRegisterService` invalida la cache de `CashRegisterConfigService` y `SaleConfigService` para que POS muestre solo cajas abiertas vigentes al volver a ingresar.
 - Los impuestos configurados para ventas se aplican automaticamente sobre productos cuyo precio no incluye IGV (`price_includes_tax = false`).
 - Si existe una sesion de caja abierta, POS puede asociar la venta a `cash_session_id` para alimentar movimientos de caja.
+## Venta POS - pagos y confirmación
+
+- La vista principal del POS se enfoca en seleccionar catálogo, cliente, caja y revisar el detalle de la venta.
+- Los métodos de pago se revisan y editan únicamente en la modal **Confirmar venta**. Por defecto se muestra un resumen legible; si el pago será mixto, el usuario puede usar **Cambiar método de pago** y ajustar importes antes de confirmar.
+- El botón principal de la vista se mantiene como **Revisar venta** para reforzar que la venta se confirma en un segundo paso.
+- Las cajas disponibles se limitan por las sucursales permitidas del colaborador. Si el usuario no tiene sucursales configuradas, mantiene acceso a todas las sucursales de la empresa.
+- Los ítems con estado `inactive` no se cargan para Venta POS ni para el flujo transaccional de ventas.

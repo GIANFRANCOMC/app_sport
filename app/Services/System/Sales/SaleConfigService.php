@@ -30,6 +30,12 @@ final class SaleConfigService extends BaseConfigService {
 
     }
 
+    protected static function usesUserScopedCache(): bool {
+
+        return true;
+
+    }
+
     protected static function buildConfig(int $companyId, string $page): stdClass {
 
         $references = CompanyReferenceDataService::for($companyId);
@@ -47,6 +53,17 @@ final class SaleConfigService extends BaseConfigService {
                     "statuses" => SaleHeader::getStatuses()
                 ])
             ]);
+
+        }
+
+        $cashSessions = CashSession::query()
+                                   ->with(["register", "branch"])
+                                   ->where("company_id", $companyId)
+                                   ->where("status", "open");
+
+        if($branchIds = $references->allowedBranchIds()) {
+
+            $cashSessions->whereIn("branch_id", $branchIds);
 
         }
 
@@ -80,12 +97,7 @@ final class SaleConfigService extends BaseConfigService {
                 "records" => $references->paymentMethodsFor("sale")
             ]),
             "cashSessions" => self::data([
-                "records" => CashSession::query()
-                                        ->with(["register", "branch"])
-                                        ->where("company_id", $companyId)
-                                        ->where("status", "open")
-                                        ->latest("opened_at")
-                                        ->get()
+                "records" => $cashSessions->latest("opened_at")->get()
             ]),
             "salesHeader" => self::data([
                 "statuses" => SaleHeader::getStatuses()

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services\System\Base;
 
 use Illuminate\Database\Eloquent\{Builder, Collection};
+use Illuminate\Support\Facades\{Auth, DB};
 use InvalidArgumentException;
 
 use App\Models\System\Assets\Asset;
@@ -19,7 +20,10 @@ use App\Models\System\Warehouses\Warehouse;
  */
 final class CompanyReferenceDataService {
 
-    private function __construct(private readonly int $companyId) {
+    private function __construct(
+        private readonly int $companyId,
+        private readonly ?int $userId = null
+    ) {
 
         if($companyId <= 0) {
 
@@ -29,9 +33,9 @@ final class CompanyReferenceDataService {
 
     }
 
-    public static function for(int $companyId): self {
+    public static function for(int $companyId, ?int $userId = null): self {
 
-        return new self($companyId);
+        return new self($companyId, $userId ?? Auth::id());
 
     }
 
@@ -57,16 +61,22 @@ final class CompanyReferenceDataService {
 
     public function stockWarehouses(): Collection {
 
-        return Warehouse::query()
-                        ->with("branch")
-                        ->whereHas("branch", function($query) {
+        $query = Warehouse::query()
+                          ->with("branch")
+                          ->whereHas("branch", function($query) {
 
                             $query->where("company_id", $this->companyId);
 
-                        })
-                        ->where("status", "active")
-                        ->orderBy("name")
-                        ->get();
+                          })
+                          ->where("status", "active");
+
+        if($branchIds = $this->allowedBranchIds()) {
+
+            $query->whereIn("branch_id", $branchIds);
+
+        }
+
+        return $query->orderBy("name")->get();
 
     }
 
@@ -170,9 +180,35 @@ final class CompanyReferenceDataService {
 
     private function branchQuery(): Builder {
 
-        return Branch::query()
-                     ->where("company_id", $this->companyId)
-                     ->orderBy("name");
+        $query = Branch::query()
+                       ->where("company_id", $this->companyId);
+
+        if($branchIds = $this->allowedBranchIds()) {
+
+            $query->whereIn("id", $branchIds);
+
+        }
+
+        return $query->orderBy("name");
+
+    }
+
+    public function allowedBranchIds(): array {
+
+        if(!$this->userId) {
+
+            return [];
+
+        }
+
+        return DB::table("user_branches")
+                 ->where("company_id", $this->companyId)
+                 ->where("user_id", $this->userId)
+                 ->where("status", "active")
+                 ->pluck("branch_id")
+                 ->map(fn($branchId) => (int) $branchId)
+                 ->values()
+                 ->all();
 
     }
 

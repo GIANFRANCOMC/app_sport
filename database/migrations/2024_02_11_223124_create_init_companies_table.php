@@ -107,6 +107,23 @@ return new class extends Migration {
         });
 
         // ✅
+        Schema::create("user_branches", function(Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger("company_id");
+            $table->unsignedBigInteger("user_id");
+            $table->unsignedBigInteger("branch_id");
+            $table->enum("status", ["active", "inactive"])->default("active");
+
+            $table->timestamp("created_at")->useCurrent()->nullable();
+            $table->integer("created_by")->nullable();
+            $table->timestamp("updated_at")->nullable();
+            $table->integer("updated_by")->nullable();
+
+            $table->foreign("company_id")->references("id")->on("companies")->onDelete("cascade");
+            $table->foreign("user_id")->references("id")->on("users")->onDelete("cascade");
+            $table->foreign("branch_id")->references("id")->on("branches")->onDelete("cascade");
+        });
+
         Schema::create("series", function(Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger("branch_id");
@@ -571,6 +588,7 @@ return new class extends Migration {
         Schema::dropIfExists("items");
         Schema::dropIfExists("brands");
         Schema::dropIfExists("series");
+        Schema::dropIfExists("user_branches");
         Schema::dropIfExists("branches");
         Schema::dropIfExists("company_socials_media");
         Schema::dropIfExists("payment_methods");

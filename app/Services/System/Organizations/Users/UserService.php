@@ -168,10 +168,11 @@ class UserService {
 
             // Create the record
             $user = User::create($userData);
+            self::syncBranches($user, $data["branch_ids"] ?? [], $companyId, $userId);
 
         });
 
-        return $user;
+        return $user?->fresh(["identityDocumentType", "role", "branches"]);
 
     }
 
@@ -202,9 +203,57 @@ class UserService {
 
             }
 
+            self::syncBranches($user, $data["branch_ids"] ?? [], (int) $user->company_id, $userId);
+
         });
 
-        return $user->fresh(["identityDocumentType", "role"]);
+        return $user->fresh(["identityDocumentType", "role", "branches"]);
+
+    }
+
+    private static function syncBranches(User $user, array $branchIds, int $companyId, ?int $userId = null): void {
+
+        DB::table("user_branches")
+          ->where("company_id", $companyId)
+          ->where("user_id", $user->id)
+          ->delete();
+
+        $branchIds = collect($branchIds)
+            ->filter()
+            ->map(fn($branchId) => (int) $branchId)
+            ->unique()
+            ->values()
+            ->all();
+
+        if(empty($branchIds)) {
+
+            return;
+
+        }
+
+        $validBranchIds = DB::table("branches")
+                            ->where("company_id", $companyId)
+                            ->whereIn("id", $branchIds)
+                            ->pluck("id")
+                            ->map(fn($branchId) => (int) $branchId)
+                            ->all();
+
+        if(empty($validBranchIds)) {
+
+            return;
+
+        }
+
+        $now = now();
+
+        DB::table("user_branches")->insert(array_map(fn($branchId) => [
+            "company_id"  => $companyId,
+            "user_id"     => $user->id,
+            "branch_id"   => $branchId,
+            "status"      => "active",
+            "created_at"  => $now,
+            "created_by"  => $userId
+        ], $validBranchIds));
 
     }
 
@@ -217,7 +266,7 @@ class UserService {
      * @param array $relations Relations to eager load
      * @return User|null
      */
-    public static function findByIdAndCompany(int $id, int $companyId, ?array $statuses = ["active"], array $relations = ["identityDocumentType", "role"]): ?User {
+    public static function findByIdAndCompany(int $id, int $companyId, ?array $statuses = ["active"], array $relations = ["identityDocumentType", "role", "branches"]): ?User {
 
         $query = User::where("id", $id)
                      ->where("company_id", $companyId);
@@ -249,7 +298,7 @@ class UserService {
     public static function getPaginatedList(int $companyId, array $filters = [], int $perPage = 15): LengthAwarePaginator {
 
         $query = User::where("company_id", $companyId)
-                     ->with(["identityDocumentType", "role"]);
+                     ->with(["identityDocumentType", "role", "branches"]);
 
         // Apply filters
         $filterBy = $filters["filter_by"] ?? null;

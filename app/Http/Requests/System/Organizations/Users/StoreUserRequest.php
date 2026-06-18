@@ -36,6 +36,8 @@ class StoreUserRequest extends FormRequest {
             "gender"                    => "nullable|in:male,female,other",
             "birthdate"                 => "nullable|date",
             "status"                    => "required|in:active,inactive",
+            "branch_ids"                => "nullable|array",
+            "branch_ids.*"              => ["integer", new BelongsToCompany("branches", [], null)],
             "password"                  => "required|string|max:20"
         ];
 

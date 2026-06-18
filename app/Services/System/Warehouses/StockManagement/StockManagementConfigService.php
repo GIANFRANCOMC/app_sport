@@ -20,6 +20,12 @@ final class StockManagementConfigService extends BaseConfigService {
 
     }
 
+    protected static function usesUserScopedCache(): bool {
+
+        return true;
+
+    }
+
     protected static function buildConfig(int $companyId, string $page): stdClass {
 
         return self::data([

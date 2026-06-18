@@ -17,18 +17,29 @@ final class CashRegisterConfigService extends BaseConfigService {
 
     }
 
+    protected static function usesUserScopedCache(): bool {
+
+        return true;
+
+    }
+
     protected static function buildConfig(int $companyId, string $page): stdClass {
 
         $references = CompanyReferenceDataService::for($companyId);
+        $registers  = CashRegister::query()
+                                  ->with("branch")
+                                  ->where("company_id", $companyId)
+                                  ->where("status", "active");
+
+        if($branchIds = $references->allowedBranchIds()) {
+
+            $registers->whereIn("branch_id", $branchIds);
+
+        }
 
         return self::data([
             "branches" => $references->activeBranches(),
-            "registers" => CashRegister::query()
-                                       ->with("branch")
-                                       ->where("company_id", $companyId)
-                                       ->where("status", "active")
-                                       ->orderBy("name")
-                                       ->get(),
+            "registers" => $registers->orderBy("name")->get(),
             "paymentMethods" => $references->paymentMethodsFor("sale"),
             "statuses" => [
                 ["id" => "open", "label" => "Abierta"],

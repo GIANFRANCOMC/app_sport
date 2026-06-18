@@ -346,3 +346,8 @@ Incluye:
 - Movimiento de inventario `initial_stock` para dejar trazabilidad del stock cargado por seeder.
 
 El seeder es idempotente por `company_id + internal_code`: si se vuelve a ejecutar, actualiza los registros demo y sincroniza el stock demo por almacen.
+## Estado y disponibilidad operativa
+
+- El estado `active` permite que el producto, servicio o membresía participe en ventas, Venta POS, compras e inventario.
+- El estado `inactive` conserva el registro en catálogo para consulta o edición, pero lo excluye de operaciones nuevas.
+- Esta regla evita vender, comprar o mover inventario de ítems deshabilitados sin borrar información histórica.
