@@ -75,6 +75,12 @@ class SaleController extends BaseController {
 
     }
 
+    public function pos() {
+
+        return view("System/general/Sales/pos/main");
+
+    }
+
     /**
      * Store a newly created sale
      *
@@ -233,10 +239,14 @@ class SaleController extends BaseController {
         return [
             "branch_id"   => $request->branch_id,
             "serie_id"    => $request->serie_id,
+            "warehouse_id" => $request->warehouse_id,
+            "cash_session_id" => $request->cash_session_id,
             "holder_id"   => $request->holder_id,
             "currency_id" => $request->currency_id,
             "issue_date"  => $request->issue_date,
             "observation" => $request->observation,
+            "taxes"       => $request->taxes ?? [],
+            "payments"    => $request->payments ?? [],
             "details"     => $request->details
         ];
 

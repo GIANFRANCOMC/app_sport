@@ -2,11 +2,12 @@
     <a
         href="javascript:void(0)"
         @click="openModal()"
-        class="br-link me-2 ms-1 d-inline-flex align-items-center"
+        :class="triggerClasses"
         data-bs-toggle="tooltip"
         data-bs-placement="top"
         title="Agregar cliente">
         <i class="fa-solid fa-user-plus" aria-hidden="true"></i>
+        <span v-if="triggerLabel" v-text="triggerLabel"></span>
     </a>
 
     <!-- Modal Create -->
@@ -270,6 +271,11 @@ export default {
             type: Object,
             required: false,
             default: () => ({})
+        },
+        triggerLabel: {
+            type: String,
+            required: false,
+            default: ""
         }
     },
     data() {
@@ -327,6 +333,20 @@ export default {
         isUpdate() {
 
             return this.isDefined(this.forms[this.entity].createUpdate.data.id);
+
+        },
+        triggerClasses() {
+
+            return [
+                "br-link",
+                "br-quick-create-trigger",
+                "br-quick-create-trigger--link",
+                "me-2",
+                "ms-1",
+                "d-inline-flex",
+                "align-items-center",
+                {"br-quick-create-trigger--icon-only": !this.triggerLabel}
+            ];
 
         },
         modalTitles() {

@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\DB;
 use RuntimeException;
 
 use App\Models\System\Finance\{CashMovement, CashRegister, CashSession, CashSessionPayment, PaymentMethod};
+use App\Services\System\Sales\SaleConfigService;
 
 final class CashRegisterService {
 
@@ -180,6 +181,8 @@ final class CashRegisterService {
                 "created_by" => $userId
             ]);
 
+            $this->clearOperationalCaches($companyId);
+
             return $session->load(["register", "branch", "openedBy"]);
 
         });
@@ -264,9 +267,73 @@ final class CashRegisterService {
                 "created_by" => $userId
             ]);
 
+            $this->clearOperationalCaches($companyId);
+
             return $session->load(["register", "branch", "closedBy", "paymentSummary.paymentMethod"]);
 
         });
+
+    }
+
+    public function registerMovement(int $companyId, int $userId, array $data): CashMovement {
+
+        return DB::transaction(function() use($companyId, $userId, $data) {
+
+            $session = CashSession::query()
+                                  ->with("register")
+                                  ->where("company_id", $companyId)
+                                  ->where("status", "open")
+                                  ->findOrFail((int) $data["cash_session_id"]);
+
+            $movementType = (string) $data["movement_type"];
+            $amount = round((float) $data["amount"], 2);
+
+            if(in_array($movementType, ["expense"], true)) {
+
+                $amount = abs($amount) * -1;
+
+            }else {
+
+                $amount = abs($amount);
+
+            }
+
+            return CashMovement::create([
+                "company_id" => $companyId,
+                "branch_id" => $session->branch_id,
+                "cash_session_id" => $session->id,
+                "payment_method_id" => $data["payment_method_id"] ?? null,
+                "user_id" => $userId,
+                "movement_type" => $movementType,
+                "origin_type" => "cash_manual",
+                "origin_id" => null,
+                "amount" => $amount,
+                "reference" => $data["reference"] ?? $this->manualMovementLabel($movementType),
+                "note" => $data["note"] ?? null,
+                "occurred_at" => Carbon::now(),
+                "status" => "active",
+                "created_by" => $userId
+            ])->load(["branch", "cashSession.register", "paymentMethod", "user"]);
+
+        });
+
+    }
+
+    public function movementsForExport(int $companyId, array $filters) {
+
+        return CashMovement::query()
+                           ->with(["branch", "cashSession.register", "paymentMethod", "user"])
+                           ->where("company_id", $companyId)
+                           ->when($filters["cash_register_id"] ?? null, function($query, $registerId) {
+
+                               $query->whereHas("cashSession", fn($sessionQuery) => $sessionQuery->where("cash_register_id", $registerId));
+
+                           })
+                           ->when($filters["date_from"] ?? null, fn($query, $date) => $query->whereDate("occurred_at", ">=", $date))
+                           ->when($filters["date_to"] ?? null, fn($query, $date) => $query->whereDate("occurred_at", "<=", $date))
+                           ->where("status", "active")
+                           ->latest("occurred_at")
+                           ->get();
 
     }
 
@@ -337,6 +404,24 @@ final class CashRegisterService {
             "counted" => 0,
             "difference" => 0
         ];
+
+    }
+
+    private function manualMovementLabel(string $movementType): string {
+
+        return match($movementType) {
+            "income" => "Ingreso manual de caja",
+            "expense" => "Salida manual de caja",
+            "adjustment" => "Ajuste manual de caja",
+            default => "Movimiento manual de caja"
+        };
+
+    }
+
+    private function clearOperationalCaches(int $companyId): void {
+
+        CashRegisterConfigService::clearCache($companyId);
+        SaleConfigService::clearCache($companyId, "main");
 
     }
 

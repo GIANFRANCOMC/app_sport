@@ -2,9 +2,6 @@
 
 namespace Database\Seeders;
 
-use App\Models\System\Catalogs\{Item};
-use App\Models\System\Customers\{Customer};
-use App\Models\System\Organizations\{Company, User};
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder {
@@ -14,7 +11,9 @@ class DatabaseSeeder extends Seeder {
      */
     public function run(): void {
 
-        Item::factory(50)->create();
+        $this->call([
+            CommercialCatalogSeeder::class
+        ]);
 
     }
 

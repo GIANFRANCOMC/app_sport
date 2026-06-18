@@ -348,7 +348,8 @@ const ENTITY_SPECIAL_ROUTES = {
         movements: "movements",
         summary: "summary",
         open: "open",
-        close: "close"
+        close: "close",
+        movement: "movement"
     },
     purchases: {
         receive: "receive",

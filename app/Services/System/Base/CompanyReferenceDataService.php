@@ -106,7 +106,7 @@ final class CompanyReferenceDataService {
         return Item::query()
                    ->where("company_id", $this->companyId)
                    ->where("status", "active")
-                   ->with("currency")
+                   ->with(["currency", "brand", "categoryItems.category", "warehouseItems.warehouse"])
                    ->orderBy("type")
                    ->orderBy("name")
                    ->get();

@@ -38,6 +38,8 @@ La visualizacion principal esta en `cash_registers.index` y se monta desde:
   - `Aperturas y cierres`: historial de sesiones, esperado, contado y diferencia.
   - `Resumen`: totales y desglose por metodo de pago.
   - `Movimientos`: trazabilidad de apertura, ventas, ajustes y cierre.
+- Accion `Registrar movimiento`: permite ingresos, salidas y ajustes manuales sobre una caja abierta.
+- Accion `Descargar`: exporta movimientos filtrados en CSV compatible con Excel.
 - Modales con `data-bs-backdrop="static"` y `data-bs-keyboard="false"` para evitar cierre accidental.
 
 ## Backend implementado
@@ -47,11 +49,12 @@ La visualizacion principal esta en `cash_registers.index` y se monta desde:
 - `app/Services/System/Finance/CashRegisterConfigService.php`
 - `app/Services/System/Finance/CashRegisterService.php`
 - `resources/js/System/Helpers/Requests.js` expone rutas especiales: `sessions`, `movements`, `summary`, `open`, `close`.
+- `movement`: registra ingresos, salidas y ajustes manuales.
+- `export`: descarga movimientos de caja.
 
 ## Pendiente
 
 - Restringir ventas segun politica de empresa: permitir vender sin caja abierta o exigir caja abierta.
 - Reporte de caja por rango de fechas, sucursal, caja, usuario y metodo de pago.
-- Exportar resumen, sesiones y movimientos a Excel.
-- Registrar ingresos y salidas manuales de caja desde la pantalla de Caja.
+- Exportar resumen y sesiones a Excel con formato visual enriquecido.
 - Caja por usuario/turno cuando una misma caja fisica sea compartida por varios colaboradores en el dia.

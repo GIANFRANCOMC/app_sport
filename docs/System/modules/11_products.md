@@ -331,3 +331,18 @@ Productos incorpora una acción compacta **Carga masiva** junto a Descargar Exce
 - Añadir lector de código de barras al flujo de ventas.
 - Agregar pruebas de integración para creación multi-almacén, EAN duplicado y aislamiento entre empresas.
 - Diseñar el catálogo web/PDF que consumirá `see_my_web` y `see_my_web_price`.
+## Seeder comercial demo
+
+Se agrego `database/seeders/CommercialCatalogSeeder.php` para cargar datos base sin depender de factories aleatorias.
+
+Incluye:
+
+- Marcas demo: Hola, Gympe y Wellness.
+- Categorias demo: Bebidas, Suplementos, Accesorios, Servicios y Membresias.
+- Productos con codigo interno, codigo de barras, precio, rango de precios, marca, categoria y `price_includes_tax`.
+- Servicios comerciales sin inventario.
+- Membresias con duracion.
+- Stock inicial por cada almacen activo de la empresa demo.
+- Movimiento de inventario `initial_stock` para dejar trazabilidad del stock cargado por seeder.
+
+El seeder es idempotente por `company_id + internal_code`: si se vuelve a ejecutar, actualiza los registros demo y sincroniza el stock demo por almacen.

@@ -8,6 +8,7 @@ use stdClass;
 
 use App\Models\System\Catalogs\Item;
 use App\Models\System\Customers\Customer;
+use App\Models\System\Finance\CashSession;
 use App\Models\System\Sales\SaleHeader;
 use App\Services\System\Base\{
     BaseConfigService,
@@ -69,11 +70,22 @@ final class SaleConfigService extends BaseConfigService {
                 "durationTypes" => Item::getDurationTypes(),
                 "records"       => $references->saleItems()
             ]),
+            "categories" => self::data([
+                "records" => $references->categories()
+            ]),
             "taxes" => self::data([
                 "records" => $references->taxesFor("sale")
             ]),
             "paymentMethods" => self::data([
                 "records" => $references->paymentMethodsFor("sale")
+            ]),
+            "cashSessions" => self::data([
+                "records" => CashSession::query()
+                                        ->with(["register", "branch"])
+                                        ->where("company_id", $companyId)
+                                        ->where("status", "open")
+                                        ->latest("opened_at")
+                                        ->get()
             ]),
             "salesHeader" => self::data([
                 "statuses" => SaleHeader::getStatuses()

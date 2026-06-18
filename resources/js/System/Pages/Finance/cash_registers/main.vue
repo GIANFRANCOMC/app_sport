@@ -72,6 +72,25 @@
                     <i class="fa-solid fa-scale-balanced" aria-hidden="true"></i>
                     <span>Cerrar caja</span>
                 </button>
+                <button
+                    type="button"
+                    class="br-btn br-btn-primary"
+                    data-bs-toggle="tooltip"
+                    title="Registrar ingreso, salida o ajuste manual"
+                    :disabled="!currentSession"
+                    @click="openModal('movement')">
+                    <i class="fa-solid fa-right-left" aria-hidden="true"></i>
+                    <span>Registrar movimiento</span>
+                </button>
+                <button
+                    type="button"
+                    class="br-btn br-btn-action-download"
+                    data-bs-toggle="tooltip"
+                    title="Descargar movimientos"
+                    @click="downloadMovements">
+                    <i class="fa-solid fa-file-excel" aria-hidden="true"></i>
+                    <span class="d-inline d-lg-none">Descargar</span>
+                </button>
             </div>
         </section>
 
@@ -334,6 +353,70 @@
             </div>
         </div>
     </div>
+
+    <div class="modal fade" id="cashMovementModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content br-entity-modal">
+                <div class="modal-header br-entity-modal__header">
+                    <div>
+                        <p class="br-entity-modal__eyebrow mb-1">Movimiento manual</p>
+                        <h5 class="modal-title">Registrar operación</h5>
+                    </div>
+                    <button type="button" class="br-modal-close" data-bs-dismiss="modal" aria-label="Cerrar">
+                        <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+                    </button>
+                </div>
+                <div class="modal-body br-entity-modal__body">
+                    <InputSlot hasDiv title="Tipo de movimiento" :titleClass="['form-label']" isRequired hasTextBottom :textBottomInfo="errors.movement_type">
+                        <template v-slot:input>
+                            <v-select
+                                v-model="forms.movement.type"
+                                :options="movementTypeOptions"
+                                class="bg-white"
+                                :clearable="false"
+                                :searchable="false"
+                                placeholder="Seleccione"/>
+                        </template>
+                    </InputSlot>
+                    <InputSlot hasDiv title="Método de pago" :titleClass="['form-label']" hasTextBottom :textBottomInfo="errors.payment_method_id">
+                        <template v-slot:input>
+                            <v-select
+                                v-model="forms.movement.payment_method"
+                                :options="paymentMethodOptions"
+                                class="bg-white"
+                                :clearable="true"
+                                :searchable="false"
+                                placeholder="Efectivo / caja"/>
+                        </template>
+                    </InputSlot>
+                    <InputNumber
+                        v-model="forms.movement.amount"
+                        hasDiv
+                        title="Importe"
+                        :titleClass="['form-label']"
+                        isRequired
+                        hasTextBottom
+                        :textBottomInfo="errors.amount"/>
+                    <InputText
+                        v-model="forms.movement.reference"
+                        hasDiv
+                        title="Referencia"
+                        :titleClass="['form-label']"
+                        maxlength="120"/>
+                    <InputText
+                        v-model="forms.movement.note"
+                        hasDiv
+                        title="Nota interna"
+                        :titleClass="['form-label']"
+                        maxlength="300"/>
+                </div>
+                <div class="modal-footer br-entity-modal__footer">
+                    <button type="button" class="br-btn br-btn-cancel" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="br-btn br-btn-primary" :disabled="saving" @click="submitMovement">Registrar operación</button>
+                </div>
+            </div>
+        </div>
+    </div>
 </template>
 
 <script>
@@ -367,7 +450,14 @@ export default {
             },
             forms: {
                 open: {cash_register: null, opening_amount: "", observation: ""},
-                close: {cash_session_id: null, expected_amount: 0, payments: [], observation: ""}
+                close: {cash_session_id: null, expected_amount: 0, payments: [], observation: ""},
+                movement: {
+                    type: null,
+                    payment_method: null,
+                    amount: "",
+                    reference: "",
+                    note: ""
+                }
             },
             errors: {},
             saving: false,
@@ -398,6 +488,16 @@ export default {
         },
         currentSession() {
             return this.selectedRegister?.open_session ?? null;
+        },
+        movementTypeOptions() {
+            return [
+                {id: "income", label: "Ingreso"},
+                {id: "expense", label: "Salida"},
+                {id: "adjustment", label: "Ajuste"}
+            ];
+        },
+        paymentMethodOptions() {
+            return this.options.paymentMethods.map(method => ({...method, label: method.name}));
         }
     },
     mounted() {
@@ -501,6 +601,18 @@ export default {
                 return;
             }
 
+            if(type === "movement") {
+                this.forms.movement = {
+                    type: this.movementTypeOptions[0],
+                    payment_method: null,
+                    amount: "",
+                    reference: "",
+                    note: ""
+                };
+                this.showModal("cashMovementModal");
+                return;
+            }
+
             const session = register?.open_session || this.currentSession;
             this.forms.close = {
                 cash_session_id: session?.id,
@@ -550,6 +662,44 @@ export default {
             this.hideModal("cashCloseModal");
             Alerts.toastrs({type: "success", subtitle: result.data.msg});
             await this.refreshAll();
+        },
+        async submitMovement() {
+            this.saving = true;
+            const result = await Requests.post({
+                route: this.config.routes.movement,
+                data: {
+                    cash_session_id: this.currentSession?.id,
+                    movement_type: this.forms.movement.type?.id,
+                    payment_method_id: this.forms.movement.payment_method?.id,
+                    amount: this.forms.movement.amount,
+                    reference: this.forms.movement.reference,
+                    note: this.forms.movement.note
+                }
+            });
+            this.saving = false;
+
+            if(!Requests.valid({result})) return this.handleError(result);
+
+            this.hideModal("cashMovementModal");
+            Alerts.toastrs({type: "success", subtitle: result.data.msg});
+            await this.refreshAll();
+        },
+        async downloadMovements() {
+            Alerts.loading?.({message: "Preparando descarga"});
+
+            const result = await Requests.download({
+                route: this.config.routes.export,
+                data: this.baseFilters(),
+                fileName: "caja_movimientos.csv",
+                showAlert: true
+            });
+
+            Alerts.close?.();
+            window.Swal?.close?.();
+
+            if(result.bool) {
+                Alerts.toastrs({type: "success", subtitle: "Descarga preparada correctamente."});
+            }
         },
         handleError(result) {
             this.errors = result.errors || {};

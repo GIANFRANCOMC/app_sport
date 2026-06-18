@@ -66,3 +66,22 @@ Permite crear una venta con productos, servicios o membresias. Una venta puede g
 - `sales_header.cash_session_id` permite vincular la venta con una caja abierta cuando el modulo de caja este activo.
 - Si la venta incluye `cash_session_id`, cada pago genera un registro en `cash_movements`, manteniendo trazabilidad por metodo de pago para apertura, cierre, arqueo y resumen de caja.
 - Los metodos de pago iniciales incluyen `Efectivo`, `Tarjeta`, `Transferencia`, `Billetera digital`, `Yape` y `Plin`; todos siguen siendo configurables por empresa y por alcance (`sale`, `purchase`, `both`).
+# Venta POS
+
+- `sales.pos` usa una vista propia tipo mostrador: categorias superiores, buscador de productos, cards de productos y ticket lateral.
+- Las categorias son chips/cards minimalistas sin iconos, con fondos suaves y nombre priorizado.
+- Las cards de productos, servicios y membresias no agregan al tocar el contenido; solo agregan mediante el boton `+`.
+- Si no existen cajas abiertas, POS muestra una alerta roja dentro del panel de detalle y oculta cliente, pagos, limpiar venta y generar venta.
+- Si existe una sola caja abierta, POS muestra caja y sucursal como texto de contexto; si existen varias, permite seleccionar la caja.
+- El buscador se ubica debajo de categorias para mantener primero el contexto visual de navegacion.
+- El panel derecho sigue el orden operativo: caja/sucursal/cliente, detalle de subtotal e impuestos, total, resumen de pagos y detalle de venta.
+- La pantalla POS reutiliza `sales.store` para generar la venta, por lo que conserva validaciones y trazabilidad del modulo de ventas.
+- El ticket lateral prioriza total, items agregados, impuestos y detalle de productos.
+- La caja abierta es el selector principal del POS y muestra a que sucursal pertenece. La sucursal se deriva desde la caja.
+- El almacen solo se muestra cuando la sucursal tiene mas de un almacen disponible; si solo existe uno, se selecciona automaticamente.
+- Los metodos de pago son multiples. Por defecto se agrega efectivo por el total de la venta; el editor queda oculto para no cargar la vista y se muestra con `Cambiar metodo de pago`.
+- El selector de metodo de pago es buscable para agilizar caja cuando hay varios metodos configurados.
+- POS permite agregar un cliente desde el campo Cliente reutilizando `AddCustomer`; al crear el cliente se agrega a la lista y queda disponible para seleccion.
+- Al abrir o cerrar una caja, `CashRegisterService` invalida la cache de `CashRegisterConfigService` y `SaleConfigService` para que POS muestre solo cajas abiertas vigentes al volver a ingresar.
+- Los impuestos configurados para ventas se aplican automaticamente sobre productos cuyo precio no incluye IGV (`price_includes_tax = false`).
+- Si existe una sesion de caja abierta, POS puede asociar la venta a `cash_session_id` para alimentar movimientos de caja.
