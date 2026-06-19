@@ -11,18 +11,63 @@ use Illuminate\Support\Facades\DB;
 use RuntimeException;
 
 use App\Models\System\Finance\{CashMovement, CashRegister, CashSession, CashSessionPayment, PaymentMethod};
+use App\Models\System\Organizations\Branch;
+use App\Services\System\Base\CompanyReferenceDataService;
 use App\Services\System\Sales\SaleConfigService;
 
 final class CashRegisterService {
 
-    public function listRegisters(int $companyId) {
+    public function listRegisters(int $companyId, ?int $userId = null) {
 
-        return CashRegister::query()
-                           ->with(["branch", "openSession.paymentSummary.paymentMethod"])
-                           ->where("company_id", $companyId)
-                           ->orderBy("name")
-                           ->get()
-                           ->map(fn(CashRegister $register) => $this->formatRegister($register));
+        $query = CashRegister::query()
+                             ->with(["branch", "openSession.paymentSummary.paymentMethod"])
+                             ->where("company_id", $companyId);
+
+        $branchIds = $userId !== null
+            ? CompanyReferenceDataService::for($companyId, $userId)->allowedBranchIds()
+            : [];
+
+        if(!empty($branchIds)) {
+
+            $query->whereIn("branch_id", $branchIds);
+
+        }
+
+        return $query->orderBy("name")
+                     ->get()
+                     ->map(fn(CashRegister $register) => $this->formatRegister($register));
+
+    }
+
+    public function createRegister(int $companyId, int $userId, array $data): CashRegister {
+
+        return DB::transaction(function() use($companyId, $userId, $data) {
+
+            $branch = Branch::query()
+                            ->where("company_id", $companyId)
+                            ->where("status", "active")
+                            ->find((int) $data["branch_id"]);
+
+            if(!$branch) {
+
+                throw new RuntimeException("Seleccione una sucursal activa para registrar la caja.");
+
+            }
+
+            $register = CashRegister::create([
+                "company_id" => $companyId,
+                "branch_id" => $branch->id,
+                "code" => $data["code"] ?? $this->generateRegisterCode($companyId),
+                "name" => $data["name"],
+                "status" => $data["status"] ?? "active",
+                "created_by" => $userId
+            ]);
+
+            $this->clearOperationalCaches($companyId);
+
+            return $register->load("branch");
+
+        });
 
     }
 
@@ -415,6 +460,18 @@ final class CashRegisterService {
             "adjustment" => "Ajuste manual de caja",
             default => "Movimiento manual de caja"
         };
+
+    }
+
+    private function generateRegisterCode(int $companyId): string {
+
+        do {
+
+            $code = "CAJ-" . strtoupper(substr(bin2hex(random_bytes(4)), 0, 6));
+
+        }while(CashRegister::query()->where("company_id", $companyId)->where("code", $code)->exists());
+
+        return $code;
 
     }
 

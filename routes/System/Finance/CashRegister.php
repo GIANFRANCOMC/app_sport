@@ -12,6 +12,7 @@ Route::get('/export',    [CashRegisterController::class, 'export'])->name("$enti
 Route::get('/sessions',  [CashRegisterController::class, 'sessions'])->name("$entity.sessions");
 Route::get('/movements', [CashRegisterController::class, 'movements'])->name("$entity.movements");
 Route::get('/summary',   [CashRegisterController::class, 'summary'])->name("$entity.summary");
+Route::post('',          [CashRegisterController::class, 'store'])->name("$entity.store");
 Route::post('/open',     [CashRegisterController::class, 'open'])->name("$entity.open");
 Route::post('/close',    [CashRegisterController::class, 'close'])->name("$entity.close");
 Route::post('/movement', [CashRegisterController::class, 'movement'])->name("$entity.movement");

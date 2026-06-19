@@ -54,27 +54,16 @@
                 </button>
                 <button
                     type="button"
-                    class="br-btn br-btn-primary"
+                    class="br-btn br-btn-action-create"
                     data-bs-toggle="tooltip"
-                    title="Registrar apertura de caja"
-                    :disabled="!selectedRegister || selectedRegister.is_open"
-                    @click="openModal('open')">
-                    <i class="fa-solid fa-door-open" aria-hidden="true"></i>
-                    <span>Abrir caja</span>
+                    title="Agregar caja a una sucursal"
+                    @click="openModal('register')">
+                    <i class="fa-solid fa-plus" aria-hidden="true"></i>
+                    <span>Agregar caja</span>
                 </button>
                 <button
                     type="button"
-                    class="br-btn br-btn-secondary"
-                    data-bs-toggle="tooltip"
-                    title="Cerrar caja y registrar arqueo"
-                    :disabled="!currentSession"
-                    @click="openModal('close')">
-                    <i class="fa-solid fa-scale-balanced" aria-hidden="true"></i>
-                    <span>Cerrar caja</span>
-                </button>
-                <button
-                    type="button"
-                    class="br-btn br-btn-primary"
+                    class="br-btn br-btn-action-update"
                     data-bs-toggle="tooltip"
                     title="Registrar ingreso, salida o ajuste manual"
                     :disabled="!currentSession"
@@ -265,13 +254,77 @@
         </section>
     </section>
 
+    <div class="modal fade" id="cashRegisterModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content br-entity-modal">
+                <div class="modal-header br-entity-modal__header">
+                    <div>
+                        <p class="br-entity-modal__eyebrow mb-1">Caja</p>
+                        <h5 class="modal-title br-entity-modal__title">Agregar caja</h5>
+                    </div>
+                    <button type="button" class="br-modal-close" data-bs-dismiss="modal" aria-label="Cerrar">
+                        <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+                    </button>
+                </div>
+                <div class="modal-body br-entity-modal__body">
+                    <InputSlot hasDiv title="Sucursal" :titleClass="['form-label']" isRequired hasTextBottom :textBottomInfo="errors.branch_id">
+                        <template v-slot:input>
+                            <v-select
+                                v-model="forms.register.branch"
+                                :options="branchOptions"
+                                class="bg-white"
+                                :clearable="false"
+                                :searchable="branchOptions.length > 6"
+                                placeholder="Seleccione sucursal"/>
+                        </template>
+                    </InputSlot>
+                    <InputText
+                        v-model="forms.register.name"
+                        hasDiv
+                        title="Nombre de caja"
+                        :titleClass="['form-label']"
+                        isRequired
+                        maxlength="100"
+                        hasTextBottom
+                        :textBottomInfo="errors.name"
+                        placeholder="Ej. Caja mostrador 2"/>
+                    <InputText
+                        v-model="forms.register.code"
+                        hasDiv
+                        title="Código interno"
+                        :titleClass="['form-label']"
+                        maxlength="30"
+                        hasTextBottom
+                        :textBottomInfo="errors.code"
+                        placeholder="Se genera automáticamente si lo dejas vacío"/>
+                    <InputSlot hasDiv title="Estado" :titleClass="['form-label']" isRequired hasTextBottom :textBottomInfo="errors.status">
+                        <template v-slot:input>
+                            <v-select
+                                v-model="forms.register.status"
+                                :options="statusOptions"
+                                class="bg-white"
+                                :clearable="false"
+                                :searchable="false"/>
+                        </template>
+                    </InputSlot>
+                </div>
+                <div class="modal-footer br-entity-modal__footer">
+                    <button type="button" class="br-btn br-btn-cancel" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="br-btn br-btn-action-create" :disabled="saving" @click="submitRegister">
+                        Agregar caja
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="modal fade" id="cashOpenModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content br-entity-modal">
                 <div class="modal-header br-entity-modal__header">
                     <div>
                         <p class="br-entity-modal__eyebrow mb-1">Caja</p>
-                        <h5 class="modal-title">Abrir caja</h5>
+                        <h5 class="modal-title br-entity-modal__title">Abrir caja</h5>
                     </div>
                     <button type="button" class="br-modal-close" data-bs-dismiss="modal" aria-label="Cerrar">
                         <i class="fa-solid fa-xmark" aria-hidden="true"></i>
@@ -305,7 +358,7 @@
                 </div>
                 <div class="modal-footer br-entity-modal__footer">
                     <button type="button" class="br-btn br-btn-cancel" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="button" class="br-btn br-btn-primary" :disabled="saving" @click="submitOpen">Abrir caja</button>
+                    <button type="button" class="br-btn br-btn-action-create" :disabled="saving" @click="submitOpen">Abrir caja</button>
                 </div>
             </div>
         </div>
@@ -317,7 +370,7 @@
                 <div class="modal-header br-entity-modal__header">
                     <div>
                         <p class="br-entity-modal__eyebrow mb-1">Arqueo</p>
-                        <h5 class="modal-title">Cerrar caja</h5>
+                        <h5 class="modal-title br-entity-modal__title">Cerrar caja</h5>
                     </div>
                     <button type="button" class="br-modal-close" data-bs-dismiss="modal" aria-label="Cerrar">
                         <i class="fa-solid fa-xmark" aria-hidden="true"></i>
@@ -348,7 +401,7 @@
                 </div>
                 <div class="modal-footer br-entity-modal__footer">
                     <button type="button" class="br-btn br-btn-cancel" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="button" class="br-btn br-btn-secondary" :disabled="saving" @click="submitClose">Cerrar caja</button>
+                    <button type="button" class="br-btn br-btn-action-update" :disabled="saving" @click="submitClose">Cerrar caja</button>
                 </div>
             </div>
         </div>
@@ -360,7 +413,7 @@
                 <div class="modal-header br-entity-modal__header">
                     <div>
                         <p class="br-entity-modal__eyebrow mb-1">Movimiento manual</p>
-                        <h5 class="modal-title">Registrar operación</h5>
+                        <h5 class="modal-title br-entity-modal__title">Registrar operación</h5>
                     </div>
                     <button type="button" class="br-modal-close" data-bs-dismiss="modal" aria-label="Cerrar">
                         <i class="fa-solid fa-xmark" aria-hidden="true"></i>
@@ -412,7 +465,7 @@
                 </div>
                 <div class="modal-footer br-entity-modal__footer">
                     <button type="button" class="br-btn br-btn-cancel" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="button" class="br-btn br-btn-primary" :disabled="saving" @click="submitMovement">Registrar operación</button>
+                    <button type="button" class="br-btn br-btn-action-update" :disabled="saving" @click="submitMovement">Registrar operación</button>
                 </div>
             </div>
         </div>
@@ -449,6 +502,7 @@ export default {
                 movementTypes: []
             },
             forms: {
+                register: {branch: null, name: "", code: "", status: null},
                 open: {cash_register: null, opening_amount: "", observation: ""},
                 close: {cash_session_id: null, expected_amount: 0, payments: [], observation: ""},
                 movement: {
@@ -486,6 +540,15 @@ export default {
                 label: `${register.name} - ${register.branch?.name || 'Sin sucursal'}`
             }));
         },
+        branchOptions() {
+            return this.options.branches.map(branch => ({...branch, label: branch.name}));
+        },
+        statusOptions() {
+            return [
+                {id: "active", label: "Activa"},
+                {id: "inactive", label: "Inactiva"}
+            ];
+        },
         currentSession() {
             return this.selectedRegister?.open_session ?? null;
         },
@@ -501,7 +564,7 @@ export default {
         }
     },
     mounted() {
-        Utils.navbarItem("menu-parent-cash-registers", {addClass: "open"});
+        Utils.navbarItem("menu-parent-operations", {addClass: "open"});
         Utils.navbarItem("menu-cash-registers", {addClass: "active"});
         this.initParams();
     },
@@ -595,6 +658,17 @@ export default {
             if(register) this.selectedRegister = this.registerOptions.find(item => item.id === register.id) || register;
             this.errors = {};
 
+            if(type === "register") {
+                this.forms.register = {
+                    branch: this.branchOptions[0] || null,
+                    name: "",
+                    code: "",
+                    status: this.statusOptions[0]
+                };
+                this.showModal("cashRegisterModal");
+                return;
+            }
+
             if(type === "open") {
                 this.forms.open = {cash_register: this.selectedRegister, opening_amount: "", observation: ""};
                 this.showModal("cashOpenModal");
@@ -630,6 +704,25 @@ export default {
             }));
 
             return [{payment_method_id: null, label: "Efectivo / fondo", counted_amount: ""}, ...rows];
+        },
+        async submitRegister() {
+            this.saving = true;
+            const result = await Requests.post({
+                route: this.config.routes.store || "/cash_registers",
+                data: {
+                    branch_id: this.forms.register.branch?.id,
+                    name: this.forms.register.name,
+                    code: this.forms.register.code,
+                    status: this.forms.register.status?.id || "active"
+                }
+            });
+            this.saving = false;
+
+            if(!Requests.valid({result})) return this.handleError(result);
+
+            this.hideModal("cashRegisterModal");
+            Alerts.toastrs({type: "success", subtitle: result.data.msg});
+            await this.initParams();
         },
         async submitOpen() {
             this.saving = true;

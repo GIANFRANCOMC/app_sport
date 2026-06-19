@@ -111,7 +111,8 @@ final class RolePermissionService {
                     "sub_sections.dom_route"
                 ])->whereHas("companiesSubSections", function($companyQuery) use($companyId) {
 
-                    $companyQuery->where("company_id", $companyId);
+                    $companyQuery->where("company_id", $companyId)
+                                 ->where("status", "active");
 
                 });
 

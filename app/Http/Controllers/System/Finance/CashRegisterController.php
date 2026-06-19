@@ -43,49 +43,85 @@ final class CashRegisterController extends BaseController {
 
         return response()->json([
             "bool" => true,
-            "data" => $this->service->listRegisters($this->getCompanyId())
+            "data" => $this->service->listRegisters($this->getCompanyId(), $this->getUserId())
         ]);
 
     }
 
-    public function sessions(): JsonResponse {
+    public function store(Request $request): JsonResponse {
+
+        $validator = Validator::make($request->all(), [
+            "branch_id" => ["required", "integer"],
+            "code" => ["nullable", "string", "max:30"],
+            "name" => ["required", "string", "max:100"],
+            "status" => ["required", "in:active,inactive"]
+        ], $this->validationMessages());
+
+        if($validator->fails()) {
+
+            return $this->validationResponse($validator->errors()->toArray());
+
+        }
+
+        try {
+
+            $register = $this->service->createRegister($this->getCompanyId(), $this->getUserId(), $validator->validated());
+
+            return response()->json([
+                "bool" => true,
+                "msg" => "Caja registrada correctamente.",
+                "data" => $register
+            ]);
+
+        }catch(RuntimeException $exception) {
+
+            return response()->json([
+                "bool" => false,
+                "msg" => $exception->getMessage()
+            ], 422);
+
+        }
+
+    }
+
+    public function sessions(Request $request): JsonResponse {
 
         return response()->json([
             "bool" => true,
             "data" => $this->service->listSessions(
                 $this->getCompanyId(),
-                $this->getFilters(),
-                $this->getPerPage()
+                $this->cashFilters($request),
+                $this->getPerPage($request)
             )
         ]);
 
     }
 
-    public function movements(): JsonResponse {
+    public function movements(Request $request): JsonResponse {
 
         return response()->json([
             "bool" => true,
             "data" => $this->service->listMovements(
                 $this->getCompanyId(),
-                $this->getFilters(),
-                $this->getPerPage()
+                $this->cashFilters($request),
+                $this->getPerPage($request)
             )
         ]);
 
     }
 
-    public function summary(): JsonResponse {
+    public function summary(Request $request): JsonResponse {
 
         return response()->json([
             "bool" => true,
-            "data" => $this->service->summary($this->getCompanyId(), $this->getFilters())
+            "data" => $this->service->summary($this->getCompanyId(), $this->cashFilters($request))
         ]);
 
     }
 
-    public function export(): Response {
+    public function export(Request $request): Response {
 
-        $rows = $this->service->movementsForExport($this->getCompanyId(), $this->getFilters());
+        $rows = $this->service->movementsForExport($this->getCompanyId(), $this->cashFilters($request));
         $handle = fopen("php://temp", "r+");
 
         fputcsv($handle, [
@@ -245,6 +281,12 @@ final class CashRegisterController extends BaseController {
             "min" => "Debe ser mayor o igual a 0.",
             "max" => "No debe superar :max caracteres."
         ];
+
+    }
+
+    private function cashFilters(Request $request): array {
+
+        return array_filter($request->input("filter", []), fn($value) => $value !== null && $value !== "");
 
     }
 

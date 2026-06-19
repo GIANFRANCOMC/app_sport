@@ -46,6 +46,7 @@ En esta etapa el permiso es por modulo: si el perfil no tiene una subseccion asi
 - El administrador inicial se crea con acceso total.
 - El colaborador hereda permisos por `users.role_id`.
 - `CompanySectionService::getSections($companyId, $roleId)` filtra menu por empresa y rol.
+- El selector de modulos de Perfiles usa `CompanySectionService::getSections($companyId)`, por lo que respeta el orden custom por empresa: primero `companies_sub_sections.section_order` para cabeceras y luego `companies_sub_sections.sub_section_order` para modulos internos.
 - `RolePermissionService` cachea permisos por empresa y rol.
 - `module.permission` valida el prefijo de ruta en backend para web y JSON.
 - Las mutaciones de rol o permisos limpian cache de menu, permisos e `initParams` impactados.

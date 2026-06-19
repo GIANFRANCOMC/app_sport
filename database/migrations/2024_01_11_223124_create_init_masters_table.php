@@ -133,6 +133,8 @@ return new class extends Migration {
             $table->id();
             $table->unsignedBigInteger("company_id");
             $table->unsignedBigInteger("sub_section_id");
+            $table->integer("section_order")->nullable();
+            $table->integer("sub_section_order")->nullable();
             $table->enum("status", ["active", "inactive"])->default("active");
 
             $table->timestamp("created_at")->useCurrent()->nullable();
@@ -259,11 +261,11 @@ return new class extends Migration {
         DB::table("sections")->insert([
             ["id" => 1, "slug" => "sc_home", "name" => "home", "order" => 1, "dom_id" => "menu-parent-home", "dom_label" => "Inicio", "dom_icon" => "fa fa-home", "has_sub_menu" => false],
             ["id" => 2, "slug" => "sc_dashboard", "name" => "dashboard", "order" => 2, "dom_id" => "menu-parent-dashboard", "dom_label" => "Dashboard", "dom_icon" => "fa-solid fa-gauge", "has_sub_menu" => false],
-            ["id" => 3, "slug" => "sc_sales", "name" => "sales", "order" => 3, "dom_id" => "menu-parent-sales", "dom_label" => "Ventas", "dom_icon" => "fa-solid fa-cash-register", "has_sub_menu" => true],
-            ["id" => 9, "slug" => "sc_purchases", "name" => "purchases", "order" => 4, "dom_id" => "menu-parent-purchases", "dom_label" => "Compras", "dom_icon" => "fa-solid fa-cart-flatbed", "has_sub_menu" => true],
-            ["id" => 4, "slug" => "sc_customers", "name" => "customers", "order" => 5, "dom_id" => "menu-parent-customers", "dom_label" => "Gestión de clientes", "dom_icon" => "fa fa-user", "has_sub_menu" => true],
-            ["id" => 5, "slug" => "sc_items", "name" => "items", "order" => 6, "dom_id" => "menu-parent-items", "dom_label" => "Catálogo comercial", "dom_icon" => "fa fa-book", "has_sub_menu" => true],
-            ["id" => 10, "slug" => "sc_cash_registers", "name" => "cash_registers", "order" => 7, "dom_id" => "menu-parent-cash-registers", "dom_label" => "Caja", "dom_icon" => "fa-solid fa-vault", "has_sub_menu" => true],
+            ["id" => 3, "slug" => "sc_sales", "name" => "sales", "order" => 4, "dom_id" => "menu-parent-sales", "dom_label" => "Ventas", "dom_icon" => "fa-solid fa-cash-register", "has_sub_menu" => true],
+            ["id" => 9, "slug" => "sc_purchases", "name" => "purchases", "order" => 5, "dom_id" => "menu-parent-purchases", "dom_label" => "Compras", "dom_icon" => "fa-solid fa-cart-flatbed", "has_sub_menu" => true],
+            ["id" => 4, "slug" => "sc_customers", "name" => "customers", "order" => 6, "dom_id" => "menu-parent-customers", "dom_label" => "Gestión de clientes", "dom_icon" => "fa fa-user", "has_sub_menu" => true],
+            ["id" => 5, "slug" => "sc_items", "name" => "items", "order" => 7, "dom_id" => "menu-parent-items", "dom_label" => "Catálogo comercial", "dom_icon" => "fa fa-book", "has_sub_menu" => true],
+            ["id" => 10, "slug" => "sc_operations", "name" => "operations", "order" => 3, "dom_id" => "menu-parent-operations", "dom_label" => "Operación", "dom_icon" => "fa-solid fa-bolt", "has_sub_menu" => true],
             ["id" => 6, "slug" => "sc_infrastructure", "name" => "infrastructure", "order" => 8, "dom_id" => "menu-parent-infrastructure", "dom_label" => "Infraestructura", "dom_icon" => "fa-solid fa-industry", "has_sub_menu" => true],
             ["id" => 7, "slug" => "sc_configuration", "name" => "configuration", "order" => 10, "dom_id" => "menu-parent-configuration", "dom_label" => "Configuración", "dom_icon" => "fa fa-gear", "has_sub_menu" => true],
             ["id" => 8, "slug" => "sc_reports", "name" => "reports", "order" => 11, "dom_id" => "menu-parent-reports", "dom_label" => "Reportes", "dom_icon" => "fa fa-print", "has_sub_menu" => false]
@@ -280,7 +282,7 @@ return new class extends Migration {
             ["id" => 30, "section_id" => 3, "slug" => "sc_sales-list", "name" => "sales-list", "description" => "Revisa las ventas registradas y consulta sus detalles.", "order" => 1, "dom_id" => "menu-sales-list", "dom_label" => "Listado", "dom_route" => "sales.index"],
             ["id" => 31, "section_id" => 3, "slug" => "sc_sales-create", "name" => "sales-create", "description" => "Registra una nueva venta de productos, servicios o membresías.", "order" => 2, "dom_id" => "menu-sales-create", "dom_label" => "Nuevo", "dom_route" => "sales.create"],
 
-            ["id" => 32, "section_id" => 3, "slug" => "sc_sales-pos", "name" => "sales-pos", "description" => "Venta rÃ¡pida para mostrador, vinculada a almacÃ©n y caja activa.", "order" => 3, "dom_id" => "menu-sales-pos", "dom_label" => "Venta POS", "dom_route" => "sales.pos"],
+            ["id" => 32, "section_id" => 10, "slug" => "sc_sales-pos", "name" => "sales-pos", "description" => "Venta rápida para mostrador, vinculada a almacén y caja activa.", "order" => 1, "dom_id" => "menu-sales-pos", "dom_label" => "Venta POS", "dom_route" => "sales.pos"],
 
             // Purchases
             ["id" => 90, "section_id" => 9, "slug" => "sc_purchases-list", "name" => "purchases-list", "description" => "Registra órdenes y facturas, controla recepciones y costos de inventario.", "order" => 1, "dom_id" => "menu-purchases-list", "dom_label" => "Compras", "dom_route" => "purchases.index"],
@@ -303,7 +305,7 @@ return new class extends Migration {
             ["id" => 54, "section_id" => 5, "slug" => "sc_items-stocks_management", "name" => "items-stocks_management", "description" => "Consulta existencias, registra ajustes y revisa el kardex por almacén.", "order" => 6, "dom_id" => "menu-items-stocks_management", "dom_label" => "Inventario", "dom_route" => "stocks_management.index"],
 
             // Cash registers
-            ["id" => 100, "section_id" => 10, "slug" => "sc_cash-registers", "name" => "cash-registers", "description" => "Gestiona aperturas, cierres, arqueos, resumen por mÃ©todo de pago y movimientos de caja.", "order" => 1, "dom_id" => "menu-cash-registers", "dom_label" => "Caja", "dom_route" => "cash_registers.index"],
+            ["id" => 100, "section_id" => 10, "slug" => "sc_cash-registers", "name" => "cash-registers", "description" => "Gestiona aperturas, cierres, arqueos, resumen por método de pago y movimientos de caja.", "order" => 2, "dom_id" => "menu-cash-registers", "dom_label" => "Cajas", "dom_route" => "cash_registers.index"],
 
             // Infrastructure
             ["id" => 60, "section_id" => 6, "slug" => "sc_infrastructure-branches", "name" => "infrastructure-branches", "description" => "Administra sedes, datos de contacto y capacidad.", "order" => 1, "dom_id" => "menu-infrastructure-branches", "dom_label" => "Sucursales", "dom_route" => "branches.index"],
@@ -350,6 +352,58 @@ return new class extends Migration {
             ["company_id" => 1, "sub_section_id" => 72],
             // ["company_id" => 1, "sub_section_id" => 80]
         ]);
+
+
+        DB::table("companies_sub_sections")->where("company_id", 1)->whereIn("sub_section_id", [10])->update(["section_order" => 1]);
+        DB::table("companies_sub_sections")->where("company_id", 1)->whereIn("sub_section_id", [20])->update(["section_order" => 2]);
+        DB::table("companies_sub_sections")->where("company_id", 1)->whereIn("sub_section_id", [32, 100])->update(["section_order" => 3]);
+        DB::table("companies_sub_sections")->where("company_id", 1)->whereIn("sub_section_id", [30, 31])->update(["section_order" => 4]);
+        DB::table("companies_sub_sections")->where("company_id", 1)->whereIn("sub_section_id", [90, 91])->update(["section_order" => 5]);
+        DB::table("companies_sub_sections")->where("company_id", 1)->whereIn("sub_section_id", [40, 41, 42, 43, 44, 45])->update(["section_order" => 6]);
+        DB::table("companies_sub_sections")->where("company_id", 1)->whereIn("sub_section_id", [50, 51, 52, 53, 55, 54])->update(["section_order" => 7]);
+        DB::table("companies_sub_sections")->where("company_id", 1)->whereIn("sub_section_id", [60, 61, 62, 63])->update(["section_order" => 8]);
+        DB::table("companies_sub_sections")->where("company_id", 1)->whereIn("sub_section_id", [70, 71, 72])->update(["section_order" => 10]);
+        DB::table("companies_sub_sections")->where("company_id", 1)->whereIn("sub_section_id", [80])->update(["section_order" => 11]);
+
+        $companySubSectionOrders = [
+            10 => 1,
+            20 => 1,
+            32 => 1,
+            100 => 2,
+            30 => 1,
+            31 => 2,
+            90 => 1,
+            91 => 2,
+            40 => 1,
+            41 => 2,
+            42 => 3,
+            43 => 4,
+            44 => 5,
+            45 => 6,
+            50 => 1,
+            51 => 2,
+            52 => 3,
+            53 => 4,
+            55 => 5,
+            54 => 6,
+            60 => 1,
+            61 => 2,
+            62 => 3,
+            63 => 4,
+            70 => 1,
+            71 => 2,
+            72 => 3,
+            80 => 1
+        ];
+
+        foreach($companySubSectionOrders as $subSectionId => $subSectionOrder) {
+
+            DB::table("companies_sub_sections")
+                ->where("company_id", 1)
+                ->where("sub_section_id", $subSectionId)
+                ->update(["sub_section_order" => $subSectionOrder]);
+
+        }
 
         DB::table("roles")->insert([
             ["id" => 1, "company_id" => 1, "slug" => Utilities::generateCode(), "name" => "Administrador", "is_full_access" => true],

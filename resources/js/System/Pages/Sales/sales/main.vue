@@ -805,7 +805,8 @@ const MODULE_CONFIG = {
     entity: "sales",
     menuId: IS_POS_MODE ? "menu-sales-pos" : "menu-sales-create",
     pageTitle: IS_POS_MODE ? "Venta POS" : "Nueva venta",
-    breadcrumbParent: "Ventas"
+    breadcrumbParent: IS_POS_MODE ? "Operación" : "Ventas",
+    parentMenuId: IS_POS_MODE ? "menu-parent-operations" : "menu-parent-sales"
 };
 
 const TEXTS = {
@@ -970,7 +971,7 @@ export default {
     },
     mounted: async function() {
 
-        Utils.navbarItem("menu-parent-sales", {addClass: "open"});
+        Utils.navbarItem(MODULE.config.parentMenuId, {addClass: "open"});
         Utils.navbarItem(this.config.entity.page.menu.id, {});
         Alerts.swals({type: "initParams"});
 

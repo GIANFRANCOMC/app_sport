@@ -14,8 +14,8 @@
                         @click="selectedCategoryId = null">
                         <span>
                             <strong>Todos</strong>
-                            <small>{{ items.length }} disponibles</small>
                         </span>
+                        <small class="br-pos-category__count">{{ items.length }}</small>
                     </button>
                     <button
                         v-for="category in visibleCategories"
@@ -26,8 +26,8 @@
                         @click="selectedCategoryId = category.id">
                         <span>
                             <strong>{{ category.name }}</strong>
-                            <small>{{ countByCategory(category.id) }} disponibles</small>
                         </span>
+                        <small class="br-pos-category__count">{{ countByCategory(category.id) }}</small>
                     </button>
                 </nav>
                 <div class="br-pos-search">
@@ -52,19 +52,19 @@
                             </span>
                             <span class="br-pos-product__info">
                                 <strong>{{ item.name }}</strong>
-                                <small v-if="item.brand?.name" class="br-pos-product__brand">
-                                    <span>Marca</span>
-                                    <b>{{ item.brand.name }}</b>
-                                </small>
-                                <small v-else class="br-pos-product__description">
+                                <small v-if="item.description" class="br-pos-product__description">
                                     {{ item.description || 'Producto disponible' }}
                                 </small>
-                                <span v-if="item.internal_code || item.barcode" class="br-pos-product__codes">
-                                    <span v-if="item.internal_code" class="is-internal">
+                                <span class="br-pos-product__meta">
+                                    <span v-if="item.brand?.name" class="br-pos-product__meta-row is-brand">
+                                        <b>Marca</b>
+                                        <em>{{ item.brand.name }}</em>
+                                    </span>
+                                    <span v-if="item.internal_code" class="br-pos-product__meta-row is-internal">
                                         <b>Int.</b>
                                         <em>{{ item.internal_code }}</em>
                                     </span>
-                                    <span v-if="item.barcode" class="is-barcode">
+                                    <span v-if="item.barcode" class="br-pos-product__meta-row is-barcode">
                                         <b>Bar.</b>
                                         <em>{{ item.barcode }}</em>
                                     </span>
@@ -135,22 +135,6 @@
                         :searchable="false"
                         placeholder="Seleccione almacén"/>
                 </label>
-                <label v-if="hasOpenCashSessions">
-                    <span class="br-pos-field-label">
-                        <span>Cliente</span>
-                        <AddCustomer
-                            triggerLabel="Agregar"
-                            :options="customerQuickCreateOptions"
-                            @postAction="addCustomerPostAction"/>
-                    </span>
-                    <v-select
-                        v-model="selectedCustomer"
-                        :options="customerOptions"
-                        class="bg-white"
-                        :clearable="false"
-                        :searchable="true"
-                        placeholder="Seleccione cliente"/>
-                </label>
             </section>
 
             <section class="br-pos-total-box" aria-label="Total de venta">
@@ -206,10 +190,10 @@
             </section>
 
             <button
-                v-if="hasOpenCashSessions && canSubmit"
+                v-if="hasOpenCashSessions"
                 type="button"
                 class="br-btn br-btn-success br-pos-ticket__pay"
-                :disabled="saving || !canSubmit"
+                :disabled="saving || !cart.length"
                 @click="openSaleConfirmation">
                 <i class="fa-solid fa-cash-register" aria-hidden="true"></i>
                 <span>Revisar venta</span>
@@ -311,6 +295,26 @@
                 </div>
 
                 <div class="modal-body br-entity-modal__body br-pos-sale-modal__body">
+                    <section class="br-pos-sale-customer" aria-label="Cliente de la venta">
+                        <label>
+                            <span class="br-pos-field-label">
+                                <span>Cliente</span>
+                                <AddCustomer
+                                    triggerLabel="Agregar"
+                                    :options="customerQuickCreateOptions"
+                                    @postAction="addCustomerPostAction"/>
+                            </span>
+                            <v-select
+                                v-model="selectedCustomer"
+                                :options="customerOptions"
+                                class="bg-white"
+                                :clearable="false"
+                                :searchable="true"
+                                append-to-body
+                                placeholder="Seleccione cliente"/>
+                        </label>
+                    </section>
+
                     <section class="br-pos-sale-summary" aria-label="Resumen de importes">
                         <div>
                             <span>Subtotal</span>
@@ -390,7 +394,7 @@
                     <button
                         type="button"
                         class="br-btn br-btn-success"
-                        :disabled="saving || !canSubmit"
+                        :disabled="saving || !cart.length"
                         @click="confirmSale">
                         <span>{{ saving ? 'Confirmando venta' : 'Confirmar venta' }}</span>
                     </button>
@@ -560,7 +564,7 @@ export default {
         }
     },
     mounted() {
-        Utils.navbarItem("menu-parent-sales", {addClass: "open"});
+        Utils.navbarItem("menu-parent-operations", {addClass: "open"});
         Utils.navbarItem("menu-sales-pos", {addClass: "active"});
         this.initParams();
     },
@@ -766,8 +770,8 @@ export default {
             return value ? "Sí" : "No";
         },
         openSaleConfirmation() {
-            if(!this.canSubmit) {
-                Alerts.toastrs({type: "warning", subtitle: "Completa caja, cliente, pagos y productos. Los pagos deben cuadrar con el total."});
+            if(!this.cart.length) {
+                Alerts.toastrs({type: "warning", subtitle: "Agrega al menos un producto, servicio o membresía al detalle."});
                 return;
             }
 

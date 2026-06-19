@@ -22,6 +22,8 @@ class CompanySubSection extends Model {
     protected $fillable = [
         "company_id",
         "sub_section_id",
+        "section_order",
+        "sub_section_order",
         "status",
         "created_at",
         "created_by",

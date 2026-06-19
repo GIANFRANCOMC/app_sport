@@ -10,54 +10,66 @@ Este archivo es el indice funcional y contrato de navegacion de System. Refleja 
 - Evitar que un cambio de UI altere sin querer la estructura funcional.
 - Servir como punto de entrada antes de revisar el archivo detallado de cada modulo.
 
-Este archivo no controla el menu en ejecucion. El menu real se obtiene de `sections`, `sub_sections` y `companies_sub_sections` mediante `CompanySectionService`. El layout consume el servicio y no conoce la clave de caché. Si cambia el orden funcional o se agrega un modulo, deben actualizarse tanto los datos del sistema como este indice.
+El menu real se obtiene de `sections`, `sub_sections` y `companies_sub_sections` mediante `CompanySectionService`. El layout solo renderiza lo que entrega el servicio.
 
-## Secciones principales
+## Orden de cabeceras
 
-1. `sc_home` - Inicio, define literalmente el home donde se listan todos los modulos para poder acceder
-2. `sc_dashboard` - Dashboard, define el panel de control que muestra detalles basicos como contadores y una grafica de ventas
-3. `sc_sales` - Ventas, define la seccion donde se realizaran las ventas, tanto el listado como agregar venta
-4. `sc_purchases` - Compras, registra órdenes o facturas, proveedores y recepciones parciales o totales.
-5. `sc_customers` - Gestion de clientes, define seccion donde se gestionaran los clientes y lo asociados a estos
-6. `sc_items` - Catalogo comercial, define la seccion donde se gestionara lo que se vendera y administrara en el stock (inventario)
-7. `sc_infrastructure` - Infraestructura, define todo lo relacionado a la sucursal (empresa), todo lo perteneciente a este
-8. `sc_configuration` - Configuracion, define las maestras y temas de configuracion para el sistema
-9. `sc_reports` - Reportes, define los reportes de las secciones para poder exportar
+1. `sc_home` - Inicio.
+2. `sc_dashboard` - Dashboard.
+3. `sc_operations` - Operacion: agrupa accesos de mostrador y caja, como Venta POS y Cajas.
+4. `sc_sales` - Ventas: listado y registro tradicional de ventas.
+5. `sc_purchases` - Compras: documentos de compra, proveedores y recepciones.
+6. `sc_customers` - Gestion de clientes.
+7. `sc_items` - Catalogo comercial e inventario.
+8. `sc_infrastructure` - Infraestructura.
+9. `sc_configuration` - Configuracion.
+10. `sc_reports` - Reportes.
+
+## Orden por empresa
+
+- `sections.order` define el orden funcional base del sistema.
+- `companies_sub_sections.section_order` permite ordenar las cabeceras por `company_id` solo desde BD.
+- `companies_sub_sections.sub_section_order` permite ordenar los accesos dentro de cada cabecera por `company_id`.
+- El frontend no ordena cabeceras ni accesos. Si una empresa no tiene valores custom, `CompanySectionService` usa `sections.order` y `sub_sections.order` como respaldo.
+- Perfiles de acceso consume la misma respuesta de `CompanySectionService`, por lo que muestra las cabeceras y modulos en el mismo orden que vera el cliente en el menu.
 
 ## Subsecciones
 
-1. `home.index` - Inicio, es el home donde van los apartados, menu literalmente
-2. `dashboard.index` - Dashboard, panel de control donde se muestran detalle basicos y graficas
-3. `sales.index` - Ventas / Listado, donde se listan las ventas, anulan las ventas, imprimen las ventas
-4. `sales.create` - Ventas / Nuevo, donde se crean las ventas, imprimen despues de la creacion
-5. `purchases.index` - Compras, registra documentos de compra, costos y recepciones por almacén.
-6. `suppliers.index` - Proveedores, administra la información comercial usada por Compras.
-7. `customers.index` - Clientes, donde se gestionan los clientes, agregar, modificar
-8. `tracking_customers.index` - Historial de cliente, donde se visualiza las diferentes actividades y registros del usuario, ventas, asistencias, membresias, etc
-9. `tracking_subscriptions.index` - Membresias de clientes, listar de membresias creadas desde la venta
-10. `tracking_attendances.index` - Asistencias, donde se registran las asistencias, ya sea manual, por qr, o por lector biometrico, este ultimo falta
-11. `tracking_notifications.index` - Notificaciones, donde se visualizan el listado de notificaciones pendientes y enviadas
-12. `book_complaints.index` - Libro de reclamaciones y sugerencias, donde se gestiona la informacion de libro de reclamaciones expuestos para el cliente
-13. `products.index` - Productos, gestion de productos para vender y es contabilizado en para el stock x almacen
-14. `services.index` - Servicios, gestion de servicios para vender y no es contabilizado en para el stock x almacen
-15. `subscriptions.index` - Membresías de catálogo, gestión de membresías para vender y varía el periodo
-16. `categories.index` - Categorias, estas categorias ayudan a la clasificacion de productos, servicios y membresias para su mejor agrupacion y busqueda
-17. `brands.index` - Marcas, catálogo propio de cada empresa para identificar y agrupar productos
-18. `stocks_management.index` - Inventario: consulta existencias por almacén, registra entradas, salidas y correcciones manuales, y muestra el kardex completo.
-19. `branches.index` - Sucursales, gestion de sucursales por empresa, la cual puede tener x sucursales, junto a sus series comprobantes de venta, almacenes, etc
-20. `assets.index` - Activos, formulario para agregar, modificar activos para las sucursales
-21. `assets_management.index` - Gestion de activos, gestion de activos, asignacion de activo a usuarios, asignacion de activo a sucursales, informacion por unidad solamente por el momento, es decir depende del management_type solamente se maneja que se trata por unidad, tambien hay que se gestione por stock como un todo pero sera para otro momento
-22. `biometric_devices.index` - Dispositivos biometricos, registro de dispositivos biometricos que seran usados para registrar asistencias
-23. `companies.index` - Mi empresa, gestion de informacion principal y esencial de la empresa
-24. `users.index` - Colaboradores, gestion de usuario para tener acceso a la plataforma
-25. `roles.index` - Perfiles de acceso, configuracion de acceso por modulo para colaboradores
-26. `reports.index` - Reportes, gestion de reportes filtrando por campos
+1. `home.index` - Inicio.
+2. `dashboard.index` - Dashboard.
+3. `sales.pos` - Operacion / Venta POS.
+4. `cash_registers.index` - Operacion / Cajas.
+5. `sales.index` - Ventas / Listado.
+6. `sales.create` - Ventas / Nuevo.
+7. `purchases.index` - Compras.
+8. `suppliers.index` - Proveedores.
+9. `customers.index` - Clientes.
+10. `tracking_customers.index` - Historial de cliente.
+11. `tracking_subscriptions.index` - Membresias de clientes.
+12. `tracking_attendances.index` - Asistencias.
+13. `tracking_notifications.index` - Notificaciones.
+14. `book_complaints.index` - Libro de reclamaciones y sugerencias.
+15. `products.index` - Productos.
+16. `services.index` - Servicios.
+17. `subscriptions.index` - Membresias de catalogo.
+18. `categories.index` - Categorias.
+19. `brands.index` - Marcas.
+20. `stocks_management.index` - Inventario.
+21. `branches.index` - Sucursales.
+22. `assets.index` - Activos.
+23. `assets_management.index` - Gestion de activos.
+24. `biometric_devices.index` - Dispositivos biometricos.
+25. `companies.index` - Mi empresa.
+26. `users.index` - Colaboradores.
+27. `roles.index` - Perfiles de acceso.
+28. `reports.index` - Reportes.
 
 ## Actualizaciones recientes
 
-- `sales.pos` - Ventas / Venta POS: acceso rapido de mostrador que reutiliza el flujo de nueva venta con titulo y menu propios.
-- `cash_registers.index` - Caja: apertura, cierre, arqueo, resumen por metodo de pago y movimientos.
-- `sc_cash_registers` queda como seccion propia para no mezclar reglas de caja con ventas, compras o inventario.
+- `sales.pos` sale de la cabecera `Ventas` y queda en `Operacion`.
+- `cash_registers.index` queda en la misma cabecera `Operacion` para reducir clics del cajero y agrupar trabajo de mostrador.
+- La cabecera visible `Operacion` usa `menu-parent-operations`.
+- El grupo se ubica debajo de Dashboard mediante `companies_sub_sections.section_order = 3` para POS y Cajas.
 
 ## Modulos tecnicos de soporte
 

@@ -29,9 +29,17 @@ La visualizacion principal esta en `cash_registers.index` y se monta desde:
 - Los metodos de pago conservan nombre y referencia en la venta; caja usa esos datos para cuadrar efectivo, tarjeta, transferencia, billeteras digitales, Yape, Plin u otros medios configurados.
 - Caja registra dinero; Kardex e inventario registran unidades fisicas.
 
+## Menu
+
+- Cajas pertenece a la cabecera `Operacion`, junto con `Venta POS`.
+- La cabecera usa `menu-parent-operations` y se ordena por empresa con `companies_sub_sections.section_order`.
+- El acceso visible del modulo es `Cajas`, ruta `cash_registers.index`.
+
 ## UI implementada
 
-- Menu nuevo `Caja` con acceso `cash_registers.index`.
+- Menu `Operacion > Cajas` con acceso `cash_registers.index`.
+- Accion `Agregar caja`: permite crear varias cajas por sucursal desde el modulo Caja. El codigo interno puede dejarse vacio y se genera automaticamente con prefijo `CAJ-`.
+- Las acciones `Abrir caja` y `Cerrar caja` se muestran por cada caja del listado. No existen botones globales para evitar abrir o cerrar una caja equivocada.
 - Entrada `Venta POS` dentro de ventas usando el flujo de nueva venta, pero con titulo y menu propios.
 - Pestañas de Caja:
   - `Cajas`: estado de cada caja, sesion activa y monto esperado.
@@ -51,6 +59,12 @@ La visualizacion principal esta en `cash_registers.index` y se monta desde:
 - `resources/js/System/Helpers/Requests.js` expone rutas especiales: `sessions`, `movements`, `summary`, `open`, `close`.
 - `movement`: registra ingresos, salidas y ajustes manuales.
 - `export`: descarga movimientos de caja.
+
+## Alta de cajas por sucursal
+
+- `cash_registers.store` crea una caja asociada a una sucursal activa.
+- Si el codigo interno se deja vacio, `CashRegisterService` genera un codigo unico con prefijo `CAJ-`.
+- Al crear una caja se invalidan las caches operativas de Caja y Venta POS para que la nueva caja quede disponible sin esperar al TTL.
 
 ## Pendiente
 

@@ -18,12 +18,15 @@ Agrupa la estructura de navegacion, habilitacion por empresa y autorizacion func
 - `sections` define grupos principales.
 - `sub_sections` define items navegables, descripcion y ruta base.
 - `companies_sub_sections` habilita modulos por empresa.
+- `companies_sub_sections.section_order` ordena cabeceras por empresa.
+- `companies_sub_sections.sub_section_order` ordena modulos dentro de cada cabecera por empresa.
 - `roles` clasifica usuarios y define si el perfil tiene acceso total con `is_full_access`.
 - `role_sub_sections` asigna modulos permitidos a un rol sin acceso total.
 - `users.role_id` vincula cada colaborador con su perfil.
 - `user_preferences` guarda configuracion personal, pero no concede permisos.
 - `CompanySectionService::getSections($companyId)` devuelve el menu habilitado por empresa.
 - `CompanySectionService::getSections($companyId, $roleId)` devuelve el menu visible para ese perfil.
+- `RoleConfigService` usa `CompanySectionService::getSections($companyId)` para que Perfiles de acceso liste modulos con el mismo orden que el menu real del cliente.
 - `RolePermissionService` cachea permisos por empresa y rol para validar rutas con rapidez.
 - `EnsureModulePermission` protege las rutas internas usando el prefijo de ruta, por ejemplo `products.*`.
 - El layout consume `CompanySectionService` y no lee claves de cache directamente.

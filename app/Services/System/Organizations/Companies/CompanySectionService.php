@@ -85,10 +85,21 @@ final class CompanySectionService {
                           "has_sub_menu",
                           "status"
                       ])
+                      ->selectSub(function($subQuery) use($companyId) {
+
+                          $subQuery->from("companies_sub_sections")
+                                   ->join("sub_sections", "sub_sections.id", "=", "companies_sub_sections.sub_section_id")
+                                   ->whereColumn("sub_sections.section_id", "sections.id")
+                                   ->where("companies_sub_sections.company_id", $companyId)
+                                   ->where("companies_sub_sections.status", "active")
+                                   ->selectRaw("MIN(companies_sub_sections.section_order)");
+
+                      }, "company_section_order")
                       ->where("status", "active")
                       ->whereHas("subSections.companiesSubSections", function($query) use($companyId) {
 
-                          $query->where("company_id", $companyId);
+                          $query->where("company_id", $companyId)
+                                ->where("status", "active");
 
                       });
 
@@ -117,9 +128,19 @@ final class CompanySectionService {
                                     "dom_route",
                                     "status"
                                 ])
+                                ->selectSub(function($subQuery) use($companyId) {
+
+                                    $subQuery->from("companies_sub_sections")
+                                             ->whereColumn("companies_sub_sections.sub_section_id", "sub_sections.id")
+                                             ->where("companies_sub_sections.company_id", $companyId)
+                                             ->where("companies_sub_sections.status", "active")
+                                             ->selectRaw("MIN(companies_sub_sections.sub_section_order)");
+
+                                }, "company_sub_section_order")
                                 ->whereHas("companiesSubSections", function($companyQuery) use($companyId) {
 
-                                    $companyQuery->where("company_id", $companyId);
+                                    $companyQuery->where("company_id", $companyId)
+                                                 ->where("status", "active");
 
                                 });
 
@@ -129,11 +150,12 @@ final class CompanySectionService {
 
                           }
 
-                          $query
-                                ->orderBy("order");
+                          $query->orderByRaw("COALESCE(company_sub_section_order, `sub_sections`.`order`, 999)")
+                                ->orderBy("sub_sections.order");
 
                       }])
-                      ->orderBy("order")
+                      ->orderByRaw("COALESCE(company_section_order, `sections`.`order`, 999)")
+                      ->orderBy("sections.order")
                       ->get()
                       ->each(function(Section $section) {
 

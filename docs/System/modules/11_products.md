@@ -339,9 +339,9 @@ Incluye:
 
 - Marcas demo: Hola, Gympe y Wellness.
 - Categorias demo: Bebidas, Suplementos, Accesorios, Servicios y Membresias.
-- Productos con codigo interno, codigo de barras, precio, rango de precios, marca, categoria y `price_includes_tax`.
-- Servicios comerciales sin inventario.
-- Membresias con duracion.
+- 30 productos con codigo interno, codigo de barras, precio, rango de precios, marca, categoria y `price_includes_tax`.
+- 10 servicios comerciales sin inventario.
+- 10 membresias con duracion.
 - Stock inicial por cada almacen activo de la empresa demo.
 - Movimiento de inventario `initial_stock` para dejar trazabilidad del stock cargado por seeder.
 

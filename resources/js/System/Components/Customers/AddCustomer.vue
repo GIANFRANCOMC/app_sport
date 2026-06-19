@@ -187,6 +187,7 @@ import * as Requests from "@System/Helpers/Requests.js";
 import * as Utils from "@System/Helpers/Utils.js";
 import { validateOnlyDigits } from "@System/Helpers/ValidationHelpers.js";
 import InputDate from "@System/Components/InputDate.vue";
+import InputSlot from "@System/Components/InputSlot.vue";
 
 const MODULE_CONFIG = {
     entity: "customers",
@@ -270,7 +271,8 @@ const MODULE = {
 export default {
     name: "AddCustomer",
     components: {
-        InputDate
+        InputDate,
+        InputSlot
     },
     emits: ["postAction"],
     props: {
