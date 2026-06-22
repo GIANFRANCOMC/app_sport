@@ -242,13 +242,37 @@
                         <div class="col-lg-4">
                             <div class="br-document-settlement">
                                 <div>
-                                    <label class="form-label">Impuestos aplicados</label>
-                                    <div class="br-document-settlement__taxes" v-if="purchaseTaxes.length">
-                                        <span v-for="tax in purchaseTaxes" :key="tax.code">
-                                            {{ tax.data.name }} · {{ Number(tax.data.rate || 0).toFixed(2) }}%
-                                        </span>
+                                    <label class="form-label">Impuestos extras</label>
+                                    <div class="br-document-settlement__taxes" v-if="optionalPurchaseTaxes.length">
+                                        <template v-for="tax in optionalPurchaseTaxes" :key="`optional-purchase-tax-${tax.code}`">
+                                            <label class="br-entity-switch br-document-settlement__tax-option">
+                                                <input
+                                                    v-model="purchaseForm.selectedTaxes"
+                                                    class="form-check-input"
+                                                    type="checkbox"
+                                                    :value="tax.code"
+                                                    @change="syncSelectedTaxQuantity(tax.data)">
+                                                <span>
+                                                    <strong>{{ tax.data.name }}</strong>
+                                                    <small>{{ taxLabel(tax.data) }}</small>
+                                                </span>
+                                            </label>
+                                            <InputNumber
+                                                v-if="isFixedTax(tax.data) && (purchaseForm.selectedTaxes || []).includes(tax.code)"
+                                                v-model="purchaseForm.selectedTaxQuantities[tax.code]"
+                                                title=""
+                                                :inputClass="['form-control', 'br-tax-quantity']"
+                                                :decimals="0"
+                                                :minValue="1"
+                                                :hasNegative="false"
+                                                @change="normalizeSelectedTaxQuantity(tax.code)">
+                                                <template v-slot:inputGroupPrepend>
+                                                    <span class="input-group-text br-tax-quantity__label">Veces</span>
+                                                </template>
+                                            </InputNumber>
+                                        </template>
                                     </div>
-                                    <p v-else class="br-document-settlement__empty mb-0">Sin impuestos activos para compras.</p>
+                                    <p v-else class="br-document-settlement__empty mb-0">Sin impuestos extras disponibles.</p>
                                 </div>
                                 <div>
                                     <label class="form-label">Métodos de pago</label>
@@ -263,16 +287,17 @@
                                                 :clearable="false"
                                                 :searchable="true"
                                                 append-to-body/>
-                                            <div class="input-group">
-                                                <span class="input-group-text br-currency-prefix">{{ purchaseForm.currency?.sign }}</span>
-                                                <input
-                                                    v-model.number="payment.amount"
-                                                    type="number"
-                                                    min="0"
-                                                    step="0.01"
-                                                    class="form-control"
-                                                    :placeholder="separatorNumber(purchaseTotal)">
-                                            </div>
+                                            <InputNumber
+                                                v-model="payment.amount"
+                                                title=""
+                                                :titleClass="[]"
+                                                :inputClass="['form-control', 'br-document-payment-amount']"
+                                                :minValue="0"
+                                                :placeholder="separatorNumber(purchaseTotal)">
+                                                <template v-slot:inputGroupPrepend>
+                                                    <span class="input-group-text br-currency-prefix">{{ purchaseForm.currency?.sign }}</span>
+                                                </template>
+                                            </InputNumber>
                                             <input
                                                 v-if="payment.method?.data?.requires_reference"
                                                 v-model.trim="payment.reference"
@@ -298,8 +323,16 @@
                                 <div class="br-purchases__total">
                                     <span>Subtotal</span>
                                     <strong>{{ purchaseForm.currency?.sign }} {{ separatorNumber(purchaseSubtotal) }}</strong>
-                                    <span>Impuestos</span>
-                                    <strong>{{ purchaseForm.currency?.sign }} {{ separatorNumber(purchaseTaxTotal) }}</strong>
+                                    <template v-if="purchaseTaxBreakdown.length">
+                                        <template v-for="tax in purchaseTaxBreakdown" :key="`purchase-summary-tax-${tax.id}`">
+                                            <span>{{ tax.name }}</span>
+                                            <strong>{{ purchaseForm.currency?.sign }} {{ separatorNumber(tax.amount) }}</strong>
+                                        </template>
+                                    </template>
+                                    <template v-else>
+                                        <span>IGV</span>
+                                        <strong>{{ purchaseForm.currency?.sign }} 0.00</strong>
+                                    </template>
                                     <span>Total</span>
                                     <strong>{{ purchaseForm.currency?.sign }} {{ separatorNumber(purchaseTotal) }}</strong>
                                     <span>Pagado</span>
@@ -411,6 +444,64 @@ export default {
         };
     },
     methods: {
+        taxLabel(tax = {}) {
+
+            const name = tax?.name || "IGV";
+            const rate = Number(tax?.rate || 0);
+            const calculationType = tax?.calculation_type || "percentage";
+            const operationType = tax?.operation_type || "addition";
+            const sign = operationType === "subtraction" ? "-" : "+";
+
+            if(calculationType === "fixed") {
+
+                return `${name} ${sign} ${this.separatorNumber(rate)}`;
+
+            }
+
+            return `${name} ${sign}${this.separatorNumber(rate)}%`;
+
+        },
+        calculateTaxAmount(tax = {}, baseAmount = 0) {
+
+            const base = Number(baseAmount || 0);
+            const rate = Number(tax?.rate || 0);
+            const calculationType = tax?.calculation_type || "percentage";
+            const operationType = tax?.operation_type || "addition";
+            const quantity = this.isFixedTax(tax) ? this.selectedTaxQuantity(tax.id) : 1;
+            const amount = calculationType === "fixed"
+                ? rate * quantity
+                : base * (rate / 100);
+
+            return Number((operationType === "subtraction" ? amount * -1 : amount).toFixed(2));
+
+        },
+        taxIsRequired(tax = {}) {
+
+            return [true, 1, "1", "true"].includes(tax?.is_required);
+
+        },
+        isFixedTax(tax = {}) {
+
+            return (tax?.calculation_type || "percentage") === "fixed";
+
+        },
+        selectedTaxQuantity(taxId) {
+
+            return Math.max(1, parseInt(Number(this.purchaseForm.selectedTaxQuantities?.[taxId] || 1), 10));
+
+        },
+        normalizeSelectedTaxQuantity(taxId) {
+
+            this.purchaseForm.selectedTaxQuantities[taxId] = Math.max(1, parseInt(Number(this.purchaseForm.selectedTaxQuantities[taxId] || 1), 10));
+
+        },
+        syncSelectedTaxQuantity(tax = {}) {
+
+            if(!this.isFixedTax(tax)) return;
+
+            this.purchaseForm.selectedTaxQuantities[tax.id] = (this.purchaseForm.selectedTaxes || []).includes(tax.id) ? 1 : 0;
+
+        },
         async initParams() {
             const result = await Requests.get({
                 route: this.config.entity.routes.initParams,
@@ -463,6 +554,8 @@ export default {
                 documentNumber: "",
                 issueDate: new Date().toISOString().slice(0, 10),
                 expectedDate: "",
+                selectedTaxes: [],
+                selectedTaxQuantities: {},
                 payments: [this.newPurchasePayment({amount: this.purchaseTotal})],
                 observation: "",
                 items: [this.newPurchaseItem()]
@@ -498,6 +591,13 @@ export default {
                     issue_date: this.purchaseForm.issueDate,
                     expected_date: this.purchaseForm.expectedDate || null,
                     tax: this.purchaseTaxTotal,
+                    taxes: this.purchaseTaxBreakdown.map(tax => ({
+                        tax_id: tax.id,
+                        quantity: tax.quantity,
+                        amount: tax.amount,
+                        base_amount: this.purchaseSubtotal,
+                        is_required: tax.isRequired
+                    })),
                     payments: this.purchasePaymentPayload,
                     observation: this.purchaseForm.observation,
                     items: this.purchaseForm.items.map(item => ({
@@ -667,9 +767,24 @@ export default {
             return (this.purchaseForm.items || []).reduce((total, detail) => total + this.lineTotal(detail), 0);
         },
         purchaseTaxTotal() {
-            return (this.purchaseTaxes || []).reduce((total, tax) => {
-                return total + (this.purchaseSubtotal * (Number(tax.data?.rate || 0) / 100));
+            return (this.purchaseTaxBreakdown || []).reduce((total, tax) => {
+                return total + Number(tax.amount || 0);
             }, 0);
+        },
+        purchaseTaxBreakdown() {
+            const subtotal = Number(this.purchaseSubtotal || 0);
+
+            return (this.appliedPurchaseTaxes || []).map(tax => {
+                const data = tax.data || {};
+
+                return {
+                    id: data.id || tax.code,
+                    name: data.name || "IGV",
+                    isRequired: this.taxIsRequired(data),
+                    quantity: this.isFixedTax(data) ? this.selectedTaxQuantity(data.id || tax.code) : 1,
+                    amount: this.calculateTaxAmount(data, subtotal)
+                };
+            });
         },
         purchaseTotal() {
             return this.purchaseSubtotal + this.purchaseTaxTotal;
@@ -677,9 +792,20 @@ export default {
         purchaseTaxes() {
             return (this.options.taxes?.records || []).map(tax => ({
                 code: tax.id,
-                label: `${tax.name} (${Number(tax.rate).toFixed(2)}%)`,
+                label: this.taxLabel(tax),
                 data: tax
             }));
+        },
+        requiredPurchaseTaxes() {
+            return this.purchaseTaxes.filter(tax => this.taxIsRequired(tax.data));
+        },
+        optionalPurchaseTaxes() {
+            return this.purchaseTaxes.filter(tax => !this.taxIsRequired(tax.data));
+        },
+        appliedPurchaseTaxes() {
+            const selected = this.purchaseForm.selectedTaxes || [];
+
+            return this.purchaseTaxes.filter(tax => this.taxIsRequired(tax.data) || selected.includes(tax.code));
         },
         purchasePaymentMethods() {
             return (this.options.paymentMethods?.records || []).map(method => ({

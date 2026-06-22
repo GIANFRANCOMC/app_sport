@@ -12,7 +12,7 @@ Un valor nulo o vacío significa que el código interno se guarda sin prefijo.
 
 ## Crecimiento previsto
 
-La misma infraestructura admite configuraciones tipadas de otros grupos. Inventario ya consume `restore_stock_on_sale_cancellation`; siguen pendientes reglas como permitir o impedir ventas con stock negativo.
+La misma infraestructura admite configuraciones tipadas de otros grupos. Inventario consume `restore_stock_on_sale_cancellation` y `allow_negative_stock_on_sale`; ambas políticas ya existen en backend y quedan pendientes de interfaz administrativa.
 
 ## Reglas
 
@@ -29,7 +29,7 @@ La misma infraestructura admite configuraciones tipadas de otros grupos. Inventa
 - `InternalCodeService` aplica los prefijos en backend.
 - Productos, servicios, membresías, marcas, categorías, sucursales y activos consumen el mismo contrato.
 - Un valor nulo o vacío desactiva el prefijo sin modificar código.
-- El grupo `inventory` incluye `restore_stock_on_sale_cancellation`, desactivado por defecto.
+- El grupo `inventory` incluye `restore_stock_on_sale_cancellation` y `allow_negative_stock_on_sale`, ambas desactivadas por defecto.
 
 ## Pendiente de interfaz
 
@@ -37,4 +37,4 @@ La misma infraestructura admite configuraciones tipadas de otros grupos. Inventa
 - Definir permisos separados de lectura y edición.
 - Invalidar únicamente los `ConfigService` que consuman el grupo modificado.
 - Exponer la política de devolución automática de stock con una explicación clara de su efecto.
-- Incorporar posteriormente reglas de venta e inventario negativo sin convertir `company_settings` en un contenedor de lógica no relacionada.
+- Exponer la política de stock negativo con una explicación clara: si está desactivada, ventas y POS/Caja no pueden confirmar salidas que dejen saldo menor a cero.

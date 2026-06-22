@@ -18,6 +18,7 @@ return new class extends Migration {
             $table->string("group");
             $table->string("key");
             $table->text("value")->nullable();
+            $table->text("description")->nullable();
             $table->enum("value_type", ["string", "boolean", "integer", "decimal", "json"])->default("string");
             $table->enum("status", ["active", "inactive"])->default("active");
 
@@ -34,8 +35,12 @@ return new class extends Migration {
             $table->unsignedBigInteger("company_id");
             $table->string("code", 30);
             $table->string("name");
+            $table->text("description")->nullable();
             $table->decimal("rate", 7, 4)->default(0);
+            $table->enum("calculation_type", ["percentage", "fixed"])->default("percentage");
+            $table->enum("operation_type", ["addition", "subtraction"])->default("addition");
             $table->enum("scope", ["sale", "purchase", "both"])->default("both");
+            $table->boolean("is_required")->default(true);
             $table->boolean("is_default")->default(false);
             $table->enum("status", ["active", "inactive"])->default("active");
 
@@ -498,18 +503,27 @@ return new class extends Migration {
 
         // Inserts
         DB::table("company_settings")->insert([
-            ["company_id" => 1, "group" => "internal_code_prefixes", "key" => "product", "value" => "PRO", "value_type" => "string"],
-            ["company_id" => 1, "group" => "internal_code_prefixes", "key" => "service", "value" => "SER", "value_type" => "string"],
-            ["company_id" => 1, "group" => "internal_code_prefixes", "key" => "subscription", "value" => "MEM", "value_type" => "string"],
-            ["company_id" => 1, "group" => "internal_code_prefixes", "key" => "brand", "value" => "MAR", "value_type" => "string"],
-            ["company_id" => 1, "group" => "internal_code_prefixes", "key" => "category", "value" => "CAT", "value_type" => "string"],
-            ["company_id" => 1, "group" => "internal_code_prefixes", "key" => "branch", "value" => "SUC", "value_type" => "string"],
-            ["company_id" => 1, "group" => "internal_code_prefixes", "key" => "asset", "value" => "ACT", "value_type" => "string"],
+            ["company_id" => 1, "group" => "internal_code_prefixes", "key" => "product", "value" => "PRO", "description" => "Prefijo usado para generar códigos internos de productos. Si el valor queda vacío, el código se guarda sin prefijo.", "value_type" => "string"],
+            ["company_id" => 1, "group" => "internal_code_prefixes", "key" => "service", "value" => "SER", "description" => "Prefijo usado para generar códigos internos de servicios. Si el valor queda vacío, el código se guarda sin prefijo.", "value_type" => "string"],
+            ["company_id" => 1, "group" => "internal_code_prefixes", "key" => "subscription", "value" => "MEM", "description" => "Prefijo usado para generar códigos internos de membresías. Si el valor queda vacío, el código se guarda sin prefijo.", "value_type" => "string"],
+            ["company_id" => 1, "group" => "internal_code_prefixes", "key" => "brand", "value" => "MAR", "description" => "Prefijo usado para generar códigos internos de marcas. Si el valor queda vacío, el código se guarda sin prefijo.", "value_type" => "string"],
+            ["company_id" => 1, "group" => "internal_code_prefixes", "key" => "category", "value" => "CAT", "description" => "Prefijo usado para generar códigos internos de categorías. Si el valor queda vacío, el código se guarda sin prefijo.", "value_type" => "string"],
+            ["company_id" => 1, "group" => "internal_code_prefixes", "key" => "branch", "value" => "SUC", "description" => "Prefijo usado para generar códigos internos de sucursales. Si el valor queda vacío, el código se guarda sin prefijo.", "value_type" => "string"],
+            ["company_id" => 1, "group" => "internal_code_prefixes", "key" => "asset", "value" => "ACT", "description" => "Prefijo usado para generar códigos internos de activos. Si el valor queda vacío, el código se guarda sin prefijo.", "value_type" => "string"],
+            [
+                "company_id" => 1,
+                "group" => "inventory",
+                "key" => "allow_negative_stock_on_sale",
+                "value" => "false",
+                "description" => "Define si una venta normal o una venta POS/caja puede dejar productos con stock negativo. Por defecto es false: si la salida supera el stock disponible, la venta se bloquea antes de confirmar.",
+                "value_type" => "boolean"
+            ],
             [
                 "company_id" => 1,
                 "group" => "inventory",
                 "key" => "restore_stock_on_sale_cancellation",
                 "value" => "false",
+                "description" => "Define si al anular una venta se devuelven automáticamente los productos al almacén original. Por defecto es false: la anulación no repone stock y la devolución física debe registrarse desde Inventario si corresponde.",
                 "value_type" => "boolean"
             ],
             [
@@ -517,13 +531,60 @@ return new class extends Migration {
                 "group" => "inventory",
                 "key" => "valuation_method",
                 "value" => "weighted_average",
+                "description" => "Método usado para valorizar inventario y kardex. El valor inicial weighted_average calcula costo promedio ponderado sobre entradas y saldos.",
                 "value_type" => "string"
             ]
         ]);
 
         DB::table("taxes")->insert([
-            ["company_id" => 1, "code" => "SALE-GEN", "name" => "Impuesto venta general", "rate" => 10, "scope" => "sale", "is_default" => false],
-            ["company_id" => 1, "code" => "PUR-GEN", "name" => "Impuesto compra general", "rate" => 8, "scope" => "purchase", "is_default" => false]
+            [
+                "company_id" => 1,
+                "code" => "SALE-IGV",
+                "name" => "IGV",
+                "description" => "Impuesto General a las Ventas del Peru aplicado a ventas. Si el item incluye IGV, se calcula como tributo contenido; si no lo incluye, se suma al total.",
+                "rate" => 18,
+                "calculation_type" => "percentage",
+                "operation_type" => "addition",
+                "scope" => "sale",
+                "is_required" => true,
+                "is_default" => true
+            ],
+            [
+                "company_id" => 1,
+                "code" => "SALE-ICBP",
+                "name" => "ICBP",
+                "description" => "Impuesto al Consumo de Bolsas Plasticas aplicado a ventas cuando corresponde. Es opcional porque no todas las ventas incluyen bolsa gravada.",
+                "rate" => 0.5,
+                "calculation_type" => "fixed",
+                "operation_type" => "addition",
+                "scope" => "sale",
+                "is_required" => false,
+                "is_default" => false
+            ],
+            [
+                "company_id" => 1,
+                "code" => "PURCHASE-IGV",
+                "name" => "IGV",
+                "description" => "Impuesto General a las Ventas del Peru aplicado a compras. Se calcula sobre la base de compra registrada.",
+                "rate" => 18,
+                "calculation_type" => "percentage",
+                "operation_type" => "addition",
+                "scope" => "purchase",
+                "is_required" => true,
+                "is_default" => true
+            ],
+            [
+                "company_id" => 1,
+                "code" => "PURCHASE-ICBP",
+                "name" => "ICBP",
+                "description" => "Impuesto al Consumo de Bolsas Plasticas aplicado a compras cuando corresponde. Es opcional porque no todas las compras incluyen bolsa gravada.",
+                "rate" => 0.5,
+                "calculation_type" => "fixed",
+                "operation_type" => "addition",
+                "scope" => "purchase",
+                "is_required" => false,
+                "is_default" => false
+            ]
         ]);
 
         DB::table("payment_methods")->insert([

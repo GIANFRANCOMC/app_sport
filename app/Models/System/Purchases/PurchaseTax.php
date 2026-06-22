@@ -15,7 +15,12 @@ final class PurchaseTax extends Model {
         "purchase_header_id",
         "tax_id",
         "name",
+        "description",
         "rate",
+        "calculation_type",
+        "operation_type",
+        "is_required",
+        "quantity",
         "base_amount",
         "amount",
         "status",
@@ -27,6 +32,8 @@ final class PurchaseTax extends Model {
 
     protected $casts = [
         "rate" => "decimal:4",
+        "is_required" => "boolean",
+        "quantity" => "integer",
         "base_amount" => "decimal:2",
         "amount" => "decimal:2"
     ];

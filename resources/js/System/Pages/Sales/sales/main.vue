@@ -292,13 +292,37 @@
             </div>
             <div class="br-document-settlement br-sale-settlement mb-2 mb-md-3">
                 <div>
-                    <label class="form-label">Impuestos aplicados</label>
-                    <div class="br-document-settlement__taxes" v-if="saleTaxes.length">
-                        <span v-for="tax in saleTaxes" :key="tax.code">
-                            {{ tax.data.name }} · {{ Number(tax.data.rate || 0).toFixed(2) }}%
-                        </span>
+                    <label class="form-label">Impuestos extras</label>
+                    <div class="br-document-settlement__taxes" v-if="optionalSaleTaxes.length">
+                        <template v-for="tax in optionalSaleTaxes" :key="`optional-sale-tax-${tax.code}`">
+                            <label class="br-entity-switch br-document-settlement__tax-option">
+                                <input
+                                    v-model="forms[entity].createUpdate.data.selected_taxes"
+                                    class="form-check-input"
+                                    type="checkbox"
+                                    :value="tax.code"
+                                    @change="syncSelectedTaxQuantity(tax.data)">
+                                <span>
+                                    <strong>{{ tax.data.name }}</strong>
+                                    <small>{{ taxLabel(tax.data) }}</small>
+                                </span>
+                            </label>
+                            <InputNumber
+                                v-if="isFixedTax(tax.data) && selectedTaxIds().includes(tax.code)"
+                                v-model="forms[entity].createUpdate.data.selected_tax_quantities[tax.code]"
+                                title=""
+                                :inputClass="['form-control', 'br-tax-quantity']"
+                                :decimals="0"
+                                :minValue="1"
+                                :hasNegative="false"
+                                @change="normalizeSelectedTaxQuantity(tax.code)">
+                                <template v-slot:inputGroupPrepend>
+                                    <span class="input-group-text br-tax-quantity__label">Veces</span>
+                                </template>
+                            </InputNumber>
+                        </template>
                     </div>
-                    <p v-else class="br-document-settlement__empty mb-0">Sin impuestos activos para ventas.</p>
+                    <p v-else class="br-document-settlement__empty mb-0">Sin impuestos extras disponibles.</p>
                 </div>
                 <div>
                     <label class="form-label">Métodos de pago</label>
@@ -313,16 +337,17 @@
                                 :clearable="false"
                                 :searchable="true"
                                 append-to-body/>
-                            <div class="input-group">
-                                <span class="input-group-text br-currency-prefix">{{ forms[entity].createUpdate.data.currency?.data?.sign ?? '' }}</span>
-                                <input
-                                    v-model.number="payment.amount"
-                                    type="number"
-                                    min="0"
-                                    step="0.01"
-                                    class="form-control"
-                                    :placeholder="separatorNumber(total)">
-                            </div>
+                            <InputNumber
+                                v-model="payment.amount"
+                                title=""
+                                :titleClass="[]"
+                                :inputClass="['form-control', 'br-document-payment-amount']"
+                                :minValue="0"
+                                :placeholder="separatorNumber(total)">
+                                <template v-slot:inputGroupPrepend>
+                                    <span class="input-group-text br-currency-prefix">{{ forms[entity].createUpdate.data.currency?.data?.sign ?? '' }}</span>
+                                </template>
+                            </InputNumber>
                             <input
                                 v-if="payment.method?.data?.requires_reference"
                                 v-model.trim="payment.reference"
@@ -351,11 +376,22 @@
                         {{ forms[entity].createUpdate.data.currency?.data?.sign ?? '' }}
                         {{ separatorNumber(saleSubtotal) }}
                     </strong>
-                    <span>Impuestos</span>
-                    <strong>
-                        {{ forms[entity].createUpdate.data.currency?.data?.sign ?? '' }}
-                        {{ separatorNumber(saleTaxTotal) }}
-                    </strong>
+                    <template v-if="saleTaxBreakdown.length">
+                        <template v-for="tax in saleTaxBreakdown" :key="`sale-summary-tax-${tax.id}`">
+                            <span>{{ tax.name }}</span>
+                            <strong>
+                                {{ forms[entity].createUpdate.data.currency?.data?.sign ?? '' }}
+                                {{ separatorNumber(tax.amount) }}
+                            </strong>
+                        </template>
+                    </template>
+                    <template v-else>
+                        <span>IGV</span>
+                        <strong>
+                            {{ forms[entity].createUpdate.data.currency?.data?.sign ?? '' }}
+                            0.00
+                        </strong>
+                    </template>
                     <span>Total</span>
                     <strong>
                         {{ forms[entity].createUpdate.data.currency?.data?.sign ?? '' }}
@@ -953,6 +989,8 @@ export default {
                 holder: null,
                 currency: null,
                 observation: "",
+                selected_taxes: [],
+                selected_tax_quantities: {},
                 payments: [],
                 status: "",
                 details: []
@@ -986,6 +1024,138 @@ export default {
 
     },
     methods: {
+        taxLabel(tax = {}) {
+
+            const name = tax?.name || "IGV";
+            const rate = Number(tax?.rate || 0);
+            const calculationType = tax?.calculation_type || "percentage";
+            const operationType = tax?.operation_type || "addition";
+            const sign = operationType === "subtraction" ? "-" : "+";
+
+            if(calculationType === "fixed") {
+
+                return `${name} ${sign} ${this.separatorNumber(rate)}`;
+
+            }
+
+            return `${name} ${sign}${this.separatorNumber(rate)}%`;
+
+        },
+        calculateTaxAmount(tax = {}, baseAmount = 0) {
+
+            const base = Number(baseAmount || 0);
+            const rate = Number(tax?.rate || 0);
+            const calculationType = tax?.calculation_type || "percentage";
+            const operationType = tax?.operation_type || "addition";
+            const quantity = this.isFixedTax(tax) ? this.selectedTaxQuantity(tax.id) : 1;
+            const amount = calculationType === "fixed"
+                ? rate * quantity
+                : base * (rate / 100);
+
+            return this.fixedNumber(operationType === "subtraction" ? amount * -1 : amount);
+
+        },
+        taxIsRequired(tax = {}) {
+
+            return [true, 1, "1", "true"].includes(tax?.is_required);
+
+        },
+        isFixedTax(tax = {}) {
+
+            return (tax?.calculation_type || "percentage") === "fixed";
+
+        },
+        selectedTaxQuantity(taxId) {
+
+            const quantities = this.forms[this.entity].createUpdate.data.selected_tax_quantities || {};
+
+            return Math.max(1, parseInt(Number(quantities[taxId] || 1), 10));
+
+        },
+        normalizeSelectedTaxQuantity(taxId) {
+
+            const quantities = this.forms[this.entity].createUpdate.data.selected_tax_quantities || {};
+            quantities[taxId] = Math.max(1, parseInt(Number(quantities[taxId] || 1), 10));
+            this.forms[this.entity].createUpdate.data.selected_tax_quantities = quantities;
+
+        },
+        syncSelectedTaxQuantity(tax = {}) {
+
+            if(!this.isFixedTax(tax)) return;
+
+            const quantities = this.forms[this.entity].createUpdate.data.selected_tax_quantities || {};
+
+            if(this.selectedTaxIds().includes(tax.id)) {
+
+                quantities[tax.id] = 1;
+
+            }else {
+
+                quantities[tax.id] = 0;
+
+            }
+
+            this.forms[this.entity].createUpdate.data.selected_tax_quantities = quantities;
+
+        },
+        selectedTaxIds() {
+
+            return this.forms[this.entity].createUpdate.data.selected_taxes || [];
+
+        },
+        calculateSaleTaxLine(tax = {}) {
+
+            const rate = Number(tax?.rate || 0);
+            const calculationType = tax?.calculation_type || "percentage";
+            const operationType = tax?.operation_type || "addition";
+            let base = 0;
+            let amount = 0;
+            let totalImpact = 0;
+
+            if(calculationType === "fixed") {
+
+                amount = this.calculateTaxAmount(tax, 0);
+                totalImpact = amount;
+
+            }else {
+
+                (this.forms[this.entity].createUpdate.data.details || []).forEach(detail => {
+                    const lineTotal = Number(this.calculateTotal({item: detail}) || 0);
+                    if(lineTotal <= 0) return;
+
+                    const priceIncludesTax = Boolean(detail?.item?.data?.price_includes_tax ?? detail?.price_includes_tax ?? true);
+                    const taxIsIncluded = priceIncludesTax && operationType === "addition" && rate > 0;
+
+                    if(taxIsIncluded) {
+
+                        const lineBase = Number(this.fixedNumber(lineTotal / (1 + (rate / 100))));
+                        const lineAmount = Number(this.fixedNumber(lineTotal - lineBase));
+                        base += lineBase;
+                        amount += lineAmount;
+                        return;
+
+                    }
+
+                    const lineAmount = Number(this.calculateTaxAmount(tax, lineTotal));
+                    base += lineTotal;
+                    amount += lineAmount;
+                    totalImpact += lineAmount;
+
+                });
+
+            }
+
+            return {
+                id: tax.id,
+                name: tax.name || "IGV",
+                isRequired: this.taxIsRequired(tax),
+                quantity: this.isFixedTax(tax) ? this.selectedTaxQuantity(tax.id) : 1,
+                amount: this.fixedNumber(amount),
+                totalImpact: this.fixedNumber(totalImpact),
+                baseAmount: this.fixedNumber(base)
+            };
+
+        },
         // Init
         async initParams({}) {
 
@@ -1285,12 +1455,21 @@ export default {
                 form.holder_id   = form?.holder?.code;
                 form.currency_id = form?.currency?.code;
                 form.payments = this.salePaymentPayload;
+                form.taxes = this.saleTaxBreakdown.map(tax => ({
+                    tax_id: tax.id,
+                    quantity: tax.quantity,
+                    amount: tax.amount,
+                    base_amount: tax.baseAmount,
+                    is_required: tax.isRequired
+                }));
 
                 delete form.branch;
                 delete form.serie;
                 delete form.warehouse;
                 delete form.holder;
                 delete form.currency;
+                delete form.selected_taxes;
+                delete form.selected_tax_quantities;
 
                 form.details.forEach(detail => {
 
@@ -1365,6 +1544,8 @@ export default {
                     this.forms[this.entity].createUpdate.data.observation = "";
                     this.forms[this.entity].createUpdate.data.warehouse   = (this.warehouses).length > 0 ? this.warehouses[0] : null;
                     this.forms[this.entity].createUpdate.extras.modals.observations.draft = "";
+                    this.forms[this.entity].createUpdate.data.selected_taxes = [];
+                    this.forms[this.entity].createUpdate.data.selected_tax_quantities = {};
                     this.forms[this.entity].createUpdate.data.payments   = [this.newSalePayment({amount: this.total})];
                     this.forms[this.entity].createUpdate.data.status      = "";
                     this.forms[this.entity].createUpdate.data.details     = [];
@@ -1812,9 +1993,26 @@ export default {
 
             return (this.options?.taxes?.records || []).map(tax => ({
                 code: tax.id,
-                label: `${tax.name} (${Number(tax.rate || 0).toFixed(2)}%)`,
+                label: this.taxLabel(tax),
                 data: tax
             }));
+
+        },
+        requiredSaleTaxes() {
+
+            return this.saleTaxes.filter(tax => this.taxIsRequired(tax.data));
+
+        },
+        optionalSaleTaxes() {
+
+            return this.saleTaxes.filter(tax => !this.taxIsRequired(tax.data));
+
+        },
+        appliedSaleTaxes() {
+
+            const selected = this.selectedTaxIds();
+
+            return this.saleTaxes.filter(tax => this.taxIsRequired(tax.data) || selected.includes(tax.code));
 
         },
         salePaymentMethods() {
@@ -1826,7 +2024,7 @@ export default {
             }));
 
         },
-        saleSubtotal: function() {
+        saleGrossSubtotal: function() {
 
             let total = 0;
 
@@ -1839,13 +2037,37 @@ export default {
             return this.fixedNumber(total);
 
         },
+        saleSubtotal: function() {
+
+            return this.fixedNumber(Number(this.saleGrossSubtotal || 0) - Number(this.saleIncludedTaxTotal || 0));
+
+        },
         saleTaxTotal() {
 
-            const subtotal = Number(this.saleAdditionalTaxBase || 0);
-
-            return this.fixedNumber((this.saleTaxes || []).reduce((total, tax) => {
-                return total + (subtotal * (Number(tax.data?.rate || 0) / 100));
+            return this.fixedNumber((this.saleTaxBreakdown || []).reduce((total, tax) => {
+                return total + Number(tax.amount || 0);
             }, 0));
+
+        },
+        saleTaxImpactTotal() {
+
+            return this.fixedNumber((this.saleTaxBreakdown || []).reduce((total, tax) => {
+                return total + Number(tax.totalImpact || 0);
+            }, 0));
+
+        },
+        saleIncludedTaxTotal() {
+
+            return this.fixedNumber(Number(this.saleTaxTotal || 0) - Number(this.saleTaxImpactTotal || 0));
+
+        },
+        saleTaxBreakdown() {
+
+            return (this.appliedSaleTaxes || []).map(tax => {
+                const data = tax.data || {};
+
+                return this.calculateSaleTaxLine(data);
+            });
 
         },
         saleAdditionalTaxBase() {
@@ -1863,7 +2085,7 @@ export default {
         },
         total: function() {
 
-            return this.fixedNumber(Number(this.saleSubtotal || 0) + Number(this.saleTaxTotal || 0));
+            return this.fixedNumber(Number(this.saleGrossSubtotal || 0) + Number(this.saleTaxImpactTotal || 0));
 
         },
         salePaymentPayload() {

@@ -66,7 +66,7 @@ La toma física usa el origen `physical_count`, separado de entradas y salidas m
 - El stock inicial de Productos se registra como entrada `product_opening`.
 - Editar precio, descripción, marca, categorías o stock mínimo no genera kardex.
 - Las salidas manuales no permiten saldo negativo.
-- Ventas conservan temporalmente el comportamiento histórico que permite saldo negativo. Esta regla debe pasar a `company_settings` cuando exista la configuración correspondiente.
+- Ventas y Venta POS/Caja consultan `company_settings.inventory.allow_negative_stock_on_sale`. Por defecto es `false`, por lo que no se confirma una venta si algún producto queda por debajo de cero en el almacén seleccionado.
 
 ## Interfaz
 
@@ -78,10 +78,12 @@ La toma física usa el origen `physical_count`, separado de entradas y salidas m
   - **Kardex valorizado**: costo unitario, valor del movimiento y valor resultante por almacén.
 - Las pestañas reutilizan la estructura visual de Productos: título, descripción breve y estado activo discreto, sin tarjeta exterior.
 - No se repite un encabezado dentro de cada pestaña. El título y la descripción viven únicamente en la navegación.
+- La cabecera `Inventario` expone accesos independientes para perfiles: `Control de stock`, `Kardex`, `Traslados` y `Kardex valorizado`. Todos reutilizan el mismo componente, pero cada ruta abre su vista inicial correspondiente.
 - La barra de búsqueda y acciones reutiliza la estructura `br-filter-bar` usada por Productos: mismas alturas, etiquetas, espaciados y botones compactos.
+- El buscador principal y **Registrar operación** solo aparecen en **Control de stock**. Kardex y Kardex valorizado conservan sus filtros propios; Traslados usa su formulario especializado.
 - Las tablas usan una sola superficie delimitada, sin contenedores exteriores adicionales.
 - **Control de stock** muestra saldo actual, stock mínimo y situación por producto.
-- **Registrar operación** usa el color secundario de marca y abre un formulario para uno o hasta 100 productos. Incluye entrada, salida, toma física, reposición, devolución de cliente y devolución a proveedor.
+- **Registrar operación** es una acción general del control de stock; no se repite por fila para evitar duplicidad visual. Abre un formulario para uno o hasta 100 productos e incluye entrada, salida, toma física, reposición, devolución de cliente y devolución a proveedor.
 - **Kardex** muestra fecha, usuario, producto, tipo, variación, saldo anterior/resultante, motivo y origen.
 - **Traslados** mueve uno o varios productos entre almacenes de la misma empresa mediante salidas y entradas atómicas.
 - **Kardex valorizado** reutiliza filtros, búsqueda y paginación del Kardex operativo.
@@ -124,6 +126,7 @@ La toma física usa el origen `physical_count`, separado de entradas y salidas m
 - Usa el método `weighted_average`, configurado por empresa en `company_settings`.
 - `warehouse_items` materializa `average_cost` e `inventory_value`.
 - Cada movimiento conserva `unit_cost`, `value_before`, `value_change` y `value_after`.
+- `unit_cost` no identifica ni duplica un producto: representa el costo usado para valorizar ese movimiento. Permite que dos entradas del mismo producto tengan costos distintos y que el promedio ponderado del almacén se actualice con trazabilidad.
 - Las entradas de compra usan el costo unitario recibido.
 - Las salidas usan el costo promedio vigente del almacén.
 - Los traslados conservan el costo del almacén de origen para la entrada del destino.
@@ -134,6 +137,7 @@ La toma física usa el origen `physical_count`, separado de entradas y salidas m
 ## Traslados entre almacenes
 
 - El almacén seleccionado en la cabecera funciona como origen.
+- La vista de traslados muestra un campo **Almacén de origen** precargado con el almacén de trabajo para que el usuario confirme desde dónde saldrán los productos.
 - El destino debe ser distinto y pertenecer a la misma empresa.
 - Cada operación admite entre 1 y 100 productos sin duplicados.
 - Cada producto debe estar activo y ser de tipo `product`.

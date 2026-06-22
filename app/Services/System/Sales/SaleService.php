@@ -11,6 +11,7 @@ use stdClass;
 
 use App\Models\System\Customers\Subscription;
 use App\Models\System\Finance\CashMovement;
+use App\Models\System\Organizations\Serie;
 use App\Models\System\Sales\{SaleBody, SaleHeader, SalePayment, SaleTax};
 use App\Models\System\Warehouses\{InventoryMovement, Warehouse};
 use App\Services\System\Finance\CommercialDocumentSettlementService;
@@ -50,24 +51,6 @@ class SaleService {
     private static function calculateTotal(array $details): float {
 
         return array_reduce($details, function($carry, $detail) {
-
-            return $carry + Utilities::round(floatval($detail["quantity"]) * floatval($detail["price"]));
-
-        }, 0);
-
-    }
-
-    private static function calculateAdditionalTaxBase(array $details): float {
-
-        return array_reduce($details, function($carry, $detail) {
-
-            $priceIncludesTax = filter_var($detail["price_includes_tax"] ?? true, FILTER_VALIDATE_BOOL);
-
-            if($priceIncludesTax) {
-
-                return $carry;
-
-            }
 
             return $carry + Utilities::round(floatval($detail["quantity"]) * floatval($detail["price"]));
 
@@ -157,8 +140,16 @@ class SaleService {
 
         }
 
+        $companyId = (int) $warehouse->branch->company_id;
+        $allowNegativeStock = (bool) CompanySettingService::value(
+            $companyId,
+            CompanySettingService::INVENTORY_POLICIES,
+            "allow_negative_stock_on_sale",
+            false
+        );
+
         InventoryMovementService::apply([
-            "company_id"     => (int) $warehouse->branch->company_id,
+            "company_id"     => $companyId,
             "warehouse_id"   => (int) $warehouse->id,
             "item_id"        => (int) $saleBody->item_id,
             "user_id"        => $userId,
@@ -167,7 +158,7 @@ class SaleService {
             "origin_id"      => (int) $saleBody->id,
             "quantity"       => (float) $saleBody->quantity,
             "reason"         => "Salida generada por venta.",
-            "allow_negative" => true,
+            "allow_negative" => $allowNegativeStock,
             "metadata"       => [
                 "sale_header_id" => (int) $saleBody->sale_header_id
             ]
@@ -302,6 +293,22 @@ class SaleService {
 
     }
 
+    private static function validateSerieBelongsToBranch(int $serieId, int $branchId): void {
+
+        $exists = Serie::query()
+                       ->where("id", $serieId)
+                       ->where("branch_id", $branchId)
+                       ->where("status", "active")
+                       ->exists();
+
+        if(!$exists) {
+
+            throw new Exception("El comprobante seleccionado no pertenece a la sucursal de la venta.");
+
+        }
+
+    }
+
     /**
      * Create a new sale
      *
@@ -321,6 +328,7 @@ class SaleService {
             $companyId = $userAuth->company_id;
 
             $warehouse = self::resolveWarehouse($data, (int) $companyId);
+            self::validateSerieBelongsToBranch((int) $data["serie_id"], (int) $data["branch_id"]);
 
             // Get new sequential number
             $newSequential = SaleHeader::getNewSequential($data["serie_id"]);
@@ -332,16 +340,30 @@ class SaleService {
             }
 
             // Calculate totals
-            $subtotal = self::calculateTotal($data["details"]);
-            $additionalTaxBase = self::calculateAdditionalTaxBase($data["details"]);
-            $taxLines = CommercialDocumentSettlementService::taxes(
+            $grossSubtotal = self::calculateTotal($data["details"]);
+            $selectedTaxIds = collect($data["taxes"] ?? [])
+                ->pluck("tax_id")
+                ->filter()
+                ->map(fn($id) => (int) $id)
+                ->unique()
+                ->values()
+                ->all();
+            $selectedTaxQuantities = collect($data["taxes"] ?? [])
+                ->filter(fn($tax) => !empty($tax["tax_id"]))
+                ->mapWithKeys(fn($tax) => [(int) $tax["tax_id"] => (float) ($tax["quantity"] ?? 1)])
+                ->all();
+            $taxLines = CommercialDocumentSettlementService::saleTaxes(
                 (int) $companyId,
-                "sale",
-                (float) $additionalTaxBase,
-                (int) $userId
+                $data["details"],
+                (int) $userId,
+                $selectedTaxIds,
+                $selectedTaxQuantities
             );
             $taxTotal = Utilities::round((float) $taxLines->sum("amount"));
-            $total = Utilities::round($subtotal + $taxTotal);
+            $taxImpactTotal = Utilities::round((float) $taxLines->sum("_total_impact"));
+            $includedTaxTotal = Utilities::round($taxTotal - $taxImpactTotal);
+            $subtotal = Utilities::round($grossSubtotal - $includedTaxTotal);
+            $total = Utilities::round($grossSubtotal + $taxImpactTotal);
             $paymentLines = CommercialDocumentSettlementService::payments(
                 (int) $companyId,
                 "sale",
@@ -372,7 +394,13 @@ class SaleService {
             if($taxLines->isNotEmpty()) {
 
                 SaleTax::insert($taxLines
-                    ->map(fn($tax) => ["sale_header_id" => $saleHeader->id] + $tax)
+                    ->map(function($tax) use($saleHeader) {
+
+                        unset($tax["_total_impact"]);
+
+                        return ["sale_header_id" => $saleHeader->id] + $tax;
+
+                    })
                     ->all());
 
             }

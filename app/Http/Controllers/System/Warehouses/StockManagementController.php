@@ -139,6 +139,7 @@ class StockManagementController extends BaseController {
                 "warehouse_id",
                 "item_id",
                 "movement_type",
+                "origin_types",
                 "product_search",
                 "date_from",
                 "date_to"
@@ -254,6 +255,7 @@ class StockManagementController extends BaseController {
             "warehouse_id",
             "item_id",
             "movement_type",
+            "origin_types",
             "product_search",
             "date_from",
             "date_to"

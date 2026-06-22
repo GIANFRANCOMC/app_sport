@@ -79,8 +79,10 @@ Los maestros globales activos se reutilizan durante seis horas mediante `MasterR
 `company_settings` concentra valores configurables que pertenecen a una empresa y que no justifican una tabla funcional independiente.
 
 - Cada valor se identifica por `company_id`, `group` y `key`.
+- `description` documenta el impacto operativo de cada clave para futuras pantallas de configuración y soporte.
 - `value_type` permite interpretar strings, booleanos, enteros, decimales o JSON.
 - El grupo inicial `internal_code_prefixes` define prefijos para productos, servicios, membresías, marcas, categorías, sucursales y activos.
+- El grupo `inventory` define políticas como bloqueo de stock negativo en ventas y reposición automática al anular ventas.
 - `CompanySettingService` entrega valores por grupo y mantiene defaults de compatibilidad.
 - `BaseConfigService::internalCodePrefixes()` expone el mismo contrato a los módulos que lo requieren.
 - `InternalCodeService` es la autoridad para aplicar el prefijo en backend. La presentación Vue no reemplaza esta validación.

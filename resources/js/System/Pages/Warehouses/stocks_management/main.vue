@@ -43,6 +43,7 @@
                 <section class="br-filter-bar br-inventory__toolbar">
                     <div class="row align-items-end g-2">
                     <InputText
+                            v-if="activeView === 'stock'"
                             ref="productSearch"
                             v-model.trim="filters.productSearch"
                             hasDiv
@@ -79,10 +80,11 @@
                         hasDiv
                         :isInputGroup="false"
                         :divInputClass="['br-filter-bar__actions', 'br-inventory__toolbar-actions']"
-                        xl="5"
-                        lg="5">
+                        :xl="activeView === 'stock' ? '5' : '12'"
+                        :lg="activeView === 'stock' ? '5' : '12'">
                         <template #input>
                         <button
+                            v-if="activeView === 'stock'"
                             type="button"
                             class="br-btn br-btn-sm br-btn-action-search"
                             :disabled="isCurrentViewLoading"
@@ -91,7 +93,7 @@
                             <span>Buscar</span>
                         </button>
                         <button
-                            v-if="['stock', 'kardex'].includes(activeView)"
+                            v-if="activeView === 'stock'"
                             type="button"
                             class="br-btn br-btn-sm br-btn-primary br-inventory__register-action"
                             data-bs-toggle="modal"
@@ -126,7 +128,6 @@
                             <col class="br-inventory__col-current">
                             <col class="br-inventory__col-minimum">
                             <col class="br-inventory__col-status">
-                            <col class="br-inventory__col-actions">
                         </colgroup>
                         <thead>
                             <tr>
@@ -134,12 +135,11 @@
                                 <th class="text-end">Stock actual</th>
                                 <th class="text-end">Stock mínimo</th>
                                 <th>Situación</th>
-                                <th class="text-center"><span class="visually-hidden">Acciones</span></th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr v-if="loadingStock">
-                                <td colspan="5" class="text-center py-4"><Loader/></td>
+                                <td colspan="4" class="text-center py-4"><Loader/></td>
                             </tr>
                             <template v-else-if="stockRecords.total > 0">
                                 <tr
@@ -167,23 +167,10 @@
                                             {{ stockStatus(record).label }}
                                         </span>
                                     </td>
-                                    <td class="text-center">
-                                        <button
-                                            type="button"
-                                            class="br-icon-action br-inventory__row-action"
-                                            data-bs-toggle="modal"
-                                            data-bs-target="#inventoryMovementModal"
-                                            data-bs-placement="top"
-                                            title="Registrar operación"
-                                            :aria-label="`Registrar operación para ${record.name}`"
-                                            @click="prepareMovement(record)">
-                                                <i class="fa-solid fa-arrow-right-arrow-left" aria-hidden="true"></i>
-                                        </button>
-                                    </td>
                                 </tr>
                             </template>
                             <tr v-else>
-                                <td colspan="5"><WithoutData type="image"/></td>
+                                <td colspan="4"><WithoutData type="image"/></td>
                             </tr>
                         </tbody>
                     </table>
@@ -334,6 +321,20 @@
 
                     <div class="br-inventory-transfer__form">
                         <div class="br-inventory-transfer__destination">
+                            <label for="transferSource" class="form-label">Almacén de origen</label>
+                            <v-select
+                                id="transferSource"
+                                v-model="filters.warehouse"
+                                :options="warehouses"
+                                :clearable="false"
+                                :searchable="true"
+                                append-to-body/>
+                            <small class="br-inventory__field-help">
+                                Se toma del almacén de trabajo y será la salida del traslado.
+                            </small>
+                        </div>
+
+                        <div class="br-inventory-transfer__destination">
                             <label for="transferDestination" class="form-label">Almacén de destino</label>
                             <v-select
                                 id="transferDestination"
@@ -429,12 +430,56 @@
                             </button>
                         </div>
                     </div>
+
+                    <div class="table-responsive br-inventory__table-wrap mt-3">
+                        <table class="table br-entity-table br-inventory__kardex-table mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Fecha y responsable</th>
+                                    <th>Producto</th>
+                                    <th>Movimiento</th>
+                                    <th class="text-end">Cantidad</th>
+                                    <th>Referencia</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-if="loadingKardex">
+                                    <td colspan="5" class="text-center py-4"><Loader/></td>
+                                </tr>
+                                <template v-else-if="kardexRecords.total > 0">
+                                    <tr v-for="movement in kardexRecords.data" :key="`transfer-${movement.id}`">
+                                        <td>
+                                            <strong>{{ formatDate(movement.created_at) }}</strong>
+                                            <span class="br-inventory__meta">{{ movement.user?.name || "Proceso del sistema" }}</span>
+                                        </td>
+                                        <td>
+                                            <strong>{{ movement.item?.name }}</strong>
+                                            <span class="br-inventory__meta">{{ movement.item?.internal_code }}</span>
+                                        </td>
+                                        <td>
+                                            <span :class="['br-inventory-movement', `is-${movement.movement_type}`]">
+                                                {{ originLabel(movement.origin_type) }}
+                                            </span>
+                                        </td>
+                                        <td class="text-end fw-semibold">{{ signedNumber(movement.quantity_change) }}</td>
+                                        <td>
+                                            <strong>{{ movement.metadata?.reference || movement.reference || "-" }}</strong>
+                                            <span class="br-inventory__meta">{{ movement.reason }}</span>
+                                        </td>
+                                    </tr>
+                                </template>
+                                <tr v-else>
+                                    <td colspan="5"><WithoutData type="image"/></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
 
             </section>
 
             <div
-                v-if="['stock', 'kardex', 'valued'].includes(activeView) && currentRecords.links"
+                v-if="['stock', 'kardex', 'transfers', 'valued'].includes(activeView) && currentRecords.links"
                 class="d-flex justify-content-center mt-3">
                 <Paginator :links="currentRecords.links" @clickPage="listCurrentView"/>
             </div>
@@ -636,6 +681,20 @@ const VIEWS = [
     }
 ];
 
+const ROUTE_VIEW_MAP = {
+    stock: "stock",
+    kardex: "kardex",
+    transfers: "transfers",
+    valued: "valued"
+};
+
+const VIEW_MENU_MAP = {
+    stock: "menu-inventory-stock",
+    kardex: "menu-inventory-kardex",
+    transfers: "menu-inventory-transfers",
+    valued: "menu-inventory-valued"
+};
+
 const MOVEMENT_TYPES = [
     {code: "", label: "Todos los movimientos"},
     {code: "entry", label: "Entrada"},
@@ -654,8 +713,9 @@ const INVENTORY_OPERATIONS = [
 
 export default {
     async mounted() {
-        Utils.navbarItem("menu-parent-items", {addClass: "open"});
-        Utils.navbarItem(this.config.entity.page.menu.id, {});
+        this.activeView = this.initialViewFromPath();
+        Utils.navbarItem("menu-parent-inventory", {addClass: "open"});
+        Utils.navbarItem(this.activeMenuId(), {});
         Alerts.swals({type: "initParams"});
         const initialized = await this.initParams();
         Alerts.swals({show: false});
@@ -712,13 +772,21 @@ export default {
                     page: {
                         title: "Inventario",
                         active: true,
-                        menu: {id: "menu-items-stocks_management"}
+                        menu: {id: "menu-inventory-stock"}
                     }
                 }
             }
         };
     },
     methods: {
+        initialViewFromPath() {
+            const segment = window.location.pathname.split("?")[0].split("/").filter(Boolean).pop();
+
+            return ROUTE_VIEW_MAP[segment] || "stock";
+        },
+        activeMenuId() {
+            return VIEW_MENU_MAP[this.activeView] || VIEW_MENU_MAP.stock;
+        },
         async initParams() {
             const result = await Requests.get({
                 route: this.config.entity.routes.initParams,
@@ -754,9 +822,10 @@ export default {
         },
         changeView(view) {
             this.activeView = view;
+            Utils.navbarItem(this.activeMenuId(), {});
             this.scannedProductId = null;
 
-            if(["kardex", "valued"].includes(view) && !this.kardexRecords.data.length) {
+            if(["kardex", "valued", "transfers"].includes(view) && !this.kardexRecords.data.length) {
                 this.listKardex({});
             }
 
@@ -813,17 +882,24 @@ export default {
         },
         listCurrentView({url = null} = {}) {
             if(this.activeView === "stock") return this.listStock({url});
-            if(["kardex", "valued"].includes(this.activeView)) return this.listKardex({url});
+            if(["kardex", "transfers", "valued"].includes(this.activeView)) return this.listKardex({url});
             return Promise.resolve();
         },
         currentReportFilters() {
-            return {
+            const filters = {
                 warehouse_id: this.filters.warehouse?.code,
                 movement_type: this.filters.movementType?.code || "",
                 product_search: this.filters.productSearch,
                 date_from: this.filters.dateFrom,
                 date_to: this.filters.dateTo
             };
+
+            if(this.activeView === "transfers") {
+                filters.origin_types = ["transfer_out", "transfer_in"];
+                filters.movement_type = "";
+            }
+
+            return filters;
         },
         async exportCurrentView() {
             if(!this.filters.warehouse?.code || this.exporting) return;

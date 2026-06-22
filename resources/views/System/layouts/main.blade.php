@@ -7,6 +7,11 @@
     $role     = $user->role;
     $sections = \App\Services\System\Organizations\Companies\CompanySectionService::getSections($company->id, $role?->id);
     $preferences = $user->formatted_preferences;
+    $userInitials = collect(preg_split('/\s+/', trim($user->name)))
+                        ->filter()
+                        ->take(2)
+                        ->map(fn($part) => Str::upper(Str::substr($part, 0, 1)))
+                        ->join('') ?: 'U';
 @endphp
 
 <html
@@ -160,12 +165,13 @@
                 </aside>
                 <div class="layout-page br-layout-page">
                     <nav class="layout-navbar container-xxl navbar navbar-expand-xl navbar-detached align-items-center bg-navbar-theme br-layout-navbar" id="layout-navbar">
-                        <div class="layout-menu-toggle navbar-nav align-items-xl-center me-3 me-xl-0 d-xl-none">
-                            <a class="nav-item nav-link px-0 me-xl-4" href="javascript:void(0)" aria-label="Abrir menú">
-                                <i class="ti ti-menu-2 ti-sm"></i>
-                            </a>
-                        </div>
-                        <div class="navbar-nav-right d-flex align-items-center" id="navbar-collapse">
+                        <div class="br-navbar-shell" id="navbar-collapse">
+                            <div class="br-navbar-left">
+                                <div class="layout-menu-toggle navbar-nav align-items-center br-navbar-menu-toggle">
+                                    <a class="nav-item nav-link br-navbar-icon-btn" href="javascript:void(0)" aria-label="Alternar menú lateral" title="Alternar menú lateral">
+                                        <i class="ti ti-menu-2" aria-hidden="true"></i>
+                                    </a>
+                                </div>
                             {{-- <div class="navbar-nav align-items-center">
                                 <div class="nav-item navbar-search-wrapper mb-0">
                                     <a class="nav-item nav-link search-toggler d-flex align-items-center px-0 br-navbar-brand-link" href="{{ $ownerApp->web }}" target="_blank" rel="noopener noreferrer">
@@ -184,7 +190,7 @@
                                     </a>
                                 </li>
                             </ul> --}}
-                            <div class="br-fab-favorites br-navbar-favorites me-auto" id="brFabFavorites" data-open="0">
+                            <div class="br-fab-favorites br-navbar-favorites" id="brFabFavorites" data-open="0">
                                 <div class="br-fab-favorites__backdrop" id="brFabFavoritesBackdrop" aria-hidden="true"></div>
                                 <div class="br-fab-favorites__panel" id="brFabFavoritesPanel" role="region" aria-labelledby="brFabFavoritesTitle" aria-hidden="true">
                                     <div class="br-fab-favorites__head">
@@ -239,6 +245,39 @@
                                     <span class="br-navbar-favorites__label">Favoritos</span>
                                     <span class="br-navbar-favorites__count" id="brFabFavoritesCount">{{ $favoriteMenuGroups->sum(fn($group) => $group['items']->count()) }}</span>
                                 </button>
+                            </div>
+                            </div>
+
+                            <div class="br-navbar-actions">
+                                <div class="dropdown br-navbar-user">
+                                    <button
+                                        type="button"
+                                        class="br-navbar-user__toggle"
+                                        data-bs-toggle="dropdown"
+                                        data-bs-auto-close="outside"
+                                        aria-expanded="false"
+                                        aria-label="Abrir menú de usuario">
+                                        <span class="br-navbar-user__avatar" aria-hidden="true">{{ $userInitials }}</span>
+                                        <span class="br-navbar-user__meta">
+                                            <span class="br-navbar-user__name">{{ Str::limit($user->name, 28) }}</span>
+                                            <span class="br-navbar-user__role">{{ Str::limit($role->name ?? 'Usuario', 28) }}</span>
+                                        </span>
+                                        <i class="fa-solid fa-chevron-down br-navbar-user__chevron" aria-hidden="true"></i>
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end br-navbar-user__menu">
+                                        <li class="br-navbar-user__summary">
+                                            <strong>{{ $user->name }}</strong>
+                                            <span>{{ $company->commercial_name }}</span>
+                                        </li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li>
+                                            <button type="button" class="dropdown-item br-navbar-user__logout" onclick="$('#logout').submit();">
+                                                <i class="fa-solid fa-power-off" aria-hidden="true"></i>
+                                                <span>Cerrar sesión</span>
+                                            </button>
+                                        </li>
+                                    </ul>
+                                </div>
                             </div>
                         </div>
                     </nav>

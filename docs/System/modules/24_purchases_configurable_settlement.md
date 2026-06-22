@@ -10,13 +10,19 @@ Extender compras para que cada empresa pueda aplicar impuestos y metodos de pago
 - La compra puede recibir multiples metodos de pago desde `payment_methods`, filtrados por alcance `purchase` o `both`, indicando el monto pagado por cada metodo.
 - El backend recalcula subtotal, impuestos, total y pagos para mantener la consistencia del documento.
 - Los impuestos aplicados se guardan como foto del documento en `purchase_taxes`.
+- Los tributos iniciales de compra son `IGV` al 18% obligatorio e `ICBP` fijo de 0.50 opcional; ambos se muestran por su nombre en el frontend y el resumen evita usar una fila generica llamada `Impuestos`.
+- `taxes.calculation_type` permite porcentaje o monto fijo, y `taxes.operation_type` permite sumar o restar el monto calculado.
+- `taxes.is_required` define si el tributo de compra es obligatorio. El IGV de compra es obligatorio; el ICBP de compra es opcional y el usuario lo marca solo cuando corresponde.
+- Los tributos fijos de compra, como ICBP, son cargos de documento: no dependen de la base porcentual y se calculan al estar obligatorios o seleccionados.
+- Los tributos fijos opcionales de compra permiten indicar cantidad entera. Ejemplo: si la compra incluye 2 bolsas gravadas, el usuario marca `ICBP` y coloca cantidad 2. Al quitar el check, el campo se oculta y no se envia el tributo.
+- En compras, el bloque `Impuestos extras` muestra solo tributos opcionales. Los obligatorios, como `IGV`, se calculan automáticamente y aparecen en el resumen.
 - Los pagos aplicados se guardan como foto del documento en `purchase_payments`.
 
 ## Vista
 
 La vista `resources/js/System/Pages/Purchases/purchases/main.vue` incluye una seccion de liquidacion con:
 
-- Impuestos aplicados automaticamente.
+- Tributos aplicados automaticamente, visibles por nombre.
 - Metodos de pago con importe por cada metodo.
 - Subtotal.
 - Total de impuestos.

@@ -78,7 +78,12 @@ return new class extends Migration {
             $table->unsignedBigInteger("sale_header_id");
             $table->unsignedBigInteger("tax_id")->nullable();
             $table->string("name");
+            $table->text("description")->nullable();
             $table->decimal("rate", 7, 4)->default(0);
+            $table->enum("calculation_type", ["percentage", "fixed"])->default("percentage");
+            $table->enum("operation_type", ["addition", "subtraction"])->default("addition");
+            $table->boolean("is_required")->default(true);
+            $table->unsignedInteger("quantity")->default(1);
             $table->decimal("base_amount", 10, 2)->default(0);
             $table->decimal("amount", 10, 2)->default(0);
             $table->enum("status", ["active", "canceled", "inactive"])->default("active");

@@ -125,11 +125,24 @@ final class PurchaseService {
             $subtotal = collect($data["items"])->sum(fn($item) =>
                 round((float) $item["quantity"] * (float) $item["unit_cost"], 2)
             );
+            $selectedTaxIds = collect($data["taxes"] ?? [])
+                ->pluck("tax_id")
+                ->filter()
+                ->map(fn($id) => (int) $id)
+                ->unique()
+                ->values()
+                ->all();
+            $selectedTaxQuantities = collect($data["taxes"] ?? [])
+                ->filter(fn($tax) => !empty($tax["tax_id"]))
+                ->mapWithKeys(fn($tax) => [(int) $tax["tax_id"] => (float) ($tax["quantity"] ?? 1)])
+                ->all();
             $taxLines = CommercialDocumentSettlementService::taxes(
                 $companyId,
                 "purchase",
                 (float) $subtotal,
-                $userId
+                $userId,
+                $selectedTaxIds,
+                $selectedTaxQuantities
             );
             $tax = round((float) $taxLines->sum("amount"), 2);
             $total = round($subtotal + $tax, 2);

@@ -62,6 +62,7 @@
                     <span>Agregar caja</span>
                 </button>
                 <button
+                    v-if="activeView === 'movements'"
                     type="button"
                     class="br-btn br-btn-action-update"
                     data-bs-toggle="tooltip"
@@ -483,6 +484,20 @@ const MODULE = {
     breadcrumbParent: "Operación"
 };
 
+const ROUTE_VIEW_MAP = {
+    registers: "registers",
+    sessions: "sessions",
+    movements: "movements",
+    summary: "summary"
+};
+
+const VIEW_MENU_MAP = {
+    registers: "menu-cash-registers",
+    sessions: "menu-cash-sessions",
+    movements: "menu-cash-movements",
+    summary: "menu-cash-summary"
+};
+
 export default {
     data() {
         return {
@@ -564,11 +579,20 @@ export default {
         }
     },
     mounted() {
+        this.activeView = this.initialViewFromPath();
         Utils.navbarItem("menu-parent-operations", {addClass: "open"});
-        Utils.navbarItem("menu-cash-registers", {addClass: "active"});
+        Utils.navbarItem(this.activeMenuId(), {addClass: "active"});
         this.initParams();
     },
     methods: {
+        initialViewFromPath() {
+            const segment = window.location.pathname.split("?")[0].split("/").filter(Boolean).pop();
+
+            return ROUTE_VIEW_MAP[segment] || "registers";
+        },
+        activeMenuId() {
+            return VIEW_MENU_MAP[this.activeView] || VIEW_MENU_MAP.registers;
+        },
         async initParams() {
             this.loading.init = true;
             const result = await Requests.get({route: this.config.routes.initParams});
@@ -600,6 +624,7 @@ export default {
         },
         setView(view) {
             this.activeView = view;
+            Utils.navbarItem(this.activeMenuId(), {addClass: "active"});
             this.$nextTick(() => this.refreshActiveView());
         },
         baseFilters() {

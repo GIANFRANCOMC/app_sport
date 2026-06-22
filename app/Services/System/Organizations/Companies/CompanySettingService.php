@@ -23,6 +23,7 @@ final class CompanySettingService {
     ];
 
     private const DEFAULT_INVENTORY_POLICIES = [
+        "allow_negative_stock_on_sale" => false,
         "restore_stock_on_sale_cancellation" => false,
         "valuation_method" => "weighted_average"
     ];

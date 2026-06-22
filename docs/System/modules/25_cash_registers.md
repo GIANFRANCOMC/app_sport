@@ -4,7 +4,14 @@
 
 Gestiona apertura, cierre, arqueo, resumen y trazabilidad de caja por sucursal. Caja no reemplaza ventas ni inventario: agrupa el dinero registrado por metodo de pago y permite cuadrar lo esperado contra lo contado.
 
-La visualizacion principal esta en `cash_registers.index` y se monta desde:
+La visualizacion principal conserva `cash_registers.index` como ruta legacy, pero el menu usa accesos independientes:
+
+- `cash_registers.registers.index`
+- `cash_registers.sessions.index`
+- `cash_registers.movements.index`
+- `cash_registers.summary.index`
+
+La vista se monta desde:
 
 - `resources/views/System/general/Finance/cash_registers/main.blade.php`
 - `resources/js/System/Pages/Finance/cash_registers/main.vue`
@@ -33,11 +40,14 @@ La visualizacion principal esta en `cash_registers.index` y se monta desde:
 
 - Cajas pertenece a la cabecera `Operacion`, junto con `Venta POS`.
 - La cabecera usa `menu-parent-operations` y se ordena por empresa con `companies_sub_sections.section_order`.
-- El acceso visible del modulo es `Cajas`, ruta `cash_registers.index`.
+- La cabecera `Operación` expone accesos independientes para perfiles: `Cajas`, `Aperturas y cierres`, `Movimientos` y `Resumen`.
 
 ## UI implementada
 
-- Menu `Operacion > Cajas` con acceso `cash_registers.index`.
+- Menu `Operacion > Cajas` con acceso `cash_registers.registers.index`.
+- Menu `Operacion > Aperturas y cierres` con acceso `cash_registers.sessions.index`.
+- Menu `Operacion > Movimientos` con acceso `cash_registers.movements.index`.
+- Menu `Operacion > Resumen` con acceso `cash_registers.summary.index`.
 - Accion `Agregar caja`: permite crear varias cajas por sucursal desde el modulo Caja. El codigo interno puede dejarse vacio y se genera automaticamente con prefijo `CAJ-`.
 - Las acciones `Abrir caja` y `Cerrar caja` se muestran por cada caja del listado. No existen botones globales para evitar abrir o cerrar una caja equivocada.
 - Entrada `Venta POS` dentro de ventas usando el flujo de nueva venta, pero con titulo y menu propios.
@@ -46,7 +56,7 @@ La visualizacion principal esta en `cash_registers.index` y se monta desde:
   - `Aperturas y cierres`: historial de sesiones, esperado, contado y diferencia.
   - `Resumen`: totales y desglose por metodo de pago.
   - `Movimientos`: trazabilidad de apertura, ventas, ajustes y cierre.
-- Accion `Registrar movimiento`: permite ingresos, salidas y ajustes manuales sobre una caja abierta.
+- Accion `Registrar movimiento`: permite ingresos, salidas y ajustes manuales sobre una caja abierta, y solo se muestra dentro de la sección **Movimientos**.
 - Accion `Descargar`: exporta movimientos filtrados en CSV compatible con Excel.
 - Modales con `data-bs-backdrop="static"` y `data-bs-keyboard="false"` para evitar cierre accidental.
 

@@ -152,6 +152,9 @@ El acceso global se encuentra dentro de la navbar de `resources/views/System/lay
 - El botón se ubica en el lado izquierdo de la navbar y no utiliza tooltip.
 - Muestra un icono azul discreto, texto y contador neutro en una escala compacta.
 - En móvil oculta el texto y conserva icono y contador.
+- La navbar se mantiene compacta, ocupa todo el ancho superior y elimina el velo celeste sobrante para liberar espacio vertical al contenido.
+- La hamburguesa queda disponible como acción global para alternar el menú lateral, no solo como control móvil.
+- El bloque de usuario se ubica a la derecha con iniciales, nombre, rol y acción de cierre de sesión dentro de un menú desplegable.
 - El panel lista únicamente subsecciones activas y autorizadas para la empresa.
 - Cada grupo muestra la sección como encabezado y cada subsección favorita como cuerpo, con descripción opcional.
 - La jerarquía evita etiquetas repetidas o ambiguas como dos entradas llamadas únicamente `Gestión de clientes`.

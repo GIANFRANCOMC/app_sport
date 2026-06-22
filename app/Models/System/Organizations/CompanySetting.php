@@ -17,6 +17,7 @@ final class CompanySetting extends Model {
         "group",
         "key",
         "value",
+        "description",
         "value_type",
         "status",
         "created_by",

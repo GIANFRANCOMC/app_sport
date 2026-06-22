@@ -30,11 +30,13 @@ Empresa o tenant funcional. Campos: `slug`, `internal_code`, documento, razon so
 
 ### `company_settings`
 
-Configuración extensible por empresa. Cada registro usa `company_id`, `group`, `key`, `value`, `value_type` y `status`. `value` puede ser nulo y `value_type` permite interpretarlo como `string`, `boolean`, `integer`, `decimal` o `json`.
+Configuración extensible por empresa. Cada registro usa `company_id`, `group`, `key`, `value`, `description`, `value_type` y `status`. `description` explica el efecto operativo de la clave para que futuras interfaces administrativas puedan mostrar ayuda contextual. `value` puede ser nulo y `value_type` permite interpretarlo como `string`, `boolean`, `integer`, `decimal` o `json`.
 
 El grupo `internal_code_prefixes` contiene las claves `product`, `service`, `subscription`, `brand`, `category`, `branch` y `asset`. Sus valores iniciales son `PRO`, `SER`, `MEM`, `MAR`, `CAT`, `SUC` y `ACT`. Un valor nulo o vacío desactiva el prefijo.
 
-El grupo `inventory` contiene `restore_stock_on_sale_cancellation`, booleano con valor predeterminado `false`. Cuando está desactivado, anular una venta no modifica existencias; una devolución física se registra posteriormente desde Inventario. Cuando está activo, la anulación repone automáticamente los productos en el almacén asociado a la venta.
+El grupo `inventory` contiene `allow_negative_stock_on_sale`, booleano con valor predeterminado `false`. Cuando está desactivado, crear una venta normal o POS/caja se bloquea si la salida supera el stock disponible del almacén seleccionado. Cuando está activo, la venta puede dejar saldo negativo.
+
+El grupo `inventory` también contiene `restore_stock_on_sale_cancellation`, booleano con valor predeterminado `false`. Cuando está desactivado, anular una venta no modifica existencias; una devolución física se registra posteriormente desde Inventario. Cuando está activo, la anulación repone automáticamente los productos en el almacén asociado a la venta.
 
 Relaciones: cada configuración pertenece a `companies` mediante `company_id`.
 
@@ -178,6 +180,26 @@ Relaciones: pertenece a empresa, sucursal y cliente.
 Emails relacionados a membresias. Campos: `to`, `subject`, `body`, `extras_json`, `type`, `model_id`, `model_type`, `status`.
 
 Relaciones: puede referenciar modelos mediante `model_id`/`model_type`.
+
+## Finanzas
+
+### taxes
+
+Tributos configurables por empresa. Campos: `company_id`, `code`, `name`, `description`, `rate`, `calculation_type`, `operation_type`, `scope`, `is_required`, `is_default` y `status`.
+
+`name` es el texto que debe ver el usuario en ventas, POS y compras, por ejemplo `IGV` o `ICBP`. `description` documenta el ambito y la regla de aplicacion. `calculation_type` admite `percentage` y `fixed`; `operation_type` admite `addition` y `subtraction`, permitiendo tributos que suman o descuentan. `is_required` separa tributos obligatorios de opcionales. Los registros iniciales son `SALE-IGV` y `PURCHASE-IGV`, ambos al 18%, calculo porcentual, suma y obligatorios; ademas `SALE-ICBP` y `PURCHASE-ICBP`, ambos con monto fijo 0.50, suma y opcionales.
+
+### sale_taxes / purchase_taxes
+
+Foto historica del tributo aplicado al documento. Guardan `name`, `description`, `rate`, `calculation_type`, `operation_type`, `is_required`, `quantity`, `base_amount` y `amount` para que ventas y compras mantengan trazabilidad aunque luego cambie la configuracion de `taxes`. `quantity` es entero y se usa principalmente en tributos fijos opcionales como `ICBP`.
+
+### payment_methods
+
+Metodos de pago configurables por empresa y alcance. Campos: `company_id`, `code`, `name`, `scope`, `requires_reference`, `is_default` y `status`.
+
+### sale_payments / purchase_payments
+
+Foto historica de los pagos del documento. Guardan metodo, nombre, monto, referencia y nota.
 
 ## Ventas
 

@@ -137,41 +137,6 @@
                 </label>
             </section>
 
-            <section class="br-pos-total-box" aria-label="Total de venta">
-                <div class="br-pos-ticket__totals">
-                    <div>
-                        <span>Subtotal</span>
-                        <strong>S/ {{ separatorNumber(subtotal) }}</strong>
-                    </div>
-                    <div v-for="tax in taxSummary" :key="tax.tax_id">
-                        <span>{{ tax.name }} {{ separatorNumber(tax.rate) }}%</span>
-                        <strong>S/ {{ separatorNumber(tax.amount) }}</strong>
-                    </div>
-                    <div v-if="!taxSummary.length">
-                        <span>Impuestos</span>
-                        <strong>S/ 0.00</strong>
-                    </div>
-                </div>
-
-                <header class="br-pos-ticket__header">
-                    <div>
-                        <p>Total</p>
-                        <h2>S/ {{ separatorNumber(total) }}</h2>
-                        <span>{{ totalQuantity }} ítems agregados</span>
-                    </div>
-                    <button
-                        v-if="hasOpenCashSessions"
-                        type="button"
-                        class="br-icon-action br-btn-danger"
-                        data-bs-toggle="tooltip"
-                        title="Limpiar venta"
-                        :disabled="!cart.length"
-                        @click="clearCart">
-                        <i class="fa-solid fa-trash-can" aria-hidden="true"></i>
-                    </button>
-                </header>
-            </section>
-
             <section class="br-pos-ticket__items">
                 <article v-for="line in cart" :key="line.item.id" class="br-pos-ticket-item">
                     <div>
@@ -189,15 +154,50 @@
                 </article>
             </section>
 
-            <button
-                v-if="hasOpenCashSessions"
-                type="button"
-                class="br-btn br-btn-success br-pos-ticket__pay"
-                :disabled="saving || !cart.length"
-                @click="openSaleConfirmation">
-                <i class="fa-solid fa-cash-register" aria-hidden="true"></i>
-                <span>Revisar venta</span>
-            </button>
+            <section v-if="hasOpenCashSessions" class="br-pos-ticket__checkout" aria-label="Cierre de venta">
+                <section class="br-pos-total-box" aria-label="Total de venta">
+                    <div class="br-pos-ticket__totals">
+                        <div>
+                            <span>Subtotal</span>
+                            <strong>S/ {{ separatorNumber(subtotal) }}</strong>
+                        </div>
+                        <div v-for="tax in taxSummary" :key="tax.tax_id">
+                            <span>{{ tax.label }}</span>
+                            <strong>S/ {{ separatorNumber(tax.amount) }}</strong>
+                        </div>
+                        <div v-if="!taxSummary.length">
+                            <span>IGV</span>
+                            <strong>S/ 0.00</strong>
+                        </div>
+                    </div>
+
+                    <header class="br-pos-ticket__header">
+                        <div>
+                            <p>Total</p>
+                            <h2>S/ {{ separatorNumber(total) }}</h2>
+                            <span>{{ totalQuantity }} ítems agregados</span>
+                        </div>
+                        <button
+                            type="button"
+                            class="br-icon-action br-btn-danger"
+                            data-bs-toggle="tooltip"
+                            title="Limpiar venta"
+                            :disabled="!cart.length"
+                            @click="clearCart">
+                            <i class="fa-solid fa-trash-can" aria-hidden="true"></i>
+                        </button>
+                    </header>
+                </section>
+
+                <button
+                    type="button"
+                    class="br-btn br-btn-success br-pos-ticket__pay"
+                    :disabled="saving || !cart.length"
+                    @click="openSaleConfirmation">
+                    <i class="fa-solid fa-cash-register" aria-hidden="true"></i>
+                    <span>Revisar venta</span>
+                </button>
+            </section>
         </aside>
     </section>
 
@@ -295,6 +295,27 @@
                 </div>
 
                 <div class="modal-body br-entity-modal__body br-pos-sale-modal__body">
+                    <section class="br-pos-sale-document" aria-label="Comprobante de pago">
+                        <label v-if="hasMultipleSeries">
+                            <span class="br-pos-field-label">
+                                <span>Comprobante</span>
+                            </span>
+                            <v-select
+                                v-model="selectedSerie"
+                                :options="serieOptions"
+                                class="bg-white"
+                                :clearable="false"
+                                :searchable="false"
+                                append-to-body
+                                placeholder="Seleccione comprobante"/>
+                        </label>
+                        <div v-else class="br-pos-sale-static-field">
+                            <span>Comprobante</span>
+                            <strong>{{ selectedSerieLabel }}</strong>
+                            <small v-if="!selectedSerie">No hay comprobantes disponibles para esta sucursal.</small>
+                        </div>
+                    </section>
+
                     <section class="br-pos-sale-customer" aria-label="Cliente de la venta">
                         <label>
                             <span class="br-pos-field-label">
@@ -321,17 +342,47 @@
                             <strong>S/ {{ separatorNumber(subtotal) }}</strong>
                         </div>
                         <div v-for="tax in taxSummary" :key="`summary-${tax.tax_id}`">
-                            <span>{{ tax.name }} {{ separatorNumber(tax.rate) }}%</span>
+                            <span>{{ tax.label }}</span>
                             <strong>S/ {{ separatorNumber(tax.amount) }}</strong>
                         </div>
                         <div v-if="!taxSummary.length">
-                            <span>Impuestos</span>
+                            <span>IGV</span>
                             <strong>S/ 0.00</strong>
                         </div>
                         <div class="is-total">
                             <span>Total</span>
                             <strong>S/ {{ separatorNumber(total) }}</strong>
                         </div>
+                    </section>
+                    <section v-if="optionalTaxes.length" class="br-document-settlement__taxes" aria-label="Impuestos extras">
+                        <label class="form-label">Impuestos extras</label>
+                        <template v-for="tax in optionalTaxes" :key="`pos-optional-tax-${tax.id}`">
+                            <label class="br-entity-switch br-document-settlement__tax-option">
+                                <input
+                                    v-model="selectedTaxIds"
+                                    class="form-check-input"
+                                    type="checkbox"
+                                    :value="tax.id"
+                                    @change="syncSelectedTaxQuantity(tax)">
+                                <span>
+                                    <strong>{{ tax.name }}</strong>
+                                    <small>{{ taxLabel(tax) }}</small>
+                                </span>
+                            </label>
+                            <InputNumber
+                                v-if="isFixedTax(tax) && selectedTaxIds.includes(tax.id)"
+                                v-model="selectedTaxQuantities[tax.id]"
+                                title=""
+                                :inputClass="['form-control', 'br-tax-quantity']"
+                                :decimals="0"
+                                :minValue="1"
+                                :hasNegative="false"
+                                @change="normalizeSelectedTaxQuantity(tax.id)">
+                                <template v-slot:inputGroupPrepend>
+                                    <span class="input-group-text br-tax-quantity__label">Veces</span>
+                                </template>
+                            </InputNumber>
+                        </template>
                     </section>
 
                     <section class="br-pos-sale-payments" aria-label="Pagos de la venta">
@@ -365,8 +416,13 @@
                                 <InputNumber
                                     v-model="payment.amount"
                                     title=""
-                                    hasDiv
-                                    :minValue="0"/>
+                                    :titleClass="[]"
+                                    :inputClass="['form-control', 'br-document-payment-amount']"
+                                    :minValue="0">
+                                    <template v-slot:inputGroupPrepend>
+                                        <span class="input-group-text br-currency-prefix">S/</span>
+                                    </template>
+                                </InputNumber>
                                 <button
                                     type="button"
                                     class="br-pos-payment__remove br-btn-danger"
@@ -435,6 +491,8 @@ export default {
             selectedPaymentMethod: null,
             selectedCashSession: null,
             selectedItemDetail: null,
+            selectedTaxIds: [],
+            selectedTaxQuantities: {},
             payments: [],
             cart: []
         };
@@ -451,6 +509,18 @@ export default {
             return this.warehouses
                 .filter(warehouse => !branchId || warehouse.branch_id === branchId)
                 .map(warehouse => ({...warehouse, label: `${warehouse.branch?.name || 'Sucursal'} - ${warehouse.name}`}));
+        },
+        serieOptions() {
+            return (this.selectedBranch?.series || []).map(serie => ({
+                ...serie,
+                label: this.serieLabel(serie)
+            }));
+        },
+        hasMultipleSeries() {
+            return this.serieOptions.length > 1;
+        },
+        selectedSerieLabel() {
+            return this.selectedSerie ? this.serieLabel(this.selectedSerie) : "Sin comprobante asignado";
         },
         customerOptions() {
             return this.customers.map(customer => ({...customer, label: customer.name}));
@@ -503,32 +573,55 @@ export default {
         totalQuantity() {
             return this.cart.reduce((total, line) => total + Number(line.quantity || 0), 0);
         },
-        subtotal() {
-            return this.cart.reduce((total, line) => total + this.lineTotal(line), 0);
+        grossSubtotal() {
+            return this.fixedNumber(this.cart.reduce((total, line) => total + this.lineTotal(line), 0));
         },
-        taxableSubtotal() {
-            return this.cart.reduce((total, line) => {
-                return total + (this.includesTax(line.item) ? 0 : this.lineTotal(line));
-            }, 0);
+        subtotal() {
+            return this.fixedNumber(Number(this.grossSubtotal || 0) - Number(this.includedTaxTotal || 0));
+        },
+        requiredTaxes() {
+            return this.taxes.filter(tax => this.taxIsRequired(tax?.data || tax));
+        },
+        optionalTaxes() {
+            return this.taxes.filter(tax => !this.taxIsRequired(tax?.data || tax));
+        },
+        appliedTaxes() {
+            return this.taxes.filter(tax => {
+                const data = tax?.data || tax;
+                return this.taxIsRequired(data) || this.selectedTaxIds.includes(data.id);
+            });
         },
         taxSummary() {
-            return this.taxes.map(tax => {
-                const rate = Number(tax.rate || tax.percentage || 0);
-                const amount = this.taxableSubtotal * (rate / 100);
+            return this.appliedTaxes.map(tax => {
+                const taxData = tax?.data || tax || {};
+                const line = this.calculateSaleTaxLine(taxData);
 
                 return {
-                    tax_id: tax.id,
-                    name: tax.name,
-                    rate,
-                    amount
+                    tax_id: taxData.id ?? tax.code ?? tax.id,
+                    name: taxData.name ?? tax.label ?? "IGV",
+                    label: this.taxLabel(taxData),
+                    rate: Number(taxData.rate ?? taxData.percentage ?? 0),
+                    calculation_type: taxData.calculation_type || "percentage",
+                    operation_type: taxData.operation_type || "addition",
+                    is_required: this.taxIsRequired(taxData),
+                    quantity: this.isFixedTax(taxData) ? this.selectedTaxQuantity(taxData.id) : 1,
+                    base_amount: Number(line.baseAmount || 0),
+                    total_impact: Number(line.totalImpact || 0),
+                    amount: Number(line.amount || 0)
                 };
-            }).filter(tax => tax.amount > 0);
+            });
         },
         totalTax() {
-            return this.taxSummary.reduce((total, tax) => total + tax.amount, 0);
+            return this.fixedNumber(this.taxSummary.reduce((total, tax) => total + tax.amount, 0));
+        },
+        taxImpactTotal() {
+            return this.fixedNumber(this.taxSummary.reduce((total, tax) => total + Number(tax.total_impact || 0), 0));
+        },
+        includedTaxTotal() {
+            return this.fixedNumber(Number(this.totalTax || 0) - Number(this.taxImpactTotal || 0));
         },
         total() {
-            return this.subtotal + this.totalTax;
+            return this.fixedNumber(Number(this.grossSubtotal || 0) + Number(this.taxImpactTotal || 0));
         },
         paymentsTotal() {
             return this.payments.reduce((total, payment) => total + Number(payment.amount || 0), 0);
@@ -543,7 +636,7 @@ export default {
                 }));
         },
         paymentDifference() {
-            return Number((this.total - this.paymentsTotal).toFixed(2));
+            return this.fixedNumber(Number(this.total || 0) - Number(this.paymentsTotal || 0));
         },
         canSubmit() {
             return this.cart.length > 0
@@ -569,6 +662,86 @@ export default {
         this.initParams();
     },
     methods: {
+        taxLabel(tax = {}) {
+            const name = tax?.name || "IGV";
+            const rate = Number(tax?.rate || 0);
+            const calculationType = tax?.calculation_type || "percentage";
+            const operationType = tax?.operation_type || "addition";
+            const sign = operationType === "subtraction" ? "-" : "+";
+
+            if(calculationType === "fixed") {
+                return `${name} ${sign} S/ ${this.separatorNumber(rate)}`;
+            }
+
+            return `${name} ${sign}${this.separatorNumber(rate)}%`;
+        },
+        calculateTaxAmount(tax = {}, baseAmount = 0) {
+            const base = Number(baseAmount || 0);
+            const rate = Number(tax?.rate || 0);
+            const calculationType = tax?.calculation_type || "percentage";
+            const operationType = tax?.operation_type || "addition";
+            const quantity = this.isFixedTax(tax) ? this.selectedTaxQuantity(tax.id) : 1;
+            const amount = calculationType === "fixed"
+                ? rate * quantity
+                : base * (rate / 100);
+
+            return this.fixedNumber(operationType === "subtraction" ? amount * -1 : amount);
+        },
+        isFixedTax(tax = {}) {
+            return (tax?.calculation_type || "percentage") === "fixed";
+        },
+        selectedTaxQuantity(taxId) {
+            return Math.max(1, parseInt(Number(this.selectedTaxQuantities[taxId] || 1), 10));
+        },
+        normalizeSelectedTaxQuantity(taxId) {
+            this.selectedTaxQuantities[taxId] = Math.max(1, parseInt(Number(this.selectedTaxQuantities[taxId] || 1), 10));
+        },
+        syncSelectedTaxQuantity(tax = {}) {
+            if(!this.isFixedTax(tax)) return;
+            this.selectedTaxQuantities[tax.id] = this.selectedTaxIds.includes(tax.id) ? 1 : 0;
+        },
+        taxIsRequired(tax = {}) {
+            return [true, 1, "1", "true"].includes(tax?.is_required);
+        },
+        calculateSaleTaxLine(tax = {}) {
+            const rate = Number(tax?.rate || 0);
+            const calculationType = tax?.calculation_type || "percentage";
+            const operationType = tax?.operation_type || "addition";
+            let base = 0;
+            let amount = 0;
+            let totalImpact = 0;
+
+            if(calculationType === "fixed") {
+                amount = this.calculateTaxAmount(tax, 0);
+                totalImpact = amount;
+            }else {
+                this.cart.forEach(line => {
+                    const lineTotal = this.lineTotal(line);
+                    if(lineTotal <= 0) return;
+
+                    const taxIsIncluded = this.includesTax(line.item) && operationType === "addition" && rate > 0;
+
+                    if(taxIsIncluded) {
+                        const lineBase = Number(this.fixedNumber(lineTotal / (1 + (rate / 100))));
+                        const lineAmount = Number(this.fixedNumber(lineTotal - lineBase));
+                        base += lineBase;
+                        amount += lineAmount;
+                        return;
+                    }
+
+                    const lineAmount = Number(this.calculateTaxAmount(tax, lineTotal));
+                    base += lineTotal;
+                    amount += lineAmount;
+                    totalImpact += lineAmount;
+                });
+            }
+
+            return {
+                baseAmount: this.fixedNumber(base),
+                amount: this.fixedNumber(amount),
+                totalImpact: this.fixedNumber(totalImpact)
+            };
+        },
         async initParams() {
             this.loading = true;
             const result = await Requests.get({route: this.config.routes.initParams});
@@ -600,7 +773,7 @@ export default {
             Alerts.tooltips({});
         },
         syncBranchDependents() {
-            this.selectedSerie = this.selectedBranch?.series?.[0] || null;
+            this.selectedSerie = this.serieOptions[0] || null;
             this.selectedWarehouse = this.warehouseOptions[0] || null;
             this.selectedCashSession = this.cashSessionOptions[0] || null;
         },
@@ -608,8 +781,15 @@ export default {
             const branchId = this.selectedCashSession?.branch_id;
 
             this.selectedBranch = this.branchOptions.find(branch => branch.id === branchId) || this.selectedBranch || this.branchOptions[0] || null;
-            this.selectedSerie = this.selectedBranch?.series?.[0] || null;
+            this.selectedSerie = this.serieOptions[0] || null;
             this.selectedWarehouse = this.warehouseOptions[0] || null;
+        },
+        serieLabel(serie) {
+            const documentType = serie?.document_type || serie?.documentType || {};
+            const documentName = documentType.name || documentType.code || "Comprobante";
+            const serieName = serie?.legible_serie || serie?.serie || serie?.code || serie?.name || "";
+
+            return [serieName, documentName].filter(Boolean).join(" - ");
         },
         defaultPaymentMethod() {
             return this.paymentMethodOptions.find(method => {
@@ -689,7 +869,10 @@ export default {
             this.resetPayments();
         },
         lineTotal(line) {
-            return Number(line.quantity || 0) * Number(line.price || 0);
+            return this.fixedNumber(Number(line.quantity || 0) * Number(line.price || 0));
+        },
+        fixedNumber(value, decimals = 2) {
+            return Number(Number(value || 0).toFixed(decimals));
         },
         currencySign(item = null) {
             return item?.currency?.sign || this.currencies[0]?.sign || "S/";
@@ -701,7 +884,9 @@ export default {
             return new Date().toISOString().slice(0, 10);
         },
         includesTax(item) {
-            return [true, 1, "1", "true"].includes(item?.price_includes_tax);
+            const value = item?.price_includes_tax ?? item?.data?.price_includes_tax ?? true;
+
+            return [true, 1, "1", "true"].includes(value);
         },
         itemIcon(item) {
             if(item?.type === "service") return "fa-solid fa-dumbbell";
@@ -822,6 +1007,11 @@ export default {
                 taxes: this.taxSummary.map(tax => ({
                     tax_id: tax.tax_id,
                     rate: tax.rate,
+                    calculation_type: tax.calculation_type,
+                    operation_type: tax.operation_type,
+                    is_required: tax.is_required,
+                    quantity: tax.quantity,
+                    base_amount: Number(tax.base_amount.toFixed(2)),
                     amount: Number(tax.amount.toFixed(2))
                 })),
                 payments: this.payments.map(payment => ({
