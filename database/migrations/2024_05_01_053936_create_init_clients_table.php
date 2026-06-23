@@ -10,21 +10,19 @@ return new class extends Migration {
      * Run the migrations.
      */
     public function up(): void {
-
-        // ✔️
         Schema::create("book_complaints", function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger("company_id");
             $table->unsignedBigInteger("branch_id")->nullable();
             $table->unsignedBigInteger("identity_document_type_id");
-            $table->string("document_number");
-            $table->string("name");
-            $table->string("email")->nullable();
-            $table->string("phone_number")->nullable();
+            $table->string("document_number", 255);
+            $table->string("name", 255);
+            $table->string("email", 255)->nullable();
+            $table->string("phone_number", 255)->nullable();
             $table->enum("type", ["complaint", "claim", "suggestion"]);
             $table->text("description");
             $table->text("request")->nullable();
-            $table->string("evidence")->nullable();
+            $table->string("evidence", 255)->nullable();
             $table->text("admin_response")->nullable();
             $table->string("submitted_ip", 45)->nullable();
             $table->text("submitted_user_agent")->nullable();

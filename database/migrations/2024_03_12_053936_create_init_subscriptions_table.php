@@ -10,8 +10,6 @@ return new class extends Migration {
      * Run the migrations.
      */
     public function up(): void {
-
-        // ✅
         Schema::create("subscriptions", function(Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger("company_id");
@@ -44,8 +42,6 @@ return new class extends Migration {
             $table->foreign("sale_body_id")->references("id")->on("sales_body")->onDelete("cascade");
             $table->foreign("customer_id")->references("id")->on("customers")->onDelete("cascade");
         });
-
-        // ✅
         Schema::create("attendances", function(Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger("company_id");
@@ -69,18 +65,16 @@ return new class extends Migration {
             $table->foreign("branch_id")->references("id")->on("branches")->onDelete("cascade");
             $table->foreign("customer_id")->references("id")->on("customers")->onDelete("cascade");
         });
-
-        // ✅
         Schema::create("subscription_emails", function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger("company_id");
-            $table->string("to");
-            $table->string("subject");
+            $table->string("to", 255);
+            $table->string("subject", 255);
             $table->text("body")->nullable();
             $table->text("extras_json")->nullable();
-            $table->string("type")->nullable();
-            $table->string("model_id")->nullable();
-            $table->string("model_type")->nullable();
+            $table->string("type", 255)->nullable();
+            $table->string("model_id", 255)->nullable();
+            $table->string("model_type", 255)->nullable();
             $table->enum("status", ["pending", "sent", "failed"])->default("pending");
 
             $table->timestamp("created_at")->useCurrent()->nullable();

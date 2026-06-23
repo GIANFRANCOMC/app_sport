@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 declare(strict_types=1);
 
@@ -6,10 +6,9 @@ namespace App\Models\System\Devices;
 
 use Illuminate\Database\Eloquent\Model;
 use App\Models\System\Organizations\{Company, Branch};
-use App\Models\System\Customers\Customer;
 
-class BiometricDevice extends Model
-{
+class BiometricDevice extends Model {
+
     protected $table               = "biometric_devices";
     protected $primaryKey          = "id";
     public $incrementing           = true;
@@ -19,9 +18,8 @@ class BiometricDevice extends Model
     protected $fillable = [
         "company_id",
         "branch_id",
+        "biometric_device_model_id",
         "name",
-        "brand",
-        "model",
         "serial_number",
         "ip_address",
         "port",
@@ -35,70 +33,62 @@ class BiometricDevice extends Model
     ];
 
     protected $appends = [
-        "formatted_status"
+        "formatted_status",
+        "brand_name",
+        "model_name"
     ];
 
-    /**
-     * Get formatted status
-     */
-    public function getFormattedStatusAttribute(): string
-    {
-        return self::getStatuses("first", $this->attributes["status"])["label"] ?? "";
+    public function getFormattedStatusAttribute(): string {
+
+        return self::getStatuses("first", $this->attributes["status"] ?? "")["label"] ?? "";
+
     }
 
-    /**
-     * Get statuses list
-     */
-    public static function getStatuses(string $type = "all", ?string $code = ""): array
-    {
+    public function getBrandNameAttribute(): string {
+
+        return $this->model?->brand?->name ?? "";
+
+    }
+
+    public function getModelNameAttribute(): string {
+
+        return $this->model?->name ?? "";
+
+    }
+
+    public static function getStatuses(string $type = "all", ?string $code = ""): array {
+
         $statuses = [
             ["code" => "active", "label" => "Activo"],
             ["code" => "inactive", "label" => "Inactivo"]
         ];
 
         return \App\Helpers\System\Utilities::getValues($statuses, $type, $code);
+
     }
 
-    /**
-     * Get brands list
-     */
-    public static function getBrands(string $type = "all", ?string $code = ""): array
-    {
-        $brands = [
-            ["code" => "ZKTeco", "label" => "ZKTeco"]
-        ];
+    public function company() {
 
-        return \App\Helpers\System\Utilities::getValues($brands, $type, $code);
-    }
-
-    /**
-     * Get models by brand
-     */
-    public static function getModelsByBrand(?string $brand = "ZKTeco"): array
-    {
-        $models = [
-            "ZKTeco" => [
-                ["code" => "K20 Pro", "label" => "K20 Pro"]
-            ]
-        ];
-
-        return $models[$brand] ?? [];
-    }
-
-    // Relationships
-    public function company()
-    {
         return $this->belongsTo(Company::class, "company_id", "id");
+
     }
 
-    public function branch()
-    {
+    public function branch() {
+
         return $this->belongsTo(Branch::class, "branch_id", "id");
+
     }
 
-    public function customerFingerprints()
-    {
+    public function model() {
+
+        return $this->belongsTo(BiometricDeviceModel::class, "biometric_device_model_id", "id");
+
+    }
+
+    public function customerFingerprints() {
+
         return $this->hasMany(CustomerBiometricFingerprint::class, "biometric_device_id", "id");
-    }
-}
 
+    }
+
+}

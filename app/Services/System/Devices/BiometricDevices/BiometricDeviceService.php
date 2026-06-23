@@ -29,9 +29,8 @@ class BiometricDeviceService {
      */
     private const ALLOWED_FIELDS = [
         "branch_id",
+        "biometric_device_model_id",
         "name",
-        "brand",
-        "model",
         "serial_number",
         "ip_address",
         "port",
@@ -46,8 +45,6 @@ class BiometricDeviceService {
     private const SEARCHABLE_FIELDS = [
         "name",
         "serial_number",
-        "brand",
-        "model",
         "ip_address",
         "port"
     ];
@@ -187,7 +184,7 @@ class BiometricDeviceService {
 
         });
 
-        return $device->fresh(["branch"]);
+        return $device->fresh(["branch", "model.brand"]);
 
     }
 
@@ -200,7 +197,7 @@ class BiometricDeviceService {
      * @param array $relations Relations to eager load
      * @return BiometricDevice|null
      */
-    public static function findByIdAndCompany(int $id, int $companyId, ?array $statuses = ["active"], array $relations = ["branch"]): ?BiometricDevice {
+    public static function findByIdAndCompany(int $id, int $companyId, ?array $statuses = ["active"], array $relations = ["branch", "model.brand"]): ?BiometricDevice {
 
         $query = BiometricDevice::where("id", $id)
                                 ->where("company_id", $companyId);
@@ -232,7 +229,7 @@ class BiometricDeviceService {
     public static function getPaginatedList(int $companyId, array $filters = [], int $perPage = 15): LengthAwarePaginator {
 
         $query = BiometricDevice::where("company_id", $companyId)
-                                ->with(["branch"]);
+                                ->with(["branch", "model.brand"]);
 
         // Apply filters
         $filterBy = $filters["filter_by"] ?? null;
@@ -312,7 +309,7 @@ class BiometricDeviceService {
 
         }
 
-        return $query->with(["branch"])->get();
+        return $query->with(["branch", "model.brand"])->get();
 
     }
 

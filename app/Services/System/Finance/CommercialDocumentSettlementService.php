@@ -160,6 +160,7 @@ final class CommercialDocumentSettlementService {
         $amount = self::taxAmount($base, $rate, $calculationType, $operationType, $quantity);
 
         return [
+            "company_id" => $tax->company_id,
             "tax_id" => $tax->id,
             "name" => (string) $tax->name,
             "description" => $tax->description,
@@ -225,6 +226,7 @@ final class CommercialDocumentSettlementService {
         }
 
         return [
+            "company_id" => $tax->company_id,
             "tax_id" => $tax->id,
             "name" => (string) $tax->name,
             "description" => $tax->description,
@@ -264,11 +266,13 @@ final class CommercialDocumentSettlementService {
 
     private static function taxQuantity(Tax $tax, array $selectedTaxQuantities): int {
 
-        if($tax->calculation_type !== "fixed") return 1.0;
+        if($tax->calculation_type !== "fixed") return 1;
 
-        $quantity = $selectedTaxQuantities[$tax->id] ?? 1;
+        $minimum = max(0, (int) ($tax->min_apply_quantity ?? 0));
+        $maximum = $tax->max_apply_quantity !== null ? max($minimum, (int) $tax->max_apply_quantity) : null;
+        $quantity = max(1, $minimum, (int) ($selectedTaxQuantities[$tax->id] ?? 1));
 
-        return max(1, (int) $quantity);
+        return $maximum !== null ? min($quantity, $maximum) : $quantity;
 
     }
 
@@ -293,6 +297,7 @@ final class CommercialDocumentSettlementService {
         }
 
         return [
+            "company_id" => $method?->company_id,
             "payment_method_id" => $method?->id,
             "name" => (string) ($paymentData["name"] ?? $method?->name),
             "amount" => $amount,

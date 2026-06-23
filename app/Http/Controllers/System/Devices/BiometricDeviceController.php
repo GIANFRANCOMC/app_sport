@@ -14,7 +14,7 @@ use App\Http\Requests\System\Devices\BiometricDevices\{StoreBiometricDeviceReque
 use App\Services\System\Base\{InitParamsCacheInvalidationService};
 use App\Services\System\Devices\BiometricDevices\{BiometricDeviceConfigService, BiometricDeviceService};
 use App\Services\System\Customers\Tracking\{TrackingAttendanceBusinessService};
-use App\Models\System\Devices\{BiometricDevice};
+use App\Models\System\Devices\{BiometricDevice, BiometricDeviceModel};
 
 class BiometricDeviceController extends BaseController {
 
@@ -197,14 +197,46 @@ class BiometricDeviceController extends BaseController {
      * @param StoreBiometricDeviceRequest|UpdateBiometricDeviceRequest $request
      * @return array
      */
+    private function resolveBiometricDeviceModelId($request): ?int {
+
+        $modelId = $request->input("biometric_device_model_id");
+
+        if(Utilities::isDefined($modelId)) {
+
+            return (int)$modelId;
+
+        }
+
+        $modelName = $request->input("model");
+
+        if(!Utilities::isDefined($modelName)) {
+
+            return null;
+
+        }
+
+        $query = BiometricDeviceModel::query()
+                                     ->where("company_id", $this->getCompanyId())
+                                     ->where("status", "active")
+                                     ->where("name", $modelName);
+
+        if(Utilities::isDefined($request->input("brand"))) {
+
+            $query->whereHas("brand", fn($brandQuery) => $brandQuery->where("name", $request->input("brand")));
+
+        }
+
+        return $query->value("id");
+
+    }
+
     private function prepareBiometricDeviceData($request): array {
 
         return [
             "company_id"    => $this->getCompanyId(),
-            "branch_id"     => $request->input("branch_id"),
-            "name"          => $request->input("name"),
-            "brand"         => $request->input("brand"),
-            "model"         => $request->input("model"),
+            "branch_id"                 => $request->input("branch_id"),
+            "biometric_device_model_id" => $this->resolveBiometricDeviceModelId($request),
+            "name"                      => $request->input("name"),
             "serial_number" => $request->input("serial_number"),
             "ip_address"    => $request->input("ip_address"),
             "port"          => $request->input("port"),

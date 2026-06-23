@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 declare(strict_types=1);
 
@@ -103,6 +103,7 @@ class SaleService {
         }
 
         $saleBody = new SaleBody();
+        $saleBody->company_id = $saleHeader->company_id;
         $saleBody->sale_header_id = $saleHeader->id;
         $saleBody->item_id        = $detail["item_id"];
         $saleBody->currency_id    = $detail["currency_id"];
@@ -233,7 +234,7 @@ class SaleService {
 
             if(!$warehouse) {
 
-                throw new Exception("El almacén seleccionado no pertenece a la sucursal de la venta.");
+                throw new Exception("El almacÃ©n seleccionado no pertenece a la sucursal de la venta.");
 
             }
 
@@ -251,11 +252,11 @@ class SaleService {
 
         if($warehouses->isEmpty()) {
 
-            throw new Exception("La sucursal seleccionada no cuenta con almacén activo.");
+            throw new Exception("La sucursal seleccionada no cuenta con almacÃ©n activo.");
 
         }
 
-        throw new Exception("Seleccione el almacén que será afectado por la venta.");
+        throw new Exception("Seleccione el almacÃ©n que serÃ¡ afectado por la venta.");
 
     }
 
@@ -335,7 +336,7 @@ class SaleService {
 
             if($newSequential <= 0) {
 
-                throw new Exception("No se pudo generar el número secuencial.");
+                throw new Exception("No se pudo generar el nÃºmero secuencial.");
 
             }
 
@@ -498,7 +499,7 @@ class SaleService {
                 && !$fallbackWarehouse
                 && $saleMovements->count() !== $productPositions->count()) {
 
-                throw new Exception("No se encontró el almacén asociado a la venta.");
+                throw new Exception("No se encontrÃ³ el almacÃ©n asociado a la venta.");
 
             }
 
@@ -514,7 +515,7 @@ class SaleService {
 
                     if($warehouseId <= 0) {
 
-                        throw new Exception("No se encontró el almacén original de uno de los productos.");
+                        throw new Exception("No se encontrÃ³ el almacÃ©n original de uno de los productos.");
 
                     }
 
@@ -530,7 +531,7 @@ class SaleService {
                         "unit_cost"     => (float) (
                             $saleMovements->get($saleBody->id)?->unit_cost ?? 0
                         ),
-                        "reason"        => "Devolución automática por anulación de venta.",
+                        "reason"        => "DevoluciÃ³n automÃ¡tica por anulaciÃ³n de venta.",
                         "metadata"      => [
                             "sale_header_id" => (int) $saleHeader->id,
                             "automatic_return" => true
@@ -563,7 +564,7 @@ class SaleService {
                     ]);
 
             // Cancel subscriptions
-            $motive = "Por la anulación de la venta.";
+            $motive = "Por la anulaciÃ³n de la venta.";
 
             Subscription::where("company_id", $companyId)
                        ->where("sale_header_id", $saleHeader->id)

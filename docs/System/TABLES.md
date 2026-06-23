@@ -123,7 +123,7 @@ Series/correlativos por sucursal y tipo de documento. Campos: `branch_id`, `docu
 
 Relaciones: pertenece a sucursal y tipo de documento; usada por ventas.
 
-## Catalogo comercial
+## Catálogo comercial
 
 ### brands
 
@@ -217,27 +217,31 @@ Al registrar una caja marcada como principal, las demás cajas de la misma sucur
 
 ### cash_session_inventory_counts
 
-Conteo fisico de inventario asociado al cierre de caja principal. Campos: `company_id`, `branch_id`, `cash_session_id`, `warehouse_id`, `item_id`, `inventory_movement_id`, `system_quantity`, `counted_quantity`, `difference_quantity`, `observation`, `status` y auditoria.
+Conteo físico de inventario asociado al cierre de caja principal. Campos: `company_id`, `branch_id`, `cash_session_id`, `warehouse_id`, `item_id`, `inventory_movement_id`, `system_quantity`, `counted_quantity`, `difference_quantity`, `observation`, `status` y auditoria.
 
 Uso: cuando la cantidad real difiere del saldo del sistema, debe crearse un movimiento de inventario con origen `physical_count` y vincularlo en `inventory_movement_id`. Esto mantiene trazabilidad de mermas, diferencias de cocina y ajustes de cierre.
 
 ### taxes
 
-Tributos configurables por empresa. Campos: `company_id`, `code`, `name`, `description`, `rate`, `calculation_type`, `operation_type`, `scope`, `is_required`, `is_default` y `status`.
+Tributos configurables por empresa. Campos: `company_id`, `code`, `name`, `description`, `rate`, `calculation_type`, `operation_type`, `min_apply_quantity`, `max_apply_quantity`, `scope`, `is_required`, `is_default` y `status`.
 
-`name` es el texto que debe ver el usuario en ventas, POS y compras, por ejemplo `IGV` o `ICBP`. `description` documenta el ambito y la regla de aplicacion. `calculation_type` admite `percentage` y `fixed`; `operation_type` admite `addition` y `subtraction`, permitiendo tributos que suman o descuentan. `is_required` separa tributos obligatorios de opcionales. Los registros iniciales son `SALE-IGV` y `PURCHASE-IGV`, ambos al 18%, calculo porcentual, suma y obligatorios; ademas `SALE-ICBP` y `PURCHASE-ICBP`, ambos con monto fijo 0.50, suma y opcionales.
+`name` es el texto que debe ver el usuario en ventas, POS y compras, por ejemplo `IGV` o `ICBP`. `description` documenta el ámbito y la regla de aplicación. `calculation_type` admite `percentage` y `fixed`; `operation_type` admite `addition` y `subtraction`, permitiendo tributos que suman o descuentan. `is_required` separa tributos obligatorios de opcionales. `is_default` marca el tributo principal de su alcance para ordenar y sugerirlo antes que otros tributos.
+
+`min_apply_quantity` y `max_apply_quantity` aplican sólo a tributos `fixed`, como `ICBP`, para controlar cuántas veces puede sumarse el cargo. En tributos porcentuales deben quedar en `null`. Pendiente frontend: al seleccionar un tributo fijo opcional, mostrar un input entero respetando estos límites y ocultarlo cuando el tributo no esté seleccionado.
+
+Registros iniciales: `SALE-IGV` y `PURCHASE-IGV`, ambos 18%, porcentuales, de suma y obligatorios; además `SALE-ICBP` y `PURCHASE-ICBP`, ambos monto fijo 0.50, suma y opcionales.
 
 ### sale_taxes / purchase_taxes
 
-Foto historica del tributo aplicado al documento. Guardan `name`, `description`, `rate`, `calculation_type`, `operation_type`, `is_required`, `quantity`, `base_amount` y `amount` para que ventas y compras mantengan trazabilidad aunque luego cambie la configuracion de `taxes`. `quantity` es entero y se usa principalmente en tributos fijos opcionales como `ICBP`.
+Foto histórica del tributo aplicado al documento. Guardan `name`, `description`, `rate`, `calculation_type`, `operation_type`, `is_required`, `quantity`, `base_amount` y `amount` para que ventas y compras mantengan trazabilidad aunque luego cambie la configuración de `taxes`. `quantity` es entero y se usa principalmente en tributos fijos opcionales como `ICBP`.
 
 ### payment_methods
 
-Metodos de pago configurables por empresa y alcance. Campos: `company_id`, `code`, `name`, `scope`, `requires_reference`, `is_default` y `status`.
+Métodos de pago configurables por empresa y alcance. Campos: `company_id`, `code`, `name`, `scope`, `requires_reference`, `is_default` y `status`.
 
 ### sale_payments / purchase_payments
 
-Foto historica de los pagos del documento. Guardan metodo, nombre, monto, referencia y nota.
+Foto histórica de los pagos del documento. Guardan método, nombre, monto, referencia y nota.
 
 ## Ventas
 
@@ -319,7 +323,7 @@ Reglas:
 
 ### assets
 
-Catalogo de activos. Campos: `company_id`, `internal_code`, `name`, `description`, `management_type`, `status`.
+Catálogo de activos. Campos: `company_id`, `internal_code`, `name`, `description`, `management_type`, `status`.
 
 Relaciones: pertenece a empresa; se asigna a sucursales.
 
@@ -349,16 +353,38 @@ Reclamos, quejas o sugerencias. Campos: `company_id`, `branch_id`, `identity_doc
 
 Relaciones: pertenece a empresa, sucursal y tipo de documento.
 
-## Biometria
+## Biometría
+
+### biometric_device_brands
+
+Marcas de dispositivos biométricos por empresa. Campos: `company_id`, `slug`, `name`, `description`, `status` y auditoría.
+
+Relaciones: pertenece a empresa y tiene muchos modelos.
+
+### biometric_device_models
+
+Modelos de dispositivos biométricos por marca. Campos: `company_id`, `biometric_device_brand_id`, `slug`, `name`, `description`, `status` y auditoría.
+
+Relaciones: pertenece a empresa y marca; tiene muchos dispositivos.
 
 ### biometric_devices
 
-Dispositivos biometricos por empresa/sucursal. Campos: `company_id`, `branch_id`, `name`, `brand`, `model`, `serial_number`, `ip_address`, `port`, `device_id`, `description`, `status`.
+Dispositivos biométricos por empresa/sucursal. Campos: `company_id`, `branch_id`, `biometric_device_model_id`, `name`, `serial_number`, `ip_address`, `port`, `device_id`, `description` y `status`.
 
-Relaciones: pertenece a empresa y sucursal; tiene huellas de clientes.
+Relaciones: pertenece a empresa, sucursal y modelo; por el modelo se obtiene la marca. Tiene huellas de clientes.
 
 ### customer_biometric_fingerprints
 
-Asociacion cliente-huella-dispositivo. Campos: `company_id`, `customer_id`, `biometric_device_id`, `device_user_id`, `finger_index`, `fingerprint_template`, `description`, `status`.
+Asociación cliente-huella-dispositivo. Campos: `company_id`, `customer_id`, `biometric_device_id`, `device_user_id`, `finger_index`, `fingerprint_template`, `description`, `status`.
 
 Relaciones: pertenece a empresa, cliente y dispositivo.
+
+## Criterio de migraciones
+
+- Separar estructura y datos iniciales: las migraciones de creación definen tablas, claves primarias y claves foráneas; los inserts iniciales viven en una migración dedicada.
+- Separar por dominio cuando una migración crezca: maestros, empresas, catálogo, caja, inventario, ventas y compras deben poder evolucionar sin mezclar reglas de negocio ajenas.
+- Toda tabla operativa o hija debe tener `company_id` requerido cuando el dato pertenece a una empresa. Las filas hijas deben poblarlo desde la cabecera, el almacén, la sucursal o el usuario autenticado antes de guardar.
+- Las reglas `unique(...)` deben incluir `company_id` cuando la unicidad sea por empresa. Excepciones: tablas globales del framework o catálogos maestros realmente compartidos.
+- No crear índices explícitos salvo decisión justificada por consulta crítica. Las claves primarias, claves foráneas y `unique(...)` sí se mantienen porque expresan integridad.
+- Los montos y cantidades usan `decimal(16, 4)` como estándar operativo. Las cadenas deben tener longitud explícita; usar `text`/`longText` cuando el contenido supere una cadena razonable.
+- Evitar comentarios decorativos o símbolos en migraciones. Los comentarios sólo deben explicar una decisión técnica que no sea evidente.

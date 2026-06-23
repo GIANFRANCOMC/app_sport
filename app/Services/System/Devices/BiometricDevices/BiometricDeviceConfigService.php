@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 declare(strict_types=1);
 
@@ -6,7 +6,7 @@ namespace App\Services\System\Devices\BiometricDevices;
 
 use stdClass;
 
-use App\Models\System\Devices\BiometricDevice;
+use App\Models\System\Devices\{BiometricDevice, BiometricDeviceBrand, BiometricDeviceModel};
 use App\Services\System\Base\{
     BaseConfigService,
     CompanyReferenceDataService
@@ -22,12 +22,29 @@ final class BiometricDeviceConfigService extends BaseConfigService {
 
     protected static function buildConfig(int $companyId, string $page): stdClass {
 
+        $brands = BiometricDeviceBrand::query()
+                                      ->where("company_id", $companyId)
+                                      ->where("status", "active")
+                                      ->orderBy("name")
+                                      ->get(["id", "slug", "name"]);
+
+        $models = BiometricDeviceModel::query()
+                                      ->where("company_id", $companyId)
+                                      ->where("status", "active")
+                                      ->with("brand:id,name")
+                                      ->orderBy("name")
+                                      ->get(["id", "company_id", "biometric_device_brand_id", "slug", "name"]);
+
         return self::data([
             "branches" => self::data([
                 "records" => CompanyReferenceDataService::for($companyId)->activeBranches()
             ]),
-            "brands"   => BiometricDevice::getBrands(),
-            "models"   => ["ZKTeco" => BiometricDevice::getModelsByBrand("ZKTeco")],
+            "brands" => self::data([
+                "records" => $brands
+            ]),
+            "models" => self::data([
+                "records" => $models
+            ]),
             "statuses" => BiometricDevice::getStatuses()
         ]);
 

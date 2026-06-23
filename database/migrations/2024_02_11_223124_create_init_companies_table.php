@@ -1,9 +1,8 @@
 <?php
 
-use App\Helpers\System\Utilities;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\{DB, Hash, Schema};
+use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration {
 
@@ -15,8 +14,8 @@ return new class extends Migration {
         Schema::create("company_settings", function(Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger("company_id");
-            $table->string("group");
-            $table->string("key");
+            $table->string("group", 255);
+            $table->string("key", 255);
             $table->text("value")->nullable();
             $table->text("description")->nullable();
             $table->enum("value_type", ["string", "boolean", "integer", "decimal", "json"])->default("string");
@@ -34,11 +33,13 @@ return new class extends Migration {
             $table->id();
             $table->unsignedBigInteger("company_id");
             $table->string("code", 30);
-            $table->string("name");
+            $table->string("name", 255);
             $table->text("description")->nullable();
-            $table->decimal("rate", 7, 4)->default(0);
+            $table->decimal("rate", 16, 4)->default(0);
             $table->enum("calculation_type", ["percentage", "fixed"])->default("percentage");
             $table->enum("operation_type", ["addition", "subtraction"])->default("addition");
+            $table->unsignedInteger("min_apply_quantity")->nullable();
+            $table->unsignedInteger("max_apply_quantity")->nullable();
             $table->enum("scope", ["sale", "purchase", "both"])->default("both");
             $table->boolean("is_required")->default(true);
             $table->boolean("is_default")->default(false);
@@ -56,7 +57,7 @@ return new class extends Migration {
             $table->id();
             $table->unsignedBigInteger("company_id");
             $table->string("code", 30);
-            $table->string("name");
+            $table->string("name", 255);
             $table->enum("scope", ["sale", "purchase", "both"])->default("both");
             $table->boolean("requires_reference")->default(false);
             $table->boolean("is_default")->default(false);
@@ -69,8 +70,6 @@ return new class extends Migration {
 
             $table->foreign("company_id")->references("id")->on("companies")->onDelete("cascade");
         });
-
-        // ✅
         Schema::create("company_socials_media", function(Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger("company_id");
@@ -85,17 +84,15 @@ return new class extends Migration {
 
             $table->foreign("company_id")->references("id")->on("companies")->onDelete("cascade");
         });
-
-        // ✔️
         Schema::create("branches", function(Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger("company_id");
-            $table->string("internal_code");
-            $table->string("name");
-            $table->string("address")->nullable();
-            $table->string("reference")->nullable();
-            $table->string("telephone")->nullable();
-            $table->string("email")->nullable();
+            $table->string("internal_code", 255);
+            $table->string("name", 255);
+            $table->string("address", 255)->nullable();
+            $table->string("reference", 255)->nullable();
+            $table->string("telephone", 255)->nullable();
+            $table->string("email", 255)->nullable();
             $table->integer("capacity")->nullable();
             $table->text("map_url")->nullable();
             $table->enum("status", ["active", "inactive"])->default("active");
@@ -110,8 +107,6 @@ return new class extends Migration {
             $table->foreign("company_id")->references("id")->on("companies")->onDelete("cascade");
             $table->unique(["company_id", "internal_code"]);
         });
-
-        // ✅
         Schema::create("user_branches", function(Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger("company_id");
@@ -133,7 +128,7 @@ return new class extends Migration {
             $table->id();
             $table->unsignedBigInteger("branch_id");
             $table->unsignedBigInteger("document_type_id");
-            $table->string("code");
+            $table->string("code", 255);
             $table->integer("number");
             $table->integer("init")->default(1);
             $table->enum("status", ["active", "inactive"])->default("active");
@@ -146,13 +141,11 @@ return new class extends Migration {
             $table->foreign("branch_id")->references("id")->on("branches")->onDelete("cascade");
             $table->foreign("document_type_id")->references("id")->on("document_types")->onDelete("cascade");
         });
-
-        // ✅
         Schema::create("brands", function(Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger("company_id");
-            $table->string("internal_code");
-            $table->string("name");
+            $table->string("internal_code", 255);
+            $table->string("name", 255);
             $table->text("description")->nullable();
             $table->enum("status", ["active", "inactive"])->default("active");
 
@@ -163,20 +156,18 @@ return new class extends Migration {
 
             $table->foreign("company_id")->references("id")->on("companies")->onDelete("cascade");
         });
-
-        // ✅
         Schema::create("items", function(Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger("company_id");
             $table->unsignedBigInteger("brand_id")->nullable();
-            $table->string("internal_code");
+            $table->string("internal_code", 255);
             $table->string("barcode", 13)->nullable();
-            $table->string("name");
+            $table->string("name", 255);
             $table->text("description")->nullable();
-            $table->decimal("price", 10, 2);
+            $table->decimal("price", 16, 4);
             $table->boolean("price_includes_tax")->default(true);
-            $table->decimal("min_price", 10, 2)->nullable();
-            $table->decimal("max_price", 10, 2)->nullable();
+            $table->decimal("min_price", 16, 4)->nullable();
+            $table->decimal("max_price", 16, 4)->nullable();
             $table->unsignedBigInteger("currency_id");
             $table->enum("type", ["product", "service", "subscription"])->default("product");
             $table->enum("duration_type", ["hour", "day", "today", "month", "year"])->nullable();
@@ -194,13 +185,11 @@ return new class extends Migration {
             $table->foreign("brand_id")->references("id")->on("brands")->nullOnDelete();
             $table->foreign("currency_id")->references("id")->on("currencies")->onDelete("cascade");
         });
-
-        // ✅
         Schema::create("assets", function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger("company_id");
-            $table->string("internal_code");
-            $table->string("name");
+            $table->string("internal_code", 255);
+            $table->string("name", 255);
             $table->text("description")->nullable();
             $table->enum("management_type", ["unit", "stock"])->default("stock");
             $table->enum("status", ["active", "inactive"])->default("active");
@@ -212,13 +201,11 @@ return new class extends Migration {
 
             $table->foreign("company_id")->references("id")->on("companies")->onDelete("cascade");
         });
-
-        // ✅
         Schema::create("categories", function(Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger("company_id");
-            $table->string("internal_code");
-            $table->string("name");
+            $table->string("internal_code", 255);
+            $table->string("name", 255);
             $table->text("description")->nullable();
             $table->enum("status", ["active", "inactive"])->default("active");
 
@@ -229,8 +216,6 @@ return new class extends Migration {
 
             $table->foreign("company_id")->references("id")->on("companies")->onDelete("cascade");
         });
-
-        // ✅
         Schema::create("category_items", function(Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger("category_id");
@@ -245,16 +230,14 @@ return new class extends Migration {
             $table->foreign("category_id")->references("id")->on("categories")->onDelete("cascade");
             $table->foreign("item_id")->references("id")->on("items")->onDelete("cascade");
         });
-
-        // ✅
         Schema::create("customers", function(Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger("company_id");
             $table->unsignedBigInteger("identity_document_type_id");
-            $table->string("document_number");
-            $table->string("name");
-            $table->string("email")->nullable();
-            $table->string("phone_number")->nullable();
+            $table->string("document_number", 255);
+            $table->string("name", 255);
+            $table->string("email", 255)->nullable();
+            $table->string("phone_number", 255)->nullable();
             $table->enum("gender", ["male", "female", "other"])->nullable();
             $table->date("birthdate")->nullable();
             $table->enum("status", ["active", "inactive"])->default("active");
@@ -267,12 +250,10 @@ return new class extends Migration {
             $table->foreign("company_id")->references("id")->on("companies")->onDelete("cascade");
             $table->foreign("identity_document_type_id")->references("id")->on("identity_document_types")->onDelete("cascade");
         });
-
-        // ✅
         Schema::create("warehouses", function(Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger("branch_id");
-            $table->string("name");
+            $table->string("name", 255);
             $table->enum("status", ["active", "inactive"])->default("active");
 
             $table->timestamp("created_at")->useCurrent()->nullable();
@@ -282,14 +263,12 @@ return new class extends Migration {
 
             $table->foreign("branch_id")->references("id")->on("branches")->onDelete("cascade");
         });
-
-        // ✅
         Schema::create("cash_registers", function(Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger("company_id");
             $table->unsignedBigInteger("branch_id");
             $table->string("code", 30)->nullable();
-            $table->string("name");
+            $table->string("name", 255);
             $table->boolean("is_main")->default(false);
             $table->enum("status", ["active", "inactive"])->default("active");
 
@@ -311,10 +290,10 @@ return new class extends Migration {
             $table->unsignedBigInteger("closed_by")->nullable();
             $table->timestamp("opened_at")->useCurrent();
             $table->timestamp("closed_at")->nullable();
-            $table->decimal("opening_amount", 10, 2)->default(0);
-            $table->decimal("expected_amount", 10, 2)->default(0);
-            $table->decimal("counted_amount", 10, 2)->default(0);
-            $table->decimal("difference_amount", 10, 2)->default(0);
+            $table->decimal("opening_amount", 16, 4)->default(0);
+            $table->decimal("expected_amount", 16, 4)->default(0);
+            $table->decimal("counted_amount", 16, 4)->default(0);
+            $table->decimal("difference_amount", 16, 4)->default(0);
             $table->text("observation")->nullable();
             $table->enum("status", ["open", "closed", "canceled"])->default("open");
 
@@ -334,10 +313,10 @@ return new class extends Migration {
             $table->id();
             $table->unsignedBigInteger("cash_session_id");
             $table->unsignedBigInteger("payment_method_id")->nullable();
-            $table->string("payment_method_name");
-            $table->decimal("expected_amount", 10, 2)->default(0);
-            $table->decimal("counted_amount", 10, 2)->default(0);
-            $table->decimal("difference_amount", 10, 2)->default(0);
+            $table->string("payment_method_name", 255);
+            $table->decimal("expected_amount", 16, 4)->default(0);
+            $table->decimal("counted_amount", 16, 4)->default(0);
+            $table->decimal("difference_amount", 16, 4)->default(0);
             $table->text("note")->nullable();
             $table->enum("status", ["active", "canceled", "inactive"])->default("active");
 
@@ -360,7 +339,7 @@ return new class extends Migration {
             $table->enum("movement_type", ["opening", "sale", "purchase", "expense", "income", "withdrawal", "adjustment", "closing"])->default("sale");
             $table->string("origin_type", 60)->nullable();
             $table->unsignedBigInteger("origin_id")->nullable();
-            $table->decimal("amount", 10, 2)->default(0);
+            $table->decimal("amount", 16, 4)->default(0);
             $table->string("reference", 100)->nullable();
             $table->text("note")->nullable();
             $table->timestamp("occurred_at")->useCurrent();
@@ -377,18 +356,16 @@ return new class extends Migration {
             $table->foreign("payment_method_id")->references("id")->on("payment_methods")->nullOnDelete();
             $table->foreign("user_id")->references("id")->on("users")->onDelete("cascade");
 
-            $table->index(["company_id", "branch_id", "occurred_at"]);
-            $table->index(["origin_type", "origin_id"]);
         });
 
         Schema::create("warehouse_items", function(Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger("warehouse_id");
             $table->unsignedBigInteger("item_id");
-            $table->decimal("quantity", 12, 2)->default(0);
-            $table->decimal("minimum_stock", 12, 2)->default(0);
-            $table->decimal("average_cost", 14, 4)->default(0);
-            $table->decimal("inventory_value", 14, 2)->default(0);
+            $table->decimal("quantity", 16, 4)->default(0);
+            $table->decimal("minimum_stock", 16, 4)->default(0);
+            $table->decimal("average_cost", 16, 4)->default(0);
+            $table->decimal("inventory_value", 16, 4)->default(0);
             $table->enum("status", ["active", "inactive"])->default("active");
 
             $table->timestamp("created_at")->useCurrent()->nullable();
@@ -398,7 +375,7 @@ return new class extends Migration {
 
             $table->foreign("warehouse_id")->references("id")->on("warehouses")->onDelete("cascade");
             $table->foreign("item_id")->references("id")->on("items")->onDelete("cascade");
-            $table->unique(["warehouse_id", "item_id"]);
+            $table->unique(["company_id", "warehouse_id", "item_id"]);
         });
 
         // Historial inmutable de entradas, salidas y correcciones de inventario.
@@ -411,13 +388,13 @@ return new class extends Migration {
             $table->string("movement_type", 30);
             $table->string("origin_type", 50);
             $table->unsignedBigInteger("origin_id")->nullable();
-            $table->decimal("quantity_before", 12, 2);
-            $table->decimal("quantity_change", 12, 2);
-            $table->decimal("quantity_after", 12, 2);
-            $table->decimal("unit_cost", 14, 4)->default(0);
-            $table->decimal("value_before", 14, 2)->default(0);
-            $table->decimal("value_change", 14, 2)->default(0);
-            $table->decimal("value_after", 14, 2)->default(0);
+            $table->decimal("quantity_before", 16, 4);
+            $table->decimal("quantity_change", 16, 4);
+            $table->decimal("quantity_after", 16, 4);
+            $table->decimal("unit_cost", 16, 4)->default(0);
+            $table->decimal("value_before", 16, 4)->default(0);
+            $table->decimal("value_change", 16, 4)->default(0);
+            $table->decimal("value_after", 16, 4)->default(0);
             $table->string("reason", 255);
             $table->json("metadata")->nullable();
             $table->timestamp("created_at")->useCurrent();
@@ -427,17 +404,14 @@ return new class extends Migration {
             $table->foreign("item_id")->references("id")->on("items")->onDelete("cascade");
             $table->foreign("user_id")->references("id")->on("users")->nullOnDelete();
 
-            $table->index(["company_id", "created_at"]);
-            $table->index(["warehouse_id", "item_id", "created_at"]);
-            $table->index(["origin_type", "origin_id"]);
         });
 
         Schema::create("recipe_dishes", function(Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger("company_id");
             $table->unsignedBigInteger("item_id");
-            $table->decimal("yield_quantity", 12, 2)->default(1);
-            $table->decimal("waste_percentage", 7, 4)->default(0);
+            $table->decimal("yield_quantity", 16, 4)->default(1);
+            $table->decimal("waste_percentage", 16, 4)->default(0);
             $table->text("preparation_notes")->nullable();
             $table->enum("status", ["active", "inactive"])->default("active");
 
@@ -454,8 +428,8 @@ return new class extends Migration {
             $table->id();
             $table->unsignedBigInteger("recipe_dish_id");
             $table->unsignedBigInteger("item_id");
-            $table->decimal("quantity", 12, 4);
-            $table->decimal("waste_percentage", 7, 4)->default(0);
+            $table->decimal("quantity", 16, 4);
+            $table->decimal("waste_percentage", 16, 4)->default(0);
             $table->string("note", 255)->nullable();
             $table->enum("status", ["active", "inactive"])->default("active");
 
@@ -473,9 +447,9 @@ return new class extends Migration {
             $table->unsignedBigInteger("company_id");
             $table->unsignedBigInteger("currency_id");
             $table->unsignedBigInteger("item_id")->nullable();
-            $table->string("name");
+            $table->string("name", 255);
             $table->text("description")->nullable();
-            $table->decimal("price", 10, 2)->default(0);
+            $table->decimal("price", 16, 4)->default(0);
             $table->unsignedInteger("max_quantity")->nullable();
             $table->enum("status", ["active", "inactive"])->default("active");
 
@@ -511,8 +485,8 @@ return new class extends Migration {
             $table->id();
             $table->unsignedBigInteger("recipe_topping_id");
             $table->unsignedBigInteger("item_id");
-            $table->decimal("quantity", 12, 4);
-            $table->decimal("waste_percentage", 7, 4)->default(0);
+            $table->decimal("quantity", 16, 4);
+            $table->decimal("waste_percentage", 16, 4)->default(0);
             $table->string("note", 255)->nullable();
             $table->enum("status", ["active", "inactive"])->default("active");
 
@@ -528,7 +502,7 @@ return new class extends Migration {
         Schema::create("recipe_dish_options", function(Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger("recipe_dish_id");
-            $table->string("name");
+            $table->string("name", 255);
             $table->text("description")->nullable();
             $table->unsignedInteger("max_portions")->nullable();
             $table->enum("status", ["active", "inactive"])->default("active");
@@ -545,8 +519,8 @@ return new class extends Migration {
             $table->id();
             $table->unsignedBigInteger("recipe_dish_option_id");
             $table->unsignedBigInteger("item_id");
-            $table->decimal("quantity", 12, 4);
-            $table->decimal("waste_percentage", 7, 4)->default(0);
+            $table->decimal("quantity", 16, 4);
+            $table->decimal("waste_percentage", 16, 4)->default(0);
             $table->string("note", 255)->nullable();
             $table->enum("status", ["active", "inactive"])->default("active");
 
@@ -567,9 +541,9 @@ return new class extends Migration {
             $table->unsignedBigInteger("warehouse_id");
             $table->unsignedBigInteger("item_id");
             $table->unsignedBigInteger("inventory_movement_id")->nullable();
-            $table->decimal("system_quantity", 12, 2)->default(0);
-            $table->decimal("counted_quantity", 12, 2)->default(0);
-            $table->decimal("difference_quantity", 12, 2)->default(0);
+            $table->decimal("system_quantity", 16, 4)->default(0);
+            $table->decimal("counted_quantity", 16, 4)->default(0);
+            $table->decimal("difference_quantity", 16, 4)->default(0);
             $table->text("observation")->nullable();
             $table->enum("status", ["pending", "adjusted", "ignored", "canceled"])->default("pending");
 
@@ -585,15 +559,13 @@ return new class extends Migration {
             $table->foreign("item_id")->references("id")->on("items")->onDelete("cascade");
             $table->foreign("inventory_movement_id")->references("id")->on("inventory_movements")->nullOnDelete();
         });
-
-        // ✅
         Schema::create("branch_assets", function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger("branch_id");
             $table->unsignedBigInteger("asset_id");
             $table->unsignedBigInteger("currency_id");
-            $table->decimal("quantity", 10, 2)->nullable()->default(0);
-            $table->decimal("acquisition_value", 10, 2)->nullable()->default(0);
+            $table->decimal("quantity", 16, 4)->nullable()->default(0);
+            $table->decimal("acquisition_value", 16, 4)->nullable()->default(0);
             $table->date("acquisition_date")->nullable();
             $table->text("note")->nullable();
             $table->enum("status", ["active", "maintenance", "retired"])->default("active");
@@ -606,18 +578,16 @@ return new class extends Migration {
             $table->foreign("branch_id")->references("id")->on("branches")->onDelete("cascade");
             $table->foreign("asset_id")->references("id")->on("assets")->onDelete("cascade");
             $table->foreign("currency_id")->references("id")->on("currencies")->onDelete("cascade");
-            $table->unique(["branch_id", "asset_id"]);
+            $table->unique(["company_id", "branch_id", "asset_id"]);
         });
-
-        // ✅
         Schema::create("asset_assignments", function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger("user_id");
             $table->unsignedBigInteger("branch_id");
             $table->unsignedBigInteger("asset_id");
             $table->unsignedBigInteger("currency_id");
-            $table->decimal("quantity", 10, 2)->nullable()->default(0);
-            $table->decimal("acquisition_value", 10, 2)->nullable()->default(0);
+            $table->decimal("quantity", 16, 4)->nullable()->default(0);
+            $table->decimal("acquisition_value", 16, 4)->nullable()->default(0);
             $table->date("acquisition_date")->nullable();
             $table->text("note")->nullable();
             $table->enum("status", ["active", "maintenance", "retired"])->default("active");
@@ -632,8 +602,6 @@ return new class extends Migration {
             $table->foreign("asset_id")->references("id")->on("assets")->onDelete("cascade");
             $table->foreign("currency_id")->references("id")->on("currencies")->onDelete("cascade");
         });
-
-        // ✅
         Schema::create("asset_assignment_logs", function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger("action_by");
@@ -641,7 +609,7 @@ return new class extends Migration {
             $table->unsignedBigInteger("branch_id");
             $table->unsignedBigInteger("asset_id");
             $table->enum("action_type", ["assigned", "transferred", "returned", "retired"]);
-            $table->decimal("quantity", 10, 2);
+            $table->decimal("quantity", 16, 4);
             $table->text("note")->nullable();
             $table->timestamp("action_at")->useCurrent();
 
@@ -655,131 +623,7 @@ return new class extends Migration {
             $table->foreign("branch_id")->references("id")->on("branches")->onDelete("cascade");
             $table->foreign("asset_id")->references("id")->on("assets")->onDelete("cascade");
         });
-
-        // Inserts
-        DB::table("company_settings")->insert([
-            ["company_id" => 1, "group" => "internal_code_prefixes", "key" => "product", "value" => "PRO", "description" => "Prefijo usado para generar códigos internos de productos. Si el valor queda vacío, el código se guarda sin prefijo.", "value_type" => "string"],
-            ["company_id" => 1, "group" => "internal_code_prefixes", "key" => "service", "value" => "SER", "description" => "Prefijo usado para generar códigos internos de servicios. Si el valor queda vacío, el código se guarda sin prefijo.", "value_type" => "string"],
-            ["company_id" => 1, "group" => "internal_code_prefixes", "key" => "subscription", "value" => "MEM", "description" => "Prefijo usado para generar códigos internos de membresías. Si el valor queda vacío, el código se guarda sin prefijo.", "value_type" => "string"],
-            ["company_id" => 1, "group" => "internal_code_prefixes", "key" => "brand", "value" => "MAR", "description" => "Prefijo usado para generar códigos internos de marcas. Si el valor queda vacío, el código se guarda sin prefijo.", "value_type" => "string"],
-            ["company_id" => 1, "group" => "internal_code_prefixes", "key" => "category", "value" => "CAT", "description" => "Prefijo usado para generar códigos internos de categorías. Si el valor queda vacío, el código se guarda sin prefijo.", "value_type" => "string"],
-            ["company_id" => 1, "group" => "internal_code_prefixes", "key" => "branch", "value" => "SUC", "description" => "Prefijo usado para generar códigos internos de sucursales. Si el valor queda vacío, el código se guarda sin prefijo.", "value_type" => "string"],
-            ["company_id" => 1, "group" => "internal_code_prefixes", "key" => "asset", "value" => "ACT", "description" => "Prefijo usado para generar códigos internos de activos. Si el valor queda vacío, el código se guarda sin prefijo.", "value_type" => "string"],
-            ["company_id" => 1, "group" => "internal_code_prefixes", "key" => "recipe", "value" => "REC", "description" => "Prefijo sugerido para identificar recetas, platillos y configuraciones operativas de cocina. Si el valor queda vacío, el código se guarda sin prefijo.", "value_type" => "string"],
-            [
-                "company_id" => 1,
-                "group" => "inventory",
-                "key" => "allow_negative_stock_on_sale",
-                "value" => "false",
-                "description" => "Define si una venta normal o una venta POS/caja puede dejar productos con stock negativo. Por defecto es false: si la salida supera el stock disponible, la venta se bloquea antes de confirmar.",
-                "value_type" => "boolean"
-            ],
-            [
-                "company_id" => 1,
-                "group" => "inventory",
-                "key" => "restore_stock_on_sale_cancellation",
-                "value" => "false",
-                "description" => "Define si al anular una venta se devuelven automáticamente los productos al almacén original. Por defecto es false: la anulación no repone stock y la devolución física debe registrarse desde Inventario si corresponde.",
-                "value_type" => "boolean"
-            ],
-            [
-                "company_id" => 1,
-                "group" => "inventory",
-                "key" => "valuation_method",
-                "value" => "weighted_average",
-                "description" => "Método usado para valorizar inventario y kardex. El valor inicial weighted_average calcula costo promedio ponderado sobre entradas y saldos.",
-                "value_type" => "string"
-            ]
-        ]);
-
-        DB::table("taxes")->insert([
-            [
-                "company_id" => 1,
-                "code" => "SALE-IGV",
-                "name" => "IGV",
-                "description" => "Impuesto General a las Ventas del Peru aplicado a ventas. Si el item incluye IGV, se calcula como tributo contenido; si no lo incluye, se suma al total.",
-                "rate" => 18,
-                "calculation_type" => "percentage",
-                "operation_type" => "addition",
-                "scope" => "sale",
-                "is_required" => true,
-                "is_default" => true
-            ],
-            [
-                "company_id" => 1,
-                "code" => "SALE-ICBP",
-                "name" => "ICBP",
-                "description" => "Impuesto al Consumo de Bolsas Plasticas aplicado a ventas cuando corresponde. Es opcional porque no todas las ventas incluyen bolsa gravada.",
-                "rate" => 0.5,
-                "calculation_type" => "fixed",
-                "operation_type" => "addition",
-                "scope" => "sale",
-                "is_required" => false,
-                "is_default" => false
-            ],
-            [
-                "company_id" => 1,
-                "code" => "PURCHASE-IGV",
-                "name" => "IGV",
-                "description" => "Impuesto General a las Ventas del Peru aplicado a compras. Se calcula sobre la base de compra registrada.",
-                "rate" => 18,
-                "calculation_type" => "percentage",
-                "operation_type" => "addition",
-                "scope" => "purchase",
-                "is_required" => true,
-                "is_default" => true
-            ],
-            [
-                "company_id" => 1,
-                "code" => "PURCHASE-ICBP",
-                "name" => "ICBP",
-                "description" => "Impuesto al Consumo de Bolsas Plasticas aplicado a compras cuando corresponde. Es opcional porque no todas las compras incluyen bolsa gravada.",
-                "rate" => 0.5,
-                "calculation_type" => "fixed",
-                "operation_type" => "addition",
-                "scope" => "purchase",
-                "is_required" => false,
-                "is_default" => false
-            ]
-        ]);
-
-        DB::table("payment_methods")->insert([
-            ["company_id" => 1, "code" => "CASH", "name" => "Efectivo", "scope" => "both", "requires_reference" => false, "is_default" => true],
-            ["company_id" => 1, "code" => "CARD", "name" => "Tarjeta", "scope" => "sale", "requires_reference" => true, "is_default" => false],
-            ["company_id" => 1, "code" => "TRANSFER", "name" => "Transferencia", "scope" => "both", "requires_reference" => true, "is_default" => false],
-            ["company_id" => 1, "code" => "DIGITAL_WALLET", "name" => "Billetera digital", "scope" => "both", "requires_reference" => true, "is_default" => false],
-            ["company_id" => 1, "code" => "YAPE", "name" => "Yape", "scope" => "both", "requires_reference" => true, "is_default" => false],
-            ["company_id" => 1, "code" => "PLIN", "name" => "Plin", "scope" => "both", "requires_reference" => true, "is_default" => false]
-        ]);
-
-        DB::table("company_socials_media")->insert([
-            ["company_id" => 1, "type" => "facebook", "link" => "https://www.facebook.com/GianfrancoMC"],
-            ["company_id" => 1, "type" => "instagram", "link" => "https://www.instagram.com/gianfrancomc"],
-            ["company_id" => 1, "type" => "whatsapp", "link" => "https://wa.me/987057624"]
-        ]);
-
-        DB::table("branches")->insert([
-            ["id" => 1, "internal_code" => "SUC-" . Utilities::generateCode(5), "company_id" => 1, "name" => "Sede Principal"]
-        ]);
-
-        DB::table("series")->insert([
-            ["branch_id" => 1, "document_type_id" => 1, "code" => "BV", "number" => 1, "init" => 1],
-            ["branch_id" => 1, "document_type_id" => 2, "code" => "FA", "number" => 1, "init" => 1]
-        ]);
-
-        DB::table("customers")->insert([
-            ["company_id" => 1, "identity_document_type_id" => 1, "document_number" => "999999999", "name" => "Cliente varios", "phone_number" => ""],
-            ["company_id" => 1, "identity_document_type_id" => 2, "document_number" => "71883137", "name" => "Gianfranco Mejia Carhuajulca", "phone_number" => "51987057624"],
-            ["company_id" => 1, "identity_document_type_id" => 2, "document_number" => "71883136", "name" => "Andy Paolo Mejia Carhuajulca", "phone_number" => "51987634253"]
-        ]);
-
-        DB::table("warehouses")->insert([
-            ["branch_id" => 1, "name" => "Almacén - Sede principal"]
-        ]);
-
-        DB::table("cash_registers")->insert([
-            ["company_id" => 1, "branch_id" => 1, "code" => "CAJ-" . Utilities::generateCode(5), "name" => "Caja principal", "is_main" => true]
-        ]);
+        // Initial data lives in 2024_12_31_235959_insert_initial_system_data.php.
 
     }
 
