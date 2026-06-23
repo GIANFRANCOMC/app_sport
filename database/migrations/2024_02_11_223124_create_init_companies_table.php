@@ -290,6 +290,7 @@ return new class extends Migration {
             $table->unsignedBigInteger("branch_id");
             $table->string("code", 30)->nullable();
             $table->string("name");
+            $table->boolean("is_main")->default(false);
             $table->enum("status", ["active", "inactive"])->default("active");
 
             $table->timestamp("created_at")->useCurrent()->nullable();
@@ -431,6 +432,160 @@ return new class extends Migration {
             $table->index(["origin_type", "origin_id"]);
         });
 
+        Schema::create("recipe_dishes", function(Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger("company_id");
+            $table->unsignedBigInteger("item_id");
+            $table->decimal("yield_quantity", 12, 2)->default(1);
+            $table->decimal("waste_percentage", 7, 4)->default(0);
+            $table->text("preparation_notes")->nullable();
+            $table->enum("status", ["active", "inactive"])->default("active");
+
+            $table->timestamp("created_at")->useCurrent()->nullable();
+            $table->integer("created_by")->nullable();
+            $table->timestamp("updated_at")->nullable();
+            $table->integer("updated_by")->nullable();
+
+            $table->foreign("company_id")->references("id")->on("companies")->onDelete("cascade");
+            $table->foreign("item_id")->references("id")->on("items")->onDelete("cascade");
+        });
+
+        Schema::create("recipe_dish_components", function(Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger("recipe_dish_id");
+            $table->unsignedBigInteger("item_id");
+            $table->decimal("quantity", 12, 4);
+            $table->decimal("waste_percentage", 7, 4)->default(0);
+            $table->string("note", 255)->nullable();
+            $table->enum("status", ["active", "inactive"])->default("active");
+
+            $table->timestamp("created_at")->useCurrent()->nullable();
+            $table->integer("created_by")->nullable();
+            $table->timestamp("updated_at")->nullable();
+            $table->integer("updated_by")->nullable();
+
+            $table->foreign("recipe_dish_id")->references("id")->on("recipe_dishes")->onDelete("cascade");
+            $table->foreign("item_id")->references("id")->on("items")->onDelete("cascade");
+        });
+
+        Schema::create("recipe_toppings", function(Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger("company_id");
+            $table->unsignedBigInteger("currency_id");
+            $table->unsignedBigInteger("item_id")->nullable();
+            $table->string("name");
+            $table->text("description")->nullable();
+            $table->decimal("price", 10, 2)->default(0);
+            $table->unsignedInteger("max_quantity")->nullable();
+            $table->enum("status", ["active", "inactive"])->default("active");
+
+            $table->timestamp("created_at")->useCurrent()->nullable();
+            $table->integer("created_by")->nullable();
+            $table->timestamp("updated_at")->nullable();
+            $table->integer("updated_by")->nullable();
+
+            $table->foreign("company_id")->references("id")->on("companies")->onDelete("cascade");
+            $table->foreign("currency_id")->references("id")->on("currencies")->onDelete("cascade");
+            $table->foreign("item_id")->references("id")->on("items")->nullOnDelete();
+        });
+
+        Schema::create("recipe_dish_toppings", function(Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger("recipe_dish_id");
+            $table->unsignedBigInteger("recipe_topping_id");
+            $table->boolean("is_default")->default(false);
+            $table->unsignedInteger("min_quantity")->default(0);
+            $table->unsignedInteger("max_quantity")->nullable();
+            $table->enum("status", ["active", "inactive"])->default("active");
+
+            $table->timestamp("created_at")->useCurrent()->nullable();
+            $table->integer("created_by")->nullable();
+            $table->timestamp("updated_at")->nullable();
+            $table->integer("updated_by")->nullable();
+
+            $table->foreign("recipe_dish_id")->references("id")->on("recipe_dishes")->onDelete("cascade");
+            $table->foreign("recipe_topping_id")->references("id")->on("recipe_toppings")->onDelete("cascade");
+        });
+
+        Schema::create("recipe_topping_components", function(Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger("recipe_topping_id");
+            $table->unsignedBigInteger("item_id");
+            $table->decimal("quantity", 12, 4);
+            $table->decimal("waste_percentage", 7, 4)->default(0);
+            $table->string("note", 255)->nullable();
+            $table->enum("status", ["active", "inactive"])->default("active");
+
+            $table->timestamp("created_at")->useCurrent()->nullable();
+            $table->integer("created_by")->nullable();
+            $table->timestamp("updated_at")->nullable();
+            $table->integer("updated_by")->nullable();
+
+            $table->foreign("recipe_topping_id")->references("id")->on("recipe_toppings")->onDelete("cascade");
+            $table->foreign("item_id")->references("id")->on("items")->onDelete("cascade");
+        });
+
+        Schema::create("recipe_dish_options", function(Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger("recipe_dish_id");
+            $table->string("name");
+            $table->text("description")->nullable();
+            $table->unsignedInteger("max_portions")->nullable();
+            $table->enum("status", ["active", "inactive"])->default("active");
+
+            $table->timestamp("created_at")->useCurrent()->nullable();
+            $table->integer("created_by")->nullable();
+            $table->timestamp("updated_at")->nullable();
+            $table->integer("updated_by")->nullable();
+
+            $table->foreign("recipe_dish_id")->references("id")->on("recipe_dishes")->onDelete("cascade");
+        });
+
+        Schema::create("recipe_dish_option_components", function(Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger("recipe_dish_option_id");
+            $table->unsignedBigInteger("item_id");
+            $table->decimal("quantity", 12, 4);
+            $table->decimal("waste_percentage", 7, 4)->default(0);
+            $table->string("note", 255)->nullable();
+            $table->enum("status", ["active", "inactive"])->default("active");
+
+            $table->timestamp("created_at")->useCurrent()->nullable();
+            $table->integer("created_by")->nullable();
+            $table->timestamp("updated_at")->nullable();
+            $table->integer("updated_by")->nullable();
+
+            $table->foreign("recipe_dish_option_id")->references("id")->on("recipe_dish_options")->onDelete("cascade");
+            $table->foreign("item_id")->references("id")->on("items")->onDelete("cascade");
+        });
+
+        Schema::create("cash_session_inventory_counts", function(Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger("company_id");
+            $table->unsignedBigInteger("branch_id");
+            $table->unsignedBigInteger("cash_session_id");
+            $table->unsignedBigInteger("warehouse_id");
+            $table->unsignedBigInteger("item_id");
+            $table->unsignedBigInteger("inventory_movement_id")->nullable();
+            $table->decimal("system_quantity", 12, 2)->default(0);
+            $table->decimal("counted_quantity", 12, 2)->default(0);
+            $table->decimal("difference_quantity", 12, 2)->default(0);
+            $table->text("observation")->nullable();
+            $table->enum("status", ["pending", "adjusted", "ignored", "canceled"])->default("pending");
+
+            $table->timestamp("created_at")->useCurrent()->nullable();
+            $table->integer("created_by")->nullable();
+            $table->timestamp("updated_at")->nullable();
+            $table->integer("updated_by")->nullable();
+
+            $table->foreign("company_id")->references("id")->on("companies")->onDelete("cascade");
+            $table->foreign("branch_id")->references("id")->on("branches")->onDelete("cascade");
+            $table->foreign("cash_session_id")->references("id")->on("cash_sessions")->onDelete("cascade");
+            $table->foreign("warehouse_id")->references("id")->on("warehouses")->onDelete("cascade");
+            $table->foreign("item_id")->references("id")->on("items")->onDelete("cascade");
+            $table->foreign("inventory_movement_id")->references("id")->on("inventory_movements")->nullOnDelete();
+        });
+
         // ✅
         Schema::create("branch_assets", function (Blueprint $table) {
             $table->id();
@@ -510,6 +665,7 @@ return new class extends Migration {
             ["company_id" => 1, "group" => "internal_code_prefixes", "key" => "category", "value" => "CAT", "description" => "Prefijo usado para generar códigos internos de categorías. Si el valor queda vacío, el código se guarda sin prefijo.", "value_type" => "string"],
             ["company_id" => 1, "group" => "internal_code_prefixes", "key" => "branch", "value" => "SUC", "description" => "Prefijo usado para generar códigos internos de sucursales. Si el valor queda vacío, el código se guarda sin prefijo.", "value_type" => "string"],
             ["company_id" => 1, "group" => "internal_code_prefixes", "key" => "asset", "value" => "ACT", "description" => "Prefijo usado para generar códigos internos de activos. Si el valor queda vacío, el código se guarda sin prefijo.", "value_type" => "string"],
+            ["company_id" => 1, "group" => "internal_code_prefixes", "key" => "recipe", "value" => "REC", "description" => "Prefijo sugerido para identificar recetas, platillos y configuraciones operativas de cocina. Si el valor queda vacío, el código se guarda sin prefijo.", "value_type" => "string"],
             [
                 "company_id" => 1,
                 "group" => "inventory",
@@ -622,7 +778,7 @@ return new class extends Migration {
         ]);
 
         DB::table("cash_registers")->insert([
-            ["company_id" => 1, "branch_id" => 1, "code" => "CAJ-" . Utilities::generateCode(5), "name" => "Caja principal"]
+            ["company_id" => 1, "branch_id" => 1, "code" => "CAJ-" . Utilities::generateCode(5), "name" => "Caja principal", "is_main" => true]
         ]);
 
     }
@@ -635,6 +791,14 @@ return new class extends Migration {
         Schema::dropIfExists("asset_assignment_logs");
         Schema::dropIfExists("asset_assignments");
         Schema::dropIfExists("branch_assets");
+        Schema::dropIfExists("cash_session_inventory_counts");
+        Schema::dropIfExists("recipe_dish_option_components");
+        Schema::dropIfExists("recipe_dish_options");
+        Schema::dropIfExists("recipe_topping_components");
+        Schema::dropIfExists("recipe_dish_toppings");
+        Schema::dropIfExists("recipe_toppings");
+        Schema::dropIfExists("recipe_dish_components");
+        Schema::dropIfExists("recipe_dishes");
         Schema::dropIfExists("inventory_movements");
         Schema::dropIfExists("warehouse_items");
         Schema::dropIfExists("cash_movements");

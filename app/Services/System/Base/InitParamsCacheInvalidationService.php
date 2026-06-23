@@ -11,6 +11,7 @@ use App\Services\System\Assets\Assets\{AssetConfigService};
 use App\Services\System\Catalogs\Categories\{CategoryConfigService};
 use App\Services\System\Catalogs\Brands\{BrandConfigService};
 use App\Services\System\Catalogs\Products\{ProductConfigService};
+use App\Services\System\Catalogs\Recipes\{RecipeConfigService};
 use App\Services\System\Catalogs\Services\{ServiceConfigService};
 use App\Services\System\Catalogs\Subscriptions\{SubscriptionConfigService};
 use App\Services\System\Customers\Customers\{CustomerConfigService};
@@ -62,6 +63,7 @@ final class InitParamsCacheInvalidationService {
         ],
         self::ITEMS => [
             ProductConfigService::class,
+            RecipeConfigService::class,
             ServiceConfigService::class,
             SubscriptionConfigService::class,
             SaleConfigService::class,

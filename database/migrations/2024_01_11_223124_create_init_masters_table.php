@@ -303,6 +303,7 @@ return new class extends Migration {
             ["id" => 52, "section_id" => 5, "slug" => "sc_items-subscriptions", "name" => "items-subscriptions", "description" => "Define planes de membresía, duración y precio de venta.", "order" => 3, "dom_id" => "menu-items-subscriptions", "dom_label" => "Membresías", "dom_route" => "subscriptions.index"],
             ["id" => 53, "section_id" => 5, "slug" => "sc_items-categories", "name" => "items-categories", "description" => "Organiza productos y servicios mediante categorías.", "order" => 4, "dom_id" => "menu-items-categories", "dom_label" => "Categorías", "dom_route" => "categories.index"],
             ["id" => 55, "section_id" => 5, "slug" => "sc_items-brands", "name" => "items-brands", "description" => "Administra las marcas utilizadas para identificar y agrupar productos.", "order" => 5, "dom_id" => "menu-items-brands", "dom_label" => "Marcas", "dom_route" => "brands.index"],
+            ["id" => 59, "section_id" => 5, "slug" => "sc_items-recipes", "name" => "items-recipes", "description" => "Configura recetas, platillos, toppings, sabores e insumos para negocios de comida.", "order" => 6, "dom_id" => "menu-items-recipes", "dom_label" => "Recetas y platillos", "dom_route" => "recipes.index"],
             // Inventory
             ["id" => 54, "section_id" => 11, "slug" => "sc_inventory-stock", "name" => "inventory-stock", "description" => "Consulta existencias actuales, mínimos y alertas por almacén.", "order" => 1, "dom_id" => "menu-inventory-stock", "dom_label" => "Control de stock", "dom_route" => "stocks_management.stock.index"],
             ["id" => 56, "section_id" => 11, "slug" => "sc_inventory-kardex", "name" => "inventory-kardex", "description" => "Consulta la trazabilidad de entradas, salidas, correcciones y saldos resultantes.", "order" => 2, "dom_id" => "menu-inventory-kardex", "dom_label" => "Kardex", "dom_route" => "stocks_management.kardex.index"],
@@ -349,6 +350,7 @@ return new class extends Migration {
             ["company_id" => 1, "sub_section_id" => 52],
             ["company_id" => 1, "sub_section_id" => 53],
             ["company_id" => 1, "sub_section_id" => 55],
+            ["company_id" => 1, "sub_section_id" => 59],
             ["company_id" => 1, "sub_section_id" => 54],
             ["company_id" => 1, "sub_section_id" => 56],
             ["company_id" => 1, "sub_section_id" => 57],
@@ -374,7 +376,7 @@ return new class extends Migration {
         DB::table("companies_sub_sections")->where("company_id", 1)->whereIn("sub_section_id", [30, 31])->update(["section_order" => 4]);
         DB::table("companies_sub_sections")->where("company_id", 1)->whereIn("sub_section_id", [90, 91])->update(["section_order" => 5]);
         DB::table("companies_sub_sections")->where("company_id", 1)->whereIn("sub_section_id", [40, 41, 42, 43, 44, 45])->update(["section_order" => 6]);
-        DB::table("companies_sub_sections")->where("company_id", 1)->whereIn("sub_section_id", [50, 51, 52, 53, 55])->update(["section_order" => 7]);
+        DB::table("companies_sub_sections")->where("company_id", 1)->whereIn("sub_section_id", [50, 51, 52, 53, 55, 59])->update(["section_order" => 7]);
         DB::table("companies_sub_sections")->where("company_id", 1)->whereIn("sub_section_id", [54, 56, 57, 58])->update(["section_order" => 8]);
         DB::table("companies_sub_sections")->where("company_id", 1)->whereIn("sub_section_id", [60, 61, 62, 63])->update(["section_order" => 9]);
         DB::table("companies_sub_sections")->where("company_id", 1)->whereIn("sub_section_id", [70, 71, 72])->update(["section_order" => 10]);
@@ -403,6 +405,7 @@ return new class extends Migration {
             52 => 3,
             53 => 4,
             55 => 5,
+            59 => 6,
             54 => 1,
             56 => 2,
             57 => 3,
@@ -442,6 +445,7 @@ return new class extends Migration {
             ["role_id" => 2, "sub_section_id" => 52],
             ["role_id" => 2, "sub_section_id" => 53],
             ["role_id" => 2, "sub_section_id" => 55],
+            ["role_id" => 2, "sub_section_id" => 59],
             ["role_id" => 2, "sub_section_id" => 54],
             ["role_id" => 2, "sub_section_id" => 56],
             ["role_id" => 2, "sub_section_id" => 57],

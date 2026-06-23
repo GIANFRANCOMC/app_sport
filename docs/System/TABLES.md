@@ -32,7 +32,7 @@ Empresa o tenant funcional. Campos: `slug`, `internal_code`, documento, razon so
 
 Configuración extensible por empresa. Cada registro usa `company_id`, `group`, `key`, `value`, `description`, `value_type` y `status`. `description` explica el efecto operativo de la clave para que futuras interfaces administrativas puedan mostrar ayuda contextual. `value` puede ser nulo y `value_type` permite interpretarlo como `string`, `boolean`, `integer`, `decimal` o `json`.
 
-El grupo `internal_code_prefixes` contiene las claves `product`, `service`, `subscription`, `brand`, `category`, `branch` y `asset`. Sus valores iniciales son `PRO`, `SER`, `MEM`, `MAR`, `CAT`, `SUC` y `ACT`. Un valor nulo o vacío desactiva el prefijo.
+El grupo `internal_code_prefixes` contiene las claves `product`, `service`, `subscription`, `brand`, `category`, `branch`, `asset` y `recipe`. Sus valores iniciales son `PRO`, `SER`, `MEM`, `MAR`, `CAT`, `SUC`, `ACT` y `REC`. Un valor nulo o vacío desactiva el prefijo.
 
 El grupo `inventory` contiene `allow_negative_stock_on_sale`, booleano con valor predeterminado `false`. Cuando está desactivado, crear una venta normal o POS/caja se bloquea si la salida supera el stock disponible del almacén seleccionado. Cuando está activo, la venta puede dejar saldo negativo.
 
@@ -155,6 +155,30 @@ Relaciones: une `categories` con `items`.
 
 Restricción: la combinación `category_id + item_id` es única.
 
+### recipe_dishes
+
+Cabecera de receta o platillo. Campos: `company_id`, `item_id`, `yield_quantity`, `waste_percentage`, `preparation_notes`, `status` y auditoria.
+
+Relaciones: pertenece a `companies` y a `items`. Tiene insumos base, toppings y sabores. El `item_id` sigue representando el producto/servicio vendible; la receta es la capa operativa.
+
+### recipe_dish_components
+
+Insumos base consumidos por una receta. Campos: `recipe_dish_id`, `item_id`, `quantity`, `waste_percentage`, `note`, `status` y auditoria.
+
+Relaciones: pertenece a `recipe_dishes` y usa `items` como insumo.
+
+### recipe_toppings / recipe_dish_toppings / recipe_topping_components
+
+`recipe_toppings` define extras o toppings con precio, moneda y estado. `recipe_dish_toppings` los habilita por platillo y define cantidades minimas/maximas. `recipe_topping_components` registra insumos propios del extra.
+
+Relaciones: permiten que un adicional vendido tenga costo comercial y consumo operativo propio.
+
+### recipe_dish_options / recipe_dish_option_components
+
+Opciones o sabores de un platillo. Sirven para casos como pizzas de varios sabores, donde el producto base existe pero cada sabor consume insumos adicionales.
+
+Relaciones: cada opcion pertenece a `recipe_dishes` y cada componente usa `items`.
+
 ## Clientes, membresias y asistencias
 
 ### customers
@@ -182,6 +206,20 @@ Emails relacionados a membresias. Campos: `to`, `subject`, `body`, `extras_json`
 Relaciones: puede referenciar modelos mediante `model_id`/`model_type`.
 
 ## Finanzas
+
+### cash_registers
+
+Cajas configuradas por sucursal. Campos principales: `company_id`, `branch_id`, `code`, `name`, `is_main`, `status` y auditoria.
+
+`is_main` identifica la caja principal de la sucursal. Una caja principal no debe cerrarse mientras existan cajas secundarias abiertas en la misma sucursal, porque su cierre representa el cuadre general de la operación.
+
+Al registrar una caja marcada como principal, las demás cajas de la misma sucursal quedan como secundarias para mantener una única caja principal operativa.
+
+### cash_session_inventory_counts
+
+Conteo fisico de inventario asociado al cierre de caja principal. Campos: `company_id`, `branch_id`, `cash_session_id`, `warehouse_id`, `item_id`, `inventory_movement_id`, `system_quantity`, `counted_quantity`, `difference_quantity`, `observation`, `status` y auditoria.
+
+Uso: cuando la cantidad real difiere del saldo del sistema, debe crearse un movimiento de inventario con origen `physical_count` y vincularlo en `inventory_movement_id`. Esto mantiene trazabilidad de mermas, diferencias de cocina y ajustes de cierre.
 
 ### taxes
 

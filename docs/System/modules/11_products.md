@@ -90,6 +90,12 @@ El mínimo se guarda por almacén y no de forma general. Una sucursal puede tene
 
 Existe una restricción única para `warehouse_id + item_id`, evitando duplicar el inventario de un producto dentro del mismo almacén.
 
+## Relación con recetas y platillos
+
+El módulo `recipes.index` usa `items` como base comercial vendible. Esto evita duplicar productos o crear un tipo nuevo de item antes de ajustar ventas, POS, compras y reportes.
+
+Cuando un producto representa un platillo, la fórmula operativa vive en `recipe_dishes` y sus tablas hijas. Productos sigue administrando precio, marca, categorías, código de barras, publicación y stock inicial; Recetas y platillos administra insumos, toppings, extras, sabores, merma y rendimiento.
+
 ## Flujo de creación
 
 1. Vue carga categorías, monedas, estados y todos los almacenes activos de la empresa.

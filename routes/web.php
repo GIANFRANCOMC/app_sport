@@ -47,6 +47,7 @@ Route::middleware(["web"])
             Route::prefix('/brands')->group($systemRoute.'/Catalogs/Brand.php');
             Route::prefix('/categories')->group($systemRoute.'/Catalogs/Category.php');
             Route::prefix('/products')->group($systemRoute.'/Catalogs/Product.php');
+            Route::prefix('/recipes')->group($systemRoute.'/Catalogs/Recipe.php');
             Route::prefix('/services')->group($systemRoute.'/Catalogs/Service.php');
             Route::prefix('/subscriptions')->group($systemRoute.'/Catalogs/Subscription.php');
 

@@ -54,6 +54,7 @@ final class CashRegisterController extends BaseController {
             "branch_id" => ["required", "integer"],
             "code" => ["nullable", "string", "max:30"],
             "name" => ["required", "string", "max:100"],
+            "is_main" => ["nullable", "boolean"],
             "status" => ["required", "in:active,inactive"]
         ], $this->validationMessages());
 
@@ -73,7 +74,7 @@ final class CashRegisterController extends BaseController {
                 "data" => $register
             ]);
 
-        }catch(RuntimeException $exception) {
+        }catch(\Throwable $exception) {
 
             return response()->json([
                 "bool" => false,
@@ -185,7 +186,7 @@ final class CashRegisterController extends BaseController {
                 "data" => $session
             ]);
 
-        }catch(RuntimeException $exception) {
+        }catch(\Throwable $exception) {
 
             return response()->json([
                 "bool" => false,
@@ -204,6 +205,11 @@ final class CashRegisterController extends BaseController {
             "payments" => ["nullable", "array"],
             "payments.*.payment_method_id" => ["nullable", "integer"],
             "payments.*.counted_amount" => ["nullable", "numeric", "min:0"],
+            "inventory_counts" => ["nullable", "array"],
+            "inventory_counts.*.warehouse_id" => ["required_with:inventory_counts", "integer"],
+            "inventory_counts.*.item_id" => ["required_with:inventory_counts", "integer"],
+            "inventory_counts.*.counted_quantity" => ["required_with:inventory_counts", "numeric", "min:0"],
+            "inventory_counts.*.observation" => ["nullable", "string", "max:500"],
             "observation" => ["nullable", "string", "max:300"]
         ], $this->validationMessages());
 
@@ -276,6 +282,7 @@ final class CashRegisterController extends BaseController {
 
         return [
             "required" => "Campo obligatorio.",
+            "required_with" => "Campo obligatorio.",
             "integer" => "Debe seleccionar un registro válido.",
             "numeric" => "Debe ingresar un importe válido.",
             "min" => "Debe ser mayor o igual a 0.",

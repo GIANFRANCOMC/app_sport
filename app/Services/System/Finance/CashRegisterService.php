@@ -10,10 +10,12 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
 
-use App\Models\System\Finance\{CashMovement, CashRegister, CashSession, CashSessionPayment, PaymentMethod};
+use App\Models\System\Finance\{CashMovement, CashRegister, CashSession, CashSessionInventoryCount, CashSessionPayment, PaymentMethod};
 use App\Models\System\Organizations\Branch;
+use App\Models\System\Warehouses\WarehouseItem;
 use App\Services\System\Base\CompanyReferenceDataService;
 use App\Services\System\Sales\SaleConfigService;
+use App\Services\System\Warehouses\Inventory\InventoryMovementService;
 
 final class CashRegisterService {
 
@@ -54,11 +56,21 @@ final class CashRegisterService {
 
             }
 
+            if((bool) ($data["is_main"] ?? false)) {
+
+                CashRegister::query()
+                            ->where("company_id", $companyId)
+                            ->where("branch_id", $branch->id)
+                            ->update(["is_main" => false]);
+
+            }
+
             $register = CashRegister::create([
                 "company_id" => $companyId,
                 "branch_id" => $branch->id,
                 "code" => $data["code"] ?? $this->generateRegisterCode($companyId),
                 "name" => $data["name"],
+                "is_main" => (bool) ($data["is_main"] ?? false),
                 "status" => $data["status"] ?? "active",
                 "created_by" => $userId
             ]);
@@ -244,6 +256,24 @@ final class CashRegisterService {
                                   ->where("status", "open")
                                   ->findOrFail((int) $data["cash_session_id"]);
 
+            if($session->register?->is_main) {
+
+                $hasOpenSecondarySessions = CashSession::query()
+                                                       ->where("company_id", $companyId)
+                                                       ->where("branch_id", $session->branch_id)
+                                                       ->where("status", "open")
+                                                       ->where("id", "!=", $session->id)
+                                                       ->whereHas("register", fn($query) => $query->where("is_main", false))
+                                                       ->exists();
+
+                if($hasOpenSecondarySessions) {
+
+                    throw new RuntimeException("Primero cierra las cajas secundarias de la sucursal antes de cerrar la caja principal.");
+
+                }
+
+            }
+
             $expectedAmount = round((float) CashMovement::query()
                                                         ->where("company_id", $companyId)
                                                         ->where("cash_session_id", $session->id)
@@ -296,6 +326,13 @@ final class CashRegisterService {
 
             }
 
+            $this->syncInventoryCounts(
+                $companyId,
+                $userId,
+                $session,
+                is_array($data["inventory_counts"] ?? null) ? $data["inventory_counts"] : []
+            );
+
             CashMovement::create([
                 "company_id" => $companyId,
                 "branch_id" => $session->branch_id,
@@ -314,7 +351,7 @@ final class CashRegisterService {
 
             $this->clearOperationalCaches($companyId);
 
-            return $session->load(["register", "branch", "closedBy", "paymentSummary.paymentMethod"]);
+            return $session->load(["register", "branch", "closedBy", "paymentSummary.paymentMethod", "inventoryCounts.item", "inventoryCounts.warehouse"]);
 
         });
 
@@ -420,6 +457,7 @@ final class CashRegisterService {
             "id" => $register->id,
             "code" => $register->code,
             "name" => $register->name,
+            "is_main" => (bool) $register->is_main,
             "status" => $register->status,
             "branch" => $register->branch,
             "open_session" => $openSession,
@@ -438,6 +476,80 @@ final class CashRegisterService {
                                          ->when($paymentMethodId === null, fn($query) => $query->whereNull("payment_method_id"))
                                          ->when($paymentMethodId !== null, fn($query) => $query->where("payment_method_id", $paymentMethodId))
                                          ->sum("amount"), 2);
+
+    }
+
+    private function syncInventoryCounts(int $companyId, int $userId, CashSession $session, array $counts): void {
+
+        if(!$session->register?->is_main || empty($counts)) {
+
+            return;
+
+        }
+
+        CashSessionInventoryCount::query()
+            ->where("cash_session_id", $session->id)
+            ->delete();
+
+        foreach($counts as $count) {
+
+            $warehouseId = (int) ($count["warehouse_id"] ?? 0);
+            $itemId = (int) ($count["item_id"] ?? 0);
+
+            if($warehouseId <= 0 || $itemId <= 0) {
+
+                continue;
+
+            }
+
+            $warehouseItem = WarehouseItem::query()
+                ->where("warehouse_id", $warehouseId)
+                ->where("item_id", $itemId)
+                ->first();
+
+            $systemQuantity = round((float) ($warehouseItem?->quantity ?? 0), 2);
+            $countedQuantity = round((float) ($count["counted_quantity"] ?? $systemQuantity), 2);
+            $difference = round($countedQuantity - $systemQuantity, 2);
+            $movement = null;
+
+            if(abs($difference) >= 0.00001) {
+
+                $movement = InventoryMovementService::apply([
+                    "company_id" => $companyId,
+                    "warehouse_id" => $warehouseId,
+                    "item_id" => $itemId,
+                    "user_id" => $userId,
+                    "movement_type" => InventoryMovementService::TYPE_CORRECTION,
+                    "origin_type" => InventoryMovementService::ORIGIN_PHYSICAL_COUNT,
+                    "origin_id" => $session->id,
+                    "resulting_balance" => $countedQuantity,
+                    "reason" => "Ajuste por conteo físico en cierre de caja principal.",
+                    "metadata" => [
+                        "cash_session_id" => $session->id,
+                        "cash_register_id" => $session->cash_register_id,
+                        "observation" => $count["observation"] ?? null
+                    ],
+                    "allow_negative" => false
+                ]);
+
+            }
+
+            CashSessionInventoryCount::create([
+                "company_id" => $companyId,
+                "branch_id" => $session->branch_id,
+                "cash_session_id" => $session->id,
+                "warehouse_id" => $warehouseId,
+                "item_id" => $itemId,
+                "inventory_movement_id" => $movement?->id,
+                "system_quantity" => $systemQuantity,
+                "counted_quantity" => $countedQuantity,
+                "difference_quantity" => $difference,
+                "observation" => $count["observation"] ?? null,
+                "status" => $movement ? "adjusted" : "ignored",
+                "created_by" => $userId
+            ]);
+
+        }
 
     }
 

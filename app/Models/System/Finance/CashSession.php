@@ -68,6 +68,12 @@ final class CashSession extends Model {
 
     }
 
+    public function inventoryCounts() {
+
+        return $this->hasMany(CashSessionInventoryCount::class, "cash_session_id", "id");
+
+    }
+
     public function sales() {
 
         return $this->hasMany(SaleHeader::class, "cash_session_id", "id");

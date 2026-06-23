@@ -58,18 +58,19 @@ El menu real se obtiene de `sections`, `sub_sections` y `companies_sub_sections`
 20. `subscriptions.index` - Membresias de catalogo.
 21. `categories.index` - Categorias.
 22. `brands.index` - Marcas.
-23. `stocks_management.stock.index` - Inventario / Control de stock.
-24. `stocks_management.kardex.index` - Inventario / Kardex.
-25. `stocks_management.transfers.index` - Inventario / Traslados.
-26. `stocks_management.valued.index` - Inventario / Kardex valorizado.
-27. `branches.index` - Sucursales.
-28. `assets.index` - Activos.
-29. `assets_management.index` - Gestion de activos.
-30. `biometric_devices.index` - Dispositivos biometricos.
-31. `companies.index` - Mi empresa.
-32. `users.index` - Colaboradores.
-33. `roles.index` - Perfiles de acceso.
-34. `reports.index` - Reportes.
+23. `recipes.index` - Recetas y platillos.
+24. `stocks_management.stock.index` - Inventario / Control de stock.
+25. `stocks_management.kardex.index` - Inventario / Kardex.
+26. `stocks_management.transfers.index` - Inventario / Traslados.
+27. `stocks_management.valued.index` - Inventario / Kardex valorizado.
+28. `branches.index` - Sucursales.
+29. `assets.index` - Activos.
+30. `assets_management.index` - Gestion de activos.
+31. `biometric_devices.index` - Dispositivos biometricos.
+32. `companies.index` - Mi empresa.
+33. `users.index` - Colaboradores.
+34. `roles.index` - Perfiles de acceso.
+35. `reports.index` - Reportes.
 
 ## Actualizaciones recientes
 
@@ -78,6 +79,7 @@ El menu real se obtiene de `sections`, `sub_sections` y `companies_sub_sections`
 - Inventario se separa como cabecera propia para que perfiles pueda habilitar `Control de stock`, `Kardex`, `Traslados` y `Kardex valorizado` por separado.
 - La cabecera visible `Operacion` usa `menu-parent-operations`.
 - El grupo Operacion se ubica debajo de Dashboard mediante `companies_sub_sections.section_order = 3` para POS y Caja.
+- `recipes.index` se agrega a Catalogo comercial para restaurantes y negocios de comida. Permite configurar formulas, toppings, extras, sabores e insumos sin convertir `items.type` en un tipo nuevo.
 
 ## Modulos tecnicos de soporte
 
