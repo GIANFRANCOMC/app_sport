@@ -39,7 +39,7 @@ final class RecipeConfigService extends BaseConfigService {
                     ->get()
             ]),
             "currencies" => self::data([
-                "records" => MasterReferenceDataService::currencies()
+                "records" => MasterReferenceDataService::currencies($companyId)
             ]),
             "internal_code_prefixes" => self::internalCodePrefixes($companyId),
             "statuses" => RecipeDish::getStatuses()

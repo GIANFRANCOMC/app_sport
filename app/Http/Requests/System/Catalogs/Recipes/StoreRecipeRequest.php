@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Requests\System\Catalogs\Recipes;
 
 use Illuminate\Foundation\Http\FormRequest;
+use App\Rules\System\Defaults\BelongsToCompany;
 
 class StoreRecipeRequest extends FormRequest {
 
@@ -31,7 +32,7 @@ class StoreRecipeRequest extends FormRequest {
             "toppings.*.name" => ["nullable", "string", "max:100"],
             "toppings.*.description" => ["nullable", "string", "max:255"],
             "toppings.*.price" => ["nullable", "numeric", "min:0"],
-            "toppings.*.currency_id" => ["nullable", "integer"],
+            "toppings.*.currency_id" => ["nullable", "integer", new BelongsToCompany("currencies", ["status" => "active"], "Una moneda del topping no pertenece a la empresa.")],
             "toppings.*.max_quantity" => ["nullable", "integer", "min:1"],
             "toppings.*.components" => ["nullable", "array"],
             "options" => ["nullable", "array"],

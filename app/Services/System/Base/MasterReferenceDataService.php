@@ -10,13 +10,11 @@ use Illuminate\Support\Facades\Cache;
 use App\Models\System\General\{Currency, IdentityDocumentType};
 
 /**
- * Provides active global master data used by module initParams.
+ * Provides active company-scoped master data used by module initParams.
  */
 final class MasterReferenceDataService {
 
     private const CACHE_TTL = 21600;
-    private const CURRENCIES_CACHE_KEY = "master_reference:currencies:active";
-    private const IDENTITY_DOCUMENTS_CACHE_KEY = "master_reference:identity_documents:active";
 
     private const DEFAULT_IDENTITY_DOCUMENT_CODES = [
         "doc.trib.no.dom.sin.ruc",
@@ -34,12 +32,13 @@ final class MasterReferenceDataService {
         "ruc"
     ];
 
-    public static function currencies(): Collection {
+    public static function currencies(int $companyId): Collection {
 
         return Cache::remember(
-            self::CURRENCIES_CACHE_KEY,
+            self::cacheKey($companyId, "currencies"),
             self::CACHE_TTL,
             fn() => Currency::query()
+                            ->where("company_id", $companyId)
                             ->where("status", "active")
                             ->orderBy("code")
                             ->get()
@@ -47,49 +46,56 @@ final class MasterReferenceDataService {
 
     }
 
-    public static function defaultIdentityDocuments(): Collection {
+    public static function defaultIdentityDocuments(int $companyId): Collection {
 
-        return self::identityDocuments(self::DEFAULT_IDENTITY_DOCUMENT_CODES);
-
-    }
-
-    public static function companyIdentityDocuments(): Collection {
-
-        return self::identityDocuments(self::COMPANY_IDENTITY_DOCUMENT_CODES);
+        return self::identityDocuments($companyId, self::DEFAULT_IDENTITY_DOCUMENT_CODES);
 
     }
 
-    public static function customerIdentityDocuments(): Collection {
+    public static function companyIdentityDocuments(int $companyId): Collection {
 
-        return self::identityDocuments(self::CUSTOMER_IDENTITY_DOCUMENT_CODES);
+        return self::identityDocuments($companyId, self::COMPANY_IDENTITY_DOCUMENT_CODES);
 
     }
 
-    private static function identityDocuments(array $codes): Collection {
+    public static function customerIdentityDocuments(int $companyId): Collection {
 
-        return self::activeIdentityDocuments()
+        return self::identityDocuments($companyId, self::CUSTOMER_IDENTITY_DOCUMENT_CODES);
+
+    }
+
+    private static function identityDocuments(int $companyId, array $codes): Collection {
+
+        return self::activeIdentityDocuments($companyId)
                    ->whereIn("code", $codes)
                    ->values();
 
     }
 
-    public static function clearCache(): void {
+    public static function clearCache(int $companyId): void {
 
-        Cache::forget(self::CURRENCIES_CACHE_KEY);
-        Cache::forget(self::IDENTITY_DOCUMENTS_CACHE_KEY);
+        Cache::forget(self::cacheKey($companyId, "currencies"));
+        Cache::forget(self::cacheKey($companyId, "identity_documents"));
 
     }
 
-    private static function activeIdentityDocuments(): Collection {
+    private static function activeIdentityDocuments(int $companyId): Collection {
 
         return Cache::remember(
-            self::IDENTITY_DOCUMENTS_CACHE_KEY,
+            self::cacheKey($companyId, "identity_documents"),
             self::CACHE_TTL,
             fn() => IdentityDocumentType::query()
+                                      ->where("company_id", $companyId)
                                       ->where("status", "active")
                                       ->orderBy("name")
                                       ->get()
         );
+
+    }
+
+    private static function cacheKey(int $companyId, string $name): string {
+
+        return "master_reference:company:{$companyId}:{$name}:active";
 
     }
 

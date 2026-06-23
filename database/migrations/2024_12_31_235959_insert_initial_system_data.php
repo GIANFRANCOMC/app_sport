@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 
 use App\Helpers\System\Utilities;
 use Illuminate\Database\Migrations\Migration;
@@ -11,20 +11,20 @@ return new class extends Migration {
     public function up(): void {
 
         DB::table("identity_document_types")->insert([
-            ["id" => 1, "code" => "doc.trib.no.dom.sin.ruc", "name" => "Doc.trib.no.dom.sin.ruc", "is_searchable" => false, "min_length" => 15, "max_length" => 15],
-            ["id" => 2, "code" => "dni", "name" => "DNI", "is_searchable" => true, "min_length" => 8, "max_length" => 8],
-            ["id" => 3, "code" => "ce", "name" => "CE", "is_searchable" => false, "min_length" => 12, "max_length" => 12],
-            ["id" => 4, "code" => "ruc", "name" => "RUC", "is_searchable" => true, "min_length" => 11, "max_length" => 11],
-            ["id" => 5, "code" => "pasaporte", "name" => "Pasaporte", "is_searchable" => false, "min_length" => 8, "max_length" => 8]
+            ["id" => 1, "company_id" => 1, "code" => "doc.trib.no.dom.sin.ruc", "name" => "Doc.trib.no.dom.sin.ruc", "is_searchable" => false, "min_length" => 15, "max_length" => 15],
+            ["id" => 2, "company_id" => 1, "code" => "dni", "name" => "DNI", "is_searchable" => true, "min_length" => 8, "max_length" => 8],
+            ["id" => 3, "company_id" => 1, "code" => "ce", "name" => "CE", "is_searchable" => false, "min_length" => 12, "max_length" => 12],
+            ["id" => 4, "company_id" => 1, "code" => "ruc", "name" => "RUC", "is_searchable" => true, "min_length" => 11, "max_length" => 11],
+            ["id" => 5, "company_id" => 1, "code" => "pasaporte", "name" => "Pasaporte", "is_searchable" => false, "min_length" => 8, "max_length" => 8]
         ]);
 
         DB::table("document_types")->insert([
-            ["id" => 1, "code" => "BV", "name" => "BOLETA DE VENTA"],
-            ["id" => 2, "code" => "FA", "name" => "FACTURA"]
+            ["id" => 1, "company_id" => 1, "code" => "BV", "name" => "BOLETA DE VENTA"],
+            ["id" => 2, "company_id" => 1, "code" => "FA", "name" => "FACTURA"]
         ]);
 
         DB::table("currencies")->insert([
-            ["id" => 1, "code" => "PEN", "sign" => "S/", "singular_name" => "SOL", "plural_name" => "SOLES"]
+            ["id" => 1, "company_id" => 1, "code" => "PEN", "sign" => "S/", "singular_name" => "SOL", "plural_name" => "SOLES"]
         ]);
 
         DB::table("companies")->insert([
@@ -407,9 +407,8 @@ return new class extends Migration {
         DB::table("sub_sections")->whereBetween("id", [10, 103])->delete();
         DB::table("sections")->whereBetween("id", [1, 9])->delete();
         DB::table("companies")->where("id", 1)->delete();
-        DB::table("currencies")->whereIn("id", [1, 2])->delete();
-        DB::table("document_types")->whereIn("id", [1, 2, 3, 4])->delete();
-        DB::table("identity_document_types")->whereBetween("id", 1, 9)->delete();
+        DB::table("currencies")->where("company_id", 1)->delete();
+        DB::table("document_types")->where("company_id", 1)->delete();
+        DB::table("identity_document_types")->where("company_id", 1)->delete();
     }
 };
-

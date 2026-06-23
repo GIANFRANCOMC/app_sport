@@ -6,7 +6,7 @@ namespace App\Http\Requests\System\Organizations\Companies;
 
 use App\Helpers\System\Utilities;
 use Illuminate\Foundation\Http\FormRequest;
-use App\Rules\System\Defaults\{DocumentNumberLength};
+use App\Rules\System\Defaults\{BelongsToCompany, DocumentNumberLength};
 
 class UpdateCompanyRequest extends FormRequest {
 
@@ -30,7 +30,7 @@ class UpdateCompanyRequest extends FormRequest {
         $maxSize   = Utilities::$inputs["maxSize"];
 
         $validations = [
-            "identity_document_type_id" => "required|integer",
+            "identity_document_type_id" => ["required", "integer", new BelongsToCompany("identity_document_types", ["status" => "active"], "El tipo de documento no pertenece a la empresa.")],
             "document_number"           => ["required", "string", new DocumentNumberLength((int) $this->identity_document_type_id)],
             "legal_name"                => "required|string|max:100",
             "commercial_name"           => "required|string|max:100",

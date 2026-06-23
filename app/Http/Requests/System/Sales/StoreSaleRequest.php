@@ -6,6 +6,7 @@ namespace App\Http\Requests\System\Sales;
 
 use App\Helpers\System\{ApiResponse, Utilities};
 use Illuminate\Foundation\Http\FormRequest;
+use App\Rules\System\Defaults\BelongsToCompany;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Http\Exceptions\HttpResponseException;
 
@@ -35,7 +36,7 @@ class StoreSaleRequest extends FormRequest {
             "branch_id"   => "required|integer",
             "serie_id"    => "required|integer",
             "holder_id"   => "required|integer",
-            "currency_id" => "required|integer",
+            "currency_id" => ["required", "integer", new BelongsToCompany("currencies", ["status" => "active"], "La moneda seleccionada no pertenece a la empresa.")],
             "warehouse_id" => "nullable|integer",
             "cash_session_id" => "nullable|integer",
             "issue_date"  => "required|date",
@@ -57,7 +58,7 @@ class StoreSaleRequest extends FormRequest {
             "details" => "required|array",
             "details.*.item_id" => "required|integer",
             "details.*.type" => "required|string|max:255",
-            "details.*.currency_id" => "required|integer",
+            "details.*.currency_id" => ["required", "integer", new BelongsToCompany("currencies", ["status" => "active"], "Una moneda del detalle no pertenece a la empresa.")],
             "details.*.name" => "required|string|max:255",
             "details.*.quantity" => "required|numeric|min:0.1|max:$maxValue|decimal:0,$round",
             "details.*.price" => "required|numeric|min:0.1|max:$maxValue|decimal:0,$round",

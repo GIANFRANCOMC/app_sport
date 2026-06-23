@@ -6,7 +6,7 @@ namespace App\Http\Requests\System\Customers\Customers;
 
 use App\Helpers\System\Utilities;
 use Illuminate\Foundation\Http\FormRequest;
-use App\Rules\System\Defaults\{DocumentNumberLength, UniqueInCompany};
+use App\Rules\System\Defaults\{BelongsToCompany, DocumentNumberLength, UniqueInCompany};
 
 class StoreCustomerRequest extends FormRequest {
 
@@ -27,7 +27,7 @@ class StoreCustomerRequest extends FormRequest {
     public function rules(): array {
 
         return [
-            "identity_document_type_id" => "required|integer",
+            "identity_document_type_id" => ["required", "integer", new BelongsToCompany("identity_document_types", ["status" => "active"], "El tipo de documento no pertenece a la empresa.")],
             "document_number"           => ["required", "string", new DocumentNumberLength((int) $this->identity_document_type_id), new UniqueInCompany("customers", "document_number", null, [], "número de documento")],
             "name"                      => "required|string|max:100",
             "email"                     => "nullable|email|max:100",

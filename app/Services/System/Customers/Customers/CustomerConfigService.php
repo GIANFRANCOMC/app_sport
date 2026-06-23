@@ -28,7 +28,7 @@ final class CustomerConfigService extends BaseConfigService {
                 "records" => BiometricDeviceService::getActiveDevices($companyId)
             ]),
             "identityDocumentTypes" => self::data([
-                "records" => MasterReferenceDataService::customerIdentityDocuments()
+                "records" => MasterReferenceDataService::customerIdentityDocuments($companyId)
             ]),
             "genders"  => Customer::getGenders(),
             "statuses" => Customer::getStatuses()

@@ -10,7 +10,6 @@ use App\Models\System\Catalogs\{Brand, Item};
 use App\Rules\System\Catalogs\ValidEan13;
 use App\Rules\System\Defaults\{BelongsToCompany, UniqueInCompany};
 use App\Services\System\Base\InternalCodeService;
-use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
 
 abstract class ProductRequest extends CompanyFormRequest {
@@ -31,7 +30,7 @@ abstract class ProductRequest extends CompanyFormRequest {
             "price_includes_tax" => ["nullable", "boolean"],
             "min_price" => ["nullable", "numeric", "min:0", "max:{$maxValue}", "decimal:0,{$round}"],
             "max_price" => ["nullable", "numeric", "min:0", "max:{$maxValue}", "decimal:0,{$round}"],
-            "currency_id" => ["bail", "required", "integer", Rule::exists("currencies", "id")->where("status", "active")],
+            "currency_id" => ["bail", "required", "integer", new BelongsToCompany("currencies", ["status" => "active"], "La moneda seleccionada no pertenece a la empresa.")],
             "categories" => ["nullable", "array", "max:50"],
             "categories.*.category_id" => ["bail", "required", "integer", "distinct", new BelongsToCompany("categories", ["status" => "active"], "Una o más categorías no pertenecen a la empresa o no están activas.")],
             "see_my_web" => ["required", "boolean"],

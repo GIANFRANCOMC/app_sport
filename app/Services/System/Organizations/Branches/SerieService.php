@@ -57,8 +57,9 @@ class SerieService {
         // Get new sequential number for the branch
         $newSequential = self::getNewSequential($companyId, $branchId);
 
-        // Get all active document types (only needed fields)
-        $documentTypes = DocumentType::whereIn("status", ["active"])
+        // Get all active document types for the company (only needed fields)
+        $documentTypes = DocumentType::where("company_id", $companyId)
+                                     ->whereIn("status", ["active"])
                                      ->select("id", "code")
                                      ->get();
 
@@ -71,9 +72,10 @@ class SerieService {
         // Prepare bulk insert data
         $now = now();
 
-        $seriesData = $documentTypes->map(function($documentType) use($branchId, $newSequential, $userId, $now) {
+        $seriesData = $documentTypes->map(function($documentType) use($companyId, $branchId, $newSequential, $userId, $now) {
 
             return [
+                "company_id"       => $companyId,
                 "branch_id"        => $branchId,
                 "document_type_id" => $documentType->id,
                 "code"             => $documentType->code,
@@ -95,4 +97,3 @@ class SerieService {
     }
 
 }
-

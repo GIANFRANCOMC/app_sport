@@ -25,7 +25,7 @@ final class CompanyConfigService extends BaseConfigService {
         $config = self::data([
             "statuses" => Company::getStatuses(),
             "identityDocumentTypes" => self::data([
-                "records" => MasterReferenceDataService::companyIdentityDocuments()
+                "records" => MasterReferenceDataService::companyIdentityDocuments($companyId)
             ])
         ]);
 

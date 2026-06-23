@@ -6,21 +6,21 @@ Este archivo describe las tablas creadas por migraciones y usadas por System. Al
 
 ### identity_document_types
 
-Tipos de documento de identidad. Campos principales: `code`, `name`, `is_searchable`, `min_length`, `max_length`, `status`.
+Tipos de documento de identidad configurables por empresa. Campos principales: `company_id`, `code`, `name`, `is_searchable`, `min_length`, `max_length` y `status`.
 
-Relaciones: usado por `users`, `customers` y `book_complaints`.
+Relaciones: usado por `companies`, `users`, `customers` y `book_complaints`. La tabla se filtra por `company_id` desde servicios y validaciones para que cada empresa pueda manejar longitudes, códigos y disponibilidad propia. No declara clave foránea inversa hacia `companies` porque `companies` también referencia el documento inicial y se evita un ciclo frágil en el arranque de migraciones.
 
 ### document_types
 
-Tipos de documentos comerciales o comprobantes. Campos: `code`, `name`, `status`.
+Tipos de documentos comerciales o comprobantes configurables por empresa. Campos: `company_id`, `code`, `name` y `status`.
 
-Relaciones: usado por `series`.
+Relaciones: usado por `series`. Al crear series de una sucursal sólo se toman comprobantes activos de la misma empresa.
 
 ### currencies
 
-Monedas. Campos: `code`, `sign`, `singular_name`, `plural_name`, `status`.
+Monedas configurables por empresa. Campos: `company_id`, `code`, `sign`, `singular_name`, `plural_name` y `status`.
 
-Relaciones: usado por empresas, items, ventas, activos y asignaciones.
+Relaciones: usado por empresas, items, ventas, compras, activos y asignaciones. Las validaciones de catálogo, compras y ventas verifican que la moneda pertenezca a la empresa actual.
 
 ## Empresa, menu y usuarios
 
@@ -383,7 +383,8 @@ Relaciones: pertenece a empresa, cliente y dispositivo.
 
 - Separar estructura y datos iniciales: las migraciones de creación definen tablas, claves primarias y claves foráneas; los inserts iniciales viven en una migración dedicada.
 - Separar por dominio cuando una migración crezca: maestros, empresas, catálogo, caja, inventario, ventas y compras deben poder evolucionar sin mezclar reglas de negocio ajenas.
-- Toda tabla operativa o hija debe tener `company_id` requerido cuando el dato pertenece a una empresa. Las filas hijas deben poblarlo desde la cabecera, el almacén, la sucursal o el usuario autenticado antes de guardar.
+- Toda tabla operativa, hija o maestro configurable debe tener `company_id` requerido cuando el dato pertenece a una empresa. Las filas hijas deben poblarlo desde la cabecera, el almacén, la sucursal o el usuario autenticado antes de guardar. Los catálogos base como documentos y monedas también se tratan como configurables por empresa.
+- La caché de maestros configurables se invalida por `company_id`; no debe usarse `Cache::flush()` para estos datos porque puede afectar menús, perfiles y otros initParams de empresas no relacionadas.
 - Las reglas `unique(...)` deben incluir `company_id` cuando la unicidad sea por empresa. Excepciones: tablas globales del framework o catálogos maestros realmente compartidos.
 - No crear índices explícitos salvo decisión justificada por consulta crítica. Las claves primarias, claves foráneas y `unique(...)` sí se mantienen porque expresan integridad.
 - Los montos y cantidades usan `decimal(16, 4)` como estándar operativo. Las cadenas deben tener longitud explícita; usar `text`/`longText` cuando el contenido supere una cadena razonable.

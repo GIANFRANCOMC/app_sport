@@ -75,11 +75,11 @@ final class SaleConfigService extends BaseConfigService {
                 "records" => $references->stockWarehouses()
             ]),
             "currencies" => self::data([
-                "records" => MasterReferenceDataService::currencies()
+                "records" => MasterReferenceDataService::currencies($companyId)
             ]),
             "customers" => self::data([
                 "records"               => $references->activeCustomers(),
-                "identityDocumentTypes" => MasterReferenceDataService::customerIdentityDocuments(),
+                "identityDocumentTypes" => MasterReferenceDataService::customerIdentityDocuments($companyId),
                 "genders"               => Customer::getGenders(),
                 "statuses"              => Customer::getStatuses()
             ]),

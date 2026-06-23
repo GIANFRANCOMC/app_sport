@@ -44,7 +44,7 @@ final class PurchaseConfigService extends BaseConfigService {
                 "records" => $references->stockWarehouses()
             ]),
             "currencies" => self::data([
-                "records" => MasterReferenceDataService::currencies()
+                "records" => MasterReferenceDataService::currencies($companyId)
             ]),
             "products" => self::data([
                 "records" => Item::query()

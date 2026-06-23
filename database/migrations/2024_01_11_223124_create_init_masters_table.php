@@ -10,8 +10,10 @@ return new class extends Migration {
      * Run the migrations.
      */
     public function up(): void {
+
         Schema::create("identity_document_types", function(Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger("company_id");
             $table->string("code", 255);
             $table->string("name", 255);
             $table->boolean("is_searchable")->default(true);
@@ -24,9 +26,12 @@ return new class extends Migration {
             $table->integer("created_by")->nullable();
             $table->timestamp("updated_at")->nullable();
             $table->integer("updated_by")->nullable();
+
+            $table->unique(["company_id", "code"]);
         });
         Schema::create("document_types", function(Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger("company_id");
             $table->string("code", 255);
             $table->string("name", 255);
             $table->enum("status", ["active", "inactive"])->default("active");
@@ -35,9 +40,12 @@ return new class extends Migration {
             $table->integer("created_by")->nullable();
             $table->timestamp("updated_at")->nullable();
             $table->integer("updated_by")->nullable();
+
+            $table->unique(["company_id", "code"]);
         });
         Schema::create("currencies", function(Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger("company_id");
             $table->string("code", 255);
             $table->string("sign", 255);
             $table->string("singular_name", 255);
@@ -48,6 +56,8 @@ return new class extends Migration {
             $table->integer("created_by")->nullable();
             $table->timestamp("updated_at")->nullable();
             $table->integer("updated_by")->nullable();
+
+            $table->unique(["company_id", "code"]);
         });
         Schema::create("companies", function(Blueprint $table) {
             $table->id();

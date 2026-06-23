@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Requests\System\Purchases;
 
 use Illuminate\Foundation\Http\FormRequest;
+use App\Rules\System\Defaults\BelongsToCompany;
 
 final class StorePurchaseRequest extends FormRequest {
 
@@ -19,7 +20,7 @@ final class StorePurchaseRequest extends FormRequest {
         return [
             "supplier_id" => ["required", "integer"],
             "warehouse_id" => ["required", "integer"],
-            "currency_id" => ["required", "integer"],
+            "currency_id" => ["required", "integer", new BelongsToCompany("currencies", ["status" => "active"], "La moneda seleccionada no pertenece a la empresa.")],
             "document_type" => ["required", "in:order,invoice"],
             "document_number" => ["nullable", "string", "max:50"],
             "issue_date" => ["required", "date"],

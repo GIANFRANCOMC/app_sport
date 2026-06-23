@@ -33,7 +33,7 @@ final class UserConfigService extends BaseConfigService {
 
         return self::data([
             "identityDocumentTypes" => self::data([
-                "records" => MasterReferenceDataService::defaultIdentityDocuments()
+                "records" => MasterReferenceDataService::defaultIdentityDocuments($companyId)
             ]),
             "roles" => self::data([
                 "records" => $references->roles()

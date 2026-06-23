@@ -30,7 +30,7 @@ final class SubscriptionConfigService extends BaseConfigService {
                 "records" => $references->categories()
             ]),
             "currencies" => self::data([
-                "records" => MasterReferenceDataService::currencies()
+                "records" => MasterReferenceDataService::currencies($companyId)
             ]),
             "internal_code_prefixes" => self::internalCodePrefixes($companyId),
             "durationTypes" => Item::getDurationTypes(),

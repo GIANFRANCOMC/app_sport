@@ -24,7 +24,7 @@ final class BookComplaintConfigService extends BaseConfigService {
 
         return self::data([
             "identity_document_types" => self::data([
-                "records" => MasterReferenceDataService::customerIdentityDocuments()
+                "records" => MasterReferenceDataService::customerIdentityDocuments($companyId)
             ]),
             "book_complaints" => self::data([
                 "types"    => BookComplaint::getTypes(),

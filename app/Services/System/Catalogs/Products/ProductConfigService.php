@@ -33,7 +33,7 @@ final class ProductConfigService extends BaseConfigService {
                 "records" => $references->categories()
             ]),
             "currencies" => self::data([
-                "records" => MasterReferenceDataService::currencies()
+                "records" => MasterReferenceDataService::currencies($companyId)
             ]),
             "warehouses" => self::data([
                 "records" => $references->stockWarehouses()

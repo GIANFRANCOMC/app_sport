@@ -62,7 +62,10 @@ class DocumentNumberLength implements ValidationRule {
 
         }
 
-        $identityDocumentType = IdentityDocumentType::find($identityDocumentTypeId);
+        $identityDocumentType = IdentityDocumentType::query()
+            ->whereKey($identityDocumentTypeId)
+            ->when(Auth::user()?->company_id, fn($query, $companyId) => $query->where("company_id", $companyId))
+            ->first();
 
         if(!$identityDocumentType) {
 
@@ -106,4 +109,3 @@ class DocumentNumberLength implements ValidationRule {
     }
 
 }
-

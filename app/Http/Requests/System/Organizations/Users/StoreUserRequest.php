@@ -28,7 +28,7 @@ class StoreUserRequest extends FormRequest {
 
         $validations = [
             "role_id"                   => ["required", "integer", new BelongsToCompany("roles", [], null)],
-            "identity_document_type_id" => "required|integer",
+            "identity_document_type_id" => ["required", "integer", new BelongsToCompany("identity_document_types", ["status" => "active"], "El tipo de documento no pertenece a la empresa.")],
             "document_number"           => ["required", "string", new DocumentNumberLength((int) $this->identity_document_type_id), new UniqueInCompany("users", "document_number", null, [], "número de documento")],
             "name"                      => "required|string|max:100",
             "email"                     => ["required", "email", "max:100", new UniqueInCompany("users", "email", null, [], "correo electrónico")],

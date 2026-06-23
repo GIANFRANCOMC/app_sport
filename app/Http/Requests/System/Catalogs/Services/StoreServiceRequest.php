@@ -7,7 +7,7 @@ namespace App\Http\Requests\System\Catalogs\Services;
 use App\Helpers\System\Utilities;
 use App\Http\Requests\System\Base\CompanyFormRequest;
 use App\Http\Requests\System\Concerns\AppliesInternalCodePrefix;
-use App\Rules\System\Defaults\{UniqueInCompany};
+use App\Rules\System\Defaults\{BelongsToCompany, UniqueInCompany};
 
 class StoreServiceRequest extends CompanyFormRequest {
 
@@ -42,7 +42,7 @@ class StoreServiceRequest extends CompanyFormRequest {
             "description"   => "nullable|string|max:100",
             "price"         => "required|numeric|min:$minValue|max:$maxValue|decimal:0,$round",
             "price_includes_tax" => "nullable|boolean",
-            "currency_id"   => "required|integer",
+            "currency_id"   => ["required", "integer", new BelongsToCompany("currencies", ["status" => "active"], "La moneda seleccionada no pertenece a la empresa.")],
             "status"        => "required|in:active,inactive"
         ];
 
