@@ -25,6 +25,7 @@ final class StorePurchaseRequest extends FormRequest {
             "document_number" => ["nullable", "string", "max:50"],
             "issue_date" => ["required", "date"],
             "expected_date" => ["nullable", "date", "after_or_equal:issue_date"],
+            "delivery_mode" => ["nullable", "in:immediate,pending"],
             "tax" => ["nullable", "numeric"],
             "taxes" => ["nullable", "array", "max:20"],
             "taxes.*.tax_id" => ["required_with:taxes", "integer"],

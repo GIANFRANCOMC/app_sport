@@ -18,6 +18,8 @@ final class Tax extends Model {
         "rate",
         "calculation_type",
         "operation_type",
+        "min_apply_quantity",
+        "max_apply_quantity",
         "scope",
         "is_required",
         "is_default",
@@ -30,6 +32,8 @@ final class Tax extends Model {
 
     protected $casts = [
         "rate" => "decimal:4",
+        "min_apply_quantity" => "integer",
+        "max_apply_quantity" => "integer",
         "is_required" => "boolean",
         "is_default" => "boolean"
     ];

@@ -163,6 +163,7 @@ final class PurchaseService {
                 "document_number" => $documentNumber ?: null,
                 "issue_date" => $data["issue_date"],
                 "expected_date" => $data["expected_date"] ?? null,
+                "delivery_mode" => $data["delivery_mode"] ?? "immediate",
                 "subtotal" => $subtotal,
                 "tax" => $tax,
                 "total" => $total,
@@ -195,6 +196,7 @@ final class PurchaseService {
                 $unitCost = round((float) $detail["unit_cost"], 4);
 
                 PurchaseItem::create([
+                    "company_id" => $companyId,
                     "purchase_header_id" => $purchase->id,
                     "item_id" => $item->id,
                     "name" => $item->name,
@@ -205,6 +207,23 @@ final class PurchaseService {
                     "status" => "pending",
                     "created_at" => now(),
                     "created_by" => $userId
+                ]);
+
+            }
+
+            if(($data["delivery_mode"] ?? "immediate") === "immediate") {
+
+                $purchase->load("items");
+
+                self::receive($companyId, $purchase->id, $userId, [
+                    "received_at" => now()->toDateTimeString(),
+                    "observation" => "Entrega inmediata registrada al crear la compra.",
+                    "items" => $purchase->items
+                        ->map(fn($item) => [
+                            "purchase_item_id" => (int) $item->id,
+                            "quantity" => (float) $item->quantity
+                        ])
+                        ->all()
                 ]);
 
             }
@@ -238,6 +257,7 @@ final class PurchaseService {
 
             $purchase->load("items");
             $receipt = PurchaseReceipt::create([
+                "company_id" => $companyId,
                 "purchase_header_id" => $purchase->id,
                 "warehouse_id" => $purchase->warehouse_id,
                 "reference" => "REC-" . strtoupper(Str::random(10)),
@@ -292,6 +312,7 @@ final class PurchaseService {
                 ]);
 
                 PurchaseReceiptItem::create([
+                    "company_id" => $companyId,
                     "purchase_receipt_id" => $receipt->id,
                     "purchase_item_id" => $purchaseItem->id,
                     "item_id" => $purchaseItem->item_id,

@@ -36,3 +36,8 @@ Guest debe tratar todo input como no confiable:
 - Algunas rutas publicas reciben datos sensibles como asistencia sin FormRequest visible.
 - `branch` puede venir codificado en base64; eso no equivale a seguridad.
 - Si se habilitan endpoints biometricos publicos, deben tener autenticacion por token/firma.
+
+## Pendientes y mejoras por realizar
+
+- Mantener sincronizada esta arquitectura con `../GENERALIDADES.md` cuando cambien criterios transversales.
+- Documentar endpoints publicos nuevos con su dependencia de `company_slug` y sus limites de exposicion.

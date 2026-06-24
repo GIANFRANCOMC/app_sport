@@ -37,3 +37,7 @@ Revisar:
 - Documentar payloads publicos.
 - Probar rutas con empresa inexistente, sucursal invalida y datos incompletos.
 
+## Pendientes y mejoras por realizar
+
+- Reforzar criterios de seguridad publica, accesibilidad y mensajes para visitantes.
+- Evitar reutilizar componentes internos de System sin revisar exposicion de datos y dependencias visuales.

@@ -58,6 +58,8 @@ return new class extends Migration {
             $table->unsignedBigInteger("company_id");
             $table->string("code", 30);
             $table->string("name", 255);
+            $table->string("sunat_code", 10)->nullable();
+            $table->string("image_path", 500)->nullable();
             $table->enum("scope", ["sale", "purchase", "both"])->default("both");
             $table->boolean("requires_reference")->default(false);
             $table->boolean("is_default")->default(false);
@@ -126,6 +128,7 @@ return new class extends Migration {
 
         Schema::create("series", function(Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger("company_id");
             $table->unsignedBigInteger("branch_id");
             $table->unsignedBigInteger("document_type_id");
             $table->string("code", 255);
@@ -139,6 +142,7 @@ return new class extends Migration {
             $table->integer("updated_by")->nullable();
 
             $table->foreign("branch_id")->references("id")->on("branches")->onDelete("cascade");
+            $table->foreign("company_id")->references("id")->on("companies")->onDelete("cascade");
             $table->foreign("document_type_id")->references("id")->on("document_types")->onDelete("cascade");
         });
         Schema::create("brands", function(Blueprint $table) {
@@ -218,6 +222,7 @@ return new class extends Migration {
         });
         Schema::create("category_items", function(Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger("company_id");
             $table->unsignedBigInteger("category_id");
             $table->unsignedBigInteger("item_id");
             $table->enum("status", ["active", "inactive"])->default("active");
@@ -226,6 +231,7 @@ return new class extends Migration {
             $table->integer("created_by")->nullable();
             $table->timestamp("updated_at")->nullable();
             $table->integer("updated_by")->nullable();
+            $table->foreign("company_id")->references("id")->on("companies")->onDelete("cascade");
 
             $table->foreign("category_id")->references("id")->on("categories")->onDelete("cascade");
             $table->foreign("item_id")->references("id")->on("items")->onDelete("cascade");
@@ -252,6 +258,7 @@ return new class extends Migration {
         });
         Schema::create("warehouses", function(Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger("company_id");
             $table->unsignedBigInteger("branch_id");
             $table->string("name", 255);
             $table->enum("status", ["active", "inactive"])->default("active");
@@ -260,6 +267,7 @@ return new class extends Migration {
             $table->integer("created_by")->nullable();
             $table->timestamp("updated_at")->nullable();
             $table->integer("updated_by")->nullable();
+            $table->foreign("company_id")->references("id")->on("companies")->onDelete("cascade");
 
             $table->foreign("branch_id")->references("id")->on("branches")->onDelete("cascade");
         });
@@ -311,6 +319,7 @@ return new class extends Migration {
 
         Schema::create("cash_session_payments", function(Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger("company_id");
             $table->unsignedBigInteger("cash_session_id");
             $table->unsignedBigInteger("payment_method_id")->nullable();
             $table->string("payment_method_name", 255);
@@ -324,6 +333,7 @@ return new class extends Migration {
             $table->integer("created_by")->nullable();
             $table->timestamp("updated_at")->nullable();
             $table->integer("updated_by")->nullable();
+            $table->foreign("company_id")->references("id")->on("companies")->onDelete("cascade");
 
             $table->foreign("cash_session_id")->references("id")->on("cash_sessions")->onDelete("cascade");
             $table->foreign("payment_method_id")->references("id")->on("payment_methods")->nullOnDelete();
@@ -360,6 +370,7 @@ return new class extends Migration {
 
         Schema::create("warehouse_items", function(Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger("company_id");
             $table->unsignedBigInteger("warehouse_id");
             $table->unsignedBigInteger("item_id");
             $table->decimal("quantity", 16, 4)->default(0);
@@ -372,6 +383,7 @@ return new class extends Migration {
             $table->integer("created_by")->nullable();
             $table->timestamp("updated_at")->nullable();
             $table->integer("updated_by")->nullable();
+            $table->foreign("company_id")->references("id")->on("companies")->onDelete("cascade");
 
             $table->foreign("warehouse_id")->references("id")->on("warehouses")->onDelete("cascade");
             $table->foreign("item_id")->references("id")->on("items")->onDelete("cascade");
@@ -426,6 +438,7 @@ return new class extends Migration {
 
         Schema::create("recipe_dish_components", function(Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger("company_id");
             $table->unsignedBigInteger("recipe_dish_id");
             $table->unsignedBigInteger("item_id");
             $table->decimal("quantity", 16, 4);
@@ -437,6 +450,7 @@ return new class extends Migration {
             $table->integer("created_by")->nullable();
             $table->timestamp("updated_at")->nullable();
             $table->integer("updated_by")->nullable();
+            $table->foreign("company_id")->references("id")->on("companies")->onDelete("cascade");
 
             $table->foreign("recipe_dish_id")->references("id")->on("recipe_dishes")->onDelete("cascade");
             $table->foreign("item_id")->references("id")->on("items")->onDelete("cascade");
@@ -465,6 +479,7 @@ return new class extends Migration {
 
         Schema::create("recipe_dish_toppings", function(Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger("company_id");
             $table->unsignedBigInteger("recipe_dish_id");
             $table->unsignedBigInteger("recipe_topping_id");
             $table->boolean("is_default")->default(false);
@@ -476,6 +491,7 @@ return new class extends Migration {
             $table->integer("created_by")->nullable();
             $table->timestamp("updated_at")->nullable();
             $table->integer("updated_by")->nullable();
+            $table->foreign("company_id")->references("id")->on("companies")->onDelete("cascade");
 
             $table->foreign("recipe_dish_id")->references("id")->on("recipe_dishes")->onDelete("cascade");
             $table->foreign("recipe_topping_id")->references("id")->on("recipe_toppings")->onDelete("cascade");
@@ -483,6 +499,7 @@ return new class extends Migration {
 
         Schema::create("recipe_topping_components", function(Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger("company_id");
             $table->unsignedBigInteger("recipe_topping_id");
             $table->unsignedBigInteger("item_id");
             $table->decimal("quantity", 16, 4);
@@ -494,6 +511,7 @@ return new class extends Migration {
             $table->integer("created_by")->nullable();
             $table->timestamp("updated_at")->nullable();
             $table->integer("updated_by")->nullable();
+            $table->foreign("company_id")->references("id")->on("companies")->onDelete("cascade");
 
             $table->foreign("recipe_topping_id")->references("id")->on("recipe_toppings")->onDelete("cascade");
             $table->foreign("item_id")->references("id")->on("items")->onDelete("cascade");
@@ -501,6 +519,7 @@ return new class extends Migration {
 
         Schema::create("recipe_dish_options", function(Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger("company_id");
             $table->unsignedBigInteger("recipe_dish_id");
             $table->string("name", 255);
             $table->text("description")->nullable();
@@ -511,12 +530,14 @@ return new class extends Migration {
             $table->integer("created_by")->nullable();
             $table->timestamp("updated_at")->nullable();
             $table->integer("updated_by")->nullable();
+            $table->foreign("company_id")->references("id")->on("companies")->onDelete("cascade");
 
             $table->foreign("recipe_dish_id")->references("id")->on("recipe_dishes")->onDelete("cascade");
         });
 
         Schema::create("recipe_dish_option_components", function(Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger("company_id");
             $table->unsignedBigInteger("recipe_dish_option_id");
             $table->unsignedBigInteger("item_id");
             $table->decimal("quantity", 16, 4);
@@ -528,6 +549,7 @@ return new class extends Migration {
             $table->integer("created_by")->nullable();
             $table->timestamp("updated_at")->nullable();
             $table->integer("updated_by")->nullable();
+            $table->foreign("company_id")->references("id")->on("companies")->onDelete("cascade");
 
             $table->foreign("recipe_dish_option_id")->references("id")->on("recipe_dish_options")->onDelete("cascade");
             $table->foreign("item_id")->references("id")->on("items")->onDelete("cascade");
@@ -561,6 +583,7 @@ return new class extends Migration {
         });
         Schema::create("branch_assets", function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger("company_id");
             $table->unsignedBigInteger("branch_id");
             $table->unsignedBigInteger("asset_id");
             $table->unsignedBigInteger("currency_id");
@@ -574,6 +597,7 @@ return new class extends Migration {
             $table->integer("created_by")->nullable();
             $table->timestamp("updated_at")->nullable();
             $table->integer("updated_by")->nullable();
+            $table->foreign("company_id")->references("id")->on("companies")->onDelete("cascade");
 
             $table->foreign("branch_id")->references("id")->on("branches")->onDelete("cascade");
             $table->foreign("asset_id")->references("id")->on("assets")->onDelete("cascade");
@@ -582,6 +606,7 @@ return new class extends Migration {
         });
         Schema::create("asset_assignments", function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger("company_id");
             $table->unsignedBigInteger("user_id");
             $table->unsignedBigInteger("branch_id");
             $table->unsignedBigInteger("asset_id");
@@ -596,6 +621,7 @@ return new class extends Migration {
             $table->integer("created_by")->nullable();
             $table->timestamp("updated_at")->nullable();
             $table->integer("updated_by")->nullable();
+            $table->foreign("company_id")->references("id")->on("companies")->onDelete("cascade");
 
             $table->foreign("user_id")->references("id")->on("users")->onDelete("cascade");
             $table->foreign("branch_id")->references("id")->on("branches")->onDelete("cascade");
@@ -604,6 +630,7 @@ return new class extends Migration {
         });
         Schema::create("asset_assignment_logs", function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger("company_id");
             $table->unsignedBigInteger("action_by");
             $table->unsignedBigInteger("user_id");
             $table->unsignedBigInteger("branch_id");
@@ -617,6 +644,7 @@ return new class extends Migration {
             $table->integer("created_by")->nullable();
             $table->timestamp("updated_at")->nullable();
             $table->integer("updated_by")->nullable();
+            $table->foreign("company_id")->references("id")->on("companies")->onDelete("cascade");
 
             $table->foreign("action_by")->references("id")->on("users")->onDelete("cascade");
             $table->foreign("user_id")->references("id")->on("users")->onDelete("cascade");

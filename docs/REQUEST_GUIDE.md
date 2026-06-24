@@ -107,3 +107,18 @@ Implementa la opcion A. Mantener compatibilidad con ventas actuales y agregar te
 - Indicar si se debe mantener compatibilidad con datos existentes.
 - Indicar si quieres pruebas automatizadas, pruebas manuales o ambas.
 - Decir si una mejora es urgente o si solo quieres evaluarla.
+## Documentacion esperada
+
+Cuando un cambio se implemente, tambien debe indicarse que documentacion se actualiza:
+
+- `docs/GENERALIDADES.md` si cambia una regla transversal.
+- `docs/System/modules/*.md` o `docs/Guest/modules/*.md` si cambia un modulo.
+- `docs/System/TABLES.md` o `docs/Guest/TABLES.md` si cambian tablas, campos o relaciones.
+- `docs/System/new_requirements` o `docs/Guest/new_requirements` si queda algo pendiente.
+
+Si el cambio afecta UI, mencionar si debe respetar branding, componentes `br-*`, tooltips, modales, formularios y patrones descritos en `GENERALIDADES.md`.
+
+## Pendientes y mejoras por realizar
+
+- Agregar plantillas especificas para requerimientos de ventas, inventario, caja, compras y catalogo comercial.
+- Mantener ejemplos actualizados con modulos reales a medida que se estabilicen los flujos.

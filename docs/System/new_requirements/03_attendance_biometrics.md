@@ -16,3 +16,7 @@ La asistencia es flujo critico y se usa desde System, Guest y biometricos. Hay r
 
 Alto. Afecta clientes, membresias, asistencias, dispositivos y portal publico.
 
+## Pendientes y mejoras por realizar
+
+- Completar matriz marca-modelo-dispositivo y documentar compatibilidad por proveedor.
+- Revisar sincronizacion y errores de dispositivos por empresa y sucursal.

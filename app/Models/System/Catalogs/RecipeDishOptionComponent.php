@@ -11,6 +11,7 @@ class RecipeDishOptionComponent extends Model {
     protected $table = "recipe_dish_option_components";
 
     protected $fillable = [
+        "company_id",
         "recipe_dish_option_id",
         "item_id",
         "quantity",

@@ -16,3 +16,7 @@ La venta crea membresias y descuenta stock. Actualmente puede crear stock negati
 
 Alto. Afecta `SaleService`, stock, membresias y reportes.
 
+## Pendientes y mejoras por realizar
+
+- Consolidar reglas de venta, POS, caja, inventario y membresias en servicios compartidos.
+- Agregar pruebas funcionales cuando el flujo de impuestos, pagos y stock quede estable.

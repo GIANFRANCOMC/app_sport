@@ -54,3 +54,7 @@ Puede usarse si se habilitan endpoints publicos o callbacks de dispositivos. Deb
 
 Puede usarse indirectamente para resolver cliente por dispositivo y usuario del dispositivo.
 
+## Pendientes y mejoras por realizar
+
+- Completar relaciones publicas que dependan de nuevas tablas System.
+- Revisar que cada tabla expuesta en Guest tenga justificacion funcional y limite de datos visible.

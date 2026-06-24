@@ -20,6 +20,7 @@ class WarehouseItem extends Model {
     ];
 
     protected $fillable = [
+        "company_id",
         "warehouse_id",
         "item_id",
         "quantity",

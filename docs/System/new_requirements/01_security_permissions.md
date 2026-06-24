@@ -15,3 +15,7 @@ System depende de `company_id`, sucursales y rutas autenticadas. Hay validacione
 
 Alto. Toca controladores, servicios y posiblemente middleware.
 
+## Pendientes y mejoras por realizar
+
+- Evolucionar permisos desde modulo hacia modulo + accion.
+- Documentar restricciones por sucursal, caja y almacen cuando se completen en usuarios/perfiles.

@@ -136,3 +136,8 @@ No se recomienda reescribir toda la arquitectura. El criterio adecuado es mejora
 - Extraer servicios compartidos si hay duplicacion real.
 - Introducir tests en flujos criticos antes de cambiar reglas sensibles.
 - Mejorar autorizacion y validacion sin romper la estructura existente.
+
+## Pendientes y mejoras por realizar
+
+- Mantener esta arquitectura alineada con `../GENERALIDADES.md`.
+- Documentar la separacion final de paginas independientes para inventario, caja, compras, ventas y POS.

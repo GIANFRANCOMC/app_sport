@@ -10,3 +10,7 @@ Mejoras propuestas para superficies publicas.
 4. Confirmaciones por email en reclamaciones.
 5. SEO/catalogo publico.
 
+## Pendientes y mejoras por realizar
+
+- Mantener cada pendiente Guest separado por experiencia publica, seguridad y trazabilidad.
+- Mover a modulos Guest las mejoras que ya hayan sido implementadas.

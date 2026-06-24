@@ -340,12 +340,15 @@ return new class extends Migration {
         ]);
 
         DB::table("payment_methods")->insert([
-            ["company_id" => 1, "code" => "CASH", "name" => "Efectivo", "scope" => "both", "requires_reference" => false, "is_default" => true],
-            ["company_id" => 1, "code" => "CARD", "name" => "Tarjeta", "scope" => "sale", "requires_reference" => true, "is_default" => false],
-            ["company_id" => 1, "code" => "TRANSFER", "name" => "Transferencia", "scope" => "both", "requires_reference" => true, "is_default" => false],
-            ["company_id" => 1, "code" => "DIGITAL_WALLET", "name" => "Billetera digital", "scope" => "both", "requires_reference" => true, "is_default" => false],
-            ["company_id" => 1, "code" => "YAPE", "name" => "Yape", "scope" => "both", "requires_reference" => true, "is_default" => false],
-            ["company_id" => 1, "code" => "PLIN", "name" => "Plin", "scope" => "both", "requires_reference" => true, "is_default" => false]
+            ["company_id" => 1, "code" => "CASH", "sunat_code" => "008", "name" => "Efectivo", "image_path" => "System/assets/img/payment-methods/cash.svg", "scope" => "both", "requires_reference" => false, "is_default" => true],
+            ["company_id" => 1, "code" => "BANK_DEPOSIT", "sunat_code" => "001", "name" => "Depósito en cuenta", "image_path" => "System/assets/img/payment-methods/bank-deposit.svg", "scope" => "both", "requires_reference" => true, "is_default" => false],
+            ["company_id" => 1, "code" => "BANK_TRANSFER", "sunat_code" => "003", "name" => "Transferencia de fondos", "image_path" => "System/assets/img/payment-methods/bank-transfer.svg", "scope" => "both", "requires_reference" => true, "is_default" => false],
+            ["company_id" => 1, "code" => "DEBIT_CARD", "sunat_code" => "005", "name" => "Tarjeta de débito", "image_path" => "System/assets/img/payment-methods/debit-card.svg", "scope" => "sale", "requires_reference" => true, "is_default" => false],
+            ["company_id" => 1, "code" => "CREDIT_CARD", "sunat_code" => "006", "name" => "Tarjeta de crédito", "image_path" => "System/assets/img/payment-methods/credit-card.svg", "scope" => "sale", "requires_reference" => true, "is_default" => false],
+            ["company_id" => 1, "code" => "CHECK", "sunat_code" => "007", "name" => "Cheque no negociable", "image_path" => "System/assets/img/payment-methods/check.svg", "scope" => "both", "requires_reference" => true, "is_default" => false],
+            ["company_id" => 1, "code" => "DIGITAL_WALLET", "sunat_code" => null, "name" => "Billetera digital", "image_path" => "System/assets/img/payment-methods/digital-wallet.svg", "scope" => "both", "requires_reference" => true, "is_default" => false],
+            ["company_id" => 1, "code" => "YAPE", "sunat_code" => null, "name" => "Yape", "image_path" => "System/assets/img/payment-methods/yape.svg", "scope" => "both", "requires_reference" => true, "is_default" => false],
+            ["company_id" => 1, "code" => "PLIN", "sunat_code" => null, "name" => "Plin", "image_path" => "System/assets/img/payment-methods/plin.svg", "scope" => "both", "requires_reference" => true, "is_default" => false]
         ]);
 
         DB::table("company_socials_media")->insert([

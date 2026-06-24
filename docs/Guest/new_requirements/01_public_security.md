@@ -12,3 +12,7 @@ Guest esta expuesto a visitantes. Cualquier formulario o endpoint puede ser abus
 - Tokens por dispositivo para biometricos.
 - Respuestas publicas sin detalles internos.
 
+## Pendientes y mejoras por realizar
+
+- Definir limites de rate limiting por recurso publico.
+- Documentar validaciones anti abuso por formulario y por empresa.

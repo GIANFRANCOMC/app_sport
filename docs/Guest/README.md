@@ -31,3 +31,12 @@ Todas dependen del middleware `company.exists`, que resuelve la empresa por slug
 4. Modulos en [modules](modules)
 5. Mejoras en [new_requirements](new_requirements)
 
+## Generalidades transversales
+
+Antes de tocar superficies publicas, revisar [../GENERALIDADES.md](../GENERALIDADES.md) y validar si la regla pertenece realmente a `Guest` o debe vivir en `System`.
+
+## Pendientes y mejoras por realizar
+
+- Documentar mejor que datos publicos dependen de `company_slug` y cuales se exponen desde System.
+- Revisar accesibilidad, seguridad publica y textos de formularios Guest.
+- Evitar copiar componentes internos de System sin revisar si exponen datos o estilos no aptos para visitantes.

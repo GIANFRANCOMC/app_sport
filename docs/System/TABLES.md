@@ -389,3 +389,9 @@ Relaciones: pertenece a empresa, cliente y dispositivo.
 - No crear índices explícitos salvo decisión justificada por consulta crítica. Las claves primarias, claves foráneas y `unique(...)` sí se mantienen porque expresan integridad.
 - Los montos y cantidades usan `decimal(16, 4)` como estándar operativo. Las cadenas deben tener longitud explícita; usar `text`/`longText` cuando el contenido supere una cadena razonable.
 - Evitar comentarios decorativos o símbolos en migraciones. Los comentarios sólo deben explicar una decisión técnica que no sea evidente.
+
+## Pendientes y mejoras por realizar
+
+- Completar revision de `company_id` requerido en tablas hijas cuando los servicios ya lo poblen siempre.
+- Revisar `unique(...)` por empresa en tablas donde la regla de negocio sea realmente estructural.
+- Separar migraciones grandes por dominio cuando se cierre la fase reiniciable.

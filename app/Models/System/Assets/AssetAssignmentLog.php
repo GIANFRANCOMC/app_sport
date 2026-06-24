@@ -21,6 +21,7 @@ class AssetAssignmentLog extends Model {
     ];
 
     protected $fillable = [
+        "company_id",
         "action_by",
         "user_id",
         "branch_id",

@@ -162,3 +162,12 @@ Hay `FormRequest` para muchos CRUDs internos. Cuando se agreguen campos a un mod
 - Documentar y probar invalidacion de cache por modulo.
 - Revisar si todos los endpoints que modifican datos usan `FormRequest`.
 
+## Referencia transversal
+
+Las reglas compartidas de multiempresa, UI, branding, formularios, modales, cache, migraciones e impuestos viven en [GENERALIDADES.md](GENERALIDADES.md). Esta arquitectura debe describir la estructura; las decisiones reutilizables deben mantenerse en ese archivo para no duplicarlas.
+
+## Pendientes y mejoras por realizar
+
+- Actualizar este archivo cuando se separen fisicamente migraciones por dominio.
+- Documentar con mas detalle los servicios transversales de inventario, caja, impuestos y permisos cuando estabilicen sus APIs.
+- Revisar controladores que aun tengan metodos vacios o placeholders.

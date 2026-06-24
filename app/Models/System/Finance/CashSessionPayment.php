@@ -11,6 +11,7 @@ final class CashSessionPayment extends Model {
     protected $table = "cash_session_payments";
 
     protected $fillable = [
+        "company_id",
         "cash_session_id",
         "payment_method_id",
         "payment_method_name",

@@ -14,6 +14,8 @@ final class PaymentMethod extends Model {
         "company_id",
         "code",
         "name",
+        "sunat_code",
+        "image_path",
         "scope",
         "requires_reference",
         "is_default",

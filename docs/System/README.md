@@ -40,3 +40,12 @@ El orden base sale del seed/menu adjunto:
 
 Dentro de cada seccion, los archivos de `modules` siguen la numeracion del menu y luego agregan modulos tecnicos de soporte.
 
+## Generalidades transversales
+
+Antes de tocar cualquier modulo System, revisar [../GENERALIDADES.md](../GENERALIDADES.md). Ese archivo concentra criterios compartidos de branding, formularios, modales, cache, migraciones, multiempresa y documentacion.
+
+## Pendientes y mejoras por realizar
+
+- Mantener la lista de modulos sincronizada con seeds de `sections`, `sub_sections`, perfiles y menu lateral.
+- Revisar que cada modulo System documente tablas, reglas, UI aplicada y pendientes propios.
+- Evitar duplicar criterios visuales aqui; si aplica a varios modulos, moverlo a `GENERALIDADES.md`.

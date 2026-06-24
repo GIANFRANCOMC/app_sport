@@ -20,6 +20,7 @@ class CategoryItem extends Model {
     ];
 
     protected $fillable = [
+        "company_id",
         "category_id",
         "item_id",
         "status",

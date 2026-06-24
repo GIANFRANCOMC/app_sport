@@ -1,5 +1,9 @@
 # System - Guía de desarrollo
 
+## Generalidades transversales
+
+Las reglas compartidas de branding, formularios, modales, SweetAlert, cache, migraciones, multiempresa, impuestos, inventario y documentación viven en [../GENERALIDADES.md](../GENERALIDADES.md). Esta guía mantiene el criterio de desarrollo System; si una regla aplica a todos los módulos o también a Guest, documentarla primero en `GENERALIDADES.md`.
+
 ## Principios
 
 - Respetar `Controller -> Service -> Model`.
@@ -67,8 +71,8 @@ Dependencias registradas:
 - Ningún módulo actualiza `warehouse_items.quantity`, `average_cost` o `inventory_value` directamente. Debe invocar `InventoryMovementService`.
 - Las operaciones con cabecera, detalles y movimientos se ejecutan dentro de una única transacción.
 - La valorización usa costos de entrada y promedio ponderado por almacén; nunca reutiliza el precio de venta.
-- Para monedas y tipos de documento globales, usar `MasterReferenceDataService`.
-- Si se implementa mantenimiento de monedas o tipos de documento, llamar `MasterReferenceDataService::clearCache()` después de una mutación correcta.
+- Para monedas y tipos de documento configurables por empresa, usar `MasterReferenceDataService` pasando siempre `companyId`.
+- Si se implementa mantenimiento de monedas o tipos de documento, llamar `MasterReferenceDataService::clearCache($companyId)` después de una mutación correcta.
 - Si una pantalla necesita una variante nueva, agregar un método descriptivo al servicio adecuado; no introducir strings como `"default"`, `"sale"` o `"management"` para modificar consultas.
 - Mantener en el método explícito los filtros de estado, orden y relaciones precargadas que necesita el consumidor.
 - Registrar el `ConfigService` consumidor en `InitParamsCacheInvalidationService` cuando la nueva referencia pueda cambiar por una mutación.
@@ -81,7 +85,7 @@ $references = CompanyReferenceDataService::for($companyId);
 $config->brands->records = $references->brands();
 $config->categories->records = $references->categories();
 $config->warehouses->records = $references->stockWarehouses();
-$config->currencies->records = MasterReferenceDataService::currencies();
+$config->currencies->records = MasterReferenceDataService::currencies($companyId);
 ```
 
 ## Secciones y menú
@@ -233,3 +237,9 @@ Cada implementación debe actualizar los archivos `.md` impactados:
 - `new_requirements` para marcar mejoras aplicadas, descartadas o pendientes.
 
 La documentación debe describir el comportamiento final, no solamente la intención inicial.
+
+## Pendientes y mejoras por realizar
+
+- Reducir duplicación entre esta guía y `GENERALIDADES.md`; dejar aquí sólo reglas propias de System.
+- Revisar servicios que aún dependan de `Auth` directamente y moverlos a contratos con `companyId` y `userId` explícitos.
+- Completar documentación técnica por cada módulo nuevo antes de abrir nuevos frentes de UI.

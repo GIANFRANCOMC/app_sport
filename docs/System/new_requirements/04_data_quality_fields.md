@@ -29,3 +29,7 @@ Activos:
 
 Medio. Requiere migraciones, requests, formularios y documentacion por modulo.
 
+## Pendientes y mejoras por realizar
+
+- Normalizar campos heredados con encoding antiguo.
+- Mantener criterio de longitud, nullable y company_id en futuras migraciones.

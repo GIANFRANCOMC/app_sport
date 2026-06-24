@@ -22,6 +22,7 @@ final class PurchaseHeader extends Model {
         "document_number",
         "issue_date",
         "expected_date",
+        "delivery_mode",
         "subtotal",
         "tax",
         "total",
@@ -44,7 +45,7 @@ final class PurchaseHeader extends Model {
         "canceled_at" => "datetime"
     ];
 
-    protected $appends = ["formatted_status", "formatted_document_type", "receipt_progress"];
+    protected $appends = ["formatted_status", "formatted_document_type", "formatted_delivery_mode", "receipt_progress"];
 
     public function getFormattedStatusAttribute(): string {
 
@@ -65,6 +66,15 @@ final class PurchaseHeader extends Model {
 
     }
 
+
+    public function getFormattedDeliveryModeAttribute(): string {
+
+        return [
+            "immediate" => "Entrega inmediata",
+            "pending" => "Entrega pendiente"
+        ][$this->attributes["delivery_mode"] ?? ""] ?? "";
+
+    }
     public function getReceiptProgressAttribute(): float {
 
         if(!$this->relationLoaded("items")) return 0;
