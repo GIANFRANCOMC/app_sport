@@ -97,7 +97,7 @@ El sistema combina administracion interna y portal publico por empresa. Internam
 
 ## Mejoras sugeridas globales
 
-- Corregir problemas de codificacion de caracteres en textos con acentos que aparecen como `Ã©`, `Â¡`, etc.
+- Corregir problemas de codificacion de caracteres en textos con acentos que aparecen como `é`, `Ã‚¡`, etc.
 - Reemplazar el README generico de Laravel por un README real del producto.
 - Agregar pruebas automatizadas para flujos criticos: venta, anulacion, asistencia, membresias y stock.
 - Centralizar estados en constantes/enums PHP para reducir strings repetidos.

@@ -54,9 +54,13 @@ final class PurchaseController extends BaseController {
                 $request->validated()
             );
 
+            $message = ($request->validated()["delivery_mode"] ?? "immediate") === "immediate"
+                ? "Compra registrada. La mercadería ingresó al inventario del almacén seleccionado."
+                : "Compra registrada. El stock se actualizará cuando registres la recepción de mercadería.";
+
             return response()->json([
                 "bool" => true,
-                "msg" => "Compra registrada. El stock se actualizará cuando recibas la mercadería.",
+                "msg" => $message,
                 "data" => $purchase
             ], 201);
 

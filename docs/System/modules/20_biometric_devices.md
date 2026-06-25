@@ -39,3 +39,7 @@ Administra dispositivos ZKTeco K20 Pro y asociaciones de huella de clientes para
 - Agregar firma/token por dispositivo.
 - Registrar logs de eventos biometricos.
 - Corregir namespace/import si hay inconsistencia con el servicio.
+
+## Pendiente de criterio operativo
+
+- Definir si un dispositivo biométrico debe registrarse también como `asset` al crearlo. Por ahora se documenta como duda de negocio: si se activa, el alta del dispositivo debería poder crear un activo asociado en estado activo para mantener trazabilidad física.

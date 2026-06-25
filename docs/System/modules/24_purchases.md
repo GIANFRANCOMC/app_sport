@@ -2,7 +2,7 @@
 
 ## Propósito
 
-Registra órdenes y facturas de compra, controla lo pendiente por recibir y alimenta el inventario con el costo real de cada recepción. El documento comercial y la recepción física son eventos distintos: crear una compra no modifica existencias.
+Registra órdenes y facturas de compra, controla lo pendiente por recibir y alimenta el inventario con el costo real de cada recepción. El documento comercial y la recepción física son eventos distintos, pero `delivery_mode` permite decidir si la entrada al almacén es inmediata o queda pendiente.
 
 ## Archivos principales
 
@@ -18,11 +18,11 @@ Registra órdenes y facturas de compra, controla lo pendiente por recibir y alim
 
 1. Se registra proveedor, almacén de recepción, moneda, documento, fechas y productos.
 2. Cada detalle guarda cantidad solicitada y costo unitario.
-3. La compra inicia como `confirmed`, pendiente de recepción.
-4. Una recepción puede incluir parte o todo lo pendiente.
-5. Cada cantidad recibida genera una entrada `purchase` mediante `InventoryMovementService`.
-6. El costo recibido recalcula el promedio ponderado del producto en ese almacén.
-7. La compra cambia a `partial` o `received` según el avance.
+3. La compra guarda `delivery_mode`: `immediate` para recibir todo al crear o `pending` para recepciones posteriores.
+4. Si la entrega es inmediata, el backend genera la recepción total y actualiza inventario en la misma transacción.
+5. Si la entrega queda pendiente, una recepción posterior puede incluir parte o todo lo pendiente.
+6. Cada cantidad recibida genera una entrada `purchase` mediante `InventoryMovementService`.
+7. El costo recibido recalcula el promedio ponderado del producto en ese almacén y la compra cambia a `partial` o `received` según el avance.
 
 ## Reglas de negocio
 
@@ -35,7 +35,7 @@ Registra órdenes y facturas de compra, controla lo pendiente por recibir y alim
 - La recepción no puede superar la cantidad pendiente.
 - La recepción y todos sus movimientos se procesan en una sola transacción.
 - Una compra con mercadería recibida no puede anularse. La salida física se registra como devolución a proveedor desde Inventario.
-- No se actualiza `warehouse_items` directamente.
+- No se actualiza `warehouse_items` directamente; los saldos cambian mediante movimientos de inventario.
 
 ## Valorización
 
@@ -56,6 +56,7 @@ El método inicial es promedio ponderado por producto y almacén. Los impuestos 
 - Aprobación de órdenes antes de confirmar.
 - Devoluciones ligadas directamente a una recepción de compra.
 - Numeración interna configurable para órdenes y recepciones.
+- Pantalla frontend con selector claro `Entrega inmediata` / `Entrega pendiente` y explicación breve del impacto en inventario.
 ## Productos disponibles
 
 - Compras solo lista productos con estado `active`.

@@ -88,7 +88,7 @@ final class PurchaseService {
 
             if(!$warehouse || $supplier->status !== "active") {
 
-                throw new DomainException("El proveedor o el almacÃ©n no estÃ¡ disponible.");
+                throw new DomainException("El proveedor o el almacén no está disponible.");
 
             }
 
@@ -103,7 +103,7 @@ final class PurchaseService {
                 ->exists()) {
 
                 throw new DomainException(
-                    "Ya existe un documento de compra activo con ese nÃºmero para el proveedor."
+                    "Ya existe un documento de compra activo con ese número para el proveedor."
                 );
 
             }
@@ -303,7 +303,7 @@ final class PurchaseService {
                     "origin_id" => (int) $receipt->id,
                     "quantity" => $quantity,
                     "unit_cost" => (float) $purchaseItem->unit_cost,
-                    "reason" => "RecepciÃ³n de compra.",
+                    "reason" => "Recepción de compra.",
                     "reference" => $receipt->reference,
                     "metadata" => [
                         "purchase_header_id" => (int) $purchase->id,
@@ -369,14 +369,14 @@ final class PurchaseService {
             if($purchase->items->contains(fn($item) => (float) $item->received_quantity > 0)) {
 
                 throw new DomainException(
-                    "La compra tiene mercaderÃ­a recibida. Registra una devoluciÃ³n a proveedor desde Inventario."
+                    "La compra tiene mercadería recibida. Registra una devolución a proveedor desde Inventario."
                 );
 
             }
 
             if($purchase->status === "canceled") {
 
-                throw new DomainException("La compra ya estÃ¡ anulada.");
+                throw new DomainException("La compra ya está anulada.");
 
             }
 

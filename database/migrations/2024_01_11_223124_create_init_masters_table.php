@@ -63,11 +63,11 @@ return new class extends Migration {
             $table->id();
             $table->string("slug", 255)->unique();
             $table->string("internal_code", 255);
-            $table->unsignedBigInteger("identity_document_type_id");
+            $table->unsignedBigInteger("identity_document_type_id")->nullable();
             $table->string("document_number", 255);
             $table->string("legal_name", 255);
             $table->string("commercial_name", 255);
-            $table->unsignedBigInteger("currency_id");
+            $table->unsignedBigInteger("currency_id")->nullable();
             $table->string("tagline", 255)->nullable();
             $table->string("description", 500)->nullable();
             $table->string("address", 255)->nullable();
@@ -85,8 +85,17 @@ return new class extends Migration {
             $table->timestamp("updated_at")->nullable();
             $table->integer("updated_by")->nullable();
 
-            $table->foreign("identity_document_type_id")->references("id")->on("identity_document_types")->onDelete("cascade");
-            $table->foreign("currency_id")->references("id")->on("currencies")->onDelete("cascade");
+            $table->foreign("identity_document_type_id")->references("id")->on("identity_document_types")->restrictOnDelete();
+            $table->foreign("currency_id")->references("id")->on("currencies")->restrictOnDelete();
+        });
+        Schema::table("identity_document_types", function(Blueprint $table) {
+            $table->foreign("company_id")->references("id")->on("companies")->onDelete("cascade");
+        });
+        Schema::table("document_types", function(Blueprint $table) {
+            $table->foreign("company_id")->references("id")->on("companies")->onDelete("cascade");
+        });
+        Schema::table("currencies", function(Blueprint $table) {
+            $table->foreign("company_id")->references("id")->on("companies")->onDelete("cascade");
         });
         Schema::create("sections", function(Blueprint $table) {
             $table->id();
@@ -167,7 +176,7 @@ return new class extends Migration {
             $table->timestamp("updated_at")->nullable();
             $table->integer("updated_by")->nullable();
 
-            $table->foreign("company_id")->references("id")->on("companies")->nullOnDelete();
+            $table->foreign("company_id")->references("id")->on("companies")->onDelete("cascade");
             $table->foreign("role_id")->references("id")->on("roles")->onDelete("cascade");
             $table->foreign("sub_section_id")->references("id")->on("sub_sections")->onDelete("cascade");
             $table->unique(["company_id", "role_id", "sub_section_id"]);
@@ -194,9 +203,9 @@ return new class extends Migration {
             $table->integer("updated_by")->nullable();
 
             $table->foreign("company_id")->references("id")->on("companies")->onDelete("cascade");
-            $table->foreign("company_id")->references("id")->on("companies")->nullOnDelete();
+            $table->foreign("company_id")->references("id")->on("companies")->onDelete("cascade");
             $table->foreign("role_id")->references("id")->on("roles")->onDelete("cascade");
-            $table->foreign("identity_document_type_id")->references("id")->on("identity_document_types")->onDelete("cascade");
+            $table->foreign("identity_document_type_id")->references("id")->on("identity_document_types")->restrictOnDelete();
             $table->unique(["email", "company_id"]);
         });
         Schema::create("user_preferences", function (Blueprint $table) {
@@ -212,7 +221,7 @@ return new class extends Migration {
             $table->timestamp("updated_at")->nullable();
             $table->integer("updated_by")->nullable();
 
-            $table->foreign("company_id")->references("id")->on("companies")->nullOnDelete();
+            $table->foreign("company_id")->references("id")->on("companies")->onDelete("cascade");
             $table->foreign("user_id")->references("id")->on("users")->onDelete("cascade");
         });
         // Initial data lives in 2024_12_31_235959_insert_initial_system_data.php.
@@ -223,6 +232,8 @@ return new class extends Migration {
      * Reverse the migrations.
      */
     public function down(): void {
+
+        Schema::disableForeignKeyConstraints();
 
         Schema::dropIfExists("user_preferences");
         Schema::dropIfExists("users");
@@ -236,6 +247,9 @@ return new class extends Migration {
         Schema::dropIfExists("document_types");
         Schema::dropIfExists("identity_document_types");
 
-    }
+        Schema::enableForeignKeyConstraints();
 
+    }
 };
+
+

@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
@@ -75,7 +75,7 @@ return new class extends Migration {
             $table->integer("updated_by")->nullable();
             $table->foreign("purchase_header_id")->references("id")->on("purchase_headers")->onDelete("cascade");
             $table->foreign("item_id")->references("id")->on("items")->onDelete("restrict");
-            $table->foreign("company_id")->references("id")->on("companies")->nullOnDelete();
+            $table->foreign("company_id")->references("id")->on("companies")->onDelete("cascade");
         });
 
         Schema::create("purchase_receipts", function(Blueprint $table) {
@@ -93,7 +93,7 @@ return new class extends Migration {
             $table->integer("canceled_by")->nullable();
             $table->foreign("purchase_header_id")->references("id")->on("purchase_headers")->onDelete("cascade");
             $table->foreign("warehouse_id")->references("id")->on("warehouses")->onDelete("restrict");
-            $table->foreign("company_id")->references("id")->on("companies")->nullOnDelete();
+            $table->foreign("company_id")->references("id")->on("companies")->onDelete("cascade");
         });
 
         Schema::create("purchase_receipt_items", function(Blueprint $table) {
@@ -112,7 +112,7 @@ return new class extends Migration {
             $table->foreign("purchase_item_id")->references("id")->on("purchase_items")->onDelete("cascade");
             $table->foreign("item_id")->references("id")->on("items")->onDelete("restrict");
             $table->foreign("inventory_movement_id")->references("id")->on("inventory_movements")->nullOnDelete();
-            $table->foreign("company_id")->references("id")->on("companies")->nullOnDelete();
+            $table->foreign("company_id")->references("id")->on("companies")->onDelete("cascade");
         });
 
         Schema::create("purchase_taxes", function(Blueprint $table) {
@@ -136,7 +136,7 @@ return new class extends Migration {
             $table->integer("updated_by")->nullable();
             $table->foreign("purchase_header_id")->references("id")->on("purchase_headers")->onDelete("cascade");
             $table->foreign("tax_id")->references("id")->on("taxes")->nullOnDelete();
-            $table->foreign("company_id")->references("id")->on("companies")->nullOnDelete();
+            $table->foreign("company_id")->references("id")->on("companies")->onDelete("cascade");
         });
 
         Schema::create("purchase_payments", function(Blueprint $table) {
@@ -155,7 +155,7 @@ return new class extends Migration {
             $table->integer("updated_by")->nullable();
             $table->foreign("purchase_header_id")->references("id")->on("purchase_headers")->onDelete("cascade");
             $table->foreign("payment_method_id")->references("id")->on("payment_methods")->nullOnDelete();
-            $table->foreign("company_id")->references("id")->on("companies")->nullOnDelete();
+            $table->foreign("company_id")->references("id")->on("companies")->onDelete("cascade");
         });
 
     }
@@ -173,3 +173,4 @@ return new class extends Migration {
     }
 
 };
+

@@ -10,8 +10,24 @@ return new class extends Migration {
      */
     public function up(): void {
 
+        DB::table("companies")->insert([
+            [
+                "id" => 1,
+                "slug" => "pagape",
+                "internal_code" => Utilities::generateCode(7),
+                "identity_document_type_id" => null,
+                "document_number" => "999999999999999",
+                "legal_name" => "BLAPOS S.A.",
+                "commercial_name" => "BLAPOS",
+                "currency_id" => null,
+                "address" => "",
+                "telephone" => "",
+                "email" => ""
+            ]
+        ]);
+
         DB::table("identity_document_types")->insert([
-            ["id" => 1, "company_id" => 1, "code" => "doc.trib.no.dom.sin.ruc", "name" => "Doc.trib.no.dom.sin.ruc", "is_searchable" => false, "min_length" => 15, "max_length" => 15],
+            ["id" => 1, "company_id" => 1, "code" => "doc.trib.no.dom.sin.ruc", "name" => "Doc. trib. no dom. sin RUC", "is_searchable" => false, "min_length" => 15, "max_length" => 15],
             ["id" => 2, "company_id" => 1, "code" => "dni", "name" => "DNI", "is_searchable" => true, "min_length" => 8, "max_length" => 8],
             ["id" => 3, "company_id" => 1, "code" => "ce", "name" => "CE", "is_searchable" => false, "min_length" => 12, "max_length" => 12],
             ["id" => 4, "company_id" => 1, "code" => "ruc", "name" => "RUC", "is_searchable" => true, "min_length" => 11, "max_length" => 11],
@@ -27,22 +43,10 @@ return new class extends Migration {
             ["id" => 1, "company_id" => 1, "code" => "PEN", "sign" => "S/", "singular_name" => "SOL", "plural_name" => "SOLES"]
         ]);
 
-        DB::table("companies")->insert([
-            [
-                "id" => 1,
-                "slug" => "pagape",
-                "internal_code" => Utilities::generateCode(7),
-                "identity_document_type_id" => 1,
-                "document_number" => "999999999999999",
-                "legal_name" => "BLAPOS S.A.",
-                "commercial_name" => "BLAPOS",
-                "currency_id" => 1,
-                "address" => "",
-                "telephone" => "",
-                "email" => ""
-            ]
+        DB::table("companies")->where("id", 1)->update([
+            "identity_document_type_id" => 1,
+            "currency_id" => 1
         ]);
-
         DB::table("sections")->insert([
             ["id" => 1, "slug" => "sc_home", "name" => "home", "order" => 1, "dom_id" => "menu-parent-home", "dom_label" => "Inicio", "dom_icon" => "fa fa-home", "has_sub_menu" => false],
             ["id" => 2, "slug" => "sc_dashboard", "name" => "dashboard", "order" => 2, "dom_id" => "menu-parent-dashboard", "dom_label" => "Dashboard", "dom_icon" => "fa-solid fa-gauge", "has_sub_menu" => false],

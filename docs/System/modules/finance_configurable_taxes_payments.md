@@ -22,36 +22,37 @@ Permitir que cada empresa configure tributos y metodos de pago de forma independ
 
 ### taxes
 
-Catalogo configurable de tributos por empresa.
+Catálogo configurable de tributos por empresa.
 
 Campos principales:
 
-- `company_id`: empresa propietaria de la configuracion.
-- `code`: codigo interno legible del tributo.
-- `name`: nombre mostrado al usuario. En la interfaz se debe mostrar este nombre, por ejemplo `IGV`, no una etiqueta generica como `Impuestos`.
-- `description`: explica el ambito del tributo, a quien aplica, de donde proviene y como debe interpretarse.
+- `company_id`: empresa propietaria de la configuración.
+- `code`: código interno legible del tributo.
+- `name`: nombre mostrado al usuario. En la interfaz se debe mostrar este nombre, por ejemplo `IGV`, no una etiqueta genérica como `Impuestos`.
+- `description`: explica el ámbito del tributo, a quién aplica, de dónde proviene y cómo debe interpretarse.
 - `rate`: valor usado para calcular el tributo. Si `calculation_type = percentage`, representa porcentaje; si `calculation_type = fixed`, representa monto fijo.
 - `calculation_type`: define si el valor se calcula como `percentage` o como `fixed`.
 - `operation_type`: define si el resultado suma (`addition`) o resta (`subtraction`) al total del documento.
+- `min_apply_quantity` / `max_apply_quantity`: límites de cantidad para tributos fijos no porcentuales, por ejemplo ICBP. En porcentajes normalmente quedan nulos.
 - `scope`: define si aplica a `sale`, `purchase` o `both`.
 - `is_required`: define si el tributo se aplica siempre en su alcance. Si es `false`, el usuario puede marcarlo o no desde el frontend del documento.
-- `is_default`: ordena primero el tributo preferente en configuraciones, reportes y futuras pantallas administrativas. No limita el calculo: ventas y compras aplican todos los tributos activos del alcance correspondiente.
-- `status`: controla si el tributo esta disponible.
-
+- `is_default`: ordena primero el tributo preferente en configuraciones, reportes y futuras pantallas administrativas. No limita el cálculo: ventas y compras aplican todos los tributos activos del alcance correspondiente.
+- `status`: controla si el tributo está disponible.
 ### payment_methods
 
-Catalogo configurable de metodos de pago por empresa.
+Catálogo configurable de métodos de pago por empresa.
 
 Campos principales:
 
-- `company_id`: empresa propietaria de la configuracion.
-- `code`: codigo interno del metodo.
+- `company_id`: empresa propietaria de la configuración.
+- `code`: código interno del método.
 - `name`: nombre mostrado al usuario.
+- `sunat_code`: código de referencia SUNAT cuando el método lo tenga.
+- `image_path`: imagen o ícono configurable para dar visibilidad al método de pago.
 - `scope`: define si aplica a `sale`, `purchase` o `both`.
 - `requires_reference`: obliga a registrar referencia cuando corresponda.
-- `is_default`: metodo sugerido por defecto.
-- `status`: controla si el metodo esta disponible.
-
+- `is_default`: método sugerido por defecto.
+- `status`: controla si el método está disponible.
 ### sale_taxes / purchase_taxes
 
 Guardan la foto del tributo aplicado al documento.
@@ -116,8 +117,8 @@ Esto evita duplicar reglas entre ventas, POS, compras y futuros documentos.
 
 ## Pendientes recomendados
 
-- Crear pantalla de configuracion financiera para tributos.
-- Crear pantalla de configuracion financiera para metodos de pago.
+- Crear pantalla de configuración financiera para tributos, incluyendo límites mínimo/máximo para tributos fijos no porcentuales.
+- Crear pantalla de configuración financiera para métodos de pago, con código SUNAT e imagen por empresa.
 - Permitir distribuir manualmente montos entre varios metodos de pago desde ventas.
 - Permitir distribuir manualmente montos entre varios metodos de pago desde compras.
 - Agregar reportes por tributo y metodo de pago.

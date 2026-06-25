@@ -160,7 +160,7 @@ Durante la etapa reiniciable del proyecto, se puede refactorizar migraciones bas
 - Separar por dominio: maestros, empresas, catálogo, inventario, ventas, compras, caja, biometría y reportes.
 - Usar `decimal(16, 4)` como estándar para cantidades y montos.
 - Limitar `string` con tamaño explícito, máximo recomendado `500`; usar `text` o `longText` si corresponde.
-- Agregar `company_id` donde el dato sea por empresa.
+- Agregar `company_id` donde el dato sea por empresa y declarar FK explícita a `companies`. En maestros que la empresa también referencia, permitir arranque nullable y actualizar la referencia después de sembrar maestros.
 - Evitar comentarios decorativos, símbolos extraños o encoding roto.
 - Tabular y espaciar consistentemente.
 
@@ -194,6 +194,7 @@ Formato recomendado por módulo:
 - Revisar todos los servicios para recibir `companyId` y `userId` explícitos, reduciendo dependencia directa de `Auth`.
 - Completar pruebas automatizadas de ventas, POS, caja, inventario, compras e impuestos cuando se cierre la fase de cambios estructurales.
 - Crear administración UI para `company_settings`, prefijos, impuestos, métodos de pago y reglas de inventario.
+- Usar `php artisan company:enable {company_id}` para habilitar datos base de una empresa sin insertar manualmente tabla por tabla.
 - Evolucionar permisos de `módulo` hacia `módulo + acción` sin romper perfiles actuales.
 - Revisar accesibilidad de todas las modales, tooltips, selects y acciones por teclado.
 - Consolidar reportes exportables por módulo con consultas reutilizadas del listado.

@@ -8,26 +8,24 @@ Este archivo describe las tablas creadas por migraciones y usadas por System. Al
 
 Tipos de documento de identidad configurables por empresa. Campos principales: `company_id`, `code`, `name`, `is_searchable`, `min_length`, `max_length` y `status`.
 
-Relaciones: usado por `companies`, `users`, `customers` y `book_complaints`. La tabla se filtra por `company_id` desde servicios y validaciones para que cada empresa pueda manejar longitudes, códigos y disponibilidad propia. No declara clave foránea inversa hacia `companies` porque `companies` también referencia el documento inicial y se evita un ciclo frágil en el arranque de migraciones.
-
+Relaciones: pertenece a `companies` mediante `company_id` y es usado por `companies`, `users`, `customers` y `book_complaints`. Se filtra siempre por empresa para que cada compañía pueda manejar longitudes, códigos y disponibilidad propia.
 ### document_types
 
 Tipos de documentos comerciales o comprobantes configurables por empresa. Campos: `company_id`, `code`, `name` y `status`.
 
-Relaciones: usado por `series`. Al crear series de una sucursal sólo se toman comprobantes activos de la misma empresa.
-
+Relaciones: pertenece a `companies` mediante `company_id` y es usado por `series`. Al crear series de una sucursal sólo se toman comprobantes activos de la misma empresa.
 ### currencies
 
 Monedas configurables por empresa. Campos: `company_id`, `code`, `sign`, `singular_name`, `plural_name` y `status`.
 
-Relaciones: usado por empresas, items, ventas, compras, activos y asignaciones. Las validaciones de catálogo, compras y ventas verifican que la moneda pertenezca a la empresa actual.
-
+Relaciones: pertenece a `companies` mediante `company_id`; es usado por empresas, items, ventas, compras, activos y asignaciones. Las validaciones de catálogo, compras y ventas verifican que la moneda pertenezca a la empresa actual.
 ## Empresa, menu y usuarios
 
 ### companies
 
-Empresa o tenant funcional. Campos: `slug`, `internal_code`, documento, razon social, nombre comercial, moneda, tagline, descripcion, direccion, telefono, email, token externo, imagenes y `status`.
+Empresa o tenant funcional. Campos: `slug`, `internal_code`, documento, razón social, nombre comercial, moneda, tagline, descripción, dirección, teléfono, email, token externo, imágenes y `status`.
 
+`identity_document_type_id` y `currency_id` son nullable en la estructura inicial para permitir crear la empresa antes de sus maestros propios y luego actualizar las referencias. Esto evita ciclos frágiles entre `companies`, `identity_document_types` y `currencies`, manteniendo FK reales por `company_id` en todos los maestros configurables.
 ### `company_settings`
 
 Configuración extensible por empresa. Cada registro usa `company_id`, `group`, `key`, `value`, `description`, `value_type` y `status`. `description` explica el efecto operativo de la clave para que futuras interfaces administrativas puedan mostrar ayuda contextual. `value` puede ser nulo y `value_type` permite interpretarlo como `string`, `boolean`, `integer`, `decimal` o `json`.
@@ -225,20 +223,16 @@ Uso: cuando la cantidad real difiere del saldo del sistema, debe crearse un movi
 
 Tributos configurables por empresa. Campos: `company_id`, `code`, `name`, `description`, `rate`, `calculation_type`, `operation_type`, `min_apply_quantity`, `max_apply_quantity`, `scope`, `is_required`, `is_default` y `status`.
 
-`name` es el texto que debe ver el usuario en ventas, POS y compras, por ejemplo `IGV` o `ICBP`. `description` documenta el ámbito y la regla de aplicación. `calculation_type` admite `percentage` y `fixed`; `operation_type` admite `addition` y `subtraction`, permitiendo tributos que suman o descuentan. `is_required` separa tributos obligatorios de opcionales. `is_default` marca el tributo principal de su alcance para ordenar y sugerirlo antes que otros tributos.
-
-`min_apply_quantity` y `max_apply_quantity` aplican sólo a tributos `fixed`, como `ICBP`, para controlar cuántas veces puede sumarse el cargo. En tributos porcentuales deben quedar en `null`. Pendiente frontend: al seleccionar un tributo fijo opcional, mostrar un input entero respetando estos límites y ocultarlo cuando el tributo no esté seleccionado.
-
-Registros iniciales: `SALE-IGV` y `PURCHASE-IGV`, ambos 18%, porcentuales, de suma y obligatorios; además `SALE-ICBP` y `PURCHASE-ICBP`, ambos monto fijo 0.50, suma y opcionales.
-
+Relaciones: pertenece a `companies`. `scope` separa venta y compra; si un tributo aplica a ambos ámbitos se registra una fila por cada alcance para mantener trazabilidad independiente. `min_apply_quantity` y `max_apply_quantity` aplican principalmente a tributos fijos opcionales como ICBP, donde el usuario puede indicar cuántas veces se cobra.
 ### sale_taxes / purchase_taxes
 
 Foto histórica del tributo aplicado al documento. Guardan `name`, `description`, `rate`, `calculation_type`, `operation_type`, `is_required`, `quantity`, `base_amount` y `amount` para que ventas y compras mantengan trazabilidad aunque luego cambie la configuración de `taxes`. `quantity` es entero y se usa principalmente en tributos fijos opcionales como `ICBP`.
 
 ### payment_methods
 
-Métodos de pago configurables por empresa y alcance. Campos: `company_id`, `code`, `name`, `scope`, `requires_reference`, `is_default` y `status`.
+Métodos de pago configurables por empresa y alcance. Campos: `company_id`, `code`, `sunat_code`, `name`, `image_path`, `scope`, `requires_reference`, `is_default` y `status`.
 
+Relaciones: pertenece a `companies`. `sunat_code` conserva la referencia SUNAT cuando exista y `image_path` permite mostrar una imagen o marca visual del método en futuras interfaces. `scope` define si el método aplica a ventas, compras o ambos.
 ### sale_payments / purchase_payments
 
 Foto histórica de los pagos del documento. Guardan método, nombre, monto, referencia y nota.
@@ -297,8 +291,9 @@ Proveedores por empresa. Campos: `company_id`, documento, nombre, contacto, tel�
 
 ### purchase_headers
 
-Cabecera de orden o factura de compra. Relaciona empresa, proveedor, almacén y moneda; guarda documento, fechas, totales, observación y estado.
+Cabecera de orden o factura de compra. Relaciona empresa, proveedor, almacén y moneda; guarda documento, fechas, `delivery_mode`, totales, observación y estado.
 
+`delivery_mode = immediate` registra la recepción total al crear la compra y genera movimientos de inventario. `delivery_mode = pending` deja la compra pendiente para recepciones parciales o totales posteriores.
 ### purchase_items
 
 Detalle solicitado. Guarda producto, nombre histórico, cantidad, cantidad recibida, costo unitario, subtotal y estado de recepción.
@@ -313,7 +308,7 @@ Detalle recibido. Relaciona el detalle de compra, producto y `inventory_movement
 
 Reglas:
 
-- Registrar una compra no cambia existencias.
+- Registrar una compra con `delivery_mode = pending` no cambia existencias. Con `delivery_mode = immediate`, se registra la recepción total y se actualiza el inventario en la misma transacción.
 - Cada detalle recibido genera una entrada `purchase`.
 - La recepción y sus movimientos se confirman en una sola transacción.
 - El costo actualiza el promedio ponderado por producto y almacén.
@@ -392,6 +387,6 @@ Relaciones: pertenece a empresa, cliente y dispositivo.
 
 ## Pendientes y mejoras por realizar
 
-- Completar revision de `company_id` requerido en tablas hijas cuando los servicios ya lo poblen siempre.
-- Revisar `unique(...)` por empresa en tablas donde la regla de negocio sea realmente estructural.
+- Completar el endurecimiento de `company_id` nullable a requerido en tablas heredadas cuando se confirme que todos los servicios lo poblan siempre.
+- Revisar `unique(...)` por empresa en tablas donde la regla de negocio sea realmente estructural; evitar índices explícitos no justificados.
 - Separar migraciones grandes por dominio cuando se cierre la fase reiniciable.
