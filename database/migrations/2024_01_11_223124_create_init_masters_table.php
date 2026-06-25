@@ -203,7 +203,6 @@ return new class extends Migration {
             $table->integer("updated_by")->nullable();
 
             $table->foreign("company_id")->references("id")->on("companies")->onDelete("cascade");
-            $table->foreign("company_id")->references("id")->on("companies")->onDelete("cascade");
             $table->foreign("role_id")->references("id")->on("roles")->onDelete("cascade");
             $table->foreign("identity_document_type_id")->references("id")->on("identity_document_types")->restrictOnDelete();
             $table->unique(["email", "company_id"]);

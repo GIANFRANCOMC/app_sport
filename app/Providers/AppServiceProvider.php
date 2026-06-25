@@ -7,6 +7,7 @@ use App\Observers\System\Organizations\{CompanySubSectionObserver, RoleObserver,
 use App\View\Components\System\{SystemGuestLayout};
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Blade;
+use App\Services\System\Tenancy\TenantContext;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -15,7 +16,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->singleton(TenantContext::class);
     }
 
     /**

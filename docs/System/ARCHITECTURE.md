@@ -27,6 +27,10 @@ Un modulo System normalmente tiene:
 - Vista Blade en `resources/views/System/general`.
 - Pagina Vue en `resources/js/System/Pages`.
 
+
+## Multi-tenant por base de datos
+
+La separación física por cliente está documentada en `MULTITENANT.md`. La aplicación usa una conexión central `landlord` para resolver dominios y una conexión dinámica `tenant` para operar sobre la base de datos propia del cliente. Esta capa no reemplaza `company_id`: dentro de cada tenant se conserva para subcompañías internas, permisos, filtros y trazabilidad.
 ## Multiempresa
 
 Regla fuerte: toda consulta operativa debe filtrar por `company_id` o validar que la entidad pertenece a una sucursal/serie/empresa del usuario autenticado.

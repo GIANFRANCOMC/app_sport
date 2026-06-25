@@ -2,6 +2,22 @@
 
 Este archivo describe las tablas creadas por migraciones y usadas por System. Algunas tablas tambien son leidas por Guest, pero la administracion principal pertenece a System.
 
+
+## Landlord multi-tenant
+
+Estas tablas viven en la conexión `landlord`, no en cada BD tenant. Sirven para resolver a qué base de datos debe conectarse la aplicación según el dominio entrante.
+
+### tenant_databases
+
+Registro central de tenants. Campos: `slug`, `company_id`, `connection_name`, `database_name`, `db_driver`, `db_host`, `db_port`, `db_username`, `db_password`, `status` y `last_resolved_at`.
+
+`company_id` es el ID raíz esperado dentro de la BD tenant. No declara FK porque `companies` pertenece a la base tenant, no a landlord.
+
+### tenant_domains
+
+Dominios y subdominios asociados a cada tenant. Campos: `tenant_database_id`, `domain`, `type`, `is_primary` y `status`.
+
+Relaciones: pertenece a `tenant_databases`. `domain` debe ser único para evitar que dos clientes resuelvan al mismo host.
 ## Maestros generales
 
 ### identity_document_types
