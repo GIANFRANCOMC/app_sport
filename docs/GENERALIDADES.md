@@ -30,11 +30,11 @@ Evitar colocar reglas críticas sólo en Vue. El frontend guía al usuario; el b
 
 ## Multi-tenant por BD
 
-Gympe puede operar con una base de datos por cliente. El registro central de dominios y conexiones vive en `landlord`; la operación del cliente se ejecuta en `tenant`. La guía completa está en `System/MULTITENANT.md`.
+Gympe opera exclusivamente desde subdominios registrados y con una base de datos por cliente. El dominio raíz pertenece a otro proyecto. El registro central mínimo vive en `landlord`; la operación del cliente se ejecuta en `tenant`. La guía completa está en `System/MULTITENANT.md`.
 
 Aunque exista una BD por cliente, `company_id` se mantiene en las tablas tenant para subcompañías internas y como defensa de aislamiento lógico. En tablas tenant, todo `company_id` debe tener FK local a `companies` salvo casos imposibles por diseño, como el registro central landlord.
 
-La sesión también se aísla por tenant. `ResolveTenant` cambia el nombre de cookie antes de iniciar sesión y `EnsureTenantSession` invalida cualquier sesión que intente cruzar de un tenant a otro. Para producción, usar HTTPS, `SESSION_SECURE_COOKIE=true` y mantener cookies host-only salvo decisión justificada.
+La sesión también se aísla por tenant. `ResolveTenant` cambia el nombre de cookie antes de iniciar sesión y `EnsureTenantSession` invalida cualquier sesión que intente cruzar de un tenant a otro. Para producción, usar HTTPS, `SESSION_SECURE_COOKIE=true` y mantener `SESSION_DOMAIN` vacío. Ver `System/SECURITY_AND_AUTH.md`.
 ## Multiempresa
 
 Toda tabla operativa, hija o maestro configurable debe tener `company_id` cuando el dato pertenece a una empresa. Esto aplica también a maestros que antes podían parecer globales, como monedas, tipos de documento o comprobantes, porque cada empresa puede tener reglas distintas.

@@ -30,7 +30,9 @@ Un modulo System normalmente tiene:
 
 ## Multi-tenant por base de datos
 
-La separación física por cliente está documentada en `MULTITENANT.md`. La aplicación usa una conexión central `landlord` para resolver dominios y una conexión dinámica `tenant` para operar sobre la base de datos propia del cliente. Esta capa no reemplaza `company_id`: dentro de cada tenant se conserva para subcompañías internas, permisos, filtros y trazabilidad.
+La separación física por cliente está documentada en `MULTITENANT.md`. La aplicación solo atiende subdominios de un nivel registrados bajo `TENANCY_BASE_DOMAIN`; el dominio raíz usa otro proyecto. `landlord` resuelve el nombre de la BD y `tenant` opera sobre ella con credenciales externas al registry. Esta capa no reemplaza `company_id`: dentro de cada tenant se conserva para subcompañías internas, permisos, filtros y trazabilidad.
+
+`ResolveTenant` es middleware global para proteger rutas web y API antes de cualquier consulta funcional. El grupo `web` se aplica una sola vez desde `RouteServiceProvider`; no debe volver a declararse dentro de `routes/web.php`.
 ## Multiempresa
 
 Regla fuerte: toda consulta operativa debe filtrar por `company_id` o validar que la entidad pertenece a una sucursal/serie/empresa del usuario autenticado.

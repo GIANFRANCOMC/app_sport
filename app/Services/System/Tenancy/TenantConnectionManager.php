@@ -6,8 +6,8 @@ namespace App\Services\System\Tenancy;
 
 use App\Models\System\Tenancy\TenantDatabase;
 use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
+use RuntimeException;
 
 final class TenantConnectionManager {
 
@@ -15,15 +15,18 @@ final class TenantConnectionManager {
 
         $connectionName = config('tenancy.tenant_connection', 'tenant');
         $base = config("database.connections.{$connectionName}", config('database.connections.mysql'));
+        $databaseName = $tenant->database_name;
+        $databasePrefix = (string) config('tenancy.database_prefix', 'gympe_tenant_');
 
-        $base['driver'] = $tenant->db_driver ?: ($base['driver'] ?? 'mysql');
-        $base['host'] = $tenant->db_host ?: ($base['host'] ?? env('DB_HOST', '127.0.0.1'));
-        $base['port'] = $tenant->db_port ?: ($base['port'] ?? env('DB_PORT', '3306'));
-        $base['database'] = $tenant->database_name;
-        $base['username'] = $tenant->db_username ?: ($base['username'] ?? env('DB_USERNAME'));
-        $base['password'] = $tenant->db_password
-            ? Crypt::decryptString($tenant->db_password)
-            : ($base['password'] ?? env('DB_PASSWORD'));
+        if(!preg_match('/^[a-zA-Z0-9_]+$/', $databaseName)) {
+            throw new RuntimeException('La base de datos tenant configurada no es válida.');
+        }
+
+        if(config('tenancy.enforce_database_prefix', true) && !str_starts_with($databaseName, $databasePrefix)) {
+            throw new RuntimeException('La base de datos tenant no cumple el prefijo permitido.');
+        }
+
+        $base['database'] = $databaseName;
 
         Config::set("database.connections.{$connectionName}", $base);
         Config::set('database.default', $connectionName);
@@ -37,9 +40,11 @@ final class TenantConnectionManager {
     public function disconnect(): void {
 
         $connectionName = config('tenancy.tenant_connection', 'tenant');
+        $landlordConnection = config('tenancy.landlord_connection', 'landlord');
+
         DB::purge($connectionName);
-        Config::set('database.default', env('DB_CONNECTION', 'mysql'));
-        DB::setDefaultConnection(config('database.default'));
+        Config::set('database.default', $landlordConnection);
+        DB::setDefaultConnection($landlordConnection);
 
     }
 

@@ -11,6 +11,7 @@ use Illuminate\Validation\ValidationException;
 
 use App\Helpers\System\Utilities;
 use App\Models\System\Organizations\{Company, User};
+use App\Services\System\Tenancy\TenantContext;
 
 class LoginRequest extends FormRequest {
 
@@ -157,7 +158,11 @@ class LoginRequest extends FormRequest {
      */
     public function throttleKey(): string {
 
-        return Str::transliterate(Str::lower($this->input("email"))."|".$this->ip());
+        $tenantId = app(TenantContext::class)->get()?->id ?? 0;
+
+        return Str::transliterate(
+            $tenantId."|".Str::lower((string) $this->input("email"))."|".$this->ip()
+        );
 
     }
 

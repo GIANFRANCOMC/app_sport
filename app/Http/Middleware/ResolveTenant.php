@@ -25,8 +25,7 @@ final class ResolveTenant {
 
         if(!$tenant) {
             $this->context->set(null);
-            Config::set('session.cookie', $this->centralSessionCookieName());
-            return $next($request);
+            abort(404);
         }
 
         $this->connectionManager->connect($tenant);
@@ -35,12 +34,6 @@ final class ResolveTenant {
         Config::set('session.domain', null);
 
         return $next($request);
-
-    }
-
-    private function centralSessionCookieName(): string {
-
-        return env('SESSION_COOKIE') ?: Str::slug(env('APP_NAME', 'laravel'), '_') . '_session';
 
     }
 

@@ -19,6 +19,7 @@ return [
 
     'name' => env('APP_NAME', 'AppSport'),
     'owner_app' => Utilities::getOwnerApp(),
+    'company_id' => env('COMPANY_ID'),
 
     /*
     |--------------------------------------------------------------------------

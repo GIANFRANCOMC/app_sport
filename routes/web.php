@@ -15,83 +15,80 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware(["web"])
-     ->group(function() {
+$systemRoute = __DIR__.'/System';
+$guestRoute = __DIR__.'/Guest';
 
-        Route::get('/send-subscription-emails',  [NotificationController::class, 'sendSubscriptionEmails'])->name('send-subscription-emails');
+// Guest Routes (Public)
+Route::prefix('{company_slug}/book_complaints')->middleware('company.exists')->group($guestRoute.'/BookComplaint.php');
+Route::prefix('{company_slug}/home')->middleware('company.exists')->group($guestRoute.'/Home.php');
+Route::prefix('{company_slug}/tracking_attendances')->middleware('company.exists')->group($guestRoute.'/TrackingAttendance.php');
+Route::prefix('{company_slug}/biometric_devices')->middleware('company.exists')->group($guestRoute.'/BiometricDevice.php');
 
-        $systemRoute = __DIR__.'/System';
-        $guestRoute = __DIR__.'/Guest';
+Route::middleware('guest')->group(function() {
 
-        // Guest Routes (Public)
-        Route::prefix('{company_slug}/book_complaints')->middleware('company.exists')->group($guestRoute.'/BookComplaint.php');
-        Route::prefix('{company_slug}/home')->middleware('company.exists')->group($guestRoute.'/Home.php');
-        Route::prefix('{company_slug}/tracking_attendances')->middleware('company.exists')->group($guestRoute.'/TrackingAttendance.php');
-        Route::prefix('{company_slug}/biometric_devices')->middleware('company.exists')->group($guestRoute.'/BiometricDevice.php');
+    Route::get('/', [AuthenticatedSessionController::class, 'create']);
+    Route::get('login', [AuthenticatedSessionController::class, 'create'])->name('login');
+    Route::post('login', [AuthenticatedSessionController::class, 'store']);
 
-        Route::middleware('guest')->group(function() use($guestRoute) {
+});
 
-            Route::get('/',  [AuthenticatedSessionController::class, 'create'])->name('login');
-            Route::get('login',  [AuthenticatedSessionController::class, 'create'])->name('login');
-            Route::post('login', [AuthenticatedSessionController::class, 'store']);
+Route::middleware(['auth', 'verified', 'module.permission'])->group(function() use($systemRoute) {
 
-        });
+    Route::post('/send-subscription-emails', [NotificationController::class, 'sendSubscriptionEmails'])
+        ->middleware('throttle:6,1')
+        ->name('send-subscription-emails');
 
-        Route::middleware(['auth', 'verified', 'module.permission'])->group(function() use($systemRoute) {
+    // Assets
+    Route::prefix('/assets')->group($systemRoute.'/Assets/Asset.php');
+    Route::prefix('/assets_management')->group($systemRoute.'/Assets/AssetManagement.php');
 
-            // Assets
-            Route::prefix('/assets')->group($systemRoute.'/Assets/Asset.php');
-            Route::prefix('/assets_management')->group($systemRoute.'/Assets/AssetManagement.php');
+    // Catalogs
+    Route::prefix('/brands')->group($systemRoute.'/Catalogs/Brand.php');
+    Route::prefix('/categories')->group($systemRoute.'/Catalogs/Category.php');
+    Route::prefix('/products')->group($systemRoute.'/Catalogs/Product.php');
+    Route::prefix('/recipes')->group($systemRoute.'/Catalogs/Recipe.php');
+    Route::prefix('/services')->group($systemRoute.'/Catalogs/Service.php');
+    Route::prefix('/subscriptions')->group($systemRoute.'/Catalogs/Subscription.php');
 
-            // Catalogs
-            Route::prefix('/brands')->group($systemRoute.'/Catalogs/Brand.php');
-            Route::prefix('/categories')->group($systemRoute.'/Catalogs/Category.php');
-            Route::prefix('/products')->group($systemRoute.'/Catalogs/Product.php');
-            Route::prefix('/recipes')->group($systemRoute.'/Catalogs/Recipe.php');
-            Route::prefix('/services')->group($systemRoute.'/Catalogs/Service.php');
-            Route::prefix('/subscriptions')->group($systemRoute.'/Catalogs/Subscription.php');
+    // Customers
+    Route::prefix('/customers')->group($systemRoute.'/Customers/Customer.php');
+    Route::prefix('/tracking_attendances')->group($systemRoute.'/Customers/TrackingAttendance.php');
+    Route::prefix('/tracking_customers')->group($systemRoute.'/Customers/TrackingCustomer.php');
+    Route::prefix('/tracking_subscriptions')->group($systemRoute.'/Customers/TrackingSubscription.php');
 
-            // Customers
-            Route::prefix('/customers')->group($systemRoute.'/Customers/Customer.php');
-            Route::prefix('/tracking_attendances')->group($systemRoute.'/Customers/TrackingAttendance.php');
-            Route::prefix('/tracking_customers')->group($systemRoute.'/Customers/TrackingCustomer.php');
-            Route::prefix('/tracking_subscriptions')->group($systemRoute.'/Customers/TrackingSubscription.php');
+    // Devices
+    Route::prefix('/biometric_devices')->group($systemRoute.'/Devices/BiometricDevice.php');
 
-            // Devices
-            Route::prefix('/biometric_devices')->group($systemRoute.'/Devices/BiometricDevice.php');
+    // Essentials
+    Route::prefix('/dashboard')->group($systemRoute.'/Essentials/Dashboard.php');
+    Route::prefix('/helpers')->group($systemRoute.'/Essentials/Helper.php');
+    Route::prefix('/home')->group($systemRoute.'/Essentials/Home.php');
+    Route::prefix('/reports')->group($systemRoute.'/Essentials/Report.php');
 
-            // Essentials
-            Route::prefix('/dashboard')->group($systemRoute.'/Essentials/Dashboard.php');
-            Route::prefix('/helpers')->group($systemRoute.'/Essentials/Helper.php');
-            Route::prefix('/home')->group($systemRoute.'/Essentials/Home.php');
-            Route::prefix('/reports')->group($systemRoute.'/Essentials/Report.php');
+    // Customers (Tracking Notifications)
+    Route::prefix('/tracking_notifications')->group($systemRoute.'/Customers/TrackingNotification.php');
 
-            // Customers (Tracking Notifications)
-            Route::prefix('/tracking_notifications')->group($systemRoute.'/Customers/TrackingNotification.php');
+    // Organizations
+    Route::prefix('/book_complaints')->group($systemRoute.'/Organizations/BookComplaint.php');
+    Route::prefix('/branches')->group($systemRoute.'/Organizations/Branch.php');
+    Route::prefix('/companies')->group($systemRoute.'/Organizations/Company.php');
+    Route::prefix('/roles')->group($systemRoute.'/Organizations/Role.php');
+    Route::prefix('/users')->group($systemRoute.'/Organizations/User.php');
 
-            // Organizations
-            Route::prefix('/book_complaints')->group($systemRoute.'/Organizations/BookComplaint.php');
-            Route::prefix('/branches')->group($systemRoute.'/Organizations/Branch.php');
-            Route::prefix('/companies')->group($systemRoute.'/Organizations/Company.php');
-            Route::prefix('/roles')->group($systemRoute.'/Organizations/Role.php');
-            Route::prefix('/users')->group($systemRoute.'/Organizations/User.php');
+    // Sales
+    Route::prefix('/sales')->group($systemRoute.'/Sales/Sale.php');
 
-            // Sales
-            Route::prefix('/sales')->group($systemRoute.'/Sales/Sale.php');
+    // Finance
+    Route::prefix('/cash_registers')->group($systemRoute.'/Finance/CashRegister.php');
 
-            // Finance
-            Route::prefix('/cash_registers')->group($systemRoute.'/Finance/CashRegister.php');
+    // Purchases
+    Route::prefix('/purchases')->group($systemRoute.'/Purchases/Purchase.php');
+    Route::prefix('/suppliers')->group($systemRoute.'/Purchases/Supplier.php');
 
-            // Purchases
-            Route::prefix('/purchases')->group($systemRoute.'/Purchases/Purchase.php');
-            Route::prefix('/suppliers')->group($systemRoute.'/Purchases/Supplier.php');
+    // Warehouses
+    Route::prefix('/stocks_management')->group($systemRoute.'/Warehouses/StockManagement.php');
 
-            // Warehouses
-            Route::prefix('/stocks_management')->group($systemRoute.'/Warehouses/StockManagement.php');
+    // Sessions
+    Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
 
-            // Sessions
-            Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
-
-        });
-
-  });
+});

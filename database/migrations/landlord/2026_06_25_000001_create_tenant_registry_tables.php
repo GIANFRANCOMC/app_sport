@@ -16,13 +16,7 @@ return new class extends Migration {
             $table->id();
             $table->string('slug', 120)->unique();
             $table->unsignedBigInteger('company_id')->nullable();
-            $table->string('connection_name', 60)->default('tenant');
             $table->string('database_name', 180);
-            $table->string('db_driver', 30)->default('mysql');
-            $table->string('db_host', 180)->nullable();
-            $table->string('db_port', 20)->nullable();
-            $table->string('db_username', 180)->nullable();
-            $table->text('db_password')->nullable();
             $table->enum('status', ['provisioning', 'active', 'inactive', 'suspended'])->default('provisioning');
             $table->timestamp('last_resolved_at')->nullable();
             $table->timestamp('created_at')->useCurrent()->nullable();
@@ -35,7 +29,7 @@ return new class extends Migration {
             $table->id();
             $table->unsignedBigInteger('tenant_database_id');
             $table->string('domain', 255)->unique();
-            $table->enum('type', ['subdomain', 'custom'])->default('subdomain');
+            $table->enum('type', ['subdomain'])->default('subdomain');
             $table->boolean('is_primary')->default(false);
             $table->enum('status', ['active', 'inactive'])->default('active');
             $table->timestamp('created_at')->useCurrent()->nullable();

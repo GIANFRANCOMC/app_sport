@@ -57,7 +57,7 @@ class Utilities {
 
         $result = new stdClass();
 
-        $result->env_company_id = env("COMPANY_ID") ?? null;
+        $result->env_company_id = config("app.company_id");
 
         return $result;
 

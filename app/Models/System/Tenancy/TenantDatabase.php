@@ -15,13 +15,7 @@ final class TenantDatabase extends Model {
     protected $fillable = [
         'slug',
         'company_id',
-        'connection_name',
         'database_name',
-        'db_driver',
-        'db_host',
-        'db_port',
-        'db_username',
-        'db_password',
         'status',
         'last_resolved_at',
         'created_at',
@@ -33,10 +27,6 @@ final class TenantDatabase extends Model {
     protected $casts = [
         'company_id' => 'integer',
         'last_resolved_at' => 'datetime'
-    ];
-
-    protected $hidden = [
-        'db_password'
     ];
 
     public function domains() {
