@@ -135,6 +135,10 @@
                         :searchable="false"
                         placeholder="Seleccione almacén"/>
                 </label>
+                <div v-if="posConfigurationIssue" class="br-pos-alert br-pos-alert--danger mb-0">
+                    <i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i>
+                    <span>{{ posConfigurationIssue }}</span>
+                </div>
             </section>
 
             <section class="br-pos-ticket__items">
@@ -192,7 +196,8 @@
                 <button
                     type="button"
                     class="br-btn br-btn-success br-pos-ticket__pay"
-                    :disabled="saving || !cart.length"
+                    :disabled="saving || !cart.length || Boolean(posConfigurationIssue)"
+                    :title="posConfigurationIssue || 'Revisar venta'"
                     @click="openSaleConfirmation">
                     <i class="fa-solid fa-cash-register" aria-hidden="true"></i>
                     <span>Revisar venta</span>
@@ -507,14 +512,16 @@ export default {
         warehouseOptions() {
             const branchId = this.selectedBranch?.id;
             return this.warehouses
-                .filter(warehouse => !branchId || warehouse.branch_id === branchId)
+                .filter(warehouse => warehouse?.status === "active" && (!branchId || warehouse.branch_id === branchId))
                 .map(warehouse => ({...warehouse, label: `${warehouse.branch?.name || 'Sucursal'} - ${warehouse.name}`}));
         },
         serieOptions() {
-            return (this.selectedBranch?.series || []).map(serie => ({
-                ...serie,
-                label: this.serieLabel(serie)
-            }));
+            return (this.selectedBranch?.series || [])
+                .filter(serie => serie?.status === "active")
+                .map(serie => ({
+                    ...serie,
+                    label: this.serieLabel(serie)
+                }));
         },
         hasMultipleSeries() {
             return this.serieOptions.length > 1;
@@ -550,6 +557,19 @@ export default {
         },
         showWarehouseInput() {
             return this.warehouseOptions.length > 1;
+        },
+        posConfigurationIssue() {
+            if(!this.hasOpenCashSessions || !this.selectedBranch) return null;
+
+            if(!this.serieOptions.length) {
+                return "Esta sucursal no tiene una serie activa. Crea o activa una serie antes de vender.";
+            }
+
+            if(!this.warehouseOptions.length) {
+                return "Esta sucursal no tiene un almacén activo. Crea o activa un almacén antes de vender.";
+            }
+
+            return null;
         },
         visibleCategories() {
             return this.categories.filter(category => this.countByCategory(category.id) > 0);
@@ -957,6 +977,11 @@ export default {
         openSaleConfirmation() {
             if(!this.cart.length) {
                 Alerts.toastrs({type: "warning", subtitle: "Agrega al menos un producto, servicio o membresía al detalle."});
+                return;
+            }
+
+            if(this.posConfigurationIssue) {
+                Alerts.toastrs({type: "warning", subtitle: this.posConfigurationIssue});
                 return;
             }
 

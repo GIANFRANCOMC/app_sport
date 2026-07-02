@@ -64,6 +64,15 @@
                                     placeholder="Seleccione"/>
                             </template>
                         </InputSlot>
+                        <div v-if="saleConfigurationIssue" class="col-12">
+                            <div class="alert alert-warning d-flex align-items-start gap-2 px-3 py-2 mb-0" role="alert">
+                                <i class="fa-solid fa-triangle-exclamation mt-1" aria-hidden="true"></i>
+                                <div>
+                                    <strong class="d-block" v-text="saleConfigurationIssue.title"></strong>
+                                    <span v-text="saleConfigurationIssue.message"></span>
+                                </div>
+                            </div>
+                        </div>
                         <InputDate
                             v-model="forms[entity].createUpdate.data.issue_date"
                             hasDiv
@@ -418,7 +427,12 @@
                         <span v-text="MODULE.texts.actions.viewMemberships"></span>
                     </button>
                 </div>
-                <button type="button" class="br-btn br-btn-success br-sale-sidebar-actions__cta waves-effect" @click="createUpdateEntity()">
+                <button
+                    type="button"
+                    class="br-btn br-btn-success br-sale-sidebar-actions__cta waves-effect"
+                    :disabled="Boolean(saleConfigurationIssue)"
+                    :title="saleConfigurationIssue?.message || MODULE.texts.actions.generateSale"
+                    @click="createUpdateEntity()">
                     <i class="fa-solid fa-cash-register" aria-hidden="true"></i>
                     <span v-text="MODULE.texts.actions.generateSale"></span>
                 </button>
@@ -1952,7 +1966,7 @@ export default {
 
             if(branch.length === 1) {
 
-                const series = branch[0].series;
+                const series = (branch[0].series ?? []).filter(e => e?.status === "active");
 
                 return series.map(e => ({code: e.id, label: `${e.legible_serie} - ${e?.document_type?.name}`, data: e}));
 
@@ -1966,12 +1980,39 @@ export default {
             const branchId = this.forms[this.entity].createUpdate.data.branch?.code;
 
             return (this.options?.warehouses?.records ?? [])
-                .filter(e => !branchId || e?.branch_id == branchId)
+                .filter(e => e?.status === "active" && (!branchId || e?.branch_id == branchId))
                 .map(e => ({
                     code: e.id,
                     label: `${e?.branch?.name ?? "Sucursal"} - ${e.name}`,
                     data: e
                 }));
+
+        },
+        saleConfigurationIssue() {
+
+            const branch = this.forms[this.entity].createUpdate.data.branch;
+
+            if(!branch) return null;
+
+            if(!this.series.length) {
+
+                return {
+                    title: "Falta una serie activa",
+                    message: "Crea o activa una serie para esta sucursal antes de generar la venta."
+                };
+
+            }
+
+            if(!this.warehouses.length) {
+
+                return {
+                    title: "Falta un almacén activo",
+                    message: "Crea o activa un almacén para esta sucursal antes de generar la venta."
+                };
+
+            }
+
+            return null;
 
         },
         holders: function() {

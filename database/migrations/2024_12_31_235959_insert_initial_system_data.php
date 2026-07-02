@@ -250,6 +250,22 @@ return new class extends Migration {
             ["company_id" => 1, "role_id" => 2, "identity_document_type_id" => 2, "document_number" => "71883137", "name" => "Gianfranco", "email" => "gmc@pagape.com", "password" => Hash::make("1")]
         ]);
         DB::table("company_settings")->insert([
+            [
+                "company_id" => 1,
+                "group" => "localization",
+                "key" => "timezone",
+                "value" => "America/Lima",
+                "description" => "Zona horaria IANA usada para convertir los límites diarios del Dashboard y otros procesos operativos. Las fechas se almacenan en la base de datos y se interpretan con esta zona antes de calcular indicadores por día.",
+                "value_type" => "string"
+            ],
+            [
+                "company_id" => 1,
+                "group" => "dashboard",
+                "key" => "membership_expiration_window_days",
+                "value" => "7",
+                "description" => "Cantidad de días calendario, incluyendo la fecha consultada, usada para identificar membresías activas próximas a vencer en el Dashboard.",
+                "value_type" => "integer"
+            ],
             ["company_id" => 1, "group" => "internal_code_prefixes", "key" => "product", "value" => "PRO", "description" => "Prefijo usado para generar códigos internos de productos. Si el valor queda vacío, el código se guarda sin prefijo.", "value_type" => "string"],
             ["company_id" => 1, "group" => "internal_code_prefixes", "key" => "service", "value" => "SER", "description" => "Prefijo usado para generar códigos internos de servicios. Si el valor queda vacío, el código se guarda sin prefijo.", "value_type" => "string"],
             ["company_id" => 1, "group" => "internal_code_prefixes", "key" => "subscription", "value" => "MEM", "description" => "Prefijo usado para generar códigos internos de membresías. Si el valor queda vacío, el código se guarda sin prefijo.", "value_type" => "string"],

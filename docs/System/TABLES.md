@@ -54,6 +54,12 @@ El grupo `inventory` contiene `allow_negative_stock_on_sale`, booleano con valor
 
 El grupo `inventory` también contiene `restore_stock_on_sale_cancellation`, booleano con valor predeterminado `false`. Cuando está desactivado, anular una venta no modifica existencias; una devolución física se registra posteriormente desde Inventario. Cuando está activo, la anulación repone automáticamente los productos en el almacén asociado a la venta.
 
+El grupo `localization` contiene `timezone`, con valor inicial `America/Lima`. Debe almacenar una zona horaria IANA y se usa para construir límites diarios coherentes en Dashboard y procesos operativos.
+
+El grupo `dashboard` contiene `membership_expiration_window_days`, entero con valor inicial `7`. Define cuántos días calendario, incluyendo la fecha consultada, abarca el KPI de membresías próximas a vencer.
+
+La combinación `company_id + group + key` es única: una empresa no puede tener dos valores activos o históricos ambiguos para la misma configuración.
+
 Relaciones: cada configuración pertenece a `companies` mediante `company_id`.
 
 ### company_socials_media
@@ -147,6 +153,14 @@ Relaciones: pertenece a empresa; tiene series, almacenes, asistencias, membresia
 ### series
 
 Series/correlativos por sucursal y tipo de documento. Campos: `branch_id`, `document_type_id`, `code`, `number`, `init`, `status`.
+
+La asignación del correlativo bloquea la serie dentro de la transacción. `sales_header` garantiza que `company_id + serie_id + sequential` no se repita.
+
+### series_correlative_movements
+
+Bitácora inmutable de correlativos de venta. Campos: `company_id`, `serie_id`, `sale_header_id`, `user_id`, `sequential`, `action`, `source`, `note`, `metadata`, `occurred_at`.
+
+Relaciones: pertenece a empresa, serie, venta y usuario. `action` distingue emisión y anulación; `source` distingue venta normal y POS. Anular una venta registra un nuevo evento y no libera el correlativo.
 
 Relaciones: pertenece a sucursal y tipo de documento; usada por ventas.
 
@@ -345,11 +359,17 @@ Reglas:
 
 ## Activos
 
+### asset_categories
+
+Catálogo de clasificación de activos por empresa. Campos: `company_id`, `name`, `description`, `status`.
+
+Relaciones: pertenece a empresa y clasifica registros de `assets`. Al eliminar una categoría, los activos se conservan y quedan sin categoría.
+
 ### assets
 
-Catálogo de activos. Campos: `company_id`, `internal_code`, `name`, `description`, `management_type`, `status`.
+Catálogo de activos. Campos: `company_id`, `asset_category_id`, `internal_code`, `patrimonial_code`, `serial_number`, `name`, `description`, `management_type`, `status`.
 
-Relaciones: pertenece a empresa; se asigna a sucursales.
+Relaciones: pertenece a empresa y opcionalmente a `asset_categories`; se asigna a sucursales. `internal_code` identifica el registro en la plataforma, `patrimonial_code` corresponde al control patrimonial de la empresa y `serial_number` a la serie física del fabricante.
 
 ### branch_assets
 

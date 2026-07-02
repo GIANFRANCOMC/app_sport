@@ -41,6 +41,31 @@ return new class extends Migration {
             $table->foreign("warehouse_id")->references("id")->on("warehouses")->nullOnDelete();
             $table->foreign("cash_session_id")->references("id")->on("cash_sessions")->nullOnDelete();
             $table->foreign("company_id")->references("id")->on("companies")->onDelete("cascade");
+            $table->unique(["company_id", "serie_id", "sequential"]);
+        });
+
+        Schema::create("series_correlative_movements", function(Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger("company_id");
+            $table->unsignedBigInteger("serie_id");
+            $table->unsignedBigInteger("sale_header_id");
+            $table->unsignedBigInteger("user_id")->nullable();
+            $table->integer("sequential");
+            $table->enum("action", ["issued", "canceled"]);
+            $table->enum("source", ["sale", "pos"])->default("sale");
+            $table->string("note", 500)->nullable();
+            $table->json("metadata")->nullable();
+            $table->timestamp("occurred_at")->useCurrent();
+            $table->timestamp("created_at")->useCurrent()->nullable();
+
+            $table->foreign("company_id")->references("id")->on("companies")->onDelete("cascade");
+            $table->foreign("serie_id")->references("id")->on("series")->restrictOnDelete();
+            $table->foreign("sale_header_id")->references("id")->on("sales_header")->restrictOnDelete();
+            $table->foreign("user_id")->references("id")->on("users")->nullOnDelete();
+            $table->unique(
+                ["company_id", "serie_id", "sequential", "action"],
+                "series_corr_company_serie_seq_action_uq"
+            );
         });
         Schema::create("sales_body", function(Blueprint $table) {
             $table->id();
@@ -130,6 +155,7 @@ return new class extends Migration {
         Schema::dropIfExists("sale_payments");
         Schema::dropIfExists("sale_taxes");
         Schema::dropIfExists("sales_body");
+        Schema::dropIfExists("series_correlative_movements");
         Schema::dropIfExists("sales_header");
 
     }

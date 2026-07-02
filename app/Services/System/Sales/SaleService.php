@@ -28,6 +28,8 @@ class SaleService {
      * Translation namespace for sale module
      */
     private const TRANSLATION_NAMESPACE = "System.Sales.sale";
+    private const CORRELATIVE_ISSUED = "issued";
+    private const CORRELATIVE_CANCELED = "canceled";
 
     /**
      * Get translation with fallback
@@ -234,7 +236,7 @@ class SaleService {
 
             if(!$warehouse) {
 
-                throw new Exception("El almacÃ©n seleccionado no pertenece a la sucursal de la venta.");
+                throw new Exception("El almacén seleccionado no está activo o no pertenece a la sucursal de la venta.");
 
             }
 
@@ -252,11 +254,11 @@ class SaleService {
 
         if($warehouses->isEmpty()) {
 
-            throw new Exception("La sucursal seleccionada no cuenta con almacÃ©n activo.");
+            throw new Exception("La sucursal no tiene un almacén activo. Crea o activa un almacén antes de registrar la venta.");
 
         }
 
-        throw new Exception("Seleccione el almacÃ©n que serÃ¡ afectado por la venta.");
+        throw new Exception("Selecciona el almacén que será afectado por la venta.");
 
     }
 
@@ -304,9 +306,48 @@ class SaleService {
 
         if(!$exists) {
 
-            throw new Exception("El comprobante seleccionado no pertenece a la sucursal de la venta.");
+            $hasActiveSeries = Serie::query()
+                ->where("branch_id", $branchId)
+                ->where("status", "active")
+                ->exists();
+
+            if(!$hasActiveSeries) {
+
+                throw new Exception("La sucursal no tiene una serie activa. Crea o activa una serie antes de registrar la venta.");
+
+            }
+
+            throw new Exception("El comprobante seleccionado no está activo o no pertenece a la sucursal de la venta.");
 
         }
+
+    }
+
+    private static function recordCorrelativeMovement(
+        SaleHeader $saleHeader,
+        string $action,
+        int $companyId,
+        int $userId,
+        string $source = "sale"
+    ): void {
+
+        DB::table("series_correlative_movements")->insert([
+            "company_id" => $companyId,
+            "serie_id" => (int) $saleHeader->serie_id,
+            "sale_header_id" => (int) $saleHeader->id,
+            "user_id" => $userId,
+            "sequential" => (int) $saleHeader->sequential,
+            "action" => $action,
+            "source" => in_array($source, ["sale", "pos"], true) ? $source : "sale",
+            "note" => $action === self::CORRELATIVE_CANCELED
+                ? "Correlativo conservado en el historial por anulación de la venta."
+                : "Correlativo asignado al registrar la venta.",
+            "metadata" => json_encode([
+                "sale_status" => (string) $saleHeader->status
+            ]),
+            "occurred_at" => now(),
+            "created_at" => now()
+        ]);
 
     }
 
@@ -391,6 +432,14 @@ class SaleService {
             $saleHeader->created_at  = now();
             $saleHeader->created_by  = $userId;
             $saleHeader->save();
+
+            self::recordCorrelativeMovement(
+                $saleHeader,
+                self::CORRELATIVE_ISSUED,
+                (int) $companyId,
+                (int) $userId,
+                (string) ($data["source_channel"] ?? "sale")
+            );
 
             if($taxLines->isNotEmpty()) {
 
@@ -551,6 +600,22 @@ class SaleService {
             $saleHeader->canceled_at = now();
             $saleHeader->canceled_by = $userId;
             $saleHeader->save();
+
+            $correlativeSource = (string) (
+                DB::table("series_correlative_movements")
+                    ->where("sale_header_id", $saleHeader->id)
+                    ->where("action", self::CORRELATIVE_ISSUED)
+                    ->value("source")
+                ?? "sale"
+            );
+
+            self::recordCorrelativeMovement(
+                $saleHeader,
+                self::CORRELATIVE_CANCELED,
+                $companyId,
+                (int) $userId,
+                $correlativeSource
+            );
 
             // Cancel sale bodies
             SaleBody::where("sale_header_id", $saleHeader->id)

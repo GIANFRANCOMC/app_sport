@@ -27,6 +27,7 @@ return new class extends Migration {
             $table->integer("updated_by")->nullable();
 
             $table->foreign("company_id")->references("id")->on("companies")->onDelete("cascade");
+            $table->unique(["company_id", "group", "key"]);
         });
 
         Schema::create("taxes", function(Blueprint $table) {
@@ -189,10 +190,27 @@ return new class extends Migration {
             $table->foreign("brand_id")->references("id")->on("brands")->nullOnDelete();
             $table->foreign("currency_id")->references("id")->on("currencies")->onDelete("cascade");
         });
+        Schema::create("asset_categories", function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger("company_id");
+            $table->string("name", 150);
+            $table->string("description", 500)->nullable();
+            $table->enum("status", ["active", "inactive"])->default("active");
+
+            $table->timestamp("created_at")->useCurrent()->nullable();
+            $table->integer("created_by")->nullable();
+            $table->timestamp("updated_at")->nullable();
+            $table->integer("updated_by")->nullable();
+
+            $table->foreign("company_id")->references("id")->on("companies")->onDelete("cascade");
+        });
         Schema::create("assets", function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger("company_id");
+            $table->unsignedBigInteger("asset_category_id")->nullable();
             $table->string("internal_code", 255);
+            $table->string("patrimonial_code", 100)->nullable();
+            $table->string("serial_number", 150)->nullable();
             $table->string("name", 255);
             $table->text("description")->nullable();
             $table->enum("management_type", ["unit", "stock"])->default("stock");
@@ -204,6 +222,7 @@ return new class extends Migration {
             $table->integer("updated_by")->nullable();
 
             $table->foreign("company_id")->references("id")->on("companies")->onDelete("cascade");
+            $table->foreign("asset_category_id")->references("id")->on("asset_categories")->nullOnDelete();
         });
         Schema::create("categories", function(Blueprint $table) {
             $table->id();
@@ -682,6 +701,7 @@ return new class extends Migration {
         Schema::dropIfExists("category_items");
         Schema::dropIfExists("categories");
         Schema::dropIfExists("assets");
+        Schema::dropIfExists("asset_categories");
         Schema::dropIfExists("items");
         Schema::dropIfExists("brands");
         Schema::dropIfExists("series");

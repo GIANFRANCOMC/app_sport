@@ -125,6 +125,17 @@ class SaleHeader extends Model {
 
         try {
 
+            $serie = Serie::query()
+                          ->where("id", $serie_id)
+                          ->lockForUpdate()
+                          ->first(["id", "init"]);
+
+            if(!Utilities::isDefined($serie)) {
+
+                return 0;
+
+            }
+
             $maxSequential = SaleHeader::where("serie_id", $serie_id)
                                        ->max("sequential");
 
@@ -134,14 +145,7 @@ class SaleHeader extends Model {
 
             }else {
 
-                $serie = Serie::where("id", $serie_id)
-                              ->first();
-
-                if(Utilities::isDefined($serie)) {
-
-                    $newSequential = intval($serie->init);
-
-                }
+                $newSequential = intval($serie->init);
 
             }
 
