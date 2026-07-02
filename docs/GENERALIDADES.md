@@ -203,7 +203,7 @@ Formato recomendado por módulo:
 - Completar pruebas automatizadas de ventas, POS, caja, inventario, compras e impuestos cuando se cierre la fase de cambios estructurales.
 - Crear administración UI para `company_settings`, prefijos, impuestos, métodos de pago y reglas de inventario.
 - Usar `php artisan company:enable {company_id}` para habilitar datos base de una empresa sin insertar manualmente tabla por tabla.
-- Evolucionar permisos de `módulo` hacia `módulo + acción` sin romper perfiles actuales.
+- Mantener sincronizados los nuevos endpoints con `config/permissions.php` cuando compartan un prefijo entre varias páginas.
 - Revisar accesibilidad de todas las modales, tooltips, selects y acciones por teclado.
 - Consolidar reportes exportables por módulo con consultas reutilizadas del listado.
 - Mantener una auditoría funcional clara para movimientos sensibles: stock, caja, ventas, compras, perfiles y configuración.

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\System\Organizations\Roles;
 
+use App\Rules\System\Defaults\BelongsToCompany;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -15,10 +16,21 @@ class StoreRoleRequest extends FormRequest {
 
     }
 
+    protected function prepareForValidation(): void {
+
+        $this->merge([
+            "branch_scope_mode" => $this->input("branch_scope_mode", "all"),
+            "cash_register_scope_mode" => $this->input("cash_register_scope_mode", "all"),
+            "warehouse_scope_mode" => $this->input("warehouse_scope_mode", "all")
+        ]);
+
+    }
+
     public function rules(): array {
 
         $companyId = (int) $this->user()?->company_id;
         $roleId = (int) $this->route("id");
+        $actionCodes = collect(config("permissions.actions", []))->pluck("code")->all();
 
         return [
             "name" => [
@@ -31,8 +43,21 @@ class StoreRoleRequest extends FormRequest {
             ],
             "is_full_access" => ["required", "boolean"],
             "sub_section_ids" => ["array"],
-            "sub_section_ids.*" => ["integer"],
-            "status" => ["required", "in:active,inactive"]
+            "sub_section_ids.*" => ["integer", "distinct"],
+            "permissions" => ["nullable", "array"],
+            "permissions.*.sub_section_id" => ["required", "integer", "distinct"],
+            "permissions.*.actions" => ["required", "array", "min:1"],
+            "permissions.*.actions.*" => ["required", "string", Rule::in($actionCodes)],
+            "branch_scope_mode" => ["required", Rule::in(["all", "restricted"])],
+            "cash_register_scope_mode" => ["required", Rule::in(["all", "restricted"])],
+            "warehouse_scope_mode" => ["required", Rule::in(["all", "restricted"])],
+            "branch_ids" => ["required_if:branch_scope_mode,restricted", "array", "min:1"],
+            "branch_ids.*" => ["integer", "distinct", new BelongsToCompany("branches")],
+            "cash_register_ids" => ["required_if:cash_register_scope_mode,restricted", "array", "min:1"],
+            "cash_register_ids.*" => ["integer", "distinct", new BelongsToCompany("cash_registers")],
+            "warehouse_ids" => ["required_if:warehouse_scope_mode,restricted", "array", "min:1"],
+            "warehouse_ids.*" => ["integer", "distinct", new BelongsToCompany("warehouses")],
+            "status" => ["required", Rule::in(["active", "inactive"])]
         ];
 
     }
@@ -43,9 +68,11 @@ class StoreRoleRequest extends FormRequest {
             "required" => "Campo obligatorio.",
             "unique" => "Ya existe un perfil con este nombre.",
             "boolean" => "Selecciona una opción válida.",
-            "array" => "Selecciona módulos válidos.",
-            "integer" => "Selecciona módulos válidos.",
+            "array" => "Selecciona opciones válidas.",
+            "integer" => "Selecciona opciones válidas.",
+            "distinct" => "No repitas una opción.",
             "in" => "Selecciona una opción válida.",
+            "min" => "Selecciona al menos una acción.",
             "max" => "Supera la longitud permitida."
         ];
 

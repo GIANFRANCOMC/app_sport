@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 
 declare(strict_types=1);
 
@@ -609,11 +609,24 @@ class SaleService {
      * @param int $perPage Items per page
      * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator
      */
-    public static function getPaginatedList(int $companyId, array $filters = [], int $perPage = 15) {
+    public static function getPaginatedList(
+        int $companyId,
+        array $filters = [],
+        int $perPage = 15,
+        ?int $userId = null
+    ) {
 
-        $branches = \App\Models\System\Organizations\Branch::where("company_id", $companyId)
-                                                           ->with(["series"])
-                                                           ->get();
+        $branchQuery = \App\Models\System\Organizations\Branch::where("company_id", $companyId)
+            ->with(["series"]);
+        $branchIds = $userId === null
+            ? null
+            : \App\Services\System\Base\CompanyReferenceDataService::for($companyId, $userId)->allowedBranchIds();
+
+        if($branchIds !== null) {
+            $branchQuery->whereIn("id", $branchIds);
+        }
+
+        $branches = $branchQuery->get();
 
         $serieIds = $branches->pluck("series.*.id")->flatten();
 

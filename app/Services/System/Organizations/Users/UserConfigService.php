@@ -41,6 +41,12 @@ final class UserConfigService extends BaseConfigService {
             "branches" => self::data([
                 "records" => $references->activeBranches()
             ]),
+            "cashRegisters" => self::data([
+                "records" => $references->cashRegisters()
+            ]),
+            "warehouses" => self::data([
+                "records" => $references->stockWarehouses()
+            ]),
             "genders"  => User::getGenders(),
             "statuses" => User::getStatuses()
         ]);

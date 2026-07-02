@@ -205,27 +205,83 @@
                                     </button>
                                 </header>
                                 <div class="br-roles__modules">
-                                    <label
+                                    <div
                                         v-for="module in section.subSections"
                                         :key="module.id"
                                         :class="['br-roles__module', {'is-selected': isSelected(module.id), 'is-disabled': form.isFullAccess}]">
-                                        <input
-                                            type="checkbox"
-                                            :checked="isSelected(module.id)"
-                                            :disabled="form.isFullAccess"
-                                            @change="toggleModule(module.id)">
-                                        <span>
-                                            <strong>{{ module.dom_label }}</strong>
-                                            <small>{{ module.description }}</small>
-                                        </span>
-                                    </label>
+                                        <label class="br-roles__module-main">
+                                            <input
+                                                type="checkbox"
+                                                :checked="isSelected(module.id)"
+                                                :disabled="form.isFullAccess"
+                                                @change="toggleModule(module.id)">
+                                            <span>
+                                                <strong>{{ module.dom_label }}</strong>
+                                                <small>{{ module.description }}</small>
+                                            </span>
+                                        </label>
+                                        <div v-if="isSelected(module.id)" class="br-roles__actions" aria-label="Acciones permitidas">
+                                            <label
+                                                v-for="action in actionsForModule(module)"
+                                                :key="`${module.id}-${action.code}`"
+                                                :title="action.description">
+                                                <input
+                                                    type="checkbox"
+                                                    :checked="hasAction(module.id, action.code)"
+                                                    :disabled="form.isFullAccess"
+                                                    @change="toggleAction(module.id, action.code)">
+                                                <span>{{ action.label }}</span>
+                                            </label>
+                                        </div>
+                                    </div>
                                 </div>
                             </article>
                         </div>
-                        <small v-if="errors.sub_section_ids" class="text-danger">
-                            {{ firstError(errors.sub_section_ids) }}
+                        <small v-if="errors.permissions || errors.sub_section_ids" class="text-danger">
+                            {{ firstError(errors.permissions || errors.sub_section_ids) }}
                         </small>
                     </div>
+
+                    <section class="br-roles__scopes">
+                        <header class="br-roles__scopes-head">
+                            <strong>Alcance operativo</strong>
+                            <small>Limita dónde puede trabajar el perfil. Estas restricciones también se validan en el servidor.</small>
+                        </header>
+                        <div class="br-roles__scope-grid">
+                            <article v-for="scope in scopeDefinitions" :key="scope.type" class="br-roles__scope">
+                                <label class="br-entity-switch" :for="`role-scope-${scope.type}`">
+                                    <input
+                                        :id="`role-scope-${scope.type}`"
+                                        class="form-check-input"
+                                        type="checkbox"
+                                        role="switch"
+                                        :checked="form[scope.modeField] === 'restricted'"
+                                        :disabled="form.isFullAccess"
+                                        @change="setScopeMode(scope, $event.target.checked)">
+                                    <span>
+                                        <strong>{{ scope.title }}</strong>
+                                        <small>{{ scope.help }}</small>
+                                    </span>
+                                </label>
+                                <v-select
+                                    v-if="form[scope.modeField] === 'restricted' && !form.isFullAccess"
+                                    v-model="form[scope.selectionField]"
+                                    :options="scope.options"
+                                    :clearable="true"
+                                    :searchable="scope.options.length > 6"
+                                    multiple
+                                    append-to-body
+                                    :placeholder="scope.placeholder">
+                                    <template #selected-option="{label}">
+                                        <span class="br-select-selected-text" :title="label">{{ label }}</span>
+                                    </template>
+                                </v-select>
+                                <small v-if="errors[scope.errorField]" class="text-danger">
+                                    {{ firstError(errors[scope.errorField]) }}
+                                </small>
+                            </article>
+                        </div>
+                    </section>
                 </div>
 
                 <div class="modal-footer br-entity-modal__footer">
@@ -263,7 +319,14 @@ export default {
             editingId: null,
             records: {total: 0, data: []},
             filters: {word: ""},
-            options: {sections: [], statuses: []},
+            options: {
+                sections: [],
+                statuses: [],
+                permissionActions: [],
+                branches: [],
+                cashRegisters: [],
+                warehouses: []
+            },
             moduleSearch: "",
             showSelectedOnly: false,
             form: this.defaultForm(),
@@ -287,6 +350,13 @@ export default {
                 name: "",
                 isFullAccess: false,
                 selectedIds: [],
+                selectedActions: {},
+                branchScopeMode: "all",
+                cashRegisterScopeMode: "all",
+                warehouseScopeMode: "all",
+                branches: [],
+                cashRegisters: [],
+                warehouses: [],
                 status: {code: "active", label: "Activo"}
             };
         },
@@ -299,6 +369,10 @@ export default {
             });
             this.options.sections = result.data?.config?.sections?.records || [];
             this.options.statuses = result.data?.config?.statuses || [];
+            this.options.permissionActions = result.data?.config?.permissionActions || [];
+            this.options.branches = result.data?.config?.branches || [];
+            this.options.cashRegisters = result.data?.config?.cashRegisters || [];
+            this.options.warehouses = result.data?.config?.warehouses || [];
             Alerts.swals({show: false});
         },
         async listRoles({url = null} = {}) {
@@ -318,10 +392,24 @@ export default {
             this.showSelectedOnly = false;
 
             if(role) {
+                const selectedActions = {};
+                (role.role_sub_sections || []).forEach(permission => {
+                    selectedActions[Number(permission.sub_section_id)] = permission.actions?.length
+                        ? permission.actions
+                        : this.actionCodes;
+                });
+
                 this.form = {
                     name: role.name || "",
                     isFullAccess: Boolean(role.is_full_access),
                     selectedIds: (role.role_sub_sections || []).map(permission => Number(permission.sub_section_id)),
+                    selectedActions,
+                    branchScopeMode: role.branch_scope_mode || "all",
+                    cashRegisterScopeMode: role.cash_register_scope_mode || "all",
+                    warehouseScopeMode: role.warehouse_scope_mode || "all",
+                    branches: this.matchOptions(this.branchOptions, role.branches),
+                    cashRegisters: this.matchOptions(this.cashRegisterOptions, role.cash_registers),
+                    warehouses: this.matchOptions(this.warehouseOptions, role.warehouses),
                     status: this.statusOptions.find(option => option.code === role.status) || this.statusOptions[0]
                 };
             }
@@ -334,23 +422,68 @@ export default {
 
             if(this.isSelected(moduleId)) {
                 this.form.selectedIds = this.form.selectedIds.filter(selectedId => selectedId !== moduleId);
+                const selectedActions = {...this.form.selectedActions};
+                delete selectedActions[moduleId];
+                this.form.selectedActions = selectedActions;
                 return;
             }
 
             this.form.selectedIds = [...this.form.selectedIds, moduleId];
+            this.form.selectedActions = {
+                ...this.form.selectedActions,
+                [moduleId]: this.actionCodesForModule(moduleId)
+            };
+        },
+        hasAction(moduleId, actionCode) {
+            return (this.form.selectedActions[Number(moduleId)] || []).includes(actionCode);
+        },
+        actionsForModule(module) {
+            const allowed = module?.delegable_actions;
+
+            return Array.isArray(allowed)
+                ? this.permissionActions.filter(action => allowed.includes(action.code))
+                : this.permissionActions;
+        },
+        actionCodesForModule(moduleId) {
+            const module = this.availableSections
+                .flatMap(section => section.subSections)
+                .find(item => Number(item.id) === Number(moduleId));
+
+            return this.actionsForModule(module).map(action => action.code);
+        },
+        toggleAction(moduleId, actionCode) {
+            const id = Number(moduleId);
+            const current = [...(this.form.selectedActions[id] || [])];
+
+            if(current.includes(actionCode)) {
+                if(actionCode === "view" && current.length > 1) return;
+                if(current.length === 1) return;
+                this.form.selectedActions = {
+                    ...this.form.selectedActions,
+                    [id]: current.filter(code => code !== actionCode)
+                };
+                return;
+            }
+
+            this.form.selectedActions = {
+                ...this.form.selectedActions,
+                [id]: [...current, actionCode]
+            };
         },
         toggleSection(section) {
             const ids = this.sectionModules(section).map(module => Number(module.id));
             const selected = this.isSectionSelected(section);
 
-            this.form.selectedIds = selected
-                ? this.form.selectedIds.filter(id => !ids.includes(id))
-                : [...new Set([...this.form.selectedIds, ...ids])];
+            ids.forEach(id => {
+                if(selected === this.isSelected(id)) this.toggleModule(id);
+            });
         },
         toggleAllModules() {
-            this.form.selectedIds = this.allModulesSelected
-                ? []
-                : this.availableSections.flatMap(section => section.subSections.map(module => Number(module.id)));
+            const ids = this.availableSections.flatMap(section => section.subSections.map(module => Number(module.id)));
+            const selected = this.allModulesSelected;
+            ids.forEach(id => {
+                if(selected === this.isSelected(id)) this.toggleModule(id);
+            });
         },
         isSectionSelected(section) {
             return this.sectionModules(section).every(module => this.isSelected(module.id));
@@ -360,6 +493,14 @@ export default {
         },
         sectionModules(section) {
             return this.availableSections.find(availableSection => availableSection.id === section.id)?.subSections || section.subSections;
+        },
+        matchOptions(options, records = []) {
+            const ids = (records || []).map(record => Number(record.id));
+            return options.filter(option => ids.includes(Number(option.code)));
+        },
+        setScopeMode(scope, restricted) {
+            this.form[scope.modeField] = restricted ? "restricted" : "all";
+            if(!restricted) this.form[scope.selectionField] = [];
         },
         async saveRole() {
             if(this.saving) return;
@@ -374,7 +515,16 @@ export default {
             const data = {
                 name: this.form.name,
                 is_full_access: this.form.isFullAccess,
-                sub_section_ids: this.form.isFullAccess ? [] : this.form.selectedIds,
+                permissions: this.form.isFullAccess ? [] : this.form.selectedIds.map(id => ({
+                    sub_section_id: id,
+                    actions: this.form.selectedActions[id] || this.actionCodesForModule(id)
+                })),
+                branch_scope_mode: this.form.isFullAccess ? "all" : this.form.branchScopeMode,
+                cash_register_scope_mode: this.form.isFullAccess ? "all" : this.form.cashRegisterScopeMode,
+                warehouse_scope_mode: this.form.isFullAccess ? "all" : this.form.warehouseScopeMode,
+                branch_ids: this.optionIds(this.form.branches),
+                cash_register_ids: this.optionIds(this.form.cashRegisters),
+                warehouse_ids: this.optionIds(this.form.warehouses),
                 status: this.form.status?.code
             };
             const result = this.editingId
@@ -401,6 +551,9 @@ export default {
         },
         firstError(error) {
             return Array.isArray(error) ? error[0] : error;
+        },
+        optionIds(options = []) {
+            return options.map(option => Number(option?.code ?? option)).filter(Boolean);
         },
         statusLabel(status) {
             return this.statusOptions.find(option => option.code === status)?.label || status;
@@ -462,6 +615,85 @@ export default {
         allModulesSelected() {
             const ids = this.availableSections.flatMap(section => section.subSections.map(module => Number(module.id)));
             return ids.length > 0 && ids.every(id => this.isSelected(id));
+        },
+        permissionActions() {
+            return this.options.permissionActions.length
+                ? this.options.permissionActions
+                : [
+                    {code: "view", label: "Ver"},
+                    {code: "create", label: "Crear"},
+                    {code: "update", label: "Editar"},
+                    {code: "delete", label: "Eliminar"},
+                    {code: "export", label: "Exportar"},
+                    {code: "import", label: "Importar"},
+                    {code: "operate", label: "Operar"}
+                ];
+        },
+        actionCodes() {
+            return this.permissionActions.map(action => action.code);
+        },
+        branchOptions() {
+            return this.options.branches.map(record => ({code: record.id, label: record.name, data: record}));
+        },
+        cashRegisterOptions() {
+            const branchIds = this.optionIds(this.form.branches);
+            return this.options.cashRegisters
+                .filter(record => !branchIds.length || branchIds.includes(Number(record.branch_id)))
+                .map(record => ({code: record.id, label: record.name, data: record}));
+        },
+        warehouseOptions() {
+            const branchIds = this.optionIds(this.form.branches);
+            return this.options.warehouses
+                .filter(record => !branchIds.length || branchIds.includes(Number(record.branch_id)))
+                .map(record => ({code: record.id, label: record.name, data: record}));
+        },
+        scopeDefinitions() {
+            return [
+                {
+                    type: "branch",
+                    title: "Restringir sucursales",
+                    help: "El perfil solo podrá operar en las sucursales seleccionadas.",
+                    modeField: "branchScopeMode",
+                    selectionField: "branches",
+                    errorField: "branch_ids",
+                    options: this.branchOptions,
+                    placeholder: "Seleccionar sucursales"
+                },
+                {
+                    type: "cash-register",
+                    title: "Restringir cajas",
+                    help: "Aplica a apertura, cierre, movimientos y ventas POS.",
+                    modeField: "cashRegisterScopeMode",
+                    selectionField: "cashRegisters",
+                    errorField: "cash_register_ids",
+                    options: this.cashRegisterOptions,
+                    placeholder: "Seleccionar cajas"
+                },
+                {
+                    type: "warehouse",
+                    title: "Restringir almacenes",
+                    help: "Aplica a existencias, compras, ventas y traslados.",
+                    modeField: "warehouseScopeMode",
+                    selectionField: "warehouses",
+                    errorField: "warehouse_ids",
+                    options: this.warehouseOptions,
+                    placeholder: "Seleccionar almacenes"
+                }
+            ];
+        }
+    },
+    watch: {
+        "form.branches": {
+            handler() {
+                const cashRegisterIds = this.cashRegisterOptions.map(option => Number(option.code));
+                const warehouseIds = this.warehouseOptions.map(option => Number(option.code));
+
+                this.form.cashRegisters = this.form.cashRegisters
+                    .filter(option => cashRegisterIds.includes(Number(option?.code ?? option)));
+                this.form.warehouses = this.form.warehouses
+                    .filter(option => warehouseIds.includes(Number(option?.code ?? option)));
+            },
+            deep: true
         }
     }
 };

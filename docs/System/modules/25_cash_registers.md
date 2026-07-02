@@ -82,9 +82,10 @@ La vista se monta desde:
 - Reporte de caja por rango de fechas, sucursal, caja, usuario y metodo de pago.
 - Exportar resumen y sesiones a Excel con formato visual enriquecido.
 - Caja por usuario/turno cuando una misma caja fisica sea compartida por varios colaboradores en el dia.
-## Alcance por sucursal
+## Alcance operativo
 
-- Caja usa las sucursales permitidas del colaborador para listar cajas activas y sesiones abiertas.
-- Si el colaborador no tiene sucursales asignadas en `user_branches`, conserva acceso a todas las cajas de la empresa.
-- Si tiene sucursales asignadas, solo puede abrir, cerrar o usar cajas vinculadas a esas sucursales.
+- Caja aplica el alcance efectivo de perfil y colaborador para sucursales y cajas.
+- Un colaborador sin selección propia hereda el perfil; no obtiene acceso total automáticamente.
+- Solo puede listar, abrir, cerrar o usar cajas incluidas en `role_cash_registers`/`user_cash_registers` y en sus sucursales permitidas.
 - Venta POS reutiliza esta misma restricción para evitar que un usuario cobre en una caja de una sucursal que no le corresponde.
+- Los accesos `Cajas`, `Aperturas y cierres`, `Movimientos` y `Resumen` conservan permisos por acción independientes aunque compartan controlador.

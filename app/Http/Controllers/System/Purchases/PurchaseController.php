@@ -39,7 +39,8 @@ final class PurchaseController extends BaseController {
             [
                 "word" => $request->input("word"),
                 "status" => $request->input("status")
-            ]
+            ],
+            $this->getUserId()
         )->paginate($this->getPerPage($request, Utilities::$per_page_default));
 
     }
@@ -142,7 +143,7 @@ final class PurchaseController extends BaseController {
             new PurchaseListExport($this->getCompanyId(), [
                 "word" => $request->input("word"),
                 "status" => $request->input("status")
-            ]),
+            ], $this->getUserId()),
             "compras_" . now()->format("Y-m-d_His") . ".xlsx"
         );
 

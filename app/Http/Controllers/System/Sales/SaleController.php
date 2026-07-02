@@ -49,7 +49,12 @@ class SaleController extends BaseController {
         ];
         $perPage = $this->getPerPage($request, Utilities::$per_page_default);
 
-        return SaleService::getPaginatedList($this->getCompanyId(), $filters, $perPage);
+        return SaleService::getPaginatedList(
+            $this->getCompanyId(),
+            $filters,
+            $perPage,
+            $this->getUserId()
+        );
 
     }
 

@@ -24,6 +24,9 @@ class Role extends Model {
         "slug",
         "name",
         "is_full_access",
+        "branch_scope_mode",
+        "cash_register_scope_mode",
+        "warehouse_scope_mode",
         "status",
         "created_at",
         "created_by",
@@ -80,6 +83,35 @@ class Role extends Model {
             "role_sub_sections",
             "role_id",
             "sub_section_id"
+        )->wherePivot("status", "active");
+
+    }
+
+    public function branches() {
+
+        return $this->belongsToMany(Branch::class, "role_branches", "role_id", "branch_id")
+                    ->wherePivot("status", "active");
+
+    }
+
+    public function cashRegisters() {
+
+        return $this->belongsToMany(
+            \App\Models\System\Finance\CashRegister::class,
+            "role_cash_registers",
+            "role_id",
+            "cash_register_id"
+        )->wherePivot("status", "active");
+
+    }
+
+    public function warehouses() {
+
+        return $this->belongsToMany(
+            \App\Models\System\Warehouses\Warehouse::class,
+            "role_warehouses",
+            "role_id",
+            "warehouse_id"
         )->wherePivot("status", "active");
 
     }

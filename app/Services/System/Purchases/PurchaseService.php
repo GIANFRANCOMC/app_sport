@@ -25,7 +25,7 @@ use App\Services\System\Warehouses\StockManagement\StockManagementService;
 
 final class PurchaseService {
 
-    public static function getFilteredQuery(int $companyId, array $filters = []): Builder {
+    public static function getFilteredQuery(int $companyId, array $filters = [], ?int $userId = null): Builder {
 
         $query = PurchaseHeader::query()
             ->where("company_id", $companyId)
@@ -37,6 +37,14 @@ final class PurchaseService {
                 "taxes",
                 "payments"
             ]);
+
+        $warehouseIds = $userId === null
+            ? null
+            : \App\Services\System\Base\CompanyReferenceDataService::for($companyId, $userId)->allowedWarehouseIds();
+
+        if($warehouseIds !== null) {
+            $query->whereIn("warehouse_id", $warehouseIds);
+        }
 
         $word = trim((string) ($filters["word"] ?? ""));
 

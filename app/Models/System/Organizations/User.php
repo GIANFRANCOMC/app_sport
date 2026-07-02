@@ -37,6 +37,9 @@ class User extends Authenticatable {
     protected $fillable = [
         "company_id",
         "role_id",
+        "branch_scope_mode",
+        "cash_register_scope_mode",
+        "warehouse_scope_mode",
         "identity_document_type_id",
         "document_number",
         "name",
@@ -148,6 +151,28 @@ class User extends Authenticatable {
         return $this->belongsToMany(Branch::class, "user_branches", "user_id", "branch_id")
                     ->withPivot(["company_id", "status", "created_by", "updated_by"])
                     ->wherePivot("status", "active");
+
+    }
+
+    public function cashRegisters() {
+
+        return $this->belongsToMany(
+            \App\Models\System\Finance\CashRegister::class,
+            "user_cash_registers",
+            "user_id",
+            "cash_register_id"
+        )->wherePivot("status", "active");
+
+    }
+
+    public function warehouses() {
+
+        return $this->belongsToMany(
+            \App\Models\System\Warehouses\Warehouse::class,
+            "user_warehouses",
+            "user_id",
+            "warehouse_id"
+        )->wherePivot("status", "active");
 
     }
 

@@ -986,6 +986,7 @@ export default {
         },
         buildPayload() {
             return {
+                source_channel: "pos",
                 branch_id: this.selectedBranch?.id,
                 serie_id: this.selectedSerie?.id,
                 warehouse_id: this.selectedWarehouse?.id,

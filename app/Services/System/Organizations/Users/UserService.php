@@ -10,8 +10,11 @@ use Illuminate\Support\Facades\{Auth, DB};
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Str;
+use Illuminate\Auth\Access\AuthorizationException;
 
-use App\Models\System\Organizations\{User};
+use App\Models\System\Organizations\{Role, User};
+use App\Services\System\Organizations\AccessScopeService;
+use App\Services\System\Organizations\Roles\RolePermissionService;
 
 /**
  * Service class for managing module operations
@@ -29,6 +32,9 @@ class UserService {
      */
     private const ALLOWED_FIELDS = [
         "role_id",
+        "branch_scope_mode",
+        "cash_register_scope_mode",
+        "warehouse_scope_mode",
         "identity_document_type_id",
         "document_number",
         "name",
@@ -163,16 +169,19 @@ class UserService {
 
             $userId = $userId ?? $userAuth->id ?? null;
 
+            self::assertRoleAssignable($companyId, (int) $userId, (int) ($data["role_id"] ?? 0));
+
             // Prepare data with only allowed fields
             $userData = self::prepareUserDataForCreate($data, $companyId, $userId);
 
             // Create the record
             $user = User::create($userData);
             self::syncBranches($user, $data["branch_ids"] ?? [], $companyId, $userId);
+            self::syncResourceScopes($user, $data, $companyId, $userId);
 
         });
 
-        return $user?->fresh(["identityDocumentType", "role", "branches"]);
+        return $user?->fresh(["identityDocumentType", "role", "branches", "cashRegisters", "warehouses"]);
 
     }
 
@@ -191,6 +200,12 @@ class UserService {
             $userAuth = Auth::user();
             $userId   = $userId ?? $userAuth->id ?? null;
 
+            self::assertRoleAssignable(
+                (int) $user->company_id,
+                (int) $userId,
+                (int) ($data["role_id"] ?? $user->role_id)
+            );
+
             // Prepare update data with only changed fields
             $updateData = self::prepareUserDataForUpdate($user, $data);
 
@@ -204,10 +219,11 @@ class UserService {
             }
 
             self::syncBranches($user, $data["branch_ids"] ?? [], (int) $user->company_id, $userId);
+            self::syncResourceScopes($user, $data, (int) $user->company_id, $userId);
 
         });
 
-        return $user->fresh(["identityDocumentType", "role", "branches"]);
+        return $user->fresh(["identityDocumentType", "role", "branches", "cashRegisters", "warehouses"]);
 
     }
 
@@ -257,6 +273,63 @@ class UserService {
 
     }
 
+    private static function assertRoleAssignable(int $companyId, int $actorId, int $roleId): void {
+
+        $actor = User::query()->where("company_id", $companyId)->findOrFail($actorId);
+        $role = Role::query()->where("company_id", $companyId)->findOrFail($roleId);
+
+        if(!RolePermissionService::canAssignRole($actor, $role)) {
+            throw new AuthorizationException("No puedes asignar un perfil con permisos superiores a los tuyos.");
+        }
+
+    }
+
+    private static function syncResourceScopes(
+        User $user,
+        array $data,
+        int $companyId,
+        ?int $userId = null
+    ): void {
+
+        $definitions = [
+            "cash_register" => ["table" => "user_cash_registers", "resource" => "cash_registers", "key" => "cash_register_id"],
+            "warehouse" => ["table" => "user_warehouses", "resource" => "warehouses", "key" => "warehouse_id"]
+        ];
+        $branchIds = collect($data["branch_ids"] ?? [])->map(fn($id) => (int) $id)->filter()->all();
+
+        foreach($definitions as $type => $definition) {
+            DB::table($definition["table"])
+                ->where("company_id", $companyId)
+                ->where("user_id", $user->id)
+                ->delete();
+
+            $ids = collect($data["{$type}_ids"] ?? [])->map(fn($id) => (int) $id)->filter()->unique();
+            if($ids->isEmpty()) {
+                continue;
+            }
+
+            $validIds = DB::table($definition["resource"])
+                ->where("company_id", $companyId)
+                ->whereIn("id", $ids)
+                ->when(!empty($branchIds), fn($query) => $query->whereIn("branch_id", $branchIds))
+                ->pluck("id")
+                ->map(fn($id) => (int) $id)
+                ->all();
+
+            DB::table($definition["table"])->insert(array_map(fn($id) => [
+                "company_id" => $companyId,
+                "user_id" => $user->id,
+                $definition["key"] => $id,
+                "status" => "active",
+                "created_at" => now(),
+                "created_by" => $userId
+            ], $validIds));
+        }
+
+        AccessScopeService::clearUserCache($companyId, (int) $user->id);
+
+    }
+
     /**
      * Find record by ID and company ID
      *
@@ -266,7 +339,7 @@ class UserService {
      * @param array $relations Relations to eager load
      * @return User|null
      */
-    public static function findByIdAndCompany(int $id, int $companyId, ?array $statuses = ["active"], array $relations = ["identityDocumentType", "role", "branches"]): ?User {
+    public static function findByIdAndCompany(int $id, int $companyId, ?array $statuses = ["active"], array $relations = ["identityDocumentType", "role", "branches", "cashRegisters", "warehouses"]): ?User {
 
         $query = User::where("id", $id)
                      ->where("company_id", $companyId);
@@ -298,7 +371,7 @@ class UserService {
     public static function getPaginatedList(int $companyId, array $filters = [], int $perPage = 15): LengthAwarePaginator {
 
         $query = User::where("company_id", $companyId)
-                     ->with(["identityDocumentType", "role", "branches"]);
+                     ->with(["identityDocumentType", "role", "branches", "cashRegisters", "warehouses"]);
 
         // Apply filters
         $filterBy = $filters["filter_by"] ?? null;

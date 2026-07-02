@@ -92,7 +92,8 @@ final class CashRegisterController extends BaseController {
             "data" => $this->service->listSessions(
                 $this->getCompanyId(),
                 $this->cashFilters($request),
-                $this->getPerPage($request)
+                $this->getPerPage($request),
+                $this->getUserId()
             )
         ]);
 
@@ -105,7 +106,8 @@ final class CashRegisterController extends BaseController {
             "data" => $this->service->listMovements(
                 $this->getCompanyId(),
                 $this->cashFilters($request),
-                $this->getPerPage($request)
+                $this->getPerPage($request),
+                $this->getUserId()
             )
         ]);
 
@@ -115,14 +117,18 @@ final class CashRegisterController extends BaseController {
 
         return response()->json([
             "bool" => true,
-            "data" => $this->service->summary($this->getCompanyId(), $this->cashFilters($request))
+            "data" => $this->service->summary($this->getCompanyId(), $this->cashFilters($request), $this->getUserId())
         ]);
 
     }
 
     public function export(Request $request): Response {
 
-        $rows = $this->service->movementsForExport($this->getCompanyId(), $this->cashFilters($request));
+        $rows = $this->service->movementsForExport(
+            $this->getCompanyId(),
+            $this->cashFilters($request),
+            $this->getUserId()
+        );
         $handle = fopen("php://temp", "r+");
 
         fputcsv($handle, [

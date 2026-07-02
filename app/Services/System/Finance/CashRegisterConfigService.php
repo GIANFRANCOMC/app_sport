@@ -6,7 +6,6 @@ namespace App\Services\System\Finance;
 
 use stdClass;
 
-use App\Models\System\Finance\CashRegister;
 use App\Services\System\Base\{BaseConfigService, CompanyReferenceDataService};
 
 final class CashRegisterConfigService extends BaseConfigService {
@@ -26,20 +25,10 @@ final class CashRegisterConfigService extends BaseConfigService {
     protected static function buildConfig(int $companyId, string $page): stdClass {
 
         $references = CompanyReferenceDataService::for($companyId);
-        $registers  = CashRegister::query()
-                                  ->with("branch")
-                                  ->where("company_id", $companyId)
-                                  ->where("status", "active");
-
-        if($branchIds = $references->allowedBranchIds()) {
-
-            $registers->whereIn("branch_id", $branchIds);
-
-        }
 
         return self::data([
             "branches" => $references->activeBranches(),
-            "registers" => $registers->orderBy("name")->get(),
+            "registers" => $references->cashRegisters(),
             "paymentMethods" => $references->paymentMethodsFor("sale"),
             "statuses" => [
                 ["id" => "open", "label" => "Abierta"],

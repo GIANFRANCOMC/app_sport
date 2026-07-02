@@ -25,13 +25,13 @@ final class CashRegisterService {
                              ->with(["branch", "openSession.paymentSummary.paymentMethod"])
                              ->where("company_id", $companyId);
 
-        $branchIds = $userId !== null
-            ? CompanyReferenceDataService::for($companyId, $userId)->allowedBranchIds()
-            : [];
+        $cashRegisterIds = $userId !== null
+            ? CompanyReferenceDataService::for($companyId, $userId)->allowedCashRegisterIds()
+            : null;
 
-        if(!empty($branchIds)) {
+        if($cashRegisterIds !== null) {
 
-            $query->whereIn("branch_id", $branchIds);
+            $query->whereIn("id", $cashRegisterIds);
 
         }
 
@@ -83,17 +83,17 @@ final class CashRegisterService {
 
     }
 
-    public function listSessions(int $companyId, array $filters, int $perPage): LengthAwarePaginator {
+    public function listSessions(int $companyId, array $filters, int $perPage, ?int $userId = null): LengthAwarePaginator {
 
-        return $this->sessionsQuery($companyId, $filters)
+        return $this->sessionsQuery($companyId, $filters, $userId)
                     ->latest("opened_at")
                     ->paginate($perPage);
 
     }
 
-    public function listMovements(int $companyId, array $filters, int $perPage): LengthAwarePaginator {
+    public function listMovements(int $companyId, array $filters, int $perPage, ?int $userId = null): LengthAwarePaginator {
 
-        return CashMovement::query()
+        $query = CashMovement::query()
                            ->with(["branch", "cashSession.register", "paymentMethod", "user"])
                            ->where("company_id", $companyId)
                            ->when($filters["branch_id"] ?? null, fn($query, $branchId) => $query->where("branch_id", $branchId))
@@ -125,14 +125,20 @@ final class CashRegisterService {
                            ->when($filters["date_from"] ?? null, fn($query, $date) => $query->whereDate("occurred_at", ">=", $date))
                            ->when($filters["date_to"] ?? null, fn($query, $date) => $query->whereDate("occurred_at", "<=", $date))
                            ->where("status", "active")
-                           ->latest("occurred_at")
-                           ->paginate($perPage);
+                           ->latest("occurred_at");
+
+        $cashRegisterIds = $this->allowedCashRegisterIds($companyId, $userId);
+        if($cashRegisterIds !== null) {
+            $query->whereHas("cashSession", fn($sessionQuery) => $sessionQuery->whereIn("cash_register_id", $cashRegisterIds));
+        }
+
+        return $query->paginate($perPage);
 
     }
 
-    public function summary(int $companyId, array $filters): array {
+    public function summary(int $companyId, array $filters, ?int $userId = null): array {
 
-        $sessions = $this->sessionsQuery($companyId, $filters)->get();
+        $sessions = $this->sessionsQuery($companyId, $filters, $userId)->get();
         $sessionIds = $sessions->pluck("id")->all();
 
         if(empty($sessionIds)) {
@@ -401,9 +407,9 @@ final class CashRegisterService {
 
     }
 
-    public function movementsForExport(int $companyId, array $filters) {
+    public function movementsForExport(int $companyId, array $filters, ?int $userId = null) {
 
-        return CashMovement::query()
+        $query = CashMovement::query()
                            ->with(["branch", "cashSession.register", "paymentMethod", "user"])
                            ->where("company_id", $companyId)
                            ->when($filters["cash_register_id"] ?? null, function($query, $registerId) {
@@ -414,14 +420,20 @@ final class CashRegisterService {
                            ->when($filters["date_from"] ?? null, fn($query, $date) => $query->whereDate("occurred_at", ">=", $date))
                            ->when($filters["date_to"] ?? null, fn($query, $date) => $query->whereDate("occurred_at", "<=", $date))
                            ->where("status", "active")
-                           ->latest("occurred_at")
-                           ->get();
+                           ->latest("occurred_at");
+
+        $cashRegisterIds = $this->allowedCashRegisterIds($companyId, $userId);
+        if($cashRegisterIds !== null) {
+            $query->whereHas("cashSession", fn($sessionQuery) => $sessionQuery->whereIn("cash_register_id", $cashRegisterIds));
+        }
+
+        return $query->get();
 
     }
 
-    private function sessionsQuery(int $companyId, array $filters): Builder {
+    private function sessionsQuery(int $companyId, array $filters, ?int $userId = null): Builder {
 
-        return CashSession::query()
+        $query = CashSession::query()
                           ->with(["register", "branch", "openedBy", "closedBy", "paymentSummary.paymentMethod"])
                           ->where("company_id", $companyId)
                           ->when($filters["branch_id"] ?? null, fn($query, $branchId) => $query->where("branch_id", $branchId))
@@ -446,6 +458,21 @@ final class CashRegisterService {
                           })
                           ->when($filters["date_from"] ?? null, fn($query, $date) => $query->whereDate("opened_at", ">=", $date))
                           ->when($filters["date_to"] ?? null, fn($query, $date) => $query->whereDate("opened_at", "<=", $date));
+
+        $cashRegisterIds = $this->allowedCashRegisterIds($companyId, $userId);
+        if($cashRegisterIds !== null) {
+            $query->whereIn("cash_register_id", $cashRegisterIds);
+        }
+
+        return $query;
+
+    }
+
+    private function allowedCashRegisterIds(int $companyId, ?int $userId): ?array {
+
+        return $userId === null
+            ? null
+            : CompanyReferenceDataService::for($companyId, $userId)->allowedCashRegisterIds();
 
     }
 

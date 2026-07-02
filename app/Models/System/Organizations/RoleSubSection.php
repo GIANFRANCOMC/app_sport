@@ -11,13 +11,19 @@ class RoleSubSection extends Model {
     protected $table = "role_sub_sections";
 
     protected $fillable = [
+        "company_id",
         "role_id",
         "sub_section_id",
+        "actions",
         "status",
         "created_at",
         "created_by",
         "updated_at",
         "updated_by"
+    ];
+
+    protected $casts = [
+        "actions" => "array"
     ];
 
     public function role() {

@@ -18,18 +18,23 @@ class EnsureModulePermission {
 
         }
 
-        if(!RolePermissionService::canAccessRoute($user, $request->route()?->getName())) {
+        if(!RolePermissionService::canAccessRoute(
+            $user,
+            $request->route()?->getName(),
+            $request->method(),
+            $request->input("source_channel")
+        )) {
 
             if($request->expectsJson()) {
 
                 return response()->json([
                     "bool" => false,
-                    "msg" => "No tienes permiso para acceder a este módulo."
+                    "msg" => "No tienes permiso para realizar esta acción en el módulo."
                 ], 403);
 
             }
 
-            abort(403, "No tienes permiso para acceder a este módulo.");
+            abort(403, "No tienes permiso para realizar esta acción en el módulo.");
 
         }
 

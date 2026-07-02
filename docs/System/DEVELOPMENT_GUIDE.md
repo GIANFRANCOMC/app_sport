@@ -92,8 +92,11 @@ $config->currencies->records = MasterReferenceDataService::currencies($companyId
 
 - Obtener módulos habilitados mediante `CompanySectionService::getSections($companyId)`.
 - Obtener módulos visibles para un colaborador mediante `CompanySectionService::getSections($companyId, $roleId)`.
-- Las rutas internas usan `module.permission`; todo módulo nuevo debe registrar `sub_sections.dom_route` con el mismo prefijo de ruta que sus endpoints.
-- Los permisos actuales son por módulo. La futura granularidad por acción debe extender el contrato sin romper `role_sub_sections`.
+- Las rutas internas usan `module.permission`; todo módulo nuevo debe registrar `sub_sections.dom_route` y mapear endpoints compartidos en `config/permissions.php`.
+- `role_sub_sections.actions` implementa permisos por módulo + acción sin romper registros anteriores: `null` conserva todas las acciones.
+- Las acciones estándar son `view`, `create`, `update`, `delete`, `export`, `import` y `operate`.
+- Las rutas que reciben sucursal, caja o almacén usan también `resource.scope`; los listados e `initParams` deben aplicar el mismo alcance mediante `CompanyReferenceDataService`.
+- El alcance del colaborador solo puede heredar o reducir el del perfil. Nunca debe ampliarlo desde frontend ni backend.
 - No leer ni escribir manualmente la clave de caché desde controladores, listeners o Blade.
 - Las mutaciones de `CompanySubSection` invalidan el menú mediante `CompanySubSectionObserver`.
 - Las mutaciones de `Role` o `RoleSubSection` invalidan menú por rol y permisos mediante sus observers.

@@ -5,15 +5,17 @@ declare(strict_types=1);
 namespace App\Services\System\Base;
 
 use Illuminate\Database\Eloquent\{Builder, Collection};
-use Illuminate\Support\Facades\{Auth, DB};
+use Illuminate\Support\Facades\Auth;
 use InvalidArgumentException;
 
 use App\Models\System\Assets\Asset;
 use App\Models\System\Catalogs\{Brand, Category, Item};
 use App\Models\System\Customers\Customer;
 use App\Models\System\Finance\{PaymentMethod, Tax};
+use App\Models\System\Finance\CashRegister;
 use App\Models\System\Organizations\{Branch, Role, User};
 use App\Models\System\Warehouses\Warehouse;
+use App\Services\System\Organizations\AccessScopeService;
 
 /**
  * Provides reusable, company-scoped records used by module initParams.
@@ -70,9 +72,10 @@ final class CompanyReferenceDataService {
                           })
                           ->where("status", "active");
 
-        if($branchIds = $this->allowedBranchIds()) {
+        $warehouseIds = $this->allowedWarehouseIds();
+        if($warehouseIds !== null) {
 
-            $query->whereIn("branch_id", $branchIds);
+            $query->whereIn("id", $warehouseIds);
 
         }
 
@@ -94,6 +97,22 @@ final class CompanyReferenceDataService {
                     ->where("status", "active")
                     ->with("series.documentType")
                     ->get();
+
+    }
+
+    public function cashRegisters(): Collection {
+
+        $query = CashRegister::query()
+            ->with("branch")
+            ->where("company_id", $this->companyId)
+            ->where("status", "active");
+        $cashRegisterIds = $this->allowedCashRegisterIds();
+
+        if($cashRegisterIds !== null) {
+            $query->whereIn("id", $cashRegisterIds);
+        }
+
+        return $query->orderBy("name")->get();
 
     }
 
@@ -183,7 +202,8 @@ final class CompanyReferenceDataService {
         $query = Branch::query()
                        ->where("company_id", $this->companyId);
 
-        if($branchIds = $this->allowedBranchIds()) {
+        $branchIds = $this->allowedBranchIds();
+        if($branchIds !== null) {
 
             $query->whereIn("id", $branchIds);
 
@@ -193,22 +213,47 @@ final class CompanyReferenceDataService {
 
     }
 
-    public function allowedBranchIds(): array {
+    public function allowedBranchIds(): ?array {
 
         if(!$this->userId) {
 
-            return [];
+            return null;
 
         }
 
-        return DB::table("user_branches")
-                 ->where("company_id", $this->companyId)
-                 ->where("user_id", $this->userId)
-                 ->where("status", "active")
-                 ->pluck("branch_id")
-                 ->map(fn($branchId) => (int) $branchId)
-                 ->values()
-                 ->all();
+        $user = User::query()
+            ->where("company_id", $this->companyId)
+            ->find($this->userId);
+
+        return $user
+            ? AccessScopeService::allowedIds($user, AccessScopeService::BRANCH)
+            : [];
+
+    }
+
+    public function allowedCashRegisterIds(): ?array {
+
+        return $this->allowedIds(AccessScopeService::CASH_REGISTER);
+
+    }
+
+    public function allowedWarehouseIds(): ?array {
+
+        return $this->allowedIds(AccessScopeService::WAREHOUSE);
+
+    }
+
+    private function allowedIds(string $type): ?array {
+
+        if(!$this->userId) {
+            return null;
+        }
+
+        $user = User::query()
+            ->where("company_id", $this->companyId)
+            ->find($this->userId);
+
+        return $user ? AccessScopeService::allowedIds($user, $type) : [];
 
     }
 

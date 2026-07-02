@@ -190,10 +190,7 @@ input.input-number-no-range::-webkit-inner-spin-button {
 }
 
 .br-roles__module {
-    display: grid;
-    grid-template-columns: auto 1fr;
-    align-items: flex-start;
-    gap: 0.55rem;
+    display: block;
     margin: 0;
     padding: 0.58rem 0.62rem;
     border: 1px solid transparent;
@@ -201,6 +198,43 @@ input.input-number-no-range::-webkit-inner-spin-button {
     background: #ffffff;
     cursor: pointer;
     transition: var(--br-transition, all 0.18s ease);
+}
+
+.br-roles__module-main {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: flex-start;
+    gap: 0.55rem;
+    margin: 0;
+    cursor: pointer;
+}
+
+.br-roles__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    margin: 0.55rem 0 0 1.45rem;
+}
+
+.br-roles__actions label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.28rem;
+    margin: 0;
+    padding: 0.2rem 0.42rem;
+    border: 1px solid color-mix(in srgb, var(--br-secondary, #1a1a35) 14%, var(--br-border, #dbe3ec));
+    border-radius: var(--br-radius-sm, 0.35rem);
+    background: #ffffff;
+    color: var(--br-secondary, #1a1a35);
+    font-size: 0.67rem;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.br-roles__actions input {
+    width: 0.78rem;
+    height: 0.78rem;
+    margin: 0;
 }
 
 .br-roles__module:hover {
@@ -225,6 +259,44 @@ input.input-number-no-range::-webkit-inner-spin-button {
     cursor: not-allowed;
 }
 
+.br-roles__scopes {
+    margin-top: 1rem;
+    padding: 1rem;
+    border: 1px solid var(--br-border, #dbe3ec);
+    border-radius: var(--br-radius-md, 0.5rem);
+    background: #ffffff;
+}
+
+.br-roles__scopes-head small {
+    display: block;
+    margin-top: 0.12rem;
+    color: var(--br-text-muted, #64748b);
+    font-size: 0.72rem;
+}
+
+.br-roles__scope-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.75rem;
+    margin-top: 0.75rem;
+}
+
+.br-roles__scope {
+    min-width: 0;
+    padding: 0.7rem;
+    border: 1px solid #edf1f5;
+    border-radius: var(--br-radius-sm, 0.35rem);
+    background: #f7f8fa;
+}
+
+.br-roles__scope .br-entity-switch {
+    margin: 0;
+}
+
+.br-roles__scope .v-select {
+    margin-top: 0.6rem;
+}
+
 @media (max-width: 991.98px) {
     .br-roles__sections {
         grid-template-columns: 1fr;
@@ -236,6 +308,10 @@ input.input-number-no-range::-webkit-inner-spin-button {
     }
 
     .br-roles__permission-tools {
+        grid-template-columns: 1fr;
+    }
+
+    .br-roles__scope-grid {
         grid-template-columns: 1fr;
     }
 }

@@ -73,7 +73,29 @@ abstract class BaseConfigService {
 
     }
 
-    public static function cacheKey(int $companyId, string $page = "main"): string {
+    public static function clearUserCache(int $companyId, int $userId, ?string $page = null): void {
+
+        self::validateCompanyId($companyId);
+
+        if(!static::usesUserScopedCache() || $userId <= 0) {
+
+            return;
+
+        }
+
+        $pages = $page === null
+            ? static::cachePages()
+            : [self::normalizePage($page)];
+
+        foreach(array_unique($pages) as $cachePage) {
+
+            Cache::forget(static::cacheKey($companyId, $cachePage, $userId));
+
+        }
+
+    }
+
+    public static function cacheKey(int $companyId, string $page = "main", ?int $userId = null): string {
 
         self::validateCompanyId($companyId);
 
@@ -88,7 +110,7 @@ abstract class BaseConfigService {
 
         if(static::usesUserScopedCache()) {
 
-            $cacheKey .= sprintf(":user:%d", (int) Auth::id());
+            $cacheKey .= sprintf(":user:%d", (int) ($userId ?? Auth::id()));
 
         }
 

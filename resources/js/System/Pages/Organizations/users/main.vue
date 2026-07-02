@@ -145,11 +145,61 @@
                                         :searchable="branches.length > 6"
                                         multiple
                                         append-to-body
-                                        placeholder="Todas las sucursales"
+                                        placeholder="Heredar sucursales del perfil"
                                         @close="tooltips({show: true, time: 500})">
                                         <template #option="{label}">
                                             <span class="br-select-option-text" :title="label">{{ label }}</span>
                                         </template>
+                                        <template #selected-option="{label}">
+                                            <span class="br-select-selected-text" :title="label">{{ label }}</span>
+                                        </template>
+                                    </v-select>
+                                </template>
+                            </InputSlot>
+                            <InputSlot
+                                hasDiv
+                                :title="MODULE.texts.form.cashRegisters"
+                                :titleClass="[config.forms.classes.title]"
+                                hasTextBottom
+                                :textBottomInfo="forms[entity].createUpdate.errors?.cash_register_ids || MODULE.texts.form.cashRegistersHint"
+                                xl="6"
+                                lg="6">
+                                <template v-slot:input>
+                                    <v-select
+                                        v-model="forms[entity].createUpdate.data.cashRegisters"
+                                        :options="cashRegisters"
+                                        :class="config.forms.classes.select2"
+                                        :clearable="true"
+                                        :searchable="cashRegisters.length > 6"
+                                        multiple
+                                        append-to-body
+                                        placeholder="Heredar cajas del perfil"
+                                        @close="tooltips({show: true, time: 500})">
+                                        <template #selected-option="{label}">
+                                            <span class="br-select-selected-text" :title="label">{{ label }}</span>
+                                        </template>
+                                    </v-select>
+                                </template>
+                            </InputSlot>
+                            <InputSlot
+                                hasDiv
+                                :title="MODULE.texts.form.warehouses"
+                                :titleClass="[config.forms.classes.title]"
+                                hasTextBottom
+                                :textBottomInfo="forms[entity].createUpdate.errors?.warehouse_ids || MODULE.texts.form.warehousesHint"
+                                xl="6"
+                                lg="6">
+                                <template v-slot:input>
+                                    <v-select
+                                        v-model="forms[entity].createUpdate.data.warehouses"
+                                        :options="warehouses"
+                                        :class="config.forms.classes.select2"
+                                        :clearable="true"
+                                        :searchable="warehouses.length > 6"
+                                        multiple
+                                        append-to-body
+                                        placeholder="Heredar almacenes del perfil"
+                                        @close="tooltips({show: true, time: 500})">
                                         <template #selected-option="{label}">
                                             <span class="br-select-selected-text" :title="label">{{ label }}</span>
                                         </template>
@@ -331,6 +381,8 @@ const MODULE_CONFIG = {
 const FORM_FIELDS = {
     role: null,
     branches: [],
+    cashRegisters: [],
+    warehouses: [],
     identity_document_type: null,
     document_number: "",
     name: "",
@@ -345,6 +397,8 @@ const FORM_FIELDS = {
 const FORM_FIELD_CONFIG = {
     role: {mapToField: "role_id"},
     branches: {removeIfEmpty: false},
+    cashRegisters: {removeIfEmpty: false},
+    warehouses: {removeIfEmpty: false},
     identity_document_type: {mapToField: "identity_document_type_id"},
     document_number: {trim: true},
     name: {trim: true},
@@ -359,6 +413,8 @@ const FORM_FIELD_CONFIG = {
 const VALIDATION_RULES = {
     role: {required: true},
     branches: {required: false},
+    cashRegisters: {required: false},
+    warehouses: {required: false},
     identity_document_type: {required: true},
     document_number: {required: true},
     name: {required: true},
@@ -375,6 +431,10 @@ const ERROR_LABELS = {
     role_id: "Perfil de acceso",
     branches: "Sucursales permitidas",
     branch_ids: "Sucursales permitidas",
+    cashRegisters: "Cajas permitidas",
+    cash_register_ids: "Cajas permitidas",
+    warehouses: "Almacenes permitidos",
+    warehouse_ids: "Almacenes permitidos",
     identity_document_type: "Tipo de documento",
     identity_document_type_id: "Tipo de documento",
     document_number: "Número de documento",
@@ -408,7 +468,11 @@ const TEXTS = {
     form: {
         role: "Perfil de acceso",
         branches: "Sucursales permitidas",
-        branchesHint: "Deja vacío para permitir ventas y operaciones en todas las sucursales.",
+        branchesHint: "Deja vacío para heredar las sucursales permitidas por el perfil.",
+        cashRegisters: "Cajas permitidas",
+        cashRegistersHint: "Deja vacío para heredar las cajas permitidas por el perfil.",
+        warehouses: "Almacenes permitidos",
+        warehousesHint: "Deja vacío para heredar los almacenes permitidos por el perfil.",
         identityDocumentType: "Tipo de documento",
         documentNumber: "Número de documento",
         name: "Nombre",
@@ -493,6 +557,8 @@ export default {
                 this.options.identityDocumentTypes = response.data.config.identityDocumentTypes;
                 this.options.roles                 = response.data.config.roles;
                 this.options.branches              = response.data.config.branches;
+                this.options.cashRegisters         = response.data.config.cashRegisters;
+                this.options.warehouses             = response.data.config.warehouses;
                 this.options.statuses              = response.data.config.statuses;
 
             }
@@ -575,11 +641,15 @@ export default {
                       identityDocumentTypeOption = this.identityDocumentTypes.find(e => e.code === record?.identity_document_type_id),
                       roleOption                 = this.roles.find(e => e.code === record?.role_id),
                       branchOptions              = this.branches.filter(branch => (record?.branches || []).some(recordBranch => Number(recordBranch.id) === Number(branch.code))),
+                      cashRegisterOptions        = this.cashRegisters.filter(option => (record?.cash_registers || []).some(item => Number(item.id) === Number(option.code))),
+                      warehouseOptions           = this.warehouses.filter(option => (record?.warehouses || []).some(item => Number(item.id) === Number(option.code))),
                       statusOption               = this.statuses.find(s => s.code === record?.status);
 
                 entityForms.data.id                     = record.id;
                 entityForms.data.role                   = roleOption;
                 entityForms.data.branches               = branchOptions;
+                entityForms.data.cashRegisters          = cashRegisterOptions;
+                entityForms.data.warehouses             = warehouseOptions;
                 entityForms.data.identity_document_type = identityDocumentTypeOption;
                 entityForms.data.document_number        = record.document_number;
                 entityForms.data.name                   = record.name;
@@ -595,6 +665,8 @@ export default {
                 // Set defaults for new record
                 entityForms.data.role                   = this.roles.length > 0 ? this.roles[0] : null;
                 entityForms.data.branches               = [];
+                entityForms.data.cashRegisters          = [];
+                entityForms.data.warehouses             = [];
                 entityForms.data.identity_document_type = this.identityDocumentTypes.length > 1 ? this.identityDocumentTypes[1] : null;
                 entityForms.data.gender                 = this.genders.length > 0 ? this.genders[0] : null;
                 entityForms.data.status                 = this.statuses.length > 0 ? this.statuses[0] : null;
@@ -632,7 +704,11 @@ export default {
 
                 const preparedData  = Forms.prepareFormData(formData, this.MODULE.formFieldConfig);
                 preparedData.branch_ids = (formData.branches || []).map(branch => branch?.code ?? branch).filter(Boolean);
+                preparedData.cash_register_ids = (formData.cashRegisters || []).map(register => register?.code ?? register).filter(Boolean);
+                preparedData.warehouse_ids = (formData.warehouses || []).map(warehouse => warehouse?.code ?? warehouse).filter(Boolean);
                 delete preparedData.branches;
+                delete preparedData.cashRegisters;
+                delete preparedData.warehouses;
                 const id            = preparedData.id;
                 const isUpdate      = this.isDefined(id);
                 const requestMethod = isUpdate ? "patch" : "post";
@@ -762,12 +838,17 @@ export default {
         branchAccessLabel(record) {
 
             const branches = record?.branches || [];
+            const cashRegisters = record?.cash_registers || [];
+            const warehouses = record?.warehouses || [];
+            const scopes = [];
 
-            if(!branches.length) return "Todas las sucursales";
+            if(branches.length) scopes.push(`${branches.length} suc.`);
+            if(cashRegisters.length) scopes.push(`${cashRegisters.length} caja${cashRegisters.length === 1 ? "" : "s"}`);
+            if(warehouses.length) scopes.push(`${warehouses.length} almacén${warehouses.length === 1 ? "" : "es"}`);
 
-            if(branches.length === 1) return branches[0]?.name || "1 sucursal";
+            if(!scopes.length) return "Hereda alcance del perfil";
 
-            return `${branches.length} sucursales`;
+            return scopes.join(" · ");
 
         }
     },
@@ -803,6 +884,26 @@ export default {
         branches() {
 
             return (this.options?.branches?.records ?? []).map(e => ({code: e.id, label: e.name, data: e}));
+
+        },
+        cashRegisters() {
+
+            const selectedBranchIds = (this.forms[this.entity].createUpdate.data.branches || [])
+                .map(branch => Number(branch?.code ?? branch));
+
+            return (this.options?.cashRegisters?.records ?? [])
+                .filter(record => !selectedBranchIds.length || selectedBranchIds.includes(Number(record.branch_id)))
+                .map(record => ({code: record.id, label: record.name, data: record}));
+
+        },
+        warehouses() {
+
+            const selectedBranchIds = (this.forms[this.entity].createUpdate.data.branches || [])
+                .map(branch => Number(branch?.code ?? branch));
+
+            return (this.options?.warehouses?.records ?? [])
+                .filter(record => !selectedBranchIds.length || selectedBranchIds.includes(Number(record.branch_id)))
+                .map(record => ({code: record.id, label: record.name, data: record}));
 
         },
         identityDocumentTypes() {
@@ -920,6 +1021,21 @@ export default {
         }
     },
     watch: {
+        "forms.users.createUpdate.data.branches": {
+            handler() {
+
+                const formData = this.forms[this.entity].createUpdate.data;
+                const cashRegisterIds = this.cashRegisters.map(option => Number(option.code));
+                const warehouseIds = this.warehouses.map(option => Number(option.code));
+
+                formData.cashRegisters = (formData.cashRegisters || [])
+                    .filter(option => cashRegisterIds.includes(Number(option?.code ?? option)));
+                formData.warehouses = (formData.warehouses || [])
+                    .filter(option => warehouseIds.includes(Number(option?.code ?? option)));
+
+            },
+            deep: true
+        },
         "forms.users.createUpdate.data.identity_document_type": {
             handler(newValue) {
 

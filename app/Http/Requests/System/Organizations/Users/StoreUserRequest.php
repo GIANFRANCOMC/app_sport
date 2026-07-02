@@ -27,7 +27,7 @@ class StoreUserRequest extends FormRequest {
     public function rules(): array {
 
         $validations = [
-            "role_id"                   => ["required", "integer", new BelongsToCompany("roles", [], null)],
+            "role_id"                   => ["required", "integer", new BelongsToCompany("roles", ["status" => "active"], null)],
             "identity_document_type_id" => ["required", "integer", new BelongsToCompany("identity_document_types", ["status" => "active"], "El tipo de documento no pertenece a la empresa.")],
             "document_number"           => ["required", "string", new DocumentNumberLength((int) $this->identity_document_type_id), new UniqueInCompany("users", "document_number", null, [], "número de documento")],
             "name"                      => "required|string|max:100",
@@ -37,7 +37,11 @@ class StoreUserRequest extends FormRequest {
             "birthdate"                 => "nullable|date",
             "status"                    => "required|in:active,inactive",
             "branch_ids"                => "nullable|array",
-            "branch_ids.*"              => ["integer", new BelongsToCompany("branches", [], null)],
+            "branch_ids.*"              => ["integer", "distinct", new BelongsToCompany("branches", [], null)],
+            "cash_register_ids"         => "nullable|array",
+            "cash_register_ids.*"       => ["integer", "distinct", new BelongsToCompany("cash_registers", [], null)],
+            "warehouse_ids"             => "nullable|array",
+            "warehouse_ids.*"           => ["integer", "distinct", new BelongsToCompany("warehouses", [], null)],
             "password"                  => "required|string|max:20"
         ];
 

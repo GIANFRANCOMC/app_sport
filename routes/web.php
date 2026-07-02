@@ -32,7 +32,7 @@ Route::middleware('guest')->group(function() {
 
 });
 
-Route::middleware(['auth', 'verified', 'module.permission'])->group(function() use($systemRoute) {
+Route::middleware(['auth', 'verified', 'module.permission', 'resource.scope'])->group(function() use($systemRoute) {
 
     Route::post('/send-subscription-emails', [NotificationController::class, 'sendSubscriptionEmails'])
         ->middleware('throttle:6,1')

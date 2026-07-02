@@ -61,9 +61,10 @@ final class SaleConfigService extends BaseConfigService {
                                    ->where("company_id", $companyId)
                                    ->where("status", "open");
 
-        if($branchIds = $references->allowedBranchIds()) {
+        $cashRegisterIds = $references->allowedCashRegisterIds();
+        if($cashRegisterIds !== null) {
 
-            $cashSessions->whereIn("branch_id", $branchIds);
+            $cashSessions->whereIn("cash_register_id", $cashRegisterIds);
 
         }
 

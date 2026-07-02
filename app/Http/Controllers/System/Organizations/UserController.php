@@ -213,8 +213,22 @@ class UserController extends BaseController {
                                             ->filter()
                                             ->map(fn($branchId) => (int) $branchId)
                                             ->values()
+                                            ->all(),
+            "cash_register_ids"         => collect($request->input("cash_register_ids", []))
+                                            ->filter()
+                                            ->map(fn($cashRegisterId) => (int) $cashRegisterId)
+                                            ->values()
+                                            ->all(),
+            "warehouse_ids"             => collect($request->input("warehouse_ids", []))
+                                            ->filter()
+                                            ->map(fn($warehouseId) => (int) $warehouseId)
+                                            ->values()
                                             ->all()
         ];
+
+        $data["branch_scope_mode"] = empty($data["branch_ids"]) ? "inherit" : "restricted";
+        $data["cash_register_scope_mode"] = empty($data["cash_register_ids"]) ? "inherit" : "restricted";
+        $data["warehouse_scope_mode"] = empty($data["warehouse_ids"]) ? "inherit" : "restricted";
 
         // Only include password if provided
         if(Utilities::isDefined($request->input("password"))) {

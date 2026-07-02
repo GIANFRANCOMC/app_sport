@@ -84,30 +84,41 @@ Relaciones: une `companies` con `sub_sections`.
 
 ### roles
 
-Roles internos por empresa. Campos: `company_id`, `slug`, `name`, `is_full_access`, `status` y auditoria.
+Roles internos por empresa. Campos: `company_id`, `slug`, `name`, `is_full_access`, `branch_scope_mode`, `cash_register_scope_mode`, `warehouse_scope_mode`, `status` y auditoría.
 
 `is_full_access` indica que el perfil puede ingresar a todos los modulos habilitados para la empresa. El rol administrador inicial se crea con este valor activo.
 
-Relaciones: usado por `users`; tiene permisos por modulo mediante `role_sub_sections`.
+Relaciones: usado por `users`; tiene permisos por módulo/acción mediante `role_sub_sections` y alcances mediante `role_branches`, `role_cash_registers` y `role_warehouses`.
 
 ### role_sub_sections
 
-Permisos de modulo por rol. Campos: `role_id`, `sub_section_id`, `status` y auditoria.
+Permisos de módulo por rol. Campos: `company_id`, `role_id`, `sub_section_id`, `actions`, `status` y auditoría. `actions` es JSON y admite `view`, `create`, `update`, `delete`, `export`, `import` y `operate`.
 
 Relaciones: une `roles` con `sub_sections`. La combinacion `role_id + sub_section_id` es unica para evitar duplicidad de permisos activos o inactivos sobre el mismo modulo.
 
 Reglas:
 
 - Solo se usa cuando `roles.is_full_access` es falso.
-- Define visibilidad de menu y acceso backend por prefijo de ruta.
+- Define visibilidad de menú y acceso backend por módulo y acción.
+- `actions = null` equivale a todas las acciones para conservar perfiles anteriores.
 - Se cachea por empresa y rol mediante `RolePermissionService`.
 - Al cambiar un permiso se invalida el menu cacheado de ese rol.
 
 ### users
 
-Usuarios internos del sistema. Campos: `company_id`, `role_id`, `identity_document_type_id`, documento, nombre, email, password, telefono, genero, nacimiento, `status`.
+Usuarios internos del sistema. Campos: `company_id`, `role_id`, `branch_scope_mode`, `cash_register_scope_mode`, `warehouse_scope_mode`, `identity_document_type_id`, documento, nombre, email, password, teléfono, género, nacimiento y `status`.
 
-Relaciones: pertenece a empresa, rol y tipo de documento. Puede vender, crear registros, recibir activos y tener preferencias.
+Relaciones: pertenece a empresa, rol y tipo de documento. Puede vender, crear registros, recibir activos y tener preferencias. Los modos `inherit/restricted` determinan si hereda el alcance del perfil o lo reduce.
+
+### role_branches, role_cash_registers y role_warehouses
+
+Alcances operativos del perfil. Cada tabla guarda `company_id`, `role_id`, el recurso correspondiente, `status` y auditoría. Solo se consultan cuando el modo del perfil es `restricted`.
+
+### user_branches, user_cash_registers y user_warehouses
+
+Restricciones adicionales por colaborador. Cada tabla guarda `company_id`, `user_id`, el recurso correspondiente, `status` y auditoría. Una ausencia de filas con modo `inherit` conserva el alcance del perfil; no significa acceso total.
+
+El alcance efectivo es la intersección del perfil y el colaborador. Cajas y almacenes también se intersectan con las sucursales efectivas.
 
 ### user_preferences
 
