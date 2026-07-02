@@ -6,8 +6,9 @@ namespace App\Services\System\Customers\Tracking;
 
 use App\Helpers\System\Utilities;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 use App\Models\System\Customers\{Attendance, Customer, Subscription};
-use App\Services\System\Devices\Biometric\BiometricDeviceService;
+use App\Services\System\Devices\BiometricDevices\BiometricDeviceService;
 
 /**
  * Business Service for Attendance Operations
@@ -86,18 +87,20 @@ class TrackingAttendanceBusinessService {
      */
     public function checkAttendanceLimits(int $companyId, int $branchId, int $customerId, Carbon $startDate, int $limit): array {
 
-        $attendances = Attendance::where("company_id", $companyId)
-                                 ->where("branch_id", $branchId)
-                                 ->where("customer_id", $customerId)
-                                 ->whereDate("start_date", $startDate->format("Y-m-d"))
-                                 ->whereIn("status", ["active", "finalized"])
-                                 ->get();
+        $dailyAttendances = Attendance::where("company_id", $companyId)
+            ->where("branch_id", $branchId)
+            ->where("customer_id", $customerId)
+            ->whereDate("start_date", $startDate->format("Y-m-d"));
 
-        $active = $attendances->where("status", "active")->count();
-        $finalized = $attendances->where("status", "finalized")->count();
+        $hasActive = (clone $dailyAttendances)
+            ->where("status", "active")
+            ->exists();
+        $finalized = (clone $dailyAttendances)
+            ->where("status", "finalized")
+            ->count();
 
         return [
-            "hasActive"    => $active > 0,
+            "hasActive"    => $hasActive,
             "exceedsLimit" => $finalized >= $limit
         ];
 
@@ -133,6 +136,14 @@ class TrackingAttendanceBusinessService {
      * @return array Response array with bool, msg, and optional data
      */
     public function validateAndCreateAttendance(array $data): array {
+
+        return DB::transaction(
+            fn() => $this->validateAndCreateAttendanceWithinTransaction($data)
+        );
+
+    }
+
+    private function validateAndCreateAttendanceWithinTransaction(array $data): array {
 
         $response = [
             "bool" => false,
@@ -180,6 +191,18 @@ class TrackingAttendanceBusinessService {
             $customer = $this->getValidCustomer($customerId, $companyId, $customerAttendanceType);
 
         }
+
+        if(!Utilities::isDefined($customer)) {
+
+            $response["msg"] = "No se ha encontrado el cliente solicitado.";
+            return $response;
+
+        }
+
+        $customer = Customer::query()
+            ->where("company_id", $companyId)
+            ->lockForUpdate()
+            ->find($customer->id);
 
         if(!Utilities::isDefined($customer)) {
 
@@ -278,6 +301,13 @@ class TrackingAttendanceBusinessService {
 
         }
 
+        if($check["exceedsLimit"]) {
+
+            $response["msg"] = "$customer->name: Alcanzó el límite diario de {$limitPerDay} asistencia(s) para esta sucursal.";
+            return $response;
+
+        }
+
         // Create attendance
         $result = $this->createAttendance([
             "company_id"  => $companyId,
@@ -299,4 +329,3 @@ class TrackingAttendanceBusinessService {
     }
 
 }
-

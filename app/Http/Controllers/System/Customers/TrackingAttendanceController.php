@@ -108,7 +108,11 @@ class TrackingAttendanceController extends BaseController {
 
             }
 
-            return $this->errorResponse("create_failed", [], 422);
+            return response()->json([
+                "bool" => false,
+                "msg" => $result["msg"] ?? "No fue posible registrar la asistencia.",
+                "attendances" => [$result]
+            ], 422);
 
         }catch(\Exception $e) {
 
@@ -172,7 +176,11 @@ class TrackingAttendanceController extends BaseController {
 
             }
 
-            return $this->errorResponse("update_failed", [], 422);
+            return response()->json([
+                "bool" => false,
+                "msg" => $result["msg"] ?? "No fue posible registrar la salida.",
+                "attendances" => [$result]
+            ], 422);
 
         }catch(\Exception $e) {
 

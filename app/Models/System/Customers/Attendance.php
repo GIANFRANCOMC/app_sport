@@ -43,10 +43,19 @@ class Attendance extends Model {
     // Appends
     public function getWorkedHoursAttribute() {
 
-        $start = Carbon::parse($this->attributes["start_date"]);
-        $end = Carbon::parse($this->attributes["end_date"]);
+        $startDate = $this->attributes["start_date"] ?? null;
+        $endDate = $this->attributes["end_date"] ?? null;
 
-        return Utilities::isDefined($this->attributes["start_date"]) && Utilities::isDefined($this->attributes["end_date"]) ? round($start->floatDiffInHours($end), 3) : 0;
+        if(!Utilities::isDefined($startDate) || !Utilities::isDefined($endDate)) {
+
+            return 0;
+
+        }
+
+        $start = Carbon::parse($startDate);
+        $end = Carbon::parse($endDate);
+
+        return round($start->floatDiffInHours($end), 3);
 
     }
 

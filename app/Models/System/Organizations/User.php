@@ -196,4 +196,10 @@ class User extends Authenticatable {
 
     }
 
+    public function attendances() {
+
+        return $this->hasMany(UserAttendance::class, "user_id", "id");
+
+    }
+
 }

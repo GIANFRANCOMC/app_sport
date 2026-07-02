@@ -28,7 +28,9 @@ return [
 
     'route_actions' => [
         'stocks_management.store' => 'operate',
-        'stocks_management.update' => 'operate'
+        'stocks_management.update' => 'operate',
+        'user_attendances.checkin' => 'operate',
+        'user_attendances.checkout' => 'operate'
     ],
 
     /* Endpoints compartidos por varias pantallas del mismo módulo técnico. */
@@ -40,6 +42,11 @@ return [
         'sales.update' => ['sales.index'],
         'sales.cancel' => ['sales.index'],
         'sales.store' => ['sales.create', 'sales.pos'],
+
+        'user_attendances.list' => ['users.index'],
+        'user_attendances.weekly' => ['users.index'],
+        'user_attendances.checkin' => ['users.index'],
+        'user_attendances.checkout' => ['users.index'],
 
         'stocks_management.index' => ['stocks_management.stock.index'],
         'stocks_management.initParams' => [

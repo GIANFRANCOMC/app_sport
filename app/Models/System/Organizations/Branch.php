@@ -84,4 +84,10 @@ class Branch extends Model {
 
     }
 
+    public function userAttendances() {
+
+        return $this->hasMany(UserAttendance::class, "branch_id", "id");
+
+    }
+
 }

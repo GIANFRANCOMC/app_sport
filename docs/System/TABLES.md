@@ -236,9 +236,17 @@ Relaciones: pertenece a empresa, sucursal y cliente; puede venir de venta.
 
 ### attendances
 
-Registros de asistencia. Campos: `company_id`, `branch_id`, `customer_id`, `start_date`, `end_date`, `observation`, `motive`, `type`, `status`.
+Registros de asistencia de clientes. Campos: `company_id`, `branch_id`, `customer_id`, `start_date`, `end_date`, `observation`, `motive`, `type`, `status`.
 
 Relaciones: pertenece a empresa, sucursal y cliente.
+
+La asistencia activa es única por empresa, sucursal y cliente. El límite diario procede de la membresía y considera asistencias finalizadas del mismo día y sucursal.
+
+### user_attendances
+
+Jornadas laborales de colaboradores. Campos: `company_id`, `branch_id`, `user_id`, `work_date`, `checked_in_at`, `checked_out_at`, `worked_minutes`, `source_type`, `source_reference`, `observation`, `motive`, `status` y auditoría.
+
+Relaciones: pertenece a empresa, sucursal y usuario. La jornada activa es única por empresa y colaborador para impedir trabajo simultáneo en varias sedes. Los reportes semanales suman `worked_minutes` de jornadas finalizadas.
 
 ### subscription_emails
 

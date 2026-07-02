@@ -74,6 +74,7 @@ Route::middleware(['auth', 'verified', 'module.permission', 'resource.scope'])->
     Route::prefix('/companies')->group($systemRoute.'/Organizations/Company.php');
     Route::prefix('/roles')->group($systemRoute.'/Organizations/Role.php');
     Route::prefix('/users')->group($systemRoute.'/Organizations/User.php');
+    Route::prefix('/user_attendances')->group($systemRoute.'/Organizations/UserAttendance.php');
 
     // Sales
     Route::prefix('/sales')->group($systemRoute.'/Sales/Sale.php');
