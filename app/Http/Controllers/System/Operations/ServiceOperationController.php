@@ -37,9 +37,47 @@ final class ServiceOperationController extends BaseController {
             "data" => ServiceOperationService::stations(
                 $this->getCompanyId(),
                 $this->getUserId(),
+                (int) $request->input("branch_id"),
+                $request->filled("service_floor_id") ? (int) $request->input("service_floor_id") : null
+            )
+        ]);
+
+    }
+
+    public function floors(Request $request): JsonResponse {
+
+        $request->validate(["branch_id" => ["required", "integer"]]);
+
+        return response()->json([
+            "bool" => true,
+            "data" => ServiceOperationService::floors(
+                $this->getCompanyId(),
+                $this->getUserId(),
                 (int) $request->input("branch_id")
             )
         ]);
+
+    }
+
+    public function storeFloor(Request $request): JsonResponse {
+
+        $data = $this->validateData($request, [
+            "branch_id" => ["required", "integer"],
+            "code" => ["required", "string", "max:50"],
+            "name" => ["required", "string", "max:150"],
+            "level_number" => ["required", "integer", "min:-20", "max:200"],
+            "sort_order" => ["nullable", "integer", "min:1", "max:999"],
+            "background_color" => ["nullable", "regex:/^#[0-9a-fA-F]{6}$/"],
+            "description" => ["nullable", "string", "max:500"],
+            "status" => ["nullable", "in:active,inactive"]
+        ]);
+
+        if($data instanceof JsonResponse) return $data;
+
+        return $this->execute(
+            fn() => ServiceOperationService::createFloor($this->getCompanyId(), $this->getUserId(), $data),
+            "Piso registrado correctamente."
+        );
 
     }
 
@@ -77,10 +115,15 @@ final class ServiceOperationController extends BaseController {
 
         $data = $this->validateData($request, [
             "branch_id" => ["required", "integer"],
+            "service_floor_id" => ["nullable", "integer"],
             "code" => ["required", "string", "max:50"],
             "name" => ["required", "string", "max:150"],
             "station_type" => ["required", "string", "max:30"],
             "capacity" => ["required", "integer", "min:1", "max:999"],
+            "position_x" => ["nullable", "numeric", "min:0", "max:100"],
+            "position_y" => ["nullable", "numeric", "min:0", "max:100"],
+            "color" => ["nullable", "regex:/^#[0-9a-fA-F]{6}$/"],
+            "shape" => ["nullable", "in:round,square,rectangle"],
             "description" => ["nullable", "string", "max:500"],
             "status" => ["nullable", "in:active,inactive"]
         ]);
@@ -90,6 +133,30 @@ final class ServiceOperationController extends BaseController {
         return $this->execute(
             fn() => ServiceOperationService::createStation($this->getCompanyId(), $this->getUserId(), $data),
             "Estación registrada correctamente."
+        );
+
+    }
+
+    public function updateStationLayout(Request $request, int $id): JsonResponse {
+
+        $data = $this->validateData($request, [
+            "service_floor_id" => ["nullable", "integer"],
+            "position_x" => ["nullable", "numeric", "min:0", "max:100"],
+            "position_y" => ["nullable", "numeric", "min:0", "max:100"],
+            "color" => ["nullable", "regex:/^#[0-9a-fA-F]{6}$/"],
+            "shape" => ["nullable", "in:round,square,rectangle"]
+        ]);
+
+        if($data instanceof JsonResponse) return $data;
+
+        return $this->execute(
+            fn() => ServiceOperationService::updateStationLayout(
+                $this->getCompanyId(),
+                $this->getUserId(),
+                $id,
+                $data
+            ),
+            "Distribución actualizada correctamente."
         );
 
     }

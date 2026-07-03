@@ -38,6 +38,8 @@ final class ServiceOperationConfigService extends BaseConfigService {
             "customers" => $references->activeCustomers(),
             "items" => $references->saleItems(),
             "stationTypes" => ServiceOperationService::stationTypes(),
+            "stationColors" => ServiceOperationService::stationColors(),
+            "stationShapes" => ServiceOperationService::stationShapes(),
             "sessionTypes" => ServiceOperationService::sessionTypes(),
             "sessionStatuses" => ServiceOperationService::sessionStatuses()
         ]);

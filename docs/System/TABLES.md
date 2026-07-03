@@ -262,11 +262,19 @@ Relaciones: puede referenciar modelos mediante `model_id`/`model_type`.
 
 ## Operaciones y servicios
 
+### service_floors
+
+Pisos o zonas operativas por sucursal. Campos: `company_id`, `branch_id`, `code`, `name`, `level_number`, `sort_order`, `background_color`, `description`, `status` y auditoría.
+
+Relaciones: pertenece a empresa y sucursal; contiene muchas estaciones. `level_number` permite sótanos, planta baja o varios niveles, mientras `sort_order` controla el orden visual sin depender del nombre. El color de fondo es una referencia del plano y no modifica estados operativos.
+
 ### service_stations
 
-Estaciones físicas donde ocurre una atención. Campos: `company_id`, `branch_id`, `code`, `name`, `station_type`, `capacity`, `description`, `status` y auditoría.
+Estaciones físicas donde ocurre una atención. Campos: `company_id`, `branch_id`, `service_floor_id`, `code`, `name`, `station_type`, `capacity`, `position_x`, `position_y`, `color`, `shape`, `description`, `status` y auditoría.
 
 `station_type` admite mesa, sillón, cabina, habitación, cancha, bahía u otro. Así, la misma estructura sirve para restaurantes, barberías, clínicas, talleres, alquileres y centros deportivos. Una estación se considera ocupada cuando posee una sesión `pending` o `in_progress`; la disponibilidad no se almacena como un estado duplicado.
+
+`position_x` y `position_y` guardan porcentajes entre 5 y 95 para mantener el plano responsive. `color` y `shape` dan una referencia visual estable, pero no reemplazan el indicador de disponibilidad. Un piso asignado debe pertenecer a la misma empresa y sucursal que la estación.
 
 ### service_sessions
 

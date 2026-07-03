@@ -7,7 +7,7 @@ namespace App\Services\System\Operations;
 use App\Helpers\System\Utilities;
 use App\Models\System\Catalogs\Item;
 use App\Models\System\Customers\Customer;
-use App\Models\System\Operations\{ServiceSession, ServiceSessionItem, ServiceStation};
+use App\Models\System\Operations\{ServiceFloor, ServiceSession, ServiceSessionItem, ServiceStation};
 use App\Models\System\Organizations\{Branch, User};
 use App\Services\System\Base\CompanyReferenceDataService;
 use App\Services\System\Organizations\AccessScopeService;
@@ -60,17 +60,44 @@ final class ServiceOperationService {
 
     }
 
-    public static function createStation(int $companyId, int $actorId, array $data): ServiceStation {
+    public static function stationColors(): array {
+
+        return ["#2899e5", "#1a1a35", "#10b981", "#d97706", "#dc2626", "#7c3aed"];
+
+    }
+
+    public static function stationShapes(): array {
+
+        return [
+            ["code" => "round", "label" => "Redonda"],
+            ["code" => "square", "label" => "Cuadrada"],
+            ["code" => "rectangle", "label" => "Rectangular"]
+        ];
+
+    }
+
+    public static function createFloor(int $companyId, int $actorId, array $data): ServiceFloor {
 
         self::requireBranch($companyId, (int) $data["branch_id"], $actorId);
 
-        return ServiceStation::create([
+        $duplicate = ServiceFloor::query()
+            ->where("company_id", $companyId)
+            ->where("branch_id", (int) $data["branch_id"])
+            ->where("code", trim((string) $data["code"]))
+            ->exists();
+
+        if($duplicate) {
+            throw new DomainException("Ya existe un piso con ese código en la sucursal.");
+        }
+
+        return ServiceFloor::create([
             "company_id" => $companyId,
             "branch_id" => (int) $data["branch_id"],
             "code" => trim((string) $data["code"]),
             "name" => trim((string) $data["name"]),
-            "station_type" => (string) ($data["station_type"] ?? "table"),
-            "capacity" => (int) ($data["capacity"] ?? 1),
+            "level_number" => (int) ($data["level_number"] ?? 1),
+            "sort_order" => (int) ($data["sort_order"] ?? 1),
+            "background_color" => (string) ($data["background_color"] ?? "#f7f8fa"),
             "description" => $data["description"] ?? null,
             "status" => (string) ($data["status"] ?? "active"),
             "created_at" => now(),
@@ -79,7 +106,68 @@ final class ServiceOperationService {
 
     }
 
-    public static function stations(int $companyId, int $actorId, int $branchId) {
+    public static function floors(int $companyId, int $actorId, int $branchId) {
+
+        self::requireBranch($companyId, $branchId, $actorId);
+
+        return ServiceFloor::query()
+            ->where("company_id", $companyId)
+            ->where("branch_id", $branchId)
+            ->where("status", "active")
+            ->withCount(["stations" => fn($query) => $query->where("status", "active")])
+            ->orderBy("sort_order")
+            ->orderBy("level_number")
+            ->orderBy("name")
+            ->get();
+
+    }
+
+    public static function createStation(int $companyId, int $actorId, array $data): ServiceStation {
+
+        self::requireBranch($companyId, (int) $data["branch_id"], $actorId);
+        $floor = self::requireOptionalFloor(
+            $companyId,
+            (int) $data["branch_id"],
+            $data["service_floor_id"] ?? null
+        );
+
+        $duplicate = ServiceStation::query()
+            ->where("company_id", $companyId)
+            ->where("branch_id", (int) $data["branch_id"])
+            ->where("code", trim((string) $data["code"]))
+            ->exists();
+
+        if($duplicate) {
+            throw new DomainException("Ya existe una mesa o estación con ese código en la sucursal.");
+        }
+
+        $position = self::nextStationPosition(
+            $companyId,
+            (int) $data["branch_id"],
+            $floor?->id
+        );
+
+        return ServiceStation::create([
+            "company_id" => $companyId,
+            "branch_id" => (int) $data["branch_id"],
+            "service_floor_id" => $floor?->id,
+            "code" => trim((string) $data["code"]),
+            "name" => trim((string) $data["name"]),
+            "station_type" => (string) ($data["station_type"] ?? "table"),
+            "capacity" => (int) ($data["capacity"] ?? 1),
+            "position_x" => (float) ($data["position_x"] ?? $position["x"]),
+            "position_y" => (float) ($data["position_y"] ?? $position["y"]),
+            "color" => (string) ($data["color"] ?? "#2899e5"),
+            "shape" => (string) ($data["shape"] ?? "round"),
+            "description" => $data["description"] ?? null,
+            "status" => (string) ($data["status"] ?? "active"),
+            "created_at" => now(),
+            "created_by" => $actorId
+        ]);
+
+    }
+
+    public static function stations(int $companyId, int $actorId, int $branchId, ?int $floorId = null) {
 
         self::requireBranch($companyId, $branchId, $actorId);
 
@@ -87,13 +175,53 @@ final class ServiceOperationService {
             ->where("company_id", $companyId)
             ->where("branch_id", $branchId)
             ->where("status", "active")
+            ->when($floorId, fn($query) => $query->where("service_floor_id", $floorId))
             ->with([
+                "floor",
                 "activeSession.customer",
                 "activeSession.assignedUser",
                 "activeSession.items.assignedUser"
             ])
             ->orderBy("name")
             ->get();
+
+    }
+
+    public static function updateStationLayout(
+        int $companyId,
+        int $actorId,
+        int $stationId,
+        array $data
+    ): ServiceStation {
+
+        return DB::transaction(function() use($companyId, $actorId, $stationId, $data) {
+            $station = ServiceStation::query()
+                ->where("company_id", $companyId)
+                ->lockForUpdate()
+                ->find($stationId);
+
+            if(!$station) {
+                throw new DomainException("La mesa o estación no está disponible.");
+            }
+
+            self::requireBranch($companyId, (int) $station->branch_id, $actorId);
+            $floor = self::requireOptionalFloor(
+                $companyId,
+                (int) $station->branch_id,
+                $data["service_floor_id"] ?? $station->service_floor_id
+            );
+
+            $station->service_floor_id = $floor?->id;
+            $station->position_x = self::percentage($data["position_x"] ?? $station->position_x);
+            $station->position_y = self::percentage($data["position_y"] ?? $station->position_y);
+            $station->color = (string) ($data["color"] ?? $station->color);
+            $station->shape = (string) ($data["shape"] ?? $station->shape);
+            $station->updated_at = now();
+            $station->updated_by = $actorId;
+            $station->save();
+
+            return $station->fresh(["floor", "activeSession.customer", "activeSession.items"]);
+        });
 
     }
 
@@ -474,6 +602,45 @@ final class ServiceOperationService {
         }
 
         return $customer;
+
+    }
+
+    private static function requireOptionalFloor(int $companyId, int $branchId, mixed $floorId): ?ServiceFloor {
+
+        if(empty($floorId)) return null;
+
+        $floor = ServiceFloor::query()
+            ->where("company_id", $companyId)
+            ->where("branch_id", $branchId)
+            ->where("status", "active")
+            ->find((int) $floorId);
+
+        if(!$floor) {
+            throw new DomainException("El piso no está activo o no pertenece a la sucursal.");
+        }
+
+        return $floor;
+
+    }
+
+    private static function nextStationPosition(int $companyId, int $branchId, ?int $floorId): array {
+
+        $position = ServiceStation::query()
+            ->where("company_id", $companyId)
+            ->where("branch_id", $branchId)
+            ->where("service_floor_id", $floorId)
+            ->count();
+
+        return [
+            "x" => 8 + (($position % 6) * 16.8),
+            "y" => min(11 + (intdiv($position, 6) * 19.5), 89)
+        ];
+
+    }
+
+    private static function percentage(mixed $value): float {
+
+        return min(95, max(5, round((float) $value, 4)));
 
     }
 

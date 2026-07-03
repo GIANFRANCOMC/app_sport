@@ -25,7 +25,17 @@
                 <button
                     v-if="isRestaurant"
                     type="button"
+                    class="br-btn br-btn-secondary"
+                    @click="openFloorModal">
+                    <i class="fa-solid fa-layer-group" aria-hidden="true"></i>
+                    <span>Agregar piso</span>
+                </button>
+                <button
+                    v-if="isRestaurant"
+                    type="button"
                     class="br-btn br-btn-action-create"
+                    :disabled="!selectedFloor"
+                    :title="selectedFloor ? 'Agregar mesa al piso actual' : 'Primero agrega un piso'"
                     @click="openStationModal">
                     <i class="fa-solid fa-plus" aria-hidden="true"></i>
                     <span>Agregar mesa</span>
@@ -44,49 +54,78 @@
         <Loader v-if="loading"/>
 
         <template v-else-if="isRestaurant">
-            <div class="br-service-legend" aria-label="Leyenda de disponibilidad">
-                <span><i class="is-available"></i> Disponible</span>
-                <span><i class="is-pending"></i> Pendiente</span>
-                <span><i class="is-progress"></i> En atención</span>
-            </div>
-
-            <div class="br-service-stations">
-                <article
-                    v-for="station in stations"
-                    :key="station.id"
-                    class="br-service-station"
-                    :class="stationClass(station)">
-                    <header>
-                        <span class="br-service-station__icon" aria-hidden="true">
-                            <i class="fa-solid fa-utensils"></i>
-                        </span>
-                        <span>
-                            <strong>{{ station.name }}</strong>
-                            <small>{{ station.code }} · {{ station.capacity }} personas</small>
-                        </span>
-                    </header>
-                    <div v-if="station.active_session" class="br-service-station__session">
-                        <span>{{ station.active_session.customer?.name || 'Cliente general' }}</span>
-                        <strong>{{ elapsedLabel(station.active_session) }}</strong>
-                        <small>{{ station.active_session.items?.length || 0 }} detalle(s)</small>
-                    </div>
-                    <div v-else class="br-service-station__session is-empty">
-                        <span>Mesa disponible</span>
-                        <small>Lista para una nueva atención</small>
-                    </div>
+            <template v-if="floors.length">
+                <div class="br-service-floor-nav">
                     <button
+                        v-for="floor in floors"
+                        :key="floor.id"
                         type="button"
-                        class="br-btn br-btn-sm"
-                        :class="station.active_session ? 'br-btn-secondary' : 'br-btn-primary'"
-                        @click="station.active_session ? selectSession(station.active_session) : openSessionModal(station)">
-                        {{ station.active_session ? 'Ver atención' : 'Abrir mesa' }}
+                        class="br-service-floor-nav__item"
+                        :class="{'is-active': selectedFloor?.id === floor.id}"
+                        @click="selectFloor(floor)">
+                        <span>{{ floor.name }}</span>
+                        <small>{{ floor.stations_count || 0 }}</small>
                     </button>
-                </article>
-            </div>
+                </div>
+
+                <div class="br-service-floor-meta">
+                    <div class="br-service-legend" aria-label="Leyenda de disponibilidad">
+                        <span><i class="is-available"></i> Disponible</span>
+                        <span><i class="is-pending"></i> Pendiente</span>
+                        <span><i class="is-progress"></i> En atención</span>
+                    </div>
+                    <small><i class="fa-solid fa-arrows-up-down-left-right" aria-hidden="true"></i> Arrastra desde el asa para ordenar el plano.</small>
+                </div>
+
+                <div class="br-service-floor-plan-scroll">
+                    <div
+                        ref="floorPlan"
+                        class="br-service-floor-plan"
+                        :style="{backgroundColor: selectedFloor?.background_color || '#f7f8fa'}">
+                    <article
+                        v-for="station in stations"
+                        :key="station.id"
+                        class="br-service-map-station"
+                        :class="[stationClass(station), `is-${station.shape || 'round'}`]"
+                        :style="stationPositionStyle(station)">
+                        <button
+                            type="button"
+                            class="br-service-map-station__drag"
+                            title="Mover mesa"
+                            aria-label="Mover mesa"
+                            @pointerdown.prevent="startStationDrag($event, station)">
+                            <i class="fa-solid fa-grip" aria-hidden="true"></i>
+                        </button>
+                        <button
+                            type="button"
+                            class="br-service-map-station__color"
+                            title="Cambiar color"
+                            aria-label="Cambiar color"
+                            @click.stop="cycleStationColor(station)">
+                            <i class="fa-solid fa-palette" aria-hidden="true"></i>
+                        </button>
+                        <button
+                            type="button"
+                            class="br-service-map-station__body"
+                            @click="station.active_session ? selectSession(station.active_session) : openSessionModal(station)">
+                            <strong>{{ station.name }}</strong>
+                            <small>{{ station.capacity }} personas</small>
+                            <span>{{ station.active_session ? elapsedLabel(station.active_session) : 'Disponible' }}</span>
+                        </button>
+                    </article>
+
+                        <div v-if="!stations.length" class="br-service-floor-plan__empty">
+                            <i class="fa-solid fa-utensils" aria-hidden="true"></i>
+                            <strong>Este piso aún no tiene mesas</strong>
+                            <span>Agrega una mesa para comenzar a diseñar la distribución.</span>
+                        </div>
+                    </div>
+                </div>
+            </template>
             <WithoutData
-                v-if="!stations.length"
-                text="Aún no hay mesas registradas"
-                description="Agrega la primera mesa o estación de atención para esta sucursal."/>
+                v-else
+                text="Aún no hay pisos registrados"
+                description="Crea el primer piso o zona para ubicar las mesas de esta sucursal."/>
         </template>
 
         <template v-else>
@@ -236,6 +275,46 @@
         </aside>
     </section>
 
+    <div id="brServiceFloorModal" class="modal fade br-entity-modal" data-bs-backdrop="static" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header br-entity-modal__header">
+                    <div>
+                        <p class="br-entity-modal__eyebrow mb-1">Restaurante POS</p>
+                        <h2 class="modal-title br-entity-modal__title">Agregar piso</h2>
+                    </div>
+                    <button type="button" class="br-modal-close" data-bs-dismiss="modal" aria-label="Cerrar">
+                        <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+                    </button>
+                </div>
+                <div class="modal-body br-entity-modal__body">
+                    <div class="row g-3">
+                        <InputText v-model="floorForm.name" title="Nombre" :isRequired="true" :xl="8" :lg="8" :md="12" :sm="12"/>
+                        <InputText v-model="floorForm.code" title="Código" :isRequired="true" :xl="4" :lg="4" :md="12" :sm="12"/>
+                        <InputNumber v-model="floorForm.levelNumber" title="Nivel" :hasNegative="true" :decimals="0" :hasDiv="true" :xl="6" :lg="6" :md="12" :sm="12"/>
+                        <div class="form-group col-md-6">
+                            <label class="form-label">Fondo del plano</label>
+                            <div class="br-service-color-options">
+                                <button
+                                    v-for="color in floorBackgroundColors"
+                                    :key="color"
+                                    type="button"
+                                    :class="{'is-selected': floorForm.backgroundColor === color}"
+                                    :style="{backgroundColor: color}"
+                                    :aria-label="`Usar fondo ${color}`"
+                                    @click="floorForm.backgroundColor = color"></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer br-entity-modal__footer">
+                    <button type="button" class="br-btn br-btn-cancel" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="br-btn br-btn-action-create" :disabled="saving" @click="saveFloor">Agregar piso</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div id="brServiceStationModal" class="modal fade br-entity-modal" data-bs-backdrop="static" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered" role="document">
             <div class="modal-content">
@@ -250,6 +329,10 @@
                 </div>
                 <div class="modal-body br-entity-modal__body">
                     <div class="row g-3">
+                        <div class="form-group col-12">
+                            <label class="form-label">Piso</label>
+                            <v-select v-model="stationForm.floor" :options="floorOptions" :clearable="false" :searchable="false"/>
+                        </div>
                         <InputText v-model="stationForm.name" title="Nombre" :isRequired="true" :xl="8" :lg="8" :md="12" :sm="12"/>
                         <InputText v-model="stationForm.code" title="Código" :isRequired="true" :xl="4" :lg="4" :md="12" :sm="12"/>
                         <div class="form-group col-md-8">
@@ -257,6 +340,23 @@
                             <v-select v-model="stationForm.type" :options="stationTypeOptions" :clearable="false"/>
                         </div>
                         <InputNumber v-model="stationForm.capacity" title="Capacidad" :minValue="1" :decimals="0" :hasDiv="true" :xl="4" :lg="4" :md="12" :sm="12"/>
+                        <div class="form-group col-md-8">
+                            <label class="form-label">Color de referencia</label>
+                            <div class="br-service-color-options">
+                                <button
+                                    v-for="color in stationColorOptions"
+                                    :key="color"
+                                    type="button"
+                                    :class="{'is-selected': stationForm.color === color}"
+                                    :style="{backgroundColor: color}"
+                                    :aria-label="`Usar color ${color}`"
+                                    @click="stationForm.color = color"></button>
+                            </div>
+                        </div>
+                        <div class="form-group col-md-4">
+                            <label class="form-label">Forma</label>
+                            <v-select v-model="stationForm.shape" :options="stationShapeOptions" :clearable="false" :searchable="false"/>
+                        </div>
                     </div>
                 </div>
                 <div class="modal-footer br-entity-modal__footer">
@@ -334,9 +434,20 @@ export default {
         return {
             isRestaurant,
             config: Requests.config({entity: "service_operations"}),
-            options: {branches: [], users: [], customers: [], items: [], stationTypes: [], sessionStatuses: []},
+            options: {
+                branches: [],
+                users: [],
+                customers: [],
+                items: [],
+                stationTypes: [],
+                stationColors: [],
+                stationShapes: [],
+                sessionStatuses: []
+            },
             selectedBranch: null,
             selectedStatus: null,
+            floors: [],
+            selectedFloor: null,
             stations: [],
             sessions: {data: [], links: []},
             selectedSession: null,
@@ -344,7 +455,10 @@ export default {
             saving: false,
             now: Date.now(),
             timer: null,
-            stationForm: {name: "", code: "", type: null, capacity: 2},
+            dragState: null,
+            dragHandlers: null,
+            floorForm: {name: "", code: "", levelNumber: 1, backgroundColor: "#f7f8fa"},
+            stationForm: {floor: null, name: "", code: "", type: null, capacity: 2, color: "#2899e5", shape: null},
             sessionForm: {station: null, customer: null, user: null, item: null, quantity: 1, startImmediately: true},
             detailForm: {item: null, user: null}
         };
@@ -358,6 +472,20 @@ export default {
         },
         branchOptions() {
             return this.options.branches.map(record => ({...record, label: record.name}));
+        },
+        floorOptions() {
+            return this.floors.map(record => ({...record, label: record.name}));
+        },
+        floorBackgroundColors() {
+            return ["#f7f8fa", "#eef6fb", "#f0fdf4", "#fff7ed", "#f5f3ff", "#ffffff"];
+        },
+        stationColorOptions() {
+            return this.options.stationColors?.length
+                ? this.options.stationColors
+                : ["#2899e5", "#1a1a35", "#10b981", "#d97706", "#dc2626", "#7c3aed"];
+        },
+        stationShapeOptions() {
+            return (this.options.stationShapes || []).map(record => ({...record, label: record.label}));
         },
         userOptions() {
             return this.options.users.map(record => ({...record, label: record.name}));
@@ -393,6 +521,7 @@ export default {
     },
     beforeUnmount() {
         window.clearInterval(this.timer);
+        this.removeStationDragListeners();
     },
     methods: {
         async initParams() {
@@ -412,21 +541,53 @@ export default {
             this.selectedBranch = this.branchOptions[0] || null;
             this.selectedStatus = this.statusOptions[0] || null;
             this.stationForm.type = this.stationTypeOptions.find(type => type.code === "table") || this.stationTypeOptions[0] || null;
+            this.stationForm.shape = this.stationShapeOptions.find(shape => shape.code === "round") || this.stationShapeOptions[0] || null;
             await this.refresh();
         },
         async refresh() {
             if(!this.selectedBranch) return;
-            await (this.isRestaurant ? this.getStations() : this.getSessions());
+            if(this.isRestaurant) {
+                await this.getFloors();
+                await this.getStations();
+                return;
+            }
+
+            await this.getSessions();
         },
         async handleBranchChange() {
             this.selectedSession = null;
+            this.selectedFloor = null;
             await this.refresh();
         },
+        async getFloors() {
+            const result = await Requests.get({route: this.config.routes.floors, data: {branch_id: this.selectedBranch.id}});
+            if(!Requests.valid({result})) {
+                this.floors = [];
+                this.selectedFloor = null;
+                return;
+            }
+
+            this.floors = result.data.data;
+            this.selectedFloor = this.floors.find(floor => floor.id === this.selectedFloor?.id) || this.floors[0] || null;
+        },
         async getStations() {
+            if(!this.selectedFloor) {
+                this.stations = [];
+                return;
+            }
+
             this.loading = true;
-            const result = await Requests.get({route: this.config.routes.stations, data: {branch_id: this.selectedBranch.id}});
+            const result = await Requests.get({
+                route: this.config.routes.stations,
+                data: {branch_id: this.selectedBranch.id, service_floor_id: this.selectedFloor.id}
+            });
             this.loading = false;
             if(Requests.valid({result})) this.stations = result.data.data;
+        },
+        async selectFloor(floor) {
+            this.selectedFloor = floor;
+            this.selectedSession = null;
+            await this.getStations();
         },
         async getSessions(url = null) {
             this.loading = true;
@@ -446,13 +607,62 @@ export default {
             }
         },
         openStationModal() {
+            const sequence = this.stations.length + 1;
+            const floorCode = this.selectedFloor?.code || "P";
             this.stationForm = {
-                name: "",
-                code: `M${String(this.stations.length + 1).padStart(2, "0")}`,
+                floor: this.floorOptions.find(floor => floor.id === this.selectedFloor?.id) || this.floorOptions[0] || null,
+                name: `Mesa ${String(sequence).padStart(2, "0")}`,
+                code: `${floorCode}-M${String(sequence).padStart(2, "0")}`,
                 type: this.stationTypeOptions.find(type => type.code === "table") || this.stationTypeOptions[0] || null,
-                capacity: 2
+                capacity: 2,
+                color: this.stationColorOptions[0],
+                shape: this.stationShapeOptions.find(shape => shape.code === "round") || this.stationShapeOptions[0] || null
             };
             Alerts.modals({type: "show", id: "brServiceStationModal"});
+        },
+        openFloorModal() {
+            const sequence = this.floors.length + 1;
+            this.floorForm = {
+                name: `Piso ${sequence}`,
+                code: `P${String(sequence).padStart(2, "0")}`,
+                levelNumber: sequence,
+                backgroundColor: "#f7f8fa"
+            };
+            Alerts.modals({type: "show", id: "brServiceFloorModal"});
+        },
+        async saveFloor() {
+            if(!this.floorForm.name?.trim() || !this.floorForm.code?.trim()) {
+                Alerts.toastrs({type: "warning", subtitle: "Completa el nombre y código del piso."});
+                return;
+            }
+
+            this.saving = true;
+            Alerts.loading({message: "Registrando piso"});
+            const result = await Requests.post({
+                route: this.config.routes.floors,
+                data: {
+                    branch_id: this.selectedBranch.id,
+                    name: this.floorForm.name,
+                    code: this.floorForm.code,
+                    level_number: this.floorForm.levelNumber,
+                    sort_order: this.floors.length + 1,
+                    background_color: this.floorForm.backgroundColor,
+                    status: "active"
+                }
+            });
+            this.saving = false;
+            Alerts.close();
+
+            if(!Requests.valid({result})) {
+                this.notify(result, "No fue posible registrar el piso.");
+                return;
+            }
+
+            Alerts.modals({type: "hide", id: "brServiceFloorModal"});
+            await this.getFloors();
+            this.selectedFloor = this.floors.find(floor => floor.id === result.data.data?.id) || this.selectedFloor;
+            await this.getStations();
+            this.notify(result, "Piso registrado correctamente.", "success");
         },
         openSessionModal(station = null) {
             this.sessionForm = {station, customer: null, user: null, item: null, quantity: 1, startImmediately: true};
@@ -470,10 +680,13 @@ export default {
                     route: this.config.routes.stations,
                     data: {
                         branch_id: this.selectedBranch.id,
+                        service_floor_id: this.stationForm.floor?.id,
                         name: this.stationForm.name,
                         code: this.stationForm.code,
                         station_type: this.stationForm.type?.code,
                         capacity: this.stationForm.capacity,
+                        color: this.stationForm.color,
+                        shape: this.stationForm.shape?.code,
                         status: "active"
                     }
                 }),
@@ -558,6 +771,70 @@ export default {
 
             const targetId = sessionId || (selectResult ? result.data.data?.id : null);
             if(targetId) await this.selectSession({id: targetId});
+        },
+        stationPositionStyle(station) {
+            return {
+                left: `${Number(station.position_x || 10)}%`,
+                top: `${Number(station.position_y || 15)}%`,
+                "--br-station-color": station.color || "#2899e5"
+            };
+        },
+        startStationDrag(event, station) {
+            const plan = this.$refs.floorPlan;
+            if(!plan) return;
+
+            this.removeStationDragListeners();
+            this.dragState = {station, rect: plan.getBoundingClientRect()};
+            this.dragHandlers = {
+                move: pointerEvent => this.moveStationDrag(pointerEvent),
+                end: () => this.endStationDrag()
+            };
+            window.addEventListener("pointermove", this.dragHandlers.move, {passive: false});
+            window.addEventListener("pointerup", this.dragHandlers.end, {once: true});
+            event.currentTarget?.setPointerCapture?.(event.pointerId);
+        },
+        moveStationDrag(event) {
+            if(!this.dragState) return;
+            event.preventDefault();
+
+            const {rect, station} = this.dragState;
+            station.position_x = Math.min(95, Math.max(5, ((event.clientX - rect.left) / rect.width) * 100));
+            station.position_y = Math.min(95, Math.max(5, ((event.clientY - rect.top) / rect.height) * 100));
+        },
+        async endStationDrag() {
+            const station = this.dragState?.station;
+            this.removeStationDragListeners();
+            if(station) await this.saveStationLayout(station);
+        },
+        removeStationDragListeners() {
+            if(this.dragHandlers) {
+                window.removeEventListener("pointermove", this.dragHandlers.move);
+                window.removeEventListener("pointerup", this.dragHandlers.end);
+            }
+            this.dragHandlers = null;
+            this.dragState = null;
+        },
+        async cycleStationColor(station) {
+            const currentIndex = this.stationColorOptions.indexOf(station.color);
+            station.color = this.stationColorOptions[(currentIndex + 1) % this.stationColorOptions.length];
+            await this.saveStationLayout(station);
+        },
+        async saveStationLayout(station) {
+            const result = await Requests.patch({
+                route: `${this.config.routes.stations}/${station.id}/layout`,
+                data: {
+                    service_floor_id: this.selectedFloor?.id,
+                    position_x: Number(station.position_x || 10).toFixed(4),
+                    position_y: Number(station.position_y || 15).toFixed(4),
+                    color: station.color,
+                    shape: station.shape || "round"
+                }
+            });
+
+            if(!Requests.valid({result})) {
+                this.notify(result, "No fue posible guardar la distribución de la mesa.");
+                await this.getStations();
+            }
         },
         notify(result, fallback, type = "error") {
             Alerts.toastrs({type, subtitle: result?.data?.msg || fallback});

@@ -14,10 +14,15 @@ final class ServiceStation extends Model {
     protected $fillable = [
         "company_id",
         "branch_id",
+        "service_floor_id",
         "code",
         "name",
         "station_type",
         "capacity",
+        "position_x",
+        "position_y",
+        "color",
+        "shape",
         "description",
         "status",
         "created_at",
@@ -27,7 +32,9 @@ final class ServiceStation extends Model {
     ];
 
     protected $casts = [
-        "capacity" => "integer"
+        "capacity" => "integer",
+        "position_x" => "decimal:4",
+        "position_y" => "decimal:4"
     ];
 
     public function company() {
@@ -39,6 +46,12 @@ final class ServiceStation extends Model {
     public function branch() {
 
         return $this->belongsTo(Branch::class, "branch_id", "id");
+
+    }
+
+    public function floor() {
+
+        return $this->belongsTo(ServiceFloor::class, "service_floor_id", "id");
 
     }
 

@@ -8,14 +8,15 @@ return new class extends Migration {
 
     public function up(): void {
 
-        Schema::create("service_stations", function(Blueprint $table) {
+        Schema::create("service_floors", function(Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger("company_id");
             $table->unsignedBigInteger("branch_id");
             $table->string("code", 50);
             $table->string("name", 150);
-            $table->string("station_type", 30)->default("table");
-            $table->unsignedSmallInteger("capacity")->default(1);
+            $table->smallInteger("level_number")->default(1);
+            $table->unsignedSmallInteger("sort_order")->default(1);
+            $table->string("background_color", 20)->default("#f7f8fa");
             $table->string("description", 500)->nullable();
             $table->string("status", 20)->default("active");
 
@@ -26,6 +27,33 @@ return new class extends Migration {
 
             $table->foreign("company_id")->references("id")->on("companies")->onDelete("cascade");
             $table->foreign("branch_id")->references("id")->on("branches")->restrictOnDelete();
+            $table->unique(["company_id", "branch_id", "code"]);
+        });
+
+        Schema::create("service_stations", function(Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger("company_id");
+            $table->unsignedBigInteger("branch_id");
+            $table->unsignedBigInteger("service_floor_id")->nullable();
+            $table->string("code", 50);
+            $table->string("name", 150);
+            $table->string("station_type", 30)->default("table");
+            $table->unsignedSmallInteger("capacity")->default(1);
+            $table->decimal("position_x", 7, 4)->default(10);
+            $table->decimal("position_y", 7, 4)->default(15);
+            $table->string("color", 20)->default("#2899e5");
+            $table->string("shape", 20)->default("round");
+            $table->string("description", 500)->nullable();
+            $table->string("status", 20)->default("active");
+
+            $table->timestamp("created_at")->useCurrent()->nullable();
+            $table->integer("created_by")->nullable();
+            $table->timestamp("updated_at")->nullable();
+            $table->integer("updated_by")->nullable();
+
+            $table->foreign("company_id")->references("id")->on("companies")->onDelete("cascade");
+            $table->foreign("branch_id")->references("id")->on("branches")->restrictOnDelete();
+            $table->foreign("service_floor_id")->references("id")->on("service_floors")->restrictOnDelete();
             $table->unique(["company_id", "branch_id", "code"]);
         });
 
@@ -102,6 +130,7 @@ return new class extends Migration {
         Schema::dropIfExists("service_session_items");
         Schema::dropIfExists("service_sessions");
         Schema::dropIfExists("service_stations");
+        Schema::dropIfExists("service_floors");
 
     }
 

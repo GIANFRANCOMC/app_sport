@@ -357,6 +357,7 @@ const ENTITY_SPECIAL_ROUTES = {
         checkOut: "check-out"
     },
     service_operations: {
+        floors: "floors",
         stations: "stations",
         sessions: "sessions"
     },

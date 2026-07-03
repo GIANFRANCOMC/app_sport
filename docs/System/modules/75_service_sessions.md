@@ -10,7 +10,7 @@ Controla atenciones que poseen inicio y fin reales. Sirve para barberías, salon
 - Ruta principal: `GET /service_operations/services`.
 - Núcleo: `ServiceOperationService`.
 - Tablas: `service_sessions` y `service_session_items`.
-- Estación opcional: `service_stations` para sillón, cabina, habitación, cancha u otro recurso.
+- Estación opcional: `service_stations` para sillón, cabina, habitación, cancha u otro recurso. Puede organizarse por `service_floors` cuando el negocio tiene niveles o zonas físicas.
 
 ## Flujo
 
