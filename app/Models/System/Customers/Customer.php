@@ -32,6 +32,9 @@ class Customer extends Model {
         "name",
         "email",
         "phone_number",
+        "emergency_contact_name",
+        "emergency_contact_phone",
+        "medical_notes",
         "gender",
         "birthdate",
         "status",
@@ -44,13 +47,13 @@ class Customer extends Model {
     // Appends
     public function getFormattedGenderAttribute() {
 
-        return self::getGenders("first", $this->attributes["gender"])["label"] ?? "";
+        return self::getGenders("first", $this->attributes["gender"] ?? "")["label"] ?? "";
 
     }
 
     public function getFormattedStatusAttribute() {
 
-        return self::getStatuses("first", $this->attributes["status"])["label"] ?? "";
+        return self::getStatuses("first", $this->attributes["status"] ?? "")["label"] ?? "";
 
     }
 

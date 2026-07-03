@@ -57,6 +57,10 @@ return new class extends Migration {
             $table->string("ip_address", 255);
             $table->integer("port")->default(4370);
             $table->string("device_id", 255)->nullable();
+            $table->string("access_key", 100)->nullable();
+            $table->text("secret_encrypted")->nullable();
+            $table->timestamp("credentials_rotated_at")->nullable();
+            $table->timestamp("last_seen_at")->nullable();
             $table->text("description")->nullable();
             $table->enum("status", ["active", "inactive"])->default("active");
 
@@ -92,6 +96,28 @@ return new class extends Migration {
             $table->unique(["company_id", "biometric_device_id", "device_user_id", "finger_index"], "cbf_company_device_user_finger_unique");
         });
 
+        Schema::create("biometric_device_events", function(Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger("company_id");
+            $table->unsignedBigInteger("biometric_device_id");
+            $table->string("event_uuid", 64);
+            $table->string("event_type", 40);
+            $table->string("subject_type", 20)->nullable();
+            $table->integer("device_user_id")->nullable();
+            $table->dateTime("occurred_at");
+            $table->json("payload")->nullable();
+            $table->string("processing_status", 20)->default("pending");
+            $table->unsignedSmallInteger("attempts")->default(0);
+            $table->text("last_error")->nullable();
+            $table->timestamp("processed_at")->nullable();
+            $table->timestamp("created_at")->useCurrent()->nullable();
+            $table->timestamp("updated_at")->nullable();
+
+            $table->foreign("company_id")->references("id")->on("companies")->onDelete("cascade");
+            $table->foreign("biometric_device_id")->references("id")->on("biometric_devices")->onDelete("cascade");
+            $table->unique(["company_id", "biometric_device_id", "event_uuid"], "bde_company_device_event_unique");
+        });
+
     }
 
     /**
@@ -99,6 +125,7 @@ return new class extends Migration {
      */
     public function down(): void {
 
+        Schema::dropIfExists("biometric_device_events");
         Schema::dropIfExists("customer_biometric_fingerprints");
         Schema::dropIfExists("biometric_devices");
         Schema::dropIfExists("biometric_device_models");

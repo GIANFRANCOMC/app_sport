@@ -127,6 +127,28 @@ return new class extends Migration {
             $table->foreign("branch_id")->references("id")->on("branches")->onDelete("cascade");
         });
 
+        Schema::create("business_audit_logs", function(Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger("company_id");
+            $table->unsignedBigInteger("branch_id")->nullable();
+            $table->unsignedBigInteger("user_id")->nullable();
+            $table->string("module", 80);
+            $table->string("action", 80);
+            $table->string("auditable_type", 150)->nullable();
+            $table->unsignedBigInteger("auditable_id")->nullable();
+            $table->string("summary", 500);
+            $table->json("before_data")->nullable();
+            $table->json("after_data")->nullable();
+            $table->json("context")->nullable();
+            $table->string("ip_address", 45)->nullable();
+            $table->string("user_agent", 500)->nullable();
+            $table->timestamp("occurred_at")->useCurrent();
+
+            $table->foreign("company_id")->references("id")->on("companies")->onDelete("cascade");
+            $table->foreign("branch_id")->references("id")->on("branches")->nullOnDelete();
+            $table->foreign("user_id")->references("id")->on("users")->nullOnDelete();
+        });
+
         Schema::create("series", function(Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger("company_id");
@@ -152,6 +174,9 @@ return new class extends Migration {
             $table->string("internal_code", 255);
             $table->string("name", 255);
             $table->text("description")->nullable();
+            $table->string("logo_path", 500)->nullable();
+            $table->string("origin_country_code", 3)->nullable();
+            $table->string("website_url", 500)->nullable();
             $table->enum("status", ["active", "inactive"])->default("active");
 
             $table->timestamp("created_at")->useCurrent()->nullable();
@@ -177,6 +202,11 @@ return new class extends Migration {
             $table->enum("type", ["product", "service", "subscription"])->default("product");
             $table->enum("duration_type", ["hour", "day", "today", "month", "year"])->nullable();
             $table->integer("duration_value")->nullable();
+            $table->unsignedInteger("estimated_duration_minutes")->nullable();
+            $table->decimal("commission_rate", 7, 4)->nullable();
+            $table->unsignedSmallInteger("attendance_limit_per_day")->nullable();
+            $table->json("benefits")->nullable();
+            $table->json("restrictions")->nullable();
             $table->boolean("see_my_web")->nullable()->default(true);
             $table->boolean("see_my_web_price")->nullable()->default(false);
             $table->enum("status", ["active", "inactive"])->default("active");
@@ -230,6 +260,8 @@ return new class extends Migration {
             $table->string("internal_code", 255);
             $table->string("name", 255);
             $table->text("description")->nullable();
+            $table->unsignedSmallInteger("sort_order")->default(1);
+            $table->boolean("is_public")->default(true);
             $table->enum("status", ["active", "inactive"])->default("active");
 
             $table->timestamp("created_at")->useCurrent()->nullable();
@@ -263,6 +295,9 @@ return new class extends Migration {
             $table->string("name", 255);
             $table->string("email", 255)->nullable();
             $table->string("phone_number", 255)->nullable();
+            $table->string("emergency_contact_name", 255)->nullable();
+            $table->string("emergency_contact_phone", 50)->nullable();
+            $table->text("medical_notes")->nullable();
             $table->enum("gender", ["male", "female", "other"])->nullable();
             $table->date("birthdate")->nullable();
             $table->enum("status", ["active", "inactive"])->default("active");
@@ -274,6 +309,10 @@ return new class extends Migration {
 
             $table->foreign("company_id")->references("id")->on("companies")->onDelete("cascade");
             $table->foreign("identity_document_type_id")->references("id")->on("identity_document_types")->onDelete("cascade");
+            $table->unique(
+                ["company_id", "identity_document_type_id", "document_number"],
+                "customers_company_identity_document_unique"
+            );
         });
         Schema::create("warehouses", function(Blueprint $table) {
             $table->id();
@@ -705,6 +744,7 @@ return new class extends Migration {
         Schema::dropIfExists("items");
         Schema::dropIfExists("brands");
         Schema::dropIfExists("series");
+        Schema::dropIfExists("business_audit_logs");
         Schema::dropIfExists("user_branches");
         Schema::dropIfExists("branches");
         Schema::dropIfExists("company_socials_media");

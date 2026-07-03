@@ -12,4 +12,6 @@ Route::get("/export", [PurchaseController::class, "export"])->name("$entity.expo
 Route::post("", [PurchaseController::class, "store"])->name("$entity.store");
 Route::get("/{id}", [PurchaseController::class, "show"])->name("$entity.show");
 Route::post("/{id}/receive", [PurchaseController::class, "receive"])->name("$entity.receive");
+Route::post("/{id}/returns", [PurchaseController::class, "returnToSupplier"])->name("$entity.returns.store");
+Route::patch("/{id}/approve", [PurchaseController::class, "approve"])->name("$entity.approve");
 Route::patch("/{id}/cancel", [PurchaseController::class, "cancel"])->name("$entity.cancel");

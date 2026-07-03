@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Guest;
 use App\Helpers\System\Utilities;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use App\Http\Requests\Guest\PublicAttendanceRequest;
 use Illuminate\Support\Facades\{Auth, DB};
 use stdClass;
 
@@ -54,6 +55,24 @@ class TrackingAttendanceController extends Controller {
 
     }
 
+    public function signedIndex(Request $request, int $branch) {
+
+        $company = $request->get("company");
+        $record = Branch::query()
+            ->where("company_id", $company->id)
+            ->where("status", "active")
+            ->find($branch);
+
+        abort_unless($record, 404, "La sucursal no está disponible.");
+
+        return view("Guest/general/tracking_attendances/main", [
+            "company" => $company,
+            "branch" => $record,
+            "withMenu" => false
+        ]);
+
+    }
+
     public function create() {
 
         //
@@ -90,7 +109,7 @@ class TrackingAttendanceController extends Controller {
 
     }
 
-    public function qrCamera(Request $request, TrackingAttendanceBusinessService $attendanceService) { // StoreTrackingAttendanceRequest
+    public function qrCamera(PublicAttendanceRequest $request, TrackingAttendanceBusinessService $attendanceService) {
 
         $company = $request->get("company");
 
@@ -99,7 +118,7 @@ class TrackingAttendanceController extends Controller {
 
         $attendances = collect();
 
-        foreach($request->customers as $customerRequest) {
+        foreach($request->validated("customers") as $customerRequest) {
 
             $result = $attendanceService->validateAndCreateAttendance([
                 "company_id"  => $company->id,

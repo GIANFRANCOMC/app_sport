@@ -4,7 +4,13 @@ declare(strict_types=1);
 
 namespace App\Services\System\Organizations\Users;
 
-use App\Models\System\Organizations\{Branch, User, UserAttendance};
+use App\Models\System\Organizations\{
+    Branch,
+    User,
+    UserAttendance,
+    UserAttendanceBreak,
+    UserAttendanceCorrection
+};
 use App\Services\System\Devices\BiometricDevices\BiometricDeviceService;
 use Carbon\Carbon;
 use DomainException;
@@ -142,6 +148,14 @@ final class UserAttendanceService {
 
             }
 
+            if(UserAttendanceBreak::query()
+                ->where("company_id", $companyId)
+                ->where("user_attendance_id", $attendance->id)
+                ->where("status", "active")
+                ->exists()) {
+                throw new DomainException("Finaliza la pausa en curso antes de registrar la salida.");
+            }
+
             $checkedInAt = Carbon::parse($attendance->checked_in_at);
 
             if($checkedOutAt->lessThanOrEqualTo($checkedInAt)) {
@@ -151,7 +165,12 @@ final class UserAttendanceService {
             }
 
             $attendance->checked_out_at = $checkedOutAt;
-            $attendance->worked_minutes = $checkedInAt->diffInMinutes($checkedOutAt);
+            $metrics = self::calculateMetrics($attendance, $checkedInAt, $checkedOutAt);
+            $attendance->worked_minutes = $metrics["worked_minutes"];
+            $attendance->ordinary_minutes = $metrics["ordinary_minutes"];
+            $attendance->late_minutes = $metrics["late_minutes"];
+            $attendance->overtime_minutes = $metrics["overtime_minutes"];
+            $attendance->break_minutes = $metrics["break_minutes"];
             $attendance->status = self::STATUS_FINALIZED;
             $attendance->updated_at = now();
             $attendance->updated_by = $actorId;
@@ -159,6 +178,130 @@ final class UserAttendanceService {
 
             return $attendance->fresh(["branch", "user"]);
 
+        });
+
+    }
+
+    public static function startBreak(int $companyId, int $attendanceId, int $actorId, ?string $reason = null): UserAttendanceBreak {
+
+        return DB::transaction(function() use($companyId, $attendanceId, $actorId, $reason) {
+            $attendance = UserAttendance::query()
+                ->where("company_id", $companyId)
+                ->where("status", self::STATUS_ACTIVE)
+                ->lockForUpdate()
+                ->find($attendanceId);
+
+            if(!$attendance) {
+                throw new DomainException("La jornada no está disponible para iniciar una pausa.");
+            }
+
+            if(UserAttendanceBreak::query()
+                ->where("company_id", $companyId)
+                ->where("user_attendance_id", $attendanceId)
+                ->where("status", "active")
+                ->exists()) {
+                throw new DomainException("La jornada ya tiene una pausa en curso.");
+            }
+
+            return UserAttendanceBreak::create([
+                "company_id" => $companyId,
+                "user_attendance_id" => $attendanceId,
+                "started_at" => now(),
+                "reason" => $reason,
+                "status" => "active",
+                "created_by" => $actorId
+            ]);
+        });
+
+    }
+
+    public static function endBreak(int $companyId, int $attendanceId, int $actorId): UserAttendanceBreak {
+
+        return DB::transaction(function() use($companyId, $attendanceId, $actorId) {
+            $break = UserAttendanceBreak::query()
+                ->where("company_id", $companyId)
+                ->where("user_attendance_id", $attendanceId)
+                ->where("status", "active")
+                ->lockForUpdate()
+                ->first();
+
+            if(!$break) {
+                throw new DomainException("La jornada no tiene una pausa en curso.");
+            }
+
+            $break->ended_at = now();
+            $break->duration_minutes = $break->started_at->diffInMinutes($break->ended_at);
+            $break->status = "finalized";
+            $break->updated_by = $actorId;
+            $break->save();
+
+            return $break;
+        });
+
+    }
+
+    public static function requestCorrection(int $companyId, int $attendanceId, int $actorId, array $data): UserAttendanceCorrection {
+
+        $attendance = UserAttendance::query()->where("company_id", $companyId)->find($attendanceId);
+        if(!$attendance) {
+            throw new DomainException("La jornada no existe o pertenece a otra empresa.");
+        }
+
+        return UserAttendanceCorrection::create([
+            "company_id" => $companyId,
+            "user_attendance_id" => $attendanceId,
+            "requested_by" => $actorId,
+            "requested_check_in_at" => $data["checked_in_at"] ?? null,
+            "requested_check_out_at" => $data["checked_out_at"] ?? null,
+            "reason" => $data["reason"],
+            "status" => "pending"
+        ]);
+
+    }
+
+    public static function reviewCorrection(int $companyId, int $correctionId, int $actorId, bool $approve, ?string $note): UserAttendanceCorrection {
+
+        return DB::transaction(function() use($companyId, $correctionId, $actorId, $approve, $note) {
+            $correction = UserAttendanceCorrection::query()
+                ->where("company_id", $companyId)
+                ->where("status", "pending")
+                ->lockForUpdate()
+                ->find($correctionId);
+
+            if(!$correction) {
+                throw new DomainException("La solicitud de corrección ya fue revisada o no existe.");
+            }
+
+            if($approve) {
+                $attendance = UserAttendance::query()->lockForUpdate()->findOrFail($correction->user_attendance_id);
+                $attendance->checked_in_at = $correction->requested_check_in_at ?? $attendance->checked_in_at;
+                $attendance->checked_out_at = $correction->requested_check_out_at ?? $attendance->checked_out_at;
+
+                if($attendance->checked_out_at && Carbon::parse($attendance->checked_out_at)->lessThanOrEqualTo(Carbon::parse($attendance->checked_in_at))) {
+                    throw new DomainException("La salida corregida debe ser posterior al ingreso.");
+                }
+
+                if($attendance->checked_out_at) {
+                    $metrics = self::calculateMetrics(
+                        $attendance,
+                        Carbon::parse($attendance->checked_in_at),
+                        Carbon::parse($attendance->checked_out_at)
+                    );
+                    $attendance->fill($metrics);
+                }
+
+                $attendance->updated_at = now();
+                $attendance->updated_by = $actorId;
+                $attendance->save();
+            }
+
+            $correction->status = $approve ? "approved" : "rejected";
+            $correction->reviewed_by = $actorId;
+            $correction->review_note = $note;
+            $correction->reviewed_at = now();
+            $correction->save();
+
+            return $correction;
         });
 
     }
@@ -270,6 +413,58 @@ final class UserAttendanceService {
         }
 
         return $branch;
+
+    }
+
+    private static function calculateMetrics(UserAttendance $attendance, Carbon $checkIn, Carbon $checkOut): array {
+
+        $breakMinutes = (int) UserAttendanceBreak::query()
+            ->where("company_id", $attendance->company_id)
+            ->where("user_attendance_id", $attendance->id)
+            ->where("status", "finalized")
+            ->sum("duration_minutes");
+        $workedMinutes = max(0, $checkIn->diffInMinutes($checkOut) - $breakMinutes);
+        $weekday = $checkIn->dayOfWeekIso;
+        $schedule = DB::table("user_work_schedules")
+            ->where("company_id", $attendance->company_id)
+            ->where("weekday", $weekday)
+            ->where("status", "active")
+            ->where(function($query) use($attendance) {
+                $query->where("user_id", $attendance->user_id)->orWhereNull("user_id");
+            })
+            ->where(function($query) use($attendance) {
+                $query->where("branch_id", $attendance->branch_id)->orWhereNull("branch_id");
+            })
+            ->orderByRaw("user_id is null")
+            ->orderByRaw("branch_id is null")
+            ->first();
+
+        if(!$schedule || !$schedule->is_working_day) {
+            return [
+                "worked_minutes" => $workedMinutes,
+                "ordinary_minutes" => 0,
+                "late_minutes" => 0,
+                "overtime_minutes" => $workedMinutes,
+                "break_minutes" => $breakMinutes
+            ];
+        }
+
+        $scheduledStart = Carbon::parse($checkIn->toDateString() . " " . $schedule->starts_at);
+        $scheduledEnd = Carbon::parse($checkIn->toDateString() . " " . $schedule->ends_at);
+        if($schedule->crosses_midnight || $scheduledEnd->lessThanOrEqualTo($scheduledStart)) {
+            $scheduledEnd->addDay();
+        }
+
+        $scheduledMinutes = $scheduledStart->diffInMinutes($scheduledEnd);
+        $lateMinutes = max(0, $scheduledStart->copy()->addMinutes((int) $schedule->tolerance_minutes)->diffInMinutes($checkIn, false));
+
+        return [
+            "worked_minutes" => $workedMinutes,
+            "ordinary_minutes" => min($workedMinutes, $scheduledMinutes),
+            "late_minutes" => $lateMinutes,
+            "overtime_minutes" => max(0, $workedMinutes - $scheduledMinutes),
+            "break_minutes" => $breakMinutes
+        ];
 
     }
 

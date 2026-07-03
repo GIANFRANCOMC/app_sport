@@ -22,6 +22,10 @@ final class PurchaseHeader extends Model {
         "document_number",
         "issue_date",
         "expected_date",
+        "due_date",
+        "approval_status",
+        "approved_by",
+        "approved_at",
         "delivery_mode",
         "subtotal",
         "tax",
@@ -39,6 +43,8 @@ final class PurchaseHeader extends Model {
     protected $casts = [
         "issue_date" => "date:Y-m-d",
         "expected_date" => "date:Y-m-d",
+        "due_date" => "date:Y-m-d",
+        "approved_at" => "datetime",
         "subtotal" => "decimal:2",
         "tax" => "decimal:2",
         "total" => "decimal:2",
@@ -127,6 +133,18 @@ final class PurchaseHeader extends Model {
 
         return $this->hasMany(PurchasePayment::class, "purchase_header_id")
                     ->whereIn("status", ["active"]);
+
+    }
+
+    public function expenses() {
+
+        return $this->hasMany(PurchaseExpense::class, "purchase_header_id");
+
+    }
+
+    public function returns() {
+
+        return $this->hasMany(PurchaseReturn::class, "purchase_header_id");
 
     }
 

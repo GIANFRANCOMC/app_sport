@@ -173,6 +173,10 @@ final class ServiceOperationController extends BaseController {
             "session_type" => ["required", "string", "max:30"],
             "start_immediately" => ["nullable", "boolean"],
             "started_at" => ["nullable", "date"],
+            "scheduled_at" => ["nullable", "date"],
+            "expected_end_at" => ["nullable", "date", "after:scheduled_at"],
+            "tolerance_minutes" => ["nullable", "integer", "min:0", "max:1440"],
+            "queue_code" => ["nullable", "string", "max:30"],
             "observation" => ["nullable", "string", "max:500"]
         ]);
 
@@ -236,6 +240,74 @@ final class ServiceOperationController extends BaseController {
         return $this->execute(
             fn() => ServiceOperationService::completeItem($this->getCompanyId(), $this->getUserId(), $id),
             "Detalle finalizado."
+        );
+
+    }
+
+    public function reassignSession(Request $request, int $id): JsonResponse {
+
+        $data = $this->validateData($request, [
+            "assigned_user_id" => ["required", "integer"],
+            "note" => ["nullable", "string", "max:500"]
+        ]);
+        if($data instanceof JsonResponse) return $data;
+
+        return $this->execute(
+            fn() => ServiceOperationService::reassign(
+                $this->getCompanyId(),
+                $this->getUserId(),
+                $id,
+                (int) $data["assigned_user_id"],
+                $data["note"] ?? null
+            ),
+            "Responsable actualizado correctamente."
+        );
+
+    }
+
+    public function pauseSession(Request $request, int $id): JsonResponse {
+
+        $data = $this->validateData($request, [
+            "service_session_item_id" => ["nullable", "integer"],
+            "reason" => ["nullable", "string", "max:500"]
+        ]);
+        if($data instanceof JsonResponse) return $data;
+
+        return $this->execute(
+            fn() => ServiceOperationService::pause(
+                $this->getCompanyId(),
+                $this->getUserId(),
+                $id,
+                isset($data["service_session_item_id"]) ? (int) $data["service_session_item_id"] : null,
+                $data["reason"] ?? null
+            ),
+            "Pausa registrada correctamente."
+        );
+
+    }
+
+    public function resumeSession(int $id): JsonResponse {
+
+        return $this->execute(
+            fn() => ServiceOperationService::resume($this->getCompanyId(), $this->getUserId(), $id),
+            "Atención reanudada correctamente."
+        );
+
+    }
+
+    public function cancelSession(Request $request, int $id): JsonResponse {
+
+        $data = $this->validateData($request, ["reason" => ["required", "string", "max:500"]]);
+        if($data instanceof JsonResponse) return $data;
+
+        return $this->execute(
+            fn() => ServiceOperationService::cancel(
+                $this->getCompanyId(),
+                $this->getUserId(),
+                $id,
+                $data["reason"]
+            ),
+            "Atención cancelada correctamente."
         );
 
     }

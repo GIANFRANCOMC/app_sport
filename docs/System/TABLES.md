@@ -473,6 +473,40 @@ Asociación cliente-huella-dispositivo. Campos: `company_id`, `customer_id`, `bi
 
 Relaciones: pertenece a empresa, cliente y dispositivo.
 
+## Trazabilidad y operaciones ampliadas
+
+### business_audit_logs
+
+Bitácora transversal de cambios sensibles. Relaciona empresa, sucursal y usuario; registra módulo, acción, modelo, registro, resumen, estado anterior/nuevo y contexto técnico. Nunca almacena contraseñas, tokens, secretos ni plantillas biométricas.
+
+### book_complaint_attachments / book_complaint_status_histories
+
+Conservan adjuntos múltiples y cada transición del libro de reclamaciones. `book_complaints.tracking_code` permite consulta pública aislada; `public_response` se separa de `admin_response`.
+
+### biometric_device_events
+
+Recibe eventos firmados por dispositivo. `event_uuid` hace idempotente cada evento; `processing_status`, `attempts`, `last_error` y `processed_at` permiten reintento y diagnóstico sin duplicar asistencias.
+
+### user_work_schedules / user_attendance_breaks / user_attendance_corrections
+
+Modelan horarios por empresa, sucursal o usuario, pausas múltiples y correcciones con aprobación. `user_attendances` conserva métricas históricas ordinarias, tardanza, horas extra y descanso.
+
+### service_session_events / service_session_pauses
+
+Registran línea de tiempo, reasignaciones, cancelaciones y pausas de una atención. Los eventos son append-only y mantienen actor, estado, nota y metadatos.
+
+### supplier_contacts / supplier_bank_accounts
+
+Separan contactos y cuentas bancarias múltiples del proveedor. Cada fila conserva empresa, estado y marca de principal.
+
+### purchase_expenses
+
+Gastos adicionales de compra como flete o seguro, con importe y método de distribución.
+
+### purchase_returns / purchase_return_items
+
+Devoluciones al proveedor vinculadas con compra, recepción, almacén, detalles y movimientos de inventario.
+
 ## Criterio de migraciones
 
 - Separar estructura y datos iniciales: las migraciones de creación definen tablas, claves primarias y claves foráneas; los inserts iniciales viven en una migración dedicada.

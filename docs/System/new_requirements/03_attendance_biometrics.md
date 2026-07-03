@@ -9,8 +9,8 @@ La asistencia es flujo critico y se usa desde System, Guest y biometricos. Hay r
 - Tests de check-in/check-out.
 - Aplicar limite diario de membresia.
 - Definir si checkout automatico se permite desde QR/biometria.
-- Corregir namespace/import del servicio biometrico si falla.
-- Crear logs de eventos biometricos.
+- Namespace e imports del servicio biométrico normalizados.
+- Logs idempotentes de eventos biométricos implementados con firma, intentos y errores.
 
 ## Impacto
 

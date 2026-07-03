@@ -18,6 +18,10 @@ final class UserAttendance extends Model {
         "checked_in_at",
         "checked_out_at",
         "worked_minutes",
+        "ordinary_minutes",
+        "late_minutes",
+        "overtime_minutes",
+        "break_minutes",
         "source_type",
         "source_reference",
         "observation",
@@ -35,7 +39,11 @@ final class UserAttendance extends Model {
         "work_date" => "date",
         "checked_in_at" => "datetime",
         "checked_out_at" => "datetime",
-        "worked_minutes" => "integer"
+        "worked_minutes" => "integer",
+        "ordinary_minutes" => "integer",
+        "late_minutes" => "integer",
+        "overtime_minutes" => "integer",
+        "break_minutes" => "integer"
     ];
 
     protected $appends = [
@@ -63,6 +71,18 @@ final class UserAttendance extends Model {
     public function user() {
 
         return $this->belongsTo(User::class, "user_id", "id");
+
+    }
+
+    public function breaks() {
+
+        return $this->hasMany(UserAttendanceBreak::class, "user_attendance_id", "id");
+
+    }
+
+    public function corrections() {
+
+        return $this->hasMany(UserAttendanceCorrection::class, "user_attendance_id", "id");
 
     }
 

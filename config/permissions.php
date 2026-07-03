@@ -32,6 +32,15 @@ return [
         'user_attendances.checkin' => 'operate',
         'user_attendances.biometric-checkin' => 'operate',
         'user_attendances.checkout' => 'operate',
+        'user_attendances.breaks.start' => 'operate',
+        'user_attendances.breaks.end' => 'operate',
+        'user_attendances.corrections.store' => 'update',
+        'user_attendances.corrections.review' => 'update',
+        'roles.duplicate' => 'create',
+        'purchases.returns.store' => 'operate',
+        'purchases.approve' => 'operate',
+        'assets.categories.store' => 'create',
+        'assets.categories.update' => 'update',
         'users.biometric-fingerprints.store' => 'update',
         'service_operations.sessions.store' => 'operate',
         'service_operations.floors.store' => 'create',
@@ -39,12 +48,19 @@ return [
         'service_operations.items.store' => 'operate',
         'service_operations.sessions.start' => 'operate',
         'service_operations.sessions.complete' => 'operate',
+        'service_operations.sessions.reassign' => 'operate',
+        'service_operations.sessions.pause' => 'operate',
+        'service_operations.sessions.resume' => 'operate',
+        'service_operations.sessions.cancel' => 'operate',
         'service_operations.items.start' => 'operate',
         'service_operations.items.complete' => 'operate'
     ],
 
     /* Endpoints compartidos por varias pantallas del mismo módulo técnico. */
     'route_modules' => [
+        'assets.categories.list' => ['assets.index'],
+        'assets.categories.store' => ['assets.index'],
+        'assets.categories.update' => ['assets.index'],
         'sales.initParams' => ['sales.index', 'sales.create', 'sales.pos'],
         'sales.list' => ['sales.index'],
         'sales.show' => ['sales.index'],
@@ -59,6 +75,10 @@ return [
         'user_attendances.checkin' => ['user_attendances.index'],
         'user_attendances.biometric-checkin' => ['user_attendances.index'],
         'user_attendances.checkout' => ['user_attendances.index'],
+        'user_attendances.breaks.start' => ['user_attendances.index'],
+        'user_attendances.breaks.end' => ['user_attendances.index'],
+        'user_attendances.corrections.store' => ['user_attendances.index'],
+        'user_attendances.corrections.review' => ['user_attendances.index'],
 
         'users.biometric-fingerprints.store' => ['users.index'],
 
@@ -74,6 +94,10 @@ return [
         'service_operations.items.store' => ['restaurant_pos.index', 'service_sessions.index'],
         'service_operations.sessions.start' => ['restaurant_pos.index', 'service_sessions.index'],
         'service_operations.sessions.complete' => ['restaurant_pos.index', 'service_sessions.index'],
+        'service_operations.sessions.reassign' => ['restaurant_pos.index', 'service_sessions.index'],
+        'service_operations.sessions.pause' => ['restaurant_pos.index', 'service_sessions.index'],
+        'service_operations.sessions.resume' => ['restaurant_pos.index', 'service_sessions.index'],
+        'service_operations.sessions.cancel' => ['restaurant_pos.index', 'service_sessions.index'],
         'service_operations.items.start' => ['restaurant_pos.index', 'service_sessions.index'],
         'service_operations.items.complete' => ['restaurant_pos.index', 'service_sessions.index'],
 

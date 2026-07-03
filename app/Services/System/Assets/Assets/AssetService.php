@@ -28,6 +28,9 @@ class AssetService {
      */
     private const ALLOWED_FIELDS = [
         "internal_code",
+        "asset_category_id",
+        "patrimonial_code",
+        "serial_number",
         "name",
         "description",
         "status"
@@ -38,6 +41,8 @@ class AssetService {
      */
     private const SEARCHABLE_FIELDS = [
         "internal_code",
+        "patrimonial_code",
+        "serial_number",
         "name",
         "description"
     ];

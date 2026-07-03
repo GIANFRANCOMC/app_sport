@@ -207,6 +207,8 @@ class ServiceController extends BaseController {
             "min_price"        => $request->input("min_price"),
             "max_price"        => $request->input("max_price"),
             "currency_id"      => $request->input("currency_id"),
+            "estimated_duration_minutes" => $request->input("estimated_duration_minutes"),
+            "commission_rate"  => $request->input("commission_rate"),
             "see_my_web"       => $request->input("see_my_web"),
             "see_my_web_price" => $request->input("see_my_web_price"),
             "status"           => $request->input("status"),

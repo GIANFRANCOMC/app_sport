@@ -1,25 +1,25 @@
-# 04 - Biometria publica o expuesta
+# 04 - Eventos biométricos públicos
 
-## Que hace
+## Contrato backend
 
-Espacio para endpoints o servicios expuestos relacionados a dispositivos biometricos. Debe tratarse como superficie publica sensible.
+`POST /api/{company_slug}/biometric/events` recibe eventos de clientes o colaboradores sin sesión web.
 
-## Archivos
+Cabeceras obligatorias:
 
-- Ruta: `routes/Guest/BiometricDevice.php`
-- Tablas: `biometric_devices`, `customer_biometric_fingerprints`, `customers`, `attendances`
+- `X-Device-Key`: clave pública del dispositivo.
+- `X-Device-Signature`: HMAC SHA-256 del cuerpo JSON usando el secreto entregado al registrar o rotar credenciales.
 
-## Reglas
+El payload exige `event_uuid`, `event_type`, `subject_type`, `device_user_id` y `occurred_at`.
 
-- No aceptar eventos sin autenticacion por dispositivo.
-- Validar empresa, dispositivo y sucursal.
-- Registrar logs de eventos.
-- Reutilizar reglas de asistencia para validar membresia.
+## Seguridad y trazabilidad
 
-## Mejoras sugeridas
+- Empresa resuelta desde subdominio/slug y no desde el cuerpo.
+- Dispositivo activo y perteneciente a la empresa.
+- Firma comparada con `hash_equals`.
+- `event_uuid` idempotente por empresa y dispositivo.
+- Máximo tres intentos automáticos antes de requerir revisión.
+- Estado, error, payload, intentos y fecha de proceso se guardan en `biometric_device_events`.
+- El secreto se almacena cifrado y nunca se serializa en el modelo.
+- El rate limiting se aplica por empresa y clave del dispositivo.
 
-- Definir payload oficial del dispositivo.
-- Agregar token por dispositivo.
-- Agregar tabla de logs biometricos.
-- Documentar errores y reintentos.
-
+Los pendientes visuales de administración y monitoreo están en `docs/UI_UX_PENDING.md`.

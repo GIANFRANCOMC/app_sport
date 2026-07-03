@@ -22,7 +22,5 @@ Permite registrar asistencia desde enlace/QR publico de una sucursal.
 ## Mejoras sugeridas
 
 - Reemplazar base64 de sucursal por token firmado.
-- Agregar FormRequest.
-- Agregar rate limiting.
+- FormRequest y rate limiting implementados.
 - Permitir checkout automatico si ya hay asistencia activa, si el negocio lo aprueba.
-

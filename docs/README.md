@@ -40,3 +40,4 @@ No mezclar documentacion ni logica entre `System` y `Guest`.
 - Mantener GENERALIDADES.md como fuente transversal antes de duplicar reglas por modulo.
 - Revisar periodicamente que los archivos de modulos tengan seccion de pendientes y referencias a tablas afectadas.
 - Completar limpieza de encoding en comentarios antiguos de CSS y archivos heredados cuando se toque cada bloque.
+- [Pendientes UI/UX consolidados](UI_UX_PENDING.md)

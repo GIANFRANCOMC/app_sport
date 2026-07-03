@@ -2,6 +2,8 @@
 
 Mejoras propuestas para superficies publicas.
 
+Los pendientes exclusivamente visuales se administran en `docs/UI_UX_PENDING.md`.
+
 ## Prioridades sugeridas
 
 1. Seguridad de rutas publicas.

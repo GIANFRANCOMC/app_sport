@@ -22,7 +22,10 @@ class Asset extends Model {
 
     protected $fillable = [
         "company_id",
+        "asset_category_id",
         "internal_code",
+        "patrimonial_code",
+        "serial_number",
         "name",
         "description",
         "management_type",
@@ -73,6 +76,12 @@ class Asset extends Model {
     public function company() {
 
         return $this->belongsTo(Company::class, "company_id", "id");
+
+    }
+
+    public function category() {
+
+        return $this->belongsTo(AssetCategory::class, "asset_category_id", "id");
 
     }
 

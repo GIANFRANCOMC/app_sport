@@ -38,6 +38,9 @@ class SubscriptionService {
         "currency_id",
         "duration_type",
         "duration_value",
+        "attendance_limit_per_day",
+        "benefits",
+        "restrictions",
         "see_my_web",
         "see_my_web_price",
         "status"

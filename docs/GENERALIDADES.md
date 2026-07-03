@@ -197,6 +197,8 @@ Formato recomendado por módulo:
 
 ## Pendientes y Mejoras Transversales
 
+Los pendientes exclusivamente visuales se administran en `docs/UI_UX_PENDING.md` y no deben duplicarse en `new_requirements` ni en los módulos.
+
 - Limpiar comentarios con encoding dañado en encabezados CSS antiguos, especialmente en `br-branding.css`.
 - Separar físicamente migraciones grandes por dominio cuando se estabilice el alcance final.
 - Revisar todos los servicios para recibir `companyId` y `userId` explícitos, reduciendo dependencia directa de `Auth`.

@@ -79,6 +79,33 @@ class RoleController extends BaseController {
 
     }
 
+    public function duplicate(Request $request, int $id): JsonResponse {
+
+        $data = $request->validate([
+            "name" => [
+                "required",
+                "string",
+                "max:80",
+                \Illuminate\Validation\Rule::unique("roles", "name")
+                    ->where("company_id", $this->getCompanyId())
+            ]
+        ]);
+        $role = RoleService::duplicate(
+            $this->getCompanyId(),
+            $id,
+            $this->getUserId(),
+            $data["name"]
+        );
+        $this->invalidate();
+
+        return response()->json([
+            "bool" => true,
+            "msg" => "Perfil duplicado correctamente.",
+            "data" => $role
+        ], 201);
+
+    }
+
     private function invalidate(): void {
 
         RolePermissionService::clearCompanyCache($this->getCompanyId());

@@ -30,6 +30,8 @@ class CategoryService {
         "internal_code",
         "name",
         "description",
+        "sort_order",
+        "is_public",
         "status"
     ];
 
@@ -266,10 +268,34 @@ class CategoryService {
 
         }
 
-        return $query->orderBy("name", "ASC")
+        return $query->orderBy("sort_order")
+                     ->orderBy("name", "ASC")
                      ->paginate($perPage);
 
     }
 
-}
+    public static function delete(int $companyId, int $categoryId): void {
 
+        DB::transaction(function() use($companyId, $categoryId) {
+            $category = Category::query()
+                ->where("company_id", $companyId)
+                ->lockForUpdate()
+                ->findOrFail($categoryId);
+            $hasActiveItems = DB::table("category_items")
+                ->join("items", "items.id", "=", "category_items.item_id")
+                ->where("category_items.company_id", $companyId)
+                ->where("category_items.category_id", $categoryId)
+                ->where("category_items.status", "active")
+                ->where("items.status", "active")
+                ->exists();
+
+            if($hasActiveItems) {
+                throw new \DomainException("No puedes eliminar una categoría asociada a productos activos.");
+            }
+
+            $category->delete();
+        });
+
+    }
+
+}

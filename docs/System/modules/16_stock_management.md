@@ -182,7 +182,6 @@ El módulo Compras está conectado. Crear el documento no cambia existencias; ca
 
 ## Pendientes
 
-- Configuración por empresa para permitir o bloquear ventas con saldo negativo.
 - Alertas y notificaciones automáticas al alcanzar stock mínimo.
 - Configuración visual del método de valorización; actualmente se administra por base de datos.
 

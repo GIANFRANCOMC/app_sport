@@ -170,6 +170,89 @@ final class UserAttendanceController extends BaseController {
 
     }
 
+    public function startBreak(Request $request, int $attendanceId): JsonResponse {
+
+        $data = $request->validate(["reason" => ["nullable", "string", "max:500"]]);
+
+        return $this->domainResponse(function() use($attendanceId, $data) {
+            $break = UserAttendanceService::startBreak(
+                $this->getCompanyId(),
+                $attendanceId,
+                $this->getUserId(),
+                $data["reason"] ?? null
+            );
+
+            return ["msg" => "Pausa iniciada correctamente.", "break" => $break];
+        });
+
+    }
+
+    public function endBreak(int $attendanceId): JsonResponse {
+
+        return $this->domainResponse(function() use($attendanceId) {
+            $break = UserAttendanceService::endBreak(
+                $this->getCompanyId(),
+                $attendanceId,
+                $this->getUserId()
+            );
+
+            return ["msg" => "Pausa finalizada correctamente.", "break" => $break];
+        });
+
+    }
+
+    public function requestCorrection(Request $request, int $attendanceId): JsonResponse {
+
+        $data = $request->validate([
+            "checked_in_at" => ["nullable", "date", "required_without:checked_out_at"],
+            "checked_out_at" => ["nullable", "date", "after:checked_in_at", "required_without:checked_in_at"],
+            "reason" => ["required", "string", "max:500"]
+        ]);
+
+        return $this->domainResponse(function() use($attendanceId, $data) {
+            $correction = UserAttendanceService::requestCorrection(
+                $this->getCompanyId(),
+                $attendanceId,
+                $this->getUserId(),
+                $data
+            );
+
+            return ["msg" => "Solicitud de corrección registrada.", "correction" => $correction];
+        });
+
+    }
+
+    public function reviewCorrection(Request $request, int $correctionId): JsonResponse {
+
+        $data = $request->validate([
+            "approve" => ["required", "boolean"],
+            "note" => ["nullable", "string", "max:500"]
+        ]);
+
+        return $this->domainResponse(function() use($correctionId, $data) {
+            $correction = UserAttendanceService::reviewCorrection(
+                $this->getCompanyId(),
+                $correctionId,
+                $this->getUserId(),
+                (bool) $data["approve"],
+                $data["note"] ?? null
+            );
+
+            return ["msg" => "Solicitud de corrección revisada.", "correction" => $correction];
+        });
+
+    }
+
+    private function domainResponse(callable $callback): JsonResponse {
+
+        try {
+            return response()->json(["bool" => true, ...$callback()]);
+        }catch(\DomainException $exception) {
+            return response()->json(["bool" => false, "msg" => $exception->getMessage()], 422);
+        }
+
+    }
+
     protected function getTranslationNamespace(): string {
 
         return self::TRANSLATION_NAMESPACE;

@@ -335,10 +335,16 @@ final class ServiceOperationService {
                 "session_type" => (string) ($data["session_type"] ?? "catalog_service"),
                 "status" => $startedAt ? self::STATUS_IN_PROGRESS : self::STATUS_PENDING,
                 "started_at" => $startedAt,
+                "scheduled_at" => $data["scheduled_at"] ?? null,
+                "expected_end_at" => $data["expected_end_at"] ?? null,
+                "tolerance_minutes" => (int) ($data["tolerance_minutes"] ?? 0),
+                "queue_code" => $data["queue_code"] ?? null,
                 "observation" => $data["observation"] ?? null,
                 "created_at" => now(),
                 "created_by" => $actorId
             ]);
+
+            self::recordEvent($session, $actorId, "opened", null, $session->status);
 
             if(!empty($data["item_id"])) {
                 self::addItem($companyId, $actorId, $session->id, [
@@ -408,6 +414,7 @@ final class ServiceOperationService {
             $session->updated_at = now();
             $session->updated_by = $actorId;
             $session->save();
+            self::recordEvent($session, $actorId, "started", self::STATUS_PENDING, self::STATUS_IN_PROGRESS);
 
             return self::find($companyId, $sessionId, $actorId);
         });
@@ -436,6 +443,14 @@ final class ServiceOperationService {
         return DB::transaction(function() use($companyId, $actorId, $sessionId, $saleHeaderId) {
             $session = self::lockOpenSession($companyId, $sessionId);
             self::requireBranch($companyId, (int) $session->branch_id, $actorId);
+            if(DB::table("service_session_pauses")
+                ->where("company_id", $companyId)
+                ->where("service_session_id", $sessionId)
+                ->where("status", "active")
+                ->exists()) {
+                throw new DomainException("Reanuda la atención antes de finalizarla.");
+            }
+            $previousStatus = $session->status;
             $endedAt = now();
             $startedAt = $session->started_at ? Carbon::parse($session->started_at) : Carbon::parse($session->created_at);
 
@@ -464,6 +479,7 @@ final class ServiceOperationService {
             $session->updated_at = now();
             $session->updated_by = $actorId;
             $session->save();
+            self::recordEvent($session, $actorId, "completed", $previousStatus, self::STATUS_COMPLETED);
 
             return self::find($companyId, $sessionId, $actorId);
         });
@@ -473,6 +489,127 @@ final class ServiceOperationService {
     public static function attachSale(int $companyId, int $actorId, int $sessionId, int $saleHeaderId): ServiceSession {
 
         return self::complete($companyId, $actorId, $sessionId, $saleHeaderId);
+
+    }
+
+    public static function reassign(int $companyId, int $actorId, int $sessionId, int $assignedUserId, ?string $note = null): ServiceSession {
+
+        return DB::transaction(function() use($companyId, $actorId, $sessionId, $assignedUserId, $note) {
+            $session = self::lockOpenSession($companyId, $sessionId);
+            self::requireBranch($companyId, (int) $session->branch_id, $actorId);
+            self::requireOptionalUser($companyId, $assignedUserId);
+            $previousUserId = $session->assigned_user_id;
+            $session->assigned_user_id = $assignedUserId;
+            $session->updated_by = $actorId;
+            $session->updated_at = now();
+            $session->save();
+
+            self::recordEvent($session, $actorId, "reassigned", null, null, $note, [
+                "previous_user_id" => $previousUserId,
+                "assigned_user_id" => $assignedUserId
+            ]);
+
+            return self::find($companyId, $sessionId, $actorId);
+        });
+
+    }
+
+    public static function pause(int $companyId, int $actorId, int $sessionId, ?int $itemId, ?string $reason): array {
+
+        return DB::transaction(function() use($companyId, $actorId, $sessionId, $itemId, $reason) {
+            $session = self::lockOpenSession($companyId, $sessionId);
+            self::requireBranch($companyId, (int) $session->branch_id, $actorId);
+
+            if(DB::table("service_session_pauses")
+                ->where("company_id", $companyId)
+                ->where("service_session_id", $sessionId)
+                ->where("status", "active")
+                ->exists()) {
+                throw new DomainException("La atención ya tiene una pausa en curso.");
+            }
+
+            if($itemId && !ServiceSessionItem::query()
+                ->where("company_id", $companyId)
+                ->where("service_session_id", $sessionId)
+                ->where("id", $itemId)
+                ->exists()) {
+                throw new DomainException("El detalle seleccionado no pertenece a la atención.");
+            }
+
+            $id = DB::table("service_session_pauses")->insertGetId([
+                "company_id" => $companyId,
+                "service_session_id" => $sessionId,
+                "service_session_item_id" => $itemId,
+                "paused_by" => $actorId,
+                "paused_at" => now(),
+                "duration_minutes" => 0,
+                "reason" => $reason,
+                "status" => "active",
+                "created_at" => now()
+            ]);
+
+            self::recordEvent($session, $actorId, "paused", null, null, $reason, ["item_id" => $itemId]);
+
+            return (array) DB::table("service_session_pauses")->find($id);
+        });
+
+    }
+
+    public static function resume(int $companyId, int $actorId, int $sessionId): array {
+
+        return DB::transaction(function() use($companyId, $actorId, $sessionId) {
+            $session = self::lockOpenSession($companyId, $sessionId);
+            self::requireBranch($companyId, (int) $session->branch_id, $actorId);
+            $pause = DB::table("service_session_pauses")
+                ->where("company_id", $companyId)
+                ->where("service_session_id", $sessionId)
+                ->where("status", "active")
+                ->lockForUpdate()
+                ->first();
+
+            if(!$pause) {
+                throw new DomainException("La atención no tiene una pausa en curso.");
+            }
+
+            $resumedAt = now();
+            $minutes = Carbon::parse($pause->paused_at)->diffInMinutes($resumedAt);
+            DB::table("service_session_pauses")->where("id", $pause->id)->update([
+                "resumed_by" => $actorId,
+                "resumed_at" => $resumedAt,
+                "duration_minutes" => $minutes,
+                "status" => "finalized",
+                "updated_at" => now()
+            ]);
+
+            if($pause->service_session_item_id) {
+                ServiceSessionItem::query()->where("id", $pause->service_session_item_id)->increment("paused_minutes", $minutes);
+            }
+
+            self::recordEvent($session, $actorId, "resumed", null, null, null, ["pause_id" => $pause->id]);
+
+            return (array) DB::table("service_session_pauses")->find($pause->id);
+        });
+
+    }
+
+    public static function cancel(int $companyId, int $actorId, int $sessionId, string $reason): ServiceSession {
+
+        return DB::transaction(function() use($companyId, $actorId, $sessionId, $reason) {
+            $session = self::lockOpenSession($companyId, $sessionId);
+            self::requireBranch($companyId, (int) $session->branch_id, $actorId);
+            $previous = $session->status;
+            $session->status = self::STATUS_CANCELED;
+            $session->cancellation_reason = $reason;
+            $session->canceled_at = now();
+            $session->canceled_by = $actorId;
+            $session->updated_at = now();
+            $session->updated_by = $actorId;
+            $session->save();
+
+            self::recordEvent($session, $actorId, "canceled", $previous, self::STATUS_CANCELED, $reason);
+
+            return self::find($companyId, $sessionId, $actorId);
+        });
 
     }
 
@@ -647,6 +784,31 @@ final class ServiceOperationService {
     private static function nextReference(): string {
 
         return "SRV-" . Utilities::generateCode(10);
+
+    }
+
+    private static function recordEvent(
+        ServiceSession $session,
+        ?int $actorId,
+        string $eventType,
+        ?string $previousStatus = null,
+        ?string $newStatus = null,
+        ?string $note = null,
+        array $metadata = []
+    ): void {
+
+        DB::table("service_session_events")->insert([
+            "company_id" => $session->company_id,
+            "service_session_id" => $session->id,
+            "service_session_item_id" => $metadata["item_id"] ?? null,
+            "user_id" => $actorId,
+            "event_type" => $eventType,
+            "previous_status" => $previousStatus,
+            "new_status" => $newStatus,
+            "note" => $note,
+            "metadata" => $metadata ? json_encode($metadata, JSON_UNESCAPED_UNICODE) : null,
+            "occurred_at" => now()
+        ]);
 
     }
 

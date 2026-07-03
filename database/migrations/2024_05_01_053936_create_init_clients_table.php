@@ -24,6 +24,10 @@ return new class extends Migration {
             $table->text("request")->nullable();
             $table->string("evidence", 255)->nullable();
             $table->text("admin_response")->nullable();
+            $table->text("public_response")->nullable();
+            $table->string("tracking_code", 64);
+            $table->timestamp("responded_at")->nullable();
+            $table->unsignedBigInteger("responded_by")->nullable();
             $table->string("submitted_ip", 45)->nullable();
             $table->text("submitted_user_agent")->nullable();
             $table->string("submitted_platform", 100)->nullable();
@@ -40,6 +44,37 @@ return new class extends Migration {
             $table->foreign("company_id")->references("id")->on("companies")->onDelete("cascade");
             $table->foreign("branch_id")->references("id")->on("branches")->onDelete("cascade");
             $table->foreign("identity_document_type_id")->references("id")->on("identity_document_types")->onDelete("cascade");
+            $table->foreign("responded_by")->references("id")->on("users")->nullOnDelete();
+            $table->unique(["company_id", "tracking_code"]);
+        });
+
+        Schema::create("book_complaint_attachments", function(Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger("company_id");
+            $table->unsignedBigInteger("book_complaint_id");
+            $table->string("file_name", 255);
+            $table->string("file_path", 500);
+            $table->string("mime_type", 100);
+            $table->unsignedBigInteger("file_size")->default(0);
+            $table->timestamp("created_at")->useCurrent()->nullable();
+
+            $table->foreign("company_id")->references("id")->on("companies")->onDelete("cascade");
+            $table->foreign("book_complaint_id")->references("id")->on("book_complaints")->onDelete("cascade");
+        });
+
+        Schema::create("book_complaint_status_histories", function(Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger("company_id");
+            $table->unsignedBigInteger("book_complaint_id");
+            $table->unsignedBigInteger("changed_by")->nullable();
+            $table->string("previous_status", 30)->nullable();
+            $table->string("new_status", 30);
+            $table->string("note", 500)->nullable();
+            $table->timestamp("changed_at")->useCurrent();
+
+            $table->foreign("company_id")->references("id")->on("companies")->onDelete("cascade");
+            $table->foreign("book_complaint_id")->references("id")->on("book_complaints")->onDelete("cascade");
+            $table->foreign("changed_by")->references("id")->on("users")->nullOnDelete();
         });
 
     }
@@ -49,6 +84,8 @@ return new class extends Migration {
      */
     public function down(): void {
 
+        Schema::dropIfExists("book_complaint_status_histories");
+        Schema::dropIfExists("book_complaint_attachments");
         Schema::dropIfExists("book_complaints");
 
     }

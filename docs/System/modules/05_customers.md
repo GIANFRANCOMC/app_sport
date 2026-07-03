@@ -35,8 +35,9 @@ Administra los clientes de una empresa. Un cliente puede comprar, recibir membre
 
 ## Mejoras sugeridas
 
-- Agregar validacion de unicidad por empresa + tipo documento + numero.
-- Mejorar busqueda por documento/nombre/telefono.
-- Agregar contacto de emergencia y observaciones medicas si el negocio lo necesita.
-- Agregar tests de creacion/edicion multiempresa.
+## Estado backend implementado
 
+- La unicidad se valida y refuerza por empresa, tipo de documento y número.
+- La búsqueda cubre documento, nombre, correo y teléfono.
+- Se incorporaron `emergency_contact_name`, `emergency_contact_phone` y `medical_notes` como datos opcionales.
+- La presentación de estos campos queda centralizada en `docs/UI_UX_PENDING.md`.

@@ -29,6 +29,9 @@ abstract class BrandRequest extends CompanyFormRequest {
                 new UniqueInCompany("brands", "name", $brandId, [], "nombre")
             ],
             "description" => ["nullable", "string", "max:250"],
+            "logo_path" => ["nullable", "string", "max:500"],
+            "origin_country_code" => ["nullable", "string", "size:3"],
+            "website_url" => ["nullable", "url", "max:500"],
             "status" => ["required", "in:active,inactive"]
         ];
 
@@ -59,6 +62,9 @@ abstract class BrandRequest extends CompanyFormRequest {
             "internal_code",
             "name",
             "description"
+            ,"logo_path"
+            ,"origin_country_code"
+            ,"website_url"
         ];
 
     }

@@ -53,7 +53,8 @@ class DashboardController extends BaseController {
                 ? $request->date 
                 : date("Y-m-d");
 
-        $data = DashboardService::getDashboardData($this->getCompanyId(), $date);
+        $branchId = $request->filled("branch_id") ? (int) $request->input("branch_id") : null;
+        $data = DashboardService::getDashboardData($this->getCompanyId(), $date, $branchId);
 
         return $this->successResponse($data, "data_obtained");
 

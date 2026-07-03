@@ -28,6 +28,10 @@ final class ServiceSession extends Model {
         "started_at",
         "ended_at",
         "duration_minutes",
+        "scheduled_at",
+        "expected_end_at",
+        "tolerance_minutes",
+        "queue_code",
         "observation",
         "cancellation_reason",
         "created_at",
@@ -42,6 +46,9 @@ final class ServiceSession extends Model {
         "started_at" => "datetime",
         "ended_at" => "datetime",
         "duration_minutes" => "integer"
+        ,"scheduled_at" => "datetime"
+        ,"expected_end_at" => "datetime"
+        ,"tolerance_minutes" => "integer"
     ];
 
     public function branch() {

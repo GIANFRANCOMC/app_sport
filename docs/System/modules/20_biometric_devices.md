@@ -1,45 +1,21 @@
-# 20 - Dispositivos biometricos
+# 20 - Dispositivos biométricos
 
-## Que hace
+## Backend
 
-Administra dispositivos ZKTeco K20 Pro y asociaciones de huella de clientes para asistencia biometrica.
+- Marca y modelo son catálogos separados por empresa.
+- Cada dispositivo pertenece a empresa, sucursal y modelo.
+- Al crearlo se generan `access_key` y secreto; el secreto se devuelve una sola vez y se almacena cifrado.
+- `rotateCredentials` invalida las credenciales anteriores y conserva fecha de rotación.
+- `last_seen_at` registra el último evento procesado.
+- `biometric_device_events` conserva eventos idempotentes, intentos, error y estado.
+- Clientes y colaboradores usan tablas de huellas separadas, pero comparten la reserva de `device_user_id`.
 
-## Archivos
+## Endpoint
 
-- Ruta: `routes/System/Devices/BiometricDevice.php`
-- Controlador: `BiometricDeviceController`
-- Servicio: `BiometricDeviceService`
-- Requests: `StoreBiometricDeviceRequest`, `UpdateBiometricDeviceRequest`
-- Tablas: `biometric_devices`, `customer_biometric_fingerprints`
+El contrato firmado se documenta en `docs/Guest/modules/04_biometric_devices.md`.
 
-## Campos necesarios
+## Criterio operativo
 
-- `company_id`
-- `branch_id`
-- `name`
-- `brand`
-- `model`
-- `serial_number`
-- `ip_address`
-- `port`
-- `device_id`
-- `description`
-- `status`
+El dispositivo no se crea automáticamente como activo patrimonial. Esa decisión permanece explícita porque no todo equipo integrado pertenece a la empresa; puede ser alquilado o administrado por un tercero. Si se activa en el futuro, debe gobernarse mediante `company_settings` y enlazar el activo creado.
 
-## Reglas
-
-- Dispositivo pertenece a empresa y sucursal.
-- Huella se asocia a cliente, dispositivo, `device_user_id` e indice de dedo.
-- La huella puede vivir solo en el dispositivo.
-- La asistencia biometrica debe validar membresia vigente.
-
-## Mejoras sugeridas
-
-- Definir endpoint seguro para eventos del dispositivo.
-- Agregar firma/token por dispositivo.
-- Registrar logs de eventos biometricos.
-- Corregir namespace/import si hay inconsistencia con el servicio.
-
-## Pendiente de criterio operativo
-
-- Definir si un dispositivo biométrico debe registrarse también como `asset` al crearlo. Por ahora se documenta como duda de negocio: si se activa, el alta del dispositivo debería poder crear un activo asociado en estado activo para mantener trazabilidad física.
+Los pendientes visuales están en `docs/UI_UX_PENDING.md`.

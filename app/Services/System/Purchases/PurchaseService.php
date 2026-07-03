@@ -171,6 +171,10 @@ final class PurchaseService {
                 "document_number" => $documentNumber ?: null,
                 "issue_date" => $data["issue_date"],
                 "expected_date" => $data["expected_date"] ?? null,
+                "due_date" => $data["due_date"] ?? null,
+                "approval_status" => $data["approval_status"] ?? "approved",
+                "approved_by" => ($data["approval_status"] ?? "approved") === "approved" ? $userId : null,
+                "approved_at" => ($data["approval_status"] ?? "approved") === "approved" ? now() : null,
                 "delivery_mode" => $data["delivery_mode"] ?? "immediate",
                 "subtotal" => $subtotal,
                 "tax" => $tax,
@@ -197,6 +201,21 @@ final class PurchaseService {
 
             }
 
+            if(!empty($data["expenses"])) {
+                \App\Models\System\Purchases\PurchaseExpense::insert(collect($data["expenses"])
+                    ->map(fn($expense) => [
+                        "company_id" => $companyId,
+                        "purchase_header_id" => $purchase->id,
+                        "expense_type" => $expense["expense_type"],
+                        "name" => $expense["name"],
+                        "amount" => $expense["amount"],
+                        "allocation_method" => $expense["allocation_method"] ?? "value",
+                        "note" => $expense["note"] ?? null,
+                        "created_at" => now(),
+                        "updated_at" => now()
+                    ])->all());
+            }
+
             foreach($data["items"] as $detail) {
 
                 $item = $items->get((int) $detail["item_id"]);
@@ -219,7 +238,8 @@ final class PurchaseService {
 
             }
 
-            if(($data["delivery_mode"] ?? "immediate") === "immediate") {
+            if(($data["delivery_mode"] ?? "immediate") === "immediate"
+                && ($data["approval_status"] ?? "approved") === "approved") {
 
                 $purchase->load("items");
 
@@ -261,6 +281,10 @@ final class PurchaseService {
 
                 throw new DomainException("La compra no admite nuevas recepciones.");
 
+            }
+
+            if($purchase->approval_status !== "approved") {
+                throw new DomainException("La orden debe aprobarse antes de registrar una recepción.");
             }
 
             $purchase->load("items");
@@ -407,6 +431,30 @@ final class PurchaseService {
 
     }
 
+    public static function approve(int $companyId, int $purchaseId, int $userId): PurchaseHeader {
+
+        return DB::transaction(function() use($companyId, $purchaseId, $userId) {
+            $purchase = PurchaseHeader::query()
+                ->where("company_id", $companyId)
+                ->where("status", "confirmed")
+                ->lockForUpdate()
+                ->findOrFail($purchaseId);
+
+            if($purchase->approval_status !== "approved") {
+                $purchase->update([
+                    "approval_status" => "approved",
+                    "approved_by" => $userId,
+                    "approved_at" => now(),
+                    "updated_by" => $userId,
+                    "updated_at" => now()
+                ]);
+            }
+
+            return self::find($companyId, $purchaseId);
+        });
+
+    }
+
     public static function find(int $companyId, int $purchaseId): PurchaseHeader {
 
         return PurchaseHeader::query()
@@ -418,7 +466,9 @@ final class PurchaseService {
                 "items.item",
                 "taxes",
                 "payments",
-                "receipts.items.item"
+                "expenses",
+                "receipts.items.item",
+                "returns.items.item"
             ])
             ->findOrFail($purchaseId);
 

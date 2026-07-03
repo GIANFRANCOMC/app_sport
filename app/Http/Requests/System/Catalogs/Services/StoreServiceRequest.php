@@ -43,6 +43,8 @@ class StoreServiceRequest extends CompanyFormRequest {
             "price"         => "required|numeric|min:$minValue|max:$maxValue|decimal:0,$round",
             "price_includes_tax" => "nullable|boolean",
             "currency_id"   => ["required", "integer", new BelongsToCompany("currencies", ["status" => "active"], "La moneda seleccionada no pertenece a la empresa.")],
+            "estimated_duration_minutes" => "nullable|integer|min:1|max:10080",
+            "commission_rate" => "nullable|numeric|min:0|max:100|decimal:0,4",
             "status"        => "required|in:active,inactive"
         ];
 

@@ -24,7 +24,9 @@ Mantiene los terceros comerciales usados en Compras. Cada proveedor pertenece a 
 
 ## Mejoras sugeridas
 
-- Contactos múltiples y cuentas bancarias.
-- Condiciones de pago predeterminadas.
-- Historial de compras, devoluciones y cumplimiento de entregas.
-- Validación documental específica por país.
+## Estado backend implementado
+
+- `supplier_contacts` admite múltiples contactos y uno principal.
+- `supplier_bank_accounts` admite varias cuentas, moneda y cuenta principal.
+- El proveedor incorpora plazo de pago predeterminado y límite de crédito opcional.
+- La interfaz y el resumen de desempeño están consolidados en `docs/UI_UX_PENDING.md`.

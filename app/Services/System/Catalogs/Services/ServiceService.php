@@ -36,6 +36,8 @@ class ServiceService {
         "min_price",
         "max_price",
         "currency_id",
+        "estimated_duration_minutes",
+        "commission_rate",
         "see_my_web",
         "see_my_web_price",
         "status"

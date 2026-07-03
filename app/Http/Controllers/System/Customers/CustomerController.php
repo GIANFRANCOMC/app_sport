@@ -206,6 +206,9 @@ class CustomerController extends BaseController {
             "name"                      => $request->name,
             "email"                     => $request->email,
             "phone_number"              => $request->phone_number,
+            "emergency_contact_name"    => $request->emergency_contact_name,
+            "emergency_contact_phone"   => $request->emergency_contact_phone,
+            "medical_notes"             => $request->medical_notes,
             "gender"                    => $request->gender ?? "other",
             "birthdate"                 => $request->birthdate,
             "status"                    => $request->status

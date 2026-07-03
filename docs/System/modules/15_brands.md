@@ -117,7 +117,8 @@ Esto limpia:
 
 ## Mejoras pendientes
 
-- Logotipo opcional con almacenamiento validado.
-- País de origen y sitio web oficial.
-- Historial de cambios o auditoría especializada.
-- Pruebas de integración con base de datos para unicidad y aislamiento entre empresas.
+## Estado backend implementado
+
+- `logo_path`, `origin_country_code` y `website_url` forman parte de migración, modelo, validación y servicio.
+- Las mutaciones sensibles quedan cubiertas por `business_audit_logs`.
+- La carga y presentación del logotipo se especifica únicamente en `docs/UI_UX_PENDING.md`.

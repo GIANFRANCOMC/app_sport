@@ -200,7 +200,10 @@ class AssetController extends BaseController {
 
         return [
             "company_id"    => $this->getCompanyId(),
+            "asset_category_id" => $request->input("asset_category_id"),
             "internal_code" => $request->input("internal_code"),
+            "patrimonial_code" => $request->input("patrimonial_code"),
+            "serial_number" => $request->input("serial_number"),
             "name"          => $request->input("name"),
             "description"   => $request->input("description"),
             "status"        => $request->input("status")

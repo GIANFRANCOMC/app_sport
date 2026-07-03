@@ -12,4 +12,5 @@ Route::get("/initParams", [RoleController::class, "initParams"])->name("$entity.
 Route::get("/list", [RoleController::class, "list"])->name("$entity.list");
 Route::post("", [RoleController::class, "store"])->name("$entity.store");
 Route::get("/{id}", [RoleController::class, "show"])->name("$entity.show");
+Route::post("/{id}/duplicate", [RoleController::class, "duplicate"])->name("$entity.duplicate");
 Route::patch("/{id}", [RoleController::class, "update"])->name("$entity.update");

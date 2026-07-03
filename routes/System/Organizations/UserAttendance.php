@@ -12,3 +12,7 @@ Route::get("/weekly-summary", [UserAttendanceController::class, "weeklySummary"]
 Route::post("/check-in", [UserAttendanceController::class, "checkIn"])->name("user_attendances.checkin");
 Route::post("/biometric/check-in", [UserAttendanceController::class, "biometricCheckIn"])->name("user_attendances.biometric-checkin");
 Route::patch("/check-out", [UserAttendanceController::class, "checkOut"])->name("user_attendances.checkout");
+Route::post("/{attendanceId}/breaks", [UserAttendanceController::class, "startBreak"])->name("user_attendances.breaks.start");
+Route::patch("/{attendanceId}/breaks/end", [UserAttendanceController::class, "endBreak"])->name("user_attendances.breaks.end");
+Route::post("/{attendanceId}/corrections", [UserAttendanceController::class, "requestCorrection"])->name("user_attendances.corrections.store");
+Route::patch("/corrections/{correctionId}", [UserAttendanceController::class, "reviewCorrection"])->name("user_attendances.corrections.review");

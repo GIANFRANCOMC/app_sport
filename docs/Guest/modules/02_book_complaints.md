@@ -1,36 +1,13 @@
-# 02 - Libro de reclamaciones publico
+# 02 - Libro de reclamaciones público
 
-## Que hace
+## Backend
 
-Permite a visitantes registrar quejas, reclamos o sugerencias.
+- Valida documento, contacto, tipo, detalle y pedido mediante `StoreBookComplaintRequest`.
+- Limita solicitudes por minuto, día, empresa e IP; añade honeypot.
+- Genera `tracking_code` aleatorio y único por empresa.
+- Separa `admin_response` de `public_response`.
+- Registra estado inicial en `book_complaint_status_histories`.
+- Admite adjuntos múltiples mediante `book_complaint_attachments`.
+- `GET /{company_slug}/book_complaints/status/{trackingCode}` expone únicamente estado, respuesta pública y fechas.
 
-## Archivos
-
-- Ruta: `routes/Guest/BookComplaint.php`
-- Controlador: `Guest/BookComplaintController`
-- Vista/Vue: `resources/views/Guest/general/book_complaints`, `resources/js/Guest/Pages/book_complaints`
-- Tablas: `book_complaints`, `identity_document_types`, `branches`
-
-## Campos necesarios
-
-- Tipo y numero de documento.
-- Nombre.
-- Email y telefono opcionales segun validacion.
-- Tipo: queja, reclamo o sugerencia.
-- Descripcion.
-- Solicitud.
-- Evidencia si aplica.
-- Datos tecnicos: IP, user agent, plataforma, navegador.
-
-## Reglas
-
-- Debe pertenecer a empresa y sucursal validas.
-- Estado inicial recomendado: `pending`.
-- No debe permitir modificar reclamos desde Guest.
-
-## Mejoras sugeridas
-
-- Agregar captcha/rate limiting.
-- Enviar constancia por email.
-- Permitir seguimiento publico con codigo seguro.
-
+Captcha, carga de adjuntos y consulta visual están centralizados en `docs/UI_UX_PENDING.md`.

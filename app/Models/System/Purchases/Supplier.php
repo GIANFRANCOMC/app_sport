@@ -19,6 +19,8 @@ final class Supplier extends Model {
         "telephone",
         "email",
         "address",
+        "payment_term_days",
+        "credit_limit",
         "status",
         "created_at",
         "created_by",
@@ -26,9 +28,26 @@ final class Supplier extends Model {
         "updated_by"
     ];
 
+    protected $casts = [
+        "payment_term_days" => "integer",
+        "credit_limit" => "decimal:4"
+    ];
+
     public function purchases() {
 
         return $this->hasMany(PurchaseHeader::class, "supplier_id");
+
+    }
+
+    public function contacts() {
+
+        return $this->hasMany(SupplierContact::class, "supplier_id");
+
+    }
+
+    public function bankAccounts() {
+
+        return $this->hasMany(SupplierBankAccount::class, "supplier_id");
 
     }
 

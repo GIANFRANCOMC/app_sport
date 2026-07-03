@@ -17,6 +17,9 @@ final class BrandService {
         "internal_code",
         "name",
         "description",
+        "logo_path",
+        "origin_country_code",
+        "website_url",
         "status"
     ];
 

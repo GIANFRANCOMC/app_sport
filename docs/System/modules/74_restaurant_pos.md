@@ -2,48 +2,25 @@
 
 ## Qué hace
 
-Administra mesas y pedidos abiertos antes del cobro. No crea una segunda clase de venta: la atención conserva el contexto operativo y, al cobrar, genera una venta normal mediante Venta POS.
+Administra pisos, mesas, pedidos y tiempos antes del cobro. La atención operativa no reemplaza la venta: al cobrar se genera una venta normal con comprobante, tributos, pagos, caja e inventario.
 
-## Arquitectura
+## Estructura
 
-- Vista compartida: `resources/js/System/Pages/Operations/service_operations/main.vue`.
-- Controlador: `ServiceOperationController`.
-- Servicio: `ServiceOperationService`.
-- Ruta principal: `GET /service_operations/restaurant`.
-- Tablas: `service_floors`, `service_stations`, `service_sessions`, `service_session_items`.
-- Integración de cobro: `sales_header` mediante `service_session_id`.
-
-## Flujo
-
-1. El usuario selecciona una sucursal permitida.
-2. Registra uno o varios pisos por sucursal y define su orden y fondo visual.
-3. Registra mesas con código, nombre, capacidad, color y forma dentro del piso correspondiente.
-4. Arrastra las mesas en el plano; las coordenadas porcentuales quedan guardadas en base de datos.
-5. Abre una mesa, opcionalmente asignando cliente y responsable.
-6. Agrega productos o servicios durante la atención.
-7. Consulta tiempo transcurrido y estado de cada detalle.
-8. Envía la atención a Venta POS para completar comprobante, impuestos, pagos, caja y almacén.
-9. La sesión queda finalizada y vinculada a la venta únicamente si toda la venta se confirma.
+- `service_floors`: pisos o zonas por sucursal.
+- `service_stations`: mesas y otros recursos con capacidad, posición, color y forma.
+- `service_sessions`: atención activa, cita, cola y vínculo final con la venta.
+- `service_session_items`: productos/servicios y estados de preparación.
+- `service_session_events`: apertura, inicio, reasignación, pausa, reanudación, cancelación y cierre.
+- `service_session_pauses`: pausas justificadas.
 
 ## Reglas
 
 - Una mesa solo puede tener una atención pendiente o en curso.
-- Cada piso pertenece a una única sucursal; una mesa no puede moverse hacia un piso de otra sede.
-- La ubicación se guarda en porcentajes para conservar la distribución en distintos tamaños de pantalla.
-- Color y forma identifican visualmente la mesa; disponible, pendiente y en atención siguen siendo estados derivados de la sesión.
-- La disponibilidad se deriva de sesiones activas; no se mantiene un indicador redundante.
-- El usuario solo puede operar sucursales incluidas en su alcance de acceso.
-- Cliente y responsable son opcionales, pero si se envían deben estar activos y pertenecer a la empresa.
-- Los precios se copian al detalle para mantener la referencia operativa previa al cobro.
+- Un piso y sus mesas siempre pertenecen a la misma sucursal y empresa.
+- Las coordenadas son porcentuales para conservar el plano entre resoluciones.
+- La disponibilidad se deriva de sesiones abiertas; no se duplica en una columna.
+- Los estados de preparación soportan recibido/pendiente, preparando, listo y entregado.
+- Cancelaciones y reasignaciones conservan actor, motivo y metadatos.
+- La sesión se vincula a `sales_header` únicamente al confirmarse el cobro.
 
-## Pendientes y mejoras
-
-- Comandas y estados de cocina: recibido, preparando, listo y entregado.
-- División y unión de cuentas, cambio de mesa y pago parcial.
-- Reservas, aforo y unión temporal de mesas.
-- Elementos no operativos del plano: paredes, puertas, barras, escaleras y zonas restringidas.
-- Edición de nombre, orden y fondo de pisos existentes.
-- Modificadores, toppings y observaciones por plato desde Recetas.
-- Impresión por área de preparación y pantallas KDS.
-- Política de liberación de mesa cuando una venta es anulada.
-- Indicadores de rotación, permanencia promedio y consumo por mesa.
+Los pendientes de KDS, impresión, reservas, cuentas divididas y elementos decorativos del plano están en `docs/UI_UX_PENDING.md`.

@@ -32,9 +32,9 @@ Revisar:
 
 ## Mejoras recomendadas
 
-- Crear FormRequests para reclamaciones y asistencia publica.
-- Definir politicas de rate limiting.
-- Documentar payloads publicos.
+- Mantener FormRequests públicos por recurso y ampliar sus reglas cuando cambie el contrato.
+- Mantener rate limiting diferenciado por empresa, IP o clave de dispositivo.
+- Documentar cada payload público junto con los datos que deliberadamente no expone.
 - Probar rutas con empresa inexistente, sucursal invalida y datos incompletos.
 
 ## Pendientes y mejoras por realizar

@@ -32,6 +32,9 @@ class CustomerService {
         "name",
         "email",
         "phone_number",
+        "emergency_contact_name",
+        "emergency_contact_phone",
+        "medical_notes",
         "gender",
         "birthdate",
         "status"

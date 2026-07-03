@@ -1,56 +1,16 @@
-# 91 - Menu, roles y permisos
+# 91 - Menú, módulos y permisos
 
-## Que hace
+## Contrato
 
-Agrupa la estructura de navegacion, habilitacion por empresa y autorizacion funcional por perfil.
+- `sections` y `sub_sections` definen catálogo y rutas.
+- `companies_sub_sections` habilita y ordena módulos por empresa.
+- `role_sub_sections` concede acciones por perfil.
+- Los alcances operativos restringen sucursales, cajas y almacenes.
+- El orden del menú y el árbol de perfiles provienen de `CompanySectionService`, por lo que conservan la misma estructura.
+- `config/permissions.php` mapea endpoints compartidos con el módulo visible correcto.
 
-## Tablas
+## Seguridad
 
-- `sections`
-- `sub_sections`
-- `companies_sub_sections`
-- `roles`
-- `role_sub_sections`
-- `user_preferences`
+El menú es una representación, no una autorización. Toda ruta System exige `module.permission`; los recursos operativos exigen además `resource.scope`. Los perfiles de acceso total siguen sujetos al aislamiento por tenant y `company_id`.
 
-## Reglas
-
-- `sections` define grupos principales.
-- `sub_sections` define items navegables, descripcion y ruta base.
-- `companies_sub_sections` habilita modulos por empresa.
-- `companies_sub_sections.section_order` ordena cabeceras por empresa.
-- `companies_sub_sections.sub_section_order` ordena modulos dentro de cada cabecera por empresa.
-- `roles` clasifica usuarios y define si el perfil tiene acceso total con `is_full_access`.
-- `role_sub_sections` asigna modulos permitidos a un rol sin acceso total.
-- `users.role_id` vincula cada colaborador con su perfil.
-- `user_preferences` guarda configuracion personal, pero no concede permisos.
-- `CompanySectionService::getSections($companyId)` devuelve el menu habilitado por empresa.
-- `CompanySectionService::getSections($companyId, $roleId)` devuelve el menu visible para ese perfil.
-- `RoleConfigService` usa `CompanySectionService::getSections($companyId)` para que Perfiles de acceso liste modulos con el mismo orden que el menu real del cliente.
-- `RolePermissionService` cachea permisos por empresa y rol para validar rutas con rapidez.
-- `EnsureModulePermission` protege las rutas internas usando el prefijo de ruta, por ejemplo `products.*`.
-- El layout consume `CompanySectionService` y no lee claves de cache directamente.
-- `CompanySubSectionObserver` invalida el menu cuando cambia la habilitacion de modulos.
-- `RoleObserver` y `RoleSubSectionObserver` invalidan permisos y menu cuando cambia un perfil.
-
-## Caches
-
-- Menu por empresa: `company_sections:company:{companyId}:role:all`.
-- Menu por rol: `company_sections:company:{companyId}:role:{roleId}`.
-- Permisos por rol: `role_permissions:company:{companyId}:role:{roleId}`.
-- InitParams de roles: `RoleConfigService`, invalidado junto con usuarios porque colaboradores consumen roles.
-
-## Buenas practicas
-
-- Al crear un modulo, registrar `sub_sections.dom_route` con el mismo prefijo de las rutas reales.
-- No validar permisos solamente en Vue. El backend decide con middleware.
-- Mantener la visibilidad de menu y la autorizacion alineadas, pero separadas.
-- Si un modulo agrega acciones sensibles, documentarlas para la futura matriz modulo + accion.
-- No usar `Cache::flush()` para corregir permisos; invalidar por empresa y recurso.
-
-## Mejoras sugeridas
-
-- Extender la matriz actual de modulo a modulo + accion.
-- Agregar policies para acciones sensibles cuando exista granularidad.
-- Permitir auditoria y comparacion historica de perfiles.
-- Proteger cambios que puedan dejar a todos los administradores sin acceso total.
+La visualización de auditoría y comparación histórica se centraliza en `docs/UI_UX_PENDING.md`; el backend conserva los eventos en `business_audit_logs`.

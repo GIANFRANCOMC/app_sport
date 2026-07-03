@@ -51,12 +51,13 @@ El método inicial es promedio ponderado por producto y almacén. Los impuestos 
 
 ## Mejoras sugeridas
 
-- Condiciones de pago, cuentas por pagar y vencimientos.
-- Gastos adicionales distribuibles al costo, como flete o seguro.
-- Aprobación de órdenes antes de confirmar.
-- Devoluciones ligadas directamente a una recepción de compra.
-- Numeración interna configurable para órdenes y recepciones.
-- Pantalla frontend con selector claro `Entrega inmediata` / `Entrega pendiente` y explicación breve del impacto en inventario.
+## Estado backend implementado
+
+- La cabecera incorpora vencimiento y estado/aprobador de aprobación.
+- `purchase_expenses` registra flete, seguro u otros gastos con criterio de distribución.
+- `purchase_returns` y `purchase_return_items` vinculan devoluciones con compra, recepción, almacén y movimiento de inventario.
+- La pantalla de estos contratos se mantiene en `docs/UI_UX_PENDING.md`.
+
 ## Productos disponibles
 
 - Compras solo lista productos con estado `active`.

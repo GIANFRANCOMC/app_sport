@@ -86,6 +86,7 @@ final class RoleService {
     public static function update(int $companyId, int $roleId, int $userId, array $data): Role {
 
         self::assertCanDelegate($companyId, $userId, $data, $roleId);
+        self::assertCompanyKeepsAdministrator($companyId, $roleId, $data);
 
         return DB::transaction(function() use($companyId, $roleId, $userId, $data) {
 
@@ -109,6 +110,35 @@ final class RoleService {
             return self::find($companyId, $role->id);
 
         });
+
+    }
+
+    public static function duplicate(int $companyId, int $roleId, int $userId, string $name): Role {
+
+        $source = self::find($companyId, $roleId);
+
+        $permissions = $source->is_full_access
+            ? self::enabledSubSectionIds($companyId)->map(fn($subSectionId) => [
+                "sub_section_id" => (int) $subSectionId,
+                "actions" => RolePermissionService::actionCodes()
+            ])->values()->all()
+            : $source->roleSubSections->map(fn(RoleSubSection $permission) => [
+                "sub_section_id" => (int) $permission->sub_section_id,
+                "actions" => $permission->actions
+            ])->values()->all();
+
+        return self::create($companyId, $userId, [
+            "name" => trim($name),
+            "is_full_access" => false,
+            "permissions" => $permissions,
+            "branch_scope_mode" => $source->branch_scope_mode,
+            "cash_register_scope_mode" => $source->cash_register_scope_mode,
+            "warehouse_scope_mode" => $source->warehouse_scope_mode,
+            "branch_ids" => $source->branches->pluck("id")->all(),
+            "cash_register_ids" => $source->cashRegisters->pluck("id")->all(),
+            "warehouse_ids" => $source->warehouses->pluck("id")->all(),
+            "status" => "active"
+        ]);
 
     }
 
@@ -328,6 +358,34 @@ final class RoleService {
             if($allowedIds !== null && $requestedIds->diff($allowedIds)->isNotEmpty()) {
                 throw new AuthorizationException("Seleccionaste recursos fuera de tu alcance operativo.");
             }
+        }
+
+    }
+
+    private static function assertCompanyKeepsAdministrator(int $companyId, int $roleId, array $data): void {
+
+        $role = Role::query()->where("company_id", $companyId)->findOrFail($roleId);
+        $removesFullAccess = $role->is_full_access && (
+            !(bool) ($data["is_full_access"] ?? false)
+            || ($data["status"] ?? "active") !== "active"
+        );
+
+        if(!$removesFullAccess) {
+            return;
+        }
+
+        $otherAdministratorExists = User::query()
+            ->where("company_id", $companyId)
+            ->where("status", "active")
+            ->whereHas("role", fn(Builder $query) => $query
+                ->where("company_id", $companyId)
+                ->where("status", "active")
+                ->where("is_full_access", true)
+                ->where("id", "!=", $roleId))
+            ->exists();
+
+        if(!$otherAdministratorExists) {
+            throw new AuthorizationException("La empresa debe conservar al menos un usuario con acceso total.");
         }
 
     }

@@ -1,41 +1,26 @@
-﻿<?php
+<?php
 
 declare(strict_types=1);
 
 namespace App\Models\System\Devices;
 
+use App\Models\System\Organizations\{Branch, Company};
 use Illuminate\Database\Eloquent\Model;
-use App\Models\System\Organizations\{Company, Branch};
 
 class BiometricDevice extends Model {
 
-    protected $table               = "biometric_devices";
-    protected $primaryKey          = "id";
-    public $incrementing           = true;
-    public $timestamps             = true;
-    public static $snakeAttributes = true;
-
+    protected $table = "biometric_devices";
     protected $fillable = [
-        "company_id",
-        "branch_id",
-        "biometric_device_model_id",
-        "name",
-        "serial_number",
-        "ip_address",
-        "port",
-        "device_id",
-        "description",
-        "status",
-        "created_at",
-        "created_by",
-        "updated_at",
-        "updated_by"
+        "company_id", "branch_id", "biometric_device_model_id", "name",
+        "serial_number", "ip_address", "port", "device_id", "access_key",
+        "secret_encrypted", "credentials_rotated_at", "last_seen_at",
+        "description", "status", "created_at", "created_by", "updated_at", "updated_by"
     ];
-
-    protected $appends = [
-        "formatted_status",
-        "brand_name",
-        "model_name"
+    protected $appends = ["formatted_status", "brand_name", "model_name"];
+    protected $hidden = ["secret_encrypted"];
+    protected $casts = [
+        "credentials_rotated_at" => "datetime",
+        "last_seen_at" => "datetime"
     ];
 
     public function getFormattedStatusAttribute(): string {
@@ -58,12 +43,10 @@ class BiometricDevice extends Model {
 
     public static function getStatuses(string $type = "all", ?string $code = ""): array {
 
-        $statuses = [
+        return \App\Helpers\System\Utilities::getValues([
             ["code" => "active", "label" => "Activo"],
             ["code" => "inactive", "label" => "Inactivo"]
-        ];
-
-        return \App\Helpers\System\Utilities::getValues($statuses, $type, $code);
+        ], $type, $code);
 
     }
 

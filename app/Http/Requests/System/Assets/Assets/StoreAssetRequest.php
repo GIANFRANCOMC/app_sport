@@ -6,40 +6,25 @@ namespace App\Http\Requests\System\Assets\Assets;
 
 use App\Http\Requests\System\Base\CompanyFormRequest;
 use App\Http\Requests\System\Concerns\AppliesInternalCodePrefix;
-use App\Rules\System\Defaults\{UniqueInCompany};
+use App\Rules\System\Defaults\{BelongsToCompany, UniqueInCompany};
 
-class StoreAssetRequest extends CompanyFormRequest {
-
+final class StoreAssetRequest extends CompanyFormRequest {
     use AppliesInternalCodePrefix;
 
-    protected function internalCodeEntity(): string {
-
-        return "asset";
-
-    }
-
+    protected function internalCodeEntity(): string { return "asset"; }
     protected function normalizedStringFields(): array {
-
-        return ["internal_code", "name", "description"];
-
+        return ["internal_code", "patrimonial_code", "serial_number", "name", "description"];
     }
 
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
-     */
     public function rules(): array {
-
-        $validations = [
+        return [
             "internal_code" => ["required", "string", "max:50", new UniqueInCompany("assets", "internal_code", null, [], "código interno")],
-            "name"          => "required|string|max:50",
-            "description"   => "nullable|string|max:100",
-            "status"        => "required|in:active,inactive"
+            "asset_category_id" => ["nullable", "integer", new BelongsToCompany("asset_categories", ["status" => "active"])],
+            "patrimonial_code" => ["nullable", "string", "max:100", new UniqueInCompany("assets", "patrimonial_code")],
+            "serial_number" => ["nullable", "string", "max:150", new UniqueInCompany("assets", "serial_number")],
+            "name" => ["required", "string", "max:50"],
+            "description" => ["nullable", "string", "max:500"],
+            "status" => ["required", "in:active,inactive"]
         ];
-
-        return $validations;
-
     }
-
 }

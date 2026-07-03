@@ -331,8 +331,6 @@ Productos incorpora una acción compacta **Carga masiva** junto a Descargar Exce
 
 ## Mejoras pendientes
 
-- Crear una tabla de movimientos de inventario con motivo, usuario, origen y saldo resultante.
-- Definir si se bloquearán ventas con stock insuficiente o se permitirá stock negativo.
 - Incorporar impresión masiva y plantillas configurables de etiquetas; la descarga PNG individual ya está disponible.
 - Añadir lector de código de barras al flujo de ventas.
 - Agregar pruebas de integración para creación multi-almacén, EAN duplicado y aislamiento entre empresas.

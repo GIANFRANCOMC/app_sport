@@ -2,47 +2,30 @@
 
 ## Qué hace
 
-Controla atenciones que poseen inicio y fin reales. Sirve para barberías, salones, clínicas, talleres, canchas, alquileres, soporte técnico y cualquier negocio que necesite medir tiempo y responsable antes de cobrar.
+Controla atenciones con inicio y fin reales para barberías, salones, clínicas, talleres, canchas, alquileres y otros rubros. Una sesión puede tener cita, cola, estación, cliente, responsable y varios detalles independientes.
 
-## Arquitectura
+## Backend
 
-- Vista compartida: `resources/js/System/Pages/Operations/service_operations/main.vue`.
-- Ruta principal: `GET /service_operations/services`.
-- Núcleo: `ServiceOperationService`.
-- Tablas: `service_sessions` y `service_session_items`.
-- Estación opcional: `service_stations` para sillón, cabina, habitación, cancha u otro recurso. Puede organizarse por `service_floors` cuando el negocio tiene niveles o zonas físicas.
-
-## Flujo
-
-1. Se crea una atención con sucursal, cliente y responsable opcionales.
-2. Puede iniciarse de inmediato o quedar pendiente.
-3. Se agregan uno o varios servicios; cada uno puede tener otro colaborador.
-4. El operador inicia y finaliza cada detalle.
-5. La plataforma calcula duración por detalle y duración total.
-6. La atención puede finalizar sin venta o enviarse a Venta POS para cobrarla.
+- Tablas principales: `service_sessions`, `service_session_items`.
+- Trazabilidad: `service_session_events`.
+- Pausas: `service_session_pauses`.
+- Recursos físicos: `service_floors`, `service_stations`.
 
 ## Reglas
 
-- Una atención pendiente comienza automáticamente cuando inicia su primer detalle.
-- Un detalle finalizado no puede reiniciarse ni volver a finalizarse.
-- Finalizar toda la sesión consolida los detalles abiertos para no dejar cronómetros inconclusos.
-- Los valores históricos de nombre, tipo y precio quedan en el detalle aunque luego cambie el catálogo.
-- Toda lectura y escritura se limita por empresa y por alcance de sucursal del usuario.
+- `scheduled_at`, `expected_end_at`, `tolerance_minutes` y `queue_code` soportan agenda y cola sin confundirlas con el inicio real.
+- Cada pausa conserva responsable, motivo, duración y detalle afectado; su tiempo se separa del tiempo efectivo.
+- Reasignar operador registra usuario anterior, nuevo usuario, actor y motivo.
+- Cancelar exige motivo y genera un evento inmutable.
+- Cada detalle conserva nombre, tipo y precio históricos.
+- Los detalles de preparación disponen de estados pendiente, preparando, listo y entregado.
+- Todo acceso se limita por empresa y alcance de sucursal.
 
-## Indicadores posibles
+## Endpoints adicionales
 
-- Tiempo promedio real por servicio y por colaborador.
-- Diferencia entre duración configurada y duración real.
-- Atenciones pendientes, en curso y finalizadas.
-- Utilización de sillones, cabinas, habitaciones o canchas.
-- Ventas y ticket promedio originados por cada operador.
+- `sessions/{id}/reassign`
+- `sessions/{id}/pause`
+- `sessions/{id}/resume`
+- `sessions/{id}/cancel`
 
-## Pendientes y mejoras
-
-- Agenda, citas, cola de espera y tolerancias de llegada.
-- Pausas justificadas que no sumen al tiempo efectivo.
-- Reasignación de operador conservando trazabilidad.
-- Cancelación con motivo, aprobación y eventos inmutables.
-- Comisiones por servicio, colaborador y tramo de tiempo.
-- SLA, alertas por demora y notificaciones al cliente.
-- Reportes exportables por sucursal, estación, servicio y responsable.
+Los pendientes visuales de agenda, SLA, comisiones y reportes están en `docs/UI_UX_PENDING.md`.

@@ -4,39 +4,34 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\System\Customers\Customers;
 
-use App\Helpers\System\Utilities;
-use Illuminate\Foundation\Http\FormRequest;
 use App\Rules\System\Defaults\{BelongsToCompany, DocumentNumberLength, UniqueInCompany};
+use Illuminate\Foundation\Http\FormRequest;
 
-class UpdateCustomerRequest extends FormRequest {
+final class UpdateCustomerRequest extends FormRequest {
 
-    /**
-     * Determine if the user is authorized to make this request.
-     */
     public function authorize(): bool {
 
         return true;
 
     }
 
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
-     */
     public function rules(): array {
 
+        $identityTypeId = (int) $this->input("identity_document_type_id");
         $customerId = (int) $this->route("id");
 
         return [
             "identity_document_type_id" => ["required", "integer", new BelongsToCompany("identity_document_types", ["status" => "active"], "El tipo de documento no pertenece a la empresa.")],
-            "document_number"           => ["required", "string", new DocumentNumberLength((int) $this->identity_document_type_id), new UniqueInCompany("customers", "document_number", $customerId, [], "número de documento")],
-            "name"                      => "required|string|max:100",
-            "email"                     => "nullable|email|max:100",
-            "phone_number"              => "nullable|string|max:15",
-            "gender"                    => "nullable|in:male,female,other",
-            "birthdate"                 => "nullable|date",
-            "status"                    => "required|in:active,inactive"
+            "document_number" => ["required", "string", new DocumentNumberLength($identityTypeId), new UniqueInCompany("customers", "document_number", $customerId, ["identity_document_type_id" => $identityTypeId], "número de documento")],
+            "name" => ["required", "string", "max:100"],
+            "email" => ["nullable", "email", "max:100"],
+            "phone_number" => ["nullable", "string", "max:15"],
+            "emergency_contact_name" => ["nullable", "string", "max:255", "required_with:emergency_contact_phone"],
+            "emergency_contact_phone" => ["nullable", "string", "max:50", "required_with:emergency_contact_name"],
+            "medical_notes" => ["nullable", "string", "max:5000"],
+            "gender" => ["nullable", "in:male,female,other"],
+            "birthdate" => ["nullable", "date"],
+            "status" => ["required", "in:active,inactive"]
         ];
 
     }

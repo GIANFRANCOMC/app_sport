@@ -20,7 +20,6 @@ Define el alcance de funcionalidades publicas. Guest existe para que una empresa
 
 ## Mejoras sugeridas
 
-- Crear rate limiting por ruta publica.
-- Agregar tokens firmados para asistencia publica.
-- Documentar contratos de payload.
-
+- Rate limiting por ruta pública implementado.
+- Ruta firmada de asistencia pública implementada; la migración visual desde enlaces legacy está en `docs/UI_UX_PENDING.md`.
+- Contratos de reclamos, asistencia y biometría documentados por módulo.

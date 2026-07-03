@@ -2,51 +2,14 @@
 
 ## Qué hace
 
-Administra items de tipo `subscription`, que representan planes o membresías vendibles.
+Administra ítems `subscription` que, al venderse, generan una membresía real para cliente y sucursal.
 
-## Archivos
+## Backend
 
-- Ruta: `routes/System/Catalogs/Subscription.php`
-- Controlador: `SubscriptionController`
-- Servicios: `SubscriptionService`, `SubscriptionConfigService`
-- Requests: `StoreSubscriptionRequest`, `UpdateSubscriptionRequest`
-- Tablas: `items`, `subscriptions` cuando se vende
+- Duración y tipo de duración son obligatorios.
+- `attendance_limit_per_day` permite definir un límite diario específico del plan.
+- `benefits` y `restrictions` son arreglos JSON validados, con hasta 50 textos de 255 caracteres.
+- `price_includes_tax` determina si el IGV ya está incluido.
+- Código, moneda, categorías y pertenencia se validan por empresa.
 
-## Campos necesarios
-
-- Campos base de item.
-- `type = subscription`
-- `duration_type`
-- `duration_value`
-- `see_my_web`
-- `see_my_web_price`
-
-## Reglas
-
-- Categorías y monedas de `initParams` se obtienen mediante los servicios de referencia compartidos.
-- Al venderse, genera registro en `subscriptions`.
-- Debe definir duración para calcular vigencia.
-- La membresía real queda asociada a cliente y sucursal.
-- Al crear o editar una membresía se invalida el recurso compartido `items`, actualizando también los artículos disponibles en Ventas.
-- Al crear o editar una categoría se limpia la caché de `SubscriptionConfigService`, por lo que el selector se actualiza en la siguiente carga.
-
-## Mejoras sugeridas
-
-- Agregar límite diario configurable en item de catálogo.
-- Agregar beneficios o restricciones por plan.
-
-## Configuración y validación compartida
-
-- El código interno usa `company_settings.internal_code_prefixes.subscription`; `MEM` es el valor inicial.
-- El formulario integra `MEM-` al inicio del control, mientras el usuario mantiene únicamente la parte variable.
-- `InternalCodeService` aplica el prefijo en backend y evita duplicarlo cuando recibe un código ya normalizado.
-- Un valor nulo o vacío desactiva el prefijo para esa empresa.
-- Store y Update extienden `CompanyFormRequest`; los errores inline son breves y el resumen identifica el campo que requiere corrección.
-- Validar que duración no sea nula si se venderá.
-
-## Actualizacion: IGV incluido
-
-- Las membresias usan `items.price_includes_tax` igual que productos y servicios.
-- En el formulario se muestra `Precio incluye IGV`, activo por defecto.
-- Cuando se vende una membresia con IGV incluido, los impuestos configurados de venta no aumentan el total de ese detalle.
-- Cuando se vende una membresia sin IGV incluido, todos los impuestos activos de alcance `sale` o `both` se calculan sobre el precio del detalle.
+La presentación de beneficios, restricciones y límites está en `docs/UI_UX_PENDING.md`.

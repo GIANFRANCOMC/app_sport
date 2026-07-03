@@ -7,8 +7,8 @@ namespace App\Http\Controllers\System\Purchases;
 use App\Exports\System\Purchases\PurchaseListExport;
 use App\Helpers\System\Utilities;
 use App\Http\Controllers\System\Base\BaseController;
-use App\Http\Requests\System\Purchases\{ReceivePurchaseRequest, StorePurchaseRequest};
-use App\Services\System\Purchases\{PurchaseConfigService, PurchaseService};
+use App\Http\Requests\System\Purchases\{ReceivePurchaseRequest, StorePurchaseRequest, StorePurchaseReturnRequest};
+use App\Services\System\Purchases\{PurchaseConfigService, PurchaseReturnService, PurchaseService};
 use Illuminate\Http\{JsonResponse, Request};
 use Maatwebsite\Excel\Facades\Excel;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
@@ -55,9 +55,12 @@ final class PurchaseController extends BaseController {
                 $request->validated()
             );
 
-            $message = ($request->validated()["delivery_mode"] ?? "immediate") === "immediate"
-                ? "Compra registrada. La mercadería ingresó al inventario del almacén seleccionado."
-                : "Compra registrada. El stock se actualizará cuando registres la recepción de mercadería.";
+            $validated = $request->validated();
+            $message = ($validated["approval_status"] ?? "approved") !== "approved"
+                ? "Orden registrada y pendiente de aprobación. El inventario aún no cambió."
+                : (($validated["delivery_mode"] ?? "immediate") === "immediate"
+                    ? "Compra registrada. La mercadería ingresó al inventario del almacén seleccionado."
+                    : "Compra registrada. El stock se actualizará cuando registres la recepción de mercadería.");
 
             return response()->json([
                 "bool" => true,
@@ -133,6 +136,41 @@ final class PurchaseController extends BaseController {
                 "msg" => $exception->getMessage()
             ], 422);
 
+        }
+
+    }
+
+    public function returnToSupplier(StorePurchaseReturnRequest $request, int $id): JsonResponse {
+
+        try {
+            $return = PurchaseReturnService::create(
+                $this->getCompanyId(),
+                $id,
+                $this->getUserId(),
+                $request->validated()
+            );
+
+            return response()->json([
+                "bool" => true,
+                "msg" => "Devolución registrada y existencias actualizadas.",
+                "data" => $return
+            ], 201);
+        }catch(\Throwable $exception) {
+            return response()->json(["bool" => false, "msg" => $exception->getMessage()], 422);
+        }
+
+    }
+
+    public function approve(int $id): JsonResponse {
+
+        try {
+            return response()->json([
+                "bool" => true,
+                "msg" => "Orden aprobada correctamente.",
+                "data" => PurchaseService::approve($this->getCompanyId(), $id, $this->getUserId())
+            ]);
+        }catch(\Throwable $exception) {
+            return response()->json(["bool" => false, "msg" => $exception->getMessage()], 422);
         }
 
     }

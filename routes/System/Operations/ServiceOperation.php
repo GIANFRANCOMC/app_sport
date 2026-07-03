@@ -19,5 +19,9 @@ Route::get("/sessions/{id}", [ServiceOperationController::class, "show"])->name(
 Route::post("/sessions/{id}/items", [ServiceOperationController::class, "addItem"])->name("service_operations.items.store");
 Route::patch("/sessions/{id}/start", [ServiceOperationController::class, "startSession"])->name("service_operations.sessions.start");
 Route::patch("/sessions/{id}/complete", [ServiceOperationController::class, "completeSession"])->name("service_operations.sessions.complete");
+Route::patch("/sessions/{id}/reassign", [ServiceOperationController::class, "reassignSession"])->name("service_operations.sessions.reassign");
+Route::post("/sessions/{id}/pause", [ServiceOperationController::class, "pauseSession"])->name("service_operations.sessions.pause");
+Route::patch("/sessions/{id}/resume", [ServiceOperationController::class, "resumeSession"])->name("service_operations.sessions.resume");
+Route::patch("/sessions/{id}/cancel", [ServiceOperationController::class, "cancelSession"])->name("service_operations.sessions.cancel");
 Route::patch("/items/{id}/start", [ServiceOperationController::class, "startItem"])->name("service_operations.items.start");
 Route::patch("/items/{id}/complete", [ServiceOperationController::class, "completeItem"])->name("service_operations.items.complete");

@@ -7,7 +7,8 @@ namespace App\Services\System\Devices\BiometricDevices;
 use DomainException;
 use Exception;
 use App\Helpers\System\{TranslationHelper, Utilities};
-use Illuminate\Support\Facades\{Auth, DB};
+use Illuminate\Support\Facades\{Auth, Crypt, DB};
+use Illuminate\Support\Str;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -147,13 +148,37 @@ class BiometricDeviceService {
 
             // Prepare data with only allowed fields
             $deviceData = self::prepareBiometricDeviceDataForCreate($data, $companyId, $userId);
+            $plainSecret = Str::random(64);
+            $deviceData["access_key"] = Str::lower(Str::random(32));
+            $deviceData["secret_encrypted"] = Crypt::encryptString($plainSecret);
+            $deviceData["credentials_rotated_at"] = now();
 
             // Create the record
             $device = BiometricDevice::create($deviceData);
+            $device->setAttribute("plain_secret", $plainSecret);
 
         });
 
         return $device;
+
+    }
+
+    public static function rotateCredentials(BiometricDevice $device, ?int $userId = null): array {
+
+        $plainSecret = Str::random(64);
+        $device->forceFill([
+            "access_key" => Str::lower(Str::random(32)),
+            "secret_encrypted" => Crypt::encryptString($plainSecret),
+            "credentials_rotated_at" => now(),
+            "updated_at" => now(),
+            "updated_by" => $userId ?? Auth::id()
+        ])->save();
+
+        return [
+            "access_key" => $device->access_key,
+            "secret" => $plainSecret,
+            "rotated_at" => $device->credentials_rotated_at
+        ];
 
     }
 

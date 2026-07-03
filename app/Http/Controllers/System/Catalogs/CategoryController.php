@@ -184,9 +184,19 @@ class CategoryController extends BaseController {
      * @param Category $record
      * @return JsonResponse
      */
-    public function destroy(Category $record): JsonResponse {
+    public function destroy(int $id): JsonResponse {
 
-        return $this->errorResponse("not_implemented", [], 501);
+        try {
+            CategoryService::delete($this->getCompanyId(), $id);
+            InitParamsCacheInvalidationService::invalidate(
+                InitParamsCacheInvalidationService::CATEGORIES,
+                $this->getCompanyId()
+            );
+
+            return response()->json(["bool" => true, "msg" => "Categoría eliminada correctamente."]);
+        }catch(\DomainException $exception) {
+            return response()->json(["bool" => false, "msg" => $exception->getMessage()], 422);
+        }
 
     }
 
@@ -203,6 +213,8 @@ class CategoryController extends BaseController {
             "internal_code" => $request->input("internal_code"),
             "name"          => $request->input("name"),
             "description"   => $request->input("description"),
+            "sort_order"    => $request->input("sort_order", 1),
+            "is_public"     => $request->boolean("is_public", true),
             "status"        => $request->input("status")
         ];
 

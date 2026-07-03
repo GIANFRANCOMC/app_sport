@@ -25,6 +25,11 @@ final class ServiceSessionItem extends Model {
         "started_at",
         "ended_at",
         "duration_minutes",
+        "paused_minutes",
+        "preparation_status",
+        "preparation_started_at",
+        "ready_at",
+        "delivered_at",
         "observation",
         "created_at",
         "created_by",
@@ -39,7 +44,11 @@ final class ServiceSessionItem extends Model {
         "unit_price" => "decimal:4",
         "started_at" => "datetime",
         "ended_at" => "datetime",
-        "duration_minutes" => "integer"
+        "duration_minutes" => "integer",
+        "paused_minutes" => "integer",
+        "preparation_started_at" => "datetime",
+        "ready_at" => "datetime",
+        "delivered_at" => "datetime"
     ];
 
     public function session() {

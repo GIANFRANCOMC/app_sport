@@ -46,6 +46,11 @@ class UpdateSubscriptionRequest extends CompanyFormRequest {
             "price"          => "required|numeric|min:$minValue|max:$maxValue|decimal:0,$round",
             "price_includes_tax" => "nullable|boolean",
             "currency_id"    => ["required", "integer", new BelongsToCompany("currencies", ["status" => "active"], "La moneda seleccionada no pertenece a la empresa.")],
+            "attendance_limit_per_day" => "nullable|integer|min:1|max:1000",
+            "benefits" => "nullable|array|max:50",
+            "benefits.*" => "string|max:255",
+            "restrictions" => "nullable|array|max:50",
+            "restrictions.*" => "string|max:255",
             "status"         => "required|in:active,inactive"
         ];
 

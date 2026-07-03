@@ -2,6 +2,8 @@
 
 Esta carpeta contiene mejoras, ideas y cambios recomendados para evaluar antes de implementarlos. No describe necesariamente el comportamiento actual.
 
+Los pendientes exclusivamente visuales no se duplican aquí; su fuente única es `docs/UI_UX_PENDING.md`.
+
 ## Prioridades sugeridas
 
 1. Seguridad multiempresa y permisos.

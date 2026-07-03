@@ -73,6 +73,10 @@ return new class extends Migration {
             $table->dateTime("started_at")->nullable();
             $table->dateTime("ended_at")->nullable();
             $table->unsignedInteger("duration_minutes")->default(0);
+            $table->dateTime("scheduled_at")->nullable();
+            $table->dateTime("expected_end_at")->nullable();
+            $table->unsignedSmallInteger("tolerance_minutes")->default(0);
+            $table->string("queue_code", 30)->nullable();
             $table->string("observation", 500)->nullable();
             $table->string("cancellation_reason", 500)->nullable();
 
@@ -108,6 +112,11 @@ return new class extends Migration {
             $table->dateTime("started_at")->nullable();
             $table->dateTime("ended_at")->nullable();
             $table->unsignedInteger("duration_minutes")->default(0);
+            $table->unsignedInteger("paused_minutes")->default(0);
+            $table->string("preparation_status", 20)->default("pending");
+            $table->dateTime("preparation_started_at")->nullable();
+            $table->dateTime("ready_at")->nullable();
+            $table->dateTime("delivered_at")->nullable();
             $table->string("observation", 500)->nullable();
 
             $table->timestamp("created_at")->useCurrent()->nullable();
@@ -123,10 +132,53 @@ return new class extends Migration {
             $table->foreign("assigned_user_id")->references("id")->on("users")->nullOnDelete();
         });
 
+        Schema::create("service_session_pauses", function(Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger("company_id");
+            $table->unsignedBigInteger("service_session_id");
+            $table->unsignedBigInteger("service_session_item_id")->nullable();
+            $table->unsignedBigInteger("paused_by");
+            $table->unsignedBigInteger("resumed_by")->nullable();
+            $table->dateTime("paused_at");
+            $table->dateTime("resumed_at")->nullable();
+            $table->unsignedInteger("duration_minutes")->default(0);
+            $table->string("reason", 500)->nullable();
+            $table->string("status", 20)->default("active");
+            $table->timestamp("created_at")->useCurrent()->nullable();
+            $table->timestamp("updated_at")->nullable();
+
+            $table->foreign("company_id")->references("id")->on("companies")->onDelete("cascade");
+            $table->foreign("service_session_id")->references("id")->on("service_sessions")->onDelete("cascade");
+            $table->foreign("service_session_item_id")->references("id")->on("service_session_items")->onDelete("cascade");
+            $table->foreign("paused_by")->references("id")->on("users")->restrictOnDelete();
+            $table->foreign("resumed_by")->references("id")->on("users")->nullOnDelete();
+        });
+
+        Schema::create("service_session_events", function(Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger("company_id");
+            $table->unsignedBigInteger("service_session_id");
+            $table->unsignedBigInteger("service_session_item_id")->nullable();
+            $table->unsignedBigInteger("user_id")->nullable();
+            $table->string("event_type", 40);
+            $table->string("previous_status", 30)->nullable();
+            $table->string("new_status", 30)->nullable();
+            $table->string("note", 500)->nullable();
+            $table->json("metadata")->nullable();
+            $table->timestamp("occurred_at")->useCurrent();
+
+            $table->foreign("company_id")->references("id")->on("companies")->onDelete("cascade");
+            $table->foreign("service_session_id")->references("id")->on("service_sessions")->onDelete("cascade");
+            $table->foreign("service_session_item_id")->references("id")->on("service_session_items")->onDelete("cascade");
+            $table->foreign("user_id")->references("id")->on("users")->nullOnDelete();
+        });
+
     }
 
     public function down(): void {
 
+        Schema::dropIfExists("service_session_events");
+        Schema::dropIfExists("service_session_pauses");
         Schema::dropIfExists("service_session_items");
         Schema::dropIfExists("service_sessions");
         Schema::dropIfExists("service_stations");
