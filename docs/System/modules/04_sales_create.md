@@ -116,3 +116,12 @@ Permite crear una venta con productos, servicios o membresias. Una venta puede g
 - El botón principal de la vista se mantiene como **Revisar venta** para reforzar que la venta se confirma en un segundo paso.
 - Las cajas disponibles se limitan por las sucursales permitidas del colaborador. Si el usuario no tiene sucursales configuradas, mantiene acceso a todas las sucursales de la empresa.
 - Los ítems con estado `inactive` no se cargan para Venta POS ni para el flujo transaccional de ventas.
+
+## Integración con atenciones de servicio
+
+- Venta POS admite `service_session_id` para cobrar una mesa o servicio previamente iniciado.
+- Al abrir POS desde Restaurante POS o Servicios en curso, se precargan sucursal, cliente y detalles vigentes de la atención.
+- La sesión debe pertenecer a la misma empresa, estar pendiente o en curso y ser accesible para el usuario por sucursal.
+- La venta y el cierre de la sesión ocurren dentro de la misma transacción. Si falla comprobante, pago, stock, impuesto o caja, la atención permanece abierta.
+- Una sesión cobrada guarda `sale_header_id`, fecha de fin, duración total y usuario que realizó el cierre.
+- Los detalles conservan su tiempo individual y se consolidan al cerrar para evitar cronómetros abiertos.

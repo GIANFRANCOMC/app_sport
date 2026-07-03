@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\System\Devices\BiometricDevices;
 
+use DomainException;
 use Exception;
 use App\Helpers\System\{TranslationHelper, Utilities};
 use Illuminate\Support\Facades\{Auth, DB};
@@ -11,7 +12,8 @@ use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 
 use App\Models\System\Customers\{Customer};
-use App\Models\System\Devices\{BiometricDevice, CustomerBiometricFingerprint};
+use App\Models\System\Devices\{BiometricDevice, CustomerBiometricFingerprint, UserBiometricFingerprint};
+use App\Models\System\Organizations\User;
 
 /**
  * Service class for managing module operations
@@ -326,16 +328,26 @@ class BiometricDeviceService {
      */
     public static function registerFingerprint(int $customerId, int $biometricDeviceId, int $deviceUserId, int $fingerIndex = 0, int $userId = 0, int $companyId = 0): CustomerBiometricFingerprint {
 
-        return CustomerBiometricFingerprint::create([
-            "company_id"          => $companyId,
-            "customer_id"         => $customerId,
-            "biometric_device_id" => $biometricDeviceId,
-            "device_user_id"      => $deviceUserId,
-            "finger_index"        => $fingerIndex,
-            "status"              => "active",
-            "created_at"          => now(),
-            "created_by"          => $userId
-        ]);
+        return DB::transaction(function() use($customerId, $biometricDeviceId, $deviceUserId, $fingerIndex, $userId, $companyId) {
+            self::lockFingerprintDevice($biometricDeviceId, $companyId);
+
+            if(!Customer::query()->where("company_id", $companyId)->where("status", "active")->whereKey($customerId)->exists()) {
+                throw new DomainException("El cliente no está activo o no pertenece a la empresa.");
+            }
+
+            self::assertAvailableDeviceUserId($biometricDeviceId, $deviceUserId, $fingerIndex);
+
+            return CustomerBiometricFingerprint::create([
+                "company_id"          => $companyId,
+                "customer_id"         => $customerId,
+                "biometric_device_id" => $biometricDeviceId,
+                "device_user_id"      => $deviceUserId,
+                "finger_index"        => $fingerIndex,
+                "status"              => "active",
+                "created_at"          => now(),
+                "created_by"          => $userId
+            ]);
+        });
 
     }
 
@@ -360,6 +372,55 @@ class BiometricDeviceService {
 
     }
 
+    public static function registerUserFingerprint(
+        int $employeeUserId,
+        int $biometricDeviceId,
+        int $deviceUserId,
+        int $fingerIndex = 0,
+        int $actorId = 0,
+        int $companyId = 0
+    ): UserBiometricFingerprint {
+
+        return DB::transaction(function() use($employeeUserId, $biometricDeviceId, $deviceUserId, $fingerIndex, $actorId, $companyId) {
+            self::lockFingerprintDevice($biometricDeviceId, $companyId);
+
+            if(!User::query()->where("company_id", $companyId)->where("status", "active")->whereKey($employeeUserId)->exists()) {
+                throw new DomainException("El colaborador no está activo o no pertenece a la empresa.");
+            }
+
+            self::assertAvailableDeviceUserId($biometricDeviceId, $deviceUserId, $fingerIndex);
+
+            return UserBiometricFingerprint::create([
+                "company_id" => $companyId,
+                "user_id" => $employeeUserId,
+                "biometric_device_id" => $biometricDeviceId,
+                "device_user_id" => $deviceUserId,
+                "finger_index" => $fingerIndex,
+                "status" => "active",
+                "created_at" => now(),
+                "created_by" => $actorId
+            ]);
+        });
+
+    }
+
+    public static function findUserByDeviceUserId(int $deviceId, int $deviceUserId, int $companyId): ?User {
+
+        $fingerprint = UserBiometricFingerprint::query()
+            ->where("biometric_device_id", $deviceId)
+            ->where("device_user_id", $deviceUserId)
+            ->where("company_id", $companyId)
+            ->where("status", "active")
+            ->whereHas("user", function(Builder $query) use($companyId) {
+                $query->where("company_id", $companyId)->where("status", "active");
+            })
+            ->with("user")
+            ->first();
+
+        return $fingerprint?->user;
+
+    }
+
     /**
      * Get next available device user for a device
      *
@@ -368,8 +429,11 @@ class BiometricDeviceService {
      */
     public static function getNextDeviceUserId(int $deviceId): int {
 
-        $maxUserId = CustomerBiometricFingerprint::where("biometric_device_id", $deviceId)
-                                                 ->max("device_user_id");
+        $customerMax = CustomerBiometricFingerprint::where("biometric_device_id", $deviceId)
+            ->max("device_user_id");
+        $userMax = UserBiometricFingerprint::where("biometric_device_id", $deviceId)
+            ->max("device_user_id");
+        $maxUserId = max((int) ($customerMax ?? 0), (int) ($userMax ?? 0));
 
         return ($maxUserId ?? 0) + 1;
 
@@ -385,16 +449,43 @@ class BiometricDeviceService {
      */
     public static function deviceUserIdExists(int $deviceId, int $deviceUserId, ?int $fingerIndex = null): bool {
 
-        $query = CustomerBiometricFingerprint::where("biometric_device_id", $deviceId)
-                                             ->where("device_user_id", $deviceUserId);
+        $customerQuery = CustomerBiometricFingerprint::where("biometric_device_id", $deviceId)
+            ->where("device_user_id", $deviceUserId);
+        $userQuery = UserBiometricFingerprint::where("biometric_device_id", $deviceId)
+            ->where("device_user_id", $deviceUserId);
 
         if(Utilities::isDefined($fingerIndex)) {
 
-            $query->where("finger_index", $fingerIndex);
+            $customerQuery->where("finger_index", $fingerIndex);
+            $userQuery->where("finger_index", $fingerIndex);
 
         }
 
-        return $query->exists();
+        return $customerQuery->exists() || $userQuery->exists();
+
+    }
+
+    private static function lockFingerprintDevice(int $deviceId, int $companyId): BiometricDevice {
+
+        $device = BiometricDevice::query()
+            ->where("company_id", $companyId)
+            ->where("status", "active")
+            ->lockForUpdate()
+            ->find($deviceId);
+
+        if(!$device) {
+            throw new DomainException("El dispositivo biométrico no está disponible.");
+        }
+
+        return $device;
+
+    }
+
+    private static function assertAvailableDeviceUserId(int $deviceId, int $deviceUserId, int $fingerIndex): void {
+
+        if(self::deviceUserIdExists($deviceId, $deviceUserId, $fingerIndex)) {
+            throw new DomainException("El identificador biométrico ya está utilizado en este dispositivo.");
+        }
 
     }
 

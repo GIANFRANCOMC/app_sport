@@ -30,7 +30,15 @@ return [
         'stocks_management.store' => 'operate',
         'stocks_management.update' => 'operate',
         'user_attendances.checkin' => 'operate',
-        'user_attendances.checkout' => 'operate'
+        'user_attendances.biometric-checkin' => 'operate',
+        'user_attendances.checkout' => 'operate',
+        'users.biometric-fingerprints.store' => 'update',
+        'service_operations.sessions.store' => 'operate',
+        'service_operations.items.store' => 'operate',
+        'service_operations.sessions.start' => 'operate',
+        'service_operations.sessions.complete' => 'operate',
+        'service_operations.items.start' => 'operate',
+        'service_operations.items.complete' => 'operate'
     ],
 
     /* Endpoints compartidos por varias pantallas del mismo módulo técnico. */
@@ -43,10 +51,26 @@ return [
         'sales.cancel' => ['sales.index'],
         'sales.store' => ['sales.create', 'sales.pos'],
 
-        'user_attendances.list' => ['users.index'],
-        'user_attendances.weekly' => ['users.index'],
-        'user_attendances.checkin' => ['users.index'],
-        'user_attendances.checkout' => ['users.index'],
+        'user_attendances.initParams' => ['user_attendances.index'],
+        'user_attendances.list' => ['user_attendances.index'],
+        'user_attendances.weekly' => ['user_attendances.index'],
+        'user_attendances.checkin' => ['user_attendances.index'],
+        'user_attendances.biometric-checkin' => ['user_attendances.index'],
+        'user_attendances.checkout' => ['user_attendances.index'],
+
+        'users.biometric-fingerprints.store' => ['users.index'],
+
+        'service_operations.initParams' => ['restaurant_pos.index', 'service_sessions.index'],
+        'service_operations.stations' => ['restaurant_pos.index', 'service_sessions.index'],
+        'service_operations.stations.store' => ['restaurant_pos.index', 'service_sessions.index'],
+        'service_operations.sessions' => ['restaurant_pos.index', 'service_sessions.index'],
+        'service_operations.sessions.store' => ['restaurant_pos.index', 'service_sessions.index'],
+        'service_operations.sessions.show' => ['restaurant_pos.index', 'service_sessions.index'],
+        'service_operations.items.store' => ['restaurant_pos.index', 'service_sessions.index'],
+        'service_operations.sessions.start' => ['restaurant_pos.index', 'service_sessions.index'],
+        'service_operations.sessions.complete' => ['restaurant_pos.index', 'service_sessions.index'],
+        'service_operations.items.start' => ['restaurant_pos.index', 'service_sessions.index'],
+        'service_operations.items.complete' => ['restaurant_pos.index', 'service_sessions.index'],
 
         'stocks_management.index' => ['stocks_management.stock.index'],
         'stocks_management.initParams' => [

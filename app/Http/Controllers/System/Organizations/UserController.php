@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Log;
 use App\Http\Requests\System\Organizations\Users\{StoreUserRequest, UpdateUserRequest};
 use App\Services\System\Base\{InitParamsCacheInvalidationService};
 use App\Services\System\Organizations\Users\{UserConfigService, UserService};
+use App\Services\System\Devices\BiometricDevices\BiometricDeviceService;
 use App\Models\System\Organizations\{User};
 
 class UserController extends BaseController {
@@ -187,6 +188,57 @@ class UserController extends BaseController {
     public function destroy(User $record): JsonResponse {
 
         return $this->errorResponse("not_implemented", [], 501);
+
+    }
+
+    public function registerBiometricFingerprint(Request $request, int $id): JsonResponse {
+
+        $request->validate([
+            "biometric_device_id" => ["required", "integer"],
+            "device_user_id" => ["nullable", "integer", "min:1"],
+            "finger_index" => ["nullable", "integer", "min:0", "max:9"]
+        ], [
+            "required" => "Campo obligatorio.",
+            "integer" => "Debe ser un número entero.",
+            "min" => "El valor es menor al permitido.",
+            "max" => "El valor supera el límite permitido."
+        ]);
+
+        try {
+
+            $user = UserService::findByIdAndCompany($id, $this->getCompanyId(), ["active"]);
+            if(!$user) return $this->notFoundResponse();
+
+            $deviceId = (int) $request->input("biometric_device_id");
+            $device = BiometricDeviceService::findByIdAndCompany($deviceId, $this->getCompanyId(), ["active"]);
+            if(!$device) {
+                return $this->errorResponse("not_found", ["msg" => "El dispositivo biométrico no está disponible."], 404);
+            }
+
+            $deviceUserId = $request->filled("device_user_id")
+                ? (int) $request->input("device_user_id")
+                : BiometricDeviceService::getNextDeviceUserId($deviceId);
+
+            $fingerprint = BiometricDeviceService::registerUserFingerprint(
+                (int) $user->id,
+                $deviceId,
+                $deviceUserId,
+                (int) $request->input("finger_index", 0),
+                $this->getUserId(),
+                $this->getCompanyId()
+            );
+
+            return $this->createdResponse($fingerprint, "fingerprint_registered", "biometric_fingerprint");
+
+        }catch(\DomainException $exception) {
+
+            return response()->json(["bool" => false, "msg" => $exception->getMessage()], 422);
+
+        }catch(\Throwable $exception) {
+
+            return $this->handleException($exception, "register_fingerprint");
+
+        }
 
     }
 

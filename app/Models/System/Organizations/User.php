@@ -202,4 +202,14 @@ class User extends Authenticatable {
 
     }
 
+    public function biometricFingerprints() {
+
+        return $this->hasMany(
+            \App\Models\System\Devices\UserBiometricFingerprint::class,
+            "user_id",
+            "id"
+        )->where("status", "active");
+
+    }
+
 }

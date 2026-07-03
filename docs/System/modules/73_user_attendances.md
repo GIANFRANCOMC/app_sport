@@ -13,6 +13,8 @@ Registra jornadas de colaboradores sin mezclar información laboral con las visi
 - Requests: `CheckInUserAttendanceRequest`, `CheckOutUserAttendanceRequest`.
 - Rutas: `routes/System/Organizations/UserAttendance.php`.
 - Tabla: `user_attendances`.
+- Identidad biométrica: `user_biometric_fingerprints` y `BiometricDeviceService`.
+- Vista: `resources/js/System/Pages/Organizations/user_attendances/main.vue`.
 
 ## Campos
 
@@ -44,9 +46,25 @@ Registra jornadas de colaboradores sin mezclar información laboral con las visi
 - `GET /user_attendances/list`: listado por colaborador, sucursal, estado y fechas.
 - `GET /user_attendances/weekly-summary`: minutos y horas por día y semana.
 - `POST /user_attendances/check-in`: abre jornada.
+- `POST /user_attendances/biometric/check-in`: resuelve la identidad del dispositivo y abre jornada.
 - `PATCH /user_attendances/check-out`: finaliza jornada.
+- `POST /users/{id}/biometric-fingerprints`: enrola una identidad biométrica para el colaborador.
 
-Los endpoints heredan permisos del módulo `users.index`: lectura para listados/resumen y acción `operate` para ingreso/salida.
+Los endpoints usan el módulo independiente `user_attendances.index`: lectura para listados/resumen y acción `operate` para ingreso/salida.
+
+## Interfaz
+
+- Filtra por sucursal, colaborador y semana.
+- Muestra horas consolidadas y si existe una jornada activa.
+- Separa visualmente las acciones de ingreso y salida.
+- Reutiliza el paginador, loader, selects y estados generales de System.
+
+## Biometría del personal
+
+- `user_biometric_fingerprints` vincula colaborador, dispositivo, usuario interno del dispositivo y dedo.
+- `device_user_id` se reserva considerando huellas de clientes y colaboradores para evitar colisiones dentro del equipo.
+- `checkInFromBiometric` resuelve la identidad dentro de la empresa y registra `source_type = biometric`.
+- El dispositivo no reemplaza la validación de jornada activa, sucursal ni pertenencia empresarial.
 
 ## Pruebas
 
@@ -58,11 +76,9 @@ Los endpoints heredan permisos del módulo `users.index`: lectura para listados/
 
 ## Mejoras futuras
 
-- Crear la pantalla de asistencia laboral dentro de Colaboradores.
 - Configurar horarios, turnos nocturnos, descansos y días no laborables.
 - Separar horas ordinarias, tardanzas, horas extra y ausencias justificadas.
 - Incorporar solicitudes y aprobación de correcciones sin modificar el registro original.
-- Agregar una identidad biométrica para colaboradores y resolver `device_user_id` sin colisionar con clientes.
 - Permitir políticas de redondeo y tolerancia configurables por empresa.
 - Añadir cierres automáticos supervisados para jornadas olvidadas.
 - Exportar reportes semanales y mensuales para nómina.

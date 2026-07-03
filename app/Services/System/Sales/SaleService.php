@@ -16,6 +16,7 @@ use App\Models\System\Sales\{SaleBody, SaleHeader, SalePayment, SaleTax};
 use App\Models\System\Warehouses\{InventoryMovement, Warehouse};
 use App\Services\System\Finance\CommercialDocumentSettlementService;
 use App\Services\System\Organizations\Companies\CompanySettingService;
+use App\Services\System\Operations\ServiceOperationService;
 use App\Services\System\Warehouses\Inventory\InventoryMovementService;
 
 /**
@@ -475,6 +476,17 @@ class SaleService {
 
                 // Create subscription for subscription items
                 self::createSubscription($saleHeader, $saleBody, $detail, $companyId, $data["branch_id"], $userId);
+
+            }
+
+            if(Utilities::isDefined($data["service_session_id"] ?? null)) {
+
+                ServiceOperationService::attachSale(
+                    (int) $companyId,
+                    (int) $userId,
+                    (int) $data["service_session_id"],
+                    (int) $saleHeader->id
+                );
 
             }
 

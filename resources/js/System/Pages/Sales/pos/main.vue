@@ -499,7 +499,9 @@ export default {
             selectedTaxIds: [],
             selectedTaxQuantities: {},
             payments: [],
-            cart: []
+            cart: [],
+            serviceSessionId: null,
+            serviceSession: null
         };
     },
     computed: {
@@ -791,6 +793,51 @@ export default {
             this.syncFromCashSession();
             this.resetPayments();
             Alerts.tooltips({});
+            await this.preloadServiceSession();
+        },
+        async preloadServiceSession() {
+            const sessionId = Number(new URLSearchParams(window.location.search).get("service_session_id") || 0);
+            if(!sessionId) return;
+
+            const serviceRoutes = Requests.config({entity: "service_operations"}).routes;
+            const result = await Requests.get({route: `${serviceRoutes.sessions}/${sessionId}`});
+
+            if(!Requests.valid({result})) {
+                Alerts.toastrs({type: "warning", subtitle: result.data?.msg || "La atención ya no está disponible."});
+                return;
+            }
+
+            const session = result.data.data;
+            if(!["pending", "in_progress"].includes(session.status)) {
+                Alerts.toastrs({type: "warning", subtitle: "La atención ya fue finalizada y no puede volver a cobrarse."});
+                return;
+            }
+
+            this.serviceSessionId = session.id;
+            this.serviceSession = session;
+            this.selectedBranch = this.branchOptions.find(branch => branch.id === session.branch_id) || this.selectedBranch;
+            this.selectedCashSession = this.cashSessionOptions.find(cash => cash.branch_id === session.branch_id) || null;
+            this.syncFromCashSession();
+
+            if(session.customer_id) {
+                this.selectedCustomer = this.customerOptions.find(customer => customer.id === session.customer_id) || this.selectedCustomer;
+            }
+
+            this.cart = (session.items || []).map(detail => {
+                const item = this.items.find(record => record.id === detail.item_id);
+                if(!item) return null;
+
+                return {
+                    item,
+                    quantity: Number(detail.quantity || 1),
+                    price: Number(detail.unit_price ?? item.price ?? 0)
+                };
+            }).filter(Boolean);
+            this.resetPayments();
+
+            if(!this.cart.length) {
+                Alerts.toastrs({type: "warning", subtitle: "La atención no contiene detalles disponibles para cobrar."});
+            }
         },
         syncBranchDependents() {
             this.selectedSerie = this.serieOptions[0] || null;
@@ -1012,6 +1059,7 @@ export default {
         buildPayload() {
             return {
                 source_channel: "pos",
+                service_session_id: this.serviceSessionId,
                 branch_id: this.selectedBranch?.id,
                 serie_id: this.selectedSerie?.id,
                 warehouse_id: this.selectedWarehouse?.id,
@@ -1073,6 +1121,8 @@ export default {
 
             Alerts.toastrs({type: "success", subtitle: result.data?.msg || "Venta generada correctamente."});
             this.clearCart();
+            this.serviceSessionId = null;
+            this.serviceSession = null;
         }
     }
 };

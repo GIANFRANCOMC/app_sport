@@ -16,3 +16,4 @@ Route::get("/{id}/edit",  [UserController::class, "edit"])->name("$entity.edit")
 Route::get("/{id}",       [UserController::class, "show"])->name("$entity.show");
 Route::patch("/{id}",     [UserController::class, "update"])->name("$entity.update");
 Route::delete("/{id}",    [UserController::class, "destroy"])->name("{$entity}.destroy");
+Route::post("/{id}/biometric-fingerprints", [UserController::class, "registerBiometricFingerprint"])->name("{$entity}.biometric-fingerprints.store");

@@ -232,7 +232,7 @@ export function patch({route = "", data = {}, id = "", formData = null}) {
 
 	return new Promise((resolve, reject) => {
 
-		let requestURL  = `${route}/${id}`,
+		let requestURL  = Utils.isDefined({value: id}) ? `${route}/${id}` : route,
 			requestData = formData ?? {...data, id};
 
         if(!Utils.isDefined({value: requestData?.id})) {
@@ -251,8 +251,7 @@ export function patch({route = "", data = {}, id = "", formData = null}) {
 
 		}
 
-		axios
-        axios({
+		axios({
             method: method,
             url: requestURL,
             data: requestData,
@@ -350,6 +349,16 @@ const ENTITY_SPECIAL_ROUTES = {
         open: "open",
         close: "close",
         movement: "movement"
+    },
+    user_attendances: {
+        weekly: "weekly-summary",
+        checkIn: "check-in",
+        biometricCheckIn: "biometric/check-in",
+        checkOut: "check-out"
+    },
+    service_operations: {
+        stations: "stations",
+        sessions: "sessions"
     },
     purchases: {
         receive: "receive",

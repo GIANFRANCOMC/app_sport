@@ -53,10 +53,15 @@ export default defineConfig({
                 'resources/js/System/Pages/Organizations/companies/main.js',
                 'resources/js/System/Pages/Organizations/roles/main.js',
                 'resources/js/System/Pages/Organizations/users/main.js',
+                'resources/js/System/Pages/Organizations/user_attendances/main.js',
+
+                // System Pages - Operations
+                'resources/js/System/Pages/Operations/service_operations/main.js',
 
                 // System Pages - Sales
                 'resources/js/System/Pages/Sales/sales/list.js',
                 'resources/js/System/Pages/Sales/sales/main.js',
+                'resources/js/System/Pages/Sales/pos/main.js',
 
                 // System Pages - Warehouses
                 'resources/js/System/Pages/Warehouses/stocks_management/main.js',

@@ -323,6 +323,10 @@ class CustomerController extends BaseController {
 
             return $this->createdResponse($fingerprint, "fingerprint_registered", "biometric_fingerprint");
 
+        }catch(\DomainException $e) {
+
+            return response()->json(["bool" => false, "msg" => $e->getMessage()], 422);
+
         }catch(\Exception $e) {
 
             return $this->handleException($e, "register_fingerprint");

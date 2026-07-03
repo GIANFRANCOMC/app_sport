@@ -43,34 +43,37 @@ El menu real se obtiene de `sections`, `sub_sections` y `companies_sub_sections`
 5. `cash_registers.sessions.index` - Operacion / Aperturas y cierres.
 6. `cash_registers.movements.index` - Operacion / Movimientos.
 7. `cash_registers.summary.index` - Operacion / Resumen.
-8. `sales.index` - Ventas / Listado.
-9. `sales.create` - Ventas / Nuevo.
-10. `purchases.index` - Compras.
-11. `suppliers.index` - Proveedores.
-12. `customers.index` - Clientes.
-13. `tracking_customers.index` - Historial de cliente.
-14. `tracking_subscriptions.index` - Membresias de clientes.
-15. `tracking_attendances.index` - Asistencias.
-16. `tracking_notifications.index` - Notificaciones.
-17. `book_complaints.index` - Libro de reclamaciones y sugerencias.
-18. `products.index` - Productos.
-19. `services.index` - Servicios.
-20. `subscriptions.index` - Membresias de catalogo.
-21. `categories.index` - Categorias.
-22. `brands.index` - Marcas.
-23. `recipes.index` - Recetas y platillos.
-24. `stocks_management.stock.index` - Inventario / Control de stock.
-25. `stocks_management.kardex.index` - Inventario / Kardex.
-26. `stocks_management.transfers.index` - Inventario / Traslados.
-27. `stocks_management.valued.index` - Inventario / Kardex valorizado.
-28. `branches.index` - Sucursales.
-29. `assets.index` - Activos.
-30. `assets_management.index` - Gestion de activos.
-31. `biometric_devices.index` - Dispositivos biometricos.
-32. `companies.index` - Mi empresa.
-33. `users.index` - Colaboradores.
-34. `roles.index` - Perfiles de acceso.
-35. `reports.index` - Reportes.
+8. `user_attendances.index` - Operacion / Asistencia del personal.
+9. `restaurant_pos.index` - Operacion / Restaurante POS.
+10. `service_sessions.index` - Operacion / Servicios en curso.
+11. `sales.index` - Ventas / Listado.
+12. `sales.create` - Ventas / Nuevo.
+13. `purchases.index` - Compras.
+14. `suppliers.index` - Proveedores.
+15. `customers.index` - Clientes.
+16. `tracking_customers.index` - Historial de cliente.
+17. `tracking_subscriptions.index` - Membresias de clientes.
+18. `tracking_attendances.index` - Asistencias.
+19. `tracking_notifications.index` - Notificaciones.
+20. `book_complaints.index` - Libro de reclamaciones y sugerencias.
+21. `products.index` - Productos.
+22. `services.index` - Servicios.
+23. `subscriptions.index` - Membresias de catalogo.
+24. `categories.index` - Categorias.
+25. `brands.index` - Marcas.
+26. `recipes.index` - Recetas y platillos.
+27. `stocks_management.stock.index` - Inventario / Control de stock.
+28. `stocks_management.kardex.index` - Inventario / Kardex.
+29. `stocks_management.transfers.index` - Inventario / Traslados.
+30. `stocks_management.valued.index` - Inventario / Kardex valorizado.
+31. `branches.index` - Sucursales.
+32. `assets.index` - Activos.
+33. `assets_management.index` - Gestion de activos.
+34. `biometric_devices.index` - Dispositivos biometricos.
+35. `companies.index` - Mi empresa.
+36. `users.index` - Colaboradores.
+37. `roles.index` - Perfiles de acceso.
+38. `reports.index` - Reportes.
 
 ## Actualizaciones recientes
 
@@ -80,6 +83,9 @@ El menu real se obtiene de `sections`, `sub_sections` y `companies_sub_sections`
 - La cabecera visible `Operacion` usa `menu-parent-operations`.
 - El grupo Operacion se ubica debajo de Dashboard mediante `companies_sub_sections.section_order = 3` para POS y Caja.
 - `recipes.index` se agrega a Catalogo comercial para restaurantes y negocios de comida. Permite configurar formulas, toppings, extras, sabores e insumos sin convertir `items.type` en un tipo nuevo.
+- `user_attendances.index` separa las jornadas laborales de las asistencias de clientes.
+- `restaurant_pos.index` administra mesas y pedidos abiertos antes de enviarlos a Venta POS.
+- `service_sessions.index` mide inicio, fin y duración de servicios, con responsable por atención y por detalle.
 
 ## Modulos tecnicos de soporte
 

@@ -248,11 +248,45 @@ Jornadas laborales de colaboradores. Campos: `company_id`, `branch_id`, `user_id
 
 Relaciones: pertenece a empresa, sucursal y usuario. La jornada activa es única por empresa y colaborador para impedir trabajo simultáneo en varias sedes. Los reportes semanales suman `worked_minutes` de jornadas finalizadas.
 
+### user_biometric_fingerprints
+
+Identidad biométrica de colaboradores. Campos: `company_id`, `user_id`, `biometric_device_id`, `device_user_id`, `finger_index`, `fingerprint_template`, `description`, `status` y auditoría.
+
+Relaciones: pertenece a empresa, colaborador y dispositivo. El servicio biométrico reserva `device_user_id` considerando tanto clientes como colaboradores para evitar que un dispositivo asigne la misma identidad a dos personas.
+
 ### subscription_emails
 
 Emails relacionados a membresias. Campos: `to`, `subject`, `body`, `extras_json`, `type`, `model_id`, `model_type`, `status`.
 
 Relaciones: puede referenciar modelos mediante `model_id`/`model_type`.
+
+## Operaciones y servicios
+
+### service_stations
+
+Estaciones físicas donde ocurre una atención. Campos: `company_id`, `branch_id`, `code`, `name`, `station_type`, `capacity`, `description`, `status` y auditoría.
+
+`station_type` admite mesa, sillón, cabina, habitación, cancha, bahía u otro. Así, la misma estructura sirve para restaurantes, barberías, clínicas, talleres, alquileres y centros deportivos. Una estación se considera ocupada cuando posee una sesión `pending` o `in_progress`; la disponibilidad no se almacena como un estado duplicado.
+
+### service_sessions
+
+Cabecera de una atención operativa. Campos: `company_id`, `branch_id`, `service_station_id`, `customer_id`, `assigned_user_id`, `sale_header_id`, responsables de apertura/cierre, `reference`, `session_type`, `status`, inicio, fin, duración, observación, cancelación y auditoría.
+
+Relaciones: pertenece a empresa, sucursal, estación opcional, cliente opcional, colaborador responsable y venta opcional. Una estación no puede tener dos sesiones activas. El alcance de sucursal se valida también contra los permisos del colaborador autenticado.
+
+### service_session_items
+
+Productos o servicios atendidos dentro de una sesión. Campos: `company_id`, `service_session_id`, `item_id`, `assigned_user_id`, nombre y tipo históricos, cantidad, precio unitario, estado, inicio, fin, duración, observación y auditoría.
+
+Cada detalle puede tener un responsable y cronómetro independiente. Iniciar un detalle inicia también la sesión si aún estaba pendiente. Finalizar un detalle no cierra automáticamente la sesión, porque puede quedar trabajo adicional o un cobro pendiente.
+
+Reglas de integración:
+
+- Restaurante POS usa estaciones tipo `table` y sesiones tipo `restaurant`.
+- Servicios en curso usa sesiones tipo `catalog_service`, con o sin estación física.
+- “Cobrar en POS” envía `service_session_id`; la sesión se vincula y finaliza dentro de la misma transacción que crea `sales_header`.
+- Una sesión ya finalizada no puede cobrarse nuevamente.
+- `duration_minutes` se consolida al terminar para conservar indicadores históricos estables.
 
 ## Finanzas
 

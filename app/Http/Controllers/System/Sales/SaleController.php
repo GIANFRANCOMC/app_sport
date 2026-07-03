@@ -246,6 +246,7 @@ class SaleController extends BaseController {
             "serie_id"    => $request->serie_id,
             "warehouse_id" => $request->warehouse_id,
             "cash_session_id" => $request->cash_session_id,
+            "service_session_id" => $request->service_session_id,
             "source_channel" => $request->source_channel ?? "sale",
             "holder_id"   => $request->holder_id,
             "currency_id" => $request->currency_id,

@@ -104,6 +104,9 @@ return new class extends Migration {
             ["id" => 101, "section_id" => 10, "slug" => "sc_cash-sessions", "name" => "cash-sessions", "description" => "Consulta aperturas, cierres, arqueos y diferencias por caja.", "order" => 3, "dom_id" => "menu-cash-sessions", "dom_label" => "Aperturas y cierres", "dom_route" => "cash_registers.sessions.index"],
             ["id" => 102, "section_id" => 10, "slug" => "sc_cash-movements", "name" => "cash-movements", "description" => "Registra y consulta entradas, salidas y ajustes manuales de dinero.", "order" => 4, "dom_id" => "menu-cash-movements", "dom_label" => "Movimientos", "dom_route" => "cash_registers.movements.index"],
             ["id" => 103, "section_id" => 10, "slug" => "sc_cash-summary", "name" => "cash-summary", "description" => "Revisa resumen de caja por métodos de pago, esperado, contado y diferencia.", "order" => 5, "dom_id" => "menu-cash-summary", "dom_label" => "Resumen", "dom_route" => "cash_registers.summary.index"],
+            ["id" => 104, "section_id" => 10, "slug" => "sc_user-attendances", "name" => "user-attendances", "description" => "Controla ingresos, salidas y horas trabajadas por colaborador.", "order" => 6, "dom_id" => "menu-user-attendances", "dom_label" => "Asistencia del personal", "dom_route" => "user_attendances.index"],
+            ["id" => 105, "section_id" => 10, "slug" => "sc_restaurant-pos", "name" => "restaurant-pos", "description" => "Gestiona mesas, pedidos en curso y su posterior cobro en POS.", "order" => 7, "dom_id" => "menu-restaurant-pos", "dom_label" => "Restaurante POS", "dom_route" => "restaurant_pos.index"],
+            ["id" => 106, "section_id" => 10, "slug" => "sc_service-sessions", "name" => "service-sessions", "description" => "Inicia, asigna y finaliza servicios midiendo su tiempo real.", "order" => 8, "dom_id" => "menu-service-sessions", "dom_label" => "Servicios en curso", "dom_route" => "service_sessions.index"],
 
             // Infrastructure
             ["id" => 60, "section_id" => 6, "slug" => "sc_infrastructure-branches", "name" => "infrastructure-branches", "description" => "Administra sedes, datos de contacto y capacidad.", "order" => 1, "dom_id" => "menu-infrastructure-branches", "dom_label" => "Sucursales", "dom_route" => "branches.index"],
@@ -148,6 +151,9 @@ return new class extends Migration {
             ["company_id" => 1, "sub_section_id" => 101],
             ["company_id" => 1, "sub_section_id" => 102],
             ["company_id" => 1, "sub_section_id" => 103],
+            ["company_id" => 1, "sub_section_id" => 104],
+            ["company_id" => 1, "sub_section_id" => 105],
+            ["company_id" => 1, "sub_section_id" => 106],
             ["company_id" => 1, "sub_section_id" => 60],
             ["company_id" => 1, "sub_section_id" => 61],
             ["company_id" => 1, "sub_section_id" => 62],
@@ -161,7 +167,7 @@ return new class extends Migration {
 
         DB::table("companies_sub_sections")->where("company_id", 1)->whereIn("sub_section_id", [10])->update(["section_order" => 1]);
         DB::table("companies_sub_sections")->where("company_id", 1)->whereIn("sub_section_id", [20])->update(["section_order" => 2]);
-        DB::table("companies_sub_sections")->where("company_id", 1)->whereIn("sub_section_id", [32, 100, 101, 102, 103])->update(["section_order" => 3]);
+        DB::table("companies_sub_sections")->where("company_id", 1)->whereIn("sub_section_id", [32, 100, 101, 102, 103, 104, 105, 106])->update(["section_order" => 3]);
         DB::table("companies_sub_sections")->where("company_id", 1)->whereIn("sub_section_id", [30, 31])->update(["section_order" => 4]);
         DB::table("companies_sub_sections")->where("company_id", 1)->whereIn("sub_section_id", [90, 91])->update(["section_order" => 5]);
         DB::table("companies_sub_sections")->where("company_id", 1)->whereIn("sub_section_id", [40, 41, 42, 43, 44, 45])->update(["section_order" => 6]);
@@ -179,6 +185,9 @@ return new class extends Migration {
             101 => 3,
             102 => 4,
             103 => 5,
+            104 => 6,
+            105 => 7,
+            106 => 8,
             30 => 1,
             31 => 2,
             90 => 1,

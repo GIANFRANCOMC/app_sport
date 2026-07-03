@@ -418,6 +418,27 @@ export function swals({
 
 }
 
+/**
+ * Alias semántico para procesos asincrónicos de interfaz.
+ * Conserva un único loader global y evita que cada módulo implemente el suyo.
+ */
+export function loading({message = "", type = "default", title = null, entity = null} = {}) {
+
+    swals({
+        show: true,
+        type,
+        title: title || message || null,
+        entity
+    });
+
+}
+
+export function close() {
+
+    swals({show: false});
+
+}
+
 export function toastrs({type = "success", options = null, code = null, title = null, subtitle = null}) {
 
     let toastrOptions = {};

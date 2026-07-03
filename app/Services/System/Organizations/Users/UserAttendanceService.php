@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services\System\Organizations\Users;
 
 use App\Models\System\Organizations\{Branch, User, UserAttendance};
+use App\Services\System\Devices\BiometricDevices\BiometricDeviceService;
 use Carbon\Carbon;
 use DomainException;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -77,6 +78,35 @@ final class UserAttendanceService {
             ]);
 
         });
+
+    }
+
+    public static function checkInFromBiometric(array $data): UserAttendance {
+
+        $companyId = (int) $data["company_id"];
+        $deviceId = (int) $data["device_id"];
+        $deviceUserId = (int) $data["device_user_id"];
+        $branchId = (int) $data["branch_id"];
+        $device = BiometricDeviceService::findByIdAndCompany($deviceId, $companyId, ["active"]);
+
+        if(!$device || (int) $device->branch_id !== $branchId) {
+            throw new DomainException("El dispositivo biométrico no está activo en la sucursal seleccionada.");
+        }
+
+        $user = BiometricDeviceService::findUserByDeviceUserId($deviceId, $deviceUserId, $companyId);
+
+        if(!$user) {
+
+            throw new DomainException("No se encontró un colaborador activo para la identidad biométrica.");
+
+        }
+
+        return self::checkIn([
+            ...$data,
+            "user_id" => (int) $user->id,
+            "source_type" => self::SOURCE_BIOMETRIC,
+            "source_reference" => "device:{$deviceId};user:{$deviceUserId}"
+        ]);
 
     }
 

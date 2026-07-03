@@ -39,6 +39,7 @@ class StoreSaleRequest extends FormRequest {
             "currency_id" => ["required", "integer", new BelongsToCompany("currencies", ["status" => "active"], "La moneda seleccionada no pertenece a la empresa.")],
             "warehouse_id" => "nullable|integer",
             "cash_session_id" => "nullable|integer",
+            "service_session_id" => "nullable|integer",
             "source_channel" => "nullable|in:sale,pos",
             "issue_date"  => "required|date",
             "observation" => "nullable|string|max:300",
