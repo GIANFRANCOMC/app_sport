@@ -36,7 +36,6 @@ Administra sedes fisicas de la empresa.
 - Crear una sucursal genera sus series activas por tipo documental y un almacén predeterminado con relaciones de producto en cero.
 - `capacity` se valida como entero no negativo y queda disponible para aforo de mesas/estaciones.
 - No puede inactivarse una sucursal con activos asignados a colaboradores.
-- `map_url` conserva el enlace cartográfico de la sucursal. Su captura y la separación visual de configuración pública/fiscal están en `docs/UI_UX_PENDING.md`.
 
 ## Configuración y validación compartida
 

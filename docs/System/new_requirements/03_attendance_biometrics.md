@@ -1,8 +1,8 @@
 # 03 - Asistencias y biometricos
 
-## Problema
+## Riesgo evaluado
 
-La asistencia es flujo critico y se usa desde System, Guest y biometricos. Hay reglas importantes sin pruebas visibles.
+La asistencia es un flujo crítico compartido por System, Guest y biometría. Se revisaron límites diarios, duplicados, idempotencia y salidas involuntarias.
 
 ## Requerimientos evaluados
 
@@ -12,9 +12,9 @@ La asistencia es flujo critico y se usa desde System, Guest y biometricos. Hay r
 - Logs idempotentes de eventos biométricos implementados con firma, intentos y errores.
 - Las pruebas de check-in/check-out se añadirán únicamente cuando sean solicitadas expresamente.
 
-## Impacto
+## Impacto cerrado
 
-Alto. Afecta clientes, membresias, asistencias, dispositivos y portal publico.
+El contrato quedó integrado entre clientes, membresías, asistencias, dispositivos y portal público.
 
 ## Estado backend
 
@@ -24,4 +24,3 @@ Alto. Afecta clientes, membresias, asistencias, dispositivos y portal publico.
 - `customer_attendance.biometric_duplicate_tolerance_seconds` evita lecturas repetidas.
 - `customer_attendance.daily_limit_scope` permite contar el límite diario por sucursal o por empresa.
 - `customer_attendance.allow_automatic_checkout` controla si QR o biometría pueden finalizar una asistencia activa; el valor inicial es `false` para evitar salidas involuntarias.
-- Los errores permanecen consultables en `biometric_device_events`; la visualización y reintento autorizado están centralizados en `docs/UI_UX_PENDING.md`.

@@ -12,5 +12,3 @@
 ## Seguridad
 
 El menú es una representación, no una autorización. Toda ruta System exige `module.permission`; los recursos operativos exigen además `resource.scope`. Los perfiles de acceso total siguen sujetos al aislamiento por tenant y `company_id`.
-
-La visualización de auditoría y comparación histórica se centraliza en `docs/UI_UX_PENDING.md`; el backend conserva los eventos en `business_audit_logs`.

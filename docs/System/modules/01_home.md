@@ -199,7 +199,6 @@ El acceso global se encuentra dentro de la navbar de `resources/views/System/lay
 
 - Las pruebas se añadirán cuando sean solicitadas expresamente.
 - No se agrega una restricción única sobre preferencias porque el historial se conserva y la consolidación activa ocurre transaccionalmente.
-- Orden manual, extracción del partial e internacionalización son decisiones de interfaz centralizadas en `docs/UI_UX_PENDING.md`.
 
 ## Datos del módulo
 

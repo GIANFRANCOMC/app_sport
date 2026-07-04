@@ -8,6 +8,7 @@ use App\Helpers\System\{TranslationHelper, Utilities};
 use App\Models\System\Customers\{Attendance, AttendanceCorrection};
 use App\Models\System\Organizations\Branch;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use DomainException;
 
@@ -16,6 +17,8 @@ use DomainException;
  * Handles business logic for listing and managing attendances
  */
 class TrackingAttendanceService {
+
+    private const MAX_EXPORT_ROWS = 10000;
 
     /**
      * Translation namespace for tracking attendance module
@@ -50,19 +53,52 @@ class TrackingAttendanceService {
         ?array $allowedBranchIds = null
     ): LengthAwarePaginator {
 
-        $branch = Branch::where("id", $filters["branch_id"] ?? null)
-                        ->where("company_id", $companyId)
-                        ->first();
-
-        if(!Utilities::isDefined($branch)) {
+        $query = self::query($companyId, $filters, $allowedBranchIds);
+        if($query === null) {
 
             return new LengthAwarePaginator([], 0, 1, 1, ["path" => ""]);
 
         }
 
-        $query = Attendance::where("company_id", $companyId)
-                           ->where("branch_id", $branch->id)
-                           ->when($allowedBranchIds !== null, fn($query) => $query->whereIn("branch_id", $allowedBranchIds));
+        return $query->paginate($perPage);
+
+    }
+
+    public static function getForExport(
+        int $companyId,
+        array $filters = [],
+        ?array $allowedBranchIds = null
+    ): Collection {
+
+        $query = self::query($companyId, $filters, $allowedBranchIds);
+        if($query === null) {
+            return collect();
+        }
+
+        $records = $query->limit(self::MAX_EXPORT_ROWS + 1)->get();
+        if($records->count() > self::MAX_EXPORT_ROWS) {
+            throw new DomainException("La exportación supera 10 000 registros. Reduce el rango de fechas.");
+        }
+
+        return $records;
+
+    }
+
+    private static function query(int $companyId, array $filters, ?array $allowedBranchIds) {
+
+        $branch = Branch::query()
+            ->where("id", $filters["branch_id"] ?? null)
+            ->where("company_id", $companyId)
+            ->first();
+
+        if(!$branch || ($allowedBranchIds !== null && !in_array((int) $branch->id, $allowedBranchIds, true))) {
+            return null;
+        }
+
+        $query = Attendance::query()
+            ->where("company_id", $companyId)
+            ->where("branch_id", $branch->id)
+            ->when($allowedBranchIds !== null, fn($query) => $query->whereIn("branch_id", $allowedBranchIds));
 
         if(Utilities::isDefined($filters["start_date"] ?? null)) {
 
@@ -80,14 +116,11 @@ class TrackingAttendanceService {
 
         }
 
-        // Apply filters
         self::applyFilters($query, $filters);
 
-        // Apply ordering
-        $query->orderBy("id", "DESC")
-              ->with(["branch", "customer", "biometricDevice", "corrections"]);
-
-        return $query->paginate($perPage);
+        return $query
+            ->orderByDesc("id")
+            ->with(["branch", "customer", "biometricDevice", "corrections"]);
 
     }
 

@@ -48,9 +48,9 @@ El sistema combina administracion interna y portal publico por empresa. Internam
 - Muchos listados filtran por `company_id` del usuario autenticado.
 - Los estados se modelan con strings/enums: `active`, `inactive`, `canceled`, `finalized`, `pending`, `resolved`, etc.
 - Los cambios importantes guardan auditoria basica: `created_by`, `updated_by`, `canceled_by`, `deleted_by` segun tabla.
-- La mayoria de modulos internos siguen CRUD: `index`, `initParams`, `list`, `create`, `store`, `show`, `edit`, `update`, `destroy`.
+- Los módulos internos publican únicamente las operaciones que implementan: normalmente `index`, `initParams`, `list`, `store` y `update`, más acciones de negocio explícitas.
 - Las pantallas usan Blade como contenedor y Vue como modulo interactivo.
-- Los servicios `*ConfigService` preparan datos iniciales y suelen usar cache por empresa/modulo.
+- Los servicios `*ConfigService` preparan datos iniciales y usan caché por empresa/página; agregan usuario cuando contienen referencias restringidas por alcance.
 - Los servicios principales encapsulan reglas de negocio y acceso a modelos.
 
 ## Flujos importantes

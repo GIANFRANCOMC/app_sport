@@ -37,4 +37,3 @@ El costo de inventario se mantiene desde el costo unitario del detalle. Los impu
 ## Estado de mejoras
 
 - El backend exige referencia cuando `payment_methods.requires_reference` está activo y conserva nombre, importe, referencia y nota históricos.
-- La pantalla administrativa para impuestos y métodos de pago está centralizada en `docs/UI_UX_PENDING.md`.

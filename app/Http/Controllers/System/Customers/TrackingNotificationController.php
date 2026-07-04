@@ -9,7 +9,6 @@ use App\Helpers\System\{Utilities};
 use Illuminate\Http\{Request, JsonResponse};
 
 use App\Services\System\Customers\Tracking\{TrackingNotificationConfigService, TrackingNotificationService};
-use App\Models\System\Customers\{SubscriptionEmail};
 
 class TrackingNotificationController extends BaseController {
 
@@ -27,7 +26,7 @@ class TrackingNotificationController extends BaseController {
     public function initParams(Request $request) {
 
         $page = $this->getPage($request);
-        return TrackingNotificationConfigService::getInitParams($this->getCompanyId(), $page);
+        return TrackingNotificationConfigService::getInitParams($this->getCompanyId(), $page, $this->getUserId());
 
     }
 
@@ -57,81 +56,23 @@ class TrackingNotificationController extends BaseController {
 
     }
 
-    /**
-     * Show the form for creating a new tracking notification
-     * (Not used in SPA, but kept for REST compliance)
-     *
-     * @return void
-     */
-    public function create(): void {
+    public function retry(int $id): JsonResponse {
 
-        // Form is handled by frontend SPA
+        try {
+            $notification = TrackingNotificationService::retry(
+                $this->getCompanyId(),
+                $this->getUserId(),
+                $id
+            );
 
-    }
-
-    /**
-     * Store a newly created tracking notification
-     * (Not implemented, but kept for REST compliance)
-     *
-     * @param Request $request
-     * @return void
-     */
-    public function store(Request $request): void {
-
-        // Not implemented
-
-    }
-
-    /**
-     * Display the specified tracking notification
-     * (Not used, but kept for REST compliance)
-     *
-     * @param SubscriptionEmail $email
-     * @return JsonResponse
-     */
-    public function show(SubscriptionEmail $email): JsonResponse {
-
-        return $this->errorResponse("not_implemented", [], 501);
-
-    }
-
-    /**
-     * Show the form for editing the specified tracking notification
-     * (Not used in SPA, but kept for REST compliance)
-     *
-     * @param SubscriptionEmail $email
-     * @return void
-     */
-    public function edit(SubscriptionEmail $email): void {
-
-        // Form is handled by frontend SPA
-
-    }
-
-    /**
-     * Update the specified tracking notification
-     * (Not implemented, but kept for REST compliance)
-     *
-     * @param Request $request
-     * @param mixed $id
-     * @return JsonResponse
-     */
-    public function update(Request $request, $id): JsonResponse {
-
-        return $this->errorResponse("not_implemented", [], 501);
-
-    }
-
-    /**
-     * Remove the specified tracking notification
-     * (Not used, but kept for REST compliance)
-     *
-     * @param SubscriptionEmail $email
-     * @return JsonResponse
-     */
-    public function destroy(SubscriptionEmail $email): JsonResponse {
-
-        return $this->errorResponse("not_implemented", [], 501);
+            return response()->json([
+                "bool" => true,
+                "msg" => "Notificación preparada para reintento.",
+                "data" => $notification
+            ]);
+        }catch(\Throwable $exception) {
+            return $this->handleException($exception, "update");
+        }
 
     }
 
@@ -147,4 +88,3 @@ class TrackingNotificationController extends BaseController {
     }
 
 }
-

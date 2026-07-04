@@ -7,12 +7,9 @@ namespace App\Http\Controllers\System\Organizations;
 use App\Http\Controllers\System\Base\BaseController;
 use App\Helpers\System\{Utilities};
 use Illuminate\Http\{JsonResponse, Request};
-use Carbon\Carbon;
-use Illuminate\Support\Facades\Log;
 
-use App\Http\Requests\System\Organizations\Companies\{StoreCompanyRequest, UpdateCompanyRequest};
+use App\Http\Requests\System\Organizations\Companies\UpdateCompanyRequest;
 use App\Services\System\Organizations\Companies\{CompanyConfigService, CompanyService};
-use App\Models\System\Organizations\{Company};
 
 class CompanyController extends BaseController {
 
@@ -31,22 +28,10 @@ class CompanyController extends BaseController {
 
         $page = $this->getPage($request);
 
-        return CompanyConfigService::getInitParams($this->getCompanyId(), $page);
+        return CompanyConfigService::getInitParams($this->getCompanyId(), $page, $this->getUserId());
 
     }
 
-    /**
-     * Get paginated list of companies with filters
-     * (Not used for companies, but kept for REST compliance)
-     *
-     * @param Request $request
-     * @return void
-     */
-    public function list(Request $request): void {
-
-        // Not implemented - companies are managed individually
-
-    }
 
     /**
      * Display the module index page
@@ -59,56 +44,9 @@ class CompanyController extends BaseController {
 
     }
 
-    /**
-     * Show the form for creating a new record
-     * (Not used in SPA, but kept for REST compliance)
-     *
-     * @return void
-     */
-    public function create(): void {
 
-        // Form is handled by frontend SPA
 
-    }
 
-    /**
-     * Store a newly created record
-     * (Not used, but kept for REST compliance)
-     *
-     * @param StoreCompanyRequest $request
-     * @return JsonResponse
-     */
-    public function store(StoreCompanyRequest $request): JsonResponse {
-
-        return $this->errorResponse("not_implemented", [], 501);
-
-    }
-
-    /**
-     * Display the specified record
-     * (Not used, but kept for REST compliance)
-     *
-     * @param Company $company
-     * @return JsonResponse
-     */
-    public function show(Company $company): JsonResponse {
-
-        return $this->errorResponse("not_implemented", [], 501);
-
-    }
-
-    /**
-     * Show the form for editing the specified record
-     * (Not used in SPA, but kept for REST compliance)
-     *
-     * @param Company $company
-     * @return void
-     */
-    public function edit(Company $company): void {
-
-        // Form is handled by frontend SPA
-
-    }
 
     /**
      * Update the specified company
@@ -151,18 +89,6 @@ class CompanyController extends BaseController {
 
     }
 
-    /**
-     * Remove the specified record
-     * (Not used, but kept for REST compliance)
-     *
-     * @param Company $company
-     * @return JsonResponse
-     */
-    public function destroy(Company $company): JsonResponse {
-
-        return $this->errorResponse("not_implemented", [], 501);
-
-    }
 
     /**
      * Prepare company data from request

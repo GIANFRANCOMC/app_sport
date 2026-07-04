@@ -9,11 +9,13 @@ use stdClass;
 use App\Models\System\Customers\Customer;
 use App\Services\System\Base\{
     BaseConfigService,
+    CompanyReferenceDataService,
     MasterReferenceDataService
 };
-use App\Services\System\Devices\BiometricDevices\BiometricDeviceService;
 
 final class CustomerConfigService extends BaseConfigService {
+
+    protected const USER_SCOPED_CACHE = true;
 
     protected static function getCachePrefix(): string {
 
@@ -21,11 +23,13 @@ final class CustomerConfigService extends BaseConfigService {
 
     }
 
-    protected static function buildConfig(int $companyId, string $page): stdClass {
+    protected static function buildConfig(int $companyId, string $page, ?int $userId = null): stdClass {
+
+        $references = CompanyReferenceDataService::for($companyId, $userId);
 
         return self::data([
             "biometricDevices" => self::data([
-                "records" => BiometricDeviceService::getActiveDevices($companyId)
+                "records" => $references->biometricDevices()
             ]),
             "identityDocumentTypes" => self::data([
                 "records" => MasterReferenceDataService::customerIdentityDocuments($companyId)

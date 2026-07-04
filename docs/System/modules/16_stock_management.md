@@ -107,6 +107,7 @@ La toma física usa el origen `physical_count`, separado de entradas y salidas m
 - Tipo de operación, origen, almacén y motivo son comunes al lote.
 - Cada producto conserva su propia cantidad o saldo contado.
 - El backend valida todos los registros y los procesa dentro de una sola transacción.
+- `StoreInventoryOperationRequest`, `StoreInventoryMovementRequest` y `StoreInventoryTransferRequest` encapsulan reglas y campos condicionales.
 - Si cualquier producto falla, no se registra ningún movimiento del lote.
 - La operación continúa generando un registro independiente en `inventory_movements` por producto; no se pierde granularidad ni trazabilidad.
 
@@ -186,7 +187,6 @@ El módulo Compras está conectado. Crear el documento no cambia existencias; ca
 - `GET /stocks_management/alerts` permite consultar alertas abiertas/resueltas por almacén.
 - `inventory_guides` e `inventory_guide_items` respaldan guías confirmadas de entrada/salida; cada detalle genera su movimiento inmutable.
 - Cantidades, saldos y movimientos conservan cuatro decimales. Esto evita perder consumos pequeños de recetas, insumos fraccionados o traslados medidos por peso/volumen.
-- La configuración visual del método de valorización y las pantallas de alertas/guías están en `docs/UI_UX_PENDING.md`.
 
 ## Evolución del módulo
 
@@ -198,7 +198,6 @@ La navegación funcional evita nombres duplicados:
 - **Toma física** es una corrección con origen `physical_count`.
 - **Reposiciones y devoluciones** usan `replenishment`, `customer_return` y `supplier_return`.
 
-El backend de guías y reportes por almacén está disponible. La app móvil de almaceneros y las vistas consolidadas entre almacenes son tareas de interfaz registradas en `docs/UI_UX_PENDING.md`.
 ## Actualizacion: ventas por almacen y caja
 
 - Las ventas ahora guardan `sales_header.warehouse_id`, de modo que el descuento de stock ocurre en el almacen seleccionado por el usuario y no en el primero disponible.

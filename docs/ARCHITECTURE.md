@@ -119,7 +119,7 @@ El sistema depende fuertemente de `company_id`. Al modificar codigo, revisar:
 
 ## Cache
 
-Los servicios `*ConfigService` construyen claves por empresa y pagina. Al modificar catalogos o datos de configuracion, considerar limpiar cache del modulo afectado.
+Los servicios `*ConfigService` construyen claves por empresa y página; cuando contienen referencias restringidas, también por usuario. Las mutaciones invalidan consumidores mediante `InitParamsCacheInvalidationService`.
 
 ## Auditoria
 
@@ -146,7 +146,7 @@ Hay `FormRequest` para muchos CRUDs internos. Cuando se agreguen campos a un mod
 ## Estado técnico
 
 - Las rutas SPA publican únicamente operaciones implementadas; los métodos REST de plantilla que devolvían `501` ya no tienen rutas activas.
-- Los servicios de escritura principales reciben `companyId` y `userId` explícitos. El acceso a `Auth` queda limitado a adaptadores de configuración y auditoría que representan una frontera HTTP intencional.
+- Los servicios de escritura, configuración y referencias reciben `companyId` y `userId` explícitos. La auditoría automática obtiene el actor desde el request de frontera y no usa `Auth` como dependencia oculta.
 - Autorización funcional usa módulo + acción; el alcance operativo intersecta empresa, sucursal, caja y almacén.
 - La invalidación de caché se centraliza por dependencia y las claves tenant no usan versiones paralelas.
 - Guest usa modelos/servicios con contrato público y límites antiabuso centralizados.

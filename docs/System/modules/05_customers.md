@@ -38,4 +38,3 @@ Administra los clientes de una empresa. Un cliente puede comprar, recibir membre
 - La unicidad se valida y refuerza por empresa, tipo de documento y número.
 - La búsqueda cubre documento, nombre, correo y teléfono.
 - Se incorporaron `emergency_contact_name`, `emergency_contact_phone` y `medical_notes` como datos opcionales.
-- La presentación de estos campos queda centralizada en `docs/UI_UX_PENDING.md`.

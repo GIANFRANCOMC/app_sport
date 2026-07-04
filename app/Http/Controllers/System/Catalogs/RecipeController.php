@@ -32,7 +32,11 @@ class RecipeController extends BaseController {
 
     public function initParams(Request $request) {
 
-        return RecipeConfigService::getInitParams($this->getCompanyId(), $this->getPage($request));
+        return RecipeConfigService::getInitParams(
+            $this->getCompanyId(),
+            $this->getPage($request),
+            $this->getUserId()
+        );
 
     }
 

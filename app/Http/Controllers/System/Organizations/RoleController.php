@@ -23,7 +23,11 @@ class RoleController extends BaseController {
 
     public function initParams(Request $request) {
 
-        return RoleConfigService::getInitParams($this->getCompanyId(), $this->getPage($request));
+        return RoleConfigService::getInitParams(
+            $this->getCompanyId(),
+            $this->getPage($request),
+            $this->getUserId()
+        );
 
     }
 

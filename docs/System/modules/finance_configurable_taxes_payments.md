@@ -36,7 +36,7 @@ Campos principales:
 - `min_apply_quantity` / `max_apply_quantity`: límites de cantidad para tributos fijos no porcentuales, por ejemplo ICBP. En porcentajes normalmente quedan nulos.
 - `scope`: define si aplica a `sale`, `purchase` o `both`.
 - `is_required`: define si el tributo se aplica siempre en su alcance. Si es `false`, el usuario puede marcarlo o no desde el frontend del documento.
-- `is_default`: ordena primero el tributo preferente en configuraciones, reportes y futuras pantallas administrativas. No limita el cálculo: ventas y compras aplican todos los tributos activos del alcance correspondiente.
+- `is_default`: ordena primero el tributo preferente en configuraciones, reportes y consumidores administrativos. No limita el cálculo: ventas y compras aplican todos los tributos activos del alcance correspondiente.
 - `status`: controla si el tributo está disponible.
 ### payment_methods
 
@@ -48,7 +48,7 @@ Campos principales:
 - `code`: código interno del método.
 - `name`: nombre mostrado al usuario.
 - `sunat_code`: código de referencia SUNAT cuando el método lo tenga.
-- `image_path`: imagen o ícono configurable para dar visibilidad al método de pago.
+- `image_path`: ruta generada por backend para la imagen del método; el API recibe `image`, valida JPG/PNG/WebP y almacena el archivo en el directorio público del tenant.
 - `scope`: define si aplica a `sale`, `purchase` o `both`.
 - `requires_reference`: obliga a registrar referencia cuando corresponda.
 - `is_default`: método sugerido por defecto.
@@ -113,10 +113,9 @@ Esto evita duplicar reglas entre ventas, POS, compras y futuros documentos.
 - Venta POS: calcula IGV igual que una venta normal y muestra cada tributo por su nombre.
 - Compras: subtotal, tributos por nombre, total y pagos.
 - Catalogo comercial: `price_includes_tax` define si el precio publico ya incluye IGV.
-- Configuracion futura: se recomienda crear un modulo visual para administrar tributos y metodos de pago por empresa.
+- Configuración: el backend expone `taxes` y `payment-methods` mediante `/master-data/{resource}` con validación, auditoría e invalidación de caché.
 
 ## Evolución
 
-- La administración y distribución manual de pagos están centralizadas en `docs/UI_UX_PENDING.md`.
 - `GET /reports/settlements` resume tributos o métodos de pago por ventas, compras o ambos y permite rango de fechas.
 - Los tributos se calculan de forma independiente sobre la misma base. Un cálculo en cascada requerirá una decisión contable explícita antes de cambiar este contrato.

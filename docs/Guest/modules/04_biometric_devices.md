@@ -21,5 +21,3 @@ El payload exige `event_uuid`, `event_type`, `subject_type`, `device_user_id` y 
 - Estado, error, payload, intentos y fecha de proceso se guardan en `biometric_device_events`.
 - El secreto se almacena cifrado y nunca se serializa en el modelo.
 - El rate limiting se aplica por empresa y clave del dispositivo.
-
-Los pendientes visuales de administración y monitoreo están en `docs/UI_UX_PENDING.md`.

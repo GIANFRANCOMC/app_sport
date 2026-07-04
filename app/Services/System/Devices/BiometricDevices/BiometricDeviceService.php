@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Builder;
 use App\Models\System\Customers\{Customer};
 use App\Models\System\Devices\{BiometricDevice, CustomerBiometricFingerprint, UserBiometricFingerprint};
 use App\Models\System\Organizations\User;
+use App\Services\System\Organizations\BusinessAuditService;
 
 /**
  * Service class for managing module operations
@@ -153,20 +154,35 @@ class BiometricDeviceService {
 
     public static function rotateCredentials(BiometricDevice $device, int $userId): array {
 
-        $plainSecret = Str::random(64);
-        $device->forceFill([
-            "access_key" => Str::lower(Str::random(32)),
-            "secret_encrypted" => Crypt::encryptString($plainSecret),
-            "credentials_rotated_at" => now(),
-            "updated_at" => now(),
-            "updated_by" => $userId
-        ])->save();
+        return DB::transaction(function() use($device, $userId) {
+            $plainSecret = Str::random(64);
+            $device->forceFill([
+                "access_key" => Str::lower(Str::random(32)),
+                "secret_encrypted" => Crypt::encryptString($plainSecret),
+                "credentials_rotated_at" => now(),
+                "updated_at" => now(),
+                "updated_by" => $userId
+            ])->save();
 
-        return [
-            "access_key" => $device->access_key,
-            "secret" => $plainSecret,
-            "rotated_at" => $device->credentials_rotated_at
-        ];
+            BusinessAuditService::record(
+                (int) $device->company_id,
+                "biometric_devices",
+                "credentials_rotated",
+                "Credenciales rotadas para el dispositivo #{$device->id}.",
+                $device,
+                [],
+                ["credentials_rotated_at" => $device->credentials_rotated_at],
+                [],
+                (int) $device->branch_id,
+                $userId
+            );
+
+            return [
+                "access_key" => $device->access_key,
+                "secret" => $plainSecret,
+                "rotated_at" => $device->credentials_rotated_at
+            ];
+        });
 
     }
 

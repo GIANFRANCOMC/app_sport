@@ -1,6 +1,6 @@
 # 04 - Calidad de datos y campos nuevos
 
-## Campos sugeridos
+## Campos incorporados
 
 Clientes:
 
@@ -25,12 +25,12 @@ Activos:
 - Numero de serie fisico.
 - Categoria de activo.
 
-## Impacto
+## Impacto cerrado
 
-Medio. Requiere migraciones, requests, formularios y documentacion por modulo.
+Las migraciones, modelos, requests y servicios ya incorporan estos campos. Su representación visual permanece fuera de este documento.
 
 ## Estado backend
 
 Los campos descritos ya forman parte de sus contratos de migración, modelos, requests y servicios. El criterio transversal de longitudes, `nullable`, claves foráneas y `company_id` está documentado en `docs/GENERALIDADES.md` y `docs/System/TABLES.md`.
 
-La corrección de textos heredados con encoding dañado se realiza al tocar cada módulo, evitando reescrituras masivas de datos sin auditoría.
+Los archivos backend y documentación usan UTF-8; cualquier dato persistido con codificación dañada debe corregirse mediante una operación de datos auditada, no mediante una reescritura silenciosa.

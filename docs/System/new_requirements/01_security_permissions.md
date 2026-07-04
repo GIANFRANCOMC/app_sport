@@ -45,5 +45,3 @@ El backend impide que un usuario delegue módulos, acciones o recursos que no po
 ## Auditoría
 
 `business_audit_logs` conserva empresa, sucursal, actor, módulo, acción, modelo, registro, resumen, valores anteriores/nuevos, contexto, IP, agente y fecha. Secretos, contraseñas, tokens y plantillas biométricas se excluyen del payload.
-
-Los pendientes de interfaz para visualizar auditoría, duplicar perfiles y explicar bloqueos se encuentran en `docs/UI_UX_PENDING.md`.

@@ -16,7 +16,6 @@ use Maatwebsite\Excel\Facades\Excel;
 use App\Http\Requests\System\Catalogs\Products\{StoreProductRequest, UpdateProductRequest};
 use App\Services\System\Base\{InitParamsCacheInvalidationService};
 use App\Services\System\Catalogs\Products\{ProductConfigService, ProductService};
-use App\Models\System\Catalogs\{Item};
 use App\Models\System\Organizations\Company;
 use App\Services\System\Warehouses\StockManagement\StockManagementService;
 use Illuminate\Validation\ValidationException;
@@ -38,7 +37,7 @@ class ProductController extends BaseController {
 
         $page = $this->getPage($request);
 
-        return ProductConfigService::getInitParams($this->getCompanyId(), $page);
+        return ProductConfigService::getInitParams($this->getCompanyId(), $page, $this->getUserId());
 
     }
 
@@ -155,17 +154,6 @@ class ProductController extends BaseController {
 
     }
 
-    /**
-     * Show the form for creating a new record
-     * (Not used in SPA, but kept for REST compliance)
-     *
-     * @return void
-     */
-    public function create(): void {
-
-        // Form is handled by frontend SPA
-
-    }
 
     /**
      * Store a newly created record
@@ -201,31 +189,7 @@ class ProductController extends BaseController {
 
     }
 
-    /**
-     * Display the specified record
-     * (Not used, but kept for REST compliance)
-     *
-     * @param Item $record
-     * @return JsonResponse
-     */
-    public function show(Item $record): JsonResponse {
 
-        return $this->errorResponse("not_implemented", [], 501);
-
-    }
-
-    /**
-     * Show the form for editing the specified record
-     * (Not used in SPA, but kept for REST compliance)
-     *
-     * @param Item $record
-     * @return void
-     */
-    public function edit(Item $record): void {
-
-        // Form is handled by frontend SPA
-
-    }
 
     /**
      * Update the specified record
@@ -270,18 +234,6 @@ class ProductController extends BaseController {
 
     }
 
-    /**
-     * Remove the specified record
-     * (Not used, but kept for REST compliance)
-     *
-     * @param Item $record
-     * @return JsonResponse
-     */
-    public function destroy(Item $record): JsonResponse {
-
-        return $this->errorResponse("not_implemented", [], 501);
-
-    }
 
     /**
      * Prepare record data from request

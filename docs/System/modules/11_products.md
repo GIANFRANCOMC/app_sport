@@ -331,7 +331,6 @@ Productos incorpora una acción compacta **Carga masiva** junto a Descargar Exce
 
 ## Evolución
 
-Impresión masiva, lector de código de barras y catálogo público/PDF están centralizados en `docs/UI_UX_PENDING.md`. Las pruebas de integración se añadirán cuando sean solicitadas expresamente.
 ## Seeder comercial demo
 
 Se agrego `database/seeders/CommercialCatalogSeeder.php` para cargar datos base sin depender de factories aleatorias.

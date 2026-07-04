@@ -7,13 +7,10 @@ namespace App\Http\Controllers\System\Catalogs;
 use App\Http\Controllers\System\Base\BaseController;
 use App\Helpers\System\{Utilities};
 use Illuminate\Http\{JsonResponse, Request};
-use Carbon\Carbon;
-use Illuminate\Support\Facades\Log;
 
 use App\Http\Requests\System\Catalogs\Categories\{StoreCategoryRequest, UpdateCategoryRequest};
 use App\Services\System\Base\{InitParamsCacheInvalidationService};
 use App\Services\System\Catalogs\Categories\{CategoryConfigService, CategoryService};
-use App\Models\System\Catalogs\{Category};
 
 class CategoryController extends BaseController {
 
@@ -32,7 +29,7 @@ class CategoryController extends BaseController {
 
         $page = $this->getPage($request);
 
-        return CategoryConfigService::getInitParams($this->getCompanyId(), $page);
+        return CategoryConfigService::getInitParams($this->getCompanyId(), $page, $this->getUserId());
 
     }
 
@@ -62,17 +59,6 @@ class CategoryController extends BaseController {
 
     }
 
-    /**
-     * Show the form for creating a new record
-     * (Not used in SPA, but kept for REST compliance)
-     *
-     * @return void
-     */
-    public function create(): void {
-
-        // Form is handled by frontend SPA
-
-    }
 
     /**
      * Store a newly created record
@@ -108,31 +94,7 @@ class CategoryController extends BaseController {
 
     }
 
-    /**
-     * Display the specified record
-     * (Not used, but kept for REST compliance)
-     *
-     * @param Category $record
-     * @return JsonResponse
-     */
-    public function show(Category $record): JsonResponse {
 
-        return $this->errorResponse("not_implemented", [], 501);
-
-    }
-
-    /**
-     * Show the form for editing the specified record
-     * (Not used in SPA, but kept for REST compliance)
-     *
-     * @param Category $record
-     * @return void
-     */
-    public function edit(Category $record): void {
-
-        // Form is handled by frontend SPA
-
-    }
 
     /**
      * Update the specified record
@@ -179,9 +141,9 @@ class CategoryController extends BaseController {
 
     /**
      * Remove the specified record
-     * (Not used, but kept for REST compliance)
+     * Deletes the category only when no active product dependency exists.
      *
-     * @param Category $record
+     * @param int $id Category ID
      * @return JsonResponse
      */
     public function destroy(int $id): JsonResponse {

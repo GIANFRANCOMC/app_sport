@@ -30,5 +30,3 @@ La ruta legacy basada únicamente en base64 responde 404 y no concede acceso.
 - La membresía debe estar vigente y respetar el límite diario.
 - `customer_attendance.auto_checkout_active` define si una lectura posterior cierra automáticamente una asistencia activa; por defecto permanece desactivado.
 - Los límites antiabuso se obtienen desde `config/public_access.php`.
-
-Los mensajes y la experiencia móvil del QR se gestionan en `docs/UI_UX_PENDING.md`.

@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Http\Controllers\System\General;
 
 use App\Http\Controllers\System\Base\BaseController;
+use App\Http\Requests\System\General\SaveMasterDataRequest;
 use App\Services\System\General\MasterDataService;
-use Illuminate\Http\{JsonResponse, Request};
-use Illuminate\Support\Facades\Validator;
+use Illuminate\Http\JsonResponse;
 
 final class MasterDataController extends BaseController {
 
@@ -28,13 +28,13 @@ final class MasterDataController extends BaseController {
 
     }
 
-    public function store(Request $request, string $resource): JsonResponse {
+    public function store(SaveMasterDataRequest $request, string $resource): JsonResponse {
 
         return $this->save($request, $resource);
 
     }
 
-    public function update(Request $request, string $resource, int $id): JsonResponse {
+    public function update(SaveMasterDataRequest $request, string $resource, int $id): JsonResponse {
 
         return $this->save($request, $resource, $id);
 
@@ -46,41 +46,7 @@ final class MasterDataController extends BaseController {
 
     }
 
-    private function save(Request $request, string $resource, ?int $id = null): JsonResponse {
-
-        $rules = match($resource) {
-            "identity-documents" => [
-                "code" => "required|string|max:50",
-                "name" => "required|string|max:100",
-                "is_searchable" => "required|boolean",
-                "min_length" => "required|integer|min:1|max:100",
-                "max_length" => "required|integer|gte:min_length|max:100",
-                "status" => "required|in:active,inactive"
-            ],
-            "currencies" => [
-                "code" => "required|string|max:10",
-                "sign" => "required|string|max:10",
-                "singular_name" => "required|string|max:50",
-                "plural_name" => "required|string|max:50",
-                "status" => "required|in:active,inactive"
-            ],
-            default => [
-                "code" => "required|string|max:50",
-                "name" => "required|string|max:100",
-                "status" => "required|in:active,inactive"
-            ]
-        };
-        $validator = Validator::make($request->all(), $rules);
-
-        if($validator->fails()) {
-
-            return response()->json([
-                "bool" => false,
-                "msg" => "Revisa los campos marcados para continuar.",
-                "errors" => $validator->errors()
-            ], 422);
-
-        }
+    private function save(SaveMasterDataRequest $request, string $resource, ?int $id = null): JsonResponse {
 
         try {
 
@@ -88,7 +54,7 @@ final class MasterDataController extends BaseController {
                 $this->getCompanyId(),
                 $this->getUserId(),
                 $resource,
-                $validator->validated(),
+                $request->validated(),
                 $id
             );
 

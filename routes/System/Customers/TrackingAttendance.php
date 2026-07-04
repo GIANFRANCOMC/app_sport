@@ -8,6 +8,7 @@ $entity = "tracking_attendances";
 Route::get('',               [TrackingAttendanceController::class, 'index'])->name("$entity.index");
 Route::get('/initParams',    [TrackingAttendanceController::class, 'initParams'])->name("$entity.initParams");
 Route::get('/list',          [TrackingAttendanceController::class, 'list'])->name("$entity.list");
+Route::get('/export',        [TrackingAttendanceController::class, 'export'])->name("$entity.export");
 Route::post('',              [TrackingAttendanceController::class, 'store'])->name("$entity.store");
 Route::patch('/{id}',        [TrackingAttendanceController::class, 'update'])->name("$entity.update");
 Route::patch('/cancel/{id}', [TrackingAttendanceController::class, 'cancel'])->name("$entity.cancel");

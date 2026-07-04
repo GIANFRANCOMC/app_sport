@@ -66,9 +66,11 @@ La vista se monta desde:
 - `app/Http/Controllers/System/Finance/CashRegisterController.php`
 - `app/Services/System/Finance/CashRegisterConfigService.php`
 - `app/Services/System/Finance/CashRegisterService.php`
+- `StoreCashRegisterRequest`, `OpenCashSessionRequest`, `CloseCashSessionRequest` y `StoreCashMovementRequest` encapsulan validación y normalización.
 - `resources/js/System/Helpers/Requests.js` expone rutas especiales: `sessions`, `movements`, `summary`, `open`, `close`.
 - `movement`: registra ingresos, salidas y ajustes manuales.
 - `export`: descarga movimientos de caja.
+- Los errores `422` usan el contrato común de `CompanyFormRequest` y no duplican validadores dentro del controlador.
 
 ## Alta de cajas por sucursal
 
@@ -84,7 +86,6 @@ La vista se monta desde:
 - El filtro de responsable considera apertura o cierre en sesiones y responsable directo en movimientos. El filtro de método de pago restringe sesiones con arqueo/movimiento asociado y el desglose del resumen.
 - El CSV usa nombre versionado `gympe-caja-movimientos-{Ymd-His}.csv` para evitar sobrescrituras ambiguas.
 - Una sesión identifica turno, caja y usuario de apertura/cierre. No se permiten dos sesiones abiertas simultáneas para la misma caja física.
-- El formato Excel enriquecido y las páginas separadas están en `docs/UI_UX_PENDING.md`.
 ## Alcance operativo
 
 - Caja aplica el alcance efectivo de perfil y colaborador para sucursales y cajas.

@@ -27,5 +27,3 @@ Controla atenciones con inicio y fin reales para barberías, salones, clínicas,
 - `sessions/{id}/pause`
 - `sessions/{id}/resume`
 - `sessions/{id}/cancel`
-
-Los pendientes visuales de agenda, SLA, comisiones y reportes están en `docs/UI_UX_PENDING.md`.

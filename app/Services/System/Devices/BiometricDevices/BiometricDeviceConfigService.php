@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 
 declare(strict_types=1);
 
@@ -14,13 +14,15 @@ use App\Services\System\Base\{
 
 final class BiometricDeviceConfigService extends BaseConfigService {
 
+    protected const USER_SCOPED_CACHE = true;
+
     protected static function getCachePrefix(): string {
 
         return "biometric_device";
 
     }
 
-    protected static function buildConfig(int $companyId, string $page): stdClass {
+    protected static function buildConfig(int $companyId, string $page, ?int $userId = null): stdClass {
 
         $brands = BiometricDeviceBrand::query()
                                       ->where("company_id", $companyId)
@@ -37,7 +39,7 @@ final class BiometricDeviceConfigService extends BaseConfigService {
 
         return self::data([
             "branches" => self::data([
-                "records" => CompanyReferenceDataService::for($companyId)->activeBranches()
+                "records" => CompanyReferenceDataService::for($companyId, $userId)->activeBranches()
             ]),
             "brands" => self::data([
                 "records" => $brands

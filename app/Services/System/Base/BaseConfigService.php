@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace App\Services\System\Base;
 
-use Illuminate\Support\Facades\{Auth, Cache};
+use Illuminate\Support\Facades\Cache;
 use InvalidArgumentException;
 use stdClass;
+use App\Models\System\Organizations\User;
 use App\Services\System\Organizations\Companies\CompanySettingService;
 
 /**
@@ -15,14 +16,15 @@ use App\Services\System\Organizations\Companies\CompanySettingService;
 abstract class BaseConfigService {
 
     protected const CACHE_TTL = 3600;
+    protected const USER_SCOPED_CACHE = false;
 
     abstract protected static function getCachePrefix(): string;
 
-    abstract protected static function buildConfig(int $companyId, string $page): stdClass;
+    abstract protected static function buildConfig(int $companyId, string $page, ?int $userId = null): stdClass;
 
     protected static function usesUserScopedCache(): bool {
 
-        return false;
+        return static::USER_SCOPED_CACHE;
 
     }
 
@@ -37,16 +39,16 @@ abstract class BaseConfigService {
 
     }
 
-    public static function getInitParams(int $companyId, string $page = "main"): stdClass {
+    public static function getInitParams(int $companyId, string $page, int $userId): stdClass {
 
         self::validateCompanyId($companyId);
 
         $page = self::normalizePage($page);
 
         return Cache::remember(
-            static::cacheKey($companyId, $page),
+            static::cacheKey($companyId, $page, $userId),
             static::CACHE_TTL,
-            fn() => static::createInitParams(static::buildConfig($companyId, $page))
+            fn() => static::createInitParams(static::buildConfig($companyId, $page, $userId))
         );
 
     }
@@ -58,6 +60,21 @@ abstract class BaseConfigService {
         $pages = $page === null
             ? static::cachePages()
             : [self::normalizePage($page)];
+
+        if(static::usesUserScopedCache()) {
+
+            User::query()
+                ->where("company_id", $companyId)
+                ->pluck("id")
+                ->each(function($userId) use($pages, $companyId): void {
+                    foreach(array_unique($pages) as $cachePage) {
+                        Cache::forget(static::cacheKey($companyId, $cachePage, (int) $userId));
+                    }
+                });
+
+            return;
+
+        }
 
         foreach(array_unique($pages) as $cachePage) {
 
@@ -110,7 +127,11 @@ abstract class BaseConfigService {
 
         if(static::usesUserScopedCache()) {
 
-            $cacheKey .= sprintf(":user:%d", (int) ($userId ?? Auth::id()));
+            if(!$userId || $userId <= 0) {
+                throw new InvalidArgumentException("User ID is required for user-scoped configuration cache.");
+            }
+
+            $cacheKey .= sprintf(":user:%d", $userId);
 
         }
 

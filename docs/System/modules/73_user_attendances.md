@@ -32,5 +32,3 @@ Registra jornadas laborales de colaboradores, separadas de las visitas de client
 - Correcciones: `POST /{attendanceId}/corrections` y `PATCH /corrections/{correctionId}`.
 
 El listado, resumen y exportación respetan las sucursales efectivas del colaborador autenticado. La exportación aplica `company_settings.reports.export_max_rows`, usa CSV UTF-8 y conserva minutos ordinarios, tardanza, horas extra y pausas.
-
-Los pendientes de interfaz y supervisión visual están en `docs/UI_UX_PENDING.md`.

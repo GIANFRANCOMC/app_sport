@@ -7,14 +7,12 @@ namespace App\Http\Controllers\System\Customers;
 use App\Http\Controllers\System\Base\BaseController;
 use App\Helpers\System\{Utilities};
 use Illuminate\Http\{JsonResponse, Request};
-use Carbon\Carbon;
-use Illuminate\Support\Facades\Log;
 
 use App\Http\Requests\System\Customers\Customers\{StoreCustomerRequest, UpdateCustomerRequest};
 use App\Services\System\Base\{InitParamsCacheInvalidationService};
 use App\Services\System\Customers\Customers\{CustomerConfigService, CustomerService};
 use App\Services\System\Devices\BiometricDevices\{BiometricDeviceService};
-use App\Models\System\Customers\{Customer, Subscription};
+use App\Models\System\Customers\Subscription;
 
 class CustomerController extends BaseController {
 
@@ -33,7 +31,7 @@ class CustomerController extends BaseController {
 
         $page = $this->getPage($request);
 
-        return CustomerConfigService::getInitParams($this->getCompanyId(), $page);
+        return CustomerConfigService::getInitParams($this->getCompanyId(), $page, $this->getUserId());
 
     }
 
@@ -63,17 +61,6 @@ class CustomerController extends BaseController {
 
     }
 
-    /**
-     * Show the form for creating a new record
-     * (Not used in SPA, but kept for REST compliance)
-     *
-     * @return void
-     */
-    public function create(): void {
-
-        // Form is handled by frontend SPA
-
-    }
 
     /**
      * Store a newly created record
@@ -109,31 +96,7 @@ class CustomerController extends BaseController {
 
     }
 
-    /**
-     * Display the specified record
-     * (Not used, but kept for REST compliance)
-     *
-     * @param Customer $record
-     * @return JsonResponse
-     */
-    public function show(Customer $record): JsonResponse {
 
-        return $this->errorResponse("not_implemented", [], 501);
-
-    }
-
-    /**
-     * Show the form for editing the specified record
-     * (Not used in SPA, but kept for REST compliance)
-     *
-     * @param Customer $record
-     * @return void
-     */
-    public function edit(Customer $record): void {
-
-        // Form is handled by frontend SPA
-
-    }
 
     /**
      * Update the specified record
@@ -178,18 +141,6 @@ class CustomerController extends BaseController {
 
     }
 
-    /**
-     * Remove the specified record
-     * (Not used, but kept for REST compliance)
-     *
-     * @param Customer $record
-     * @return JsonResponse
-     */
-    public function destroy(Customer $record): JsonResponse {
-
-        return $this->errorResponse("not_implemented", [], 501);
-
-    }
 
     /**
      * Prepare record data from request

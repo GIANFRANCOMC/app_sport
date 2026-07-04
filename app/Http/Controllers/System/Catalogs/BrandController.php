@@ -22,7 +22,8 @@ final class BrandController extends BaseController {
 
         return BrandConfigService::getInitParams(
             $this->getCompanyId(),
-            $this->getPage($request)
+            $this->getPage($request),
+            $this->getUserId()
         );
 
     }
@@ -43,8 +44,6 @@ final class BrandController extends BaseController {
 
     }
 
-    public function create(): void {
-    }
 
     public function store(StoreBrandRequest $request): JsonResponse {
 
@@ -71,14 +70,7 @@ final class BrandController extends BaseController {
 
     }
 
-    public function show(int $id): JsonResponse {
 
-        return $this->errorResponse("not_implemented", [], 501);
-
-    }
-
-    public function edit(int $id): void {
-    }
 
     public function update(UpdateBrandRequest $request, int $id): JsonResponse {
 
@@ -114,11 +106,6 @@ final class BrandController extends BaseController {
 
     }
 
-    public function destroy(int $id): JsonResponse {
-
-        return $this->errorResponse("not_implemented", [], 501);
-
-    }
 
     protected function getTranslationNamespace(): string {
 

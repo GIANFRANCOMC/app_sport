@@ -6,17 +6,22 @@ namespace App\Services\System\Organizations;
 
 use App\Models\System\Organizations\BusinessAuditLog;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Arr;
 
 final class BusinessAuditService {
 
     private const HIDDEN_FIELDS = [
         "password",
+        "password_confirmation",
         "remember_token",
         "secret",
+        "secret_encrypted",
         "secret_hash",
         "access_token",
         "api_token",
+        "client_secret",
+        "private_key",
+        "signature",
+        "authorization",
         "fingerprint_template"
     ];
 
@@ -34,11 +39,12 @@ final class BusinessAuditService {
     ): BusinessAuditLog {
 
         $request = app()->bound("request") ? request() : null;
+        $actorId = $userId ?? $request?->user()?->getAuthIdentifier();
 
         return BusinessAuditLog::create([
             "company_id" => $companyId,
             "branch_id" => $branchId,
-            "user_id" => $userId ?? auth()->id(),
+            "user_id" => $actorId ? (int) $actorId : null,
             "module" => $module,
             "action" => $action,
             "auditable_type" => $record ? $record::class : null,
@@ -56,7 +62,7 @@ final class BusinessAuditService {
 
     public static function recordModelChange(Model $model, string $action): ?BusinessAuditLog {
 
-        $companyId = (int) ($model->getAttribute("company_id") ?? auth()->user()?->company_id ?? 0);
+        $companyId = (int) ($model->getAttribute("company_id") ?? 0);
         if($companyId <= 0) {
             return null;
         }
@@ -80,8 +86,22 @@ final class BusinessAuditService {
 
     private static function sanitize(array $data): array {
 
-        foreach(self::HIDDEN_FIELDS as $field) {
-            Arr::forget($data, $field);
+        $settingKey = strtolower((string) ($data["key"] ?? ""));
+        if(array_key_exists("value", $data)
+            && preg_match('/(?:secret|password|token|credential|api[_-]?key|private[_-]?key)/', $settingKey)) {
+            $data["value"] = "[REDACTED]";
+        }
+
+        foreach($data as $key => $value) {
+            if(in_array(strtolower((string) $key), self::HIDDEN_FIELDS, true)) {
+                unset($data[$key]);
+
+                continue;
+            }
+
+            if(is_array($value)) {
+                $data[$key] = self::sanitize($value);
+            }
         }
 
         return $data;

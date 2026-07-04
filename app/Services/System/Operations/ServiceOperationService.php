@@ -433,6 +433,67 @@ final class ServiceOperationService {
 
     }
 
+    public static function updatePreparationStatus(
+        int $companyId,
+        int $actorId,
+        int $itemId,
+        string $status
+    ): ServiceSessionItem {
+
+        return DB::transaction(function() use($companyId, $actorId, $itemId, $status) {
+            $item = ServiceSessionItem::query()
+                ->where("company_id", $companyId)
+                ->with("session")
+                ->lockForUpdate()
+                ->findOrFail($itemId);
+            $session = $item->session;
+
+            self::requireBranch($companyId, (int) $session->branch_id, $actorId);
+
+            if(in_array($session->status, [self::STATUS_COMPLETED, self::STATUS_CANCELED], true)) {
+                throw new DomainException("La atención ya no admite cambios de preparación.");
+            }
+
+            $previousStatus = (string) ($item->preparation_status ?: "pending");
+            if($previousStatus === $status) {
+                return $item->fresh();
+            }
+
+            $allowedTransitions = [
+                "pending" => "preparing",
+                "preparing" => "ready",
+                "ready" => "delivered"
+            ];
+
+            if(($allowedTransitions[$previousStatus] ?? null) !== $status) {
+                throw new DomainException("El cambio de estado de preparación no es válido.");
+            }
+
+            $item->preparation_status = $status;
+            $item->preparation_started_at = $status === "preparing"
+                ? now()
+                : $item->preparation_started_at;
+            $item->ready_at = $status === "ready" ? now() : $item->ready_at;
+            $item->delivered_at = $status === "delivered" ? now() : $item->delivered_at;
+            $item->updated_by = $actorId;
+            $item->updated_at = now();
+            $item->save();
+
+            self::recordEvent(
+                $session,
+                $actorId,
+                "preparation_status_changed",
+                $previousStatus,
+                $status,
+                null,
+                ["service_session_item_id" => $item->id]
+            );
+
+            return $item->fresh();
+        });
+
+    }
+
     public static function complete(
         int $companyId,
         int $actorId,

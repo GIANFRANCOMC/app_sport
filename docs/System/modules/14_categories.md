@@ -12,5 +12,3 @@ Agrupa productos, servicios y membresías por empresa.
 - Eliminar queda bloqueado cuando existen ítems activos asociados.
 - Crear, editar o eliminar invalida las cachés dependientes de Productos, Servicios y Membresías.
 - La alta rápida conserva generación de código y validación backend.
-
-La administración visual de orden y publicación está en `docs/UI_UX_PENDING.md`.

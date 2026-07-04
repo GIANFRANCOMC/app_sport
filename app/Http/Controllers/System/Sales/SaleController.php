@@ -10,7 +10,6 @@ use Illuminate\Http\{JsonResponse, Request};
 
 use App\Http\Requests\System\Sales\{CancelSaleRequest, StoreSaleRequest, UpdateSaleRequest};
 use App\Services\System\Sales\{SaleConfigService, SaleService};
-use App\Models\System\Sales\{SaleHeader};
 use App\Services\System\Organizations\AccessScopeService;
 
 class SaleController extends BaseController {
@@ -29,7 +28,7 @@ class SaleController extends BaseController {
     public function initParams(Request $request) {
 
         $page = $this->getPage($request);
-        return SaleConfigService::getInitParams($this->getCompanyId(), $page);
+        return SaleConfigService::getInitParams($this->getCompanyId(), $page, $this->getUserId());
 
     }
 
@@ -119,58 +118,9 @@ class SaleController extends BaseController {
 
     }
 
-    /**
-     * Display the specified sale
-     * (Not used, but kept for REST compliance)
-     *
-     * @param SaleHeader $record
-     * @return JsonResponse
-     */
-    public function show(SaleHeader $record): JsonResponse {
 
-        return $this->errorResponse("not_implemented", [], 501);
 
-    }
 
-    /**
-     * Show the form for editing the specified sale
-     * (Not used in SPA, but kept for REST compliance)
-     *
-     * @param SaleHeader $record
-     * @return void
-     */
-    public function edit(SaleHeader $record): void {
-
-        // Form is handled by frontend SPA
-
-    }
-
-    /**
-     * Update the specified sale
-     * (Not implemented, but kept for REST compliance)
-     *
-     * @param UpdateSaleRequest $request
-     * @param int $id
-     * @return JsonResponse
-     */
-    public function update(UpdateSaleRequest $request, int $id): JsonResponse {
-
-        return $this->errorResponse("not_implemented", [], 501);
-
-    }
-
-    /**
-     * Remove the specified sale
-     * (Not used, but kept for REST compliance)
-     *
-     * @param SaleHeader $record
-     * @return JsonResponse
-     */
-    public function destroy(SaleHeader $record): JsonResponse {
-
-        return $this->errorResponse("not_implemented", [], 501);
-
-    }
 
     /**
      * Cancel the specified sale

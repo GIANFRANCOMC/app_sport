@@ -27,7 +27,8 @@ final class PurchaseController extends BaseController {
 
         return PurchaseConfigService::getInitParams(
             $this->getCompanyId(),
-            $this->getPage($request)
+            $this->getPage($request),
+            $this->getUserId()
         );
 
     }

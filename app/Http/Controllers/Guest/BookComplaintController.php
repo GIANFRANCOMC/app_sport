@@ -7,9 +7,11 @@ namespace App\Http\Controllers\Guest;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Guest\StoreBookComplaintRequest;
 use App\Models\Guest\{BookComplaint, IdentityDocumentType};
+use App\Services\System\Tenancy\TenantStoragePath;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Jenssegers\Agent\Agent;
 use stdClass;
@@ -66,34 +68,65 @@ final class BookComplaintController extends Controller {
             ], 429);
         }
 
-        $bookComplaint = DB::transaction(function() use($request, $company, $agent) {
-            $record = BookComplaint::create([
-                ...$request->validated(),
-                "company_id" => $company->id,
-                "admin_response" => null,
-                "public_response" => null,
-                "tracking_code" => $this->uniqueTrackingCode((int) $company->id),
-                "submitted_ip" => $request->ip(),
-                "submitted_user_agent" => $request->userAgent(),
-                "submitted_platform" => $agent->platform(),
-                "submitted_browser" => $agent->browser(),
-                "status" => "pending",
-                "created_at" => now(),
-                "created_by" => null
-            ]);
+        $storedPaths = [];
 
-            DB::table("book_complaint_status_histories")->insert([
-                "company_id" => $company->id,
-                "book_complaint_id" => $record->id,
-                "changed_by" => null,
-                "previous_status" => null,
-                "new_status" => "pending",
-                "note" => "Solicitud recibida desde el canal público.",
-                "changed_at" => now()
-            ]);
+        try {
+            $bookComplaint = DB::transaction(function() use($request, $company, $agent, &$storedPaths) {
+                $payload = collect($request->validated())
+                    ->except(["attachments", "cf-turnstile-response", "website"])
+                    ->all();
+                $record = BookComplaint::create([
+                    ...$payload,
+                    "company_id" => $company->id,
+                    "admin_response" => null,
+                    "public_response" => null,
+                    "tracking_code" => $this->uniqueTrackingCode((int) $company->id),
+                    "submitted_ip" => $request->ip(),
+                    "submitted_user_agent" => $request->userAgent(),
+                    "submitted_platform" => $agent->platform(),
+                    "submitted_browser" => $agent->browser(),
+                    "status" => "pending",
+                    "created_at" => now(),
+                    "created_by" => null
+                ]);
 
-            return $record;
-        });
+                DB::table("book_complaint_status_histories")->insert([
+                    "company_id" => $company->id,
+                    "book_complaint_id" => $record->id,
+                    "changed_by" => null,
+                    "previous_status" => null,
+                    "new_status" => "pending",
+                    "note" => "Solicitud recibida desde el canal público.",
+                    "changed_at" => now()
+                ]);
+
+                foreach($request->file("attachments", []) as $file) {
+                    $storedName = Str::uuid()->toString().".".$file->guessExtension();
+                    $path = $file->storeAs(
+                        TenantStoragePath::for("complaints/{$record->id}"),
+                        $storedName,
+                        "local"
+                    );
+                    $storedPaths[] = $path;
+
+                    DB::table("book_complaint_attachments")->insert([
+                        "company_id" => $company->id,
+                        "book_complaint_id" => $record->id,
+                        "file_name" => mb_substr($file->getClientOriginalName(), 0, 255),
+                        "file_path" => $path,
+                        "mime_type" => mb_substr((string) $file->getMimeType(), 0, 100),
+                        "file_size" => (int) $file->getSize(),
+                        "created_at" => now()
+                    ]);
+                }
+
+                return $record;
+            });
+        }catch(\Throwable $exception) {
+            Storage::disk("local")->delete($storedPaths);
+
+            throw $exception;
+        }
 
         return response()->json([
             "bool" => true,

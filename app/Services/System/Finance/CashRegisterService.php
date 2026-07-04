@@ -687,8 +687,8 @@ final class CashRegisterService {
 
     private function clearOperationalCaches(int $companyId): void {
 
-        CashRegisterConfigService::clearCache($companyId);
-        SaleConfigService::clearCache($companyId, "main");
+        CashRegisterConfigService::clearAllCache($companyId);
+        SaleConfigService::clearAllCache($companyId);
 
     }
 

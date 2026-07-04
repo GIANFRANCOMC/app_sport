@@ -16,7 +16,7 @@ final class ReportConfigService extends BaseConfigService {
 
     }
 
-    protected static function buildConfig(int $companyId, string $page): stdClass {
+    protected static function buildConfig(int $companyId, string $page, ?int $userId = null): stdClass {
 
         return self::data();
 

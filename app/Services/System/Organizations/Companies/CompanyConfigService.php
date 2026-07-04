@@ -20,7 +20,7 @@ final class CompanyConfigService extends BaseConfigService {
 
     }
 
-    protected static function buildConfig(int $companyId, string $page): stdClass {
+    protected static function buildConfig(int $companyId, string $page, ?int $userId = null): stdClass {
 
         $config = self::data([
             "statuses" => Company::getStatuses(),

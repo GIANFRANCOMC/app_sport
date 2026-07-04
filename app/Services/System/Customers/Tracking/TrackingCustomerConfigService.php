@@ -13,17 +13,19 @@ use App\Services\System\Base\{
 
 final class TrackingCustomerConfigService extends BaseConfigService {
 
+    protected const USER_SCOPED_CACHE = true;
+
     protected static function getCachePrefix(): string {
 
         return "tracking_customer";
 
     }
 
-    protected static function buildConfig(int $companyId, string $page): stdClass {
+    protected static function buildConfig(int $companyId, string $page, ?int $userId = null): stdClass {
 
         return self::data([
             "customers" => self::data([
-                "records" => CompanyReferenceDataService::for($companyId)->customers()
+                "records" => CompanyReferenceDataService::for($companyId, $userId)->customers()
             ])
         ]);
 

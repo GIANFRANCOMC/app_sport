@@ -41,5 +41,4 @@ Lista ventas realizadas, permite filtrar y acceder a detalle, anulacion o impres
 - El backend valida empresa y alcance de sucursal antes de anular.
 - El listado acepta `start_date`, `end_date` y `branch_id`, además de los filtros existentes.
 - Cada venta carga la sucursal emisora mediante `serie.branch` sin consultas adicionales por fila.
-- La presentación de la sucursal y los filtros en Vue está registrada en `docs/UI_UX_PENDING.md`.
 - Las pruebas multiempresa se añadirán únicamente cuando sean solicitadas expresamente.

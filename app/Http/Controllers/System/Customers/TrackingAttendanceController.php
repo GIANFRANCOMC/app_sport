@@ -6,8 +6,9 @@ namespace App\Http\Controllers\System\Customers;
 
 use App\Http\Controllers\System\Base\BaseController;
 use App\Helpers\System\{Utilities};
-use Illuminate\Http\{JsonResponse, Request};
+use Illuminate\Http\{JsonResponse, Request, Response};
 use Carbon\Carbon;
+use DomainException;
 
 use App\Http\Requests\System\Customers\TrackingAttendances\{
     CancelTrackingAttendanceRequest,
@@ -15,7 +16,7 @@ use App\Http\Requests\System\Customers\TrackingAttendances\{
     StoreAttendanceCorrectionRequest
 };
 use App\Services\System\Customers\Tracking\{TrackingAttendanceConfigService, TrackingAttendanceService, TrackingAttendanceBusinessService};
-use App\Models\System\Customers\{Attendance, AttendanceCorrection};
+use App\Models\System\Customers\Attendance;
 use App\Services\System\Organizations\AccessScopeService;
 
 class TrackingAttendanceController extends BaseController {
@@ -34,7 +35,7 @@ class TrackingAttendanceController extends BaseController {
     public function initParams(Request $request) {
 
         $page = $this->getPage($request);
-        return TrackingAttendanceConfigService::getInitParams($this->getCompanyId(), $page);
+        return TrackingAttendanceConfigService::getInitParams($this->getCompanyId(), $page, $this->getUserId());
 
     }
 
@@ -46,21 +47,65 @@ class TrackingAttendanceController extends BaseController {
      */
     public function list(Request $request) {
 
-        $filters = [
-            "branch_id"   => $request->input("branch_id"),
-            "customer_id" => $request->input("customer_id"),
-            "status"      => $request->input("status"),
-            "start_date"  => $request->input("start_date"),
-            "end_date"    => $request->input("end_date")
-        ];
         $perPage = $this->getPerPage($request, Utilities::$per_page_max);
 
         return TrackingAttendanceService::getPaginatedList(
             $this->getCompanyId(),
-            $filters,
+            $this->filters($request),
             $perPage,
-            AccessScopeService::allowedIds(auth()->user(), AccessScopeService::BRANCH)
+            AccessScopeService::allowedIds($this->getAuthUser(), AccessScopeService::BRANCH)
         );
+
+    }
+
+    public function export(Request $request): Response|JsonResponse {
+
+        try {
+            $records = TrackingAttendanceService::getForExport(
+                $this->getCompanyId(),
+                $this->filters($request),
+                AccessScopeService::allowedIds($this->getAuthUser(), AccessScopeService::BRANCH)
+            );
+        }catch(DomainException $exception) {
+            return response()->json([
+                "bool" => false,
+                "msg" => $exception->getMessage()
+            ], 422);
+        }
+        $handle = fopen("php://temp", "r+");
+
+        fputcsv($handle, [
+            "Inicio",
+            "Fin",
+            "Sucursal",
+            "Cliente",
+            "Estado",
+            "Origen",
+            "Dispositivo biométrico",
+            "Observación"
+        ], ";");
+
+        foreach($records as $record) {
+            fputcsv($handle, [
+                $record->start_date,
+                $record->end_date,
+                $record->branch?->name,
+                $record->customer?->name,
+                $record->formatted_status,
+                $record->type,
+                $record->biometricDevice?->name,
+                $record->observation
+            ], ";");
+        }
+
+        rewind($handle);
+        $csv = stream_get_contents($handle);
+        fclose($handle);
+
+        return response("\xEF\xBB\xBF".$csv, 200, [
+            "Content-Type" => "text/csv; charset=UTF-8",
+            "Content-Disposition" => "attachment; filename=asistencias-clientes-".now()->format("Ymd-His").".csv"
+        ]);
 
     }
 
@@ -75,17 +120,6 @@ class TrackingAttendanceController extends BaseController {
 
     }
 
-    /**
-     * Show the form for creating a new tracking attendance
-     * (Not used in SPA, but kept for REST compliance)
-     *
-     * @return void
-     */
-    public function create(): void {
-
-        // Form is handled by frontend SPA
-
-    }
 
     public function store(Request $request, TrackingAttendanceBusinessService $businessService): JsonResponse {
 
@@ -133,31 +167,7 @@ class TrackingAttendanceController extends BaseController {
 
     }
 
-    /**
-     * Display the specified tracking attendance
-     * (Not used, but kept for REST compliance)
-     *
-     * @param Attendance $attendance
-     * @return JsonResponse
-     */
-    public function show(Attendance $attendance): JsonResponse {
 
-        return $this->errorResponse("not_implemented", [], 501);
-
-    }
-
-    /**
-     * Show the form for editing the specified tracking attendance
-     * (Not used in SPA, but kept for REST compliance)
-     *
-     * @param Attendance $attendance
-     * @return void
-     */
-    public function edit(Attendance $attendance): void {
-
-        // Form is handled by frontend SPA
-
-    }
 
     public function update(Request $request, int $id, TrackingAttendanceBusinessService $businessService): JsonResponse {
 
@@ -243,11 +253,6 @@ class TrackingAttendanceController extends BaseController {
 
     }
 
-    public function destroy(Attendance $attendance): JsonResponse {
-
-        return $this->errorResponse("not_implemented", [], 501);
-
-    }
 
     public function requestCorrection(StoreAttendanceCorrectionRequest $request, int $id): JsonResponse {
 
@@ -416,6 +421,12 @@ class TrackingAttendanceController extends BaseController {
             return $this->handleException($e, "create");
 
         }
+
+    }
+
+    private function filters(Request $request): array {
+
+        return $request->only(["branch_id", "customer_id", "status", "start_date", "end_date"]);
 
     }
 

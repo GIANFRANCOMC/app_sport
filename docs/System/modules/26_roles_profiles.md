@@ -14,5 +14,3 @@ Define qué módulos, acciones, sucursales, cajas y almacenes puede utilizar cad
 - `POST /roles/{id}/duplicate` copia permisos y alcances a un perfil nuevo sin acceso total.
 - Cambios de perfil, permiso y recursos invalidan únicamente las cachés afectadas.
 - `business_audit_logs` registra los cambios sensibles sin guardar secretos.
-
-La auditoría visible, comparación y acción de duplicar en la interfaz están en `docs/UI_UX_PENDING.md`.

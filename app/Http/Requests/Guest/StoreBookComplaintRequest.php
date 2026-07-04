@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Guest;
 
+use App\Services\Security\TurnstileVerificationService;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Validator;
 
 final class StoreBookComplaintRequest extends FormRequest {
 
@@ -33,8 +35,33 @@ final class StoreBookComplaintRequest extends FormRequest {
             "description" => ["required", "string", "max:5000"],
             "request" => ["nullable", "string", "max:5000"],
             "evidence" => ["nullable", "string", "max:500"],
+            "attachments" => ["nullable", "array", "max:5"],
+            "attachments.*" => ["file", "mimes:pdf,jpg,jpeg,png", "max:5120"],
+            "cf-turnstile-response" => [
+                Rule::requiredIf(TurnstileVerificationService::enabled()),
+                "nullable",
+                "string",
+                "max:2048"
+            ],
             "website" => ["prohibited"]
         ];
+
+    }
+
+    public function after(): array {
+
+        return [function(Validator $validator): void {
+            if($validator->errors()->has("cf-turnstile-response")) {
+                return;
+            }
+
+            if(!TurnstileVerificationService::verify(
+                $this->input("cf-turnstile-response"),
+                $this->ip()
+            )) {
+                $validator->errors()->add("captcha", "No se pudo validar el control antiabuso.");
+            }
+        }];
 
     }
 

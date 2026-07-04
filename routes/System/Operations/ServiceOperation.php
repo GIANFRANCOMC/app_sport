@@ -25,3 +25,5 @@ Route::patch("/sessions/{id}/resume", [ServiceOperationController::class, "resum
 Route::patch("/sessions/{id}/cancel", [ServiceOperationController::class, "cancelSession"])->name("service_operations.sessions.cancel");
 Route::patch("/items/{id}/start", [ServiceOperationController::class, "startItem"])->name("service_operations.items.start");
 Route::patch("/items/{id}/complete", [ServiceOperationController::class, "completeItem"])->name("service_operations.items.complete");
+Route::patch("/items/{id}/preparation-status", [ServiceOperationController::class, "updatePreparationStatus"])
+    ->name("service_operations.items.preparation-status");

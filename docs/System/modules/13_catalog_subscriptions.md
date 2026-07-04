@@ -11,5 +11,3 @@ Administra ítems `subscription` que, al venderse, generan una membresía real p
 - `benefits` y `restrictions` son arreglos JSON validados, con hasta 50 textos de 255 caracteres.
 - `price_includes_tax` determina si el IGV ya está incluido.
 - Código, moneda, categorías y pertenencia se validan por empresa.
-
-La presentación de beneficios, restricciones y límites está en `docs/UI_UX_PENDING.md`.

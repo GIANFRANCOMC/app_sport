@@ -133,7 +133,6 @@ class TranslationHelper {
             "exception_update" => "Error al actualizar " . $entityLabel,
             "exception_delete" => "Error al eliminar " . $entityLabel,
             "exception_cancel" => "Error al cancelar " . $entityLabel,
-            "not_implemented" => "Funcionalidad no implementada"
         ];
 
         // Get message or use key as fallback

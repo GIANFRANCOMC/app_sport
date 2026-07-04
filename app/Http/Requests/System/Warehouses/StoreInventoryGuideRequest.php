@@ -4,11 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\System\Warehouses;
 
-use Illuminate\Foundation\Http\FormRequest;
+use App\Http\Requests\System\Base\CompanyFormRequest;
 
-final class StoreInventoryGuideRequest extends FormRequest {
-
-    public function authorize(): bool { return true; }
+final class StoreInventoryGuideRequest extends CompanyFormRequest {
 
     public function rules(): array {
 

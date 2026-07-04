@@ -54,7 +54,6 @@ Permite crear una venta con productos, servicios o membresias. Una venta puede g
 - Los pagos aplicados se guardan como foto del documento en `sale_payments`.
 - La vista `resources/js/System/Pages/Sales/sales/main.vue` muestra un bloque lateral de liquidacion con impuestos aplicados automaticamente, metodos de pago, subtotal, impuestos, total, pagado y diferencia.
 - Si solo hay un metodo de pago, el importe se sincroniza con el total para facilitar el registro.
-- La administración visual de impuestos y métodos de pago por empresa está centralizada en `docs/UI_UX_PENDING.md`.
 
 ## Actualizacion: IGV incluido, almacen de venta y caja
 

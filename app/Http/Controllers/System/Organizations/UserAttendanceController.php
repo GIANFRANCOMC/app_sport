@@ -30,7 +30,8 @@ final class UserAttendanceController extends BaseController {
         return response()->json(
             UserAttendanceConfigService::getInitParams(
                 $this->getCompanyId(),
-                (string) $request->input("page", "main")
+                (string) $request->input("page", "main"),
+                $this->getUserId()
             )
         );
 

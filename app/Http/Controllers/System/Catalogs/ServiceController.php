@@ -7,13 +7,10 @@ namespace App\Http\Controllers\System\Catalogs;
 use App\Http\Controllers\System\Base\BaseController;
 use App\Helpers\System\{Utilities};
 use Illuminate\Http\{JsonResponse, Request};
-use Carbon\Carbon;
-use Illuminate\Support\Facades\Log;
 
 use App\Http\Requests\System\Catalogs\Services\{StoreServiceRequest, UpdateServiceRequest};
 use App\Services\System\Base\{InitParamsCacheInvalidationService};
 use App\Services\System\Catalogs\Services\{ServiceConfigService, ServiceService};
-use App\Models\System\Catalogs\{Item};
 
 class ServiceController extends BaseController {
 
@@ -32,7 +29,7 @@ class ServiceController extends BaseController {
 
         $page = $this->getPage($request);
 
-        return ServiceConfigService::getInitParams($this->getCompanyId(), $page);
+        return ServiceConfigService::getInitParams($this->getCompanyId(), $page, $this->getUserId());
 
     }
 
@@ -62,17 +59,6 @@ class ServiceController extends BaseController {
 
     }
 
-    /**
-     * Show the form for creating a new record
-     * (Not used in SPA, but kept for REST compliance)
-     *
-     * @return void
-     */
-    public function create(): void {
-
-        // Form is handled by frontend SPA
-
-    }
 
     /**
      * Store a newly created record
@@ -108,31 +94,7 @@ class ServiceController extends BaseController {
 
     }
 
-    /**
-     * Display the specified record
-     * (Not used, but kept for REST compliance)
-     *
-     * @param Item $record
-     * @return JsonResponse
-     */
-    public function show(Item $record): JsonResponse {
 
-        return $this->errorResponse("not_implemented", [], 501);
-
-    }
-
-    /**
-     * Show the form for editing the specified record
-     * (Not used in SPA, but kept for REST compliance)
-     *
-     * @param Item $record
-     * @return void
-     */
-    public function edit(Item $record): void {
-
-        // Form is handled by frontend SPA
-
-    }
 
     /**
      * Update the specified record
@@ -177,18 +139,6 @@ class ServiceController extends BaseController {
 
     }
 
-    /**
-     * Remove the specified record
-     * (Not used, but kept for REST compliance)
-     *
-     * @param Item $record
-     * @return JsonResponse
-     */
-    public function destroy(Item $record): JsonResponse {
-
-        return $this->errorResponse("not_implemented", [], 501);
-
-    }
 
     /**
      * Prepare record data from request

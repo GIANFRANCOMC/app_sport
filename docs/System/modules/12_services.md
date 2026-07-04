@@ -12,5 +12,3 @@ Administra ítems `service`: se venden, no descuentan stock y pueden medirse den
 - `price_includes_tax` define si el precio ya contiene IGV.
 - Moneda, categoría y código interno se validan por empresa.
 - Crear o editar invalida las configuraciones dependientes de ventas y catálogo.
-
-Los campos visuales y reportes de duración/comisión se mantienen en `docs/UI_UX_PENDING.md`.

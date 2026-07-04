@@ -14,23 +14,19 @@ use App\Services\System\Base\{
 
 final class StockManagementConfigService extends BaseConfigService {
 
+    protected const USER_SCOPED_CACHE = true;
+
     protected static function getCachePrefix(): string {
 
         return "inventory_v2";
 
     }
 
-    protected static function usesUserScopedCache(): bool {
-
-        return true;
-
-    }
-
-    protected static function buildConfig(int $companyId, string $page): stdClass {
+    protected static function buildConfig(int $companyId, string $page, ?int $userId = null): stdClass {
 
         return self::data([
             "warehouses" => self::data([
-                "records" => CompanyReferenceDataService::for($companyId)->stockWarehouses()
+                "records" => CompanyReferenceDataService::for($companyId, $userId)->stockWarehouses()
             ]),
             "products" => self::data([
                 "records" => Item::query()

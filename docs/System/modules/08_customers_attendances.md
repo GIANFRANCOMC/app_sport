@@ -61,4 +61,4 @@ Para entradas biométricas, el dispositivo y `device_user_id` deben resolver una
 - `biometric_device_id` y `source_reference` identifican la lectura exacta.
 - `biometric_duplicate_tolerance_seconds` evita duplicados en la ventana configurada.
 - `attendance_corrections` conserva valor anterior, valor solicitado, motivo, solicitante, revisor y decisión.
-- El listado backend acepta rango de fechas y carga dispositivo/correcciones; su presentación y exportación están en `docs/UI_UX_PENDING.md`.
+- `GET /tracking_attendances/export` reutiliza filtros y alcance de sucursal del listado, descarga CSV y exige reducir el rango si supera 10 000 registros.

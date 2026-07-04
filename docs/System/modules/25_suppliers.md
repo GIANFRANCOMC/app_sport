@@ -27,4 +27,3 @@ Mantiene los terceros comerciales usados en Compras. Cada proveedor pertenece a 
 - `supplier_contacts` admite múltiples contactos y uno principal.
 - `supplier_bank_accounts` admite varias cuentas, moneda y cuenta principal.
 - El proveedor incorpora plazo de pago predeterminado y límite de crédito opcional.
-- La interfaz y el resumen de desempeño están consolidados en `docs/UI_UX_PENDING.md`.

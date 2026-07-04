@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace App\Services\System\Base;
 
 use Illuminate\Database\Eloquent\{Builder, Collection};
-use Illuminate\Support\Facades\Auth;
 use InvalidArgumentException;
 
 use App\Models\System\Assets\Asset;
 use App\Models\System\Catalogs\{Brand, Category, Item};
 use App\Models\System\Customers\Customer;
+use App\Models\System\Devices\BiometricDevice;
 use App\Models\System\Finance\{PaymentMethod, Tax};
 use App\Models\System\Finance\CashRegister;
 use App\Models\System\Organizations\{Branch, Role, User};
@@ -21,6 +21,12 @@ use App\Services\System\Organizations\AccessScopeService;
  * Provides reusable, company-scoped records used by module initParams.
  */
 final class CompanyReferenceDataService {
+
+    private bool $userResolved = false;
+    private ?User $user = null;
+
+    /** @var array<string, array<int, int>|null> */
+    private array $allowedIdsCache = [];
 
     private function __construct(
         private readonly int $companyId,
@@ -37,7 +43,7 @@ final class CompanyReferenceDataService {
 
     public static function for(int $companyId, ?int $userId = null): self {
 
-        return new self($companyId, $userId ?? Auth::id());
+        return new self($companyId, $userId);
 
     }
 
@@ -186,6 +192,21 @@ final class CompanyReferenceDataService {
 
     }
 
+    public function biometricDevices(): Collection {
+
+        $query = BiometricDevice::query()
+            ->where("company_id", $this->companyId)
+            ->where("status", "active");
+        $branchIds = $this->allowedBranchIds();
+
+        if($branchIds !== null) {
+            $query->whereIn("branch_id", $branchIds);
+        }
+
+        return $query->orderBy("name")->get();
+
+    }
+
     public function users(): Collection {
 
         return User::query()
@@ -215,19 +236,7 @@ final class CompanyReferenceDataService {
 
     public function allowedBranchIds(): ?array {
 
-        if(!$this->userId) {
-
-            return null;
-
-        }
-
-        $user = User::query()
-            ->where("company_id", $this->companyId)
-            ->find($this->userId);
-
-        return $user
-            ? AccessScopeService::allowedIds($user, AccessScopeService::BRANCH)
-            : [];
+        return $this->allowedIds(AccessScopeService::BRANCH);
 
     }
 
@@ -245,15 +254,32 @@ final class CompanyReferenceDataService {
 
     private function allowedIds(string $type): ?array {
 
-        if(!$this->userId) {
-            return null;
+        if(array_key_exists($type, $this->allowedIdsCache)) {
+            return $this->allowedIdsCache[$type];
         }
 
-        $user = User::query()
-            ->where("company_id", $this->companyId)
-            ->find($this->userId);
+        if(!$this->userId) {
+            return $this->allowedIdsCache[$type] = null;
+        }
 
-        return $user ? AccessScopeService::allowedIds($user, $type) : [];
+        $user = $this->user();
+
+        return $this->allowedIdsCache[$type] = $user
+            ? AccessScopeService::allowedIds($user, $type)
+            : [];
+
+    }
+
+    private function user(): ?User {
+
+        if(!$this->userResolved) {
+            $this->user = User::query()
+                ->where("company_id", $this->companyId)
+                ->find($this->userId);
+            $this->userResolved = true;
+        }
+
+        return $this->user;
 
     }
 

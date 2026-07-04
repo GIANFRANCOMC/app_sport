@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\System\Operations;
 
 use App\Http\Controllers\System\Base\BaseController;
+use App\Http\Requests\System\Operations\UpdatePreparationStatusRequest;
 use App\Services\System\Operations\{ServiceOperationConfigService, ServiceOperationService};
 use Illuminate\Http\{JsonResponse, Request};
 use Illuminate\Support\Facades\Validator;
@@ -22,7 +23,8 @@ final class ServiceOperationController extends BaseController {
         return response()->json(
             ServiceOperationConfigService::getInitParams(
                 $this->getCompanyId(),
-                (string) $request->input("page", "restaurant")
+                (string) $request->input("page", "restaurant"),
+                $this->getUserId()
             )
         );
 
@@ -240,6 +242,20 @@ final class ServiceOperationController extends BaseController {
         return $this->execute(
             fn() => ServiceOperationService::completeItem($this->getCompanyId(), $this->getUserId(), $id),
             "Detalle finalizado."
+        );
+
+    }
+
+    public function updatePreparationStatus(UpdatePreparationStatusRequest $request, int $id): JsonResponse {
+
+        return $this->execute(
+            fn() => ServiceOperationService::updatePreparationStatus(
+                $this->getCompanyId(),
+                $this->getUserId(),
+                $id,
+                (string) $request->validated("status")
+            ),
+            "Estado de preparación actualizado."
         );
 
     }

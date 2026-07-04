@@ -71,6 +71,8 @@ La CSP actual es compatible con vistas heredadas. Una CSP estricta con nonce req
 ## Secretos y red
 
 - `.env` no se versiona.
+- El API de `company-settings` rechaza claves de secretos, contraseñas, tokens y credenciales.
+- `CAPTCHA_ENABLED`, claves Turnstile y timeout se configuran por entorno; si no existe secreto, el verificador permanece desactivado.
 - `APP_KEY`, credenciales DB/SMTP, tokens cloud y CAPTCHA no se guardan en tablas, logs ni documentación.
 - `APP_DEBUG=false` y `LOG_LEVEL=warning` en producción.
 - Landlord guarda nombres de BD, nunca credenciales.
@@ -81,7 +83,7 @@ La CSP actual es compatible con vistas heredadas. Una CSP estricta con nonce req
 
 ## Segundo factor
 
-El segundo factor para administradores y operaciones críticas requiere una librería TOTP/WebAuthn mantenida, recuperación segura, cifrado de secretos y una experiencia completa de enrolamiento. No se implementa criptografía propia. La interfaz pendiente está registrada en `docs/UI_UX_PENDING.md`; el backend se abordará cuando se seleccione el proveedor o paquete auditado.
+El segundo factor no forma parte del alcance vigente. Si se aprueba como proyecto independiente, debe usar una librería TOTP/WebAuthn mantenida, recuperación segura y cifrado de secretos; nunca se implementará criptografía propia ni una simulación exclusivamente visual.
 
 ## Lista de salida a producción
 

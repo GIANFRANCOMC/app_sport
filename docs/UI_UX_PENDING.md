@@ -18,7 +18,7 @@ No se incluyen pruebas PHP ni reglas de negocio. Cada tarea debe consumir los pe
 ## Guest
 
 - **Inicio público:** jerarquizar categorías, optimizar SEO y metadatos sociales, y presentar catálogo responsive sin exponer precios ocultos.
-- **Libro de reclamaciones:** añadir captcha configurable, consulta por código de seguimiento, adjuntos múltiples y presentación clara de la respuesta pública.
+- **Libro de reclamaciones:** integrar el CAPTCHA configurado, la consulta por código de seguimiento, la carga múltiple hacia el contrato existente y la presentación clara de la respuesta pública.
 - **Asistencia pública:** sustituir enlaces legacy por enlaces firmados, explicar sucursal y estado del registro, y mostrar respuestas antiabuso sin detalles internos.
 - **Dispositivos biométricos:** no requiere una pantalla pública; documentar visualmente las credenciales solo en System y mostrarlas una única vez al rotarlas.
 
@@ -34,7 +34,7 @@ No se incluyen pruebas PHP ni reglas de negocio. Cada tarea debe consumir los pe
 - **Historial:** agregar rango personalizado, resumen financiero y resumen de asistencias con filtros por sucursal.
 - **Membresías:** exponer política de solapamiento, renovación y límites diarios con mensajes claros.
 - **Asistencia de clientes:** permitir correcciones auditadas, exportación y detalle del dispositivo biométrico exacto.
-- **Notificaciones:** mostrar intentos, último error y reintento controlado; no ofrecer rutas públicas directas de envío.
+- **Notificaciones:** mostrar intentos, último error y ejecutar el reintento controlado mediante `PATCH /tracking_notifications/{id}/retry`; no ofrecer rutas públicas directas de envío.
 - **Libro de reclamaciones interno:** separar respuesta interna y pública, visualizar historial de estados y administrar adjuntos.
 
 ## Catálogo comercial
@@ -71,17 +71,15 @@ No se incluyen pruebas PHP ni reglas de negocio. Cada tarea debe consumir los pe
 ## Personal, perfiles y seguridad
 
 - **Seguridad de acceso:** crear un visor del historial de autenticación que consuma `GET /users/{id}/authentication-events`, con filtros por evento, resultado y fechas.
-- **Segundo factor:** diseñar enrolamiento, verificación y recuperación cuando se seleccione una librería TOTP/WebAuthn mantenida; no simular esta seguridad solo desde Vue.
-
 - **Perfiles:** duplicar perfil, mostrar auditoría, resumen de usuarios afectados y advertencia al intentar retirar el último administrador.
 - **Colaboradores:** contraseña en flujo separado, bloqueo sin eliminación y visualización de auditoría sensible.
 - **Asistencia laboral:** horarios, pausas, tardanzas, horas ordinarias/extra y solicitudes de corrección; añadir descarga de nómina consumiendo el endpoint `export` existente.
-- **Biométricos:** rotación de credenciales, estado del último contacto, eventos fallidos y reintento autorizado.
+- **Biométricos:** consumir la rotación de credenciales, mostrar el secreto una sola vez y visualizar el último contacto y los eventos fallidos.
 
 ## Restaurante y servicios
 
-- **Restaurante POS:** estados de cocina, KDS, impresión por área, división/unión de cuentas, cambio de mesa y pagos parciales.
-- **Restaurante POS:** reservas, aforo, unión temporal de mesas y elementos no operativos del plano.
+- **Restaurante POS:** presentar estados de cocina/KDS consumiendo la transición secuencial `pending -> preparing -> ready -> delivered` y la trazabilidad existente.
+- **Restaurante POS:** representar citas programadas, aforo y elementos no operativos del plano usando sesiones, pisos y estaciones existentes.
 - **Pisos y mesas:** edición de nombre, orden, fondo y disposición con validación visual de colisiones.
 - **Servicios en curso:** agenda, cola, tolerancia, pausas, reasignación, cancelación y línea de tiempo inmutable.
 - **Servicios en curso:** SLA, alertas, comisiones y reportes por sucursal, estación, servicio y responsable.
@@ -91,7 +89,7 @@ No se incluyen pruebas PHP ni reglas de negocio. Cada tarea debe consumir los pe
 - **Reportes:** formulario estándar de parámetros, nombres de archivo consistentes, progreso y mensajes cuando una consulta exceda límites.
 - **Series:** filtros de auditoría, exportación e indicadores de saltos de correlativo.
 - **Reportes financieros:** consumir `/reports/settlements` para resumir tributos y métodos de pago por alcance y rango.
-- **Maestros internos:** CRUD protegido para tipos de identidad, documentos y monedas, con advertencia de impacto antes de inactivar.
+- **Maestros internos:** consumir el CRUD protegido `/master-data/{resource}` para tipos de identidad, documentos, monedas, tributos, métodos de pago y configuraciones, con advertencia de impacto antes de inactivar.
 - **Mi empresa/Sucursales:** separar configuración pública, fiscal y operativa; coordenadas, capacidad y documentos disponibles.
 
 ## Regla de cierre

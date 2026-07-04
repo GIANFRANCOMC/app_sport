@@ -7,14 +7,12 @@ namespace App\Http\Controllers\System\Devices;
 use App\Http\Controllers\System\Base\BaseController;
 use App\Helpers\System\{Utilities};
 use Illuminate\Http\{JsonResponse, Request};
-use Carbon\Carbon;
-use Illuminate\Support\Facades\Log;
 
 use App\Http\Requests\System\Devices\BiometricDevices\{StoreBiometricDeviceRequest, UpdateBiometricDeviceRequest};
 use App\Services\System\Base\{InitParamsCacheInvalidationService};
 use App\Services\System\Devices\BiometricDevices\{BiometricDeviceConfigService, BiometricDeviceService};
 use App\Services\System\Customers\Tracking\{TrackingAttendanceBusinessService};
-use App\Models\System\Devices\{BiometricDevice, BiometricDeviceModel};
+use App\Models\System\Devices\BiometricDeviceModel;
 
 class BiometricDeviceController extends BaseController {
 
@@ -33,7 +31,7 @@ class BiometricDeviceController extends BaseController {
 
         $page = $this->getPage($request);
 
-        return BiometricDeviceConfigService::getInitParams($this->getCompanyId(), $page);
+        return BiometricDeviceConfigService::getInitParams($this->getCompanyId(), $page, $this->getUserId());
 
     }
 
@@ -63,17 +61,6 @@ class BiometricDeviceController extends BaseController {
 
     }
 
-    /**
-     * Show the form for creating a new record
-     * (Not used in SPA, but kept for REST compliance)
-     *
-     * @return void
-     */
-    public function create(): void {
-
-        // Form is handled by frontend SPA
-
-    }
 
     /**
      * Store a newly created record
@@ -109,31 +96,7 @@ class BiometricDeviceController extends BaseController {
 
     }
 
-    /**
-     * Display the specified record
-     * (Not used, but kept for REST compliance)
-     *
-     * @param BiometricDevice $record
-     * @return JsonResponse
-     */
-    public function show(BiometricDevice $record): JsonResponse {
 
-        return $this->errorResponse("not_implemented", [], 501);
-
-    }
-
-    /**
-     * Show the form for editing the specified record
-     * (Not used in SPA, but kept for REST compliance)
-     *
-     * @param BiometricDevice $record
-     * @return void
-     */
-    public function edit(BiometricDevice $record): void {
-
-        // Form is handled by frontend SPA
-
-    }
 
     /**
      * Update the specified record
@@ -178,18 +141,25 @@ class BiometricDeviceController extends BaseController {
 
     }
 
-    /**
-     * Remove the specified record
-     * (Not used, but kept for REST compliance)
-     *
-     * @param BiometricDevice $record
-     * @return JsonResponse
-     */
-    public function destroy(BiometricDevice $record): JsonResponse {
+    public function rotateCredentials(int $id): JsonResponse {
 
-        return $this->errorResponse("not_implemented", [], 501);
+        try {
+            $device = BiometricDeviceService::findByIdAndCompany($id, $this->getCompanyId(), null);
+            if(!$device) {
+                return $this->notFoundResponse();
+            }
+
+            return response()->json([
+                "bool" => true,
+                "msg" => "Credenciales rotadas correctamente. Guarda el secreto porque no volverá a mostrarse.",
+                "data" => BiometricDeviceService::rotateCredentials($device, $this->getUserId())
+            ]);
+        }catch(\Throwable $exception) {
+            return $this->handleException($exception, "update");
+        }
 
     }
+
 
     /**
      * Prepare record data from request

@@ -5,17 +5,25 @@ declare(strict_types=1);
 namespace App\Services\System\General;
 
 use App\Models\System\General\{Currency, DocumentType, IdentityDocumentType};
-use App\Services\System\Base\MasterReferenceDataService;
+use App\Models\System\Finance\{PaymentMethod, Tax};
+use App\Models\System\Organizations\CompanySetting;
+use App\Services\System\Base\{InitParamsCacheInvalidationService, MasterReferenceDataService};
+use App\Services\System\Tenancy\TenantStoragePath;
 use DomainException;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\{DB, Storage};
+use Illuminate\Support\Str;
 
 final class MasterDataService {
 
     private const DEFINITIONS = [
-        "identity-documents" => ["model" => IdentityDocumentType::class, "table" => "identity_document_types"],
-        "document-types" => ["model" => DocumentType::class, "table" => "document_types"],
-        "currencies" => ["model" => Currency::class, "table" => "currencies"]
+        "identity-documents" => ["model" => IdentityDocumentType::class],
+        "document-types" => ["model" => DocumentType::class],
+        "currencies" => ["model" => Currency::class],
+        "taxes" => ["model" => Tax::class],
+        "payment-methods" => ["model" => PaymentMethod::class],
+        "company-settings" => ["model" => CompanySetting::class]
     ];
 
     public static function list(int $companyId, string $resource) {
@@ -24,7 +32,7 @@ final class MasterDataService {
 
         return $definition["model"]::query()
             ->where("company_id", $companyId)
-            ->orderBy($resource === "currencies" ? "code" : "name")
+            ->orderBy(self::orderColumn($resource))
             ->get();
 
     }
@@ -38,47 +46,120 @@ final class MasterDataService {
     ): Model {
 
         $definition = self::definition($resource);
+        $newImagePath = null;
+        $obsoleteImagePath = null;
 
-        return DB::transaction(function() use($companyId, $userId, $resource, $definition, $data, $id) {
+        try {
+            $record = DB::transaction(function() use(
+                $companyId,
+                $userId,
+                $resource,
+                $definition,
+                $data,
+                $id,
+                &$newImagePath,
+                &$obsoleteImagePath
+            ) {
 
-            $record = $id
-                ? $definition["model"]::query()->where("company_id", $companyId)->findOrFail($id)
-                : new $definition["model"]();
+                $record = $id
+                    ? $definition["model"]::query()->where("company_id", $companyId)->findOrFail($id)
+                    : new $definition["model"]();
 
-            $duplicate = $definition["model"]::query()
-                ->where("company_id", $companyId)
-                ->where("code", $data["code"])
-                ->when($id, fn($query) => $query->where("id", "!=", $id))
-                ->exists();
+                $duplicateQuery = $definition["model"]::query()
+                    ->where("company_id", $companyId);
 
-            if($duplicate) {
+                foreach(self::uniqueKey($resource, $data) as $column => $value) {
+                    $duplicateQuery->where($column, $value);
+                }
 
-                throw new DomainException("Ya existe un registro con ese código en la empresa.");
+                $duplicate = $duplicateQuery
+                    ->when($id, fn($query) => $query->where("id", "!=", $id))
+                    ->exists();
 
+                if($duplicate) {
+
+                    throw new DomainException("Ya existe un registro equivalente en la empresa.");
+
+                }
+
+                if(($data["status"] ?? $record->status) === "inactive" && $id) {
+
+                    self::assertCanDeactivate($companyId, $resource, $id);
+
+                }
+
+                $allowed = match($resource) {
+                    "identity-documents" => ["code", "name", "is_searchable", "min_length", "max_length", "status"],
+                    "currencies" => ["code", "sign", "singular_name", "plural_name", "status"],
+                    "taxes" => [
+                        "code", "name", "description", "rate", "calculation_type", "operation_type",
+                        "min_apply_quantity", "max_apply_quantity", "scope", "is_required", "is_default", "status"
+                    ],
+                    "payment-methods" => [
+                        "code", "name", "sunat_code", "image_path", "scope", "requires_reference", "is_default", "status"
+                    ],
+                    "company-settings" => ["group", "key", "value", "description", "value_type", "status"],
+                    default => ["code", "name", "status"]
+                };
+
+                if($resource === "taxes" && ($data["calculation_type"] ?? null) === "percentage") {
+                    $data["min_apply_quantity"] = null;
+                    $data["max_apply_quantity"] = null;
+                }
+
+                if($resource === "company-settings") {
+                    if(preg_match(
+                        '/(?:secret|password|token|credential|api[_-]?key|private[_-]?key)/',
+                        strtolower((string) $data["key"])
+                    )) {
+                        throw new DomainException("Los secretos y credenciales deben configurarse por entorno, no en company_settings.");
+                    }
+
+                    $data["value"] = self::normalizeSettingValue(
+                        $data["value"] ?? null,
+                        (string) $data["value_type"]
+                    );
+                }
+
+                if($resource === "payment-methods" && ($data["image"] ?? null) instanceof UploadedFile) {
+                    $obsoleteImagePath = $record->image_path;
+                    $newImagePath = $data["image"]->storeAs(
+                        TenantStoragePath::for("finance/payment-methods"),
+                        Str::uuid()->toString().".".$data["image"]->guessExtension(),
+                        "public"
+                    );
+                    $data["image_path"] = $newImagePath;
+                }
+
+                unset($data["image"]);
+
+                $record->fill(collect($data)->only($allowed)->all());
+                $record->company_id = $companyId;
+                $record->{$id ? "updated_by" : "created_by"} = $userId;
+                $record->save();
+
+                MasterReferenceDataService::clearCache($companyId);
+                InitParamsCacheInvalidationService::invalidate(
+                    self::invalidationResource($resource),
+                    $companyId
+                );
+
+                return $record->fresh();
+
+            });
+        }catch(\Throwable $exception) {
+            if($newImagePath) {
+                Storage::disk("public")->delete($newImagePath);
             }
 
-            if(($data["status"] ?? $record->status) === "inactive" && $id) {
+            throw $exception;
+        }
 
-                self::assertCanDeactivate($companyId, $resource, $id);
+        if($obsoleteImagePath && $obsoleteImagePath !== $newImagePath) {
+            Storage::disk("public")->delete($obsoleteImagePath);
+        }
 
-            }
-
-            $allowed = match($resource) {
-                "identity-documents" => ["code", "name", "is_searchable", "min_length", "max_length", "status"],
-                "currencies" => ["code", "sign", "singular_name", "plural_name", "status"],
-                default => ["code", "name", "status"]
-            };
-
-            $record->fill(collect($data)->only($allowed)->all());
-            $record->company_id = $companyId;
-            $record->{$id ? "updated_by" : "created_by"} = $userId;
-            $record->save();
-
-            MasterReferenceDataService::clearCache($companyId);
-
-            return $record->fresh();
-
-        });
+        return $record;
 
     }
 
@@ -131,6 +212,85 @@ final class MasterDataService {
 
         return self::DEFINITIONS[$resource]
             ?? throw new DomainException("El maestro solicitado no está disponible.");
+
+    }
+
+    private static function orderColumn(string $resource): string {
+
+        return match($resource) {
+            "currencies" => "code",
+            "company-settings" => "group",
+            default => "name"
+        };
+
+    }
+
+    private static function uniqueKey(string $resource, array $data): array {
+
+        return match($resource) {
+            "taxes", "payment-methods" => [
+                "code" => $data["code"],
+                "scope" => $data["scope"]
+            ],
+            "company-settings" => [
+                "group" => $data["group"],
+                "key" => $data["key"]
+            ],
+            default => ["code" => $data["code"]]
+        };
+
+    }
+
+    private static function invalidationResource(string $resource): string {
+
+        return match($resource) {
+            "identity-documents" => InitParamsCacheInvalidationService::IDENTITY_DOCUMENTS,
+            "document-types" => InitParamsCacheInvalidationService::DOCUMENT_TYPES,
+            "currencies" => InitParamsCacheInvalidationService::CURRENCIES,
+            "taxes" => InitParamsCacheInvalidationService::TAXES,
+            "payment-methods" => InitParamsCacheInvalidationService::PAYMENT_METHODS,
+            "company-settings" => InitParamsCacheInvalidationService::COMPANY_SETTINGS,
+            default => throw new DomainException("El maestro solicitado no tiene política de caché.")
+        };
+
+    }
+
+    private static function normalizeSettingValue(mixed $value, string $type): ?string {
+
+        if($value === null || $value === "") {
+            return null;
+        }
+
+        return match($type) {
+            "string" => is_scalar($value)
+                ? (string) $value
+                : throw new DomainException("La configuración debe contener texto."),
+            "boolean" => ($boolean = filter_var($value, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE)) !== null
+                ? ($boolean ? "true" : "false")
+                : throw new DomainException("La configuración debe ser verdadera o falsa."),
+            "integer" => filter_var($value, FILTER_VALIDATE_INT) !== false
+                ? (string) (int) $value
+                : throw new DomainException("La configuración debe ser un número entero."),
+            "decimal" => is_numeric($value)
+                ? (string) $value
+                : throw new DomainException("La configuración debe ser un número decimal."),
+            "json" => self::normalizeJsonValue($value),
+            default => throw new DomainException("El tipo de configuración no es válido.")
+        };
+
+    }
+
+    private static function normalizeJsonValue(mixed $value): string {
+
+        try {
+            if(is_string($value)) {
+                $value = json_decode($value, true, 512, JSON_THROW_ON_ERROR);
+            }
+
+            return json_encode($value, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE);
+        }catch(\JsonException) {
+            throw new DomainException("La configuración debe contener JSON válido.");
+        }
 
     }
 

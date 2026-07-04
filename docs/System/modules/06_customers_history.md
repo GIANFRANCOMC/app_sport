@@ -31,4 +31,3 @@ Permite consultar ventas, membresias y asistencias de un cliente en un periodo.
 - Ventas, membresías y asistencias se limitan por empresa y sucursales efectivas del colaborador.
 - `period_type=custom` acepta `start_date` y `end_date` y rechaza rangos invertidos.
 - La respuesta incluye `summary` con ventas activas/canceladas, membresías activas y asistencias.
-- La cabecera y los controles visuales pendientes están en `docs/UI_UX_PENDING.md`.

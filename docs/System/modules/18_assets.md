@@ -15,6 +15,5 @@ Administra bienes físicos por empresa, con clasificación, identificación inte
 - Endpoints protegidos para listar, crear y editar categorías bajo `/assets/categories`.
 - Búsqueda de activos por código interno, código patrimonial, serie, nombre o descripción.
 
-La alta rápida, los campos visuales y la exportación están en `docs/UI_UX_PENDING.md`.
 
 La individualización de unidades de un bien administrado como stock sigue siendo una decisión de negocio: solo debe crearse una tabla de unidades físicas cuando cada unidad necesite serie, mantenimiento o ciclo de vida propio.

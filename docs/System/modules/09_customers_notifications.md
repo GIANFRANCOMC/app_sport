@@ -27,7 +27,7 @@ Permite revisar emails relacionados a suscripciones y su estado de envio.
 ## Reglas
 
 - Estados: `pending`, `sent`, `failed`.
-- El envio deberia poder reintentarse.
+- Solo las notificaciones fallidas pueden habilitarse para reintento manual.
 - El contenido debe estar asociado a una membresia o modelo relacionado.
 
 ## Estado de mejoras
@@ -37,4 +37,5 @@ Permite revisar emails relacionados a suscripciones y su estado de envio.
 - Admite `--tenant`, `--company` y `--limit` para operación controlada sin compartir contexto entre clientes.
 - Cada notificación conserva intentos, máximo, próxima ejecución, envío, fallo y último error.
 - Los reintentos usan espera incremental y terminan al alcanzar `max_attempts`.
+- `PATCH /tracking_notifications/{id}/retry` reinicia intentos, limpia el error, agenda ejecución inmediata y registra auditoría empresarial.
 - El disparador HTTP heredado permanece autenticado, limitado y protegido por permisos; no existe una ruta pública de envío.

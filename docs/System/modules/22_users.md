@@ -58,5 +58,3 @@ Administra usuarios internos, perfiles, alcance operativo y seguridad de acceso 
 - Las selecciones se guardan en `user_branches`, `user_cash_registers` y `user_warehouses`.
 - El alcance efectivo es la intersección entre perfil y colaborador.
 - Crear o editar sucursales, cajas o almacenes invalida las configuraciones dependientes para no conservar opciones antiguas.
-
-La interfaz para consultar el historial de autenticación y la auditoría general se mantiene en `docs/UI_UX_PENDING.md`.

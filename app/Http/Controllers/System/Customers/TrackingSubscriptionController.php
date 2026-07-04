@@ -32,7 +32,7 @@ class TrackingSubscriptionController extends BaseController {
     public function initParams(Request $request) {
 
         $page = $this->getPage($request);
-        return TrackingSubscriptionConfigService::getInitParams($this->getCompanyId(), $page);
+        return TrackingSubscriptionConfigService::getInitParams($this->getCompanyId(), $page, $this->getUserId());
 
     }
 
@@ -68,41 +68,10 @@ class TrackingSubscriptionController extends BaseController {
 
     }
 
-    /**
-     * Show the form for creating a new tracking subscription
-     * (Not used in SPA, but kept for REST compliance)
-     *
-     * @return void
-     */
-    public function create(): void {
 
-        // Form is handled by frontend SPA
 
-    }
 
-    public function store(Request $request) { // StoreTrackingSubscriptionRequest
 
-        //
-
-    }
-
-    public function show(Subscription $subscription): JsonResponse {
-
-        return $this->errorResponse("not_implemented", [], 501);
-
-    }
-
-    public function edit(Subscription $subscription): void {
-
-        // Form is handled by frontend SPA
-
-    }
-
-    public function update(Request $request, $id): JsonResponse { // UpdateTrackingSubscriptionRequest
-
-        return $this->errorResponse("not_implemented", [], 501);
-
-    }
 
     /**
      * Cancel the specified subscription
@@ -179,10 +148,5 @@ class TrackingSubscriptionController extends BaseController {
 
     }
 
-    public function destroy(Subscription $subscription): JsonResponse {
-
-        return $this->errorResponse("not_implemented", [], 501);
-
-    }
 
 }

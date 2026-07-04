@@ -78,7 +78,7 @@ Todos los servicios `*ConfigService` heredan de `BaseConfigService`.
 - `InitParamsCacheInvalidationService` resuelve dependencias entre recursos y módulos consumidores.
 - No se invalida caché cuando una mutación no modifica datos incluidos en `initParams`.
 
-Los maestros globales activos se reutilizan durante seis horas mediante `MasterReferenceDataService`. Si monedas o tipos de documento adquieren mantenimiento CRUD, la mutación debe ejecutar `MasterReferenceDataService::clearCache()`.
+Los maestros activos se reutilizan durante seis horas mediante `MasterReferenceDataService`. `MasterDataService` invalida esa caché y los `initParams` dependientes después de cada mutación correcta.
 
 ## Configuración por empresa
 
@@ -95,7 +95,7 @@ Los maestros globales activos se reutilizan durante seis horas mediante `MasterR
 - `AppliesInternalCodePrefix` evita repetir la preparación del código en los FormRequests equivalentes.
 - Un valor nulo o vacío desactiva el prefijo para esa entidad y empresa.
 
-La tabla está preparada para futuras reglas empresariales, como permitir ventas con stock negativo. La interfaz administrativa permanece pendiente hasta definir permisos, auditoría e invalidación de caché.
+`GET|POST|PATCH /master-data/company-settings` permite administrar estas claves por empresa. Las mutaciones usan permisos de Mi empresa, auditoría empresarial e invalidación centralizada de `initParams`.
 
 ## Errores de formulario
 
@@ -108,10 +108,10 @@ La tabla está preparada para futuras reglas empresariales, como permitir ventas
 
 Los modelos no deben exponer métodos genéricos como `getAll($type, $companyId)`. Ese contrato ocultaba filtros tras strings, repetía el identificador de empresa y permitía combinaciones inválidas.
 
-- `CompanyReferenceDataService::for($companyId)` concentra consultas acotadas a una empresa.
+- `CompanyReferenceDataService::for($companyId, $userId)` concentra consultas acotadas a empresa y alcance operativo del colaborador.
 - Sus métodos expresan la intención: `brands()`, `categories()`, `stockWarehouses()`, `branchesWithSeries()`, `activeCustomers()`, `saleItems()`, entre otros.
 - `MasterReferenceDataService` entrega maestros globales activos, como monedas y tipos de documento según su uso.
-- Cada `ConfigService` crea una referencia por empresa y reutiliza esa instancia dentro de su construcción de `initParams`.
+- Cada `ConfigService` crea una referencia por empresa y usuario y reutiliza esa instancia dentro de su construcción de `initParams`.
 - Los modelos conservan relaciones, accessors, scopes y reglas propias de la entidad; no conocen el contexto de una pantalla.
 - La prueba `ModelGetAllConventionTest` evita reintroducir `Model::getAll(...)`.
 
@@ -128,7 +128,7 @@ Los modelos no deben exponer métodos genéricos como `getAll($type, $companyId)
 
 ## Estado actual
 
-- Los servicios de escritura de ventas, catálogo, clientes, activos, biometría, sucursales, empresa y usuarios reciben contexto explícito; los adaptadores de configuración y auditoría pueden leer la sesión porque son fronteras HTTP.
+- Los servicios de escritura, configuración, referencias y auditoría reciben contexto explícito o lo obtienen del request únicamente en observers de frontera; ningún servicio de dominio consulta el facade `Auth`.
 - Permisos combinan módulo + acción y alcances de sucursal, caja y almacén.
 - Los endpoints mutables usan FormRequest o validadores dedicados cuando el payload es dinámico.
 - Las rutas REST de plantilla sin implementación ya no se publican.
@@ -143,4 +143,4 @@ No se recomienda reescribir toda la arquitectura. El criterio adecuado es mejora
 - Introducir tests en flujos criticos antes de cambiar reglas sensibles.
 - Mejorar autorizacion y validacion sin romper la estructura existente.
 
-Esta arquitectura debe mantenerse alineada con `../GENERALIDADES.md`. Las mejoras visuales de páginas independientes para inventario, caja, compras, ventas y POS están centralizadas en `../UI_UX_PENDING.md`.
+Esta arquitectura debe mantenerse alineada con `../GENERALIDADES.md`.

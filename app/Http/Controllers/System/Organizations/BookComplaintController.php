@@ -6,11 +6,13 @@ namespace App\Http\Controllers\System\Organizations;
 
 use App\Http\Controllers\System\Base\BaseController;
 use App\Helpers\System\{Utilities};
+use App\Models\System\Organizations\BookComplaintAttachment;
 use Illuminate\Http\{JsonResponse, Request};
+use Illuminate\Support\Facades\Storage;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 use App\Http\Requests\System\Organizations\BookComplaints\{UpdateBookComplaintRequest};
 use App\Services\System\Organizations\BookComplaints\{BookComplaintConfigService, BookComplaintService};
-use App\Models\System\Organizations\{BookComplaint};
 
 class BookComplaintController extends BaseController {
 
@@ -28,7 +30,7 @@ class BookComplaintController extends BaseController {
     public function initParams(Request $request) {
 
         $page = $this->getPage($request);
-        return BookComplaintConfigService::getInitParams($this->getCompanyId(), $page);
+        return BookComplaintConfigService::getInitParams($this->getCompanyId(), $page, $this->getUserId());
 
     }
 
@@ -63,55 +65,9 @@ class BookComplaintController extends BaseController {
 
     }
 
-    /**
-     * Show the form for creating a new book complaint
-     * (Not used in SPA, but kept for REST compliance)
-     *
-     * @return void
-     */
-    public function create(): void {
 
-        // Form is handled by frontend SPA
 
-    }
 
-    /**
-     * Store a newly created book complaint
-     * (Not used in System, book complaints are created from Guest side)
-     *
-     * @return JsonResponse
-     */
-    public function store(): JsonResponse {
-
-        return $this->errorResponse("not_implemented", [], 501);
-
-    }
-
-    /**
-     * Display the specified book complaint
-     * (Not used, but kept for REST compliance)
-     *
-     * @param BookComplaint $record
-     * @return JsonResponse
-     */
-    public function show(BookComplaint $record): JsonResponse {
-
-        return $this->errorResponse("not_implemented", [], 501);
-
-    }
-
-    /**
-     * Show the form for editing the specified book complaint
-     * (Not used in SPA, but kept for REST compliance)
-     *
-     * @param BookComplaint $record
-     * @return void
-     */
-    public function edit(BookComplaint $record): void {
-
-        // Form is handled by frontend SPA
-
-    }
 
     /**
      * Update the specified book complaint
@@ -151,18 +107,22 @@ class BookComplaintController extends BaseController {
 
     }
 
-    /**
-     * Remove the specified book complaint
-     * (Not used, but kept for REST compliance)
-     *
-     * @param BookComplaint $record
-     * @return JsonResponse
-     */
-    public function destroy(BookComplaint $record): JsonResponse {
+    public function downloadAttachment(int $attachmentId): StreamedResponse {
 
-        return $this->errorResponse("not_implemented", [], 501);
+        $attachment = BookComplaintAttachment::query()
+            ->where("company_id", $this->getCompanyId())
+            ->findOrFail($attachmentId);
+
+        abort_unless(Storage::disk("local")->exists($attachment->file_path), 404);
+
+        return Storage::disk("local")->download(
+            $attachment->file_path,
+            $attachment->file_name,
+            ["Content-Type" => $attachment->mime_type]
+        );
 
     }
+
 
     /**
      * Prepare book complaint data from request

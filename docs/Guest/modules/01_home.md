@@ -21,5 +21,3 @@ Muestra información pública de la empresa, categorías y catálogo visible par
 - Moneda y categorías se precargan para evitar consultas repetidas.
 - Categorías públicas deben estar activas, visibles y ordenadas.
 - El contrato excluye tokens externos, campos de auditoría y columnas internas que el visitante no necesita.
-
-SEO, metadatos sociales y la presentación responsive por categorías permanecen como trabajo de interfaz en `docs/UI_UX_PENDING.md`.

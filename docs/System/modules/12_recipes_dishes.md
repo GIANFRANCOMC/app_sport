@@ -47,8 +47,6 @@ Se agrega `cash_session_inventory_counts` para registrar conteos fisicos al cier
 - Al confirmar una venta, `RecipeConsumptionService` consume los insumos base, opciones y toppings elegidos, incluyendo merma configurada.
 - Los consumos se agrupan por insumo y generan movimientos `recipe_sale` vinculados al detalle de venta y receta.
 - La anulación con reposición automática revierte tanto productos directos como insumos de receta en el almacén original.
-- El conteo físico de cierre principal ya genera correcciones trazables; su pantalla y los selectores de toppings/sabores permanecen en `docs/UI_UX_PENDING.md`.
 - `GET /recipes/{id}/theoretical-cost?warehouse_id=...` calcula costo base por porción, opciones y toppings usando el costo promedio del almacén; también informa insumos sin costo disponible.
 - `GET /recipes/waste-records` consulta mermas reales por receta, almacén, insumo y fecha.
 - `POST /recipes/{id}/waste-records` registra la merma, su costo histórico y el movimiento de inventario en una sola transacción.
-- La presentación analítica de costo y merma permanece en `docs/UI_UX_PENDING.md`; los cálculos y la trazabilidad ya pertenecen al backend.

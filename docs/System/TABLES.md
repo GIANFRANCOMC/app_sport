@@ -52,7 +52,7 @@ Empresa o tenant funcional. Campos: `slug`, `internal_code`, documento, razón s
 `identity_document_type_id` y `currency_id` son nullable en la estructura inicial para permitir crear la empresa antes de sus maestros propios y luego actualizar las referencias. Esto evita ciclos frágiles entre `companies`, `identity_document_types` y `currencies`, manteniendo FK reales por `company_id` en todos los maestros configurables.
 ### `company_settings`
 
-Configuración extensible por empresa. Cada registro usa `company_id`, `group`, `key`, `value`, `description`, `value_type` y `status`. `description` explica el efecto operativo de la clave para que futuras interfaces administrativas puedan mostrar ayuda contextual. `value` puede ser nulo y `value_type` permite interpretarlo como `string`, `boolean`, `integer`, `decimal` o `json`.
+Configuración extensible por empresa. Cada registro usa `company_id`, `group`, `key`, `value`, `description`, `value_type` y `status`. `description` explica el efecto operativo de la clave a sus consumidores administrativos. `value` puede ser nulo y `value_type` permite interpretarlo como `string`, `boolean`, `integer`, `decimal` o `json`. El mantenimiento backend se expone como `company-settings` en `/master-data/{resource}`.
 
 El grupo `internal_code_prefixes` contiene las claves `product`, `service`, `subscription`, `brand`, `category`, `branch`, `asset` y `recipe`. Sus valores iniciales son `PRO`, `SER`, `MEM`, `MAR`, `CAT`, `SUC`, `ACT` y `REC`. Un valor nulo o vacío desactiva el prefijo.
 
@@ -345,7 +345,7 @@ Foto histórica del tributo aplicado al documento. Guardan `name`, `description`
 
 Métodos de pago configurables por empresa y alcance. Campos: `company_id`, `code`, `sunat_code`, `name`, `image_path`, `scope`, `requires_reference`, `is_default` y `status`.
 
-Relaciones: pertenece a `companies`. `sunat_code` conserva la referencia SUNAT cuando exista y `image_path` permite mostrar una imagen o marca visual del método en futuras interfaces. `scope` define si el método aplica a ventas, compras o ambos.
+Relaciones: pertenece a `companies`. `sunat_code` conserva la referencia SUNAT cuando exista y `image_path` almacena la ruta pública generada por backend dentro del tenant. `scope` define si el método aplica a ventas, compras o ambos.
 ### sale_payments / purchase_payments
 
 Foto histórica de los pagos del documento. Guardan método, nombre, monto, referencia y nota.

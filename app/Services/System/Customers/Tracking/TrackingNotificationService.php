@@ -6,6 +6,8 @@ namespace App\Services\System\Customers\Tracking;
 
 use App\Helpers\System\Utilities;
 use App\Models\System\Customers\SubscriptionEmail;
+use App\Services\System\Organizations\BusinessAuditService;
+use DomainException;
 
 /**
  * Service class for managing Tracking Notification operations
@@ -37,6 +39,43 @@ class TrackingNotificationService {
                                  ->where("company_id", $companyId)
                                  ->orderBy("id", "DESC")
                                  ->paginate($perPage);
+
+    }
+
+    public static function retry(int $companyId, int $userId, int $notificationId): SubscriptionEmail {
+
+        $notification = SubscriptionEmail::query()
+            ->where("company_id", $companyId)
+            ->findOrFail($notificationId);
+
+        if($notification->status !== "failed") {
+            throw new DomainException("Solo se pueden reintentar notificaciones fallidas.");
+        }
+
+        $before = $notification->getAttributes();
+        $notification->forceFill([
+            "status" => "pending",
+            "attempts" => 0,
+            "next_attempt_at" => now(),
+            "failed_at" => null,
+            "last_error" => null,
+            "updated_by" => $userId
+        ])->save();
+
+        BusinessAuditService::record(
+            $companyId,
+            "tracking_notifications",
+            "retry",
+            "Notificación #{$notification->id} habilitada para reintento.",
+            $notification,
+            $before,
+            $notification->getAttributes(),
+            [],
+            null,
+            $userId
+        );
+
+        return $notification->fresh();
 
     }
 

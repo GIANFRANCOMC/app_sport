@@ -28,7 +28,7 @@ class AssetManagementController extends BaseController {
     public function initParams(Request $request) {
 
         $page = $this->getPage($request);
-        return AssetManagementConfigService::getInitParams($this->getCompanyId(), $page);
+        return AssetManagementConfigService::getInitParams($this->getCompanyId(), $page, $this->getUserId());
 
     }
 
@@ -67,83 +67,11 @@ class AssetManagementController extends BaseController {
 
     }
 
-    /**
-     * Show the form for creating a new asset management
-     * (Not used in SPA, but kept for REST compliance)
-     *
-     * @return void
-     */
-    public function create(): void {
 
-        // Form is handled by frontend SPA
 
-    }
 
-    /**
-     * Store a newly created asset management
-     * (Not used, but kept for REST compliance)
-     *
-     * @param Request $request
-     * @return void
-     */
-    public function store(Request $request): void {
 
-        // Not implemented
 
-    }
-
-    /**
-     * Display the specified asset management
-     * (Not used, but kept for REST compliance)
-     *
-     * @param mixed $record
-     * @return void
-     */
-    public function show($record): void {
-
-        // Not implemented
-
-    }
-
-    /**
-     * Show the form for editing the specified asset management
-     * (Not used in SPA, but kept for REST compliance)
-     *
-     * @param mixed $record
-     * @return void
-     */
-    public function edit($record): void {
-
-        // Form is handled by frontend SPA
-
-    }
-
-    /**
-     * Update the specified asset management
-     * (Not used, but kept for REST compliance)
-     *
-     * @param Request $request
-     * @param int $id
-     * @return void
-     */
-    public function update(Request $request, int $id): void {
-
-        // Not implemented
-
-    }
-
-    /**
-     * Remove the specified asset management
-     * (Not used, but kept for REST compliance)
-     *
-     * @param mixed $record
-     * @return void
-     */
-    public function destroy($record): void {
-
-        // Not implemented
-
-    }
 
     /**
      * Assign assets to a branch

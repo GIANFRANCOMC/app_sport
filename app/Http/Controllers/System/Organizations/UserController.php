@@ -7,8 +7,6 @@ namespace App\Http\Controllers\System\Organizations;
 use App\Http\Controllers\System\Base\BaseController;
 use App\Helpers\System\{Utilities};
 use Illuminate\Http\{JsonResponse, Request};
-use Carbon\Carbon;
-use Illuminate\Support\Facades\Log;
 
 use App\Http\Requests\System\Organizations\Users\{
     ChangeUserPasswordRequest,
@@ -18,7 +16,7 @@ use App\Http\Requests\System\Organizations\Users\{
 use App\Services\System\Base\{InitParamsCacheInvalidationService};
 use App\Services\System\Organizations\Users\{UserConfigService, UserService};
 use App\Services\System\Devices\BiometricDevices\BiometricDeviceService;
-use App\Models\System\Organizations\{AuthenticationEvent, User};
+use App\Models\System\Organizations\AuthenticationEvent;
 
 class UserController extends BaseController {
 
@@ -37,7 +35,7 @@ class UserController extends BaseController {
 
         $page = $this->getPage($request);
 
-        return UserConfigService::getInitParams($this->getCompanyId(), $page);
+        return UserConfigService::getInitParams($this->getCompanyId(), $page, $this->getUserId());
 
     }
 
@@ -67,17 +65,6 @@ class UserController extends BaseController {
 
     }
 
-    /**
-     * Show the form for creating a new record
-     * (Not used in SPA, but kept for REST compliance)
-     *
-     * @return void
-     */
-    public function create(): void {
-
-        // Form is handled by frontend SPA
-
-    }
 
     /**
      * Store a newly created record
@@ -113,31 +100,7 @@ class UserController extends BaseController {
 
     }
 
-    /**
-     * Display the specified record
-     * (Not used, but kept for REST compliance)
-     *
-     * @param User $record
-     * @return JsonResponse
-     */
-    public function show(User $record): JsonResponse {
 
-        return $this->errorResponse("not_implemented", [], 501);
-
-    }
-
-    /**
-     * Show the form for editing the specified record
-     * (Not used in SPA, but kept for REST compliance)
-     *
-     * @param User $record
-     * @return void
-     */
-    public function edit(User $record): void {
-
-        // Form is handled by frontend SPA
-
-    }
 
     /**
      * Update the specified record
@@ -206,18 +169,6 @@ class UserController extends BaseController {
 
     }
 
-    /**
-     * Remove the specified record
-     * (Not used, but kept for REST compliance)
-     *
-     * @param User $record
-     * @return JsonResponse
-     */
-    public function destroy(User $record): JsonResponse {
-
-        return $this->errorResponse("not_implemented", [], 501);
-
-    }
 
     public function changePassword(ChangeUserPasswordRequest $request, int $id): JsonResponse {
 

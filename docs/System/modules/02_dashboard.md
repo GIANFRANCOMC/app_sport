@@ -29,5 +29,3 @@ Entrega indicadores operativos agregados para una fecha empresarial y, opcionalm
 ## Contrato
 
 `GET /dashboard/initData?date=YYYY-MM-DD&branch_id=ID` devuelve fecha, zona horaria, alcance y los agregados. No contiene colecciones de registros.
-
-Los pendientes exclusivamente visuales están consolidados en `docs/UI_UX_PENDING.md`.

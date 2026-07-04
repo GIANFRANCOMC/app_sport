@@ -13,6 +13,7 @@ use App\Helpers\System\Utilities;
 use App\Models\System\Organizations\{Company, User};
 use App\Services\System\Tenancy\TenantContext;
 use App\Services\System\Auth\AuthenticationAuditService;
+use App\Services\Security\TurnstileVerificationService;
 
 class LoginRequest extends FormRequest {
 
@@ -108,44 +109,10 @@ class LoginRequest extends FormRequest {
 
         }
 
-        // Captcha
-        $captchaResponse = $this->input("cf-turnstile-response");
-        $secret = config("app.CAPTCHA_KEY_BACKEND");
-
-        $context = stream_context_create([
-            "http" => [
-                "method"  => "POST",
-                "header"  => "Content-type: application/x-www-form-urlencoded",
-                "content" => http_build_query([
-                    "secret"   => $secret,
-                    "response" => $captchaResponse,
-                    "remoteip" => $_SERVER["REMOTE_ADDR"],
-                ]),
-                "ignore_errors" => true
-            ]
-        ]);
-
-        $response = file_get_contents("https://challenges.cloudflare.com/turnstile/v0/siteverify", false, $context);
-
-        if(!$response || !$json = json_decode($response)) {
-
-            AuthenticationAuditService::record(
-                $this,
-                'login',
-                'failure',
-                $user,
-                (int) $companyId,
-                (string) $credentials['email'],
-                'No se pudo validar el desafío antiabuso.'
-            );
-
-            throw ValidationException::withMessages([
-                "captcha" => trans("auth.captcha")
-            ]);
-
-        }
-
-        if(empty($json->success)) {
+        if(!TurnstileVerificationService::verify(
+            $this->input("cf-turnstile-response"),
+            $this->ip()
+        )) {
 
             AuthenticationAuditService::record(
                 $this,

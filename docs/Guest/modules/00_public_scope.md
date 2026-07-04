@@ -20,5 +20,3 @@ Guest expone experiencias para visitantes y clientes finales sin permitir acceso
 - Reclamos, consulta de estado, asistencia y biometría tienen límites configurables por IP, empresa y recurso en `config/public_access.php`.
 - La asistencia pública exige entrada por URL firmada y una capacidad temporal guardada en sesión antes de aceptar el POST.
 - Los dispositivos biométricos usan credenciales propias, firma e idempotencia; no heredan una sesión de usuario.
-
-Los trabajos exclusivamente visuales se mantienen en `docs/UI_UX_PENDING.md`.

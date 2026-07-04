@@ -119,4 +119,3 @@ Esto limpia:
 
 - `logo_path`, `origin_country_code` y `website_url` forman parte de migración, modelo, validación y servicio.
 - Las mutaciones sensibles quedan cubiertas por `business_audit_logs`.
-- La carga y presentación del logotipo se especifica únicamente en `docs/UI_UX_PENDING.md`.

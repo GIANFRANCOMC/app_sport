@@ -63,7 +63,6 @@ El método inicial es promedio ponderado por producto y almacén. Los impuestos 
 - La cabecera incorpora vencimiento y estado/aprobador de aprobación.
 - `purchase_expenses` registra flete, seguro u otros gastos con criterio de distribución.
 - `purchase_returns` y `purchase_return_items` vinculan devoluciones con compra, recepción, almacén y movimiento de inventario.
-- La pantalla de estos contratos se mantiene en `docs/UI_UX_PENDING.md`.
 
 ## Productos disponibles
 

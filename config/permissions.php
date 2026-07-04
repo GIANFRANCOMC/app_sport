@@ -38,14 +38,17 @@ return [
         'user_attendances.export' => 'export',
         'roles.duplicate' => 'create',
         'tracking_subscriptions.renew' => 'create',
+        'tracking_notifications.retry' => 'operate',
         'tracking_attendances.corrections.store' => 'update',
         'tracking_attendances.corrections.review' => 'update',
+        'tracking_attendances.export' => 'export',
         'recipes.waste-records.store' => 'operate',
         'purchases.returns.store' => 'operate',
         'purchases.approve' => 'operate',
         'assets.categories.store' => 'create',
         'assets.categories.update' => 'update',
         'users.biometric-fingerprints.store' => 'update',
+        'biometric_devices.credentials.rotate' => 'update',
         'users.password.update' => 'update',
         'users.authentication-events' => 'view',
         'reports.sale' => 'export',
@@ -59,6 +62,7 @@ return [
         'master_data.update' => 'update',
         'branches.series.audit.export' => 'export',
         'branches.public-attendance-link' => 'view',
+        'book_complaints.attachments.download' => 'view',
         'service_operations.sessions.store' => 'operate',
         'service_operations.floors.store' => 'create',
         'service_operations.stations.layout' => 'update',
@@ -70,7 +74,8 @@ return [
         'service_operations.sessions.resume' => 'operate',
         'service_operations.sessions.cancel' => 'operate',
         'service_operations.items.start' => 'operate',
-        'service_operations.items.complete' => 'operate'
+        'service_operations.items.complete' => 'operate',
+        'service_operations.items.preparation-status' => 'operate'
     ],
 
     /* Endpoints compartidos por varias pantallas del mismo módulo técnico. */
@@ -120,6 +125,7 @@ return [
         'service_operations.sessions.cancel' => ['restaurant_pos.index', 'service_sessions.index'],
         'service_operations.items.start' => ['restaurant_pos.index', 'service_sessions.index'],
         'service_operations.items.complete' => ['restaurant_pos.index', 'service_sessions.index'],
+        'service_operations.items.preparation-status' => ['restaurant_pos.index'],
 
         'stocks_management.index' => ['stocks_management.stock.index'],
         'stocks_management.initParams' => [

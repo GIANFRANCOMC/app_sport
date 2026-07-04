@@ -76,7 +76,7 @@ class ReportController extends BaseController {
     public function initParams(Request $request) {
 
         $page = $this->getPage($request);
-        return ReportConfigService::getInitParams($this->getCompanyId(), $page);
+        return ReportConfigService::getInitParams($this->getCompanyId(), $page, $this->getUserId());
 
     }
 

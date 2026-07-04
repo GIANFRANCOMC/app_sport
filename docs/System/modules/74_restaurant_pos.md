@@ -20,7 +20,6 @@ Administra pisos, mesas, pedidos y tiempos antes del cobro. La atención operati
 - Las coordenadas son porcentuales para conservar el plano entre resoluciones.
 - La disponibilidad se deriva de sesiones abiertas; no se duplica en una columna.
 - Los estados de preparación soportan recibido/pendiente, preparando, listo y entregado.
+- `PATCH /service_operations/items/{id}/preparation-status` aplica únicamente la transición secuencial `pending -> preparing -> ready -> delivered`, guarda sus fechas y registra el evento.
 - Cancelaciones y reasignaciones conservan actor, motivo y metadatos.
 - La sesión se vincula a `sales_header` únicamente al confirmarse el cobro.
-
-Los pendientes de KDS, impresión, reservas, cuentas divididas y elementos decorativos del plano están en `docs/UI_UX_PENDING.md`.

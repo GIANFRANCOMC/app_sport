@@ -26,16 +26,10 @@ class TrackingCustomerController extends BaseController {
     public function initParams(Request $request) {
 
         $page = $this->getPage($request);
-        return TrackingCustomerConfigService::getInitParams($this->getCompanyId(), $page);
+        return TrackingCustomerConfigService::getInitParams($this->getCompanyId(), $page, $this->getUserId());
 
     }
 
-    public function list(Request $request) {
-
-        // Not implemented - tracking is handled by getTracking method
-        return [];
-
-    }
 
     /**
      * Display the tracking customers index page
@@ -48,83 +42,11 @@ class TrackingCustomerController extends BaseController {
 
     }
 
-    /**
-     * Show the form for creating a new tracking customer
-     * (Not used in SPA, but kept for REST compliance)
-     *
-     * @return void
-     */
-    public function create(): void {
 
-        // Form is handled by frontend SPA
 
-    }
 
-    /**
-     * Store a newly created tracking customer
-     * (Not implemented, but kept for REST compliance)
-     *
-     * @param Request $request
-     * @return void
-     */
-    public function store(Request $request): void {
 
-        // Not implemented
 
-    }
-
-    /**
-     * Display the specified tracking customer
-     * (Not used, but kept for REST compliance)
-     *
-     * @param mixed $attendance
-     * @return JsonResponse
-     */
-    public function show($attendance): JsonResponse {
-
-        return $this->errorResponse("not_implemented", [], 501);
-
-    }
-
-    /**
-     * Show the form for editing the specified tracking customer
-     * (Not used in SPA, but kept for REST compliance)
-     *
-     * @param mixed $attendance
-     * @return void
-     */
-    public function edit($attendance): void {
-
-        // Form is handled by frontend SPA
-
-    }
-
-    /**
-     * Update the specified tracking customer
-     * (Not implemented, but kept for REST compliance)
-     *
-     * @param Request $request
-     * @param mixed $id
-     * @return JsonResponse
-     */
-    public function update(Request $request, $id): JsonResponse {
-
-        return $this->errorResponse("not_implemented", [], 501);
-
-    }
-
-    /**
-     * Remove the specified tracking customer
-     * (Not used, but kept for REST compliance)
-     *
-     * @param mixed $attendance
-     * @return JsonResponse
-     */
-    public function destroy($attendance): JsonResponse {
-
-        return $this->errorResponse("not_implemented", [], 501);
-
-    }
 
     /**
      * Get tracking information for a customer

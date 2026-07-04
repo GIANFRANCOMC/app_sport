@@ -26,7 +26,7 @@ class DashboardController extends BaseController {
     public function initParams(Request $request) {
 
         $page = $this->getPage($request);
-        return DashboardConfigService::getInitParams($this->getCompanyId(), $page);
+        return DashboardConfigService::getInitParams($this->getCompanyId(), $page, $this->getUserId());
 
     }
 

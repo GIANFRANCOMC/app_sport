@@ -30,4 +30,3 @@ Gestiona asignaciones de activos a sucursales y usuarios.
 - Altas, reactivaciones, retiros, asignaciones y devoluciones escriben `asset_assignment_logs`.
 - La bitácora conserva origen/destino de usuario y sucursal para soportar transferencias sin perder contexto.
 - Inactivar una sucursal se bloquea mientras existan activos asignados a colaboradores.
-- El flujo visual de transferencia permanece centralizado en `docs/UI_UX_PENDING.md`.

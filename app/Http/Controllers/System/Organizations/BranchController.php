@@ -7,14 +7,12 @@ namespace App\Http\Controllers\System\Organizations;
 use App\Http\Controllers\System\Base\BaseController;
 use App\Helpers\System\{Utilities};
 use Illuminate\Http\{JsonResponse, Request};
-use Carbon\Carbon;
-use Illuminate\Support\Facades\{Log, URL};
+use Illuminate\Support\Facades\URL;
 
 use App\Http\Requests\System\Organizations\Branches\{StoreBranchRequest, UpdateBranchRequest};
 use App\Services\System\Base\{InitParamsCacheInvalidationService};
 use App\Services\System\Organizations\Branches\{BranchConfigService, BranchService};
 use App\Services\System\Organizations\Branches\SerieService;
-use App\Models\System\Organizations\{Branch};
 
 class BranchController extends BaseController {
 
@@ -33,7 +31,7 @@ class BranchController extends BaseController {
 
         $page = $this->getPage($request);
 
-        return BranchConfigService::getInitParams($this->getCompanyId(), $page);
+        return BranchConfigService::getInitParams($this->getCompanyId(), $page, $this->getUserId());
 
     }
 
@@ -63,17 +61,6 @@ class BranchController extends BaseController {
 
     }
 
-    /**
-     * Show the form for creating a new record
-     * (Not used in SPA, but kept for REST compliance)
-     *
-     * @return void
-     */
-    public function create(): void {
-
-        // Form is handled by frontend SPA
-
-    }
 
     /**
      * Store a newly created record
@@ -109,31 +96,7 @@ class BranchController extends BaseController {
 
     }
 
-    /**
-     * Display the specified record
-     * (Not used, but kept for REST compliance)
-     *
-     * @param Branch $record
-     * @return JsonResponse
-     */
-    public function show(Branch $record): JsonResponse {
 
-        return $this->errorResponse("not_implemented", [], 501);
-
-    }
-
-    /**
-     * Show the form for editing the specified record
-     * (Not used in SPA, but kept for REST compliance)
-     *
-     * @param Branch $record
-     * @return void
-     */
-    public function edit(Branch $record): void {
-
-        // Form is handled by frontend SPA
-
-    }
 
     /**
      * Update the specified record
@@ -178,18 +141,6 @@ class BranchController extends BaseController {
 
     }
 
-    /**
-     * Remove the specified record
-     * (Not used, but kept for REST compliance)
-     *
-     * @param Branch $record
-     * @return JsonResponse
-     */
-    public function destroy(Branch $record): JsonResponse {
-
-        return $this->errorResponse("not_implemented", [], 501);
-
-    }
 
     public function seriesAudit(Request $request): JsonResponse {
 

@@ -15,21 +15,17 @@ use App\Services\System\Base\{
 
 final class UserConfigService extends BaseConfigService {
 
+    protected const USER_SCOPED_CACHE = true;
+
     protected static function getCachePrefix(): string {
 
         return "user";
 
     }
 
-    protected static function usesUserScopedCache(): bool {
+    protected static function buildConfig(int $companyId, string $page, ?int $userId = null): stdClass {
 
-        return true;
-
-    }
-
-    protected static function buildConfig(int $companyId, string $page): stdClass {
-
-        $references = CompanyReferenceDataService::for($companyId);
+        $references = CompanyReferenceDataService::for($companyId, $userId);
 
         return self::data([
             "identityDocumentTypes" => self::data([

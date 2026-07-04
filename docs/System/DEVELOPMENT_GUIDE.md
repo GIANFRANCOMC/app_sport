@@ -49,7 +49,7 @@ Revisar siempre:
 - No invalidar caché por crear ventas, cambiar stock, cancelar asistencias o actualizar asignaciones si esos registros no forman parte de `initParams`.
 - La invalidación siempre es por empresa y por recurso. No usar `Cache::flush()` para resolver dependencias funcionales.
 - La matriz central vive en `app/Services/System/Base/InitParamsCacheInvalidationService.php`.
-- Al añadir un nuevo `ConfigService` que consuma datos compartidos, registrarlo en la dependencia correspondiente y agregar una prueba.
+- Al añadir un nuevo `ConfigService` que consuma datos compartidos, registrarlo en la dependencia correspondiente y validar su contrato de caché.
 
 Dependencias registradas:
 
@@ -66,13 +66,14 @@ Dependencias registradas:
 ## Consultas compartidas de `initParams`
 
 - No crear ni consumir `Model::getAll($type, $companyId)`.
-- Para datos dependientes de empresa, crear una sola instancia con `CompanyReferenceDataService::for($companyId)` y usar métodos con intención explícita.
+- Para datos dependientes de empresa y alcance operativo, crear una sola instancia con `CompanyReferenceDataService::for($companyId, $userId)` y usar métodos con intención explícita.
+- Reutilizar esa instancia durante todo `buildConfig`; memoriza usuario y alcances para no repetir consultas por sucursal, caja y almacén.
 - Los módulos documentales que afecten inventario deben separar documento y ejecución física. Compras registra intención comercial; la recepción es el evento que mueve stock.
 - Ningún módulo actualiza `warehouse_items.quantity`, `average_cost` o `inventory_value` directamente. Debe invocar `InventoryMovementService`.
 - Las operaciones con cabecera, detalles y movimientos se ejecutan dentro de una única transacción.
 - La valorización usa costos de entrada y promedio ponderado por almacén; nunca reutiliza el precio de venta.
 - Para monedas y tipos de documento configurables por empresa, usar `MasterReferenceDataService` pasando siempre `companyId`.
-- Si se implementa mantenimiento de monedas o tipos de documento, llamar `MasterReferenceDataService::clearCache($companyId)` después de una mutación correcta.
+- El mantenimiento de maestros debe invalidar `MasterReferenceDataService` y los `ConfigService` registrados en `InitParamsCacheInvalidationService`.
 - Si una pantalla necesita una variante nueva, agregar un método descriptivo al servicio adecuado; no introducir strings como `"default"`, `"sale"` o `"management"` para modificar consultas.
 - Mantener en el método explícito los filtros de estado, orden y relaciones precargadas que necesita el consumidor.
 - Registrar el `ConfigService` consumidor en `InitParamsCacheInvalidationService` cuando la nueva referencia pueda cambiar por una mutación.
@@ -80,7 +81,7 @@ Dependencias registradas:
 Ejemplo:
 
 ```php
-$references = CompanyReferenceDataService::for($companyId);
+$references = CompanyReferenceDataService::for($companyId, $userId);
 
 $config->brands->records = $references->brands();
 $config->categories->records = $references->categories();
@@ -244,5 +245,5 @@ La documentación debe describir el comportamiento final, no solamente la intenc
 ## Mantenimiento de la guía
 
 - `GENERALIDADES.md` conserva reglas transversales; aquí permanecen únicamente convenciones de System.
-- Los servicios de escritura reciben `companyId` y `userId` explícitos. Los lectores de `Auth` restantes se limitan a adaptadores de configuración y auditoría.
+- Los servicios de escritura, configuración y referencias reciben `companyId` y `userId` explícitos. La auditoría automática obtiene el actor desde el request de frontera, sin depender del facade `Auth`.
 - Todo módulo nuevo debe quedar documentado antes de abrir trabajo visual adicional.

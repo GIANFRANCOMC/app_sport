@@ -1,8 +1,8 @@
 # 02 - Ventas, stock y membresias
 
-## Problema
+## Riesgo evaluado
 
-La venta crea membresias y descuenta stock. Actualmente puede crear stock negativo si no existe `warehouse_item` o si la cantidad no alcanza.
+La venta crea membresías y descuenta stock. Se evaluó el riesgo de generar saldos negativos sin política explícita, usar series ajenas a la sucursal o perder trazabilidad al anular.
 
 ## Requerimientos evaluados
 
@@ -12,9 +12,9 @@ La venta crea membresias y descuenta stock. Actualmente puede crear stock negati
 - Correlativo protegido contra concurrencia y duplicados.
 - `attendance_limit_per_day` heredado desde membresía de catálogo.
 
-## Impacto
+## Impacto cerrado
 
-Alto. Afecta `SaleService`, stock, membresias y reportes.
+El contrato quedó centralizado en `SaleService`, inventario, membresías y reportes.
 
 ## Estado backend
 

@@ -42,4 +42,4 @@ Permite configurar datos de la empresa visibles interna y publicamente.
 - Al reemplazar una imagen se elimina el archivo anterior después de guardar la nueva referencia.
 - Los archivos de marca se guardan bajo `tenants/{tenant_slug}/...`; dos tenants con el mismo código interno no pueden sobrescribirse.
 - La configuración operativa vive tipada en `company_settings`; los datos fiscales y públicos permanecen en `companies`.
-- La separación visual de estos bloques está en `docs/UI_UX_PENDING.md`.
+- `GET|POST|PATCH /master-data/company-settings` administra claves tipadas bajo los permisos de Mi empresa; valida el valor, audita la mutación e invalida `initParams` dependientes.

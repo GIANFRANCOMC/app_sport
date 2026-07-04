@@ -8,10 +8,12 @@ use App\Services\System\Base\BaseConfigService;
 use App\Services\System\Base\CompanyReferenceDataService;
 use App\Services\System\Organizations\Companies\CompanySectionService;
 use App\Models\System\Organizations\Role;
-use Illuminate\Support\Facades\Auth;
+use App\Models\System\Organizations\User;
 use stdClass;
 
 final class RoleConfigService extends BaseConfigService {
+
+    protected const USER_SCOPED_CACHE = true;
 
     protected static function getCachePrefix(): string {
 
@@ -19,18 +21,14 @@ final class RoleConfigService extends BaseConfigService {
 
     }
 
-    protected static function usesUserScopedCache(): bool {
+    protected static function buildConfig(int $companyId, string $page, ?int $userId = null): stdClass {
 
-        return true;
-
-    }
-
-    protected static function buildConfig(int $companyId, string $page): stdClass {
-
-        $user = Auth::user();
+        $user = $userId
+            ? User::query()->where("company_id", $companyId)->find($userId)
+            : null;
         $sections = CompanySectionService::getSections($companyId, $user?->role_id);
         $delegableActions = $user ? RolePermissionService::allowedActionsBySubSection($user) : [];
-        $references = CompanyReferenceDataService::for($companyId);
+        $references = CompanyReferenceDataService::for($companyId, $userId);
 
         $sections->each(function($section) use($delegableActions): void {
             $section->subSections->each(function($subSection) use($delegableActions): void {

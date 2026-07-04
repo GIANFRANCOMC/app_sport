@@ -124,7 +124,11 @@ Convención visual de SweetAlert:
 
 ## Cache e initParams
 
-Los `ConfigService` preparan referencias para pantallas Vue. Deben extender `BaseConfigService` y construir datos en `buildConfig(int $companyId, string $page)`.
+Los `ConfigService` preparan referencias para pantallas Vue. Deben extender `BaseConfigService` y construir datos en `buildConfig(int $companyId, string $page, ?int $userId = null)`.
+
+- `getInitParams` siempre recibe empresa, página y usuario explícitos.
+- Un servicio que incluya sucursales, cajas o almacenes filtrables declara `USER_SCOPED_CACHE = true`.
+- `clearCache($companyId)` elimina todas las variantes de usuario cuando la caché está segmentada.
 
 Reglas:
 
@@ -191,7 +195,7 @@ Formato recomendado por módulo:
 5. Tablas y relaciones.
 6. Reglas de negocio.
 7. Validaciones.
-8. Contrato de interfaz disponible y referencia a `UI_UX_PENDING.md` cuando corresponda.
+8. Contrato HTTP disponible para que la interfaz no replique reglas de negocio.
 9. Integraciones con otros módulos.
 10. Integraciones, seguridad y trazabilidad.
 
@@ -200,7 +204,7 @@ Formato recomendado por módulo:
 Los pendientes exclusivamente visuales se administran en `docs/UI_UX_PENDING.md` y no deben duplicarse en `new_requirements` ni en los módulos.
 
 - Las migraciones se separan por dependencia y dominio cuando ello conserva un `migrate:fresh` determinista; no se crean migraciones correctivas si la base puede editarse directamente.
-- Los servicios de escritura reciben `companyId` y `userId` explícitos. Configuración y auditoría pueden resolver la sesión únicamente como adaptadores de frontera.
+- Los servicios de escritura, configuración y referencias reciben `companyId` y `userId` explícitos. Los observers de auditoría pueden obtener el actor desde el request de frontera, sin consultar `Auth` dentro del dominio.
 - Las pruebas automatizadas se incorporan únicamente cuando el usuario las solicite; no deben crearse de forma implícita.
 - Usar `php artisan company:enable {company_id}` para habilitar datos base de una empresa sin insertar manualmente tabla por tabla.
 - Mantener sincronizados los nuevos endpoints con `config/permissions.php` cuando compartan un prefijo entre varias páginas.

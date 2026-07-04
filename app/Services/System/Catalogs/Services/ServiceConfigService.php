@@ -15,15 +15,17 @@ use App\Services\System\Base\{
 
 final class ServiceConfigService extends BaseConfigService {
 
+    protected const USER_SCOPED_CACHE = true;
+
     protected static function getCachePrefix(): string {
 
         return "service";
 
     }
 
-    protected static function buildConfig(int $companyId, string $page): stdClass {
+    protected static function buildConfig(int $companyId, string $page, ?int $userId = null): stdClass {
 
-        $references = CompanyReferenceDataService::for($companyId);
+        $references = CompanyReferenceDataService::for($companyId, $userId);
 
         return self::data([
             "categories" => self::data([
