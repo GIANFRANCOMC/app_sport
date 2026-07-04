@@ -84,11 +84,12 @@ class TrackingSubscriptionController extends BaseController {
 
         try {
 
-            $subscription = Subscription::findOrFail($id);
+            $subscription = Subscription::query()
+                ->where("company_id", $this->getCompanyId())
+                ->find($id);
 
-            if(!Utilities::isDefined($subscription)
-                || $subscription->company_id !== $this->getCompanyId()
-                || !AccessScopeService::canAccess(auth()->user(), AccessScopeService::BRANCH, (int) $subscription->branch_id)) {
+            if(!$subscription
+                || !AccessScopeService::canAccess($this->getAuthUser(), AccessScopeService::BRANCH, (int) $subscription->branch_id)) {
 
                 return $this->notFoundResponse();
 
@@ -115,7 +116,7 @@ class TrackingSubscriptionController extends BaseController {
                 ->find($id);
 
             if(!$subscription
-                || !AccessScopeService::canAccess(auth()->user(), AccessScopeService::BRANCH, (int) $subscription->branch_id)) {
+                || !AccessScopeService::canAccess($this->getAuthUser(), AccessScopeService::BRANCH, (int) $subscription->branch_id)) {
 
                 return $this->notFoundResponse();
 

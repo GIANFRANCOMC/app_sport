@@ -441,7 +441,8 @@ class AssetManagementService {
 
             foreach($assignments as $record) {
 
-                $assetAssignment = AssetAssignment::where("id", $record["id"])
+                $assetAssignment = AssetAssignment::where("company_id", $branchAsset->company_id)
+                                                  ->where("id", $record["id"])
                                                   ->where("user_id", $record["user_id"])
                                                   ->where("branch_id", $branchAsset->branch_id)
                                                   ->where("asset_id", $branchAsset->asset_id)

@@ -16,19 +16,16 @@ class WarehouseService {
     /**
      * Create default warehouse for a new branch
      *
-     * @param int $branchId Branch ID
-     * @param string $branchName Branch name for warehouse naming
+     * @param Branch $branch Persisted branch that owns the warehouse
      * @param int|null $userId User ID creating the warehouse
      * @return Warehouse Created warehouse instance
      */
-    public static function createDefaultForBranch(int $branchId, string $branchName, ?int $userId = null): Warehouse {
-
-        $branch = Branch::findOrFail($branchId);
+    public static function createDefaultForBranch(Branch $branch, ?int $userId = null): Warehouse {
 
         $warehouse = Warehouse::create([
             "company_id" => $branch->company_id,
-            "branch_id"  => $branchId,
-            "name"       => self::generateWarehouseName($branchName, 1),
+            "branch_id"  => $branch->id,
+            "name"       => self::generateWarehouseName($branch->name, 1),
             "status"     => "active",
             "created_at" => now(),
             "created_by" => $userId

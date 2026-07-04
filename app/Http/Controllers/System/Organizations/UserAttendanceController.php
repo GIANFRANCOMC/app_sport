@@ -6,8 +6,13 @@ namespace App\Http\Controllers\System\Organizations;
 
 use App\Http\Controllers\System\Base\BaseController;
 use App\Http\Requests\System\Organizations\UserAttendances\{
+    BiometricCheckInRequest,
     CheckInUserAttendanceRequest,
-    CheckOutUserAttendanceRequest
+    CheckOutUserAttendanceRequest,
+    RequestUserAttendanceCorrectionRequest,
+    ReviewUserAttendanceCorrectionRequest,
+    StartUserAttendanceBreakRequest,
+    UserAttendanceSummaryRequest
 };
 use App\Services\System\Organizations\Users\{UserAttendanceConfigService, UserAttendanceService};
 use App\Services\System\Base\CompanyReferenceDataService;
@@ -179,19 +184,9 @@ final class UserAttendanceController extends BaseController {
 
     }
 
-    public function biometricCheckIn(Request $request): JsonResponse {
+    public function biometricCheckIn(BiometricCheckInRequest $request): JsonResponse {
 
-        $data = $request->validate([
-            "branch_id" => ["required", "integer", new \App\Rules\System\Defaults\BelongsToCompany("branches", ["status" => "active"])],
-            "device_id" => ["required", "integer", new \App\Rules\System\Defaults\BelongsToCompany("biometric_devices", ["status" => "active"])],
-            "device_user_id" => ["required", "integer", "min:1"],
-            "checked_in_at" => ["nullable", "date"]
-        ], [
-            "required" => "Campo obligatorio.",
-            "integer" => "Debe ser un número entero.",
-            "min" => "El valor es menor al permitido.",
-            "date" => "La fecha y hora no son válidas."
-        ]);
+        $data = $request->validated();
 
         try {
 
@@ -215,30 +210,26 @@ final class UserAttendanceController extends BaseController {
 
     }
 
-    public function weeklySummary(Request $request): JsonResponse {
+    public function weeklySummary(UserAttendanceSummaryRequest $request): JsonResponse {
 
-        $request->validate([
-            "user_id" => ["required", "integer", new \App\Rules\System\Defaults\BelongsToCompany("users")],
-            "branch_id" => ["nullable", "integer", new \App\Rules\System\Defaults\BelongsToCompany("branches")],
-            "week_start" => ["nullable", "date"]
-        ]);
+        $data = $request->validated();
 
         return response()->json([
             "bool" => true,
             "summary" => UserAttendanceService::weeklySummary(
                 $this->getCompanyId(),
-                (int) $request->input("user_id"),
-                $request->input("week_start"),
-                $request->filled("branch_id") ? (int) $request->input("branch_id") : null,
+                (int) $data["user_id"],
+                $data["week_start"] ?? null,
+                isset($data["branch_id"]) ? (int) $data["branch_id"] : null,
                 $this->allowedBranchIds()
             )
         ]);
 
     }
 
-    public function startBreak(Request $request, int $attendanceId): JsonResponse {
+    public function startBreak(StartUserAttendanceBreakRequest $request, int $attendanceId): JsonResponse {
 
-        $data = $request->validate(["reason" => ["nullable", "string", "max:500"]]);
+        $data = $request->validated();
 
         return $this->domainResponse(function() use($attendanceId, $data) {
             $break = UserAttendanceService::startBreak(
@@ -267,13 +258,9 @@ final class UserAttendanceController extends BaseController {
 
     }
 
-    public function requestCorrection(Request $request, int $attendanceId): JsonResponse {
+    public function requestCorrection(RequestUserAttendanceCorrectionRequest $request, int $attendanceId): JsonResponse {
 
-        $data = $request->validate([
-            "checked_in_at" => ["nullable", "date", "required_without:checked_out_at"],
-            "checked_out_at" => ["nullable", "date", "after:checked_in_at", "required_without:checked_in_at"],
-            "reason" => ["required", "string", "max:500"]
-        ]);
+        $data = $request->validated();
 
         return $this->domainResponse(function() use($attendanceId, $data) {
             $correction = UserAttendanceService::requestCorrection(
@@ -288,12 +275,9 @@ final class UserAttendanceController extends BaseController {
 
     }
 
-    public function reviewCorrection(Request $request, int $correctionId): JsonResponse {
+    public function reviewCorrection(ReviewUserAttendanceCorrectionRequest $request, int $correctionId): JsonResponse {
 
-        $data = $request->validate([
-            "approve" => ["required", "boolean"],
-            "note" => ["nullable", "string", "max:500"]
-        ]);
+        $data = $request->validated();
 
         return $this->domainResponse(function() use($correctionId, $data) {
             $correction = UserAttendanceService::reviewCorrection(

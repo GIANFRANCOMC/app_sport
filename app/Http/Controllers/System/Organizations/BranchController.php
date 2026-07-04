@@ -207,7 +207,7 @@ class BranchController extends BaseController {
             "guest.tracking_attendances.signed",
             $expiresAt,
             [
-                "company_slug" => auth()->user()->company->slug,
+                "company_slug" => $this->getAuthUser()->company->slug,
                 "branch" => $branch->id
             ]
         );

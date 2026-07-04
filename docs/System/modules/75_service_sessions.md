@@ -20,6 +20,7 @@ Controla atenciones con inicio y fin reales para barberías, salones, clínicas,
 - Cada detalle conserva nombre, tipo y precio históricos.
 - Los detalles de preparación disponen de estados pendiente, preparando, listo y entregado.
 - Todo acceso se limita por empresa y alcance de sucursal.
+- Pausas y detalles se consultan y actualizan con `company_id + service_session_id + id`, incluso dentro de la transacción, para impedir cruces entre sesiones.
 
 ## Endpoints adicionales
 

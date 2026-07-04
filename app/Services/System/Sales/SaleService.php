@@ -779,9 +779,11 @@ class SaleService {
      * @param int $id Sale header ID
      * @return SaleHeader|null
      */
-    public static function findById(int $id): ?SaleHeader {
+    public static function findById(int $companyId, int $id): ?SaleHeader {
 
-        return SaleHeader::find($id);
+        return SaleHeader::query()
+            ->where("company_id", $companyId)
+            ->find($id);
 
     }
 

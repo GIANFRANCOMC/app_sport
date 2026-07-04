@@ -4,15 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\System\Customers\TrackingAttendances;
 
-use Illuminate\Foundation\Http\FormRequest;
+use App\Http\Requests\System\Base\CompanyFormRequest;
 
-final class ReviewAttendanceCorrectionRequest extends FormRequest {
-
-    public function authorize(): bool {
-
-        return true;
-
-    }
+final class ReviewAttendanceCorrectionRequest extends CompanyFormRequest {
 
     public function rules(): array {
 
@@ -20,6 +14,12 @@ final class ReviewAttendanceCorrectionRequest extends FormRequest {
             "decision" => "required|string|in:approved,rejected",
             "note" => "nullable|string|max:500"
         ];
+
+    }
+
+    protected function normalizedStringFields(): array {
+
+        return ["decision", "note"];
 
     }
 

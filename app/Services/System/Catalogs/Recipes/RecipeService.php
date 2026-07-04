@@ -295,6 +295,8 @@ final class RecipeService {
 
     private static function syncToppings(RecipeDish $recipe, array $toppings, int $companyId, int $userId): void {
 
+        $recipe->loadMissing("item");
+
         $oldToppingIds = RecipeDishTopping::where("recipe_dish_id", $recipe->id)
             ->pluck("recipe_topping_id")
             ->all();
@@ -317,7 +319,7 @@ final class RecipeService {
 
             $topping = RecipeTopping::create([
                 "company_id" => $companyId,
-                "currency_id" => (int) ($toppingData["currency_id"] ?? 1),
+                "currency_id" => (int) ($toppingData["currency_id"] ?? $recipe->item?->currency_id),
                 "item_id" => $toppingData["item_id"] ?? null,
                 "name" => $name,
                 "description" => $toppingData["description"] ?? null,

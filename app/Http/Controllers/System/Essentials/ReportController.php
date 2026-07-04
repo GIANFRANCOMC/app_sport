@@ -63,7 +63,7 @@ class ReportController extends BaseController {
 
     private function allowedBranchIds(): ?array {
 
-        return AccessScopeService::allowedIds(auth()->user(), AccessScopeService::BRANCH);
+        return AccessScopeService::allowedIds($this->getAuthUser(), AccessScopeService::BRANCH);
 
     }
 

@@ -298,6 +298,7 @@ Productos incorpora una acción compacta **Carga masiva** junto a Descargar Exce
 - No se solicitan IDs, marca ni categorías para mantener el flujo comprensible.
 - El archivo admite hasta 500 productos y 5 MB.
 - La importación es transaccional: una fila inválida evita una carga parcial y muestra fila, campo y motivo.
+- `ImportProductsRequest` valida archivo y pertenencia del almacén antes de iniciar la lectura; el controlador consume únicamente datos validados.
 - Cada stock inicial mayor que cero genera su movimiento `product_opening`.
 - Al terminar se invalida la referencia compartida de items, incluyendo la configuración de Inventario.
 - El botón de carga masiva usa una acción ámbar sólida para diferenciarse visualmente de agregar, buscar y exportar.

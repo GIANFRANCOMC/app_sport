@@ -5,15 +5,9 @@ declare(strict_types=1);
 namespace App\Http\Requests\System\Organizations\UserAttendances;
 
 use App\Rules\System\Defaults\BelongsToCompany;
-use Illuminate\Foundation\Http\FormRequest;
+use App\Http\Requests\System\Base\CompanyFormRequest;
 
-final class CheckOutUserAttendanceRequest extends FormRequest {
-
-    public function authorize(): bool {
-
-        return true;
-
-    }
+final class CheckOutUserAttendanceRequest extends CompanyFormRequest {
 
     public function rules(): array {
 

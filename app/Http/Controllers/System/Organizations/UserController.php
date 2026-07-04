@@ -10,6 +10,7 @@ use Illuminate\Http\{JsonResponse, Request};
 
 use App\Http\Requests\System\Organizations\Users\{
     ChangeUserPasswordRequest,
+    RegisterUserFingerprintRequest,
     StoreUserRequest,
     UpdateUserRequest
 };
@@ -198,39 +199,30 @@ class UserController extends BaseController {
 
     }
 
-    public function registerBiometricFingerprint(Request $request, int $id): JsonResponse {
+    public function registerBiometricFingerprint(RegisterUserFingerprintRequest $request, int $id): JsonResponse {
 
-        $request->validate([
-            "biometric_device_id" => ["required", "integer"],
-            "device_user_id" => ["nullable", "integer", "min:1"],
-            "finger_index" => ["nullable", "integer", "min:0", "max:9"]
-        ], [
-            "required" => "Campo obligatorio.",
-            "integer" => "Debe ser un número entero.",
-            "min" => "El valor es menor al permitido.",
-            "max" => "El valor supera el límite permitido."
-        ]);
+        $data = $request->validated();
 
         try {
 
             $user = UserService::findByIdAndCompany($id, $this->getCompanyId(), ["active"]);
             if(!$user) return $this->notFoundResponse();
 
-            $deviceId = (int) $request->input("biometric_device_id");
+            $deviceId = (int) $data["biometric_device_id"];
             $device = BiometricDeviceService::findByIdAndCompany($deviceId, $this->getCompanyId(), ["active"]);
             if(!$device) {
                 return $this->errorResponse("not_found", ["msg" => "El dispositivo biométrico no está disponible."], 404);
             }
 
-            $deviceUserId = $request->filled("device_user_id")
-                ? (int) $request->input("device_user_id")
+            $deviceUserId = isset($data["device_user_id"])
+                ? (int) $data["device_user_id"]
                 : BiometricDeviceService::getNextDeviceUserId($deviceId);
 
             $fingerprint = BiometricDeviceService::registerUserFingerprint(
                 (int) $user->id,
                 $deviceId,
                 $deviceUserId,
-                (int) $request->input("finger_index", 0),
+                (int) ($data["finger_index"] ?? 0),
                 $this->getUserId(),
                 $this->getCompanyId()
             );

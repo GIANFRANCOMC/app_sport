@@ -4,19 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\System\Customers\TrackingAttendances;
 
-use App\Helpers\System\Utilities;
-use Illuminate\Foundation\Http\FormRequest;
+use App\Http\Requests\System\Base\CompanyFormRequest;
 
-class CancelTrackingAttendanceRequest extends FormRequest {
-
-    /**
-     * Determine if the user is authorized to make this request.
-     */
-    public function authorize(): bool {
-
-        return true;
-
-    }
+class CancelTrackingAttendanceRequest extends CompanyFormRequest {
 
     /**
      * Get the validation rules that apply to the request.
@@ -28,6 +18,12 @@ class CancelTrackingAttendanceRequest extends FormRequest {
         return [
             "motive" => "nullable|string|max:300"
         ];
+
+    }
+
+    protected function normalizedStringFields(): array {
+
+        return ["motive"];
 
     }
 

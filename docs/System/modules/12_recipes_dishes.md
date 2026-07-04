@@ -27,11 +27,13 @@
 
 - No se crea un nuevo `items.type`; la receta se apoya en un item existente para no romper ventas, POS, compras ni reportes.
 - Los insumos deben pertenecer a la misma empresa.
+- El item principal, los insumos base, los insumos de toppings, los insumos de opciones y las monedas se validan mediante `CompanyFormRequest` antes de entrar al servicio.
 - La cantidad de insumo debe ser mayor a cero.
 - La merma esperada permite proyectar consumo real con tolerancia operativa.
 - La merma global de la receta y la merma particular de cada componente se aplican de forma acumulativa al consumo.
 - Una merma real genera una salida `recipe_waste`; no modifica silenciosamente el saldo ni se confunde con la merma esperada.
 - Los toppings pueden tener precio y consumo de insumos propio.
+- Si un topping no declara moneda, hereda la moneda del item principal de la receta; nunca usa un ID global fijo.
 - Los sabores permiten distribuir componentes adicionales segun eleccion del cliente.
 
 ## Impacto en POS y ventas
@@ -50,3 +52,4 @@ Se agrega `cash_session_inventory_counts` para registrar conteos fisicos al cier
 - `GET /recipes/{id}/theoretical-cost?warehouse_id=...` calcula costo base por porción, opciones y toppings usando el costo promedio del almacén; también informa insumos sin costo disponible.
 - `GET /recipes/waste-records` consulta mermas reales por receta, almacén, insumo y fecha.
 - `POST /recipes/{id}/waste-records` registra la merma, su costo histórico y el movimiento de inventario en una sola transacción.
+- Actualizar, eliminar, calcular costo y registrar merma resuelven la receta y el almacén con `company_id + id`; un ID de otro tenant no puede atravesar el controlador.

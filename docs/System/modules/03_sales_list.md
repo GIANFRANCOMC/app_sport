@@ -39,6 +39,7 @@ Lista ventas realizadas, permite filtrar y acceder a detalle, anulacion o impres
 ## Estado de mejoras
 
 - El backend valida empresa y alcance de sucursal antes de anular.
+- La venta se obtiene por `sales_header.company_id + id`; no se carga un documento de otra empresa antes de autorizarlo.
 - El listado acepta `start_date`, `end_date` y `branch_id`, además de los filtros existentes.
 - Cada venta carga la sucursal emisora mediante `serie.branch` sin consultas adicionales por fila.
 - Las pruebas multiempresa se añadirán únicamente cuando sean solicitadas expresamente.

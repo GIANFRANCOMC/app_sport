@@ -13,7 +13,7 @@ use Illuminate\Http\{JsonResponse, Request};
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Maatwebsite\Excel\Facades\Excel;
 
-use App\Http\Requests\System\Catalogs\Products\{StoreProductRequest, UpdateProductRequest};
+use App\Http\Requests\System\Catalogs\Products\{ImportProductsRequest, StoreProductRequest, UpdateProductRequest};
 use App\Services\System\Base\{InitParamsCacheInvalidationService};
 use App\Services\System\Catalogs\Products\{ProductConfigService, ProductService};
 use App\Models\System\Organizations\Company;
@@ -79,22 +79,12 @@ class ProductController extends BaseController {
 
     }
 
-    public function import(Request $request): JsonResponse {
-
-        $request->validate([
-            "file"         => ["required", "file", "mimes:xlsx,xls,csv", "max:5120"],
-            "warehouse_id" => ["required", "integer"]
-        ], [
-            "required" => "Campo obligatorio.",
-            "file"     => "Selecciona un archivo válido.",
-            "mimes"    => "Usa un archivo Excel o CSV.",
-            "max"      => "El archivo no debe superar 5 MB."
-        ]);
+    public function import(ImportProductsRequest $request): JsonResponse {
 
         try {
 
             $warehouse = StockManagementService::validateWarehouse(
-                (int) $request->input("warehouse_id"),
+                (int) $request->validated("warehouse_id"),
                 $this->getCompanyId()
             );
 

@@ -279,12 +279,22 @@ class TrackingAttendanceBusinessService {
         }
 
         // Check for active attendance
-        $activeAttendance = Attendance::where("company_id", $companyId)
-                                      ->where("branch_id", $branchId)
-                                      ->where("customer_id", $customer->id)
-                                      ->where("status", "active")
-                                      ->latest("start_date")
-                                      ->first();
+        $activeAttendanceQuery = Attendance::query()
+            ->where("company_id", $companyId)
+            ->where("branch_id", $branchId)
+            ->where("customer_id", $customer->id)
+            ->where("status", "active");
+
+        if(Utilities::isDefined($data["attendance_id"] ?? null)) {
+
+            $activeAttendanceQuery->whereKey((int) $data["attendance_id"]);
+
+        }
+
+        $activeAttendance = $activeAttendanceQuery
+            ->lockForUpdate()
+            ->latest("start_date")
+            ->first();
 
         // Handle checkout
         if(in_array($action, ["checkout"])) {

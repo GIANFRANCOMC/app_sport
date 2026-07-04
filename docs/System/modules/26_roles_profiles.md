@@ -12,5 +12,6 @@ Define qué módulos, acciones, sucursales, cajas y almacenes puede utilizar cad
 - Un usuario no puede delegar más permisos o alcance del que posee.
 - No puede retirarse el último administrador activo de una empresa.
 - `POST /roles/{id}/duplicate` copia permisos y alcances a un perfil nuevo sin acceso total.
+- `DuplicateRoleRequest` normaliza el nombre y valida unicidad dentro de la empresa antes de copiar el perfil.
 - Cambios de perfil, permiso y recursos invalidan únicamente las cachés afectadas.
 - `business_audit_logs` registra los cambios sensibles sin guardar secretos.

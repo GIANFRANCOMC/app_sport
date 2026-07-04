@@ -12,6 +12,7 @@ use App\Models\System\Organizations\{
     UserAttendanceCorrection
 };
 use App\Services\System\Devices\BiometricDevices\BiometricDeviceService;
+use App\Services\System\Organizations\AccessScopeService;
 use Carbon\Carbon;
 use DomainException;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -54,6 +55,7 @@ final class UserAttendanceService {
 
             self::lockActiveUser($companyId, $userId);
             self::requireActiveBranch($companyId, $branchId);
+            self::requireActorBranchAccess($companyId, $actorId, $branchId);
 
             $activeAttendance = UserAttendance::query()
                 ->where("company_id", $companyId)
@@ -129,6 +131,7 @@ final class UserAttendanceService {
 
             self::lockActiveUser($companyId, $userId);
             self::requireActiveBranch($companyId, $branchId);
+            self::requireActorBranchAccess($companyId, $actorId, $branchId);
 
             $attendance = UserAttendance::query()
                 ->where("company_id", $companyId)
@@ -196,6 +199,8 @@ final class UserAttendanceService {
                 throw new DomainException("La jornada no está disponible para iniciar una pausa.");
             }
 
+            self::requireActorBranchAccess($companyId, $actorId, (int) $attendance->branch_id);
+
             if(UserAttendanceBreak::query()
                 ->where("company_id", $companyId)
                 ->where("user_attendance_id", $attendanceId)
@@ -219,6 +224,17 @@ final class UserAttendanceService {
     public static function endBreak(int $companyId, int $attendanceId, int $actorId): UserAttendanceBreak {
 
         return DB::transaction(function() use($companyId, $attendanceId, $actorId) {
+            $attendance = UserAttendance::query()
+                ->where("company_id", $companyId)
+                ->lockForUpdate()
+                ->find($attendanceId);
+
+            if(!$attendance) {
+                throw new DomainException("La jornada no existe o pertenece a otra empresa.");
+            }
+
+            self::requireActorBranchAccess($companyId, $actorId, (int) $attendance->branch_id);
+
             $break = UserAttendanceBreak::query()
                 ->where("company_id", $companyId)
                 ->where("user_attendance_id", $attendanceId)
@@ -243,20 +259,28 @@ final class UserAttendanceService {
 
     public static function requestCorrection(int $companyId, int $attendanceId, int $actorId, array $data): UserAttendanceCorrection {
 
-        $attendance = UserAttendance::query()->where("company_id", $companyId)->find($attendanceId);
-        if(!$attendance) {
-            throw new DomainException("La jornada no existe o pertenece a otra empresa.");
-        }
+        return DB::transaction(function() use($companyId, $attendanceId, $actorId, $data) {
+            $attendance = UserAttendance::query()
+                ->where("company_id", $companyId)
+                ->lockForUpdate()
+                ->find($attendanceId);
 
-        return UserAttendanceCorrection::create([
-            "company_id" => $companyId,
-            "user_attendance_id" => $attendanceId,
-            "requested_by" => $actorId,
-            "requested_check_in_at" => $data["checked_in_at"] ?? null,
-            "requested_check_out_at" => $data["checked_out_at"] ?? null,
-            "reason" => $data["reason"],
-            "status" => "pending"
-        ]);
+            if(!$attendance) {
+                throw new DomainException("La jornada no existe o pertenece a otra empresa.");
+            }
+
+            self::requireActorBranchAccess($companyId, $actorId, (int) $attendance->branch_id);
+
+            return UserAttendanceCorrection::create([
+                "company_id" => $companyId,
+                "user_attendance_id" => $attendanceId,
+                "requested_by" => $actorId,
+                "requested_check_in_at" => $data["checked_in_at"] ?? null,
+                "requested_check_out_at" => $data["checked_out_at"] ?? null,
+                "reason" => $data["reason"],
+                "status" => "pending"
+            ]);
+        });
 
     }
 
@@ -273,8 +297,18 @@ final class UserAttendanceService {
                 throw new DomainException("La solicitud de corrección ya fue revisada o no existe.");
             }
 
+            $attendance = UserAttendance::query()
+                ->where("company_id", $companyId)
+                ->lockForUpdate()
+                ->find($correction->user_attendance_id);
+
+            if(!$attendance) {
+                throw new DomainException("La jornada asociada ya no está disponible.");
+            }
+
+            self::requireActorBranchAccess($companyId, $actorId, (int) $attendance->branch_id);
+
             if($approve) {
-                $attendance = UserAttendance::query()->lockForUpdate()->findOrFail($correction->user_attendance_id);
                 $attendance->checked_in_at = $correction->requested_check_in_at ?? $attendance->checked_in_at;
                 $attendance->checked_out_at = $correction->requested_check_out_at ?? $attendance->checked_out_at;
 
@@ -436,6 +470,27 @@ final class UserAttendanceService {
         }
 
         return $branch;
+
+    }
+
+    private static function requireActorBranchAccess(int $companyId, ?int $actorId, int $branchId): void {
+
+        if(!$actorId) {
+
+            return;
+
+        }
+
+        $actor = User::query()
+            ->where("company_id", $companyId)
+            ->where("status", "active")
+            ->find($actorId);
+
+        if(!$actor || !AccessScopeService::canAccess($actor, AccessScopeService::BRANCH, $branchId)) {
+
+            throw new DomainException("No tienes acceso operativo a la sucursal de esta jornada.");
+
+        }
 
     }
 

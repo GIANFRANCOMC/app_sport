@@ -46,6 +46,7 @@ No se incluyen pruebas PHP ni reglas de negocio. Cada tarea debe consumir los pe
 - **Categorías:** orden, visibilidad pública y confirmación del bloqueo cuando tenga productos activos.
 - **Marcas:** carga validada de logotipo, país de origen y sitio oficial.
 - **Recetas y platillos:** selector de toppings/sabores y combinaciones parciales; presentar costo teórico por almacén y mermas reales consumiendo los endpoints existentes; conectar con KDS cuando se implemente su interfaz.
+- **Recetas y platillos:** mapear errores anidados de componentes, toppings y opciones al control exacto devuelto por `CompanyFormRequest`, sin reemplazarlos por una alerta genérica.
 - **Activos:** categoría, código patrimonial, serie física y alta rápida de categorías.
 
 ## Ventas, POS y caja
@@ -74,6 +75,7 @@ No se incluyen pruebas PHP ni reglas de negocio. Cada tarea debe consumir los pe
 - **Perfiles:** duplicar perfil, mostrar auditoría, resumen de usuarios afectados y advertencia al intentar retirar el último administrador.
 - **Colaboradores:** contraseña en flujo separado, bloqueo sin eliminación y visualización de auditoría sensible.
 - **Asistencia laboral:** horarios, pausas, tardanzas, horas ordinarias/extra y solicitudes de corrección; añadir descarga de nómina consumiendo el endpoint `export` existente.
+- **Asistencias:** adaptar formularios manuales y lectores QR al contrato de validación por empresa/sucursal y conservar los mensajes por campo devueltos por backend.
 - **Biométricos:** consumir la rotación de credenciales, mostrar el secreto una sola vez y visualizar el último contacto y los eventos fallidos.
 
 ## Restaurante y servicios

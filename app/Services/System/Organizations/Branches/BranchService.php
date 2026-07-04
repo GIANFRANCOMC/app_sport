@@ -151,7 +151,7 @@ class BranchService {
             SerieService::createForBranch($branch->id, $companyId, $userId);
 
             // Create default warehouse
-            WarehouseService::createDefaultForBranch($branch->id, $branch->name, $userId);
+            WarehouseService::createDefaultForBranch($branch, $userId);
 
         });
 

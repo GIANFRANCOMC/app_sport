@@ -11,7 +11,7 @@ Esta lógica es independiente de `user_attendances`, que controla jornadas labor
 - Ruta: `routes/System/Customers/TrackingAttendance.php`.
 - Controlador: `TrackingAttendanceController`.
 - Servicios: `TrackingAttendanceService`, `TrackingAttendanceBusinessService`.
-- Request: `CancelTrackingAttendanceRequest`.
+- Requests: `StoreTrackingAttendanceRequest`, `CheckoutTrackingAttendanceRequest`, `ProcessTrackingAttendanceBatchRequest`, `CancelTrackingAttendanceRequest`, `StoreAttendanceCorrectionRequest` y `ReviewAttendanceCorrectionRequest`.
 - Vue: `resources/js/System/Pages/Customers/tracking_attendances`.
 - Tablas: `attendances`, `customers`, `subscriptions`, `branches`.
 
@@ -33,12 +33,15 @@ Esta lógica es independiente de `user_attendances`, que controla jornadas labor
 - El mismo cliente puede tener historial en varias sucursales, pero no dos asistencias activas en la misma sucursal.
 - No se permite un segundo check-in mientras exista una asistencia activa en esa sucursal.
 - Checkout requiere una asistencia activa en la sucursal solicitada.
+- El ID de la ruta identifica la asistencia exacta que se cerrará; sucursal y cliente se recuperan del registro y no se confía en valores alternativos enviados por el cliente HTTP.
+- La asistencia activa se bloquea dentro de la transacción antes de registrar la salida para impedir cierres concurrentes.
 - Checkout debe ser posterior al ingreso y al menos dos minutos después.
 - El límite diario se obtiene de `subscriptions.attendance_limit_per_day`.
 - `exceedsLimit` bloquea un nuevo check-in cuando las asistencias finalizadas del día alcanzan dicho límite.
 - El conteo diario considera estados `active` y `finalized`; ignora registros cancelados o inactivos.
 - Tipos: `manual_form`, `qr_camera`, `qr_scanner`, `qr_public`, `biometric`.
 - `TrackingAttendanceConfigService` carga únicamente sucursales y clientes activos.
+- Altas manuales, lotes QR, cancelaciones y correcciones validan empresa y alcance efectivo de sucursal antes de mutar información.
 - Cancelar una asistencia no invalida `initParams`, porque no modifica esas opciones.
 
 ## Biometría

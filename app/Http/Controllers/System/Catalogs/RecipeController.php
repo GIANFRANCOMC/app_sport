@@ -8,7 +8,12 @@ use Illuminate\Http\{JsonResponse, Request};
 
 use App\Helpers\System\Utilities;
 use App\Http\Controllers\System\Base\BaseController;
-use App\Http\Requests\System\Catalogs\Recipes\{StoreRecipeRequest, UpdateRecipeRequest};
+use App\Http\Requests\System\Catalogs\Recipes\{
+    RecipeWarehouseRequest,
+    StoreRecipeRequest,
+    StoreRecipeWasteRequest,
+    UpdateRecipeRequest
+};
 use App\Models\System\Catalogs\RecipeDish;
 use App\Services\System\Base\InitParamsCacheInvalidationService;
 use App\Services\System\Base\CompanyReferenceDataService;
@@ -78,7 +83,10 @@ class RecipeController extends BaseController {
 
         try {
 
-            $recipe = RecipeDish::with(["item"])->findOrFail($id);
+            $recipe = RecipeDish::query()
+                ->where("company_id", $this->getCompanyId())
+                ->with(["item"])
+                ->findOrFail($id);
             $recipe = RecipeService::update($recipe, $request->validated(), $this->getCompanyId(), $this->getUserId());
             InitParamsCacheInvalidationService::invalidate(InitParamsCacheInvalidationService::ITEMS, $this->getCompanyId());
 
@@ -115,14 +123,9 @@ class RecipeController extends BaseController {
 
     }
 
-    public function theoreticalCost(Request $request, int $id): JsonResponse {
+    public function theoreticalCost(RecipeWarehouseRequest $request, int $id): JsonResponse {
 
-        $data = $request->validate([
-            "warehouse_id" => ["required", "integer"]
-        ], [
-            "required" => "Selecciona un almacén.",
-            "integer" => "Selecciona un almacén válido."
-        ]);
+        $data = $request->validated();
 
         try {
 
@@ -163,23 +166,9 @@ class RecipeController extends BaseController {
 
     }
 
-    public function storeWaste(Request $request, int $id): JsonResponse {
+    public function storeWaste(StoreRecipeWasteRequest $request, int $id): JsonResponse {
 
-        $data = $request->validate([
-            "warehouse_id" => ["required", "integer"],
-            "item_id" => ["required", "integer"],
-            "quantity" => ["required", "numeric", "gt:0"],
-            "reason" => ["required", "string", "max:500"],
-            "occurred_at" => ["nullable", "date"],
-            "allow_negative" => ["nullable", "boolean"]
-        ], [
-            "required" => "Campo obligatorio.",
-            "integer" => "Selecciona un registro válido.",
-            "numeric" => "Ingresa una cantidad válida.",
-            "gt" => "La cantidad debe ser mayor que cero.",
-            "max" => "No debe superar :max caracteres.",
-            "date" => "Ingresa una fecha válida."
-        ]);
+        $data = $request->validated();
 
         try {
 
@@ -208,7 +197,11 @@ class RecipeController extends BaseController {
 
         try {
 
-            RecipeService::delete(RecipeDish::findOrFail($id), $this->getCompanyId());
+            $recipe = RecipeDish::query()
+                ->where("company_id", $this->getCompanyId())
+                ->findOrFail($id);
+
+            RecipeService::delete($recipe, $this->getCompanyId());
             InitParamsCacheInvalidationService::invalidate(InitParamsCacheInvalidationService::ITEMS, $this->getCompanyId());
 
             return response()->json([

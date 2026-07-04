@@ -9,7 +9,7 @@ Administra usuarios internos, perfiles, alcance operativo y seguridad de acceso 
 - Ruta: `routes/System/Organizations/User.php`
 - Controlador: `UserController`
 - Servicios: `UserService`, `UserConfigService`, `AuthenticationAuditService`
-- Requests: `StoreUserRequest`, `UpdateUserRequest`, `ChangeUserPasswordRequest`
+- Requests: `StoreUserRequest`, `UpdateUserRequest`, `ChangeUserPasswordRequest`, `RegisterUserFingerprintRequest`
 - Tablas: `users`, `authentication_events`, `roles`, `role_sub_sections`, `identity_document_types`, `user_preferences`, `user_branches`, `user_cash_registers`, `user_warehouses`
 
 ## Campos necesarios
@@ -51,6 +51,7 @@ Administra usuarios internos, perfiles, alcance operativo y seguridad de acceso 
 - `GET /users/{id}/authentication-events` lista eventos de acceso de ese usuario, siempre limitado por empresa.
 - El historial conserva evento, resultado, tenant, IP, agente, motivo y hash de sesión; nunca guarda contraseña ni ID de sesión reutilizable.
 - Cambios de usuario, perfil, estado y contraseña generan auditoría de negocio sin almacenar secretos.
+- El alta de huella valida que el dispositivo esté activo y pertenezca a la empresa antes de reservar el identificador biométrico.
 
 ## Alcance operativo
 

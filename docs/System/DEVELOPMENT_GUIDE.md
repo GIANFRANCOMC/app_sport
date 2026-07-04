@@ -42,7 +42,7 @@ Revisar siempre:
 ## Caché de `initParams` y dependencias
 
 - Todo `*ConfigService` debe extender `BaseConfigService`; no implementar `Cache::remember`, claves o TTL en cada módulo.
-- La configuración se construye en `buildConfig(int $companyId, string $page)` y se devuelve como `stdClass`.
+- La configuración se construye en `buildConfig(int $companyId, string $page, ?int $userId = null)` y se devuelve como `stdClass`.
 - Declarar `cachePages()` solamente cuando el módulo tenga más de una página de configuración.
 - Una mutación no debe limpiar únicamente la caché de su propio módulo cuando el recurso alimenta selects de otros módulos.
 - Usar `InitParamsCacheInvalidationService::invalidate($resource, $companyId)` después de completar correctamente la transacción.
@@ -219,6 +219,9 @@ Se busca mejorar sin romper el sistema:
 - Añadir una comprobación de servicio cuando la entidad pueda modificarse fuera del `FormRequest` del endpoint.
 - No exponer datos de otra empresa en listados o initParams.
 - No confiar en `company_id` enviado desde frontend.
+- Resolver entidades mutables con `company_id + id` en la misma consulta. No cargar primero por ID para comprobar la empresa después.
+- Cuando una ruta contiene el ID del recurso, ese ID es la referencia autoritativa. No sustituirlo por IDs enviados en el cuerpo para decidir qué registro actualizar.
+- Aplicar el alcance operativo después de comprobar pertenencia empresarial y antes de ejecutar el servicio de escritura.
 - Registrar al usuario que crea, actualiza, cancela o elimina.
 
 ## Verificación recomendada

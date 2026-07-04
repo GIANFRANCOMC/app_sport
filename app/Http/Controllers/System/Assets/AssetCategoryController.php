@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Http\Controllers\System\Assets;
 
 use App\Http\Controllers\System\Base\BaseController;
+use App\Http\Requests\System\Assets\AssetCategories\{StoreAssetCategoryRequest, UpdateAssetCategoryRequest};
 use App\Models\System\Assets\AssetCategory;
-use App\Rules\System\Defaults\UniqueInCompany;
 use App\Services\System\Base\InitParamsCacheInvalidationService;
-use Illuminate\Http\{JsonResponse, Request};
+use Illuminate\Http\JsonResponse;
 
 final class AssetCategoryController extends BaseController {
 
@@ -20,12 +20,8 @@ final class AssetCategoryController extends BaseController {
             ->get();
     }
 
-    public function store(Request $request): JsonResponse {
-        $data = $request->validate([
-            "name" => ["required", "string", "max:150", new UniqueInCompany("asset_categories", "name")],
-            "description" => ["nullable", "string", "max:500"],
-            "status" => ["nullable", "in:active,inactive"]
-        ]);
+    public function store(StoreAssetCategoryRequest $request): JsonResponse {
+        $data = $request->validated();
         $category = AssetCategory::create([
             ...$data,
             "company_id" => $this->getCompanyId(),
@@ -37,13 +33,9 @@ final class AssetCategoryController extends BaseController {
         return response()->json(["bool" => true, "msg" => "Categoría de activo agregada.", "data" => $category], 201);
     }
 
-    public function update(Request $request, int $id): JsonResponse {
+    public function update(UpdateAssetCategoryRequest $request, int $id): JsonResponse {
         $category = AssetCategory::query()->where("company_id", $this->getCompanyId())->findOrFail($id);
-        $data = $request->validate([
-            "name" => ["required", "string", "max:150", new UniqueInCompany("asset_categories", "name", $id)],
-            "description" => ["nullable", "string", "max:500"],
-            "status" => ["required", "in:active,inactive"]
-        ]);
+        $data = $request->validated();
         $category->fill([...$data, "updated_by" => $this->getUserId()])->save();
         InitParamsCacheInvalidationService::invalidate(InitParamsCacheInvalidationService::ASSETS, $this->getCompanyId());
 

@@ -5,16 +5,10 @@ declare(strict_types=1);
 namespace App\Http\Requests\System\Organizations\Roles;
 
 use App\Rules\System\Defaults\BelongsToCompany;
-use Illuminate\Foundation\Http\FormRequest;
+use App\Http\Requests\System\Base\CompanyFormRequest;
 use Illuminate\Validation\Rule;
 
-class StoreRoleRequest extends FormRequest {
-
-    public function authorize(): bool {
-
-        return true;
-
-    }
+class StoreRoleRequest extends CompanyFormRequest {
 
     protected function prepareForValidation(): void {
 

@@ -133,7 +133,7 @@ class SaleController extends BaseController {
 
         try {
 
-            $sale = SaleService::findById($id);
+            $sale = SaleService::findById($this->getCompanyId(), $id);
 
             if(!Utilities::isDefined($sale)) {
 
@@ -148,7 +148,7 @@ class SaleController extends BaseController {
 
                 if(!Utilities::isDefined($branch)
                     || $branch->company_id !== $this->getCompanyId()
-                    || !AccessScopeService::canAccess(auth()->user(), AccessScopeService::BRANCH, (int) $branch->id)) {
+                    || !AccessScopeService::canAccess($this->getAuthUser(), AccessScopeService::BRANCH, (int) $branch->id)) {
 
                     return $this->errorResponse("unauthorized", [], 403);
 

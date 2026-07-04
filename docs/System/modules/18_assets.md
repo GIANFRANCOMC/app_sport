@@ -13,6 +13,7 @@ Administra bienes físicos por empresa, con clasificación, identificación inte
 - `assets.serial_number`: serie física opcional y única por empresa.
 - Modelo `AssetCategory`, relaciones en `Asset` y validaciones de pertenencia/unicidad.
 - Endpoints protegidos para listar, crear y editar categorías bajo `/assets/categories`.
+- `StoreAssetCategoryRequest` y `UpdateAssetCategoryRequest` reutilizan `CompanyFormRequest`, normalizan textos y aplican unicidad empresarial antes de persistir.
 - Búsqueda de activos por código interno, código patrimonial, serie, nombre o descripción.
 
 

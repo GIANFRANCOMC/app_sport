@@ -67,7 +67,7 @@ class TrackingCustomerController extends BaseController {
                 "start_date" => $request->input("start_date"),
                 "end_date" => $request->input("end_date"),
                 "allowed_branch_ids" => AccessScopeService::allowedIds(
-                    auth()->user(),
+                    $this->getAuthUser(),
                     AccessScopeService::BRANCH
                 ),
                 "options"     => $request->input("options")

@@ -611,7 +611,11 @@ final class ServiceOperationService {
 
             self::recordEvent($session, $actorId, "paused", null, null, $reason, ["item_id" => $itemId]);
 
-            return (array) DB::table("service_session_pauses")->find($id);
+            return (array) DB::table("service_session_pauses")
+                ->where("company_id", $companyId)
+                ->where("service_session_id", $sessionId)
+                ->where("id", $id)
+                ->first();
         });
 
     }
@@ -634,21 +638,33 @@ final class ServiceOperationService {
 
             $resumedAt = now();
             $minutes = Carbon::parse($pause->paused_at)->diffInMinutes($resumedAt);
-            DB::table("service_session_pauses")->where("id", $pause->id)->update([
-                "resumed_by" => $actorId,
-                "resumed_at" => $resumedAt,
-                "duration_minutes" => $minutes,
-                "status" => "finalized",
-                "updated_at" => now()
-            ]);
+            DB::table("service_session_pauses")
+                ->where("company_id", $companyId)
+                ->where("service_session_id", $sessionId)
+                ->where("id", $pause->id)
+                ->update([
+                    "resumed_by" => $actorId,
+                    "resumed_at" => $resumedAt,
+                    "duration_minutes" => $minutes,
+                    "status" => "finalized",
+                    "updated_at" => now()
+                ]);
 
             if($pause->service_session_item_id) {
-                ServiceSessionItem::query()->where("id", $pause->service_session_item_id)->increment("paused_minutes", $minutes);
+                ServiceSessionItem::query()
+                    ->where("company_id", $companyId)
+                    ->where("service_session_id", $sessionId)
+                    ->where("id", $pause->service_session_item_id)
+                    ->increment("paused_minutes", $minutes);
             }
 
             self::recordEvent($session, $actorId, "resumed", null, null, null, ["pause_id" => $pause->id]);
 
-            return (array) DB::table("service_session_pauses")->find($pause->id);
+            return (array) DB::table("service_session_pauses")
+                ->where("company_id", $companyId)
+                ->where("service_session_id", $sessionId)
+                ->where("id", $pause->id)
+                ->first();
         });
 
     }

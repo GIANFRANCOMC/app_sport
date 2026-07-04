@@ -6,7 +6,7 @@ namespace App\Http\Controllers\System\Organizations;
 
 use App\Helpers\System\Utilities;
 use App\Http\Controllers\System\Base\BaseController;
-use App\Http\Requests\System\Organizations\Roles\StoreRoleRequest;
+use App\Http\Requests\System\Organizations\Roles\{DuplicateRoleRequest, StoreRoleRequest};
 use App\Services\System\Base\InitParamsCacheInvalidationService;
 use App\Services\System\Organizations\Roles\{RoleConfigService, RolePermissionService, RoleService};
 use Illuminate\Http\{JsonResponse, Request};
@@ -83,17 +83,9 @@ class RoleController extends BaseController {
 
     }
 
-    public function duplicate(Request $request, int $id): JsonResponse {
+    public function duplicate(DuplicateRoleRequest $request, int $id): JsonResponse {
 
-        $data = $request->validate([
-            "name" => [
-                "required",
-                "string",
-                "max:80",
-                \Illuminate\Validation\Rule::unique("roles", "name")
-                    ->where("company_id", $this->getCompanyId())
-            ]
-        ]);
+        $data = $request->validated();
         $role = RoleService::duplicate(
             $this->getCompanyId(),
             $id,
