@@ -6,7 +6,7 @@ namespace App\Services\System\Warehouses\StockManagement;
 
 use App\Helpers\System\Utilities;
 use App\Models\System\Catalogs\Item;
-use App\Models\System\Warehouses\{Warehouse, WarehouseItem};
+use App\Models\System\Warehouses\{InventoryStockAlert, Warehouse, WarehouseItem};
 use App\Services\System\Warehouses\Inventory\InventoryMovementService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
@@ -247,6 +247,30 @@ class StockManagementService {
     public static function transfer(array $data) {
 
         return InventoryMovementService::transfer($data);
+
+    }
+
+    public static function getStockAlerts(
+        int $companyId,
+        array $filters,
+        int $perPage
+    ) {
+
+        return InventoryStockAlert::query()
+            ->where("company_id", $companyId)
+            ->with([
+                "warehouseItem.warehouse.branch:id,name",
+                "warehouseItem.item:id,internal_code,barcode,name",
+                "resolvedBy:id,name"
+            ])
+            ->when($filters["warehouse_id"] ?? null, fn($query, $warehouseId) =>
+                $query->whereHas("warehouseItem", fn($warehouseItem) =>
+                    $warehouseItem->where("warehouse_id", $warehouseId)
+                )
+            )
+            ->when($filters["status"] ?? null, fn($query, $status) => $query->where("status", $status))
+            ->orderByDesc("detected_at")
+            ->paginate($perPage);
 
     }
 

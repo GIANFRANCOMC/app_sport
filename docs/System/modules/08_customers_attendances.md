@@ -55,10 +55,10 @@ Para entradas biométricas, el dispositivo y `device_user_id` deben resolver una
 - Cambio de estado `active` a `finalized`.
 - Bloqueo al superar `attendance_limit_per_day`.
 
-## Mejoras futuras
+## Estado de mejoras
 
-- Hacer configurable si la membresía comparte límite diario entre sucursales o mantiene el alcance actual por sucursal.
-- Registrar el dispositivo biométrico exacto que originó cada asistencia.
-- Agregar tolerancia configurable ante lecturas biométricas repetidas en pocos segundos.
-- Incorporar auditoría de correcciones manuales sobre ingreso y salida.
-- Exportar asistencias por cliente, membresía, sucursal y rango de fechas.
+- `daily_limit_scope` define si el límite diario se cuenta por sucursal o por toda la empresa.
+- `biometric_device_id` y `source_reference` identifican la lectura exacta.
+- `biometric_duplicate_tolerance_seconds` evita duplicados en la ventana configurada.
+- `attendance_corrections` conserva valor anterior, valor solicitado, motivo, solicitante, revisor y decisión.
+- El listado backend acepta rango de fechas y carga dispositivo/correcciones; su presentación y exportación están en `docs/UI_UX_PENDING.md`.

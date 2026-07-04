@@ -33,6 +33,10 @@ class BookComplaint extends Model {
         "request",
         "evidence",
         "admin_response",
+        "public_response",
+        "tracking_code",
+        "responded_at",
+        "responded_by",
         "submitted_ip",
         "submitted_user_agent",
         "submitted_platform",
@@ -44,16 +48,18 @@ class BookComplaint extends Model {
         "updated_by"
     ];
 
+    protected $casts = ["responded_at" => "datetime"];
+
     // Appends
     public function getFormattedTypeAttribute() {
 
-        return self::getTypes("first", $this->attributes["type"])["label"] ?? "";
+        return self::getTypes("first", $this->attributes["type"] ?? "")["label"] ?? "";
 
     }
 
     public function getFormattedStatusAttribute() {
 
-        return self::getStatuses("first", $this->attributes["status"])["label"] ?? "";
+        return self::getStatuses("first", $this->attributes["status"] ?? "")["label"] ?? "";
 
     }
 
@@ -98,6 +104,25 @@ class BookComplaint extends Model {
     public function identityDocumentType() {
 
         return $this->belongsTo(IdentityDocumentType::class, "identity_document_type_id", "id");
+
+    }
+
+    public function attachments() {
+
+        return $this->hasMany(BookComplaintAttachment::class, "book_complaint_id");
+
+    }
+
+    public function statusHistories() {
+
+        return $this->hasMany(BookComplaintStatusHistory::class, "book_complaint_id")
+                    ->orderByDesc("changed_at");
+
+    }
+
+    public function respondedBy() {
+
+        return $this->belongsTo(User::class, "responded_by");
 
     }
 

@@ -85,7 +85,7 @@ class CategoryController extends BaseController {
         try {
 
             $data     = $this->prepareCategoryData($request);
-            $category = CategoryService::create($data, $this->getUserId());
+            $category = CategoryService::create($data, $this->getCompanyId(), $this->getUserId());
 
             if(!Utilities::isDefined($category)) {
 

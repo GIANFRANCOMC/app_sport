@@ -10,7 +10,10 @@ use App\Http\Requests\System\Organizations\UserAttendances\{
     CheckOutUserAttendanceRequest
 };
 use App\Services\System\Organizations\Users\{UserAttendanceConfigService, UserAttendanceService};
-use Illuminate\Http\{JsonResponse, Request};
+use App\Services\System\Base\CompanyReferenceDataService;
+use App\Services\System\Organizations\Companies\CompanySettingService;
+use Illuminate\Http\{JsonResponse, Request, Response};
+use Illuminate\Validation\ValidationException;
 
 final class UserAttendanceController extends BaseController {
 
@@ -46,8 +49,69 @@ final class UserAttendanceController extends BaseController {
                     "date_from" => $request->input("date_from"),
                     "date_to" => $request->input("date_to")
                 ],
-                $this->getPerPage($request)
+                $this->getPerPage($request),
+                $this->allowedBranchIds()
             )
+        ]);
+
+    }
+
+    public function export(Request $request): Response {
+
+        $filters = [
+            "branch_id" => $request->input("branch_id"),
+            "user_id" => $request->input("user_id"),
+            "status" => $request->input("status"),
+            "date_from" => $request->input("date_from"),
+            "date_to" => $request->input("date_to")
+        ];
+        $query = UserAttendanceService::getFilteredQuery(
+            $this->getCompanyId(),
+            $filters,
+            $this->allowedBranchIds()
+        );
+        $limit = max(100, (int) CompanySettingService::value(
+            $this->getCompanyId(),
+            "reports",
+            "export_max_rows",
+            25000
+        ));
+
+        if((clone $query)->limit($limit + 1)->count() > $limit) {
+            throw ValidationException::withMessages([
+                "filters" => "El reporte supera {$limit} registros. Reduce el rango o aplica más filtros."
+            ]);
+        }
+
+        $handle = fopen("php://temp", "r+");
+        fputcsv($handle, [
+            "Fecha", "Colaborador", "Sucursal", "Ingreso", "Salida", "Horas trabajadas",
+            "Minutos ordinarios", "Tardanza", "Horas extra", "Pausas", "Estado"
+        ], ";");
+
+        foreach($query->orderByDesc("checked_in_at")->get() as $attendance) {
+            fputcsv($handle, [
+                $attendance->work_date?->format("Y-m-d"),
+                $attendance->user?->name,
+                $attendance->branch?->name,
+                $attendance->checked_in_at?->format("Y-m-d H:i:s"),
+                $attendance->checked_out_at?->format("Y-m-d H:i:s"),
+                number_format((float) $attendance->worked_hours, 2, ".", ""),
+                (int) $attendance->ordinary_minutes,
+                (int) $attendance->late_minutes,
+                (int) $attendance->overtime_minutes,
+                (int) $attendance->break_minutes,
+                $attendance->status
+            ], ";");
+        }
+
+        rewind($handle);
+        $csv = stream_get_contents($handle);
+        fclose($handle);
+
+        return response("\xEF\xBB\xBF".$csv, 200, [
+            "Content-Type" => "text/csv; charset=UTF-8",
+            "Content-Disposition" => "attachment; filename=gympe-asistencia-laboral-".now()->format("Ymd-His").".csv"
         ]);
 
     }
@@ -164,7 +228,8 @@ final class UserAttendanceController extends BaseController {
                 $this->getCompanyId(),
                 (int) $request->input("user_id"),
                 $request->input("week_start"),
-                $request->filled("branch_id") ? (int) $request->input("branch_id") : null
+                $request->filled("branch_id") ? (int) $request->input("branch_id") : null,
+                $this->allowedBranchIds()
             )
         ]);
 
@@ -256,6 +321,13 @@ final class UserAttendanceController extends BaseController {
     protected function getTranslationNamespace(): string {
 
         return self::TRANSLATION_NAMESPACE;
+
+    }
+
+    private function allowedBranchIds(): ?array {
+
+        return CompanyReferenceDataService::for($this->getCompanyId(), $this->getUserId())
+            ->allowedBranchIds();
 
     }
 

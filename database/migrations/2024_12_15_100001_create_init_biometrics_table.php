@@ -118,12 +118,23 @@ return new class extends Migration {
             $table->unique(["company_id", "biometric_device_id", "event_uuid"], "bde_company_device_event_unique");
         });
 
+        Schema::table("attendances", function(Blueprint $table) {
+            $table->foreign("biometric_device_id")
+                  ->references("id")
+                  ->on("biometric_devices")
+                  ->nullOnDelete();
+        });
+
     }
 
     /**
      * Reverse the migrations.
      */
     public function down(): void {
+
+        Schema::table("attendances", function(Blueprint $table) {
+            $table->dropForeign(["biometric_device_id"]);
+        });
 
         Schema::dropIfExists("biometric_device_events");
         Schema::dropIfExists("customer_biometric_fingerprints");

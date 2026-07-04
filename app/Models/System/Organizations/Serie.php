@@ -37,13 +37,13 @@ class Serie extends Model {
     // Appends
     public function getLegibleSerieAttribute() {
 
-        return $this->attributes["code"].$this->attributes["number"];
+        return ($this->attributes["code"] ?? "").($this->attributes["number"] ?? "");
 
     }
 
     public function getFormattedStatusAttribute() {
 
-        return self::getStatuses("first", $this->attributes["status"])["label"] ?? "";
+        return self::getStatuses("first", $this->attributes["status"] ?? "")["label"] ?? "";
 
     }
 

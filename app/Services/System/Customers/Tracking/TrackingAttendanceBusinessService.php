@@ -9,6 +9,7 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use App\Models\System\Customers\{Attendance, Customer, Subscription};
 use App\Services\System\Devices\BiometricDevices\BiometricDeviceService;
+use App\Services\System\Organizations\Companies\CompanySettingService;
 
 /**
  * Business Service for Attendance Operations
@@ -88,9 +89,21 @@ class TrackingAttendanceBusinessService {
     public function checkAttendanceLimits(int $companyId, int $branchId, int $customerId, Carbon $startDate, int $limit): array {
 
         $dailyAttendances = Attendance::where("company_id", $companyId)
-            ->where("branch_id", $branchId)
             ->where("customer_id", $customerId)
             ->whereDate("start_date", $startDate->format("Y-m-d"));
+
+        $scope = (string) CompanySettingService::value(
+            $companyId,
+            CompanySettingService::CUSTOMER_ATTENDANCE,
+            "daily_limit_scope",
+            "branch"
+        );
+
+        if($scope !== "company") {
+
+            $dailyAttendances->where("branch_id", $branchId);
+
+        }
 
         $hasActive = (clone $dailyAttendances)
             ->where("status", "active")
@@ -118,6 +131,8 @@ class TrackingAttendanceBusinessService {
             "company_id"  => $data["company_id"],
             "branch_id"   => $data["branch_id"],
             "customer_id" => $data["customer_id"],
+            "biometric_device_id" => $data["biometric_device_id"] ?? null,
+            "source_reference" => $data["source_reference"] ?? null,
             "start_date"  => $data["start_date"],
             "end_date"    => $data["end_date"],
             "observation" => $data["observation"],
@@ -164,15 +179,36 @@ class TrackingAttendanceBusinessService {
         $type        = $data["type"] ?? "manual_form";
         $action      = $data["action"] ?? "automatic";
 
+        if($action === "checkout"
+            && in_array($type, ["biometric", "qr_camera", "qr_scanner", "qr_public"], true)
+            && !(bool) CompanySettingService::value(
+                $companyId,
+                CompanySettingService::CUSTOMER_ATTENDANCE,
+                "allow_automatic_checkout",
+                false
+            )) {
+
+            return [
+                "bool" => false,
+                "msg" => "La salida automática por QR o biometría no está habilitada para la empresa."
+            ];
+
+        }
+
         // For automatic checkin actions, use current time if start_date is not provided
         if ($startDate === null && $action === "automatic" && in_array($type, ["biometric", "qr_camera", "qr_scanner", "qr_public"])) {
             $startDate = now();
+        }
+
+        if($endDate === null && $action === "checkout" && in_array($type, ["biometric", "qr_camera", "qr_scanner", "qr_public"], true)) {
+            $endDate = now();
         }
 
         // Get customer
         // Handle biometric attendance (by device_user_id)
         $deviceId = $data["device_id"] ?? null;
         $deviceUserId = $data["device_user_id"] ?? null;
+        $sourceReference = $data["source_reference"] ?? null;
 
         if (Utilities::isDefined($deviceId) && Utilities::isDefined($deviceUserId) && $type === "biometric") {
 
@@ -212,6 +248,35 @@ class TrackingAttendanceBusinessService {
         }
 
         $response["customer"] = $customer;
+
+        if($type === "biometric" && Utilities::isDefined($deviceId)) {
+
+            $tolerance = max(0, (int) CompanySettingService::value(
+                $companyId,
+                CompanySettingService::CUSTOMER_ATTENDANCE,
+                "biometric_duplicate_tolerance_seconds",
+                10
+            ));
+
+            $duplicate = Attendance::query()
+                ->where("company_id", $companyId)
+                ->where("customer_id", $customer->id)
+                ->where("biometric_device_id", $deviceId)
+                ->where("created_at", ">=", now()->subSeconds($tolerance))
+                ->exists();
+
+            if($tolerance > 0 && $duplicate) {
+
+                return [
+                    "bool" => true,
+                    "msg" => "Lectura biométrica duplicada ignorada.",
+                    "action" => "ignored_duplicate",
+                    "customer" => $customer
+                ];
+
+            }
+
+        }
 
         // Check for active attendance
         $activeAttendance = Attendance::where("company_id", $companyId)
@@ -313,6 +378,8 @@ class TrackingAttendanceBusinessService {
             "company_id"  => $companyId,
             "branch_id"   => $branchId,
             "customer_id" => $customer->id,
+            "biometric_device_id" => $deviceId,
+            "source_reference" => $sourceReference,
             "start_date"  => $startDate,
             "end_date"    => null,
             "observation" => $observation,

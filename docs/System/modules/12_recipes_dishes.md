@@ -21,6 +21,7 @@
 - `recipe_topping_components`: insumos consumidos por un topping.
 - `recipe_dish_options`: sabores o variantes de un platillo.
 - `recipe_dish_option_components`: insumos consumidos por cada sabor o variante.
+- `recipe_waste_records`: mermas reales vinculadas a receta, insumo, almacén, costo y movimiento de inventario.
 
 ## Reglas de negocio
 
@@ -28,6 +29,8 @@
 - Los insumos deben pertenecer a la misma empresa.
 - La cantidad de insumo debe ser mayor a cero.
 - La merma esperada permite proyectar consumo real con tolerancia operativa.
+- La merma global de la receta y la merma particular de cada componente se aplican de forma acumulativa al consumo.
+- Una merma real genera una salida `recipe_waste`; no modifica silenciosamente el saldo ni se confunde con la merma esperada.
 - Los toppings pueden tener precio y consumo de insumos propio.
 - Los sabores permiten distribuir componentes adicionales segun eleccion del cliente.
 
@@ -39,10 +42,13 @@ La base de datos ya soporta formulas y opciones. El descuento automatico de insu
 
 Se agrega `cash_session_inventory_counts` para registrar conteos fisicos al cierre de caja principal. La caja principal no debe cerrar si existen cajas secundarias abiertas en la misma sucursal. Cuando el conteo real difiere del sistema, la diferencia debe generar un movimiento de inventario con origen `physical_count`, observacion y responsable.
 
-## Mejoras sugeridas
+## Estado de mejoras
 
-- Integrar selector de toppings y sabores en Venta POS.
-- Generar consumo de insumos al confirmar venta, agrupando por receta y opciones elegidas.
-- Crear pantalla de conteo fisico en cierre de caja principal con busqueda por producto/codigo de barras.
-- Agregar reporte de merma por dia, sucursal, caja y platillo.
-- Permitir costos teoricos por receta usando `warehouse_items.average_cost`.
+- Al confirmar una venta, `RecipeConsumptionService` consume los insumos base, opciones y toppings elegidos, incluyendo merma configurada.
+- Los consumos se agrupan por insumo y generan movimientos `recipe_sale` vinculados al detalle de venta y receta.
+- La anulación con reposición automática revierte tanto productos directos como insumos de receta en el almacén original.
+- El conteo físico de cierre principal ya genera correcciones trazables; su pantalla y los selectores de toppings/sabores permanecen en `docs/UI_UX_PENDING.md`.
+- `GET /recipes/{id}/theoretical-cost?warehouse_id=...` calcula costo base por porción, opciones y toppings usando el costo promedio del almacén; también informa insumos sin costo disponible.
+- `GET /recipes/waste-records` consulta mermas reales por receta, almacén, insumo y fecha.
+- `POST /recipes/{id}/waste-records` registra la merma, su costo histórico y el movimiento de inventario en una sola transacción.
+- La presentación analítica de costo y merma permanece en `docs/UI_UX_PENDING.md`; los cálculos y la trazabilidad ya pertenecen al backend.

@@ -78,8 +78,9 @@ Cada movimiento conserva empresa, almacén, producto, usuario, tipo, origen, mot
 - Historial de emisión y anulación mediante `series_correlative_movements`.
 - Historial de movimientos físicos mediante `inventory_movements`.
 
-## Mejoras futuras
+## Estado de mejoras
 
-- Crear una pantalla de auditoría de correlativos con filtros por sucursal, serie, responsable, origen y fecha.
-- Permitir exportar la bitácora de correlativos sin alterar su carácter inmutable.
-- Alertar sobre saltos de correlativo causados por integraciones externas o cargas históricas.
+- `GET /branches/series/audit` filtra por sucursal, serie, responsable, origen, acción y fecha.
+- La respuesta incluye detección de correlativos faltantes entre el primero y el último emitido.
+- `GET /branches/series/audit/export` descarga la bitácora sin modificarla.
+- La pantalla e indicadores de saltos están en `docs/UI_UX_PENDING.md`.

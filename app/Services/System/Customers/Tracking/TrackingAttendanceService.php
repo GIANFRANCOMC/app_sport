@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace App\Services\System\Customers\Tracking;
 
 use App\Helpers\System\{TranslationHelper, Utilities};
-use App\Models\System\Customers\Attendance;
+use App\Models\System\Customers\{Attendance, AttendanceCorrection};
 use App\Models\System\Organizations\Branch;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\DB;
+use DomainException;
 
 /**
  * Service class for managing Tracking Attendance operations
@@ -41,7 +43,12 @@ class TrackingAttendanceService {
      * @param int $perPage Items per page
      * @return LengthAwarePaginator
      */
-    public static function getPaginatedList(int $companyId, array $filters = [], int $perPage = 15): LengthAwarePaginator {
+    public static function getPaginatedList(
+        int $companyId,
+        array $filters = [],
+        int $perPage = 15,
+        ?array $allowedBranchIds = null
+    ): LengthAwarePaginator {
 
         $branch = Branch::where("id", $filters["branch_id"] ?? null)
                         ->where("company_id", $companyId)
@@ -55,14 +62,30 @@ class TrackingAttendanceService {
 
         $query = Attendance::where("company_id", $companyId)
                            ->where("branch_id", $branch->id)
-                           ->whereDate("created_at", $filters["start_date"] ?? date("Y-m-d"));
+                           ->when($allowedBranchIds !== null, fn($query) => $query->whereIn("branch_id", $allowedBranchIds));
+
+        if(Utilities::isDefined($filters["start_date"] ?? null)) {
+
+            $query->whereDate("start_date", ">=", $filters["start_date"]);
+
+        }else {
+
+            $query->whereDate("start_date", date("Y-m-d"));
+
+        }
+
+        if(Utilities::isDefined($filters["end_date"] ?? null)) {
+
+            $query->whereDate("start_date", "<=", $filters["end_date"]);
+
+        }
 
         // Apply filters
         self::applyFilters($query, $filters);
 
         // Apply ordering
         $query->orderBy("id", "DESC")
-              ->with(["branch", "customer"]);
+              ->with(["branch", "customer", "biometricDevice", "corrections"]);
 
         return $query->paginate($perPage);
 
@@ -117,6 +140,72 @@ class TrackingAttendanceService {
         $attendance->save();
 
         return $attendance;
+
+    }
+
+    public static function requestCorrection(Attendance $attendance, array $data, ?int $userId): AttendanceCorrection {
+
+        if(AttendanceCorrection::query()
+            ->where("attendance_id", $attendance->id)
+            ->where("status", "pending")
+            ->exists()) {
+
+            throw new DomainException("La asistencia ya tiene una corrección pendiente de revisión.");
+
+        }
+
+        return AttendanceCorrection::create([
+            "company_id" => $attendance->company_id,
+            "attendance_id" => $attendance->id,
+            "requested_by" => $userId,
+            "previous_start_date" => $attendance->start_date,
+            "previous_end_date" => $attendance->end_date,
+            "requested_start_date" => $data["start_date"] ?? $attendance->start_date,
+            "requested_end_date" => $data["end_date"] ?? $attendance->end_date,
+            "reason" => $data["reason"],
+            "status" => "pending"
+        ]);
+
+    }
+
+    public static function reviewCorrection(
+        AttendanceCorrection $correction,
+        string $decision,
+        ?string $note,
+        ?int $userId
+    ): AttendanceCorrection {
+
+        if($correction->status !== "pending") {
+
+            throw new DomainException("La corrección ya fue revisada.");
+
+        }
+
+        return DB::transaction(function() use($correction, $decision, $note, $userId) {
+
+            $correction->loadMissing("attendance");
+
+            if($decision === "approved") {
+
+                $correction->attendance->forceFill([
+                    "start_date" => $correction->requested_start_date,
+                    "end_date" => $correction->requested_end_date,
+                    "updated_at" => now(),
+                    "updated_by" => $userId
+                ])->save();
+
+            }
+
+            $correction->forceFill([
+                "status" => $decision,
+                "reviewed_by" => $userId,
+                "review_note" => $note,
+                "reviewed_at" => now()
+            ])->save();
+
+            return $correction->fresh(["attendance", "requestedBy", "reviewedBy"]);
+
+        });
 
     }
 

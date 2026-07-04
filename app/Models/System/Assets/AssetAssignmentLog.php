@@ -26,6 +26,10 @@ class AssetAssignmentLog extends Model {
         "user_id",
         "branch_id",
         "asset_id",
+        "from_user_id",
+        "to_user_id",
+        "from_branch_id",
+        "to_branch_id",
         "action_type",
         "quantity",
         "note",
@@ -79,6 +83,30 @@ class AssetAssignmentLog extends Model {
     public function asset() {
 
         return $this->belongsTo(Asset::class, "asset_id", "id");
+
+    }
+
+    public function fromUser() {
+
+        return $this->belongsTo(User::class, "from_user_id", "id");
+
+    }
+
+    public function toUser() {
+
+        return $this->belongsTo(User::class, "to_user_id", "id");
+
+    }
+
+    public function fromBranch() {
+
+        return $this->belongsTo(Branch::class, "from_branch_id", "id");
+
+    }
+
+    public function toBranch() {
+
+        return $this->belongsTo(Branch::class, "to_branch_id", "id");
 
     }
 

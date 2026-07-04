@@ -12,6 +12,7 @@ final class PurchaseTax extends Model {
     protected $table = "purchase_taxes";
 
     protected $fillable = [
+        "company_id",
         "purchase_header_id",
         "tax_id",
         "name",

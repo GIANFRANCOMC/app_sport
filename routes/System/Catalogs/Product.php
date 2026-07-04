@@ -13,9 +13,5 @@ Route::get("/list",       [ProductController::class, "list"])->name("$entity.lis
 Route::get("/export",     [ProductController::class, "export"])->name("$entity.export");
 Route::get("/import-template", [ProductController::class, "importTemplate"])->name("$entity.import-template");
 Route::post("/import",    [ProductController::class, "import"])->name("$entity.import");
-Route::get("/create",     [ProductController::class, "create"])->name("$entity.create");
 Route::post("",           [ProductController::class, "store"])->name("$entity.store");
-Route::get("/{id}/edit",  [ProductController::class, "edit"])->name("$entity.edit");
-Route::get("/{id}",       [ProductController::class, "show"])->name("$entity.show");
 Route::patch("/{id}",     [ProductController::class, "update"])->name("$entity.update");
-Route::delete("/{id}",    [ProductController::class, "destroy"])->name("{$entity}.destroy");

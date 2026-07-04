@@ -180,10 +180,13 @@ La toma física usa el origen `physical_count`, separado de entradas y salidas m
 
 El módulo Compras está conectado. Crear el documento no cambia existencias; cada recepción genera entradas `purchase` con costo unitario y actualiza el promedio ponderado. Una compra con recepción no se anula: la mercadería que sale se registra como `supplier_return`.
 
-## Pendientes
+## Estado de mejoras
 
-- Alertas y notificaciones automáticas al alcanzar stock mínimo.
-- Configuración visual del método de valorización; actualmente se administra por base de datos.
+- `inventory_stock_alerts` abre o actualiza una alerta al alcanzar el mínimo y la resuelve automáticamente al recuperar stock.
+- `GET /stocks_management/alerts` permite consultar alertas abiertas/resueltas por almacén.
+- `inventory_guides` e `inventory_guide_items` respaldan guías confirmadas de entrada/salida; cada detalle genera su movimiento inmutable.
+- Cantidades, saldos y movimientos conservan cuatro decimales. Esto evita perder consumos pequeños de recetas, insumos fraccionados o traslados medidos por peso/volumen.
+- La configuración visual del método de valorización y las pantallas de alertas/guías están en `docs/UI_UX_PENDING.md`.
 
 ## Evolución del módulo
 
@@ -195,11 +198,7 @@ La navegación funcional evita nombres duplicados:
 - **Toma física** es una corrección con origen `physical_count`.
 - **Reposiciones y devoluciones** usan `replenishment`, `customer_return` y `supplier_return`.
 
-Requieren módulos documentales independientes y permanecen pendientes:
-
-- Guías de entrada y salida, con numeración, estado y detalle.
-- App de almaceneros, con permisos y experiencia móvil propia.
-- Reportes consolidados de inventario y stock mínimo/máximo entre varios almacenes.
+El backend de guías y reportes por almacén está disponible. La app móvil de almaceneros y las vistas consolidadas entre almacenes son tareas de interfaz registradas en `docs/UI_UX_PENDING.md`.
 ## Actualizacion: ventas por almacen y caja
 
 - Las ventas ahora guardan `sales_header.warehouse_id`, de modo que el descuento de stock ocurre en el almacen seleccionado por el usuario y no en el primero disponible.

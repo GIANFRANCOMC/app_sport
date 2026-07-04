@@ -31,10 +31,12 @@ Administra sedes fisicas de la empresa.
 - Ventas, asistencias, activos y biometricos dependen de sucursal.
 - Crear o editar una sucursal invalida también `ProductConfigService`, porque Productos carga almacenes por sucursal.
 
-## Mejoras sugeridas
+## Estado de mejoras
 
-- Documentar exactamente efectos automaticos al crear sucursal.
-- Validar capacidad para futuras reglas de aforo.
+- Crear una sucursal genera sus series activas por tipo documental y un almacén predeterminado con relaciones de producto en cero.
+- `capacity` se valida como entero no negativo y queda disponible para aforo de mesas/estaciones.
+- No puede inactivarse una sucursal con activos asignados a colaboradores.
+- `map_url` conserva el enlace cartográfico de la sucursal. Su captura y la separación visual de configuración pública/fiscal están en `docs/UI_UX_PENDING.md`.
 
 ## Configuración y validación compartida
 
@@ -42,4 +44,3 @@ Administra sedes fisicas de la empresa.
 - El addon visual y la normalización backend se desactivan cuando el valor configurado es nulo o vacío.
 - Store y Update extienden `CompanyFormRequest`, normalizan cadenas y aplican `AppliesInternalCodePrefix`.
 - Los resúmenes de validación recuperan el nombre del campo; los mensajes bajo el control permanecen compactos.
-- Agregar coordenadas si se requiere mapa.

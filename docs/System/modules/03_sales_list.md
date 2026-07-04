@@ -36,9 +36,10 @@ Lista ventas realizadas, permite filtrar y acceder a detalle, anulacion o impres
 - `sales_header.total`
 - `sales_header.status`
 
-## Mejoras sugeridas
+## Estado de mejoras
 
-- Validar autorizacion por sucursal antes de anular.
-- Agregar filtros por rango de fechas.
-- Agregar columna de sucursal en listado si no esta visible.
-- Agregar test de listado multiempresa.
+- El backend valida empresa y alcance de sucursal antes de anular.
+- El listado acepta `start_date`, `end_date` y `branch_id`, además de los filtros existentes.
+- Cada venta carga la sucursal emisora mediante `serie.branch` sin consultas adicionales por fila.
+- La presentación de la sucursal y los filtros en Vue está registrada en `docs/UI_UX_PENDING.md`.
+- Las pruebas multiempresa se añadirán únicamente cuando sean solicitadas expresamente.

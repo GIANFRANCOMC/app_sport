@@ -15,6 +15,7 @@ use App\Services\System\Devices\BiometricDevices\BiometricDeviceService;
 use Carbon\Carbon;
 use DomainException;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 
 final class UserAttendanceService {
@@ -309,12 +310,29 @@ final class UserAttendanceService {
     public static function getPaginatedList(
         int $companyId,
         array $filters = [],
-        int $perPage = 15
+        int $perPage = 15,
+        ?array $allowedBranchIds = null
     ): LengthAwarePaginator {
+
+        return self::getFilteredQuery($companyId, $filters, $allowedBranchIds)
+            ->orderByDesc("checked_in_at")
+            ->paginate($perPage);
+
+    }
+
+    public static function getFilteredQuery(
+        int $companyId,
+        array $filters = [],
+        ?array $allowedBranchIds = null
+    ): Builder {
 
         $query = UserAttendance::query()
             ->where("company_id", $companyId)
             ->with(["branch", "user"]);
+
+        if($allowedBranchIds !== null) {
+            $query->whereIn("branch_id", $allowedBranchIds);
+        }
 
         if(!empty($filters["branch_id"])) {
             $query->where("branch_id", (int) $filters["branch_id"]);
@@ -336,7 +354,7 @@ final class UserAttendanceService {
             $query->whereDate("work_date", "<=", $filters["date_to"]);
         }
 
-        return $query->orderByDesc("checked_in_at")->paginate($perPage);
+        return $query;
 
     }
 
@@ -344,7 +362,8 @@ final class UserAttendanceService {
         int $companyId,
         int $userId,
         ?string $weekStart = null,
-        ?int $branchId = null
+        ?int $branchId = null,
+        ?array $allowedBranchIds = null
     ): array {
 
         $start = Carbon::parse($weekStart ?? now())->startOfWeek(Carbon::MONDAY);
@@ -355,6 +374,10 @@ final class UserAttendanceService {
             ->where("user_id", $userId)
             ->where("status", self::STATUS_FINALIZED)
             ->whereBetween("work_date", [$start->toDateString(), $end->toDateString()]);
+
+        if($allowedBranchIds !== null) {
+            $query->whereIn("branch_id", $allowedBranchIds);
+        }
 
         if($branchId) {
             $query->where("branch_id", $branchId);

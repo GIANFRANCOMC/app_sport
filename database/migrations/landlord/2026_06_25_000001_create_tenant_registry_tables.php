@@ -40,10 +40,26 @@ return new class extends Migration {
             $table->foreign('tenant_database_id')->references('id')->on('tenant_databases')->onDelete('cascade');
         });
 
+        Schema::connection($this->connection)->create('tenant_audit_logs', function(Blueprint $table): void {
+            $table->id();
+            $table->unsignedBigInteger('tenant_database_id')->nullable();
+            $table->unsignedBigInteger('company_id')->nullable();
+            $table->string('action', 80);
+            $table->enum('result', ['success', 'failure', 'blocked'])->default('success');
+            $table->string('host', 255)->nullable();
+            $table->string('ip_address', 45)->nullable();
+            $table->string('actor', 150)->nullable();
+            $table->json('context')->nullable();
+            $table->timestamp('occurred_at')->useCurrent();
+
+            $table->foreign('tenant_database_id')->references('id')->on('tenant_databases')->nullOnDelete();
+        });
+
     }
 
     public function down(): void {
 
+        Schema::connection($this->connection)->dropIfExists('tenant_audit_logs');
         Schema::connection($this->connection)->dropIfExists('tenant_domains');
         Schema::connection($this->connection)->dropIfExists('tenant_databases');
 

@@ -8,11 +8,12 @@ use App\Http\Controllers\System\Base\BaseController;
 use App\Helpers\System\{Utilities};
 use Illuminate\Http\{JsonResponse, Request};
 use Carbon\Carbon;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\{Log, URL};
 
 use App\Http\Requests\System\Organizations\Branches\{StoreBranchRequest, UpdateBranchRequest};
 use App\Services\System\Base\{InitParamsCacheInvalidationService};
 use App\Services\System\Organizations\Branches\{BranchConfigService, BranchService};
+use App\Services\System\Organizations\Branches\SerieService;
 use App\Models\System\Organizations\{Branch};
 
 class BranchController extends BaseController {
@@ -85,7 +86,7 @@ class BranchController extends BaseController {
         try {
 
             $data   = $this->prepareBranchData($request);
-            $branch = BranchService::create($data, $this->getUserId());
+            $branch = BranchService::create($data, $this->getCompanyId(), $this->getUserId());
 
             if(!Utilities::isDefined($branch)) {
 
@@ -187,6 +188,86 @@ class BranchController extends BaseController {
     public function destroy(Branch $record): JsonResponse {
 
         return $this->errorResponse("not_implemented", [], 501);
+
+    }
+
+    public function seriesAudit(Request $request): JsonResponse {
+
+        $filters = $request->only([
+            "branch_id", "serie_id", "user_id", "source", "action", "date_from", "date_to"
+        ]);
+
+        return response()->json([
+            "bool" => true,
+            "data" => SerieService::auditQuery($this->getCompanyId(), $filters)
+                ->paginate($this->getPerPage($request, Utilities::$per_page_default)),
+            "gaps" => SerieService::detectGaps(
+                $this->getCompanyId(),
+                $request->filled("branch_id") ? (int) $request->branch_id : null
+            )
+        ]);
+
+    }
+
+    public function exportSeriesAudit(Request $request) {
+
+        $rows = SerieService::auditQuery($this->getCompanyId(), $request->only([
+            "branch_id", "serie_id", "user_id", "source", "action", "date_from", "date_to"
+        ]))->get();
+
+        return response()->streamDownload(function() use($rows) {
+
+            $output = fopen("php://output", "w");
+            fputs($output, "\xEF\xBB\xBF");
+            fputcsv($output, ["Fecha", "Sucursal", "Serie", "Correlativo", "Acción", "Origen", "Responsable"], ";");
+
+            foreach($rows as $row) {
+
+                fputcsv($output, [
+                    $row->occurred_at,
+                    $row->branch_name,
+                    "{$row->serie_code}{$row->serie_number}",
+                    $row->sequential,
+                    $row->action,
+                    $row->source,
+                    $row->user_name
+                ], ";");
+
+            }
+
+            fclose($output);
+
+        }, "auditoria-correlativos-" . now()->format("Ymd-His") . ".csv", [
+            "Content-Type" => "text/csv; charset=UTF-8"
+        ]);
+
+    }
+
+    public function publicAttendanceLink(Request $request, int $id): JsonResponse {
+
+        $branch = BranchService::findByIdAndCompany($id, $this->getCompanyId(), ["active"]);
+        if(!$branch) {
+            return $this->notFoundResponse();
+        }
+
+        $minutes = max(5, min((int) $request->input("expires_in_minutes", 1440), 10080));
+        $expiresAt = now()->addMinutes($minutes);
+        $url = URL::temporarySignedRoute(
+            "guest.tracking_attendances.signed",
+            $expiresAt,
+            [
+                "company_slug" => auth()->user()->company->slug,
+                "branch" => $branch->id
+            ]
+        );
+
+        return response()->json([
+            "bool" => true,
+            "data" => [
+                "url" => $url,
+                "expires_at" => $expiresAt->toIso8601String()
+            ]
+        ]);
 
     }
 

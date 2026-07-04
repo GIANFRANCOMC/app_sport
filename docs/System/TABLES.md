@@ -20,6 +20,12 @@ No almacena credenciales, host ni puerto. La conexión usa exclusivamente config
 Subdominios asociados a cada tenant. Campos: `tenant_database_id`, `domain`, `type`, `is_primary` y `status`. `type` se conserva como `subdomain`; dominios personalizados no son resueltos por esta aplicación.
 
 Relaciones: pertenece a `tenant_databases`. `domain` debe ser único para evitar que dos clientes resuelvan al mismo host.
+### tenant_audit_logs
+
+Bitácora operativa de landlord. Campos: `tenant_database_id`, `company_id`, `action`, `result`, `host`, `ip_address`, `actor`, `context` y `occurred_at`.
+
+Registra aprovisionamiento, verificación de salud, suspensión, reactivación, limpieza de caché, ejecución tenant del scheduler y rechazos contra hosts desconocidos. `context` contiene únicamente metadatos operativos; nunca credenciales ni identificadores de sesión en texto plano. La relación con `tenant_databases` es nullable para poder auditar hosts que todavía no corresponden a un tenant conocido.
+
 ## Maestros generales
 
 ### identity_document_types
@@ -112,9 +118,17 @@ Reglas:
 
 ### users
 
+Además de los datos del colaborador, `users.session_version` funciona como contador de revocación. Cambiar contraseña o inactivar la cuenta incrementa este valor, elimina `remember_token` y revoca tokens personales; la siguiente solicitud invalida cualquier sesión con una versión anterior.
+
 Usuarios internos del sistema. Campos: `company_id`, `role_id`, `branch_scope_mode`, `cash_register_scope_mode`, `warehouse_scope_mode`, `identity_document_type_id`, documento, nombre, email, password, teléfono, género, nacimiento y `status`.
 
 Relaciones: pertenece a empresa, rol y tipo de documento. Puede vender, crear registros, recibir activos y tener preferencias. Los modos `inherit/restricted` determinan si hereda el alcance del perfil o lo reduce.
+
+### authentication_events
+
+Historial de autenticación por tenant y empresa. Campos: `company_id`, `user_id`, `tenant_slug`, `event_type`, `result`, `email`, `ip_address`, `user_agent`, `session_hash`, `reason` y `occurred_at`.
+
+Relaciones: pertenece a `companies` y opcionalmente a `users`. Los intentos fallidos pueden no resolver un usuario. `session_hash` es SHA-256 del ID de sesión y nunca contiene el valor reutilizable. La tabla sirve para auditoría de accesos, bloqueos, cierres y revocaciones.
 
 ### role_branches, role_cash_registers y role_warehouses
 
@@ -219,6 +233,12 @@ Relaciones: permiten que un adicional vendido tenga costo comercial y consumo op
 Opciones o sabores de un platillo. Sirven para casos como pizzas de varios sabores, donde el producto base existe pero cada sabor consume insumos adicionales.
 
 Relaciones: cada opcion pertenece a `recipe_dishes` y cada componente usa `items`.
+
+### recipe_waste_records
+
+Merma real registrada durante preparación o cierre operativo. Campos: `company_id`, `recipe_dish_id`, `warehouse_id`, `item_id`, `inventory_movement_id`, `quantity`, `unit_cost`, `total_cost`, `reason`, `occurred_at` y auditoría.
+
+Relaciones: pertenece a receta opcional, almacén, insumo, movimiento de inventario y usuario responsable. El movimiento `recipe_waste` es obligatorio y conserva la salida física; por ello el registro no puede existir sin trazabilidad de Kardex.
 
 ## Clientes, membresias y asistencias
 
@@ -507,6 +527,26 @@ Gastos adicionales de compra como flete o seguro, con importe y método de distr
 
 Devoluciones al proveedor vinculadas con compra, recepción, almacén, detalles y movimientos de inventario.
 
+### attendance_corrections
+
+Auditoría de correcciones de asistencia de clientes. Conserva fechas anteriores, fechas solicitadas, motivo, solicitante, decisión, revisor y fecha de revisión.
+
+### inventory_stock_alerts
+
+Estado persistente de stock bajo por `warehouse_item`. Solo mantiene una alerta abierta por saldo y registra cuándo se resolvió y quién produjo la recuperación cuando corresponde.
+
+### inventory_guides / inventory_guide_items
+
+Cabecera y detalle de guías de entrada/salida. Cada detalle enlaza el movimiento de inventario que materializó la operación.
+
+### purchase_headers / purchase_items
+
+Además del documento y recepción, conservan referencia interna, entrega, aprobación, gastos, saldo y estado de pago. Cada detalle separa costo original, gasto distribuido y costo unitario de inventario.
+
+### book_complaint_attachments / book_complaint_status_histories
+
+Evidencias múltiples e historial inmutable de estados del libro de reclamaciones.
+
 ## Criterio de migraciones
 
 - Separar estructura y datos iniciales: las migraciones de creación definen tablas, claves primarias y claves foráneas; los inserts iniciales viven en una migración dedicada.
@@ -518,8 +558,9 @@ Devoluciones al proveedor vinculadas con compra, recepción, almacén, detalles 
 - Los montos y cantidades usan `decimal(16, 4)` como estándar operativo. Las cadenas deben tener longitud explícita; usar `text`/`longText` cuando el contenido supere una cadena razonable.
 - Evitar comentarios decorativos o símbolos en migraciones. Los comentarios sólo deben explicar una decisión técnica que no sea evidente.
 
-## Pendientes y mejoras por realizar
+## Estado de revisión
 
-- Completar el endurecimiento de `company_id` nullable a requerido en tablas heredadas cuando se confirme que todos los servicios lo poblan siempre.
-- Revisar `unique(...)` por empresa en tablas donde la regla de negocio sea realmente estructural; evitar índices explícitos no justificados.
-- Separar migraciones grandes por dominio cuando se cierre la fase reiniciable.
+- Los servicios modificados en esta fase poblan `company_id` en almacenes, saldos, preferencias, ventas, compras, recetas, caja y activos.
+- Las nuevas tablas declaran clave foránea hacia `companies` y sus relaciones operativas.
+- La separación física de migraciones grandes se pospone hasta cerrar la fase reiniciable: mover bloques ahora cambiaría timestamps y dependencias sin aportar una mejora funcional.
+- Las reglas únicas se mantienen solo cuando expresan identidad estructural, como correlativos, referencias internas o códigos de seguimiento.

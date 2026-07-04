@@ -476,6 +476,59 @@ return new class extends Migration {
 
         });
 
+        Schema::create("inventory_stock_alerts", function(Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger("company_id");
+            $table->unsignedBigInteger("warehouse_item_id");
+            $table->decimal("quantity", 16, 4);
+            $table->decimal("minimum_stock", 16, 4);
+            $table->enum("status", ["open", "resolved"])->default("open");
+            $table->timestamp("detected_at")->useCurrent();
+            $table->timestamp("resolved_at")->nullable();
+            $table->unsignedBigInteger("resolved_by")->nullable();
+            $table->timestamps();
+
+            $table->foreign("company_id")->references("id")->on("companies")->onDelete("cascade");
+            $table->foreign("warehouse_item_id")->references("id")->on("warehouse_items")->onDelete("cascade");
+            $table->foreign("resolved_by")->references("id")->on("users")->nullOnDelete();
+        });
+        Schema::create("inventory_guides", function(Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger("company_id");
+            $table->unsignedBigInteger("warehouse_id");
+            $table->string("number", 40);
+            $table->enum("guide_type", ["entry", "exit"]);
+            $table->date("issue_date");
+            $table->string("reason", 255);
+            $table->string("reference", 100)->nullable();
+            $table->enum("status", ["confirmed", "canceled"])->default("confirmed");
+            $table->timestamp("confirmed_at")->useCurrent();
+            $table->unsignedBigInteger("confirmed_by")->nullable();
+            $table->timestamp("canceled_at")->nullable();
+            $table->unsignedBigInteger("canceled_by")->nullable();
+            $table->timestamps();
+
+            $table->foreign("company_id")->references("id")->on("companies")->onDelete("cascade");
+            $table->foreign("warehouse_id")->references("id")->on("warehouses")->restrictOnDelete();
+            $table->foreign("confirmed_by")->references("id")->on("users")->nullOnDelete();
+            $table->foreign("canceled_by")->references("id")->on("users")->nullOnDelete();
+            $table->unique(["company_id", "number"]);
+        });
+        Schema::create("inventory_guide_items", function(Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger("company_id");
+            $table->unsignedBigInteger("inventory_guide_id");
+            $table->unsignedBigInteger("item_id");
+            $table->unsignedBigInteger("inventory_movement_id");
+            $table->decimal("quantity", 16, 4);
+            $table->decimal("unit_cost", 16, 4)->default(0);
+            $table->timestamps();
+
+            $table->foreign("company_id")->references("id")->on("companies")->onDelete("cascade");
+            $table->foreign("inventory_guide_id")->references("id")->on("inventory_guides")->onDelete("cascade");
+            $table->foreign("item_id")->references("id")->on("items")->restrictOnDelete();
+            $table->foreign("inventory_movement_id")->references("id")->on("inventory_movements")->restrictOnDelete();
+        });
         Schema::create("recipe_dishes", function(Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger("company_id");
@@ -613,6 +666,29 @@ return new class extends Migration {
             $table->foreign("item_id")->references("id")->on("items")->onDelete("cascade");
         });
 
+        Schema::create("recipe_waste_records", function(Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger("company_id");
+            $table->unsignedBigInteger("recipe_dish_id")->nullable();
+            $table->unsignedBigInteger("warehouse_id");
+            $table->unsignedBigInteger("item_id");
+            $table->unsignedBigInteger("inventory_movement_id");
+            $table->decimal("quantity", 16, 4);
+            $table->decimal("unit_cost", 16, 4)->default(0);
+            $table->decimal("total_cost", 16, 4)->default(0);
+            $table->string("reason", 500);
+            $table->timestamp("occurred_at")->useCurrent();
+            $table->timestamp("created_at")->useCurrent()->nullable();
+            $table->unsignedBigInteger("created_by")->nullable();
+
+            $table->foreign("company_id")->references("id")->on("companies")->onDelete("cascade");
+            $table->foreign("recipe_dish_id")->references("id")->on("recipe_dishes")->nullOnDelete();
+            $table->foreign("warehouse_id")->references("id")->on("warehouses")->restrictOnDelete();
+            $table->foreign("item_id")->references("id")->on("items")->restrictOnDelete();
+            $table->foreign("inventory_movement_id")->references("id")->on("inventory_movements")->restrictOnDelete();
+            $table->foreign("created_by")->references("id")->on("users")->nullOnDelete();
+        });
+
         Schema::create("cash_session_inventory_counts", function(Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger("company_id");
@@ -689,10 +765,14 @@ return new class extends Migration {
         Schema::create("asset_assignment_logs", function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger("company_id");
-            $table->unsignedBigInteger("action_by");
-            $table->unsignedBigInteger("user_id");
-            $table->unsignedBigInteger("branch_id");
+            $table->unsignedBigInteger("action_by")->nullable();
+            $table->unsignedBigInteger("user_id")->nullable();
+            $table->unsignedBigInteger("branch_id")->nullable();
             $table->unsignedBigInteger("asset_id");
+            $table->unsignedBigInteger("from_user_id")->nullable();
+            $table->unsignedBigInteger("to_user_id")->nullable();
+            $table->unsignedBigInteger("from_branch_id")->nullable();
+            $table->unsignedBigInteger("to_branch_id")->nullable();
             $table->enum("action_type", ["assigned", "transferred", "returned", "retired"]);
             $table->decimal("quantity", 16, 4);
             $table->text("note")->nullable();
@@ -704,10 +784,14 @@ return new class extends Migration {
             $table->integer("updated_by")->nullable();
             $table->foreign("company_id")->references("id")->on("companies")->onDelete("cascade");
 
-            $table->foreign("action_by")->references("id")->on("users")->onDelete("cascade");
-            $table->foreign("user_id")->references("id")->on("users")->onDelete("cascade");
-            $table->foreign("branch_id")->references("id")->on("branches")->onDelete("cascade");
-            $table->foreign("asset_id")->references("id")->on("assets")->onDelete("cascade");
+            $table->foreign("action_by")->references("id")->on("users")->nullOnDelete();
+            $table->foreign("user_id")->references("id")->on("users")->nullOnDelete();
+            $table->foreign("branch_id")->references("id")->on("branches")->nullOnDelete();
+            $table->foreign("asset_id")->references("id")->on("assets")->restrictOnDelete();
+            $table->foreign("from_user_id")->references("id")->on("users")->nullOnDelete();
+            $table->foreign("to_user_id")->references("id")->on("users")->nullOnDelete();
+            $table->foreign("from_branch_id")->references("id")->on("branches")->nullOnDelete();
+            $table->foreign("to_branch_id")->references("id")->on("branches")->nullOnDelete();
         });
         // Initial data lives in 2024_12_31_235959_insert_initial_system_data.php.
 
@@ -722,6 +806,7 @@ return new class extends Migration {
         Schema::dropIfExists("asset_assignments");
         Schema::dropIfExists("branch_assets");
         Schema::dropIfExists("cash_session_inventory_counts");
+        Schema::dropIfExists("recipe_waste_records");
         Schema::dropIfExists("recipe_dish_option_components");
         Schema::dropIfExists("recipe_dish_options");
         Schema::dropIfExists("recipe_topping_components");
@@ -729,6 +814,9 @@ return new class extends Migration {
         Schema::dropIfExists("recipe_toppings");
         Schema::dropIfExists("recipe_dish_components");
         Schema::dropIfExists("recipe_dishes");
+        Schema::dropIfExists("inventory_guide_items");
+        Schema::dropIfExists("inventory_guides");
+        Schema::dropIfExists("inventory_stock_alerts");
         Schema::dropIfExists("inventory_movements");
         Schema::dropIfExists("warehouse_items");
         Schema::dropIfExists("cash_movements");

@@ -6,13 +6,14 @@ namespace App\Services\System\Organizations\Branches;
 
 use Exception;
 use App\Helpers\System\{TranslationHelper, Utilities};
-use Illuminate\Support\Facades\{Auth, DB};
+use Illuminate\Support\Facades\DB;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 
 use App\Services\System\Organizations\Branches\{SerieService};
 use App\Services\System\Warehouses\Warehouses\{WarehouseService};
 use App\Models\System\Organizations\{Branch};
+use App\Models\System\Assets\AssetAssignment;
 
 /**
  * Service class for managing module operations
@@ -129,26 +130,16 @@ class BranchService {
      * Create a new record
      *
      * @param array $data Input data
-     * @param int|null $userId User creating the record
+     * @param int $companyId Company that owns the branch
+     * @param int $userId User creating the record
      * @return Branch|null Created record instance or null on failure
      * @throws Exception
      */
-    public static function create(array $data, ?int $userId = null): ?Branch {
+    public static function create(array $data, int $companyId, int $userId): ?Branch {
 
         $branch = null;
 
-        DB::transaction(function() use($data, $userId, &$branch) {
-
-            $userAuth  = Auth::user();
-            $companyId = $data["company_id"] ?? $userAuth->company_id ?? null;
-
-            if(!$companyId) {
-
-                throw new Exception(self::trans("company_id_required"));
-
-            }
-
-            $userId = $userId ?? $userAuth->id ?? null;
+        DB::transaction(function() use($data, $companyId, $userId, &$branch) {
 
             // Prepare data with only allowed fields
             $branchData = self::prepareBranchDataForCreate($data, $companyId, $userId);
@@ -173,19 +164,27 @@ class BranchService {
      *
      * @param Branch $branch Record instance to update
      * @param array $data Input data
-     * @param int|null $userId User updating the record
+     * @param int $userId User updating the record
      * @return Branch Updated record instance
      */
-    public static function update(Branch $branch, array $data, ?int $userId = null): Branch {
+    public static function update(Branch $branch, array $data, int $userId): Branch {
 
         DB::transaction(function() use($branch, $data, $userId) {
-
-            $userAuth = Auth::user();
-            $userId   = $userId ?? $userAuth->id ?? null;
 
             // Prepare update data with only changed fields
             $updateData = self::prepareBranchDataForUpdate($branch, $data);
             $nameChanged = isset($updateData["name"]);
+
+            if(($updateData["status"] ?? null) === "inactive"
+                && AssetAssignment::query()
+                    ->where("company_id", $branch->company_id)
+                    ->where("branch_id", $branch->id)
+                    ->whereIn("status", ["active", "maintenance"])
+                    ->exists()) {
+
+                throw new Exception("No se puede inactivar la sucursal mientras tenga activos asignados a colaboradores.");
+
+            }
 
             // Only update if there are changes
             if(!empty($updateData)) {
@@ -297,4 +296,3 @@ class BranchService {
     }
 
 }
-

@@ -76,12 +76,15 @@ La vista se monta desde:
 - Si el codigo interno se deja vacio, `CashRegisterService` genera un codigo unico con prefijo `CAJ-`.
 - Al crear una caja se invalidan las caches operativas de Caja y Venta POS para que la nueva caja quede disponible sin esperar al TTL.
 
-## Pendiente
+## Estado de mejoras
 
-- Restringir ventas segun politica de empresa: permitir vender sin caja abierta o exigir caja abierta.
-- Reporte de caja por rango de fechas, sucursal, caja, usuario y metodo de pago.
-- Exportar resumen y sesiones a Excel con formato visual enriquecido.
-- Caja por usuario/turno cuando una misma caja fisica sea compartida por varios colaboradores en el dia.
+- `company_settings.cash.require_open_session_on_sale` permite exigir una caja abierta de la misma sucursal.
+- Abrir, cerrar y registrar movimientos valida el alcance de caja del colaborador.
+- Sesiones, movimientos y resumen aceptan fecha, sucursal, caja, responsable y método de pago; el CSV conserva el mismo filtro.
+- El filtro de responsable considera apertura o cierre en sesiones y responsable directo en movimientos. El filtro de método de pago restringe sesiones con arqueo/movimiento asociado y el desglose del resumen.
+- El CSV usa nombre versionado `gympe-caja-movimientos-{Ymd-His}.csv` para evitar sobrescrituras ambiguas.
+- Una sesión identifica turno, caja y usuario de apertura/cierre. No se permiten dos sesiones abiertas simultáneas para la misma caja física.
+- El formato Excel enriquecido y las páginas separadas están en `docs/UI_UX_PENDING.md`.
 ## Alcance operativo
 
 - Caja aplica el alcance efectivo de perfil y colaborador para sucursales y cajas.

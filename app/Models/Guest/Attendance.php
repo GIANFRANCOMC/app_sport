@@ -38,13 +38,13 @@ class Attendance extends Model {
     // Appends
     public function getFormattedTypeAttribute() {
 
-        return self::getTypes("first", $this->attributes["type"])["label"] ?? "";
+        return self::getTypes("first", $this->attributes["type"] ?? "")["label"] ?? "";
 
     }
 
     public function getFormattedStatusAttribute() {
 
-        return self::getStatuses("first", $this->attributes["status"])["label"] ?? "";
+        return self::getStatuses("first", $this->attributes["status"] ?? "")["label"] ?? "";
 
     }
 

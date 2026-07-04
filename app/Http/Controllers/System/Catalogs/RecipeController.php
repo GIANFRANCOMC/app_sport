@@ -11,7 +11,8 @@ use App\Http\Controllers\System\Base\BaseController;
 use App\Http\Requests\System\Catalogs\Recipes\{StoreRecipeRequest, UpdateRecipeRequest};
 use App\Models\System\Catalogs\RecipeDish;
 use App\Services\System\Base\InitParamsCacheInvalidationService;
-use App\Services\System\Catalogs\Recipes\{RecipeConfigService, RecipeService};
+use App\Services\System\Base\CompanyReferenceDataService;
+use App\Services\System\Catalogs\Recipes\{RecipeConfigService, RecipeService, RecipeWasteService};
 
 class RecipeController extends BaseController {
 
@@ -107,6 +108,95 @@ class RecipeController extends BaseController {
             ->findOrFail($id);
 
         return response()->json($recipe);
+
+    }
+
+    public function theoreticalCost(Request $request, int $id): JsonResponse {
+
+        $data = $request->validate([
+            "warehouse_id" => ["required", "integer"]
+        ], [
+            "required" => "Selecciona un almacén.",
+            "integer" => "Selecciona un almacén válido."
+        ]);
+
+        try {
+
+            return response()->json([
+                "bool" => true,
+                "data" => RecipeService::theoreticalCost(
+                    $id,
+                    (int) $data["warehouse_id"],
+                    $this->getCompanyId(),
+                    CompanyReferenceDataService::for($this->getCompanyId(), $this->getUserId())
+                        ->allowedWarehouseIds()
+                )
+            ]);
+
+        }catch(\DomainException $exception) {
+
+            return response()->json([
+                "bool" => false,
+                "msg" => $exception->getMessage()
+            ], 422);
+
+        }
+
+    }
+
+    public function wasteRecords(Request $request): JsonResponse {
+
+        return response()->json([
+            "bool" => true,
+            "data" => RecipeWasteService::list(
+                $this->getCompanyId(),
+                $request->only(["recipe_dish_id", "warehouse_id", "item_id", "date_from", "date_to"]),
+                $this->getPerPage($request),
+                CompanyReferenceDataService::for($this->getCompanyId(), $this->getUserId())
+                    ->allowedWarehouseIds()
+            )
+        ]);
+
+    }
+
+    public function storeWaste(Request $request, int $id): JsonResponse {
+
+        $data = $request->validate([
+            "warehouse_id" => ["required", "integer"],
+            "item_id" => ["required", "integer"],
+            "quantity" => ["required", "numeric", "gt:0"],
+            "reason" => ["required", "string", "max:500"],
+            "occurred_at" => ["nullable", "date"],
+            "allow_negative" => ["nullable", "boolean"]
+        ], [
+            "required" => "Campo obligatorio.",
+            "integer" => "Selecciona un registro válido.",
+            "numeric" => "Ingresa una cantidad válida.",
+            "gt" => "La cantidad debe ser mayor que cero.",
+            "max" => "No debe superar :max caracteres.",
+            "date" => "Ingresa una fecha válida."
+        ]);
+
+        try {
+
+            return response()->json([
+                "bool" => true,
+                "msg" => "Merma registrada y descontada del inventario.",
+                "data" => RecipeWasteService::register(
+                    $id,
+                    $this->getCompanyId(),
+                    $this->getUserId(),
+                    $data,
+                    CompanyReferenceDataService::for($this->getCompanyId(), $this->getUserId())
+                        ->allowedWarehouseIds()
+                )
+            ], 201);
+
+        }catch(\DomainException $exception) {
+
+            return response()->json(["bool" => false, "msg" => $exception->getMessage()], 422);
+
+        }
 
     }
 

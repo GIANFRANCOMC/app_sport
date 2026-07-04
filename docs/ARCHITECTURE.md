@@ -143,31 +143,25 @@ Hay `FormRequest` para muchos CRUDs internos. Cuando se agreguen campos a un mod
 - migracion/modelo
 - listado o detalle
 
-## Riesgos tecnicos observados
+## Estado técnico
 
-- Algunos metodos CRUD estan vacios o son placeholders en modulos de tracking y publicos.
-- Hay strings de negocio escritos directamente en servicios/controladores.
-- Hay textos con codificacion rota en archivos y respuestas.
-- Algunos servicios usan `Auth::user()` dentro de la capa de servicio, lo que reduce testabilidad.
-- Varias operaciones criticas no tienen pruebas visibles.
-- El API publico `routes/api.php` esta practicamente vacio; los endpoints publicos estan en web routes.
+- Las rutas SPA publican únicamente operaciones implementadas; los métodos REST de plantilla que devolvían `501` ya no tienen rutas activas.
+- Los servicios de escritura principales reciben `companyId` y `userId` explícitos. El acceso a `Auth` queda limitado a adaptadores de configuración y auditoría que representan una frontera HTTP intencional.
+- Autorización funcional usa módulo + acción; el alcance operativo intersecta empresa, sucursal, caja y almacén.
+- La invalidación de caché se centraliza por dependencia y las claves tenant no usan versiones paralelas.
+- Guest usa modelos/servicios con contrato público y límites antiabuso centralizados.
+- Migraciones, servicios y módulos documentan sus tablas y reglas; los trabajos visuales viven únicamente en `UI_UX_PENDING.md`.
 
-## Mejoras sugeridas
+## Criterios de evolución
 
-- Crear una capa de autorizacion/policies para operaciones por empresa y sucursal.
-- Mover mensajes de negocio a archivos de traduccion o constantes.
-- Convertir estados repetidos a enums o value objects.
-- Agregar tests de feature para cada flujo principal.
-- Estandarizar todos los servicios para recibir `companyId` y `userId` explicitamente, evitando depender de `Auth` dentro del servicio.
-- Documentar y probar invalidacion de cache por modulo.
-- Revisar si todos los endpoints que modifican datos usan `FormRequest`.
+- Llevar mensajes repetidos a traducciones o constantes cuando exista más de un consumidor.
+- Introducir enums o value objects cuando un estado se comparta entre varios dominios y aporte validación real.
+- Toda ruta mutable debe usar FormRequest o una validación dedicada equivalente, además de permiso y alcance.
+- Las pruebas de feature se agregan cuando sean solicitadas para el flujo correspondiente; no se generan automáticamente en esta fase.
+- Una capacidad incompleta no debe exponerse mediante una ruta placeholder.
 
 ## Referencia transversal
 
 Las reglas compartidas de multiempresa, UI, branding, formularios, modales, cache, migraciones e impuestos viven en [GENERALIDADES.md](GENERALIDADES.md). Esta arquitectura debe describir la estructura; las decisiones reutilizables deben mantenerse en ese archivo para no duplicarlas.
 
-## Pendientes y mejoras por realizar
-
-- Actualizar este archivo cuando se separen fisicamente migraciones por dominio.
-- Documentar con mas detalle los servicios transversales de inventario, caja, impuestos y permisos cuando estabilicen sus APIs.
-- Revisar controladores que aun tengan metodos vacios o placeholders.
+Los servicios transversales de inventario, caja, impuestos, permisos, seguridad y tenancy se detallan en `docs/System`. Las migraciones base continúan organizadas por dependencias de creación para permitir `migrate:fresh`; una separación física adicional solo debe hacerse si mantiene el orden de claves foráneas y no agrega migraciones correctivas innecesarias.

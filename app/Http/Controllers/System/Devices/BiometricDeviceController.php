@@ -86,7 +86,7 @@ class BiometricDeviceController extends BaseController {
         try {
 
             $data   = $this->prepareBiometricDeviceData($request);
-            $device = BiometricDeviceService::create($data, $this->getUserId());
+            $device = BiometricDeviceService::create($data, $this->getCompanyId(), $this->getUserId());
 
             if(!Utilities::isDefined($device)) {
 

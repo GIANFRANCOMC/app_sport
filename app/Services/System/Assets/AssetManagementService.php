@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Services\System\Assets;
 
 use App\Helpers\System\Utilities;
-use App\Models\System\Assets\{AssetAssignment, BranchAsset};
+use App\Models\System\Assets\{AssetAssignment, AssetAssignmentLog, BranchAsset};
 use App\Models\System\Organizations\{Branch};
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
@@ -79,6 +79,7 @@ class AssetManagementService {
                 if(!Utilities::isDefined($branchAsset)) {
 
                     $branchAsset = new BranchAsset();
+                    $branchAsset->company_id        = $company->id;
                     $branchAsset->branch_id         = $branchId;
                     $branchAsset->asset_id          = $record["asset_id"];
                     $branchAsset->currency_id       = $company->currency_id;
@@ -90,6 +91,17 @@ class AssetManagementService {
                     $branchAsset->created_at         = now();
                     $branchAsset->created_by        = $userId;
                     $branchAsset->save();
+
+                    self::recordLog([
+                        "company_id" => $company->id,
+                        "action_by" => $userId,
+                        "branch_id" => $branchId,
+                        "to_branch_id" => $branchId,
+                        "asset_id" => $record["asset_id"],
+                        "action_type" => "assigned",
+                        "quantity" => $record["quantity"],
+                        "note" => "Activo asignado a la sucursal."
+                    ]);
 
                     $information["success"]["counter"]++;
                     $information["success"]["data"][] = ["asset_id" => $record["asset_id"]];
@@ -107,6 +119,17 @@ class AssetManagementService {
                         $branchAsset->updated_at        = now();
                         $branchAsset->updated_by         = $userId;
                         $branchAsset->save();
+
+                        self::recordLog([
+                            "company_id" => $company->id,
+                            "action_by" => $userId,
+                            "branch_id" => $branchId,
+                            "to_branch_id" => $branchId,
+                            "asset_id" => $record["asset_id"],
+                            "action_type" => "assigned",
+                            "quantity" => $record["quantity"],
+                            "note" => "Activo reactivado en la sucursal."
+                        ]);
 
                         $information["success"]["counter"]++;
                         $information["success"]["data"][] = ["asset_id" => $record["asset_id"]];
@@ -165,6 +188,17 @@ class AssetManagementService {
                     $branchAsset->updated_at = now();
                     $branchAsset->updated_by = $userId;
                     $branchAsset->save();
+
+                    self::recordLog([
+                        "company_id" => $branchAsset->company_id,
+                        "action_by" => $userId,
+                        "branch_id" => $branchId,
+                        "from_branch_id" => $branchId,
+                        "asset_id" => $record["asset_id"],
+                        "action_type" => "retired",
+                        "quantity" => $branchAsset->quantity,
+                        "note" => "Activo retirado de la sucursal."
+                    ]);
 
                     $information["success"]["counter"]++;
                     $information["success"]["data"][] = ["asset_id" => $record["asset_id"]];
@@ -294,6 +328,7 @@ class AssetManagementService {
             foreach($assignments as $record) {
 
                 $data = [
+                    "company_id"       => $branchAsset->company_id,
                     "user_id"           => $record["user_id"],
                     "branch_id"         => $branchAsset->branch_id,
                     "asset_id"          => $branchAsset->asset_id,
@@ -309,7 +344,17 @@ class AssetManagementService {
 
                 if(is_numeric($record["id"] ?? null)) {
 
-                    $assetAssignment = "check";
+                    $assetAssignment = AssetAssignment::query()
+                        ->where("company_id", $branchAsset->company_id)
+                        ->where("branch_id", $branchAsset->branch_id)
+                        ->where("asset_id", $branchAsset->asset_id)
+                        ->find((int) $record["id"]);
+
+                    if($assetAssignment) {
+
+                        $assetAssignment->fill($data)->save();
+
+                    }
 
                 }else {
 
@@ -321,6 +366,23 @@ class AssetManagementService {
                 }
 
                 if(Utilities::isDefined($assetAssignment)) {
+
+                    if($assetAssignment instanceof AssetAssignment) {
+
+                        self::recordLog([
+                            "company_id" => $branchAsset->company_id,
+                            "action_by" => $userId,
+                            "user_id" => $record["user_id"],
+                            "branch_id" => $branchAsset->branch_id,
+                            "to_user_id" => $record["user_id"],
+                            "to_branch_id" => $branchAsset->branch_id,
+                            "asset_id" => $branchAsset->asset_id,
+                            "action_type" => "assigned",
+                            "quantity" => $record["quantity"] ?? 0,
+                            "note" => "Activo asignado al colaborador."
+                        ]);
+
+                    }
 
                     $information["success"]["counter"]++;
                     $information["success"]["data"][] = ["asset_id" => $branchAsset->asset_id];
@@ -393,6 +455,19 @@ class AssetManagementService {
                     $assetAssignment->updated_by = $userId;
                     $assetAssignment->save();
 
+                    self::recordLog([
+                        "company_id" => $assetAssignment->company_id,
+                        "action_by" => $userId,
+                        "user_id" => $assetAssignment->user_id,
+                        "branch_id" => $assetAssignment->branch_id,
+                        "from_user_id" => $assetAssignment->user_id,
+                        "from_branch_id" => $assetAssignment->branch_id,
+                        "asset_id" => $assetAssignment->asset_id,
+                        "action_type" => "returned",
+                        "quantity" => $assetAssignment->quantity,
+                        "note" => "Activo devuelto por el colaborador."
+                    ]);
+
                     $information["success"]["counter"]++;
                     $information["success"]["data"][] = ["asset_id" => $branchAsset->asset_id];
 
@@ -441,6 +516,23 @@ class AssetManagementService {
                           ->where("asset_id", $assetId)
                           ->whereIn("status", ["active", "maintenance"])
                           ->first();
+
+    }
+
+    private static function recordLog(array $data): void {
+
+        AssetAssignmentLog::create([
+            ...$data,
+            "user_id" => $data["user_id"] ?? null,
+            "branch_id" => $data["branch_id"] ?? null,
+            "from_user_id" => $data["from_user_id"] ?? null,
+            "to_user_id" => $data["to_user_id"] ?? null,
+            "from_branch_id" => $data["from_branch_id"] ?? null,
+            "to_branch_id" => $data["to_branch_id"] ?? null,
+            "action_at" => now(),
+            "created_at" => now(),
+            "created_by" => $data["action_by"] ?? null
+        ]);
 
     }
 

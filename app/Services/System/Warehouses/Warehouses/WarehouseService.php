@@ -23,7 +23,10 @@ class WarehouseService {
      */
     public static function createDefaultForBranch(int $branchId, string $branchName, ?int $userId = null): Warehouse {
 
+        $branch = Branch::findOrFail($branchId);
+
         $warehouse = Warehouse::create([
+            "company_id" => $branch->company_id,
             "branch_id"  => $branchId,
             "name"       => self::generateWarehouseName($branchName, 1),
             "status"     => "active",
@@ -31,17 +34,11 @@ class WarehouseService {
             "created_by" => $userId
         ]);
 
-        $branch = Branch::find($branchId);
-
-        if($branch) {
-
-            WarehouseItemService::createForWarehouse(
-                (int) $warehouse->id,
-                (int) $branch->company_id,
-                $userId
-            );
-
-        }
+        WarehouseItemService::createForWarehouse(
+            (int) $warehouse->id,
+            (int) $branch->company_id,
+            $userId
+        );
 
         return $warehouse;
 

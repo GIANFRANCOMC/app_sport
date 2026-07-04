@@ -86,7 +86,7 @@ class CustomerController extends BaseController {
         try {
 
             $data     = $this->prepareCustomerData($request);
-            $customer = CustomerService::create($data, $this->getUserId());
+            $customer = CustomerService::create($data, $this->getCompanyId(), $this->getUserId());
 
             if(!Utilities::isDefined($customer)) {
 

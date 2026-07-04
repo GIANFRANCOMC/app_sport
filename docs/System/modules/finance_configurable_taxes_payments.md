@@ -115,11 +115,8 @@ Esto evita duplicar reglas entre ventas, POS, compras y futuros documentos.
 - Catalogo comercial: `price_includes_tax` define si el precio publico ya incluye IGV.
 - Configuracion futura: se recomienda crear un modulo visual para administrar tributos y metodos de pago por empresa.
 
-## Pendientes recomendados
+## Evolución
 
-- Crear pantalla de configuración financiera para tributos, incluyendo límites mínimo/máximo para tributos fijos no porcentuales.
-- Crear pantalla de configuración financiera para métodos de pago, con código SUNAT e imagen por empresa.
-- Permitir distribuir manualmente montos entre varios metodos de pago desde ventas.
-- Permitir distribuir manualmente montos entre varios metodos de pago desde compras.
-- Agregar reportes por tributo y metodo de pago.
-- Definir si algunos tributos deben calcularse en cascada en una fase futura.
+- La administración y distribución manual de pagos están centralizadas en `docs/UI_UX_PENDING.md`.
+- `GET /reports/settlements` resume tributos o métodos de pago por ventas, compras o ambos y permite rango de fechas.
+- Los tributos se calculan de forma independiente sobre la misma base. Un cálculo en cascada requerirá una decisión contable explícita antes de cambiar este contrato.

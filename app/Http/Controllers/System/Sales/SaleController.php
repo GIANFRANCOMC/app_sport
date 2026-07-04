@@ -11,6 +11,7 @@ use Illuminate\Http\{JsonResponse, Request};
 use App\Http\Requests\System\Sales\{CancelSaleRequest, StoreSaleRequest, UpdateSaleRequest};
 use App\Services\System\Sales\{SaleConfigService, SaleService};
 use App\Models\System\Sales\{SaleHeader};
+use App\Services\System\Organizations\AccessScopeService;
 
 class SaleController extends BaseController {
 
@@ -44,6 +45,9 @@ class SaleController extends BaseController {
             "serie_id"   => $request->input("serie_id"),
             "sequential" => $request->input("sequential"),
             "issue_date" => $request->input("issue_date"),
+            "start_date" => $request->input("start_date"),
+            "end_date"   => $request->input("end_date"),
+            "branch_id"  => $request->input("branch_id"),
             "holder_id"  => $request->input("holder_id"),
             "status"     => $request->input("status")
         ];
@@ -97,7 +101,7 @@ class SaleController extends BaseController {
         try {
 
             $data = $this->prepareSaleData($request);
-            $sale = SaleService::create($data, $this->getUserId());
+            $sale = SaleService::create($data, $this->getCompanyId(), $this->getUserId());
 
             if(!Utilities::isDefined($sale)) {
 
@@ -192,7 +196,9 @@ class SaleController extends BaseController {
 
                 $branch = $serie->branch;
 
-                if(!Utilities::isDefined($branch) || $branch->company_id !== $this->getCompanyId()) {
+                if(!Utilities::isDefined($branch)
+                    || $branch->company_id !== $this->getCompanyId()
+                    || !AccessScopeService::canAccess(auth()->user(), AccessScopeService::BRANCH, (int) $branch->id)) {
 
                     return $this->errorResponse("unauthorized", [], 403);
 
@@ -200,7 +206,7 @@ class SaleController extends BaseController {
 
             }
 
-            $sale = SaleService::cancel($sale, $this->getUserId());
+            $sale = SaleService::cancel($sale, $this->getCompanyId(), $this->getUserId());
 
             if(!Utilities::isDefined($sale)) {
 

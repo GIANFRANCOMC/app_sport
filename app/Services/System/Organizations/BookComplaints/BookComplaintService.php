@@ -9,7 +9,7 @@ use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 
 use App\Models\System\Organizations\BookComplaint;
-use App\Repositories\System\Organizations\BookComplaints\BookComplaintRepository;
+use App\Models\System\Organizations\BookComplaintStatusHistory;
 
 /**
  * Service class for managing BookComplaint operations
@@ -18,32 +18,11 @@ use App\Repositories\System\Organizations\BookComplaints\BookComplaintRepository
 class BookComplaintService {
 
     /**
-     * @var BookComplaintRepository
-     */
-    private static $repository;
-
-    /**
-     * Get repository instance (lazy initialization)
-     *
-     * @return BookComplaintRepository
-     */
-    private static function getRepository(): BookComplaintRepository {
-
-        if(self::$repository === null) {
-
-            self::$repository = new BookComplaintRepository();
-
-        }
-
-        return self::$repository;
-
-    }
-
-    /**
      * Allowed fields for book complaint update
      */
     private const ALLOWED_UPDATE_FIELDS = [
         "admin_response",
+        "public_response",
         "status"
     ];
 
@@ -58,7 +37,33 @@ class BookComplaintService {
      */
     public static function getPaginatedList(int $companyId, array $filters = [], int $perPage = 15): LengthAwarePaginator {
 
-        return self::getRepository()->getPaginatedList($companyId, $filters, $perPage);
+        return BookComplaint::query()
+            ->where("company_id", $companyId)
+            ->with(["branch", "identityDocumentType", "respondedBy"])
+            ->when(Utilities::isDefined($filters["status"] ?? null), fn($query) =>
+                $query->where("status", $filters["status"])
+            )
+            ->when(Utilities::isDefined($filters["type"] ?? null), fn($query) =>
+                $query->where("type", $filters["type"])
+            )
+            ->when(Utilities::isDefined($filters["branch_id"] ?? null), fn($query) =>
+                $query->where("branch_id", $filters["branch_id"])
+            )
+            ->when(Utilities::isDefined($filters["word"] ?? null), function($query) use($filters) {
+
+                $word = trim((string) $filters["word"]);
+                $query->where(function($nested) use($word) {
+
+                    $nested->where("tracking_code", "like", "%{$word}%")
+                           ->orWhere("document_number", "like", "%{$word}%")
+                           ->orWhere("name", "like", "%{$word}%")
+                           ->orWhere("email", "like", "%{$word}%");
+
+                });
+
+            })
+            ->orderByDesc("id")
+            ->paginate($perPage);
 
     }
 
@@ -70,9 +75,12 @@ class BookComplaintService {
      * @param array $relations Relations to eager load
      * @return BookComplaint|null
      */
-    public static function findByIdAndCompany(int $id, int $companyId, array $relations = ["branch", "identityDocumentType"]): ?BookComplaint {
+    public static function findByIdAndCompany(int $id, int $companyId, ?array $relations = null): ?BookComplaint {
 
-        return self::getRepository()->findByIdAndCompany($id, $companyId, $relations);
+        return BookComplaint::query()
+            ->where("company_id", $companyId)
+            ->with($relations ?? ["branch", "identityDocumentType", "attachments", "statusHistories.changedBy", "respondedBy"])
+            ->find($id);
 
     }
 
@@ -90,6 +98,7 @@ class BookComplaintService {
         DB::transaction(function() use($bookComplaint, $data, $userId) {
 
             $updateData = [];
+            $previousStatus = (string) $bookComplaint->status;
 
             // Only allow updating specific fields
             foreach(self::ALLOWED_UPDATE_FIELDS as $field) {
@@ -105,18 +114,50 @@ class BookComplaintService {
             // Only update if there are changes
             if(!empty($updateData)) {
 
+                if(($updateData["status"] ?? $previousStatus) === "resolved") {
+
+                    $updateData["responded_at"] = now();
+                    $updateData["responded_by"] = $userId;
+
+                }elseif($previousStatus === "resolved") {
+
+                    $updateData["responded_at"] = null;
+                    $updateData["responded_by"] = null;
+
+                }
+
                 $updateData["updated_at"] = now();
                 $updateData["updated_by"] = $userId;
 
                 $bookComplaint->update($updateData);
 
+                $newStatus = (string) $bookComplaint->status;
+                if($newStatus !== $previousStatus) {
+
+                    BookComplaintStatusHistory::create([
+                        "company_id" => $bookComplaint->company_id,
+                        "book_complaint_id" => $bookComplaint->id,
+                        "changed_by" => $userId,
+                        "previous_status" => $previousStatus,
+                        "new_status" => $newStatus,
+                        "note" => $data["status_note"] ?? null,
+                        "changed_at" => now()
+                    ]);
+
+                }
+
             }
 
         });
 
-        return $bookComplaint->fresh(["branch", "identityDocumentType"]);
+        return $bookComplaint->fresh([
+            "branch",
+            "identityDocumentType",
+            "attachments",
+            "statusHistories.changedBy",
+            "respondedBy"
+        ]);
 
     }
 
 }
-

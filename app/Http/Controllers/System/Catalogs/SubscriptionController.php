@@ -85,7 +85,7 @@ class SubscriptionController extends BaseController {
         try {
 
             $data = $this->prepareSubscriptionData($request);
-            $item = SubscriptionService::create($data, $this->getUserId());
+            $item = SubscriptionService::create($data, $this->getCompanyId(), $this->getUserId());
 
             if(!Utilities::isDefined($item)) {
 

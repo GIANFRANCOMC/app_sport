@@ -1,10 +1,10 @@
-# 02 - Experiencia publica
+# 02 - Experiencia pública
 
-## Mejoras sugeridas
+## Estado backend
 
-- SEO por empresa.
-- Catalogo publico por categorias.
-- Seguimiento publico de reclamos con codigo seguro.
-- Mensajes de asistencia mas claros para clientes.
-- Soporte mobile-first para QR y formularios.
+- El inicio entrega catálogo y categorías públicas ordenadas.
+- El libro de reclamaciones entrega código de seguimiento y consulta segura.
+- La asistencia pública usa enlaces firmados con vencimiento.
+- Las respuestas Guest excluyen datos operativos y secretos.
 
+SEO, metadatos sociales, diseño mobile-first, mensajes QR y presentación por categorías son tareas de frontend centralizadas en `docs/UI_UX_PENDING.md`.

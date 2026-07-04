@@ -12,6 +12,7 @@ final class PurchasePayment extends Model {
     protected $table = "purchase_payments";
 
     protected $fillable = [
+        "company_id",
         "purchase_header_id",
         "payment_method_id",
         "name",

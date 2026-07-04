@@ -2,44 +2,49 @@
 
 ## Resumen
 
-Gympe funciona exclusivamente desde subdominios registrados, por ejemplo `demo.gympe.test` o `cliente.app.ejemplo.com`. El dominio raíz pertenece a otro proyecto y este código no lo atiende.
+Gympe atiende exclusivamente subdominios registrados, por ejemplo `demo.gympe.test` o `cliente.app.ejemplo.com`. El dominio raíz pertenece a otro proyecto y este código no lo atiende.
 
-Cada tenant tiene:
+Cada tenant dispone de:
 
-- Un subdominio único de un solo nivel.
-- Una base de datos MySQL propia.
-- Usuarios, sesiones y datos operativos aislados.
-- Un `company_id` interno que mantiene la segmentación entre empresa raíz y posibles subcompañías del mismo tenant.
+- un subdominio único de un solo nivel;
+- una base de datos MySQL propia;
+- usuarios, sesiones, caché lógica y datos operativos aislados;
+- un `company_id` interno que permite empresa raíz y subcompañías dentro de la misma BD tenant;
+- almacenamiento con prefijo `tenants/{slug}` para impedir colisiones entre clientes.
 
-No se aceptan el dominio raíz, IPs, `localhost`, dominios personalizados ni subdominios no registrados. Si el servidor web dirige por error uno de esos hosts a Gympe, la aplicación lo rechaza antes de iniciar sesión o consultar una base tenant.
+No se aceptan IPs, `localhost`, el dominio raíz, hosts desconocidos ni subdominios reservados. La solicitud se rechaza antes de iniciar sesión o consultar modelos tenant.
 
-## Componentes
+## Conexiones
 
 ### Landlord
 
-La conexión `landlord` contiene únicamente el mapa operativo:
+La conexión `landlord` contiene únicamente el registro central:
 
-- `tenant_databases`: `slug`, `company_id`, `database_name`, estado y última resolución.
-- `tenant_domains`: subdominio exacto, tenant asociado, dominio principal y estado.
+- `tenant_databases`: slug, empresa raíz esperada, nombre de BD, estado y última resolución;
+- `tenant_domains`: host exacto y activo asociado al tenant;
+- `tenant_audit_logs`: altas, cambios de estado, verificaciones, rechazos de host y resultados operativos.
 
-El landlord no guarda host, usuario ni contraseña de MySQL. Las credenciales pertenecen al entorno seguro del servidor y nunca deben estar en Git, tablas, logs o respuestas HTTP.
+Landlord no almacena host, usuario ni contraseña de MySQL. Las credenciales pertenecen al entorno seguro del servidor y nunca deben aparecer en Git, tablas, logs o respuestas HTTP.
 
 ### Tenant
 
-La conexión `tenant` reutiliza host, puerto y credenciales definidos en el entorno y cambia únicamente `database`. `TenantConnectionManager` admite nombres alfanuméricos con guion bajo y exige el prefijo `TENANT_DB_PREFIX` cuando `TENANT_ENFORCE_DB_PREFIX=true`.
+La conexión `tenant` reutiliza host, puerto y credenciales del entorno y cambia únicamente el nombre de base. `TenantConnectionManager` valida el formato del nombre y exige `TENANT_DB_PREFIX` cuando `TENANT_ENFORCE_DB_PREFIX=true`.
 
-### Resolución HTTP
+## Resolución HTTP
 
-Orden real de defensas:
+Orden de defensas:
 
-1. `TrustProxies` interpreta proxy y HTTPS solo desde proxies configurados.
+1. `TrustProxies` interpreta proxy y HTTPS solo desde proxies permitidos.
 2. `TrustHosts` acepta exclusivamente `<slug>.<TENANCY_BASE_DOMAIN>`.
-3. `ResolveTenant` exige un subdominio de un nivel, no reservado, registrado y activo.
-4. Se activa la base de datos tenant antes de sesión, autenticación, rutas web o API.
-5. `EnsureTenantSession` verifica que la sesión pertenezca al mismo `tenant_database_id`.
-6. `SecurityHeaders` incorpora encabezados de navegador y evita cachear HTML autenticado.
+3. `ResolveTenant` exige subdominio válido, registrado y activo.
+4. Se activa la conexión tenant antes de sesión, autenticación y rutas.
+5. `EnsureTenantSession` comprueba que la sesión pertenezca al mismo `tenant_database_id`.
+6. `EnsureAuthenticatedSession` valida estado del usuario y `session_version`.
+7. `SecurityHeaders` protege navegador y evita cachear HTML autenticado.
 
-El resultado de resolución se cachea durante un periodo breve configurado en `TENANCY_RESOLVER_CACHE_SECONDS`. El comando de creación invalida esa clave. Suspender un tenant debe invalidar también `tenancy:resolver:<sha256-del-host>`; hasta implementar la consola landlord, se recomienda `php artisan cache:clear` tras cambios manuales de estado.
+El resolver usa una clave única `tenancy:resolver:<sha256(host)>` durante `TENANCY_RESOLVER_CACHE_SECONDS`. Los comandos de alta, suspensión, reactivación y limpieza invalidan esa misma clave; no existen claves versionadas paralelas.
+
+Los intentos contra hosts desconocidos se registran en landlord con deduplicación breve por host e IP. El registro de auditoría nunca puede convertir un rechazo seguro en un error 500.
 
 ## Configuración
 
@@ -66,7 +71,7 @@ TENANCY_RESOLVER_CACHE_SECONDS=60
 TENANT_SESSION_COOKIE_PREFIX=gympe_tenant
 ```
 
-`SESSION_DOMAIN` debe permanecer vacío. Configurarlo como `.gympe.test` o `.ejemplo.com` compartiría cookies entre clientes y está prohibido por esta arquitectura.
+`SESSION_DOMAIN` debe permanecer vacío. Un dominio compartido, como `.gympe.test`, compartiría cookies entre clientes y está prohibido.
 
 ## Provisionamiento
 
@@ -76,7 +81,7 @@ Preparar landlord:
 php artisan migrate --database=landlord --path=database/migrations/landlord --force
 ```
 
-Crear tenant local:
+Crear un tenant local:
 
 ```bash
 php artisan tenant:create demo \
@@ -85,9 +90,7 @@ php artisan tenant:create demo \
   --document-number=20600000001
 ```
 
-El comando crea `demo.gympe.test`, `gympe_tenant_demo`, ejecuta migraciones y habilita los datos iniciales. `--domain` solo acepta exactamente `slug + TENANCY_BASE_DOMAIN`.
-
-En producción, la opción más segura es que infraestructura cree previamente la base y otorgue permisos al usuario de runtime. Después:
+En producción, infraestructura debe crear previamente la BD y conceder al usuario runtime solo permisos operativos:
 
 ```bash
 php artisan tenant:create cliente \
@@ -98,9 +101,27 @@ php artisan tenant:create cliente \
   --document-number=20600000010
 ```
 
-Así el usuario utilizado por PHP-FPM no requiere `CREATE DATABASE` ni `DROP DATABASE`.
+## Operación
 
-## Tenants de demostración
+```bash
+php artisan tenant:list
+php artisan tenant:list --status=active
+php artisan tenant:health
+php artisan tenant:health demo
+php artisan tenant:suspend demo --force
+php artisan tenant:suspend demo --activate --force
+php artisan tenant:cache-clear demo
+php artisan tenant:cache-clear
+```
+
+- `tenant:list` consulta landlord sin abrir las bases tenant.
+- `tenant:health` prueba conexión, consulta básica, tabla `companies` y latencia.
+- `tenant:suspend` y `--activate` actualizan tenant y dominio en una transacción, invalidan caché y auditan la acción.
+- `tenant:cache-clear` invalida una clave o todas las claves conocidas sin limpiar la caché completa de la aplicación.
+
+El scheduler `notifications:send-subscriptions` itera tenants activos, conecta y desconecta cada BD en `try/finally`, y audita el resultado. Los jobs futuros deben declarar `UseTenantConnection`; un job sin contexto tenant no debe consultar modelos operativos.
+
+## Demostración
 
 ```bash
 php artisan db:seed --class=LandlordTenantDemoSeeder --force
@@ -114,25 +135,25 @@ php artisan db:seed --class=LandlordTenantDemoSeeder --force
 
 ## Reglas obligatorias
 
-- Nunca confiar en un `company_id` recibido del frontend; se deriva del usuario autenticado o del contexto.
-- Nunca resolver un tenant solo por slug: dominio, registro y estados deben coincidir.
+- Nunca confiar en un `company_id` recibido del frontend.
+- Nunca resolver un tenant solo por slug; host, dominio y estados deben coincidir.
 - Nunca guardar credenciales en `tenant_databases`.
 - Nunca habilitar `SESSION_DOMAIN` compartido.
-- Jobs y comandos operativos deben activar explícitamente el tenant antes de consultar modelos.
-- Archivos privados deben usar una ruta o disco separado por tenant; no deben publicarse bajo una URL predecible.
-- Backups, restauraciones y eliminaciones deben ejecutarse por base de datos tenant.
+- Comandos, scheduler y jobs deben activar explícitamente el tenant.
+- Archivos deben resolverse mediante `TenantStoragePath` o un disco equivalente por tenant.
+- Backups, restauraciones y eliminación de datos se ejecutan por BD tenant.
+
+## Evolución de infraestructura
+
+Estas tareas no se resuelven dentro del repositorio y deben formar parte del plan operativo del proveedor cloud:
+
+- rotación automática de credenciales y secretos;
+- backups cifrados por tenant, retención y prueba periódica de restauración;
+- alertas centralizadas sobre fallos de salud, hosts rechazados y acciones landlord;
+- consola landlord desplegada en un dominio administrativo separado si se necesita operación visual.
 
 ## Documentación relacionada
 
 - [Seguridad y autenticación](SECURITY_AND_AUTH.md)
 - [Laragon y XAMPP](deployment/LOCAL_SUBDOMAINS.md)
 - [AWS y DigitalOcean](deployment/PRODUCTION_SUBDOMAINS.md)
-
-## Pendientes
-
-- Consola landlord separada del dominio de clientes para suspender, reactivar y auditar tenants.
-- Comandos `tenant:list`, `tenant:health`, `tenant:suspend` y `tenant:cache-clear`.
-- Contexto tenant obligatorio para colas, scheduler, notificaciones y almacenamiento privado.
-- Rotación automatizada de credenciales y secretos mediante el proveedor cloud.
-- Backups cifrados por tenant con prueba periódica de restauración.
-- Auditoría de accesos landlord y alertas por intentos contra hosts desconocidos.

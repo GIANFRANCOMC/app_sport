@@ -27,6 +27,7 @@ class Subscription extends Model {
         "branch_id",
         "sale_header_id",
         "sale_body_id",
+        "renewed_from_id",
         "customer_id",
         "duration_type",
         "duration_value",
@@ -53,7 +54,7 @@ class Subscription extends Model {
         if(Utilities::isDefined($this->duration_type) && Utilities::isDefined($this->duration_value)) {
 
             $prop = $this->duration_value > 1 ? "plural" : "label";
-            $durationType = self::getDurationTypes("first", $this->attributes["duration_type"])[$prop] ?? "";
+            $durationType = self::getDurationTypes("first", $this->attributes["duration_type"] ?? "")[$prop] ?? "";
 
             return "{$this->duration_value} {$durationType}";
 
@@ -65,13 +66,13 @@ class Subscription extends Model {
 
     public function getFormattedTypeAttribute() {
 
-        return self::getTypes("first", $this->attributes["type"])["label"] ?? "";
+        return self::getTypes("first", $this->attributes["type"] ?? "")["label"] ?? "";
 
     }
 
     public function getFormattedStatusAttribute() {
 
-        return self::getStatuses("first", $this->attributes["status"])["label"] ?? "";
+        return self::getStatuses("first", $this->attributes["status"] ?? "")["label"] ?? "";
 
     }
 
@@ -141,6 +142,18 @@ class Subscription extends Model {
     public function customer() {
 
         return $this->belongsTo(Customer::class, "customer_id", "id");
+
+    }
+
+    public function renewedFrom() {
+
+        return $this->belongsTo(self::class, "renewed_from_id", "id");
+
+    }
+
+    public function renewals() {
+
+        return $this->hasMany(self::class, "renewed_from_id", "id");
 
     }
 

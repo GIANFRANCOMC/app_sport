@@ -178,7 +178,7 @@ class ProductController extends BaseController {
         try {
 
             $data = $this->prepareProductData($request);
-            $item = ProductService::create($data, $this->getUserId());
+            $item = ProductService::create($data, $this->getCompanyId(), $this->getUserId());
 
             if(!Utilities::isDefined($item)) {
 

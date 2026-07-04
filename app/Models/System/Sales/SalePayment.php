@@ -12,6 +12,7 @@ final class SalePayment extends Model {
     protected $table = "sale_payments";
 
     protected $fillable = [
+        "company_id",
         "sale_header_id",
         "payment_method_id",
         "name",

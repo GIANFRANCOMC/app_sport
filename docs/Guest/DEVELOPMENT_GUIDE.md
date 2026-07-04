@@ -1,43 +1,31 @@
-# Guest - Guia de desarrollo
+# Guest - Guía de desarrollo
 
 ## Principios
 
-- Guest es publico: validar todo.
-- No exponer datos internos de System.
-- Mantener la empresa derivada de `company_slug`.
-- Reutilizar componentes Guest, no System, salvo que sea intencional.
-- Mantener formularios publicos simples y robustos.
+- Todo input público es no confiable.
+- La empresa siempre proviene de `company_slug` resuelto.
+- El contrato devuelve solo la información necesaria para el visitante.
+- Las reglas compartidas viven en servicios de negocio; las consultas públicas específicas viven en `app/Services/Guest`.
+- Los errores internos nunca llegan directamente al cliente.
 
-## Al crear una funcionalidad Guest
+## Lista de implementación
 
-Revisar:
+1. Ruta en `routes/Guest`.
+2. `company.exists` y middleware adicional requerido.
+3. FormRequest o validación dedicada.
+4. Modelo/servicio con selección explícita de columnas.
+5. Rate limit registrado en `RouteServiceProvider` y configurado en `config/public_access.php`.
+6. Registro mínimo de IP/agente cuando exista obligación de trazabilidad.
+7. Respuesta sin IDs o secretos innecesarios.
+8. Documentación en `docs/Guest/modules`.
+9. Tarea visual, si existe, únicamente en `docs/UI_UX_PENDING.md`.
 
-- Ruta en `routes/Guest`.
-- Middleware `company.exists`.
-- Controlador Guest.
-- Modelo Guest o servicio reutilizado.
-- Vista Blade Guest.
-- Pagina Vue Guest.
-- Validacion server-side.
-- Rate limiting si el endpoint puede abusarse.
-- Documentacion en `Guest/modules`.
+## Verificación mínima
 
-## Buenas practicas
-
-- Responder con mensajes claros para clientes finales.
-- No mostrar ids internos si no es necesario.
-- Usar tokens firmados para acciones publicas sensibles.
-- Registrar IP/user agent en formularios publicos importantes.
-- Evitar que errores internos lleguen tal cual al visitante.
-
-## Mejoras recomendadas
-
-- Mantener FormRequests públicos por recurso y ampliar sus reglas cuando cambie el contrato.
-- Mantener rate limiting diferenciado por empresa, IP o clave de dispositivo.
-- Documentar cada payload público junto con los datos que deliberadamente no expone.
-- Probar rutas con empresa inexistente, sucursal invalida y datos incompletos.
-
-## Pendientes y mejoras por realizar
-
-- Reforzar criterios de seguridad publica, accesibilidad y mensajes para visitantes.
-- Evitar reutilizar componentes internos de System sin revisar exposicion de datos y dependencias visuales.
+- empresa inexistente o inactiva;
+- sucursal ajena a la empresa;
+- payload incompleto o manipulado;
+- límite por minuto y límite prolongado;
+- firma o credencial vencida;
+- respuesta sin campos internos;
+- reintento idempotente cuando aplique.

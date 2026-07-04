@@ -8,7 +8,10 @@ use App\Exports\{BranchExport, CustomerExport, ItemExport, SaleExport, UserExpor
 use App\Helpers\System\Utilities;
 use App\Http\Controllers\System\Base\BaseController;
 use Illuminate\Http\Request;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Validation\ValidationException;
 use stdClass;
+use Exception;
 
 use App\Models\System\Organizations\{User};
 use App\Models\System\Catalogs\{Item};
@@ -17,6 +20,9 @@ use App\Models\System\Organizations\{Branch, Company};
 use App\Models\System\Sales\{SaleHeader};
 
 use App\Services\System\Essentials\ReportConfigService;
+use App\Services\System\Organizations\AccessScopeService;
+use App\Services\System\Organizations\Companies\CompanySettingService;
+use App\Services\System\Finance\FinancialSettlementReportService;
 
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
@@ -29,6 +35,37 @@ class ReportController extends BaseController {
      * Translation namespace for report module
      */
     private const TRANSLATION_NAMESPACE = "System.Essentials.report";
+
+    private function exportFileName(string $resource, string $extension = "xlsx"): string {
+
+        return sprintf("gympe-%s-%s.%s", $resource, now()->format("Ymd-His"), $extension);
+
+    }
+
+    private function assertExportLimit(Builder $query): void {
+
+        $limit = max(100, (int) CompanySettingService::value(
+            $this->getCompanyId(),
+            "reports",
+            "export_max_rows",
+            25000
+        ));
+
+        if((clone $query)->limit($limit + 1)->count() > $limit) {
+
+            throw ValidationException::withMessages([
+                "filters" => "El reporte supera {$limit} registros. Reduce el rango o aplica más filtros."
+            ]);
+
+        }
+
+    }
+
+    private function allowedBranchIds(): ?array {
+
+        return AccessScopeService::allowedIds(auth()->user(), AccessScopeService::BRANCH);
+
+    }
 
     /**
      * Get initialization parameters for the module
@@ -61,9 +98,10 @@ class ReportController extends BaseController {
 
         if(Utilities::isDefined($request->document)) {
 
-            $document  = base64_decode($request->document ?? "");
-            $printType = base64_decode($request->type ?? "");
-            $expdt     = str_replace("T", " ", base64_decode($request->expdt ?? ""));
+            $document  = base64_decode((string) $request->document, true);
+            $printType = base64_decode((string) $request->type, true);
+            $encodedExpiration = base64_decode((string) $request->expdt, true);
+            $expdt = $encodedExpiration === false ? "" : str_replace("T", " ", $encodedExpiration);
 
             // Validate params: INIT
             if(!(intval($document) > 0) || !in_array($printType, ["a4", "mm80"]) || !Utilities::isDefined($expdt)) {
@@ -88,13 +126,21 @@ class ReportController extends BaseController {
 
             }
 
-            if($expirationDate->greaterThan($currentDate)) {
+            if($expirationDate->greaterThanOrEqualTo($currentDate)) {
 
-                $saleHeader = SaleHeader::where("id", $document)
+                $saleHeader = SaleHeader::where("company_id", $this->getCompanyId())
+                                        ->where("id", $document)
+                                        ->when($this->allowedBranchIds() !== null, function($query) {
+
+                                            $query->whereHas("serie", fn($serie) =>
+                                                $serie->whereIn("branch_id", $this->allowedBranchIds())
+                                            );
+
+                                        })
                                         ->with(["serie.documentType", "holder", "allPositions"])
                                         ->first();
 
-                $company = Company::first();
+                $company = Company::find($this->getCompanyId());
 
                 if(Utilities::isDefined($saleHeader) && Utilities::isDefined($company)) {
 
@@ -127,14 +173,14 @@ class ReportController extends BaseController {
 
                             // return view("System.pdf.sales.a4", $data);
                             $pdf = Pdf::loadView("System.pdf.sales.a4", $data);
-                            return $pdf->stream("$saleHeader->serie_sequential - A4.pdf", ["Attachment" => false]);
+                            return $pdf->stream($this->exportFileName("venta-{$saleHeader->serie_sequential}-a4", "pdf"), ["Attachment" => false]);
                             // return $pdf->download("Comprobante ".$saleHeader->serie_sequential.".pdf");
 
                         }else if(in_array($printType, ["mm80"])) {
 
                             // return view("System.pdf.sales.mm80", $data);
                             $pdf = Pdf::loadView("System.pdf.sales.mm80", $data)->setPaper([0, 0, 80 * 2.83, 160 * 2.83]);
-                            return $pdf->stream("$saleHeader->serie_sequential - 80mm.pdf", ["Attachment" => false]);
+                            return $pdf->stream($this->exportFileName("venta-{$saleHeader->serie_sequential}-80mm", "pdf"), ["Attachment" => false]);
                             // return $pdf->download("Comprobante ".$saleHeader->serie_sequential.".pdf");
 
                         }
@@ -161,7 +207,8 @@ class ReportController extends BaseController {
 
     public function customers(Request $request) {
 
-        $customers = Customer::when(Utilities::isDefined($request->document_number), function($query) use($request) {
+        $query = Customer::where("company_id", $this->getCompanyId())
+                             ->when(Utilities::isDefined($request->document_number), function($query) use($request) {
 
                                 $filter = "%".trim($request->document_number)."%";
 
@@ -175,8 +222,10 @@ class ReportController extends BaseController {
                                 $query->where("name", "like", $filter);
 
                              })
-                             ->with(["identityDocumentType"])
-                             ->get();
+                             ->with(["identityDocumentType"]);
+
+        $this->assertExportLimit($query);
+        $customers = $query->get();
 
         $data = collect([]);
 
@@ -193,13 +242,14 @@ class ReportController extends BaseController {
 
         }
 
-        return Excel::download(new CustomerExport($data), "Clientes.xlsx");
+        return Excel::download(new CustomerExport($data), $this->exportFileName("clientes"));
 
     }
 
     public function users(Request $request) {
 
-        $users = User::when(Utilities::isDefined($request->document_number), function($query) use($request) {
+        $query = User::where("company_id", $this->getCompanyId())
+                     ->when(Utilities::isDefined($request->document_number), function($query) use($request) {
 
                         $filter = "%".trim($request->document_number)."%";
 
@@ -213,8 +263,10 @@ class ReportController extends BaseController {
                         $query->where("name", "like", $filter);
 
                      })
-                     ->with(["identityDocumentType"])
-                     ->get();
+                     ->with(["identityDocumentType"]);
+
+        $this->assertExportLimit($query);
+        $users = $query->get();
 
         $data = collect([]);
 
@@ -231,21 +283,24 @@ class ReportController extends BaseController {
 
         }
 
-        return Excel::download(new UserExport($data), "Colaboradores.xlsx");
+        return Excel::download(new UserExport($data), $this->exportFileName("colaboradores"));
 
     }
 
     public function items(Request $request) {
 
-        $items = Item::when(Utilities::isDefined($request->name), function($query) use($request) {
+        $query = Item::where("company_id", $this->getCompanyId())
+                     ->when(Utilities::isDefined($request->name), function($query) use($request) {
 
                         $filter = "%".trim($request->name)."%";
 
                         $query->where("name", "like", $filter);
 
                      })
-                     ->with(["currency"])
-                     ->get();
+                     ->with(["currency"]);
+
+        $this->assertExportLimit($query);
+        $items = $query->get();
 
         $data = collect([]);
 
@@ -262,20 +317,26 @@ class ReportController extends BaseController {
 
         }
 
-        return Excel::download(new ItemExport($data), "Productos - Servicios.xlsx");
+        return Excel::download(new ItemExport($data), $this->exportFileName("catalogo-comercial"));
 
     }
 
     public function branches(Request $request) {
 
-        $branches = Branch::when(Utilities::isDefined($request->name), function($query) use($request) {
+        $query = Branch::where("company_id", $this->getCompanyId())
+                          ->when($this->allowedBranchIds() !== null, fn($query) =>
+                              $query->whereIn("id", $this->allowedBranchIds())
+                          )
+                          ->when(Utilities::isDefined($request->name), function($query) use($request) {
 
                             $filter = "%".trim($request->name)."%";
 
                             $query->where("name", "like", $filter);
 
-                          })
-                          ->get();
+                          });
+
+        $this->assertExportLimit($query);
+        $branches = $query->get();
 
         $data = collect([]);
 
@@ -289,13 +350,19 @@ class ReportController extends BaseController {
 
         }
 
-        return Excel::download(new BranchExport($data), "Sucursales.xlsx");
+        return Excel::download(new BranchExport($data), $this->exportFileName("sucursales"));
 
     }
 
     public function sales(Request $request) {
 
-        $salesHeader = SaleHeader::when(Utilities::isDefined($request->type), function($query) use($request) {
+        $query = SaleHeader::where("company_id", $this->getCompanyId())
+                                 ->when($this->allowedBranchIds() !== null, fn($query) =>
+                                     $query->whereHas("serie", fn($serie) =>
+                                         $serie->whereIn("branch_id", $this->allowedBranchIds())
+                                     )
+                                 )
+                                 ->when(Utilities::isDefined($request->type), function($query) use($request) {
 
                                     if(in_array($request->type, ["by_month"])) {
 
@@ -312,9 +379,9 @@ class ReportController extends BaseController {
 
                                         if(Utilities::isDefined($request->start_date) && Utilities::isDefined($request->end_date)) {
 
-                                            dd("pendiente");
-                                            $query->where("issue_date", ">=", $request->start_date."-01")
-                                                  ->where("issue_date", "<=", $request->end_date."-31");
+                                            $start = Carbon::createFromFormat("Y-m", $request->start_date)->startOfMonth();
+                                            $end = Carbon::createFromFormat("Y-m", $request->end_date)->endOfMonth();
+                                            $query->whereBetween("issue_date", [$start->toDateString(), $end->toDateString()]);
 
                                         }
 
@@ -338,8 +405,10 @@ class ReportController extends BaseController {
                                     }
 
                                  })
-                                 ->with(["holder", "currency"])
-                                 ->get();
+                                 ->with(["holder", "currency"]);
+
+        $this->assertExportLimit($query);
+        $salesHeader = $query->get();
 
         $data = collect([]);
 
@@ -357,7 +426,29 @@ class ReportController extends BaseController {
 
         }
 
-        return Excel::download(new SaleExport($data), "Ventas.xlsx");
+        return Excel::download(new SaleExport($data), $this->exportFileName("ventas"));
+
+    }
+
+    public function settlements(Request $request) {
+
+        $validated = $request->validate([
+            "type" => "required|in:taxes,payments",
+            "scope" => "nullable|in:sale,purchase,both",
+            "date_from" => "nullable|date",
+            "date_to" => "nullable|date|after_or_equal:date_from"
+        ]);
+
+        return response()->json([
+            "bool" => true,
+            "data" => FinancialSettlementReportService::summarize(
+                $this->getCompanyId(),
+                $validated["type"],
+                $validated["scope"] ?? "both",
+                $validated["date_from"] ?? null,
+                $validated["date_to"] ?? null
+            )
+        ]);
 
     }
 

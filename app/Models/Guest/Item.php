@@ -4,7 +4,6 @@ namespace App\Models\Guest;
 
 use App\Helpers\System\Utilities;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\Auth;
 
 class Item extends Model {
 
@@ -44,7 +43,7 @@ class Item extends Model {
     // Appends
     public function getFormattedTypeAttribute() {
 
-        return self::getTypes("first", $this->attributes["type"])["label"] ?? "";
+        return self::getTypes("first", $this->attributes["type"] ?? "")["label"] ?? "";
 
     }
 
@@ -53,7 +52,7 @@ class Item extends Model {
         if(Utilities::isDefined($this->duration_type) && Utilities::isDefined($this->duration_value)) {
 
             $prop = $this->duration_value > 1 ? "plural" : "label";
-            $durationType = self::getDurationTypes("first", $this->attributes["duration_type"])[$prop] ?? "";
+            $durationType = self::getDurationTypes("first", $this->attributes["duration_type"] ?? "")[$prop] ?? "";
 
             return "{$this->duration_value} {$durationType}";
 
@@ -65,7 +64,7 @@ class Item extends Model {
 
     public function getFormattedStatusAttribute() {
 
-        return self::getStatuses("first", $this->attributes["status"])["label"] ?? "";
+        return self::getStatuses("first", $this->attributes["status"] ?? "")["label"] ?? "";
 
     }
 
@@ -124,6 +123,17 @@ class Item extends Model {
     public function currency() {
 
         return $this->belongsTo(Currency::class, "currency_id", "id");
+
+    }
+
+    public function categories() {
+
+        return $this->belongsToMany(Category::class, "category_items", "item_id", "category_id")
+            ->wherePivot("status", "active")
+            ->where("categories.status", "active")
+            ->where("categories.is_public", true)
+            ->orderBy("categories.sort_order")
+            ->orderBy("categories.name");
 
     }
 

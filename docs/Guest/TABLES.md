@@ -54,7 +54,8 @@ Puede usarse si se habilitan endpoints publicos o callbacks de dispositivos. Deb
 
 Puede usarse indirectamente para resolver cliente por dispositivo y usuario del dispositivo.
 
-## Pendientes y mejoras por realizar
+## Criterios de exposición
 
-- Completar relaciones publicas que dependan de nuevas tablas System.
-- Revisar que cada tabla expuesta en Guest tenga justificacion funcional y limite de datos visible.
+- Toda tabla nueva de System requiere una justificación explícita antes de ser leída desde Guest.
+- Los modelos Guest deben declarar campos visibles y ocultar tokens, auditoría y relaciones internas.
+- Una relación disponible en Eloquent no implica que deba serializarse al visitante.

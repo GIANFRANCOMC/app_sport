@@ -40,7 +40,7 @@ class CustomerBiometricFingerprint extends Model
      */
     public function getFormattedStatusAttribute(): string
     {
-        return self::getStatuses("first", $this->attributes["status"])["label"] ?? "";
+        return self::getStatuses("first", $this->attributes["status"] ?? "")["label"] ?? "";
     }
 
     /**
@@ -72,4 +72,3 @@ class CustomerBiometricFingerprint extends Model
         return $this->belongsTo(BiometricDevice::class, "biometric_device_id", "id");
     }
 }
-

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Middleware;
 
-use App\Services\System\Tenancy\{TenantConnectionManager, TenantContext, TenantResolver};
+use App\Services\System\Tenancy\{TenantAdministrationService, TenantConnectionManager, TenantContext, TenantResolver};
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
@@ -16,7 +16,8 @@ final class ResolveTenant {
     public function __construct(
         private readonly TenantResolver $resolver,
         private readonly TenantConnectionManager $connectionManager,
-        private readonly TenantContext $context
+        private readonly TenantContext $context,
+        private readonly TenantAdministrationService $administration
     ) {}
 
     public function handle(Request $request, Closure $next): Response {
@@ -25,6 +26,19 @@ final class ResolveTenant {
 
         if(!$tenant) {
             $this->context->set(null);
+            $host = $this->resolver->normalizeHost($request->getHost());
+            $deduplicationKey = 'tenancy:unknown-host:' . hash('sha256', $host.'|'.$request->ip());
+            if(cache()->add($deduplicationKey, true, now()->addMinutes(5))) {
+                $this->administration->audit(
+                    null,
+                    'unknown_host_rejected',
+                    'blocked',
+                    ['method' => $request->method(), 'path' => $request->path()],
+                    null,
+                    $host,
+                    $request->ip()
+                );
+            }
             abort(404);
         }
 

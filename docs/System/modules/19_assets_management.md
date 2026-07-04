@@ -25,8 +25,9 @@ Gestiona asignaciones de activos a sucursales y usuarios.
 - Las sucursales no precargan series comerciales porque este módulo no las consume.
 - Asignar o retirar activos no invalida `initParams`; los cambios en activos, usuarios o sucursales sí lo hacen mediante la matriz de dependencias.
 
-## Mejoras sugeridas
+## Estado de mejoras
 
-- Usar `asset_assignment_logs` en cada movimiento.
-- Bloquear retiro de sucursal si hay usuarios con asignaciones activas.
-- Agregar transferencias entre usuarios/sucursales.
+- Altas, reactivaciones, retiros, asignaciones y devoluciones escriben `asset_assignment_logs`.
+- La bitácora conserva origen/destino de usuario y sucursal para soportar transferencias sin perder contexto.
+- Inactivar una sucursal se bloquea mientras existan activos asignados a colaboradores.
+- El flujo visual de transferencia permanece centralizado en `docs/UI_UX_PENDING.md`.

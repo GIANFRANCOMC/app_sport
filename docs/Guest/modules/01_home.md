@@ -1,26 +1,25 @@
-# 01 - Home publico
+# 01 - Inicio público
 
-## Que hace
+## Qué hace
 
-Muestra informacion publica de la empresa y catalogo visible.
+Muestra información pública de la empresa, categorías y catálogo visible para clientes.
 
 ## Archivos
 
 - Ruta: `routes/Guest/Home.php`
 - Controlador: `Guest/HomeController`
-- Servicio de catálogo: `app/Services/Guest/GuestCatalogService.php`
+- Servicio: `app/Services/Guest/GuestCatalogService.php`
+- Modelos públicos: `App\Models\Guest\Company`, `Item` y `Category`
 - Vista/Vue: `resources/views/Guest/general/home`, `resources/js/Guest/Pages/home`
-- Tablas: `companies`, `company_socials_media`, `items`, `currencies`
+- Tablas: `companies`, `company_socials_media`, `items`, `categories`, `categories_items`, `currencies`
 
 ## Reglas
 
-- Mostrar datos de empresa resuelta por slug.
-- Mostrar solo items activos con `see_my_web`.
-- Precargar moneda y ordenar el catálogo por tipo y nombre desde `GuestCatalogService`.
-- Ocultar precios si `see_my_web_price` no esta activo.
+- La empresa debe estar activa y se resuelve por slug dentro del tenant actual.
+- Solo se consultan ítems activos con `see_my_web = true`.
+- El precio se expone únicamente cuando `see_my_web_price = true`.
+- Moneda y categorías se precargan para evitar consultas repetidas.
+- Categorías públicas deben estar activas, visibles y ordenadas.
+- El contrato excluye tokens externos, campos de auditoría y columnas internas que el visitante no necesita.
 
-## Mejoras sugeridas
-
-- Agregar SEO por empresa.
-- Agregar categorias publicas.
-- Validar imagenes y textos publicos incompletos.
+SEO, metadatos sociales y la presentación responsive por categorías permanecen como trabajo de interfaz en `docs/UI_UX_PENDING.md`.

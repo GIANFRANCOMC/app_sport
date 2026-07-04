@@ -45,7 +45,7 @@ No se incluyen pruebas PHP ni reglas de negocio. Cada tarea debe consumir los pe
 - **Membresías de catálogo:** límite diario, beneficios y restricciones en una sección propia.
 - **Categorías:** orden, visibilidad pública y confirmación del bloqueo cuando tenga productos activos.
 - **Marcas:** carga validada de logotipo, país de origen y sitio oficial.
-- **Recetas y platillos:** selector de toppings/sabores, combinaciones parciales, merma y costo teórico; conectar con KDS cuando se implemente su interfaz.
+- **Recetas y platillos:** selector de toppings/sabores y combinaciones parciales; presentar costo teórico por almacén y mermas reales consumiendo los endpoints existentes; conectar con KDS cuando se implemente su interfaz.
 - **Activos:** categoría, código patrimonial, serie física y alta rápida de categorías.
 
 ## Ventas, POS y caja
@@ -63,15 +63,19 @@ No se incluyen pruebas PHP ni reglas de negocio. Cada tarea debe consumir los pe
 - **Kardex:** filtros, exportación, valorización y explicación del costo unitario/promedio.
 - **Traslados:** formulario multiproducto con almacén origen/destino y trazabilidad del responsable.
 - **Guías:** pantallas para guías de entrada/salida, numeración, estado y detalles.
+- **Alertas de stock:** consumir `GET /stocks_management/alerts`, diferenciar abiertas/resueltas y permitir navegar al producto/almacén sin duplicar reglas en Vue.
 - **Compras:** páginas separadas para Nuevo y Listado; selector explícito de entrega inmediata o pendiente.
 - **Compras:** vencimiento, aprobación, gastos distribuibles, recepción parcial y devolución a proveedor.
 - **Proveedores:** múltiples contactos y cuentas bancarias, condiciones de pago, historial de compras/devoluciones y desempeño.
 
 ## Personal, perfiles y seguridad
 
+- **Seguridad de acceso:** crear un visor del historial de autenticación que consuma `GET /users/{id}/authentication-events`, con filtros por evento, resultado y fechas.
+- **Segundo factor:** diseñar enrolamiento, verificación y recuperación cuando se seleccione una librería TOTP/WebAuthn mantenida; no simular esta seguridad solo desde Vue.
+
 - **Perfiles:** duplicar perfil, mostrar auditoría, resumen de usuarios afectados y advertencia al intentar retirar el último administrador.
 - **Colaboradores:** contraseña en flujo separado, bloqueo sin eliminación y visualización de auditoría sensible.
-- **Asistencia laboral:** horarios, pausas, tardanzas, horas ordinarias/extra, solicitudes de corrección y exportación para nómina.
+- **Asistencia laboral:** horarios, pausas, tardanzas, horas ordinarias/extra y solicitudes de corrección; añadir descarga de nómina consumiendo el endpoint `export` existente.
 - **Biométricos:** rotación de credenciales, estado del último contacto, eventos fallidos y reintento autorizado.
 
 ## Restaurante y servicios
@@ -86,6 +90,7 @@ No se incluyen pruebas PHP ni reglas de negocio. Cada tarea debe consumir los pe
 
 - **Reportes:** formulario estándar de parámetros, nombres de archivo consistentes, progreso y mensajes cuando una consulta exceda límites.
 - **Series:** filtros de auditoría, exportación e indicadores de saltos de correlativo.
+- **Reportes financieros:** consumir `/reports/settlements` para resumir tributos y métodos de pago por alcance y rango.
 - **Maestros internos:** CRUD protegido para tipos de identidad, documentos y monedas, con advertencia de impacto antes de inactivar.
 - **Mi empresa/Sucursales:** separar configuración pública, fiscal y operativa; coordenadas, capacidad y documentos disponibles.
 

@@ -20,6 +20,7 @@ class UserPreference extends Model {
     ];
 
     protected $fillable = [
+        "company_id",
         "user_id",
         "slug",
         "value",
@@ -33,7 +34,7 @@ class UserPreference extends Model {
     // Appends
     public function getFormattedStatusAttribute() {
 
-        return self::getStatuses("first", $this->attributes["status"])["label"] ?? "";
+        return self::getStatuses("first", $this->attributes["status"] ?? "")["label"] ?? "";
 
     }
 
@@ -53,7 +54,16 @@ class UserPreference extends Model {
 
         return DB::transaction(function() use($userId, $slug, $data, $extras) {
 
-            $activePreferences = UserPreference::where("user_id", $userId)
+            $companyId = (int) User::query()->whereKey($userId)->value("company_id");
+
+            if($companyId <= 0) {
+
+                throw new \DomainException("No se pudo identificar la empresa del usuario.");
+
+            }
+
+            $activePreferences = UserPreference::where("company_id", $companyId)
+                                               ->where("user_id", $userId)
                                                ->where("slug", $slug)
                                                ->where("status", "active")
                                                ->orderByDesc("id")
@@ -65,6 +75,7 @@ class UserPreference extends Model {
             if(!Utilities::isDefined($userPreference)) {
 
                 $userPreference = new UserPreference();
+                $userPreference->company_id = $companyId;
                 $userPreference->user_id    = $userId;
                 $userPreference->slug       = $slug;
                 $userPreference->value      = null;
@@ -74,7 +85,8 @@ class UserPreference extends Model {
 
             }else if($activePreferences->count() > 1) {
 
-                UserPreference::whereIn("id", $activePreferences->skip(1)->pluck("id"))
+                UserPreference::where("company_id", $companyId)
+                              ->whereIn("id", $activePreferences->skip(1)->pluck("id"))
                               ->update([
                                   "status"     => "inactive",
                                   "updated_at" => now(),

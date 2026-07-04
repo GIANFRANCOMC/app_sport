@@ -65,7 +65,21 @@ class StoreSaleRequest extends FormRequest {
             "details.*.quantity" => "required|numeric|min:0.1|max:$maxValue|decimal:0,$round",
             "details.*.price" => "required|numeric|min:0.1|max:$maxValue|decimal:0,$round",
             "details.*.price_includes_tax" => "nullable|boolean",
-            "details.*.observation" => "nullable|string|max:300"
+            "details.*.observation" => "nullable|string|max:300",
+            "details.*.extras" => "nullable|array",
+            "details.*.extras.duration_type" => "nullable|in:hour,day,today,month,year",
+            "details.*.extras.duration_value" => "nullable|integer|min:1|max:$maxValue",
+            "details.*.extras.start_date" => "nullable|date",
+            "details.*.extras.end_date" => "nullable|date|after_or_equal:details.*.extras.start_date",
+            "details.*.extras.set_end_of_day" => "nullable|boolean",
+            "details.*.extras.force" => "nullable|boolean",
+            "details.*.extras.observation" => "nullable|string|max:300",
+            "details.*.extras.recipe_options" => "nullable|array|max:50",
+            "details.*.extras.recipe_options.*.option_id" => "required_with:details.*.extras.recipe_options|integer",
+            "details.*.extras.recipe_options.*.portions" => "nullable|integer|min:1|max:100",
+            "details.*.extras.recipe_toppings" => "nullable|array|max:50",
+            "details.*.extras.recipe_toppings.*.recipe_dish_topping_id" => "required_with:details.*.extras.recipe_toppings|integer",
+            "details.*.extras.recipe_toppings.*.quantity" => "required_with:details.*.extras.recipe_toppings|integer|min:0|max:100"
         ];
 
     }

@@ -5,9 +5,8 @@ declare(strict_types=1);
 namespace App\Services\System\Devices\BiometricDevices;
 
 use DomainException;
-use Exception;
 use App\Helpers\System\{TranslationHelper, Utilities};
-use Illuminate\Support\Facades\{Auth, Crypt, DB};
+use Illuminate\Support\Facades\{Crypt, DB};
 use Illuminate\Support\Str;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
@@ -129,22 +128,11 @@ class BiometricDeviceService {
      * @return BiometricDevice|null Created record instance or null on failure
      * @throws Exception
      */
-    public static function create(array $data, ?int $userId = null): ?BiometricDevice {
+    public static function create(array $data, int $companyId, int $userId): ?BiometricDevice {
 
         $device = null;
 
-        DB::transaction(function() use($data, $userId, &$device) {
-
-            $userAuth  = Auth::user();
-            $companyId = $data["company_id"] ?? $userAuth->company_id ?? null;
-
-            if(!$companyId) {
-
-                throw new Exception(self::trans("company_id_required"));
-
-            }
-
-            $userId = $userId ?? $userAuth->id ?? null;
+        DB::transaction(function() use($data, $companyId, $userId, &$device) {
 
             // Prepare data with only allowed fields
             $deviceData = self::prepareBiometricDeviceDataForCreate($data, $companyId, $userId);
@@ -163,7 +151,7 @@ class BiometricDeviceService {
 
     }
 
-    public static function rotateCredentials(BiometricDevice $device, ?int $userId = null): array {
+    public static function rotateCredentials(BiometricDevice $device, int $userId): array {
 
         $plainSecret = Str::random(64);
         $device->forceFill([
@@ -171,7 +159,7 @@ class BiometricDeviceService {
             "secret_encrypted" => Crypt::encryptString($plainSecret),
             "credentials_rotated_at" => now(),
             "updated_at" => now(),
-            "updated_by" => $userId ?? Auth::id()
+            "updated_by" => $userId
         ])->save();
 
         return [
@@ -190,12 +178,9 @@ class BiometricDeviceService {
      * @param int|null $userId User updating the record
      * @return BiometricDevice Updated record instance
      */
-    public static function update(BiometricDevice $device, array $data, ?int $userId = null): BiometricDevice {
+    public static function update(BiometricDevice $device, array $data, int $userId): BiometricDevice {
 
         DB::transaction(function() use($device, $data, $userId) {
-
-            $userAuth = Auth::user();
-            $userId   = $userId ?? $userAuth->id ?? null;
 
             // Prepare update data with only changed fields
             $updateData = self::prepareBiometricDeviceDataForUpdate($device, $data);

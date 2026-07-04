@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace App\Services\System\Catalogs\Categories;
 
-use Exception;
 use App\Helpers\System\{TranslationHelper, Utilities};
-use Illuminate\Support\Facades\{Auth, DB};
+use Illuminate\Support\Facades\DB;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -125,22 +124,11 @@ class CategoryService {
      * @return Category|null Created record instance or null on failure
      * @throws Exception
      */
-    public static function create(array $data, ?int $userId = null): ?Category {
+    public static function create(array $data, int $companyId, int $userId): ?Category {
 
         $category = null;
 
-        DB::transaction(function() use($data, $userId, &$category) {
-
-            $userAuth  = Auth::user();
-            $companyId = $data["company_id"] ?? $userAuth->company_id ?? null;
-
-            if(!$companyId) {
-
-                throw new Exception(self::trans("company_id_required"));
-
-            }
-
-            $userId = $userId ?? $userAuth->id ?? null;
+        DB::transaction(function() use($data, $companyId, $userId, &$category) {
 
             // Prepare data with only allowed fields
             $categoryData = self::prepareCategoryDataForCreate($data, $companyId, $userId);
@@ -162,12 +150,9 @@ class CategoryService {
      * @param int|null $userId User updating the record
      * @return Category Updated record instance
      */
-    public static function update(Category $category, array $data, ?int $userId = null): Category {
+    public static function update(Category $category, array $data, int $userId): Category {
 
         DB::transaction(function() use($category, $data, $userId) {
-
-            $userAuth = Auth::user();
-            $userId   = $userId ?? $userAuth->id ?? null;
 
             // Prepare update data with only changed fields
             $updateData = self::prepareCategoryDataForUpdate($category, $data);

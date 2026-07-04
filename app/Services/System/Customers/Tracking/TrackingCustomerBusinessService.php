@@ -44,9 +44,24 @@ class TrackingCustomerBusinessService {
      * @param string $code Range code (e.g., "this_year", "last_3_months")
      * @return array Array with "from" and "to" Carbon dates
      */
-    public function getDateRangeFromCode(string $code): array {
+    public function getDateRangeFromCode(string $code, ?string $from = null, ?string $to = null): array {
 
         $now = Carbon::now();
+
+        if($code === "custom" && $from && $to) {
+
+            $start = Carbon::parse($from)->startOfDay();
+            $end = Carbon::parse($to)->endOfDay();
+
+            if($start->greaterThan($end)) {
+
+                throw new \InvalidArgumentException("La fecha inicial no puede ser posterior a la fecha final.");
+
+            }
+
+            return ["from" => $start, "to" => $end];
+
+        }
 
         if($code === "this_year") {
 
@@ -85,23 +100,38 @@ class TrackingCustomerBusinessService {
      * @param string $type Information type: "sales", "subscriptions", "attendances"
      * @return \Illuminate\Database\Eloquent\Collection
      */
-    public function getInformation(Customer $customer, array $range, string $type) {
+    public function getInformation(Customer $customer, array $range, string $type, ?array $allowedBranchIds = null) {
 
         switch($type) {
             case "sales":
                 return SaleHeader::where("holder_id", $customer->id)
+                                 ->whereHas("serie.branch", function($query) use($customer, $allowedBranchIds) {
+
+                                     $query->where("company_id", $customer->company_id);
+
+                                     if($allowedBranchIds !== null) {
+
+                                         $query->whereIn("id", $allowedBranchIds);
+
+                                     }
+
+                                 })
                                  ->whereBetween("created_at", [$range["from"], $range["to"]])
                                  ->with(["serie.documentType", "serie.branch", "currency"])
                                  ->get();
 
             case "subscriptions":
-                return Subscription::where("customer_id", $customer->id)
+                return Subscription::where("company_id", $customer->company_id)
+                                   ->where("customer_id", $customer->id)
+                                   ->when($allowedBranchIds !== null, fn($query) => $query->whereIn("branch_id", $allowedBranchIds))
                                    ->whereBetween("created_at", [$range["from"], $range["to"]])
                                    ->with(["branch"])
                                    ->get();
 
             case "attendances":
-                return Attendance::where("customer_id", $customer->id)
+                return Attendance::where("company_id", $customer->company_id)
+                                 ->where("customer_id", $customer->id)
+                                 ->when($allowedBranchIds !== null, fn($query) => $query->whereIn("branch_id", $allowedBranchIds))
                                  ->whereBetween("created_at", [$range["from"], $range["to"]])
                                  ->with(["branch"])
                                  ->get();
@@ -130,6 +160,7 @@ class TrackingCustomerBusinessService {
         $customerDocumentNumber = $data["customer_document_number"] ?? "";
         $periodType  = $data["period_type"] ?? "last_3_months";
         $options     = $data["options"] ?? [];
+        $allowedBranchIds = $data["allowed_branch_ids"] ?? null;
 
         // Get customer
         $customer = $this->getValidCustomer(
@@ -145,7 +176,11 @@ class TrackingCustomerBusinessService {
 
         }
 
-        $range = $this->getDateRangeFromCode($periodType);
+        $range = $this->getDateRangeFromCode(
+            $periodType,
+            $data["start_date"] ?? null,
+            $data["end_date"] ?? null
+        );
 
         $response["tracking"] = [
             "customer" => $customer,
@@ -160,7 +195,7 @@ class TrackingCustomerBusinessService {
 
         foreach($information as $opt) {
 
-            $response["tracking"][$opt] = $this->getInformation($customer, $range, $opt);
+            $response["tracking"][$opt] = $this->getInformation($customer, $range, $opt, $allowedBranchIds);
 
             if(in_array($opt, ["sales", "subscriptions", "attendances"])) {
 
@@ -169,6 +204,17 @@ class TrackingCustomerBusinessService {
             }
 
         }
+
+        $sales = $response["tracking"]["sales"] ?? collect();
+        $subscriptions = $response["tracking"]["subscriptions"] ?? collect();
+        $attendances = $response["tracking"]["attendances"] ?? collect();
+        $response["tracking"]["summary"] = [
+            "sales_count" => $sales->count(),
+            "active_sales_total" => (float) $sales->where("status", "active")->sum("total"),
+            "canceled_sales_total" => (float) $sales->where("status", "canceled")->sum("total"),
+            "active_subscriptions" => $subscriptions->where("status", "active")->count(),
+            "attendances" => $attendances->whereIn("status", ["active", "finalized"])->count()
+        ];
 
         $response["bool"] = true;
         $response["msg"]  = "Información encontrada";

@@ -35,16 +35,16 @@ class WarehouseItem extends Model {
     ];
 
     protected $casts = [
-        "quantity" => "decimal:2",
-        "minimum_stock" => "decimal:2",
+        "quantity" => "decimal:4",
+        "minimum_stock" => "decimal:4",
         "average_cost" => "decimal:4",
-        "inventory_value" => "decimal:2"
+        "inventory_value" => "decimal:4"
     ];
 
     // Appends
     public function getFormattedStatusAttribute() {
 
-        return self::getStatuses("first", $this->attributes["status"])["label"] ?? "";
+        return self::getStatuses("first", $this->attributes["status"] ?? "")["label"] ?? "";
 
     }
 
@@ -70,6 +70,12 @@ class WarehouseItem extends Model {
     public function item() {
 
         return $this->belongsTo(Item::class, "item_id", "id");
+
+    }
+
+    public function stockAlerts() {
+
+        return $this->hasMany(InventoryStockAlert::class, "warehouse_item_id");
 
     }
 

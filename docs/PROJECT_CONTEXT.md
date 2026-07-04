@@ -95,14 +95,13 @@ El sistema combina administracion interna y portal publico por empresa. Internam
 - Para cambios multiarchivo, modificar backend, frontend, validaciones y traducciones/mensajes si aplica.
 - Evitar refactors amplios salvo que el requerimiento lo pida.
 
-## Mejoras sugeridas globales
+## Estado transversal
 
-- Corregir problemas de codificacion de caracteres en textos con acentos que aparecen como `é`, `Ã‚¡`, etc.
-- Reemplazar el README generico de Laravel por un README real del producto.
-- Agregar pruebas automatizadas para flujos criticos: venta, anulacion, asistencia, membresias y stock.
-- Centralizar estados en constantes/enums PHP para reducir strings repetidos.
-- Revisar validaciones de permisos por empresa/sucursal en todos los endpoints que reciben ids.
-- Documentar comandos de instalacion, migracion, seed y ejecucion local.
-- Revisar rutas publicas sensibles, especialmente asistencia publica y biometria.
-- Agregar logs estructurados para operaciones de negocio criticas.
-
+- El README raíz describe Gympe, tenancy, instalación y documentación.
+- Permisos combinan módulo + acción con alcances de sucursal, caja y almacén.
+- Asistencia pública usa enlaces firmados; biometría usa credenciales de dispositivo, firma e idempotencia.
+- Operaciones críticas conservan auditoría de negocio o trazabilidad propia.
+- Los servicios de escritura principales reciben empresa y usuario explícitos.
+- Los comandos tenant, instalación local y despliegue productivo están documentados.
+- Los trabajos exclusivamente visuales se concentran en `docs/UI_UX_PENDING.md`.
+- Las pruebas PHP se agregan o ejecutan únicamente cuando el usuario las solicita para el flujo correspondiente.

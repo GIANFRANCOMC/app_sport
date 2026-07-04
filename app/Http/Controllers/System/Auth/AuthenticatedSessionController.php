@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
 use App\Models\System\Organizations\{Company};
+use App\Services\System\Auth\AuthenticationAuditService;
 
 class AuthenticatedSessionController extends Controller {
 
@@ -73,6 +74,8 @@ class AuthenticatedSessionController extends Controller {
         $request->authenticate();
 
         $request->session()->regenerate();
+        $request->session()->put('_user_session_version', max(1, (int) (Auth::user()->session_version ?? 1)));
+        AuthenticationAuditService::record($request, 'login', 'success', Auth::user());
 
         return redirect()->intended(RouteServiceProvider::HOME);
 
@@ -85,6 +88,8 @@ class AuthenticatedSessionController extends Controller {
 
         $user    = Auth::user();
         $company = $user->company;
+
+        AuthenticationAuditService::record($request, 'logout', 'success', $user);
 
         Auth::guard("web")->logout();
 

@@ -42,6 +42,7 @@ class WarehouseItemService {
 
             if($isNew) {
 
+                $warehouseItem->company_id = $companyId;
                 $warehouseItem->quantity   = 0;
                 $warehouseItem->created_at = now();
                 $warehouseItem->created_by = $userId;
@@ -98,6 +99,7 @@ class WarehouseItemService {
                     "item_id"      => $itemId
                 ],
                 [
+                    "company_id"    => $companyId,
                     "quantity"      => 0,
                     "minimum_stock" => 0,
                     "status"        => "active",

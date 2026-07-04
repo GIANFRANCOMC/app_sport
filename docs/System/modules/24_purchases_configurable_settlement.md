@@ -34,7 +34,7 @@ La vista `resources/js/System/Pages/Purchases/purchases/main.vue` incluye una se
 
 El costo de inventario se mantiene desde el costo unitario del detalle. Los impuestos documentarios no alteran el stock ni el costo promedio por si solos.
 
-## Pendientes
+## Estado de mejoras
 
-- Agregar referencias por metodo de pago cuando la configuracion lo requiera.
-- Crear pantalla administrativa para impuestos y metodos de pago por empresa.
+- El backend exige referencia cuando `payment_methods.requires_reference` está activo y conserva nombre, importe, referencia y nota históricos.
+- La pantalla administrativa para impuestos y métodos de pago está centralizada en `docs/UI_UX_PENDING.md`.

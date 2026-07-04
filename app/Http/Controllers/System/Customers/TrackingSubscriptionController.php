@@ -8,7 +8,11 @@ use App\Http\Controllers\System\Base\BaseController;
 use App\Helpers\System\{Utilities};
 use Illuminate\Http\{JsonResponse, Request};
 
-use App\Http\Requests\System\Customers\TrackingSubscriptions\{CancelTrackingSubscriptionRequest};
+use App\Http\Requests\System\Customers\TrackingSubscriptions\{
+    CancelTrackingSubscriptionRequest,
+    RenewTrackingSubscriptionRequest
+};
+use App\Services\System\Organizations\AccessScopeService;
 use App\Services\System\Customers\Tracking\{TrackingSubscriptionConfigService, TrackingSubscriptionService};
 use App\Models\System\Customers\Subscription;
 
@@ -113,7 +117,9 @@ class TrackingSubscriptionController extends BaseController {
 
             $subscription = Subscription::findOrFail($id);
 
-            if(!Utilities::isDefined($subscription) || $subscription->company_id !== $this->getCompanyId()) {
+            if(!Utilities::isDefined($subscription)
+                || $subscription->company_id !== $this->getCompanyId()
+                || !AccessScopeService::canAccess(auth()->user(), AccessScopeService::BRANCH, (int) $subscription->branch_id)) {
 
                 return $this->notFoundResponse();
 
@@ -126,6 +132,37 @@ class TrackingSubscriptionController extends BaseController {
         }catch(\Exception $e) {
 
             return $this->handleException($e, "cancel");
+
+        }
+
+    }
+
+    public function renew(RenewTrackingSubscriptionRequest $request, int $id): JsonResponse {
+
+        try {
+
+            $subscription = Subscription::query()
+                ->where("company_id", $this->getCompanyId())
+                ->find($id);
+
+            if(!$subscription
+                || !AccessScopeService::canAccess(auth()->user(), AccessScopeService::BRANCH, (int) $subscription->branch_id)) {
+
+                return $this->notFoundResponse();
+
+            }
+
+            $renewal = TrackingSubscriptionService::renew(
+                $subscription,
+                $request->validated(),
+                $this->getUserId()
+            );
+
+            return $this->createdResponse($renewal, "created", "subscription");
+
+        }catch(\Exception $e) {
+
+            return $this->handleException($e, "create");
 
         }
 

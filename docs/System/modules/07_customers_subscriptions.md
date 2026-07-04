@@ -35,9 +35,10 @@ Lista y administra membresias reales asignadas a clientes. Estas pueden originar
 - `TrackingSubscriptionConfigService` carga únicamente sucursales y clientes activos.
 - Cancelar una membresía no invalida `initParams`, porque no modifica esas opciones.
 
-## Mejoras sugeridas
+## Estado de mejoras
 
-- Definir si se permiten membresias solapadas.
-- Definir regla para `force`.
-- Agregar renovacion desde membresia vencida.
-- Agregar test de membresia vigente por fecha/sucursal.
+- `company_settings.subscriptions.overlap_policy` define `block` o `allow` por empresa.
+- `force=true` es una excepción explícita enviada por una operación autorizada; nunca es el valor por defecto.
+- `POST /tracking_subscriptions/{id}/renew` crea una nueva membresía manual y conserva `renewed_from_id`.
+- La renovación respeta empresa, sucursal, alcance, fechas y política de solapamiento.
+- Las pruebas se añadirán cuando sean solicitadas expresamente.

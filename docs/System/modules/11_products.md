@@ -329,12 +329,9 @@ Productos incorpora una acción compacta **Carga masiva** junto a Descargar Exce
 - Las respuestas del backend mantienen el mismo lenguaje: “Producto agregado exitosamente” y “Producto editado exitosamente”.
 - Los estilos comunes del módulo se exponen mediante el namespace reutilizable `br-entity-*`; no se mantienen selectores `br-products-*`.
 
-## Mejoras pendientes
+## Evolución
 
-- Incorporar impresión masiva y plantillas configurables de etiquetas; la descarga PNG individual ya está disponible.
-- Añadir lector de código de barras al flujo de ventas.
-- Agregar pruebas de integración para creación multi-almacén, EAN duplicado y aislamiento entre empresas.
-- Diseñar el catálogo web/PDF que consumirá `see_my_web` y `see_my_web_price`.
+Impresión masiva, lector de código de barras y catálogo público/PDF están centralizados en `docs/UI_UX_PENDING.md`. Las pruebas de integración se añadirán cuando sean solicitadas expresamente.
 ## Seeder comercial demo
 
 Se agrego `database/seeders/CommercialCatalogSeeder.php` para cargar datos base sin depender de factories aleatorias.

@@ -306,6 +306,54 @@ return new class extends Migration {
                 "value" => "weighted_average",
                 "description" => "Método usado para valorizar inventario y kardex. El valor inicial weighted_average calcula costo promedio ponderado sobre entradas y saldos.",
                 "value_type" => "string"
+            ],
+            [
+                "company_id" => 1,
+                "group" => "customer_attendance",
+                "key" => "daily_limit_scope",
+                "value" => "branch",
+                "description" => "Define si el límite diario de asistencia de clientes se cuenta por sucursal (branch) o sumando todas las sucursales de la empresa (company).",
+                "value_type" => "string"
+            ],
+            [
+                "company_id" => 1,
+                "group" => "customer_attendance",
+                "key" => "biometric_duplicate_tolerance_seconds",
+                "value" => "10",
+                "description" => "Ventana mínima entre lecturas biométricas equivalentes del mismo cliente y dispositivo. Evita duplicados provocados por reintentos del lector.",
+                "value_type" => "integer"
+            ],
+            [
+                "company_id" => 1,
+                "group" => "customer_attendance",
+                "key" => "allow_automatic_checkout",
+                "value" => "false",
+                "description" => "Permite que una lectura QR o biométrica finalice automáticamente una asistencia activa de cliente. El valor inicial false evita salidas involuntarias.",
+                "value_type" => "boolean"
+            ],
+            [
+                "company_id" => 1,
+                "group" => "subscriptions",
+                "key" => "overlap_policy",
+                "value" => "block",
+                "description" => "Política para membresías vigentes superpuestas del mismo cliente: block rechaza el solapamiento y allow lo permite explícitamente.",
+                "value_type" => "string"
+            ],
+            [
+                "company_id" => 1,
+                "group" => "reports",
+                "key" => "export_max_rows",
+                "value" => "25000",
+                "description" => "Máximo de filas permitido por archivo exportado. Obliga a reducir el rango antes de que una consulta excesiva agote memoria o tiempo de ejecución.",
+                "value_type" => "integer"
+            ],
+            [
+                "company_id" => 1,
+                "group" => "cash",
+                "key" => "require_open_session_on_sale",
+                "value" => "false",
+                "description" => "Cuando está activo, toda venta debe vincularse a una sesión de caja abierta de la misma sucursal. Cuando está inactivo, las ventas administrativas pueden registrarse sin caja.",
+                "value_type" => "boolean"
             ]
         ]);
 

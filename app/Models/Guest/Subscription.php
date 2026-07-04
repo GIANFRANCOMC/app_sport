@@ -51,7 +51,7 @@ class Subscription extends Model {
         if(Utilities::isDefined($this->duration_type) && Utilities::isDefined($this->duration_value)) {
 
             $prop = $this->duration_value > 1 ? "plural" : "label";
-            $durationType = self::getDurationTypes("first", $this->attributes["duration_type"])[$prop] ?? "";
+            $durationType = self::getDurationTypes("first", $this->attributes["duration_type"] ?? "")[$prop] ?? "";
 
             return "{$this->duration_value} {$durationType}";
 
@@ -63,13 +63,13 @@ class Subscription extends Model {
 
     public function getFormattedTypeAttribute() {
 
-        return self::getTypes("first", $this->attributes["type"])["label"] ?? "";
+        return self::getTypes("first", $this->attributes["type"] ?? "")["label"] ?? "";
 
     }
 
     public function getFormattedStatusAttribute() {
 
-        return self::getStatuses("first", $this->attributes["status"])["label"] ?? "";
+        return self::getStatuses("first", $this->attributes["status"] ?? "")["label"] ?? "";
 
     }
 

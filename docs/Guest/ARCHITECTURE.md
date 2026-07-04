@@ -1,43 +1,31 @@
 # Guest - Arquitectura
 
-## Proposito
+## Propósito
 
-Guest expone funciones publicas de una empresa sin requerir login interno. La empresa se identifica por `company_slug`, y sus datos se cargan por middleware.
+Guest expone funciones públicas de una empresa sin requerir login interno. La empresa se deriva de `company_slug` dentro de la BD tenant ya resuelta por subdominio.
 
 ## Flujo base
 
-1. La ruta recibe `{company_slug}`.
-2. `company.exists` busca la empresa.
-3. El controlador Guest usa `$request->get("company")`.
-4. La vista Blade monta una pagina Vue de `resources/js/Guest`.
-5. Las acciones publicas validan empresa y, si aplica, sucursal.
+1. `ResolveTenant` activa la BD correspondiente al host.
+2. La ruta recibe `{company_slug}`.
+3. `company.exists` exige una empresa activa y la adjunta al request.
+4. El controlador usa la empresa resuelta; nunca acepta `company_id` del visitante.
+5. Modelos o servicios Guest seleccionan solo datos públicos.
+6. La acción aplica validación, limitación y credencial adicional cuando corresponde.
 
-## Reutilizacion de System
+## Reutilización de System
 
-Guest puede reutilizar servicios de negocio de System cuando la regla es la misma. Ejemplo: asistencia publica usa `TrackingAttendanceBusinessService`.
+Guest reutiliza servicios de negocio solo cuando la regla es idéntica y el servicio no depende de una sesión administrativa. La asistencia pública usa `TrackingAttendanceBusinessService`; el catálogo utiliza `GuestCatalogService` porque su contrato de exposición es distinto al catálogo interno.
 
-Regla: reutilizar no significa mezclar responsabilidades. Si el servicio de System depende de usuario autenticado, debe adaptarse o envolverlo con cuidado.
+## Seguridad
 
-Las consultas públicas específicas de Guest deben vivir en servicios Guest. El catálogo visible se obtiene mediante `GuestCatalogService::publicItems($companyId)`, que aplica publicación, estado, moneda y orden sin reutilizar consultas internas de System.
+- Empresa desde slug y tenant, no desde payload.
+- Sucursal validada contra la empresa.
+- FormRequest para formularios públicos.
+- Límites centralizados en `config/public_access.php`.
+- URL firmada y capacidad temporal para asistencia.
+- HMAC e idempotencia para dispositivos biométricos.
+- Respuestas sin trazas, tokens ni columnas internas.
+- Precio público únicamente con `see_my_web_price`.
 
-## Seguridad publica
-
-Guest debe tratar todo input como no confiable:
-
-- Validar empresa desde slug, no desde request.
-- Validar sucursal contra empresa.
-- Usar FormRequest cuando se creen datos publicos.
-- Aplicar rate limiting si hay formularios o endpoints de asistencia.
-- Evitar exponer precios si `see_my_web_price` no esta activo.
-- Evitar exponer informacion interna de clientes, usuarios, ventas o stock.
-
-## Riesgos actuales
-
-- Algunas rutas publicas reciben datos sensibles como asistencia sin FormRequest visible.
-- `branch` puede venir codificado en base64; eso no equivale a seguridad.
-- Si se habilitan endpoints biometricos publicos, deben tener autenticacion por token/firma.
-
-## Pendientes y mejoras por realizar
-
-- Mantener sincronizada esta arquitectura con `../GENERALIDADES.md` cuando cambien criterios transversales.
-- Documentar endpoints publicos nuevos con su dependencia de `company_slug` y sus limites de exposicion.
+Cada endpoint nuevo debe documentar propósito, autenticación pública, límite antiabuso, datos visibles y datos deliberadamente excluidos.

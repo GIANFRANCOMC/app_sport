@@ -6,6 +6,7 @@ use App\Helpers\System\Utilities;
 use Illuminate\Database\Eloquent\Model;
 use Carbon\Carbon;
 
+use App\Models\System\Devices\BiometricDevice;
 use App\Models\System\Organizations\{Branch, Company};
 
 class Attendance extends Model {
@@ -26,6 +27,8 @@ class Attendance extends Model {
         "company_id",
         "branch_id",
         "customer_id",
+        "biometric_device_id",
+        "source_reference",
         "start_date",
         "end_date",
         "observation",
@@ -61,13 +64,13 @@ class Attendance extends Model {
 
     public function getFormattedTypeAttribute() {
 
-        return self::getTypes("first", $this->attributes["type"])["label"] ?? "";
+        return self::getTypes("first", $this->attributes["type"] ?? "")["label"] ?? "";
 
     }
 
     public function getFormattedStatusAttribute() {
 
-        return self::getStatuses("first", $this->attributes["status"])["label"] ?? "";
+        return self::getStatuses("first", $this->attributes["status"] ?? "")["label"] ?? "";
 
     }
 
@@ -115,6 +118,18 @@ class Attendance extends Model {
     public function customer() {
 
         return $this->belongsTo(Customer::class, "customer_id", "id");
+
+    }
+
+    public function biometricDevice() {
+
+        return $this->belongsTo(BiometricDevice::class, "biometric_device_id", "id");
+
+    }
+
+    public function corrections() {
+
+        return $this->hasMany(AttendanceCorrection::class, "attendance_id");
 
     }
 

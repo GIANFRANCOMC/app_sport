@@ -1,10 +1,10 @@
-# 00 - Alcance publico Guest
+# 00 - Alcance público Guest
 
-## Que hace
+## Qué hace
 
-Define el alcance de funcionalidades publicas. Guest existe para que una empresa exponga servicios a visitantes y clientes finales sin entrar al panel System.
+Guest expone experiencias para visitantes y clientes finales sin permitir acceso al panel System.
 
-## Rutas actuales
+## Rutas
 
 1. `{company_slug}/home`
 2. `{company_slug}/book_complaints`
@@ -13,13 +13,12 @@ Define el alcance de funcionalidades publicas. Guest existe para que una empresa
 
 ## Reglas
 
-- La empresa siempre se deriva de `company_slug`.
-- El visitante no debe enviar ni controlar `company_id`.
-- Toda sucursal recibida debe validarse contra la empresa.
-- No exponer datos internos.
+- La empresa se deriva de `company_slug` y debe estar activa.
+- El visitante nunca envía ni controla `company_id`.
+- Toda sucursal se valida contra la empresa resuelta.
+- Los modelos Guest seleccionan únicamente campos públicos; secretos, tokens y auditoría permanecen ocultos.
+- Reclamos, consulta de estado, asistencia y biometría tienen límites configurables por IP, empresa y recurso en `config/public_access.php`.
+- La asistencia pública exige entrada por URL firmada y una capacidad temporal guardada en sesión antes de aceptar el POST.
+- Los dispositivos biométricos usan credenciales propias, firma e idempotencia; no heredan una sesión de usuario.
 
-## Mejoras sugeridas
-
-- Rate limiting por ruta pública implementado.
-- Ruta firmada de asistencia pública implementada; la migración visual desde enlaces legacy está en `docs/UI_UX_PENDING.md`.
-- Contratos de reclamos, asistencia y biometría documentados por módulo.
+Los trabajos exclusivamente visuales se mantienen en `docs/UI_UX_PENDING.md`.

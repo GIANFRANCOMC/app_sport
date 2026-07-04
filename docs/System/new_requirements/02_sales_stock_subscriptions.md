@@ -4,19 +4,24 @@
 
 La venta crea membresias y descuenta stock. Actualmente puede crear stock negativo si no existe `warehouse_item` o si la cantidad no alcanza.
 
-## Requerimientos sugeridos
+## Requerimientos evaluados
 
-- Definir politica de stock negativo por empresa.
-- Revertir stock al anular venta.
-- Validar serie contra sucursal y empresa.
-- Bloquear correlativos duplicados por concurrencia.
-- Heredar `attendance_limit_per_day` desde membresia de catalogo.
+- Política de stock negativo definida por empresa.
+- Reposición al anular gobernada por configuración empresarial.
+- Serie validada contra sucursal y empresa.
+- Correlativo protegido contra concurrencia y duplicados.
+- `attendance_limit_per_day` heredado desde membresía de catálogo.
 
 ## Impacto
 
 Alto. Afecta `SaleService`, stock, membresias y reportes.
 
-## Pendientes y mejoras por realizar
+## Estado backend
 
-- Consolidar reglas de venta, POS, caja, inventario y membresias en servicios compartidos.
-- Agregar pruebas funcionales cuando el flujo de impuestos, pagos y stock quede estable.
+- Venta normal y POS reutilizan `SaleService`, `CommercialDocumentSettlementService` e `InventoryMovementService`.
+- La política de stock negativo, reposición por anulación y caja obligatoria se resuelve desde `company_settings`.
+- Serie, almacén y caja se validan contra empresa, sucursal, estado y alcance del colaborador.
+- Las membresías heredan límite diario y aplican una política de solapamiento configurable.
+- La renovación crea un registro nuevo enlazado mediante `renewed_from_id`; no reescribe el histórico.
+
+Las pruebas funcionales se incorporarán cuando sean solicitadas expresamente. No constituyen un pendiente de implementación productiva en esta fase.

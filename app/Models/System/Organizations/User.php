@@ -45,6 +45,7 @@ class User extends Authenticatable {
         "name",
         "email",
         "password",
+        "session_version",
         "phone_number",
         "gender",
         "birthdate",
@@ -63,6 +64,7 @@ class User extends Authenticatable {
     protected $hidden = [
         "password",
         "remember_token",
+        "session_version",
     ];
 
     /**
@@ -73,6 +75,7 @@ class User extends Authenticatable {
     protected $casts = [
         "email_verified_at" => "datetime",
         "password" => "hashed",
+        "session_version" => "integer",
     ];
 
     // Appends

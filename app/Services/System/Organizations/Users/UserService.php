@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace App\Services\System\Organizations\Users;
 
-use Exception;
 use App\Helpers\System\{TranslationHelper, Utilities};
-use Illuminate\Support\Facades\{Auth, DB};
+use Illuminate\Support\Facades\DB;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Str;
@@ -133,13 +132,6 @@ class UserService {
 
         }
 
-        // Handle password separately (only if provided)
-        if(isset($data["password"]) && !empty($data["password"])) {
-
-            $updateData["password"] = $data["password"];
-
-        }
-
         return $updateData;
 
     }
@@ -150,24 +142,12 @@ class UserService {
      * @param array $data Input data
      * @param int|null $userId User creating the record
      * @return User|null Created record instance or null on failure
-     * @throws Exception
      */
-    public static function create(array $data, ?int $userId = null): ?User {
+    public static function create(array $data, int $companyId, int $userId): ?User {
 
         $user = null;
 
-        DB::transaction(function() use($data, $userId, &$user) {
-
-            $userAuth  = Auth::user();
-            $companyId = $data["company_id"] ?? $userAuth->company_id ?? null;
-
-            if(!$companyId) {
-
-                throw new Exception(self::trans("company_id_required"));
-
-            }
-
-            $userId = $userId ?? $userAuth->id ?? null;
+        DB::transaction(function() use($data, $companyId, $userId, &$user) {
 
             self::assertRoleAssignable($companyId, (int) $userId, (int) ($data["role_id"] ?? 0));
 
@@ -193,12 +173,9 @@ class UserService {
      * @param int|null $userId User updating the record
      * @return User Updated record instance
      */
-    public static function update(User $user, array $data, ?int $userId = null): User {
+    public static function update(User $user, array $data, int $userId): User {
 
         DB::transaction(function() use($user, $data, $userId) {
-
-            $userAuth = Auth::user();
-            $userId   = $userId ?? $userAuth->id ?? null;
 
             self::assertRoleAssignable(
                 (int) $user->company_id,
@@ -212,9 +189,21 @@ class UserService {
             // Only update if there are changes
             if(!empty($updateData)) {
 
+                $invalidateSessions = array_key_exists('status', $updateData)
+                    && $updateData['status'] !== 'active';
+
+                if($invalidateSessions) {
+                    $updateData['session_version'] = max(1, (int) ($user->session_version ?? 1)) + 1;
+                    $updateData['remember_token'] = null;
+                }
+
                 $updateData["updated_at"] = now();
                 $updateData["updated_by"] = $userId;
                 $user->update($updateData);
+
+                if($invalidateSessions) {
+                    $user->tokens()->delete();
+                }
 
             }
 
@@ -224,6 +213,26 @@ class UserService {
         });
 
         return $user->fresh(["identityDocumentType", "role", "branches", "cashRegisters", "warehouses"]);
+
+    }
+
+    public static function changePassword(User $user, string $password, ?int $userId = null): User {
+
+        DB::transaction(function() use($user, $password, $userId) {
+
+            $user->forceFill([
+                "password" => $password,
+                "remember_token" => null,
+                "session_version" => max(1, (int) ($user->session_version ?? 1)) + 1,
+                "updated_at" => now(),
+                "updated_by" => $userId
+            ])->save();
+
+            $user->tokens()->delete();
+
+        });
+
+        return $user->fresh();
 
     }
 

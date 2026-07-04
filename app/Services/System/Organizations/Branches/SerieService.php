@@ -8,6 +8,7 @@ use Exception;
 
 use App\Models\System\General\{DocumentType};
 use App\Models\System\Organizations\{Branch, Serie};
+use Illuminate\Support\Facades\DB;
 
 /**
  * Service class for managing Serie operations
@@ -93,6 +94,79 @@ class SerieService {
 
         // Return count instead of fetching (more efficient)
         return $seriesData;
+
+    }
+
+    public static function auditQuery(int $companyId, array $filters = []) {
+
+        return DB::table("series_correlative_movements as movement")
+            ->join("series", "series.id", "=", "movement.serie_id")
+            ->join("branches", "branches.id", "=", "series.branch_id")
+            ->leftJoin("users", "users.id", "=", "movement.user_id")
+            ->where("movement.company_id", $companyId)
+            ->when($filters["branch_id"] ?? null, fn($query, $id) => $query->where("series.branch_id", $id))
+            ->when($filters["serie_id"] ?? null, fn($query, $id) => $query->where("movement.serie_id", $id))
+            ->when($filters["user_id"] ?? null, fn($query, $id) => $query->where("movement.user_id", $id))
+            ->when($filters["source"] ?? null, fn($query, $source) => $query->where("movement.source", $source))
+            ->when($filters["action"] ?? null, fn($query, $action) => $query->where("movement.action", $action))
+            ->when($filters["date_from"] ?? null, fn($query, $date) => $query->whereDate("movement.occurred_at", ">=", $date))
+            ->when($filters["date_to"] ?? null, fn($query, $date) => $query->whereDate("movement.occurred_at", "<=", $date))
+            ->select([
+                "movement.id",
+                "movement.sequential",
+                "movement.action",
+                "movement.source",
+                "movement.note",
+                "movement.occurred_at",
+                "series.id as serie_id",
+                "series.code as serie_code",
+                "series.number as serie_number",
+                "branches.id as branch_id",
+                "branches.name as branch_name",
+                "users.name as user_name"
+            ])
+            ->orderByDesc("movement.occurred_at");
+
+    }
+
+    public static function detectGaps(int $companyId, ?int $branchId = null): array {
+
+        return Serie::query()
+            ->where("company_id", $companyId)
+            ->when($branchId, fn($query) => $query->where("branch_id", $branchId))
+            ->get()
+            ->map(function(Serie $serie) use($companyId) {
+
+                $issued = DB::table("series_correlative_movements")
+                    ->where("company_id", $companyId)
+                    ->where("serie_id", $serie->id)
+                    ->where("action", "issued")
+                    ->orderBy("sequential")
+                    ->pluck("sequential")
+                    ->map(fn($value) => (int) $value)
+                    ->all();
+
+                if(count($issued) < 2) {
+
+                    return null;
+
+                }
+
+                $expected = range(min($issued), max($issued));
+                $missing = array_values(array_diff($expected, $issued));
+
+                return empty($missing) ? null : [
+                    "serie_id" => $serie->id,
+                    "serie" => $serie->legible_serie,
+                    "first" => min($issued),
+                    "last" => max($issued),
+                    "missing" => $missing
+                ];
+
+            })
+            ->filter()
+            ->values()
+            ->all();
 
     }
 

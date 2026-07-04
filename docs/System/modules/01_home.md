@@ -195,14 +195,11 @@ El acceso global se encuentra dentro de la navbar de `resources/views/System/lay
 - Persistencia protegida con restauración y limpieza garantizada mediante `try/catch/finally`.
 - Limpieza de tooltips durante el desmontaje del componente.
 
-## Mejoras pendientes
+## Decisiones de evolución
 
-- Agregar prueba automatizada de autorización entre empresas.
-- Agregar prueba de consolidación de preferencias duplicadas.
-- Evaluar una restricción única de base de datos para preferencia activa sin afectar históricos.
-- Evaluar orden personalizado cuando existan suficientes favoritos para justificarlo.
-- Extraer el menú global de favoritos a un partial Blade si la navbar incorpora más herramientas.
-- Evaluar internacionalización formal cuando System admita más idiomas.
+- Las pruebas se añadirán cuando sean solicitadas expresamente.
+- No se agrega una restricción única sobre preferencias porque el historial se conserva y la consolidación activa ocurre transaccionalmente.
+- Orden manual, extracción del partial e internacionalización son decisiones de interfaz centralizadas en `docs/UI_UX_PENDING.md`.
 
 ## Datos del módulo
 

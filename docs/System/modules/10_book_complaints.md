@@ -36,9 +36,10 @@ Permite administrar reclamos, quejas y sugerencias recibidas desde System o Gues
 - `BookComplaintConfigService` contiene tipos, estados y documentos de identidad.
 - Actualizar un reclamo no invalida `initParams`, porque esos maestros no cambian.
 
-## Mejoras sugeridas
+## Estado de mejoras
 
-- Separar campos de respuesta interna vs datos publicos.
-- Agregar fecha de respuesta.
-- Agregar adjuntos multiples si se necesita evidencia.
-- Agregar trazabilidad de cambios de estado.
+- `admin_response` y `public_response` tienen responsabilidades separadas.
+- Resolver exige ambas respuestas y registra `responded_at`/`responded_by`.
+- `book_complaint_attachments` admite evidencia múltiple sin sobrecargar la cabecera.
+- Cada transición genera un registro inmutable en `book_complaint_status_histories`.
+- La consulta interna incluye adjuntos, historial, autor de cambios y responsable de respuesta.

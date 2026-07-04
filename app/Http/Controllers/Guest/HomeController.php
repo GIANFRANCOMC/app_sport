@@ -36,9 +36,12 @@ class HomeController extends Controller {
             $config->items = new stdClass();
             $config->items->records = GuestCatalogService::publicItems($company->id);
 
+            $config->categories = new stdClass();
+            $config->categories->records = GuestCatalogService::publicCategories($company->id);
+
             foreach($config->items->records as $record) {
 
-                if(!($record->see_my_web_price && $record->see_my_web_price)) {
+                if(!$record->see_my_web_price) {
 
                     unset($record->price);
                     unset($record->min_price);

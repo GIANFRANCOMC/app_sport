@@ -43,8 +43,7 @@ class UpdateUserRequest extends FormRequest {
             "cash_register_ids"         => "nullable|array",
             "cash_register_ids.*"       => ["integer", "distinct", new BelongsToCompany("cash_registers", [], null)],
             "warehouse_ids"             => "nullable|array",
-            "warehouse_ids.*"           => ["integer", "distinct", new BelongsToCompany("warehouses", [], null)],
-            "password"                  => "nullable|string|max:20"
+            "warehouse_ids.*"           => ["integer", "distinct", new BelongsToCompany("warehouses", [], null)]
         ];
 
         return $validations;

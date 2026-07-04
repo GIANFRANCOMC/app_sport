@@ -33,8 +33,6 @@ Administra los clientes de una empresa. Un cliente puede comprar, recibir membre
 - El registro de huella se hace contra un dispositivo biometrico existente.
 - No debe mezclarse con usuarios internos.
 
-## Mejoras sugeridas
-
 ## Estado backend implementado
 
 - La unicidad se valida y refuerza por empresa, tipo de documento y número.

@@ -1,42 +1,32 @@
-# Guest - Portal publico
+# Guest - Portal público
 
-`Guest` representa las superficies publicas de Gympe. Esta orientado a visitantes, clientes finales de las empresas y servicios expuestos por System mediante URLs con `company_slug`.
+`Guest` representa las superficies para visitantes y clientes finales. No es el panel administrativo y no debe exponer reglas internas, stock, usuarios, secretos ni configuraciones de System.
 
-## Separacion de responsabilidad
-
-Guest no es el panel administrativo. No debe incluir reglas de administracion interna, configuracion avanzada ni operaciones que requieran usuario autenticado de empresa, salvo que reutilice servicios de System de forma controlada.
-
-## Estructura real en codigo
+## Estructura
 
 - Controladores: `app/Http/Controllers/Guest`
-- Modelos: `app/Models/Guest`
+- Modelos públicos: `app/Models/Guest`
+- Servicios públicos: `app/Services/Guest`
 - Rutas: `routes/Guest`
-- Vistas Blade: `resources/views/Guest`
+- Blade: `resources/views/Guest`
 - Vue: `resources/js/Guest`
 
-## Rutas publicas actuales
+## Rutas actuales
 
 - `{company_slug}/home`
 - `{company_slug}/book_complaints`
 - `{company_slug}/tracking_attendances`
 - `{company_slug}/biometric_devices`
 
-Todas dependen del middleware `company.exists`, que resuelve la empresa por slug.
+`company.exists` resuelve únicamente empresas activas dentro del tenant actual. Las operaciones sensibles añaden firma, capacidad temporal, credencial de dispositivo o rate limit según el recurso.
 
 ## Lectura recomendada
 
 1. [ARCHITECTURE.md](ARCHITECTURE.md)
 2. [DEVELOPMENT_GUIDE.md](DEVELOPMENT_GUIDE.md)
 3. [TABLES.md](TABLES.md)
-4. Modulos en [modules](modules)
-5. Mejoras en [new_requirements](new_requirements)
+4. [modules](modules)
+5. [new_requirements](new_requirements)
+6. [Pendientes UI/UX](../UI_UX_PENDING.md)
 
-## Generalidades transversales
-
-Antes de tocar superficies publicas, revisar [../GENERALIDADES.md](../GENERALIDADES.md) y validar si la regla pertenece realmente a `Guest` o debe vivir en `System`.
-
-## Pendientes y mejoras por realizar
-
-- Documentar mejor que datos publicos dependen de `company_slug` y cuales se exponen desde System.
-- Revisar accesibilidad, seguridad publica y textos de formularios Guest.
-- Evitar copiar componentes internos de System sin revisar si exponen datos o estilos no aptos para visitantes.
+Las reglas transversales viven en [GENERALIDADES.md](../GENERALIDADES.md). Toda capacidad backend implementada se documenta en el módulo; las tareas puramente visuales permanecen únicamente en `UI_UX_PENDING.md`.

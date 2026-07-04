@@ -13,12 +13,15 @@ final class PurchaseItem extends Model {
     protected $table = "purchase_items";
 
     protected $fillable = [
+        "company_id",
         "purchase_header_id",
         "item_id",
         "name",
         "quantity",
         "received_quantity",
         "unit_cost",
+        "allocated_expense_total",
+        "inventory_unit_cost",
         "subtotal",
         "status",
         "created_at",
@@ -31,6 +34,8 @@ final class PurchaseItem extends Model {
         "quantity" => "decimal:2",
         "received_quantity" => "decimal:2",
         "unit_cost" => "decimal:4",
+        "allocated_expense_total" => "decimal:4",
+        "inventory_unit_cost" => "decimal:4",
         "subtotal" => "decimal:2"
     ];
 

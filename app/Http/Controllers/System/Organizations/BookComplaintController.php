@@ -40,7 +40,12 @@ class BookComplaintController extends BaseController {
      */
     public function list(Request $request) {
 
-        $filters = $this->getFilters($request);
+        $filters = array_merge($this->getFilters($request), $request->only([
+            "status",
+            "type",
+            "branch_id",
+            "word"
+        ]));
         $perPage = $this->getPerPage($request, Utilities::$per_page_default);
 
         return BookComplaintService::getPaginatedList($this->getCompanyId(), $filters, $perPage);
@@ -169,6 +174,8 @@ class BookComplaintController extends BaseController {
 
         return [
             "admin_response" => $request->admin_response,
+            "public_response" => $request->public_response,
+            "status_note" => $request->status_note,
             "status"         => $request->status
         ];
 

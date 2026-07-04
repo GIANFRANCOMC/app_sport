@@ -25,6 +25,7 @@ class SaleBody extends Model {
     ];
 
     protected $fillable = [
+        "company_id",
         "sale_header_id",
         "item_id",
         "currency_id",
@@ -49,7 +50,7 @@ class SaleBody extends Model {
     // Appends
     public function getFormattedTypeAttribute() {
 
-        return self::getTypes("first", $this->attributes["type"])["label"] ?? "";
+        return self::getTypes("first", $this->attributes["type"] ?? "")["label"] ?? "";
 
     }
 
@@ -69,7 +70,7 @@ class SaleBody extends Model {
 
     public function getFormattedStatusAttribute() {
 
-        return self::getStatuses("first", $this->attributes["status"])["label"] ?? "";
+        return self::getStatuses("first", $this->attributes["status"] ?? "")["label"] ?? "";
 
     }
 

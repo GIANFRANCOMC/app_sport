@@ -46,7 +46,7 @@ final class StorePurchaseRequest extends FormRequest {
             "expenses.*.expense_type" => ["required_with:expenses", "string", "max:40"],
             "expenses.*.name" => ["required_with:expenses", "string", "max:150"],
             "expenses.*.amount" => ["required_with:expenses", "numeric", "min:0"],
-            "expenses.*.allocation_method" => ["nullable", "in:value,quantity,weight,manual"],
+            "expenses.*.allocation_method" => ["nullable", "in:value,quantity,equal"],
             "expenses.*.note" => ["nullable", "string", "max:500"],
             "observation" => ["nullable", "string", "max:1000"],
             "items" => ["required", "array", "min:1", "max:100"],

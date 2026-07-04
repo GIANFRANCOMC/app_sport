@@ -85,7 +85,7 @@ class ServiceController extends BaseController {
         try {
 
             $data = $this->prepareServiceData($request);
-            $item = ServiceService::create($data, $this->getUserId());
+            $item = ServiceService::create($data, $this->getCompanyId(), $this->getUserId());
 
             if(!Utilities::isDefined($item)) {
 

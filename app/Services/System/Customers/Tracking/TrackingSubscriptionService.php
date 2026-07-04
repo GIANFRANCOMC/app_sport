@@ -8,6 +8,9 @@ use App\Helpers\System\{TranslationHelper, Utilities};
 use App\Models\System\Customers\Subscription;
 use App\Models\System\Organizations\Branch;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\DB;
+use DomainException;
+use App\Services\System\Organizations\Companies\CompanySettingService;
 
 /**
  * Service class for managing Tracking Subscription operations
@@ -128,6 +131,92 @@ class TrackingSubscriptionService {
         $subscription->save();
 
         return $subscription;
+
+    }
+
+    public static function assertDatesAvailable(
+        int $companyId,
+        int $branchId,
+        int $customerId,
+        string $startDate,
+        string $endDate,
+        bool $force = false,
+        ?int $ignoreId = null
+    ): void {
+
+        if($force) {
+
+            return;
+
+        }
+
+        $policy = (string) CompanySettingService::value(
+            $companyId,
+            CompanySettingService::SUBSCRIPTIONS,
+            "overlap_policy",
+            "block"
+        );
+
+        if($policy === "allow") {
+
+            return;
+
+        }
+
+        $overlap = Subscription::query()
+            ->where("company_id", $companyId)
+            ->where("branch_id", $branchId)
+            ->where("customer_id", $customerId)
+            ->where("status", "active")
+            ->when($ignoreId, fn($query) => $query->where("id", "!=", $ignoreId))
+            ->where("start_date", "<=", $endDate)
+            ->where("end_date", ">=", $startDate)
+            ->exists();
+
+        if($overlap) {
+
+            throw new DomainException("El cliente ya tiene una membresía vigente que se superpone en esta sucursal.");
+
+        }
+
+    }
+
+    public static function renew(Subscription $source, array $data, ?int $userId = null): Subscription {
+
+        return DB::transaction(function() use($source, $data, $userId) {
+
+            self::assertDatesAvailable(
+                (int) $source->company_id,
+                (int) $source->branch_id,
+                (int) $source->customer_id,
+                (string) $data["start_date"],
+                (string) $data["end_date"],
+                (bool) ($data["force"] ?? false)
+            );
+
+            return Subscription::create([
+                "company_id" => $source->company_id,
+                "branch_id" => $source->branch_id,
+                "sale_header_id" => null,
+                "sale_body_id" => null,
+                "renewed_from_id" => $source->id,
+                "customer_id" => $source->customer_id,
+                "duration_type" => $source->duration_type,
+                "duration_value" => $source->duration_value,
+                "start_date" => $data["start_date"],
+                "end_date" => $data["end_date"],
+                "set_end_of_day" => $source->set_end_of_day,
+                "force" => (bool) ($data["force"] ?? false),
+                "attendance_limit_per_day" => $data["attendance_limit_per_day"]
+                    ?? $source->attendance_limit_per_day,
+                "observation" => $data["observation"] ?? null,
+                "type" => "manual",
+                "status" => "active",
+                "created_at" => now(),
+                "created_by" => $userId
+            ]);
+
+        });
 
     }
 

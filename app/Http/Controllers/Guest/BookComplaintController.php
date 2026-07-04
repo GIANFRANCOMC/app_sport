@@ -59,7 +59,7 @@ final class BookComplaintController extends Controller {
             ->whereDate("created_at", Carbon::today())
             ->count();
 
-        if($todaySubmissions >= 5) {
+        if($todaySubmissions >= (int) config('public_access.complaints.per_day')) {
             return response()->json([
                 "bool" => false,
                 "msg" => "Alcanzaste el límite diario de solicitudes desde este dispositivo."

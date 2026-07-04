@@ -32,6 +32,7 @@ class SaleHeader extends Model {
     ];
 
     protected $fillable = [
+        "company_id",
         "serie_id",
         "sequential",
         "holder_id",
@@ -56,7 +57,7 @@ class SaleHeader extends Model {
     // Appends
     public function getHashIdAttribute() {
 
-        return base64_encode($this->attributes["id"]);
+        return base64_encode((string) ($this->attributes["id"] ?? ""));
 
     }
 
@@ -80,13 +81,19 @@ class SaleHeader extends Model {
 
     public function getFormattedIssueDateAttribute() {
 
-        return Carbon::createFromFormat("Y-m-d", $this->attributes["issue_date"])->format("d-m-Y");
+        $issueDate = $this->attributes["issue_date"] ?? null;
+
+        return $issueDate ? Carbon::parse($issueDate)->format("d-m-Y") : "";
 
     }
 
     public function getDiffDaysIssueDateAttribute() {
 
-        $issueDateCarbon  = Carbon::parse($this->attributes["issue_date"]);
+        $issueDate = $this->attributes["issue_date"] ?? null;
+
+        if(!$issueDate) return 0;
+
+        $issueDateCarbon  = Carbon::parse($issueDate);
         $todayCarbon      = Carbon::now();
         $differenceInDays = $issueDateCarbon->diffInDays($todayCarbon);
 
@@ -96,13 +103,13 @@ class SaleHeader extends Model {
 
     public function getLegibleTotalAttribute() {
 
-        return Utilities::convertNumberToWords($this->attributes["total"]);
+        return Utilities::convertNumberToWords($this->attributes["total"] ?? 0);
 
     }
 
     public function getFormattedStatusAttribute() {
 
-        return self::getStatuses("first", $this->attributes["status"])["label"] ?? "";
+        return self::getStatuses("first", $this->attributes["status"] ?? "")["label"] ?? "";
 
     }
 

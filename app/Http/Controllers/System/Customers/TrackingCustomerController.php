@@ -8,6 +8,7 @@ use App\Http\Controllers\System\Base\BaseController;
 use Illuminate\Http\{JsonResponse, Request};
 
 use App\Services\System\Customers\Tracking\{TrackingCustomerConfigService, TrackingCustomerBusinessService};
+use App\Services\System\Organizations\AccessScopeService;
 
 class TrackingCustomerController extends BaseController {
 
@@ -141,6 +142,12 @@ class TrackingCustomerController extends BaseController {
                 "company_id"  => $this->getCompanyId(),
                 "customer_id" => $id,
                 "period_type" => $request->input("period_type"),
+                "start_date" => $request->input("start_date"),
+                "end_date" => $request->input("end_date"),
+                "allowed_branch_ids" => AccessScopeService::allowedIds(
+                    auth()->user(),
+                    AccessScopeService::BRANCH
+                ),
                 "options"     => $request->input("options")
             ]);
 

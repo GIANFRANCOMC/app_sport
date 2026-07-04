@@ -10,11 +10,15 @@ use Illuminate\Http\{JsonResponse, Request};
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 
-use App\Http\Requests\System\Organizations\Users\{StoreUserRequest, UpdateUserRequest};
+use App\Http\Requests\System\Organizations\Users\{
+    ChangeUserPasswordRequest,
+    StoreUserRequest,
+    UpdateUserRequest
+};
 use App\Services\System\Base\{InitParamsCacheInvalidationService};
 use App\Services\System\Organizations\Users\{UserConfigService, UserService};
 use App\Services\System\Devices\BiometricDevices\BiometricDeviceService;
-use App\Models\System\Organizations\{User};
+use App\Models\System\Organizations\{AuthenticationEvent, User};
 
 class UserController extends BaseController {
 
@@ -86,7 +90,7 @@ class UserController extends BaseController {
         try {
 
             $data = $this->prepareUserData($request);
-            $user = UserService::create($data, $this->getUserId());
+            $user = UserService::create($data, $this->getCompanyId(), $this->getUserId());
 
             if(!Utilities::isDefined($user)) {
 
@@ -178,6 +182,30 @@ class UserController extends BaseController {
 
     }
 
+    public function authenticationEvents(Request $request, int $id): JsonResponse {
+
+        $user = UserService::findByIdAndCompany($id, $this->getCompanyId(), null, []);
+        if(!$user) {
+            return $this->notFoundResponse();
+        }
+
+        $events = AuthenticationEvent::query()
+            ->where("company_id", $this->getCompanyId())
+            ->where("user_id", $user->id)
+            ->when($request->input("event_type"), fn($query, $eventType) => $query->where("event_type", $eventType))
+            ->when($request->input("result"), fn($query, $result) => $query->where("result", $result))
+            ->when($request->input("date_from"), fn($query, $date) => $query->whereDate("occurred_at", ">=", $date))
+            ->when($request->input("date_to"), fn($query, $date) => $query->whereDate("occurred_at", "<=", $date))
+            ->latest("occurred_at")
+            ->paginate($this->getPerPage($request));
+
+        return response()->json([
+            "bool" => true,
+            "data" => $events
+        ]);
+
+    }
+
     /**
      * Remove the specified record
      * (Not used, but kept for REST compliance)
@@ -188,6 +216,34 @@ class UserController extends BaseController {
     public function destroy(User $record): JsonResponse {
 
         return $this->errorResponse("not_implemented", [], 501);
+
+    }
+
+    public function changePassword(ChangeUserPasswordRequest $request, int $id): JsonResponse {
+
+        try {
+
+            $user = UserService::findByIdAndCompany($id, $this->getCompanyId(), null, []);
+
+            if(!$user) {
+
+                return $this->notFoundResponse();
+
+            }
+
+            $user = UserService::changePassword(
+                $user,
+                $request->password,
+                $this->getUserId()
+            );
+
+            return $this->updatedResponse($user, "updated", "user");
+
+        }catch(\Exception $e) {
+
+            return $this->handleException($e, "update");
+
+        }
 
     }
 
@@ -278,16 +334,13 @@ class UserController extends BaseController {
                                             ->all()
         ];
 
+        if($request instanceof StoreUserRequest) {
+            $data["password"] = $request->input("password");
+        }
+
         $data["branch_scope_mode"] = empty($data["branch_ids"]) ? "inherit" : "restricted";
         $data["cash_register_scope_mode"] = empty($data["cash_register_ids"]) ? "inherit" : "restricted";
         $data["warehouse_scope_mode"] = empty($data["warehouse_ids"]) ? "inherit" : "restricted";
-
-        // Only include password if provided
-        if(Utilities::isDefined($request->input("password"))) {
-
-            $data["password"] = $request->input("password");
-
-        }
 
         return $data;
 

@@ -85,7 +85,7 @@ class AssetController extends BaseController {
         try {
 
             $data  = $this->prepareAssetData($request);
-            $asset = AssetService::create($data, $this->getUserId());
+            $asset = AssetService::create($data, $this->getCompanyId(), $this->getUserId());
 
             if(!Utilities::isDefined($asset)) {
 

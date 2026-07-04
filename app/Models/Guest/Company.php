@@ -18,6 +18,14 @@ class Company extends Model {
         "formatted_status"
     ];
 
+    protected $hidden = [
+        "token_api_misc",
+        "created_by",
+        "updated_by",
+        "created_at",
+        "updated_at"
+    ];
+
     protected $fillable = [
         "slug",
         "internal_code",
@@ -46,7 +54,7 @@ class Company extends Model {
     // Appends
     public function getFormattedStatusAttribute() {
 
-        return self::getStatuses("first", $this->attributes["status"])["label"] ?? "";
+        return self::getStatuses("first", $this->attributes["status"] ?? "")["label"] ?? "";
 
     }
 

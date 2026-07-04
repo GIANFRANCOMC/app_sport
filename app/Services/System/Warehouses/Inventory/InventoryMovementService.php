@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 use App\Models\System\Catalogs\Item;
-use App\Models\System\Warehouses\{InventoryMovement, Warehouse, WarehouseItem};
+use App\Models\System\Warehouses\{InventoryMovement, InventoryStockAlert, Warehouse, WarehouseItem};
 
 final class InventoryMovementService {
 
@@ -31,6 +31,8 @@ final class InventoryMovementService {
     public const ORIGIN_CUSTOMER_RETURN      = "customer_return";
     public const ORIGIN_SUPPLIER_RETURN      = "supplier_return";
     public const ORIGIN_PHYSICAL_COUNT       = "physical_count";
+    public const ORIGIN_RECIPE_SALE          = "recipe_sale";
+    public const ORIGIN_RECIPE_WASTE         = "recipe_waste";
 
     private const MOVEMENT_TYPES = [
         self::TYPE_ENTRY,
@@ -71,6 +73,7 @@ final class InventoryMovementService {
             if(!$warehouseItem) {
 
                 WarehouseItem::create([
+                    "company_id" => $companyId,
                     "warehouse_id" => $warehouseId,
                     "item_id"      => $itemId,
                     "quantity"     => 0,
@@ -89,10 +92,10 @@ final class InventoryMovementService {
 
             }
 
-            $quantityBefore = round((float) $warehouseItem->quantity, 2);
+            $quantityBefore = round((float) $warehouseItem->quantity, 4);
             $quantityChange = self::resolveQuantityChange($type, $quantityBefore, $data);
-            $quantityAfter  = round($quantityBefore + $quantityChange, 2);
-            $valueBefore = round((float) ($warehouseItem->inventory_value ?? 0), 2);
+            $quantityAfter  = round($quantityBefore + $quantityChange, 4);
+            $valueBefore = round((float) ($warehouseItem->inventory_value ?? 0), 4);
             $currentAverageCost = round((float) ($warehouseItem->average_cost ?? 0), 4);
 
             if(abs($quantityChange) < 0.00001) {
@@ -108,8 +111,8 @@ final class InventoryMovementService {
             }
 
             $unitCost = self::resolveUnitCost($type, $quantityChange, $currentAverageCost, $data);
-            $valueChange = round($quantityChange * $unitCost, 2);
-            $valueAfter = round($valueBefore + $valueChange, 2);
+            $valueChange = round($quantityChange * $unitCost, 4);
+            $valueAfter = round($valueBefore + $valueChange, 4);
             $averageCost = self::resolveAverageCost(
                 $type,
                 $quantityBefore,
@@ -136,7 +139,7 @@ final class InventoryMovementService {
 
             }
 
-            return InventoryMovement::create([
+            $movement = InventoryMovement::create([
                 "company_id"      => $companyId,
                 "warehouse_id"    => $warehouseId,
                 "item_id"         => $itemId,
@@ -155,6 +158,14 @@ final class InventoryMovementService {
                 "metadata"        => $metadata ?: null,
                 "created_at"      => now()
             ]);
+
+            self::syncMinimumStockAlert(
+                $warehouseItem->fresh(),
+                $companyId,
+                $data["user_id"] ?? null
+            );
+
+            return $movement;
 
         });
 
@@ -201,7 +212,7 @@ final class InventoryMovementService {
             foreach($items as $item) {
 
                 $itemId = (int) ($item["item_id"] ?? 0);
-                $quantity = round((float) ($item["quantity"] ?? 0), 2);
+                $quantity = round((float) ($item["quantity"] ?? 0), 4);
 
                 if($quantity <= 0) {
 
@@ -368,7 +379,7 @@ final class InventoryMovementService {
 
             }
 
-            $resultingBalance = round((float) $data["resulting_balance"], 2);
+            $resultingBalance = round((float) $data["resulting_balance"], 4);
 
             if($resultingBalance < 0) {
 
@@ -376,11 +387,11 @@ final class InventoryMovementService {
 
             }
 
-            return round($resultingBalance - $quantityBefore, 2);
+            return round($resultingBalance - $quantityBefore, 4);
 
         }
 
-        $quantity = round((float) ($data["quantity"] ?? 0), 2);
+        $quantity = round((float) ($data["quantity"] ?? 0), 4);
 
         if($quantity <= 0) {
 
@@ -472,6 +483,62 @@ final class InventoryMovementService {
         if(!$warehouseExists || !$itemExists) {
 
             throw new DomainException("El producto o el almacén no pertenece a la empresa.");
+
+        }
+
+    }
+
+    private static function syncMinimumStockAlert(
+        WarehouseItem $warehouseItem,
+        int $companyId,
+        ?int $userId
+    ): void {
+
+        $quantity = (float) $warehouseItem->quantity;
+        $minimum = (float) $warehouseItem->minimum_stock;
+        $isLow = $minimum > 0 && $quantity <= $minimum;
+        $openAlert = InventoryStockAlert::query()
+            ->where("company_id", $companyId)
+            ->where("warehouse_item_id", $warehouseItem->id)
+            ->where("status", "open")
+            ->latest("id")
+            ->first();
+
+        if($isLow) {
+
+            if($openAlert) {
+
+                $openAlert->update([
+                    "quantity" => $quantity,
+                    "minimum_stock" => $minimum
+                ]);
+
+                return;
+
+            }
+
+            InventoryStockAlert::create([
+                "company_id" => $companyId,
+                "warehouse_item_id" => $warehouseItem->id,
+                "quantity" => $quantity,
+                "minimum_stock" => $minimum,
+                "status" => "open",
+                "detected_at" => now()
+            ]);
+
+            return;
+
+        }
+
+        if($openAlert) {
+
+            $openAlert->update([
+                "quantity" => $quantity,
+                "minimum_stock" => $minimum,
+                "status" => "resolved",
+                "resolved_at" => now(),
+                "resolved_by" => $userId
+            ]);
 
         }
 

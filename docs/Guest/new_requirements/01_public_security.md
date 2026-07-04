@@ -1,25 +1,13 @@
-# 01 - Seguridad publica
+# 01 - Seguridad pública
 
-## Problema
+## Estado implementado
 
-Guest esta expuesto a visitantes. Cualquier formulario o endpoint puede ser abusado.
+- Empresa activa derivada del slug y nunca del payload.
+- Rate limiting por IP, empresa y recurso con límites centralizados en `config/public_access.php`.
+- FormRequest, honeypot y límite diario para reclamos.
+- Consulta pública por código seguro sin revelar datos internos.
+- Asistencia mediante URL firmada y capacidad temporal de sesión.
+- Credenciales por dispositivo biométrico, firma HMAC, idempotencia y bitácora.
+- Contratos Guest con selección explícita de columnas y atributos sensibles ocultos.
 
-## Requerimientos sugeridos
-
-- Rate limiting por IP y empresa.
-- Captcha para reclamaciones si hay spam.
-- Tokens firmados para links de asistencia.
-- Tokens por dispositivo para biometricos.
-- Respuestas publicas sin detalles internos.
-
-## Pendientes y mejoras por realizar
-
-## Estado backend implementado
-
-- Rate limiting diferenciado por empresa, IP y recurso para reclamos, consulta de estado y asistencia pública.
-- FormRequest públicos, honeypot, límite diario de reclamos y respuestas sin datos internos.
-- Credenciales por dispositivo, firma HMAC, idempotencia y bitácora de eventos biométricos.
-- La incorporación visual de captcha y enlaces firmados se mantiene únicamente en `docs/UI_UX_PENDING.md`.
-
-- Definir limites de rate limiting por recurso publico.
-- Documentar validaciones anti abuso por formulario y por empresa.
+Captcha configurable y la presentación visual de errores antiabuso pertenecen a `docs/UI_UX_PENDING.md`.

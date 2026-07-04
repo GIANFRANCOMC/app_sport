@@ -22,8 +22,6 @@ Mantiene los terceros comerciales usados en Compras. Cada proveedor pertenece a 
 - Crear o modificar proveedores invalida la configuración dependiente de Compras.
 - El listado permite editar datos e inactivar proveedores sin eliminar su historial.
 
-## Mejoras sugeridas
-
 ## Estado backend implementado
 
 - `supplier_contacts` admite múltiples contactos y uno principal.

@@ -1,16 +1,16 @@
 # 22 - Colaboradores
 
-## Que hace
+## Qué hace
 
-Administra usuarios internos de la empresa.
+Administra usuarios internos, perfiles, alcance operativo y seguridad de acceso de cada empresa.
 
 ## Archivos
 
 - Ruta: `routes/System/Organizations/User.php`
 - Controlador: `UserController`
-- Servicios: `UserService`, `UserConfigService`
-- Requests: `StoreUserRequest`, `UpdateUserRequest`
-- Tablas: `users`, `roles`, `role_sub_sections`, `identity_document_types`, `user_preferences`, `user_branches`, `user_cash_registers`, `user_warehouses`
+- Servicios: `UserService`, `UserConfigService`, `AuthenticationAuditService`
+- Requests: `StoreUserRequest`, `UpdateUserRequest`, `ChangeUserPasswordRequest`
+- Tablas: `users`, `authentication_events`, `roles`, `role_sub_sections`, `identity_document_types`, `user_preferences`, `user_branches`, `user_cash_registers`, `user_warehouses`
 
 ## Campos necesarios
 
@@ -24,6 +24,7 @@ Administra usuarios internos de la empresa.
 - `name`
 - `email`
 - `password`
+- `session_version`
 - `phone_number`
 - `gender`
 - `birthdate`
@@ -31,27 +32,31 @@ Administra usuarios internos de la empresa.
 
 ## Reglas
 
-- Usuario pertenece a empresa.
-- Email debe ser unico segun regla definida.
-- Password debe gestionarse con hash.
-- `role_id` controla el alcance funcional del colaborador.
-- Un rol con `is_full_access = true` puede ingresar a todos los modulos habilitados.
-- Un rol sin acceso total queda restringido a las subsecciones y acciones activas en `role_sub_sections`.
-- La restricción funcional se aplica en menú, rutas web y respuestas JSON mediante `module.permission`.
-- El colaborador puede heredar los alcances del perfil o reducirlos con sucursales, cajas y almacenes específicos.
-- La restricción operativa se aplica mediante `resource.scope` y consultas filtradas.
-- No se puede asignar un perfil con permisos superiores a los del usuario que realiza la gestión.
+- El usuario pertenece a una empresa y los servicios de escritura reciben `companyId` y `userId` explícitos.
+- El email debe ser único según la regla empresarial vigente.
+- La contraseña se guarda únicamente mediante hash.
+- `role_id` controla módulos y acciones disponibles.
+- Un rol con `is_full_access = true` puede ingresar a todos los módulos habilitados.
+- Un rol sin acceso total queda restringido por `role_sub_sections.actions`.
+- `module.permission` aplica la restricción en menú, rutas web y JSON.
+- El colaborador puede heredar el alcance del perfil o reducirlo a sucursales, cajas y almacenes específicos.
+- `resource.scope` y las consultas filtradas aplican el alcance operativo.
+- No se puede asignar un perfil con permisos superiores a los del usuario gestor.
 
-## Mejoras sugeridas
+## Seguridad de sesión
 
-- Agregar bloqueo de usuario sin borrar.
-- Agregar cambio de password separado.
-- Auditar acciones sensibles por usuario.
+- `PATCH /users/{id}/password` separa el cambio de contraseña y exige confirmación.
+- Cambiar contraseña o inactivar una cuenta incrementa `session_version`, elimina `remember_token` y revoca tokens Sanctum.
+- `EnsureAuthenticatedSession` invalida una sesión cuya versión ya no coincide o cuyo usuario está inactivo.
+- `GET /users/{id}/authentication-events` lista eventos de acceso de ese usuario, siempre limitado por empresa.
+- El historial conserva evento, resultado, tenant, IP, agente, motivo y hash de sesión; nunca guarda contraseña ni ID de sesión reutilizable.
+- Cambios de usuario, perfil, estado y contraseña generan auditoría de negocio sin almacenar secretos.
+
 ## Alcance operativo
 
-- Cada colaborador puede restringir sucursales, cajas y almacenes.
 - Un selector vacío significa **heredar del perfil**, no acceso total.
 - Las selecciones se guardan en `user_branches`, `user_cash_registers` y `user_warehouses`.
 - El alcance efectivo es la intersección entre perfil y colaborador.
-- En el formulario, los tres selectores aparecen después de **Perfil de acceso** y filtran cajas/almacenes según las sucursales elegidas.
-- Crear o editar una sucursal invalida la configuración de Colaboradores, Caja, Ventas, Compras e Inventario para evitar que los selectores mantengan sucursales antiguas.
+- Crear o editar sucursales, cajas o almacenes invalida las configuraciones dependientes para no conservar opciones antiguas.
+
+La interfaz para consultar el historial de autenticación y la auditoría general se mantiene en `docs/UI_UX_PENDING.md`.

@@ -24,7 +24,7 @@ final class ProductBasicImport implements ToCollection, WithHeadingRow, SkipsEmp
         private readonly int $companyId,
         private readonly int $currencyId,
         private readonly int $warehouseId,
-        private readonly ?int $userId
+        private readonly int $userId
     ) {
     }
 
@@ -80,7 +80,7 @@ final class ProductBasicImport implements ToCollection, WithHeadingRow, SkipsEmp
                         "initial_stock" => (float) ($data["initial_stock"] ?? 0),
                         "minimum_stock" => (float) ($data["minimum_stock"] ?? 0)
                     ]]
-                ], $this->userId);
+                ], $this->companyId, $this->userId);
 
                 $this->importedCount++;
 

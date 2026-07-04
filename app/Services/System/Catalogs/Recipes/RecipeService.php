@@ -20,6 +20,7 @@ use App\Models\System\Catalogs\{
     RecipeTopping,
     RecipeToppingComponent
 };
+use App\Models\System\Warehouses\{Warehouse, WarehouseItem};
 
 final class RecipeService {
 
@@ -169,6 +170,90 @@ final class RecipeService {
 
     }
 
+    public static function theoreticalCost(
+        int $recipeId,
+        int $warehouseId,
+        int $companyId,
+        ?array $allowedWarehouseIds = null
+    ): array {
+
+        if($allowedWarehouseIds !== null && !in_array($warehouseId, $allowedWarehouseIds, true)) {
+
+            throw new DomainException("No tienes acceso al almacén seleccionado.");
+
+        }
+
+        $warehouse = Warehouse::query()
+            ->where("company_id", $companyId)
+            ->where("status", "active")
+            ->find($warehouseId);
+
+        if(!$warehouse) {
+
+            throw new DomainException("El almacén seleccionado no está activo o no pertenece a la empresa.");
+
+        }
+
+        $recipe = RecipeDish::query()
+            ->where("company_id", $companyId)
+            ->with(self::RELATIONS)
+            ->find($recipeId);
+
+        if(!$recipe) {
+
+            throw new DomainException("La receta seleccionada no pertenece a la empresa.");
+
+        }
+
+        $itemIds = $recipe->components->pluck("item_id");
+
+        foreach($recipe->options as $option) {
+            $itemIds = $itemIds->merge($option->components->pluck("item_id"));
+        }
+
+        foreach($recipe->dishToppings as $link) {
+            $itemIds = $itemIds->merge($link->topping?->components?->pluck("item_id") ?? collect());
+        }
+
+        $itemIds = $itemIds->filter()->unique()->values();
+
+        $costs = WarehouseItem::query()
+            ->where("company_id", $companyId)
+            ->where("warehouse_id", $warehouseId)
+            ->whereIn("item_id", $itemIds)
+            ->pluck("average_cost", "item_id");
+
+        $yield = max(0.0001, (float) $recipe->yield_quantity);
+        $recipeWasteFactor = 1 + (max(0, (float) $recipe->waste_percentage) / 100);
+        $base = self::costComponents($recipe->components, $costs, $recipeWasteFactor / $yield);
+        $options = $recipe->options->map(fn($option) => [
+            "id" => $option->id,
+            "name" => $option->name,
+            "cost" => self::costComponents($option->components, $costs, $recipeWasteFactor)["total"]
+        ])->values();
+        $toppings = $recipe->dishToppings->map(fn($link) => [
+            "id" => $link->id,
+            "name" => $link->topping?->name,
+            "cost" => self::costComponents($link->topping?->components ?? collect(), $costs, $recipeWasteFactor)["total"]
+        ])->values();
+
+        return [
+            "recipe_id" => $recipe->id,
+            "item" => $recipe->item,
+            "warehouse" => $warehouse,
+            "yield_quantity" => round($yield, 4),
+            "base_components" => $base["components"],
+            "base_cost" => $base["total"],
+            "option_costs" => $options,
+            "topping_costs" => $toppings,
+            "missing_cost_item_ids" => $itemIds
+                ->reject(fn($itemId) => $costs->has($itemId) && $costs->get($itemId) !== null)
+                ->values()
+                ->all()
+        ];
+
+    }
+
     private static function syncChildren(RecipeDish $recipe, array $data, int $companyId, int $userId): void {
 
         self::syncComponents($recipe, $data["components"] ?? [], $companyId, $userId);
@@ -193,6 +278,7 @@ final class RecipeService {
             self::assertItemBelongsToCompany($itemId, $companyId);
 
             RecipeDishComponent::create([
+                "company_id" => $companyId,
                 "recipe_dish_id" => $recipe->id,
                 "item_id" => $itemId,
                 "quantity" => $quantity,
@@ -243,6 +329,7 @@ final class RecipeService {
             ]);
 
             RecipeDishTopping::create([
+                "company_id" => $companyId,
                 "recipe_dish_id" => $recipe->id,
                 "recipe_topping_id" => $topping->id,
                 "is_default" => (bool) ($toppingData["is_default"] ?? false),
@@ -273,6 +360,7 @@ final class RecipeService {
             self::assertItemBelongsToCompany($itemId, $companyId);
 
             RecipeToppingComponent::create([
+                "company_id" => $companyId,
                 "recipe_topping_id" => $topping->id,
                 "item_id" => $itemId,
                 "quantity" => $quantity,
@@ -300,6 +388,7 @@ final class RecipeService {
             }
 
             $option = RecipeDishOption::create([
+                "company_id" => $companyId,
                 "recipe_dish_id" => $recipe->id,
                 "name" => $name,
                 "description" => $optionData["description"] ?? null,
@@ -321,6 +410,7 @@ final class RecipeService {
                 self::assertItemBelongsToCompany($itemId, $companyId);
 
                 RecipeDishOptionComponent::create([
+                    "company_id" => $companyId,
                     "recipe_dish_option_id" => $option->id,
                     "item_id" => $itemId,
                     "quantity" => $quantity,
@@ -344,6 +434,31 @@ final class RecipeService {
             throw new DomainException("El producto, servicio o insumo seleccionado no pertenece a la empresa.");
 
         }
+
+    }
+
+    private static function costComponents($components, $costs, float $multiplier): array {
+
+        $rows = collect($components)->map(function($component) use($costs, $multiplier) {
+
+            $wasteFactor = 1 + (max(0, (float) $component->waste_percentage) / 100);
+            $quantity = round((float) $component->quantity * $multiplier * $wasteFactor, 4);
+            $unitCost = round((float) ($costs->get($component->item_id) ?? 0), 4);
+
+            return [
+                "item_id" => (int) $component->item_id,
+                "item" => $component->item,
+                "quantity_with_waste" => $quantity,
+                "average_unit_cost" => $unitCost,
+                "cost" => round($quantity * $unitCost, 4)
+            ];
+
+        })->values();
+
+        return [
+            "components" => $rows,
+            "total" => round((float) $rows->sum("cost"), 4)
+        ];
 
     }
 

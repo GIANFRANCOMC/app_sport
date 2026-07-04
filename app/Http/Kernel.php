@@ -36,6 +36,7 @@ class Kernel extends HttpKernel
             \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
             \Illuminate\Session\Middleware\StartSession::class,
             \App\Http\Middleware\EnsureTenantSession::class,
+            \App\Http\Middleware\EnsureAuthenticatedSession::class,
             \Illuminate\View\Middleware\ShareErrorsFromSession::class,
             \App\Http\Middleware\VerifyCsrfToken::class,
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
@@ -70,5 +71,6 @@ class Kernel extends HttpKernel
         'company.exists' => \App\Http\Middleware\EnsureCompanyExists::class,
         'module.permission' => \App\Http\Middleware\EnsureModulePermission::class,
         'resource.scope' => \App\Http\Middleware\EnsureOperationalScope::class,
+        'public.attendance.access' => \App\Http\Middleware\EnsurePublicAttendanceAccess::class,
     ];
 }

@@ -6,12 +6,13 @@ namespace App\Services\System\Organizations\Companies;
 
 use Exception;
 use App\Helpers\System\{TranslationHelper, Utilities};
-use Illuminate\Support\Facades\{Auth, DB, Storage};
+use Illuminate\Support\Facades\{DB, Storage};
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\UploadedFile;
 
 use App\Models\System\Organizations\{Company, CompanySocialMedia};
+use App\Services\System\Tenancy\TenantStoragePath;
 
 /**
  * Service class for managing module operations
@@ -89,7 +90,11 @@ class CompanyService {
 
         $extension = $file->getClientOriginalExtension();
         $fileName  = "{$fieldName}.{$extension}";
-        $filePath  = $file->storeAs("{$company->internal_code}/branding", $fileName, "public");
+        $filePath  = $file->storeAs(
+            TenantStoragePath::for("{$company->internal_code}/branding"),
+            $fileName,
+            "public"
+        );
 
         return $filePath;
 
@@ -209,12 +214,11 @@ class CompanyService {
      * @return Company Updated record instance
      * @throws Exception
      */
-    public static function update(Company $company, array $data, array $files = [], ?int $userId = null): Company {
+    public static function update(Company $company, array $data, array $files, int $userId): Company {
 
-        DB::transaction(function() use($company, $data, $files, $userId) {
+        $obsoleteFiles = [];
 
-            $userAuth = Auth::user();
-            $userId   = $userId ?? $userAuth->id ?? null;
+        DB::transaction(function() use($company, $data, $files, $userId, &$obsoleteFiles) {
 
             // Prepare update data with only changed fields
             $updateData = self::prepareCompanyDataForUpdate($company, $data);
@@ -227,6 +231,13 @@ class CompanyService {
                     $filePath = self::handleImageUpload($company, $field, $files[$field]);
 
                     if($filePath) {
+
+                        $previousPath = $company->{$field};
+                        if($previousPath && $previousPath !== $filePath) {
+
+                            $obsoleteFiles[] = $previousPath;
+
+                        }
 
                         $updateData[$field] = $filePath;
 
@@ -258,9 +269,14 @@ class CompanyService {
 
         });
 
+        foreach(array_unique($obsoleteFiles) as $obsoleteFile) {
+
+            Storage::disk("public")->delete($obsoleteFile);
+
+        }
+
         return $company->fresh(["identityDocumentType"]);
 
     }
 
 }
-

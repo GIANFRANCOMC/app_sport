@@ -8,7 +8,7 @@ Permite configurar datos de la empresa visibles interna y publicamente.
 
 - Ruta: `routes/System/Organizations/Company.php`
 - Controlador: `CompanyController`
-- Servicios: `CompanyService`, `CompanyConfigService`, `CompanySectionService`
+- Servicios: `CompanyService`, `CompanyConfigService`, `CompanySectionService`, `TenantStoragePath`
 - Tablas: `companies`, `company_socials_media`, `companies_sub_sections`
 
 ## Campos necesarios
@@ -36,8 +36,10 @@ Permite configurar datos de la empresa visibles interna y publicamente.
 - Redes sociales deben mantenerse por tipo.
 - `CompanySectionService` administra el menú habilitado y `CompanySubSectionObserver` invalida su caché automáticamente.
 
-## Mejoras sugeridas
+## Estado de mejoras
 
-- Validar slug con formato estable.
-- Limpiar imagenes antiguas al reemplazar.
-- Separar configuracion publica, fiscal y operativa.
+- El `slug` se trata como identificador estable del tenant y no forma parte del formulario de actualización ordinaria.
+- Al reemplazar una imagen se elimina el archivo anterior después de guardar la nueva referencia.
+- Los archivos de marca se guardan bajo `tenants/{tenant_slug}/...`; dos tenants con el mismo código interno no pueden sobrescribirse.
+- La configuración operativa vive tipada en `company_settings`; los datos fiscales y públicos permanecen en `companies`.
+- La separación visual de estos bloques está en `docs/UI_UX_PENDING.md`.

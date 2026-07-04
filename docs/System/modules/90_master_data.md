@@ -16,9 +16,10 @@ Agrupa entidades tecnicas de soporte usadas por muchos modulos.
 - No deberian eliminarse si estan referenciadas.
 - Cambios afectan usuarios, clientes, empresas, ventas y reportes.
 
-## Mejoras sugeridas
+## Estado de mejoras
 
-- Crear CRUD interno protegido para maestros si se administraran desde UI.
-- Agregar seeds versionados y documentados.
-- Definir codigos constantes para DNI/RUC u otros documentos.
-
+- `MasterDataService` y `/master-data/{resource}` permiten listar, crear y modificar tipos de identidad, documentos y monedas por empresa.
+- Inactivar se bloquea cuando existen referencias operativas.
+- `MasterDataCodes` centraliza DNI, RUC, CE, boleta, factura y PEN para evitar literales dispersos.
+- Los datos iniciales permanecen versionados en la migración exclusiva de inserts.
+- La administración visual está en `docs/UI_UX_PENDING.md`.

@@ -228,7 +228,7 @@ Para cada cambio:
 - Probar estados límite: activo, inactivo y cancelado.
 - Probar empresa/sucursal incorrecta si el endpoint recibe ids.
 - Probar impacto en ventas, stock, membresías o asistencias si hay relación.
-- Ejecutar pruebas automatizadas si existen o crear nuevas cuando el riesgo lo amerite.
+- Ejecutar validaciones de sintaxis y carga de rutas. Crear o ejecutar pruebas PHP cuando el usuario las solicite expresamente.
 
 ## Documentación obligatoria por cambio
 
@@ -237,12 +237,12 @@ Cada implementación debe actualizar los archivos `.md` impactados:
 - Archivo del modulo en `System/modules`.
 - `TABLES.md` si cambian campos, tablas o relaciones.
 - `ARCHITECTURE.md` o esta guia si cambia un patron transversal.
-- `new_requirements` para marcar mejoras aplicadas, descartadas o pendientes.
+- `new_requirements` para conservar decisiones de evolución; al implementar una mejora, integrar el resultado en el módulo.
 
 La documentación debe describir el comportamiento final, no solamente la intención inicial.
 
-## Pendientes y mejoras por realizar
+## Mantenimiento de la guía
 
-- Reducir duplicación entre esta guía y `GENERALIDADES.md`; dejar aquí sólo reglas propias de System.
-- Revisar servicios que aún dependan de `Auth` directamente y moverlos a contratos con `companyId` y `userId` explícitos.
-- Completar documentación técnica por cada módulo nuevo antes de abrir nuevos frentes de UI.
+- `GENERALIDADES.md` conserva reglas transversales; aquí permanecen únicamente convenciones de System.
+- Los servicios de escritura reciben `companyId` y `userId` explícitos. Los lectores de `Auth` restantes se limitan a adaptadores de configuración y auditoría.
+- Todo módulo nuevo debe quedar documentado antes de abrir trabajo visual adicional.

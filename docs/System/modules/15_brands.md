@@ -115,8 +115,6 @@ Esto limpia:
 - Si se necesita una marca global compartida por empresas, crear un maestro separado y una relación explícita; no retirar `company_id` de esta tabla.
 - Antes de implementar eliminación desde UI, definir si debe bloquearse cuando existen productos o si debe conservarse el comportamiento `SET NULL`.
 
-## Mejoras pendientes
-
 ## Estado backend implementado
 
 - `logo_path`, `origin_country_code` y `website_url` forman parte de migración, modelo, validación y servicio.

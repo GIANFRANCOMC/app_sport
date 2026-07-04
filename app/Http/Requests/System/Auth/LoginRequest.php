@@ -12,6 +12,7 @@ use Illuminate\Validation\ValidationException;
 use App\Helpers\System\Utilities;
 use App\Models\System\Organizations\{Company, User};
 use App\Services\System\Tenancy\TenantContext;
+use App\Services\System\Auth\AuthenticationAuditService;
 
 class LoginRequest extends FormRequest {
 
@@ -65,6 +66,16 @@ class LoginRequest extends FormRequest {
         // Check if the company is active
         if(!Utilities::isDefined($company) || $company->status !== "active") {
 
+            AuthenticationAuditService::record(
+                $this,
+                'login',
+                'blocked',
+                null,
+                (int) $companyId,
+                (string) ($credentials['email'] ?? ''),
+                'Empresa inexistente o inactiva.'
+            );
+
             throw new HttpResponseException(
                 redirect("/".Utilities::companyLoginQuery($companyId))
             );
@@ -81,6 +92,15 @@ class LoginRequest extends FormRequest {
         if(!Utilities::isDefined($user) || !Hash::check($credentials["password"], $user->password)) {
 
             RateLimiter::hit($this->throttleKey());
+            AuthenticationAuditService::record(
+                $this,
+                'login',
+                'failure',
+                $user,
+                (int) $companyId,
+                (string) ($credentials['email'] ?? ''),
+                'Credenciales inválidas.'
+            );
 
             throw ValidationException::withMessages([
                 "email" => trans("auth.failed")
@@ -109,6 +129,16 @@ class LoginRequest extends FormRequest {
 
         if(!$response || !$json = json_decode($response)) {
 
+            AuthenticationAuditService::record(
+                $this,
+                'login',
+                'failure',
+                $user,
+                (int) $companyId,
+                (string) $credentials['email'],
+                'No se pudo validar el desafío antiabuso.'
+            );
+
             throw ValidationException::withMessages([
                 "captcha" => trans("auth.captcha")
             ]);
@@ -116,6 +146,16 @@ class LoginRequest extends FormRequest {
         }
 
         if(empty($json->success)) {
+
+            AuthenticationAuditService::record(
+                $this,
+                'login',
+                'blocked',
+                $user,
+                (int) $companyId,
+                (string) $credentials['email'],
+                'Desafío antiabuso rechazado.'
+            );
 
             throw ValidationException::withMessages([
                 "captcha" => trans("auth.captcha")
@@ -141,6 +181,16 @@ class LoginRequest extends FormRequest {
         }
 
         event(new Lockout($this));
+
+        AuthenticationAuditService::record(
+            $this,
+            'lockout',
+            'blocked',
+            null,
+            (int) $this->input('company_id'),
+            (string) $this->input('email'),
+            'Límite de intentos de inicio de sesión alcanzado.'
+        );
 
         $seconds = RateLimiter::availableIn($this->throttleKey());
 

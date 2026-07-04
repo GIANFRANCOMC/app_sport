@@ -12,6 +12,7 @@ final class SaleTax extends Model {
     protected $table = "sale_taxes";
 
     protected $fillable = [
+        "company_id",
         "sale_header_id",
         "tax_id",
         "name",

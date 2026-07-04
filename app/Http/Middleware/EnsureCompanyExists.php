@@ -26,6 +26,7 @@ class EnsureCompanyExists {
         }
 
         $company = Company::where("slug", $slug)
+                          ->where("status", "active")
                           ->first();
 
         if(!Utilities::isDefined($company)) {

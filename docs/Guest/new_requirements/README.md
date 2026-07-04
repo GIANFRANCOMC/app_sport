@@ -1,18 +1,5 @@
-# Guest - New requirements
+# Guest - Evolución
 
-Mejoras propuestas para superficies publicas.
+Esta carpeta conserva decisiones o ampliaciones de las superficies públicas. La seguridad base, enlaces firmados, límites y contratos ya implementados se describen en los documentos correspondientes.
 
-Los pendientes exclusivamente visuales se administran en `docs/UI_UX_PENDING.md`.
-
-## Prioridades sugeridas
-
-1. Seguridad de rutas publicas.
-2. Validaciones con FormRequest.
-3. Tokens firmados para asistencia.
-4. Confirmaciones por email en reclamaciones.
-5. SEO/catalogo publico.
-
-## Pendientes y mejoras por realizar
-
-- Mantener cada pendiente Guest separado por experiencia publica, seguridad y trazabilidad.
-- Mover a modulos Guest las mejoras que ya hayan sido implementadas.
+Los pendientes exclusivamente visuales se administran en `docs/UI_UX_PENDING.md`. Cuando una mejora backend se implementa, deja de ser una propuesta y se integra al módulo Guest afectado.

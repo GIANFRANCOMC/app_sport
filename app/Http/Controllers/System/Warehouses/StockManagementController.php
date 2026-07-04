@@ -16,6 +16,9 @@ use App\Services\System\Warehouses\StockManagement\{
     StockManagementConfigService,
     StockManagementService
 };
+use App\Http\Requests\System\Warehouses\StoreInventoryGuideRequest;
+use App\Services\System\Warehouses\Inventory\InventoryGuideService;
+use App\Services\System\Organizations\AccessScopeService;
 
 class StockManagementController extends BaseController {
 
@@ -146,6 +149,60 @@ class StockManagementController extends BaseController {
             ]),
             $perPage
         );
+
+    }
+
+    public function alerts(Request $request) {
+
+        return StockManagementService::getStockAlerts(
+            $this->getCompanyId(),
+            $request->only(["warehouse_id", "status"]),
+            $this->getPerPage($request, Utilities::$per_page_max)
+        );
+
+    }
+
+    public function guides(Request $request) {
+
+        return InventoryGuideService::query(
+            $this->getCompanyId(),
+            $request->only(["warehouse_id", "guide_type", "date_from", "date_to"])
+        )
+            ->when(
+                AccessScopeService::allowedIds(auth()->user(), AccessScopeService::WAREHOUSE) !== null,
+                fn($query) => $query->whereIn(
+                    "warehouse_id",
+                    AccessScopeService::allowedIds(auth()->user(), AccessScopeService::WAREHOUSE)
+                )
+            )
+            ->paginate($this->getPerPage($request, Utilities::$per_page_max));
+
+    }
+
+    public function storeGuide(StoreInventoryGuideRequest $request): JsonResponse {
+
+        try {
+
+            $warehouseId = (int) $request->warehouse_id;
+            if(!AccessScopeService::canAccess(auth()->user(), AccessScopeService::WAREHOUSE, $warehouseId)) {
+
+                return $this->errorResponse("warehouse_not_available", [], 403);
+
+            }
+
+            $guide = InventoryGuideService::create(
+                $this->getCompanyId(),
+                $this->getUserId(),
+                $request->validated()
+            );
+
+            return $this->createdResponse($guide, "created", "inventoryGuide");
+
+        }catch(\Throwable $e) {
+
+            return $this->handleException($e, "create");
+
+        }
 
     }
 

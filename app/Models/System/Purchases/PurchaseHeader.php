@@ -19,6 +19,7 @@ final class PurchaseHeader extends Model {
         "warehouse_id",
         "currency_id",
         "document_type",
+        "reference",
         "document_number",
         "issue_date",
         "expected_date",
@@ -29,7 +30,11 @@ final class PurchaseHeader extends Model {
         "delivery_mode",
         "subtotal",
         "tax",
+        "expense_total",
         "total",
+        "paid_amount",
+        "balance_due",
+        "payment_status",
         "observation",
         "status",
         "created_at",
@@ -47,7 +52,10 @@ final class PurchaseHeader extends Model {
         "approved_at" => "datetime",
         "subtotal" => "decimal:2",
         "tax" => "decimal:2",
+        "expense_total" => "decimal:2",
         "total" => "decimal:2",
+        "paid_amount" => "decimal:2",
+        "balance_due" => "decimal:2",
         "canceled_at" => "datetime"
     ];
 

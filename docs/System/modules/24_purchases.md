@@ -49,7 +49,14 @@ El método inicial es promedio ponderado por producto y almacén. Los impuestos 
 - La exportación usa los mismos filtros del listado y no aplica paginación.
 - Las modales usan backdrop estático y los estilos reutilizables `br-entity-modal` y `br-modal-standard`.
 
-## Mejoras sugeridas
+## Estado de mejoras
+
+- Cada compra recibe una referencia interna única `COM-*`, separada del número del proveedor.
+- `delivery_mode` queda persistido como `immediate` o `pending`.
+- Flete, seguro y otros gastos se distribuyen por valor, cantidad o partes iguales.
+- Cada detalle conserva costo original, gasto asignado y `inventory_unit_cost`; las recepciones valorizan inventario con este último.
+- La cabecera conserva gasto total, pagado, saldo y estado de pago.
+- La aprobación pendiente bloquea recepciones; aprobar no simula una recepción física.
 
 ## Estado backend implementado
 

@@ -11,6 +11,9 @@ final class CompanySettingService {
 
     public const INTERNAL_CODE_PREFIXES = "internal_code_prefixes";
     public const INVENTORY_POLICIES = "inventory";
+    public const CUSTOMER_ATTENDANCE = "customer_attendance";
+    public const SUBSCRIPTIONS = "subscriptions";
+    public const CASH = "cash";
 
     private const DEFAULT_INTERNAL_CODE_PREFIXES = [
         "product" => "PRO",
@@ -28,11 +31,28 @@ final class CompanySettingService {
         "valuation_method" => "weighted_average"
     ];
 
+    private const DEFAULT_CUSTOMER_ATTENDANCE = [
+        "daily_limit_scope" => "branch",
+        "biometric_duplicate_tolerance_seconds" => 10,
+        "allow_automatic_checkout" => false
+    ];
+
+    private const DEFAULT_SUBSCRIPTIONS = [
+        "overlap_policy" => "block"
+    ];
+
+    private const DEFAULT_CASH = [
+        "require_open_session_on_sale" => false
+    ];
+
     public static function group(int $companyId, string $group): array {
 
         $values = match($group) {
             self::INTERNAL_CODE_PREFIXES => self::DEFAULT_INTERNAL_CODE_PREFIXES,
             self::INVENTORY_POLICIES => self::DEFAULT_INVENTORY_POLICIES,
+            self::CUSTOMER_ATTENDANCE => self::DEFAULT_CUSTOMER_ATTENDANCE,
+            self::SUBSCRIPTIONS => self::DEFAULT_SUBSCRIPTIONS,
+            self::CASH => self::DEFAULT_CASH,
             default => []
         };
 

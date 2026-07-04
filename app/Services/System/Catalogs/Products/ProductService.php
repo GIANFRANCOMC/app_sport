@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace App\Services\System\Catalogs\Products;
 
-use Exception;
 use App\Helpers\System\{TranslationHelper, Utilities};
-use Illuminate\Support\Facades\{Auth, DB};
+use Illuminate\Support\Facades\DB;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -183,26 +182,16 @@ class ProductService {
      * Create a new record
      *
      * @param array $data Input data
-     * @param int|null $userId User creating the record
+     * @param int $companyId Company that owns the product
+     * @param int $userId User creating the record
      * @return Item|null Created record instance or null on failure
      * @throws Exception
      */
-    public static function create(array $data, ?int $userId = null): ?Item {
+    public static function create(array $data, int $companyId, int $userId): ?Item {
 
         $item = null;
 
-        DB::transaction(function() use($data, $userId, &$item) {
-
-            $userAuth  = Auth::user();
-            $companyId = $data["company_id"] ?? $userAuth->company_id ?? null;
-
-            if(!$companyId) {
-
-                throw new Exception(self::trans("company_id_required"));
-
-            }
-
-            $userId = $userId ?? $userAuth->id ?? null;
+        DB::transaction(function() use($data, $companyId, $userId, &$item) {
 
             self::assertBrandCanBeAssigned($data["brand_id"] ?? null, $companyId);
 
@@ -239,15 +228,12 @@ class ProductService {
      *
      * @param Item $item Record instance to update
      * @param array $data Input data
-     * @param int|null $userId User updating the record
+     * @param int $userId User updating the record
      * @return Item Updated record instance
      */
-    public static function update(Item $item, array $data, ?int $userId = null): Item {
+    public static function update(Item $item, array $data, int $userId): Item {
 
         DB::transaction(function() use($item, $data, $userId) {
-
-            $userAuth = Auth::user();
-            $userId   = $userId ?? $userAuth->id ?? null;
 
             self::assertBrandCanBeAssigned(
                 $data["brand_id"] ?? null,

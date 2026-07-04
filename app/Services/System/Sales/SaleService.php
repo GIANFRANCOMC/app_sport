@@ -6,17 +6,20 @@ namespace App\Services\System\Sales;
 
 use Exception;
 use App\Helpers\System\{TranslationHelper, Utilities};
-use Illuminate\Support\Facades\{Auth, DB};
+use Illuminate\Support\Facades\DB;
 use stdClass;
 
 use App\Models\System\Customers\Subscription;
-use App\Models\System\Finance\CashMovement;
-use App\Models\System\Organizations\Serie;
+use App\Models\System\Finance\{CashMovement, CashSession};
+use App\Models\System\Organizations\{Serie, User};
 use App\Models\System\Sales\{SaleBody, SaleHeader, SalePayment, SaleTax};
 use App\Models\System\Warehouses\{InventoryMovement, Warehouse};
 use App\Services\System\Finance\CommercialDocumentSettlementService;
 use App\Services\System\Organizations\Companies\CompanySettingService;
 use App\Services\System\Operations\ServiceOperationService;
+use App\Services\System\Customers\Tracking\TrackingSubscriptionService;
+use App\Services\System\Catalogs\Recipes\RecipeConsumptionService;
+use App\Services\System\Organizations\{AccessScopeService};
 use App\Services\System\Warehouses\Inventory\InventoryMovementService;
 
 /**
@@ -69,7 +72,7 @@ class SaleService {
      */
     private static function prepareSubscriptionExtras(array $detail): stdClass {
 
-        $extras = new stdClass();
+        $extras = (object) ($detail["extras"] ?? []);
 
         if(isset($detail["extras"])) {
 
@@ -78,7 +81,7 @@ class SaleService {
             $extras->start_date     = isset($detail["extras"]["start_date"]) ? str_replace("T", " ", $detail["extras"]["start_date"]) : null;
             $extras->end_date       = isset($detail["extras"]["end_date"]) ? str_replace("T", " ", $detail["extras"]["end_date"]) : null;
             $extras->set_end_of_day = $detail["extras"]["set_end_of_day"] ?? false;
-            $extras->force          = $detail["extras"]["force"] ?? true;
+            $extras->force          = $detail["extras"]["force"] ?? false;
             $extras->observation    = $detail["extras"]["observation"] ?? "";
 
         }
@@ -136,13 +139,12 @@ class SaleService {
      * @param int $userId User ID
      * @return void
      */
-    private static function updateWarehouseInventory(Warehouse $warehouse, SaleBody $saleBody, int $userId): void {
-
-        if(!in_array($saleBody->type, ["product"])) {
-
-            return;
-
-        }
+    private static function updateWarehouseInventory(
+        Warehouse $warehouse,
+        SaleBody $saleBody,
+        array $detail,
+        int $userId
+    ): void {
 
         $companyId = (int) $warehouse->branch->company_id;
         $allowNegativeStock = (bool) CompanySettingService::value(
@@ -151,6 +153,25 @@ class SaleService {
             "allow_negative_stock_on_sale",
             false
         );
+
+        if(RecipeConsumptionService::consume(
+            $warehouse,
+            $saleBody,
+            $detail,
+            $companyId,
+            $userId,
+            $allowNegativeStock
+        )) {
+
+            return;
+
+        }
+
+        if(!in_array($saleBody->type, ["product"])) {
+
+            return;
+
+        }
 
         InventoryMovementService::apply([
             "company_id"     => $companyId,
@@ -191,6 +212,15 @@ class SaleService {
 
         $extras = self::prepareSubscriptionExtras($detail);
 
+        TrackingSubscriptionService::assertDatesAvailable(
+            $companyId,
+            $branchId,
+            (int) $saleHeader->holder_id,
+            (string) $extras->start_date,
+            (string) $extras->end_date,
+            (bool) $extras->force
+        );
+
         $subscription = new Subscription();
         $subscription->company_id              = $companyId;
         $subscription->branch_id              = $branchId;
@@ -203,7 +233,7 @@ class SaleService {
         $subscription->end_date                = $extras->end_date;
         $subscription->set_end_of_day          = $extras->set_end_of_day;
         $subscription->force                   = $extras->force;
-        $subscription->attendance_limit_per_day = 1;
+        $subscription->attendance_limit_per_day = max(1, (int) ($detail["attendance_limit_per_day"] ?? 1));
         $subscription->observation             = $extras->observation;
         $subscription->motive                  = null;
         $subscription->type                    = "sale";
@@ -260,6 +290,54 @@ class SaleService {
         }
 
         throw new Exception("Selecciona el almacén que será afectado por la venta.");
+
+    }
+
+    private static function resolveCashSession(
+        array $data,
+        int $companyId,
+        int $userId
+    ): ?CashSession {
+
+        $cashSessionId = (int) ($data["cash_session_id"] ?? 0);
+        $required = (bool) CompanySettingService::value(
+            $companyId,
+            CompanySettingService::CASH,
+            "require_open_session_on_sale",
+            false
+        );
+
+        if($cashSessionId <= 0) {
+
+            if($required) {
+
+                throw new Exception("Abre una caja de la sucursal antes de registrar la venta.");
+
+            }
+
+            return null;
+
+        }
+
+        $session = CashSession::query()
+            ->with("register")
+            ->where("company_id", $companyId)
+            ->where("branch_id", (int) $data["branch_id"])
+            ->where("status", "open")
+            ->find($cashSessionId);
+
+        if(!$session
+            || !AccessScopeService::canAccess(
+                User::query()->where("company_id", $companyId)->findOrFail($userId),
+                AccessScopeService::CASH_REGISTER,
+                (int) $session->cash_register_id
+            )) {
+
+            throw new Exception("La caja seleccionada no está abierta, no pertenece a la sucursal o no está autorizada para el usuario.");
+
+        }
+
+        return $session;
 
     }
 
@@ -356,21 +434,19 @@ class SaleService {
      * Create a new sale
      *
      * @param array $data Sale data from request
-     * @param int|null $userId User ID creating the sale
+     * @param int $companyId Company that owns the sale
+     * @param int $userId User ID creating the sale
      * @return SaleHeader|null Created sale header instance or null on failure
      * @throws Exception
      */
-    public static function create(array $data, ?int $userId = null): ?SaleHeader {
+    public static function create(array $data, int $companyId, int $userId): ?SaleHeader {
 
         $saleHeader = null;
 
-        DB::transaction(function() use($data, $userId, &$saleHeader) {
-
-            $userAuth  = Auth::user();
-            $userId    = $userId ?? $userAuth->id;
-            $companyId = $userAuth->company_id;
+        DB::transaction(function() use($data, $companyId, $userId, &$saleHeader) {
 
             $warehouse = self::resolveWarehouse($data, (int) $companyId);
+            $cashSession = self::resolveCashSession($data, (int) $companyId, (int) $userId);
             self::validateSerieBelongsToBranch((int) $data["serie_id"], (int) $data["branch_id"]);
 
             // Get new sequential number
@@ -378,7 +454,7 @@ class SaleService {
 
             if($newSequential <= 0) {
 
-                throw new Exception("No se pudo generar el nÃºmero secuencial.");
+                throw new Exception("No se pudo generar el número secuencial.");
 
             }
 
@@ -417,13 +493,14 @@ class SaleService {
 
             // Create sale header
             $saleHeader = new SaleHeader();
+            $saleHeader->company_id  = $companyId;
             $saleHeader->serie_id    = $data["serie_id"];
             $saleHeader->sequential  = $newSequential;
             $saleHeader->holder_id   = $data["holder_id"];
             $saleHeader->seller_id   = $userId;
             $saleHeader->currency_id = $data["currency_id"];
             $saleHeader->warehouse_id = $warehouse->id;
-            $saleHeader->cash_session_id = $data["cash_session_id"] ?? null;
+            $saleHeader->cash_session_id = $cashSession?->id;
             $saleHeader->issue_date  = $data["issue_date"];
             $saleHeader->subtotal    = $subtotal;
             $saleHeader->tax         = $taxTotal;
@@ -472,7 +549,7 @@ class SaleService {
                 $saleBody = self::createSaleBody($saleHeader, $detail, $userId);
 
                 // Update warehouse inventory for products
-                self::updateWarehouseInventory($warehouse, $saleBody, $userId);
+                self::updateWarehouseInventory($warehouse, $saleBody, $detail, $userId);
 
                 // Create subscription for subscription items
                 self::createSubscription($saleHeader, $saleBody, $detail, $companyId, $data["branch_id"], $userId);
@@ -500,25 +577,24 @@ class SaleService {
      * Cancel a sale
      *
      * @param SaleHeader $saleHeader Sale header instance
-     * @param int|null $userId User ID canceling the sale
+     * @param int $companyId Company that owns the sale
+     * @param int $userId User ID canceling the sale
      * @return SaleHeader Updated sale header instance
      * @throws Exception
      */
-    public static function cancel(SaleHeader $saleHeader, ?int $userId = null): SaleHeader {
+    public static function cancel(SaleHeader $saleHeader, int $companyId, int $userId): SaleHeader {
 
         $stockRestored = false;
         $restoreStockPolicyEnabled = false;
 
         DB::transaction(function() use(
             $saleHeader,
+            $companyId,
             $userId,
             &$stockRestored,
             &$restoreStockPolicyEnabled
         ) {
 
-            $userAuth = Auth::user();
-            $userId   = $userId ?? $userAuth->id;
-            $companyId = (int) $userAuth->company_id;
             $restoreStockPolicyEnabled = (bool) CompanySettingService::value(
                 $companyId,
                 CompanySettingService::INVENTORY_POLICIES,
@@ -538,66 +614,97 @@ class SaleService {
                     : ["allPositions"]
             );
 
-            $productPositions = $saleHeader->allPositions
-                ->where("type", "product");
+            $allPositions = $saleHeader->allPositions;
+            $productPositions = $allPositions->where("type", "product");
             $fallbackWarehouse = $restoreStockPolicyEnabled && $productPositions->isNotEmpty()
                 ? $saleHeader->serie?->branch?->warehouses?->first()
                 : null;
 
-            $saleMovements = $restoreStockPolicyEnabled && $productPositions->isNotEmpty()
+            $saleMovements = $restoreStockPolicyEnabled && $allPositions->isNotEmpty()
                 ? InventoryMovement::query()
                     ->where("company_id", $companyId)
-                    ->where("origin_type", InventoryMovementService::ORIGIN_SALE)
-                    ->whereIn("origin_id", $productPositions->pluck("id"))
+                    ->whereIn("origin_type", [
+                        InventoryMovementService::ORIGIN_SALE,
+                        InventoryMovementService::ORIGIN_RECIPE_SALE
+                    ])
+                    ->whereIn("origin_id", $allPositions->pluck("id"))
                     ->orderByDesc("id")
-                    ->get(["id", "warehouse_id", "origin_id", "unit_cost"])
-                    ->unique("origin_id")
-                    ->keyBy("origin_id")
+                    ->get([
+                        "id",
+                        "warehouse_id",
+                        "item_id",
+                        "origin_id",
+                        "origin_type",
+                        "quantity_change",
+                        "unit_cost"
+                    ])
+                    ->groupBy("origin_id")
                 : collect();
+
+            $inventoryPositions = $allPositions->filter(fn($position) =>
+                $position->type === "product" || $saleMovements->has($position->id)
+            );
 
             if($restoreStockPolicyEnabled
                 && $productPositions->isNotEmpty()
                 && !$fallbackWarehouse
-                && $saleMovements->count() !== $productPositions->count()) {
+                && $productPositions->contains(fn($position) => !$saleMovements->has($position->id))) {
 
-                throw new Exception("No se encontrÃ³ el almacÃ©n asociado a la venta.");
+                throw new Exception("No se encontró el almacén asociado a la venta.");
 
             }
 
-            if($restoreStockPolicyEnabled && $productPositions->isNotEmpty()) {
+            if($restoreStockPolicyEnabled && $inventoryPositions->isNotEmpty()) {
 
-                foreach($productPositions as $saleBody) {
+                foreach($inventoryPositions as $saleBody) {
 
-                    $warehouseId = (int) (
-                        $saleMovements->get($saleBody->id)?->warehouse_id
-                        ?? $fallbackWarehouse?->id
-                        ?? 0
-                    );
+                    $positionMovements = $saleMovements->get($saleBody->id, collect());
 
-                    if($warehouseId <= 0) {
+                    if($positionMovements->isEmpty()) {
 
-                        throw new Exception("No se encontrÃ³ el almacÃ©n original de uno de los productos.");
+                        if($saleBody->type !== "product") {
+
+                            continue;
+
+                        }
+
+                        $positionMovements = collect([(object) [
+                            "warehouse_id" => $fallbackWarehouse?->id,
+                            "item_id" => $saleBody->item_id,
+                            "quantity_change" => -(float) $saleBody->quantity,
+                            "unit_cost" => 0,
+                            "origin_type" => InventoryMovementService::ORIGIN_SALE
+                        ]]);
 
                     }
 
-                    InventoryMovementService::apply([
-                        "company_id"    => $companyId,
-                        "warehouse_id"  => $warehouseId,
-                        "item_id"       => (int) $saleBody->item_id,
-                        "user_id"       => $userId,
-                        "movement_type" => InventoryMovementService::TYPE_ENTRY,
-                        "origin_type"   => InventoryMovementService::ORIGIN_SALE_CANCELLATION,
-                        "origin_id"     => (int) $saleBody->id,
-                        "quantity"      => (float) $saleBody->quantity,
-                        "unit_cost"     => (float) (
-                            $saleMovements->get($saleBody->id)?->unit_cost ?? 0
-                        ),
-                        "reason"        => "DevoluciÃ³n automÃ¡tica por anulaciÃ³n de venta.",
-                        "metadata"      => [
-                            "sale_header_id" => (int) $saleHeader->id,
-                            "automatic_return" => true
-                        ]
-                    ]);
+                    foreach($positionMovements as $movement) {
+
+                        if((int) $movement->warehouse_id <= 0) {
+
+                            throw new Exception("No se encontró el almacén original de uno de los productos.");
+
+                        }
+
+                        InventoryMovementService::apply([
+                            "company_id"    => $companyId,
+                            "warehouse_id"  => (int) $movement->warehouse_id,
+                            "item_id"       => (int) $movement->item_id,
+                            "user_id"       => $userId,
+                            "movement_type" => InventoryMovementService::TYPE_ENTRY,
+                            "origin_type"   => InventoryMovementService::ORIGIN_SALE_CANCELLATION,
+                            "origin_id"     => (int) $saleBody->id,
+                            "quantity"      => abs((float) $movement->quantity_change),
+                            "unit_cost"     => (float) $movement->unit_cost,
+                            "reason"        => "Devolución automática por anulación de venta.",
+                            "metadata"      => [
+                                "sale_header_id" => (int) $saleHeader->id,
+                                "automatic_return" => true,
+                                "original_origin_type" => $movement->origin_type
+                            ]
+                        ]);
+
+                    }
 
                 }
 
@@ -641,7 +748,7 @@ class SaleService {
                     ]);
 
             // Cancel subscriptions
-            $motive = "Por la anulaciÃ³n de la venta.";
+            $motive = "Por la anulación de la venta.";
 
             Subscription::where("company_id", $companyId)
                        ->where("sale_header_id", $saleHeader->id)
@@ -708,7 +815,7 @@ class SaleService {
         $serieIds = $branches->pluck("series.*.id")->flatten();
 
         $query = SaleHeader::whereIn("serie_id", $serieIds)
-                           ->with(["serie.documentType", "holder", "currency", "warehouse", "taxes", "payments"]);
+                           ->with(["serie.documentType", "serie.branch", "holder", "currency", "warehouse", "taxes", "payments"]);
 
         // Apply filters
         self::applyFilters($query, $filters);
@@ -744,6 +851,24 @@ class SaleService {
         if(Utilities::isDefined($filters["issue_date"])) {
 
             $query->where("issue_date", $filters["issue_date"]);
+
+        }
+
+        if(Utilities::isDefined($filters["start_date"])) {
+
+            $query->whereDate("issue_date", ">=", $filters["start_date"]);
+
+        }
+
+        if(Utilities::isDefined($filters["end_date"])) {
+
+            $query->whereDate("issue_date", "<=", $filters["end_date"]);
+
+        }
+
+        if(Utilities::isDefined($filters["branch_id"])) {
+
+            $query->whereHas("serie", fn($serie) => $serie->where("branch_id", $filters["branch_id"]));
 
         }
 

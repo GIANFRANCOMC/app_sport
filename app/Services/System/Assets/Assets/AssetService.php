@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace App\Services\System\Assets\Assets;
 
-use Exception;
 use App\Helpers\System\{TranslationHelper, Utilities};
-use Illuminate\Support\Facades\{Auth, DB};
+use Illuminate\Support\Facades\DB;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -129,22 +128,11 @@ class AssetService {
      * @return Asset|null Created record instance or null on failure
      * @throws Exception
      */
-    public static function create(array $data, ?int $userId = null): ?Asset {
+    public static function create(array $data, int $companyId, int $userId): ?Asset {
 
         $asset = null;
 
-        DB::transaction(function() use($data, $userId, &$asset) {
-
-            $userAuth  = Auth::user();
-            $companyId = $data["company_id"] ?? $userAuth->company_id ?? null;
-
-            if(!$companyId) {
-
-                throw new Exception(self::trans("company_id_required"));
-
-            }
-
-            $userId = $userId ?? $userAuth->id ?? null;
+        DB::transaction(function() use($data, $companyId, $userId, &$asset) {
 
             // Prepare data with only allowed fields
             $assetData = self::prepareAssetDataForCreate($data, $companyId, $userId);
@@ -166,12 +154,9 @@ class AssetService {
      * @param int|null $userId User updating the record
      * @return Asset Updated record instance
      */
-    public static function update(Asset $asset, array $data, ?int $userId = null): Asset {
+    public static function update(Asset $asset, array $data, int $userId): Asset {
 
         DB::transaction(function() use($asset, $data, $userId) {
-
-            $userAuth = Auth::user();
-            $userId   = $userId ?? $userAuth->id ?? null;
 
             // Prepare update data with only changed fields
             $updateData = self::prepareAssetDataForUpdate($asset, $data);

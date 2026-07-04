@@ -118,7 +118,12 @@ Cuando un cambio se implemente, tambien debe indicarse que documentacion se actu
 
 Si el cambio afecta UI, mencionar si debe respetar branding, componentes `br-*`, tooltips, modales, formularios y patrones descritos en `GENERALIDADES.md`.
 
-## Pendientes y mejoras por realizar
+## Datos mínimos por dominio
 
-- Agregar plantillas especificas para requerimientos de ventas, inventario, caja, compras y catalogo comercial.
-- Mantener ejemplos actualizados con modulos reales a medida que se estabilicen los flujos.
+- **Ventas/POS:** sucursal, almacén, serie, caja, cliente, tributos, pagos y política de stock.
+- **Inventario:** almacén origen/destino, motivo, cantidades, costo y trazabilidad esperada.
+- **Caja:** sucursal, caja, sesión, método de pago, responsable y tipo de movimiento.
+- **Compras:** proveedor, almacén, entrega inmediata/pendiente, tributos, pagos y recepciones.
+- **Catálogo:** tipo de ítem, publicación, precio, impuestos, inventario y relaciones comerciales.
+
+Los ejemplos deben usar módulos y rutas vigentes; una propuesta visual se registra en `UI_UX_PENDING.md` y una regla backend en el módulo afectado.

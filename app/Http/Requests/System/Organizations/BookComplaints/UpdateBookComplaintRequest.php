@@ -26,7 +26,9 @@ class UpdateBookComplaintRequest extends FormRequest {
     public function rules(): array {
 
         return [
-            "admin_response" => "required|string|max:600",
+            "admin_response"  => "nullable|string|max:2000|required_if:status,resolved",
+            "public_response" => "nullable|string|max:2000|required_if:status,resolved",
+            "status_note"     => "nullable|string|max:500",
             "status"         => "required|string|in:pending,in_progress,resolved"
         ];
 

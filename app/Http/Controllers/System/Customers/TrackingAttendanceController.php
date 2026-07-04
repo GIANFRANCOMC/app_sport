@@ -9,9 +9,14 @@ use App\Helpers\System\{Utilities};
 use Illuminate\Http\{JsonResponse, Request};
 use Carbon\Carbon;
 
-use App\Http\Requests\System\Customers\TrackingAttendances\{CancelTrackingAttendanceRequest};
+use App\Http\Requests\System\Customers\TrackingAttendances\{
+    CancelTrackingAttendanceRequest,
+    ReviewAttendanceCorrectionRequest,
+    StoreAttendanceCorrectionRequest
+};
 use App\Services\System\Customers\Tracking\{TrackingAttendanceConfigService, TrackingAttendanceService, TrackingAttendanceBusinessService};
-use App\Models\System\Customers\{Attendance};
+use App\Models\System\Customers\{Attendance, AttendanceCorrection};
+use App\Services\System\Organizations\AccessScopeService;
 
 class TrackingAttendanceController extends BaseController {
 
@@ -45,11 +50,17 @@ class TrackingAttendanceController extends BaseController {
             "branch_id"   => $request->input("branch_id"),
             "customer_id" => $request->input("customer_id"),
             "status"      => $request->input("status"),
-            "start_date"  => $request->input("start_date")
+            "start_date"  => $request->input("start_date"),
+            "end_date"    => $request->input("end_date")
         ];
         $perPage = $this->getPerPage($request, Utilities::$per_page_max);
 
-        return TrackingAttendanceService::getPaginatedList($this->getCompanyId(), $filters, $perPage);
+        return TrackingAttendanceService::getPaginatedList(
+            $this->getCompanyId(),
+            $filters,
+            $perPage,
+            AccessScopeService::allowedIds(auth()->user(), AccessScopeService::BRANCH)
+        );
 
     }
 
@@ -235,6 +246,70 @@ class TrackingAttendanceController extends BaseController {
     public function destroy(Attendance $attendance): JsonResponse {
 
         return $this->errorResponse("not_implemented", [], 501);
+
+    }
+
+    public function requestCorrection(StoreAttendanceCorrectionRequest $request, int $id): JsonResponse {
+
+        try {
+
+            $attendance = Attendance::query()
+                ->where("company_id", $this->getCompanyId())
+                ->find($id);
+
+            if(!$attendance
+                || !AccessScopeService::canAccess(auth()->user(), AccessScopeService::BRANCH, (int) $attendance->branch_id)) {
+
+                return $this->notFoundResponse();
+
+            }
+
+            $correction = TrackingAttendanceService::requestCorrection(
+                $attendance,
+                $request->validated(),
+                $this->getUserId()
+            );
+
+            return $this->createdResponse($correction, "created", "attendanceCorrection");
+
+        }catch(\Exception $e) {
+
+            return $this->handleException($e, "create");
+
+        }
+
+    }
+
+    public function reviewCorrection(ReviewAttendanceCorrectionRequest $request, int $id): JsonResponse {
+
+        try {
+
+            $correction = AttendanceCorrection::query()
+                ->where("company_id", $this->getCompanyId())
+                ->with("attendance")
+                ->find($id);
+
+            if(!$correction
+                || !AccessScopeService::canAccess(auth()->user(), AccessScopeService::BRANCH, (int) $correction->attendance->branch_id)) {
+
+                return $this->notFoundResponse();
+
+            }
+
+            $correction = TrackingAttendanceService::reviewCorrection(
+                $correction,
+                $request->decision,
+                $request->note,
+                $this->getUserId()
+            );
+
+            return $this->updatedResponse($correction, "updated", "attendanceCorrection");
+
+        }catch(\Exception $e) {
+
+            return $this->handleException($e, "update");
+
+        }
 
     }
 

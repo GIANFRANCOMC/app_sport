@@ -15,6 +15,7 @@ final class PurchaseReceiptItem extends Model {
     public $timestamps = false;
 
     protected $fillable = [
+        "company_id",
         "purchase_receipt_id",
         "purchase_item_id",
         "item_id",

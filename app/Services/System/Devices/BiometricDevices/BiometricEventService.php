@@ -96,6 +96,7 @@ final class BiometricEventService {
                 "branch_id" => $device->branch_id,
                 "device_id" => $device->id,
                 "device_user_id" => $event->device_user_id,
+                "source_reference" => "event:{$event->event_uuid}",
                 "start_date" => $isCheckout ? null : $event->occurred_at,
                 "end_date" => $isCheckout ? $event->occurred_at : null,
                 "type" => "biometric",

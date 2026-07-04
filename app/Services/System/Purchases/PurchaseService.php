@@ -25,6 +25,74 @@ use App\Services\System\Warehouses\StockManagement\StockManagementService;
 
 final class PurchaseService {
 
+    private static function allocateExpenses(array $details, array $expenses): array {
+
+        $allocations = collect($details)
+            ->mapWithKeys(fn($detail) => [(int) $detail["item_id"] => 0.0])
+            ->all();
+
+        foreach($expenses as $expense) {
+
+            $amount = round((float) ($expense["amount"] ?? 0), 4);
+            if($amount <= 0) {
+
+                continue;
+
+            }
+
+            $method = (string) ($expense["allocation_method"] ?? "value");
+            $weights = collect($details)->mapWithKeys(function($detail) use($method) {
+
+                $weight = match($method) {
+                    "quantity" => (float) $detail["quantity"],
+                    "equal" => 1.0,
+                    default => (float) $detail["quantity"] * (float) $detail["unit_cost"]
+                };
+
+                return [(int) $detail["item_id"] => max(0, $weight)];
+
+            });
+            $denominator = (float) $weights->sum();
+
+            if($denominator <= 0) {
+
+                throw new DomainException("No se pudo distribuir uno de los gastos de compra.");
+
+            }
+
+            $distributed = 0.0;
+            $lastItemId = (int) $weights->keys()->last();
+            foreach($weights as $itemId => $weight) {
+
+                $allocated = (int) $itemId === $lastItemId
+                    ? round($amount - $distributed, 4)
+                    : round($amount * ((float) $weight / $denominator), 4);
+                $allocations[(int) $itemId] += $allocated;
+                $distributed += $allocated;
+
+            }
+
+        }
+
+        return $allocations;
+
+    }
+
+    private static function generateReference(int $companyId): string {
+
+        do {
+
+            $reference = "COM-" . strtoupper(Str::random(10));
+
+        }while(PurchaseHeader::query()
+            ->where("company_id", $companyId)
+            ->where("reference", $reference)
+            ->exists());
+
+        return $reference;
+
+    }
+
     public static function getFilteredQuery(int $companyId, array $filters = [], ?int $userId = null): Builder {
 
         $query = PurchaseHeader::query()
@@ -153,7 +221,10 @@ final class PurchaseService {
                 $selectedTaxQuantities
             );
             $tax = round((float) $taxLines->sum("amount"), 2);
-            $total = round($subtotal + $tax, 2);
+            $expenses = is_array($data["expenses"] ?? null) ? $data["expenses"] : [];
+            $expenseTotal = round((float) collect($expenses)->sum("amount"), 2);
+            $allocatedExpenses = self::allocateExpenses($data["items"], $expenses);
+            $total = round($subtotal + $tax + $expenseTotal, 2);
             $paymentLines = CommercialDocumentSettlementService::payments(
                 $companyId,
                 "purchase",
@@ -161,6 +232,14 @@ final class PurchaseService {
                 $data["payments"] ?? [],
                 $userId
             );
+            $paidAmount = round((float) $paymentLines->sum("amount"), 2);
+            $balanceDue = round($total - $paidAmount, 2);
+            $paymentStatus = match(true) {
+                $paidAmount <= 0 => "unpaid",
+                $balanceDue > 0 => "partial",
+                $balanceDue < 0 => "overpaid",
+                default => "paid"
+            };
 
             $purchase = PurchaseHeader::create([
                 "company_id" => $companyId,
@@ -168,6 +247,7 @@ final class PurchaseService {
                 "warehouse_id" => $warehouse->id,
                 "currency_id" => (int) $data["currency_id"],
                 "document_type" => $data["document_type"],
+                "reference" => self::generateReference($companyId),
                 "document_number" => $documentNumber ?: null,
                 "issue_date" => $data["issue_date"],
                 "expected_date" => $data["expected_date"] ?? null,
@@ -178,7 +258,11 @@ final class PurchaseService {
                 "delivery_mode" => $data["delivery_mode"] ?? "immediate",
                 "subtotal" => $subtotal,
                 "tax" => $tax,
+                "expense_total" => $expenseTotal,
                 "total" => $total,
+                "paid_amount" => $paidAmount,
+                "balance_due" => $balanceDue,
+                "payment_status" => $paymentStatus,
                 "observation" => $data["observation"] ?? null,
                 "status" => "confirmed",
                 "created_at" => now(),
@@ -201,8 +285,8 @@ final class PurchaseService {
 
             }
 
-            if(!empty($data["expenses"])) {
-                \App\Models\System\Purchases\PurchaseExpense::insert(collect($data["expenses"])
+            if(!empty($expenses)) {
+                \App\Models\System\Purchases\PurchaseExpense::insert(collect($expenses)
                     ->map(fn($expense) => [
                         "company_id" => $companyId,
                         "purchase_header_id" => $purchase->id,
@@ -221,6 +305,10 @@ final class PurchaseService {
                 $item = $items->get((int) $detail["item_id"]);
                 $quantity = round((float) $detail["quantity"], 2);
                 $unitCost = round((float) $detail["unit_cost"], 4);
+                $allocatedExpense = round((float) ($allocatedExpenses[$item->id] ?? 0), 4);
+                $inventoryUnitCost = $quantity > 0
+                    ? round($unitCost + ($allocatedExpense / $quantity), 4)
+                    : $unitCost;
 
                 PurchaseItem::create([
                     "company_id" => $companyId,
@@ -230,6 +318,8 @@ final class PurchaseService {
                     "quantity" => $quantity,
                     "received_quantity" => 0,
                     "unit_cost" => $unitCost,
+                    "allocated_expense_total" => $allocatedExpense,
+                    "inventory_unit_cost" => $inventoryUnitCost,
                     "subtotal" => round($quantity * $unitCost, 2),
                     "status" => "pending",
                     "created_at" => now(),
@@ -334,7 +424,7 @@ final class PurchaseService {
                     "origin_type" => InventoryMovementService::ORIGIN_PURCHASE,
                     "origin_id" => (int) $receipt->id,
                     "quantity" => $quantity,
-                    "unit_cost" => (float) $purchaseItem->unit_cost,
+                    "unit_cost" => (float) $purchaseItem->inventory_unit_cost,
                     "reason" => "Recepción de compra.",
                     "reference" => $receipt->reference,
                     "metadata" => [
@@ -350,8 +440,8 @@ final class PurchaseService {
                     "item_id" => $purchaseItem->item_id,
                     "inventory_movement_id" => $movement->id,
                     "quantity" => $quantity,
-                    "unit_cost" => $purchaseItem->unit_cost,
-                    "total_cost" => round($quantity * (float) $purchaseItem->unit_cost, 2),
+                    "unit_cost" => $purchaseItem->inventory_unit_cost,
+                    "total_cost" => round($quantity * (float) $purchaseItem->inventory_unit_cost, 2),
                     "created_at" => now(),
                     "created_by" => $userId
                 ]);

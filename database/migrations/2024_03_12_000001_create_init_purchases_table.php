@@ -67,6 +67,7 @@ return new class extends Migration {
             $table->unsignedBigInteger("warehouse_id");
             $table->unsignedBigInteger("currency_id");
             $table->enum("document_type", ["order", "invoice"])->default("order");
+            $table->string("reference", 40);
             $table->string("document_number", 50)->nullable();
             $table->date("issue_date");
             $table->date("expected_date")->nullable();
@@ -74,9 +75,14 @@ return new class extends Migration {
             $table->string("approval_status", 20)->default("approved");
             $table->unsignedBigInteger("approved_by")->nullable();
             $table->timestamp("approved_at")->nullable();
+            $table->enum("delivery_mode", ["immediate", "pending"])->default("immediate");
             $table->decimal("subtotal", 16, 4)->default(0);
             $table->decimal("tax", 16, 4)->default(0);
+            $table->decimal("expense_total", 16, 4)->default(0);
             $table->decimal("total", 16, 4)->default(0);
+            $table->decimal("paid_amount", 16, 4)->default(0);
+            $table->decimal("balance_due", 16, 4)->default(0);
+            $table->enum("payment_status", ["unpaid", "partial", "paid", "overpaid"])->default("unpaid");
             $table->text("observation")->nullable();
             $table->enum("status", [
                 "confirmed",
@@ -95,6 +101,7 @@ return new class extends Migration {
             $table->foreign("warehouse_id")->references("id")->on("warehouses")->onDelete("restrict");
             $table->foreign("currency_id")->references("id")->on("currencies")->onDelete("restrict");
             $table->foreign("approved_by")->references("id")->on("users")->nullOnDelete();
+            $table->unique(["company_id", "reference"]);
         });
 
         Schema::create("purchase_items", function(Blueprint $table) {
@@ -243,6 +250,8 @@ return new class extends Migration {
             $table->unsignedBigInteger("inventory_movement_id")->nullable();
             $table->decimal("quantity", 16, 4);
             $table->decimal("unit_cost", 16, 4);
+            $table->decimal("allocated_expense_total", 16, 4)->default(0);
+            $table->decimal("inventory_unit_cost", 16, 4);
             $table->decimal("total_cost", 16, 4);
             $table->timestamp("created_at")->useCurrent()->nullable();
 

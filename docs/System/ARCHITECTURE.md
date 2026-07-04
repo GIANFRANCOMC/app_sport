@@ -126,13 +126,13 @@ Los modelos no deben exponer métodos genéricos como `getAll($type, $companyId)
 - `Company` ya no contiene `getActiveSections`; la consulta pertenece al servicio que conoce su uso y caché.
 - No se utiliza un listener de autenticación para precargar el menú.
 
-## Riesgos actuales
+## Estado actual
 
-- Algunos servicios dependen de `Auth::user()` internamente; esto funciona, pero complica pruebas.
-- Existen mensajes en codigo con problemas de codificacion de caracteres.
-- Algunos endpoints usan `Request` directo donde seria mejor `FormRequest`.
-- Hay acciones criticas sin pruebas automatizadas visibles.
-- Algunas relaciones por empresa/sucursal se validan en servicios, otras en controlador; conviene estandarizar.
+- Los servicios de escritura de ventas, catálogo, clientes, activos, biometría, sucursales, empresa y usuarios reciben contexto explícito; los adaptadores de configuración y auditoría pueden leer la sesión porque son fronteras HTTP.
+- Permisos combinan módulo + acción y alcances de sucursal, caja y almacén.
+- Los endpoints mutables usan FormRequest o validadores dedicados cuando el payload es dinámico.
+- Las rutas REST de plantilla sin implementación ya no se publican.
+- Inventario, caja, compras, ventas y POS tienen permisos y rutas diferenciadas aunque algunos reutilicen controlador o componente.
 
 ## Criterio para evolucionar
 
@@ -143,7 +143,4 @@ No se recomienda reescribir toda la arquitectura. El criterio adecuado es mejora
 - Introducir tests en flujos criticos antes de cambiar reglas sensibles.
 - Mejorar autorizacion y validacion sin romper la estructura existente.
 
-## Pendientes y mejoras por realizar
-
-- Mantener esta arquitectura alineada con `../GENERALIDADES.md`.
-- Documentar la separacion final de paginas independientes para inventario, caja, compras, ventas y POS.
+Esta arquitectura debe mantenerse alineada con `../GENERALIDADES.md`. Las mejoras visuales de páginas independientes para inventario, caja, compras, ventas y POS están centralizadas en `../UI_UX_PENDING.md`.

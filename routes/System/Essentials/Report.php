@@ -14,3 +14,4 @@ Route::get('/items',      [ReportController::class, 'items'])->name("$entity.ite
 Route::get('/branches',   [ReportController::class, 'branches'])->name("$entity.branches");
 Route::get('/sales',      [ReportController::class, 'sales'])->name("$entity.sales");
 Route::get('/users',      [ReportController::class, 'users'])->name("$entity.users");
+Route::get('/settlements',[ReportController::class, 'settlements'])->name("$entity.settlements");

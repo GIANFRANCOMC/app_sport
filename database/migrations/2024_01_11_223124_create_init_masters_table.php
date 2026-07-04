@@ -192,6 +192,7 @@ return new class extends Migration {
             $table->timestamp("email_verified_at")->nullable();
             $table->string("password", 255);
             $table->rememberToken();
+            $table->unsignedInteger("session_version")->default(1);
             $table->string("phone_number", 255)->nullable();
             $table->enum("gender", ["male", "female", "other"])->nullable();
             $table->date("birthdate")->nullable();
@@ -206,6 +207,23 @@ return new class extends Migration {
             $table->foreign("role_id")->references("id")->on("roles")->onDelete("cascade");
             $table->foreign("identity_document_type_id")->references("id")->on("identity_document_types")->restrictOnDelete();
             $table->unique(["email", "company_id"]);
+        });
+        Schema::create("authentication_events", function(Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger("company_id");
+            $table->unsignedBigInteger("user_id")->nullable();
+            $table->string("tenant_slug", 120)->nullable();
+            $table->string("event_type", 40);
+            $table->enum("result", ["success", "failure", "blocked"]);
+            $table->string("email", 255)->nullable();
+            $table->string("ip_address", 45)->nullable();
+            $table->string("user_agent", 500)->nullable();
+            $table->string("session_hash", 64)->nullable();
+            $table->string("reason", 500)->nullable();
+            $table->timestamp("occurred_at")->useCurrent();
+
+            $table->foreign("company_id")->references("id")->on("companies")->onDelete("cascade");
+            $table->foreign("user_id")->references("id")->on("users")->nullOnDelete();
         });
         Schema::create("user_preferences", function (Blueprint $table) {
             $table->id();
@@ -234,6 +252,7 @@ return new class extends Migration {
 
         Schema::disableForeignKeyConstraints();
 
+        Schema::dropIfExists("authentication_events");
         Schema::dropIfExists("user_preferences");
         Schema::dropIfExists("users");
         Schema::dropIfExists("role_sub_sections");

@@ -35,7 +35,7 @@ Permite crear una venta con productos, servicios o membresias. Una venta puede g
 - `details[]`
 - Por detalle: `item_id`, `currency_id`, `name`, `quantity`, `price`, `type`, `extras`
 
-## Mejoras sugeridas
+## Estado de mejoras
 
 - La venta normal y Venta POS/Caja consultan `company_settings.inventory.allow_negative_stock_on_sale`; por defecto no permiten confirmar si algún producto supera el stock disponible del almacén seleccionado.
 - La anulación aplica `company_settings.inventory.restore_stock_on_sale_cancellation`; por defecto no repone productos automáticamente. Si se requiere devolver mercadería, debe registrarse una devolución o reposición desde Inventario.
@@ -43,7 +43,7 @@ Permite crear una venta con productos, servicios o membresias. Una venta puede g
 - El correlativo está protegido contra concurrencia mediante `lockForUpdate()` y la unicidad `company_id + serie_id + sequential`.
 - Cada emisión y anulación queda registrada en `series_correlative_movements`; una anulación nunca libera el correlativo.
 - Venta y POS bloquean la acción cuando la sucursal no tiene serie o almacén activo y muestran la configuración que debe corregirse.
-- Tipar `extras` de membresia con estructura clara.
+- `details.*.extras` valida duración, fechas, observación, opciones de receta y toppings con una estructura explícita; los identificadores no se aceptan como datos libres.
 
 ## Actualizacion: impuestos y pagos configurables
 
@@ -54,7 +54,7 @@ Permite crear una venta con productos, servicios o membresias. Una venta puede g
 - Los pagos aplicados se guardan como foto del documento en `sale_payments`.
 - La vista `resources/js/System/Pages/Sales/sales/main.vue` muestra un bloque lateral de liquidacion con impuestos aplicados automaticamente, metodos de pago, subtotal, impuestos, total, pagado y diferencia.
 - Si solo hay un metodo de pago, el importe se sincroniza con el total para facilitar el registro.
-- Pendiente: crear pantalla administrativa para impuestos y metodos de pago por empresa.
+- La administración visual de impuestos y métodos de pago por empresa está centralizada en `docs/UI_UX_PENDING.md`.
 
 ## Actualizacion: IGV incluido, almacen de venta y caja
 

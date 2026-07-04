@@ -29,7 +29,8 @@ Activos:
 
 Medio. Requiere migraciones, requests, formularios y documentacion por modulo.
 
-## Pendientes y mejoras por realizar
+## Estado backend
 
-- Normalizar campos heredados con encoding antiguo.
-- Mantener criterio de longitud, nullable y company_id en futuras migraciones.
+Los campos descritos ya forman parte de sus contratos de migración, modelos, requests y servicios. El criterio transversal de longitudes, `nullable`, claves foráneas y `company_id` está documentado en `docs/GENERALIDADES.md` y `docs/System/TABLES.md`.
+
+La corrección de textos heredados con encoding dañado se realiza al tocar cada módulo, evitando reescrituras masivas de datos sin auditoría.

@@ -180,7 +180,7 @@ Cada cambio debe actualizar documentación afectada:
 - `TABLES.md` si cambian tablas, campos o relaciones.
 - `ARCHITECTURE.md` si cambia arquitectura.
 - `DEVELOPMENT_GUIDE.md` si cambia una práctica de desarrollo.
-- `new_requirements` cuando quede algo pendiente o se descarte una mejora.
+- `new_requirements` para decisiones de evolución; una mejora implementada se integra al módulo correspondiente.
 
 Formato recomendado por módulo:
 
@@ -191,21 +191,19 @@ Formato recomendado por módulo:
 5. Tablas y relaciones.
 6. Reglas de negocio.
 7. Validaciones.
-8. UI/UX aplicada.
+8. Contrato de interfaz disponible y referencia a `UI_UX_PENDING.md` cuando corresponda.
 9. Integraciones con otros módulos.
-10. Pendientes y mejoras por realizar.
+10. Integraciones, seguridad y trazabilidad.
 
-## Pendientes y Mejoras Transversales
+## Criterios Transversales Vigentes
 
 Los pendientes exclusivamente visuales se administran en `docs/UI_UX_PENDING.md` y no deben duplicarse en `new_requirements` ni en los módulos.
 
-- Limpiar comentarios con encoding dañado en encabezados CSS antiguos, especialmente en `br-branding.css`.
-- Separar físicamente migraciones grandes por dominio cuando se estabilice el alcance final.
-- Revisar todos los servicios para recibir `companyId` y `userId` explícitos, reduciendo dependencia directa de `Auth`.
-- Completar pruebas automatizadas de ventas, POS, caja, inventario, compras e impuestos cuando se cierre la fase de cambios estructurales.
-- Crear administración UI para `company_settings`, prefijos, impuestos, métodos de pago y reglas de inventario.
+- Las migraciones se separan por dependencia y dominio cuando ello conserva un `migrate:fresh` determinista; no se crean migraciones correctivas si la base puede editarse directamente.
+- Los servicios de escritura reciben `companyId` y `userId` explícitos. Configuración y auditoría pueden resolver la sesión únicamente como adaptadores de frontera.
+- Las pruebas automatizadas se incorporan únicamente cuando el usuario las solicite; no deben crearse de forma implícita.
 - Usar `php artisan company:enable {company_id}` para habilitar datos base de una empresa sin insertar manualmente tabla por tabla.
 - Mantener sincronizados los nuevos endpoints con `config/permissions.php` cuando compartan un prefijo entre varias páginas.
-- Revisar accesibilidad de todas las modales, tooltips, selects y acciones por teclado.
-- Consolidar reportes exportables por módulo con consultas reutilizadas del listado.
-- Mantener una auditoría funcional clara para movimientos sensibles: stock, caja, ventas, compras, perfiles y configuración.
+- Los reportes deben reutilizar consultas filtradas, declarar límites por empresa y rechazar volúmenes excesivos antes de materializar colecciones.
+- Stock, caja, ventas, compras, perfiles, configuración, reclamos, asistencia y activos conservan trazabilidad específica o auditoría empresarial.
+- Todo accessor incluido en `$appends` debe tolerar modelos con selección parcial; leer atributos mediante `??` y devolver un valor neutral evita errores `Undefined array key` en listados optimizados.

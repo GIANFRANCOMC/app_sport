@@ -23,7 +23,7 @@ System no debe asumir comportamiento de visitantes publicos. Si una funcionalida
 3. [TABLES.md](TABLES.md)
 4. [modules/00_menu_order.md](modules/00_menu_order.md)
 5. Modulos numerados en [modules](modules)
-6. Mejoras y pendientes en [new_requirements](new_requirements)
+6. Decisiones de evolución en [new_requirements](new_requirements)
 
 ## Modulos por menu
 
@@ -44,9 +44,9 @@ Dentro de cada seccion, los archivos de `modules` siguen la numeracion del menu 
 
 Antes de tocar cualquier modulo System, revisar [../GENERALIDADES.md](../GENERALIDADES.md). Ese archivo concentra criterios compartidos de branding, formularios, modales, cache, migraciones, multiempresa y documentacion.
 
-## Pendientes y mejoras por realizar
+## Criterios de mantenimiento
 
 - Mantener la lista de modulos sincronizada con seeds de `sections`, `sub_sections`, perfiles y menu lateral.
-- Revisar que cada modulo System documente tablas, reglas, UI aplicada y pendientes propios.
+- Cada módulo documenta tablas, rutas, reglas y comportamiento backend vigente.
 - Evitar duplicar criterios visuales aqui; si aplica a varios modulos, moverlo a `GENERALIDADES.md`.
 - Los pendientes exclusivamente visuales se mantienen en `docs/UI_UX_PENDING.md`.
