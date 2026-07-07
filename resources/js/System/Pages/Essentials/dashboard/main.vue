@@ -5,7 +5,7 @@
         <div class="row mb-4 align-items-start br-dashboard__split">
             <div class="col-12 col-md-6 col-lg-8">
                 <section class="br-dashboard__kpis br-dashboard__kpis--split row g-2 mb-0" :aria-label="MODULE.texts.chart.kpiSectionAria">
-                    <div class="col-12 col-sm-6 col-lg-4">
+                    <div class="col-12 col-sm-6 col-lg-4 col-xl">
                         <div class="br-dashboard-kpi br-dashboard-kpi--success h-100">
                             <div class="br-dashboard-kpi__inner">
                                 <div class="br-dashboard-kpi__icon" aria-hidden="true">
@@ -13,12 +13,12 @@
                                 </div>
                                 <div class="br-dashboard-kpi__body">
                                     <p class="br-dashboard-kpi__label" v-text="MODULE.texts.kpi.salesTotal"></p>
-                                    <p class="br-dashboard-kpi__value" v-text="'S/ '+separatorNumber(fixedNumber(forms.entity.dashboard.data.sales?.all?.total ?? 0))"></p>
+                                    <p class="br-dashboard-kpi__value" v-text="'S/ '+separatorNumber(fixedNumber(forms.entity.dashboard.data.sales?.net?.total ?? 0))"></p>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <div class="col-12 col-sm-6 col-lg-4">
+                    <div class="col-12 col-sm-6 col-lg-4 col-xl">
                         <div class="br-dashboard-kpi br-dashboard-kpi--danger h-100">
                             <div class="br-dashboard-kpi__inner">
                                 <div class="br-dashboard-kpi__icon" aria-hidden="true">
@@ -31,7 +31,33 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-12 col-sm-6 col-lg-4">
+                    <div class="col-12 col-sm-6 col-lg-4 col-xl">
+                        <div class="br-dashboard-kpi br-dashboard-kpi--info h-100">
+                            <div class="br-dashboard-kpi__inner">
+                                <div class="br-dashboard-kpi__icon" aria-hidden="true">
+                                    <i class="fa-solid fa-clipboard-user"></i>
+                                </div>
+                                <div class="br-dashboard-kpi__body">
+                                    <p class="br-dashboard-kpi__label" v-text="MODULE.texts.kpi.attendancesToday"></p>
+                                    <p class="br-dashboard-kpi__value" v-text="separatorNumber(forms.entity.dashboard.data.attendances?.count ?? 0)"></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-sm-6 col-lg-4 col-xl">
+                        <div class="br-dashboard-kpi br-dashboard-kpi--primary h-100">
+                            <div class="br-dashboard-kpi__inner">
+                                <div class="br-dashboard-kpi__icon" aria-hidden="true">
+                                    <i class="fa-solid fa-calendar-days"></i>
+                                </div>
+                                <div class="br-dashboard-kpi__body">
+                                    <p class="br-dashboard-kpi__label" v-text="MODULE.texts.kpi.expiringSubscriptions"></p>
+                                    <p class="br-dashboard-kpi__value" v-text="separatorNumber(forms.entity.dashboard.data.expiringSubscriptions?.count ?? 0)"></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-sm-6 col-lg-4 col-xl">
                         <div class="br-dashboard-kpi br-dashboard-kpi--warning h-100">
                             <div class="br-dashboard-kpi__inner">
                                 <div class="br-dashboard-kpi__icon" aria-hidden="true">
@@ -39,7 +65,7 @@
                                 </div>
                                 <div class="br-dashboard-kpi__body">
                                     <p class="br-dashboard-kpi__label" v-text="MODULE.texts.kpi.branchesActive"></p>
-                                    <p class="br-dashboard-kpi__value" v-text="separatorNumber(forms.entity.dashboard.data.branches?.valid?.count ?? 0)"></p>
+                                    <p class="br-dashboard-kpi__value" v-text="separatorNumber(forms.entity.dashboard.data.branches?.active_count ?? 0)"></p>
                                 </div>
                             </div>
                         </div>
@@ -154,8 +180,10 @@ const MODULE_CONFIG = {
 
 const TEXTS = {
     kpi: {
-        salesTotal: "Ventas en total",
+        salesTotal: "Ventas netas",
         salesCanceled: "Ventas anuladas",
+        attendancesToday: "Asistencias del día",
+        expiringSubscriptions: "Membresías por vencer",
         branchesActive: "Sucursales activas"
     },
     date: {
@@ -205,6 +233,8 @@ export default {
                             dateAux: "",
                             dateEditing: false,
                             sales: null,
+                            attendances: null,
+                            expiringSubscriptions: null,
                             branches: null,
                             users: null,
                             dashboardChartMinWidthPx: 0 // Minimum scroll area width for hourly chart (per bar; wider for gap ranges)
@@ -279,9 +309,11 @@ export default {
                 showAlert: true
             });
 
-            formData.sales    = initData.data?.data?.sales;
+            formData.sales = initData.data?.data?.sales;
+            formData.attendances = initData.data?.data?.attendances;
+            formData.expiringSubscriptions = initData.data?.data?.expiring_subscriptions;
             formData.branches = initData.data?.data?.branches;
-            formData.users    = initData.data?.data?.users;
+            formData.users = initData.data?.data?.users;
 
             this.$nextTick(() => this.initChart());
 
@@ -324,7 +356,7 @@ export default {
             this.initData({loading: true});
 
         },
-        // X-axis label: 12 h time with a. m. / p. m. (hour index 0–23)
+        // X-axis label: 12 h time with a. m. / p. m. (hour index 0-23)
         dashboardChartFormatHourLabelAmpm(h) {
 
             if(h === 0) return "12:00 a. m.";
@@ -334,7 +366,7 @@ export default {
             return `${h - 12}:00 p. m.`;
 
         },
-        // End of hour range for tooltip (…:59)
+        // End of hour range for tooltip (...:59)
         dashboardChartFormatHourEndAmpm(h) {
 
             if(h === 0) return "12:59 a. m.";
@@ -883,7 +915,7 @@ export default {
 
             this.dashboardChartSyncChartjsCanvasHeights();
 
-            const records = this.forms.entity.dashboard.data.sales?.all?.records ?? [];
+            const records = this.forms.entity.dashboard.data.sales?.records ?? this.forms.entity.dashboard.data.sales?.net?.records ?? [];
             const totalsByHour = this.dashboardChartTotalsByHour(records);
             const sliceHours = this.dashboardChartSliceHours(totalsByHour);
             const segments = this.dashboardChartBuildSegments(sliceHours, totalsByHour);
@@ -996,7 +1028,7 @@ export default {
 
             if(sales === null || sales === undefined) return false;
 
-            const records = sales?.all?.records;
+            const records = sales?.records ?? sales?.net?.records;
 
             return Array.isArray(records) && records.length === 0;
 
@@ -1017,7 +1049,7 @@ export default {
         dashboardChartHoursRangeCaption: function() {
 
             const totalsByHour = Array.from({length: 24}, () => 0);
-            const sales = this.forms.entity.dashboard.data.sales?.all?.records ?? [];
+            const sales = this.forms.entity.dashboard.data.sales?.records ?? this.forms.entity.dashboard.data.sales?.net?.records ?? [];
 
             sales.forEach((sale) => {
 

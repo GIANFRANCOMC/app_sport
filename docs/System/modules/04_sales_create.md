@@ -98,6 +98,7 @@ Permite crear una venta con productos, servicios o membresias. Una venta puede g
 - La modal de confirmacion muestra el comprobante de pago disponible para la sucursal. Si existe mas de una serie, el usuario debe seleccionar el comprobante que corresponde, por ejemplo boleta o factura.
 - POS no crea una venta simplificada ni paralela: reutiliza `sales.store`, por lo que registra `sales_header`, `sales_body`, impuestos, metodos de pago, movimientos de caja e inventario igual que una venta normal.
 - POS permite agregar un cliente desde el campo Cliente reutilizando `AddCustomer`; al crear el cliente se agrega a la lista y queda disponible para seleccion.
+- La vista POS registra localmente sus componentes (`Breadcrumb`, `Loader`, `WithoutData`, `InputNumber`, `AddCustomer`) para evitar dependencias implícitas globales al reutilizar este patrón en nuevos módulos.
 - El boton `Generar venta` se oculta hasta que la caja, cliente, pagos y detalle esten completos, evitando una accion visualmente disponible cuando todavia falta informacion.
 - Al abrir o cerrar una caja, `CashRegisterService` invalida la cache de `CashRegisterConfigService` y `SaleConfigService` para que POS muestre solo cajas abiertas vigentes al volver a ingresar.
 - Los impuestos configurados para ventas se aplican automaticamente sobre productos cuyo precio no incluye IGV (`price_includes_tax = false`).

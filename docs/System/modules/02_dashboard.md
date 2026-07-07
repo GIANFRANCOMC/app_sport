@@ -29,3 +29,9 @@ Entrega indicadores operativos agregados para una fecha empresarial y, opcionalm
 ## Contrato
 
 `GET /dashboard/initData?date=YYYY-MM-DD&branch_id=ID` devuelve fecha, zona horaria, alcance y los agregados. No contiene colecciones de registros.
+
+## Interfaz
+
+- La vista consume directamente los agregados `sales.net`, `sales.canceled`, `attendances`, `expiring_subscriptions` y `branches.active_count`.
+- Los KPIs visibles son ventas netas, ventas anuladas, asistencias del día, membresías por vencer y sucursales activas.
+- El gráfico horario queda defensivo: solo usa registros si el backend los envía explícitamente; no solicita colecciones completas desde Vue.

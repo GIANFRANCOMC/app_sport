@@ -469,8 +469,20 @@
 import * as Alerts from "@System/Helpers/Alerts.js";
 import * as Requests from "@System/Helpers/Requests.js";
 import * as Utils from "@System/Helpers/Utils.js";
+import AddCustomer from "@System/Components/Customers/AddCustomer.vue";
+import Breadcrumb from "@System/Components/Breadcrumb.vue";
+import InputNumber from "@System/Components/InputNumber.vue";
+import Loader from "@System/Components/Loader.vue";
+import WithoutData from "@System/Components/WithoutData.vue";
 
 export default {
+    components: {
+        AddCustomer,
+        Breadcrumb,
+        InputNumber,
+        Loader,
+        WithoutData
+    },
     data() {
         return {
             config: Requests.config({entity: "sales"}),

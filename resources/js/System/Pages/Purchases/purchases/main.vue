@@ -163,15 +163,23 @@
                 </div>
                 <div class="modal-body br-entity-modal__body br-modal-standard__body">
                     <div class="row g-3">
-                        <div class="col-lg-4">
+                        <div class="col-lg-3">
                             <label class="form-label">Proveedor</label>
                             <v-select v-model="purchaseForm.supplier" :options="suppliers" :clearable="false" searchable/>
                         </div>
-                        <div class="col-lg-4">
+                        <div class="col-lg-3">
                             <label class="form-label">Almacén de recepción</label>
                             <v-select v-model="purchaseForm.warehouse" :options="warehouses" :clearable="false" searchable/>
                         </div>
-                        <div class="col-lg-4">
+                        <div class="col-lg-3">
+                            <label class="form-label">Entrega</label>
+                            <v-select
+                                v-model="purchaseForm.deliveryMode"
+                                :options="deliveryModes"
+                                :clearable="false"
+                                :searchable="false"/>
+                        </div>
+                        <div class="col-lg-3">
                             <label class="form-label">Moneda</label>
                             <v-select v-model="purchaseForm.currency" :options="currencies" :clearable="false" :searchable="false"/>
                         </div>
@@ -432,6 +440,16 @@ export default {
                 status: {code: "", label: "Todos los estados"}
             },
             options: {suppliers: [], warehouses: [], currencies: [], products: [], taxes: [], paymentMethods: []},
+            deliveryModes: [
+                {
+                    code: "immediate",
+                    label: "Entrega inmediata"
+                },
+                {
+                    code: "pending",
+                    label: "Recepción pendiente"
+                }
+            ],
             purchaseForm: {},
             receiptForm: {purchase: null, items: [], receivedAt: "", observation: ""},
             config: {
@@ -554,6 +572,7 @@ export default {
                 documentNumber: "",
                 issueDate: new Date().toISOString().slice(0, 10),
                 expectedDate: "",
+                deliveryMode: this.deliveryModes[0],
                 selectedTaxes: [],
                 selectedTaxQuantities: {},
                 payments: [this.newPurchasePayment({amount: this.purchaseTotal})],
@@ -590,6 +609,7 @@ export default {
                     document_number: this.purchaseForm.documentNumber,
                     issue_date: this.purchaseForm.issueDate,
                     expected_date: this.purchaseForm.expectedDate || null,
+                    delivery_mode: this.purchaseForm.deliveryMode?.code || "immediate",
                     tax: this.purchaseTaxTotal,
                     taxes: this.purchaseTaxBreakdown.map(tax => ({
                         tax_id: tax.id,

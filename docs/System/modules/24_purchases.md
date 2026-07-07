@@ -44,6 +44,7 @@ El método inicial es promedio ponderado por producto y almacén. Los impuestos 
 ## Interfaz
 
 - El listado permite buscar por proveedor, documento o producto y filtrar por estado.
+- La modal de nueva compra expone `Entrega`: **Entrega inmediata** envía `delivery_mode = immediate` y **Recepción pendiente** envía `delivery_mode = pending`.
 - La recepción muestra únicamente cantidades pendientes.
 - El progreso diferencia pendiente, parcial, recibido y anulado.
 - La exportación usa los mismos filtros del listado y no aplica paginación.
