@@ -9,7 +9,13 @@ use App\Helpers\System\{Utilities};
 use Illuminate\Http\{JsonResponse, Request};
 use Illuminate\Pagination\LengthAwarePaginator;
 
-use App\Http\Requests\System\Assets\AssetManagements\{AssignAssetToBranchRequest, UnassignAssetFromBranchRequest};
+use App\Http\Requests\System\Assets\AssetManagements\{
+    AssignAssetToBranchRequest,
+    AssignAssetToUserRequest,
+    UnassignAssetFromBranchRequest,
+    UnassignAssetFromUserRequest,
+    UpdateAssetInBranchRequest
+};
 use App\Services\System\Assets\{AssetManagementConfigService, AssetManagementService};
 
 class AssetManagementController extends BaseController {
@@ -83,7 +89,8 @@ class AssetManagementController extends BaseController {
 
         try {
 
-            $branchId = intval($request->branch_id);
+            $data = $request->validated();
+            $branchId = (int) $data["branch_id"];
 
             $branch = AssetManagementService::validateBranch($branchId, $this->getCompanyId());
 
@@ -95,7 +102,7 @@ class AssetManagementController extends BaseController {
 
             $information = AssetManagementService::assignAssetsToBranch(
                 $branch->id,
-                $request->branch_assets ?? [],
+                $data["branch_assets"],
                 $this->getCompanyId(),
                 $this->getUserId()
             );
@@ -128,7 +135,8 @@ class AssetManagementController extends BaseController {
 
         try {
 
-            $branchId = intval($request->branch_id);
+            $data = $request->validated();
+            $branchId = (int) $data["branch_id"];
 
             $branch = AssetManagementService::validateBranch($branchId, $this->getCompanyId());
 
@@ -140,7 +148,7 @@ class AssetManagementController extends BaseController {
 
             $information = AssetManagementService::unassignAssetsFromBranch(
                 $branch->id,
-                $request->branch_assets ?? [],
+                $data["branch_assets"],
                 $this->getUserId()
             );
 
@@ -168,11 +176,12 @@ class AssetManagementController extends BaseController {
      * @param Request $request
      * @return JsonResponse
      */
-    public function assetInBranch(Request $request): JsonResponse {
+    public function assetInBranch(UpdateAssetInBranchRequest $request): JsonResponse {
 
         try {
 
-            $branchId = intval($request->input("branch_id"));
+            $validated = $request->validated();
+            $branchId = (int) $validated["branch_id"];
 
             $branch = AssetManagementService::validateBranch($branchId, $this->getCompanyId());
 
@@ -182,14 +191,14 @@ class AssetManagementController extends BaseController {
 
             }
 
-            $branchAssetId = intval($request->input("id"));
-            $assetId       = intval($request->input("asset_id"));
+            $branchAssetId = (int) $validated["id"];
+            $assetId = (int) $validated["asset_id"];
 
             $data = [
-                "quantity"          => $request->input("quantity"),
-                "acquisition_value" => $request->input("acquisition_value"),
-                "acquisition_date"  => $request->input("acquisition_date"),
-                "note"              => $request->input("note")
+                "quantity" => $validated["quantity"],
+                "acquisition_value" => $validated["acquisition_value"] ?? null,
+                "acquisition_date" => $validated["acquisition_date"] ?? null,
+                "note" => $validated["note"] ?? null
             ];
 
             $branchAsset = AssetManagementService::updateAssetInBranch(
@@ -256,11 +265,12 @@ class AssetManagementController extends BaseController {
      * @param Request $request
      * @return JsonResponse
      */
-    public function assignToUser(Request $request): JsonResponse {
+    public function assignToUser(AssignAssetToUserRequest $request): JsonResponse {
 
         try {
 
-            $branchId = intval($request->input("branch_id"));
+            $data = $request->validated();
+            $branchId = (int) $data["branch_id"];
 
             $branch = AssetManagementService::validateBranch($branchId, $this->getCompanyId());
 
@@ -270,8 +280,8 @@ class AssetManagementController extends BaseController {
 
             }
 
-            $branchAssetId = intval($request->input("branch_asset_id"));
-            $assetId       = intval($request->input("asset_id"));
+            $branchAssetId = (int) $data["branch_asset_id"];
+            $assetId = (int) $data["asset_id"];
 
             $branchAsset = AssetManagementService::validateBranchAsset($branch->id, $branchAssetId, $assetId);
 
@@ -282,7 +292,7 @@ class AssetManagementController extends BaseController {
             }
 
             $assetQuantity = floatval($branchAsset->quantity);
-            $totalQuantity = array_reduce($request->assignments ?? [], function($accumulator, $currentValue) {
+            $totalQuantity = array_reduce($data["assignments"], function($accumulator, $currentValue) {
 
                 return $accumulator + floatval($currentValue["quantity"] ?? 0);
 
@@ -298,7 +308,7 @@ class AssetManagementController extends BaseController {
                 $branch->id,
                 $branchAssetId,
                 $assetId,
-                $request->assignments ?? [],
+                $data["assignments"],
                 $this->getUserId()
             );
 
@@ -326,11 +336,12 @@ class AssetManagementController extends BaseController {
      * @param Request $request
      * @return JsonResponse
      */
-    public function unassignToUser(Request $request): JsonResponse {
+    public function unassignToUser(UnassignAssetFromUserRequest $request): JsonResponse {
 
         try {
 
-            $branchId = intval($request->input("branch_id"));
+            $data = $request->validated();
+            $branchId = (int) $data["branch_id"];
 
             $branch = AssetManagementService::validateBranch($branchId, $this->getCompanyId());
 
@@ -340,8 +351,8 @@ class AssetManagementController extends BaseController {
 
             }
 
-            $branchAssetId = intval($request->input("branch_asset_id"));
-            $assetId       = intval($request->input("asset_id"));
+            $branchAssetId = (int) $data["branch_asset_id"];
+            $assetId = (int) $data["asset_id"];
 
             $branchAsset = AssetManagementService::validateBranchAsset($branch->id, $branchAssetId, $assetId);
 
@@ -355,7 +366,7 @@ class AssetManagementController extends BaseController {
                 $branch->id,
                 $branchAssetId,
                 $assetId,
-                $request->assignments ?? [],
+                $data["assignments"],
                 $this->getUserId()
             );
 

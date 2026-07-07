@@ -1,6 +1,6 @@
 # 05 - Clientes
 
-## Que hace
+## Que Hace
 
 Administra los clientes de una empresa. Un cliente puede comprar, recibir membresias, registrar asistencias y asociarse con huellas biometricas.
 
@@ -8,13 +8,13 @@ Administra los clientes de una empresa. Un cliente puede comprar, recibir membre
 
 - Ruta: `routes/System/Customers/Customer.php`
 - Controlador: `CustomerController`
-- Requests: `StoreCustomerRequest`, `UpdateCustomerRequest`
-- Servicios: `CustomerService`, `CustomerConfigService`
+- Requests: `StoreCustomerRequest`, `UpdateCustomerRequest`, `RegisterCustomerFingerprintRequest`
+- Servicios: `CustomerService`, `CustomerConfigService`, `BiometricDeviceService`
 - Modelo: `Customer`
 - Vista/Vue: `resources/views/System/general/Customers/customers`, `resources/js/System/Pages/Customers/customers`
 - Tablas: `customers`, `identity_document_types`, `subscriptions`, `customer_biometric_fingerprints`
 
-## Campos necesarios
+## Campos Necesarios
 
 - `company_id`
 - `identity_document_type_id`
@@ -30,11 +30,14 @@ Administra los clientes de una empresa. Un cliente puede comprar, recibir membre
 
 - El cliente pertenece a una empresa.
 - Documento y tipo de documento deben ser consistentes con longitudes del maestro.
-- El registro de huella se hace contra un dispositivo biometrico existente.
+- El registro de huella se hace contra un dispositivo biometrico activo de la misma empresa.
 - No debe mezclarse con usuarios internos.
 
-## Estado backend implementado
+## Estado Backend Implementado
 
-- La unicidad se valida y refuerza por empresa, tipo de documento y número.
-- La búsqueda cubre documento, nombre, correo y teléfono.
+- La unicidad se valida y refuerza por empresa, tipo de documento y numero.
+- La busqueda cubre documento, nombre, correo y telefono.
 - Se incorporaron `emergency_contact_name`, `emergency_contact_phone` y `medical_notes` como datos opcionales.
+- `RegisterCustomerFingerprintRequest` valida `biometric_device_id`, `device_user_id` y `finger_index` antes de registrar una huella.
+- Si no se envia `device_user_id`, el backend reserva el siguiente disponible para el dispositivo.
+- La combinacion `device_user_id + finger_index` no puede repetirse dentro del mismo dispositivo.

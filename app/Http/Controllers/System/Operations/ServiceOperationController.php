@@ -4,11 +4,22 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\System\Operations;
 
+use App\Helpers\System\ApiResponse;
 use App\Http\Controllers\System\Base\BaseController;
-use App\Http\Requests\System\Operations\UpdatePreparationStatusRequest;
+use App\Http\Requests\System\Operations\{
+    AddServiceSessionItemRequest,
+    CancelServiceSessionRequest,
+    OpenServiceSessionRequest,
+    PauseServiceSessionRequest,
+    ReassignServiceSessionRequest,
+    StoreServiceFloorRequest,
+    StoreServiceStationRequest,
+    UpdatePreparationStatusRequest,
+    UpdateServiceStationLayoutRequest
+};
 use App\Services\System\Operations\{ServiceOperationConfigService, ServiceOperationService};
 use Illuminate\Http\{JsonResponse, Request};
-use Illuminate\Support\Facades\Validator;
+use Throwable;
 
 final class ServiceOperationController extends BaseController {
 
@@ -61,23 +72,14 @@ final class ServiceOperationController extends BaseController {
 
     }
 
-    public function storeFloor(Request $request): JsonResponse {
-
-        $data = $this->validateData($request, [
-            "branch_id" => ["required", "integer"],
-            "code" => ["required", "string", "max:50"],
-            "name" => ["required", "string", "max:150"],
-            "level_number" => ["required", "integer", "min:-20", "max:200"],
-            "sort_order" => ["nullable", "integer", "min:1", "max:999"],
-            "background_color" => ["nullable", "regex:/^#[0-9a-fA-F]{6}$/"],
-            "description" => ["nullable", "string", "max:500"],
-            "status" => ["nullable", "in:active,inactive"]
-        ]);
-
-        if($data instanceof JsonResponse) return $data;
+    public function storeFloor(StoreServiceFloorRequest $request): JsonResponse {
 
         return $this->execute(
-            fn() => ServiceOperationService::createFloor($this->getCompanyId(), $this->getUserId(), $data),
+            fn() => ServiceOperationService::createFloor(
+                $this->getCompanyId(),
+                $this->getUserId(),
+                $request->validated()
+            ),
             "Piso registrado correctamente."
         );
 
@@ -113,98 +115,55 @@ final class ServiceOperationController extends BaseController {
 
     }
 
-    public function storeStation(Request $request): JsonResponse {
-
-        $data = $this->validateData($request, [
-            "branch_id" => ["required", "integer"],
-            "service_floor_id" => ["nullable", "integer"],
-            "code" => ["required", "string", "max:50"],
-            "name" => ["required", "string", "max:150"],
-            "station_type" => ["required", "string", "max:30"],
-            "capacity" => ["required", "integer", "min:1", "max:999"],
-            "position_x" => ["nullable", "numeric", "min:0", "max:100"],
-            "position_y" => ["nullable", "numeric", "min:0", "max:100"],
-            "color" => ["nullable", "regex:/^#[0-9a-fA-F]{6}$/"],
-            "shape" => ["nullable", "in:round,square,rectangle"],
-            "description" => ["nullable", "string", "max:500"],
-            "status" => ["nullable", "in:active,inactive"]
-        ]);
-
-        if($data instanceof JsonResponse) return $data;
+    public function storeStation(StoreServiceStationRequest $request): JsonResponse {
 
         return $this->execute(
-            fn() => ServiceOperationService::createStation($this->getCompanyId(), $this->getUserId(), $data),
+            fn() => ServiceOperationService::createStation(
+                $this->getCompanyId(),
+                $this->getUserId(),
+                $request->validated()
+            ),
             "Estación registrada correctamente."
         );
 
     }
 
-    public function updateStationLayout(Request $request, int $id): JsonResponse {
-
-        $data = $this->validateData($request, [
-            "service_floor_id" => ["nullable", "integer"],
-            "position_x" => ["nullable", "numeric", "min:0", "max:100"],
-            "position_y" => ["nullable", "numeric", "min:0", "max:100"],
-            "color" => ["nullable", "regex:/^#[0-9a-fA-F]{6}$/"],
-            "shape" => ["nullable", "in:round,square,rectangle"]
-        ]);
-
-        if($data instanceof JsonResponse) return $data;
+    public function updateStationLayout(UpdateServiceStationLayoutRequest $request, int $id): JsonResponse {
 
         return $this->execute(
             fn() => ServiceOperationService::updateStationLayout(
                 $this->getCompanyId(),
                 $this->getUserId(),
                 $id,
-                $data
+                $request->validated()
             ),
             "Distribución actualizada correctamente."
         );
 
     }
 
-    public function openSession(Request $request): JsonResponse {
-
-        $data = $this->validateData($request, [
-            "branch_id" => ["required", "integer"],
-            "service_station_id" => ["nullable", "integer"],
-            "customer_id" => ["nullable", "integer"],
-            "assigned_user_id" => ["nullable", "integer"],
-            "item_id" => ["nullable", "integer"],
-            "quantity" => ["nullable", "numeric", "min:0.0001"],
-            "session_type" => ["required", "string", "max:30"],
-            "start_immediately" => ["nullable", "boolean"],
-            "started_at" => ["nullable", "date"],
-            "scheduled_at" => ["nullable", "date"],
-            "expected_end_at" => ["nullable", "date", "after:scheduled_at"],
-            "tolerance_minutes" => ["nullable", "integer", "min:0", "max:1440"],
-            "queue_code" => ["nullable", "string", "max:30"],
-            "observation" => ["nullable", "string", "max:500"]
-        ]);
-
-        if($data instanceof JsonResponse) return $data;
+    public function openSession(OpenServiceSessionRequest $request): JsonResponse {
 
         return $this->execute(
-            fn() => ServiceOperationService::open($this->getCompanyId(), $this->getUserId(), $data),
+            fn() => ServiceOperationService::open(
+                $this->getCompanyId(),
+                $this->getUserId(),
+                $request->validated()
+            ),
             "Atención iniciada correctamente."
         );
 
     }
 
-    public function addItem(Request $request, int $id): JsonResponse {
-
-        $data = $this->validateData($request, [
-            "item_id" => ["required", "integer"],
-            "assigned_user_id" => ["nullable", "integer"],
-            "quantity" => ["required", "numeric", "min:0.0001"],
-            "start_immediately" => ["nullable", "boolean"],
-            "observation" => ["nullable", "string", "max:500"]
-        ]);
-
-        if($data instanceof JsonResponse) return $data;
+    public function addItem(AddServiceSessionItemRequest $request, int $id): JsonResponse {
 
         return $this->execute(
-            fn() => ServiceOperationService::addItem($this->getCompanyId(), $this->getUserId(), $id, $data),
+            fn() => ServiceOperationService::addItem(
+                $this->getCompanyId(),
+                $this->getUserId(),
+                $id,
+                $request->validated()
+            ),
             "Detalle agregado a la atención."
         );
 
@@ -260,13 +219,9 @@ final class ServiceOperationController extends BaseController {
 
     }
 
-    public function reassignSession(Request $request, int $id): JsonResponse {
+    public function reassignSession(ReassignServiceSessionRequest $request, int $id): JsonResponse {
 
-        $data = $this->validateData($request, [
-            "assigned_user_id" => ["required", "integer"],
-            "note" => ["nullable", "string", "max:500"]
-        ]);
-        if($data instanceof JsonResponse) return $data;
+        $data = $request->validated();
 
         return $this->execute(
             fn() => ServiceOperationService::reassign(
@@ -281,13 +236,9 @@ final class ServiceOperationController extends BaseController {
 
     }
 
-    public function pauseSession(Request $request, int $id): JsonResponse {
+    public function pauseSession(PauseServiceSessionRequest $request, int $id): JsonResponse {
 
-        $data = $this->validateData($request, [
-            "service_session_item_id" => ["nullable", "integer"],
-            "reason" => ["nullable", "string", "max:500"]
-        ]);
-        if($data instanceof JsonResponse) return $data;
+        $data = $request->validated();
 
         return $this->execute(
             fn() => ServiceOperationService::pause(
@@ -311,10 +262,9 @@ final class ServiceOperationController extends BaseController {
 
     }
 
-    public function cancelSession(Request $request, int $id): JsonResponse {
+    public function cancelSession(CancelServiceSessionRequest $request, int $id): JsonResponse {
 
-        $data = $this->validateData($request, ["reason" => ["required", "string", "max:500"]]);
-        if($data instanceof JsonResponse) return $data;
+        $data = $request->validated();
 
         return $this->execute(
             fn() => ServiceOperationService::cancel(
@@ -328,36 +278,12 @@ final class ServiceOperationController extends BaseController {
 
     }
 
-    private function validateData(Request $request, array $rules): array|JsonResponse {
-
-        $validator = Validator::make($request->all(), $rules, [
-            "required" => "Campo obligatorio.",
-            "integer" => "Debe ser un número entero.",
-            "numeric" => "Debe ser un valor numérico.",
-            "min" => "El valor es menor al permitido.",
-            "max" => "El valor supera el límite permitido.",
-            "date" => "La fecha no es válida."
-        ]);
-
-        return $validator->fails()
-            ? $this->validationResponse($validator->errors()->toArray())
-            : $validator->validated();
-
-    }
-
     private function execute(callable $callback, string $message = "Operación completada."): JsonResponse {
 
         try {
-            return response()->json([
-                "bool" => true,
-                "msg" => $message,
-                "data" => $callback()
-            ]);
-        }catch(\Throwable $exception) {
-            return response()->json([
-                "bool" => false,
-                "msg" => $exception->getMessage()
-            ], 422);
+            return ApiResponse::success($callback(), $message);
+        }catch(Throwable $exception) {
+            return ApiResponse::error($exception->getMessage(), 422);
         }
 
     }

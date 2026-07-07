@@ -8,7 +8,11 @@ use App\Http\Controllers\System\Base\BaseController;
 use App\Helpers\System\{Utilities};
 use Illuminate\Http\{JsonResponse, Request};
 
-use App\Http\Requests\System\Customers\Customers\{StoreCustomerRequest, UpdateCustomerRequest};
+use App\Http\Requests\System\Customers\Customers\{
+    RegisterCustomerFingerprintRequest,
+    StoreCustomerRequest,
+    UpdateCustomerRequest
+};
 use App\Services\System\Base\{InitParamsCacheInvalidationService};
 use App\Services\System\Customers\Customers\{CustomerConfigService, CustomerService};
 use App\Services\System\Devices\BiometricDevices\{BiometricDeviceService};
@@ -24,7 +28,7 @@ class CustomerController extends BaseController {
     /**
      * Get initialization parameters for the module
      *
-     * @param Request $request
+     * @param RegisterCustomerFingerprintRequest $request
      * @return \stdClass
      */
     public function initParams(Request $request) {
@@ -109,6 +113,7 @@ class CustomerController extends BaseController {
 
         try {
 
+            $data = $request->validated();
             $customer = CustomerService::findByIdAndCompany($id, $this->getCompanyId(), null);
 
             if(!Utilities::isDefined($customer)) {
@@ -218,7 +223,7 @@ class CustomerController extends BaseController {
      * @param int $id Customer ID
      * @return JsonResponse
      */
-    public function registerBiometricFingerprint(Request $request, int $id): JsonResponse {
+    public function registerBiometricFingerprint(RegisterCustomerFingerprintRequest $request, int $id): JsonResponse {
 
         try {
 
@@ -230,34 +235,17 @@ class CustomerController extends BaseController {
 
             }
 
-            $biometricDeviceId = $request->input("biometric_device_id");
-            $deviceUserId      = $request->input("device_user_id");
-            $fingerIndex       = $request->input("finger_index", 0);
+            $biometricDeviceId = (int) $data["biometric_device_id"];
+            $deviceUserId = $data["device_user_id"] ?? null;
+            $fingerIndex = (int) ($data["finger_index"] ?? 0);
 
-            if(!Utilities::isDefined($biometricDeviceId)) {
-
-                return $this->errorResponse("validation_error", ["msg" => "Se requiere dispositivo biométrico."], 422);
-
-            }
-
-            // Check if device exists and belongs to company
-            $device = BiometricDeviceService::findByIdAndCompany((int)$biometricDeviceId, $this->getCompanyId(), null);
-
-            if(!Utilities::isDefined($device)) {
-
-                return $this->errorResponse("not_found", ["msg" => "Dispositivo biométrico no encontrado."], 404);
-
-            }
-
-            // Auto-assign device_user_id if not provided
             if(!Utilities::isDefined($deviceUserId)) {
 
-                $deviceUserId = BiometricDeviceService::getNextDeviceUserId((int)$biometricDeviceId);
+                $deviceUserId = BiometricDeviceService::getNextDeviceUserId($biometricDeviceId);
 
             }else {
 
-                // Check if device_user_id and finger_index combination already exists
-                if(BiometricDeviceService::deviceUserIdExists((int)$biometricDeviceId, (int)$deviceUserId, (int)$fingerIndex)) {
+                if(BiometricDeviceService::deviceUserIdExists($biometricDeviceId, (int) $deviceUserId, $fingerIndex)) {
 
                     return $this->errorResponse("validation_error", ["msg" => "Ya existe una huella registrada para este usuario y dedo en el dispositivo."], 422);
 
@@ -265,12 +253,11 @@ class CustomerController extends BaseController {
 
             }
 
-            // Register fingerprint
             $fingerprint = BiometricDeviceService::registerFingerprint(
                 $customer->id,
-                (int)$biometricDeviceId,
-                (int)$deviceUserId,
-                (int)$fingerIndex,
+                $biometricDeviceId,
+                (int) $deviceUserId,
+                $fingerIndex,
                 $this->getUserId(),
                 $this->getCompanyId()
             );
