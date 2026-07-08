@@ -121,6 +121,28 @@
                     </div>
                 </section>
 
+                <section
+                    v-if="activeView === 'stock' && openStockAlerts.length"
+                    class="br-inventory-alerts"
+                    aria-label="Alertas de stock">
+                    <div class="br-inventory-alerts__summary">
+                        <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
+                        <strong>{{ openStockAlerts.length }} alerta{{ openStockAlerts.length === 1 ? "" : "s" }} de stock</strong>
+                        <span>Productos en mínimo o sin existencias dentro del almacén seleccionado.</span>
+                    </div>
+                    <div class="br-inventory-alerts__list">
+                        <span
+                            v-for="alert in openStockAlerts.slice(0, 4)"
+                            :key="alert.id"
+                            class="br-inventory-alerts__item">
+                            {{ alertProductName(alert) }}
+                        </span>
+                        <span v-if="openStockAlerts.length > 4" class="br-inventory-alerts__item is-muted">
+                            +{{ openStockAlerts.length - 4 }} más
+                        </span>
+                    </div>
+                </section>
+
                 <div v-if="activeView === 'stock'" class="table-responsive br-inventory__table-wrap">
                     <table class="table br-entity-table br-inventory__table mb-0">
                         <colgroup>
@@ -730,11 +752,13 @@ export default {
             activeView: "stock",
             loadingStock: false,
             loadingKardex: false,
+            loadingAlerts: false,
             savingMovement: false,
             savingTransfer: false,
             exporting: false,
             scannedProductId: null,
             stockRecords: {total: 0, data: []},
+            stockAlerts: {total: 0, data: []},
             kardexRecords: {total: 0, data: []},
             filters: {
                 warehouse: null,
@@ -809,6 +833,20 @@ export default {
             });
             this.stockRecords = result?.data || {total: 0, data: []};
             this.loadingStock = false;
+            this.listStockAlerts({});
+        },
+        async listStockAlerts({url = null} = {}) {
+            if(!this.filters.warehouse?.code) return;
+            this.loadingAlerts = true;
+            const result = await Requests.get({
+                route: url || Requests.config({entity: "stocks_management", type: "alerts"}),
+                data: {
+                    warehouse_id: this.filters.warehouse.code,
+                    status: "open"
+                }
+            });
+            this.stockAlerts = result?.data || {total: 0, data: []};
+            this.loadingAlerts = false;
         },
         async listKardex({url = null} = {}) {
             if(!this.filters.warehouse?.code) return;
@@ -1102,6 +1140,9 @@ export default {
         firstError(error) {
             return Array.isArray(error) ? error[0] : error;
         },
+        alertProductName(alert) {
+            return alert?.warehouse_item?.item?.name || "Producto sin nombre";
+        },
         separatorNumber(value) {
             return Utils.separatorNumber(value || 0);
         }
@@ -1144,6 +1185,9 @@ export default {
         },
         currentRecords() {
             return this.activeView === "stock" ? this.stockRecords : this.kardexRecords;
+        },
+        openStockAlerts() {
+            return this.stockAlerts?.data || [];
         },
         isCurrentViewLoading() {
             return this.activeView === "stock" ? this.loadingStock : this.loadingKardex;

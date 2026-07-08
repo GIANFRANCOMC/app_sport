@@ -338,6 +338,8 @@ const ENTITY_SPECIAL_ROUTES = {
         sale: "sale"
     },
     stocks_management: {
+        alerts: "alerts",
+        guides: "guides",
         movements: "movements",
         operations: "operations",
         transfers: "transfers"

@@ -35,7 +35,6 @@ Cuando una pantalla queda implementada, responsive, accesible, con errores por c
 - Historial con rango personalizado, resumen financiero y resumen de asistencias.
 - Membresías: solapamiento, renovación y límite diario con mensajes claros.
 - Asistencia de clientes: correcciones auditadas, exportación y detalle de dispositivo.
-- Notificaciones: intentos, último error y reintento controlado.
 - Reclamaciones internas: separar respuesta pública/interna, historial y adjuntos.
 
 ## Catálogo Comercial
@@ -56,7 +55,7 @@ Cuando una pantalla queda implementada, responsive, accesible, con errores por c
 
 ## Inventario y Compras
 
-- Control de stock: vista consolidada entre almacenes y navegación rápida a alertas.
+- Control de stock: vista consolidada entre almacenes y navegación rápida a alertas entre múltiples almacenes.
 - Kardex: filtros avanzados, exportación, valorización y ayuda sobre costo unitario/promedio.
 - Traslados: pulir UX multiproducto con origen/destino, responsable y trazabilidad.
 - Guías: pantallas de entrada/salida con numeración, estado y detalle.
@@ -65,7 +64,6 @@ Cuando una pantalla queda implementada, responsive, accesible, con errores por c
 
 ## Personal, Perfiles y Seguridad
 
-- Visor de historial de autenticación con filtros por evento, resultado y fechas.
 - Perfiles: duplicar perfil, auditoría, usuarios afectados y advertencia al retirar el último administrador.
 - Colaboradores: contraseña en flujo separado, bloqueo sin eliminación y auditoría sensible.
 - Asistencia laboral: horarios, pausas, tardanzas, horas ordinarias/extra, correcciones y exportación de nómina.

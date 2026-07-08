@@ -6321,3 +6321,194 @@ body.br-layout .br-entity-table > thead > tr > th {
     align-items: stretch;
   }
 }
+
+/* --- [br-system] Acciones compactas reutilizables --- */
+.br-table-actions {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+}
+
+.br-icon-action-info {
+  border-color: color-mix(in srgb, var(--br-primary) 22%, var(--br-border));
+  background: color-mix(in srgb, var(--br-primary-soft) 72%, #ffffff);
+  color: var(--br-primary-active);
+}
+
+.br-icon-action-info:hover,
+.br-icon-action-info:focus-visible {
+  border-color: color-mix(in srgb, var(--br-primary) 40%, var(--br-border));
+  background: color-mix(in srgb, var(--br-primary-soft) 52%, #ffffff);
+  color: var(--br-primary-active);
+}
+
+.br-icon-action-retry {
+  border-color: color-mix(in srgb, var(--br-secondary) 20%, var(--br-border));
+  background: color-mix(in srgb, var(--br-secondary-soft) 64%, #ffffff);
+  color: var(--br-secondary);
+}
+
+.br-icon-action-retry:hover,
+.br-icon-action-retry:focus-visible {
+  border-color: color-mix(in srgb, var(--br-secondary) 34%, var(--br-border));
+  background: color-mix(in srgb, var(--br-secondary-soft) 48%, #ffffff);
+  color: var(--br-secondary-active);
+}
+
+.br-entity-primary {
+  display: block;
+  color: var(--br-secondary);
+  font-weight: 800;
+  line-height: 1.25;
+}
+
+/* --- [br-customers] Notificaciones --- */
+.br-notification-error {
+  display: inline-flex;
+  max-width: 100%;
+  margin-top: 0.35rem;
+  padding: 0.18rem 0.45rem;
+  border: 1px solid color-mix(in srgb, var(--br-danger, #ef4444) 22%, var(--br-border));
+  border-radius: var(--br-radius-sm);
+  background: color-mix(in srgb, var(--br-danger-soft, #fee2e2) 72%, #ffffff);
+  color: var(--br-danger-hover, #dc2626);
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.br-notification-attempts {
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.55rem;
+  padding: 0.16rem 0.5rem;
+  border-radius: var(--br-radius-sm);
+  background: color-mix(in srgb, var(--br-secondary-soft) 64%, #ffffff);
+  color: var(--br-secondary);
+  font-size: 0.76rem;
+  font-weight: 800;
+}
+
+.br-notification-detail {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.br-notification-detail > div {
+  padding: 0.72rem;
+  border: 1px solid var(--br-border);
+  border-radius: var(--br-radius-md);
+  background: #ffffff;
+}
+
+.br-notification-detail span,
+.br-notification-preview h6 {
+  display: block;
+  margin-bottom: 0.24rem;
+  color: var(--br-text-muted);
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.br-notification-preview {
+  padding: 0.85rem;
+  border: 1px solid var(--br-border);
+  border-radius: var(--br-radius-md);
+  background: #ffffff;
+}
+
+.br-notification-preview > div {
+  max-height: 22rem;
+  overflow: auto;
+}
+
+/* --- [br-security] Historial de autenticacion --- */
+.br-auth-events__filters {
+  margin-bottom: 0.8rem;
+}
+
+.br-auth-events__agent {
+  display: block;
+  max-width: 24rem;
+  margin-top: 0.16rem;
+  overflow: hidden;
+  color: var(--br-text-muted);
+  font-size: 0.72rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* --- [br-inventory] Alertas de stock --- */
+.br-inventory-alerts {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.85rem;
+  margin-bottom: 0.75rem;
+  padding: 0.68rem 0.75rem;
+  border: 1px solid color-mix(in srgb, var(--br-warning, #f59e0b) 30%, var(--br-border));
+  border-radius: var(--br-radius-md);
+  background: color-mix(in srgb, var(--br-warning-soft, #fef3c7) 72%, #ffffff);
+}
+
+.br-inventory-alerts__summary,
+.br-inventory-alerts__list,
+.br-inventory-alerts__item {
+  display: inline-flex;
+  align-items: center;
+}
+
+.br-inventory-alerts__summary {
+  gap: 0.45rem;
+  min-width: 0;
+  color: var(--br-secondary);
+}
+
+.br-inventory-alerts__summary i {
+  color: var(--br-warning-hover, #d97706);
+}
+
+.br-inventory-alerts__summary span {
+  color: var(--br-text-muted);
+  font-size: 0.76rem;
+}
+
+.br-inventory-alerts__list {
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.br-inventory-alerts__item {
+  max-width: 11rem;
+  padding: 0.16rem 0.45rem;
+  border: 1px solid color-mix(in srgb, var(--br-warning, #f59e0b) 24%, var(--br-border));
+  border-radius: 999px;
+  background: #ffffff;
+  color: var(--br-secondary);
+  font-size: 0.72rem;
+  font-weight: 750;
+}
+
+.br-inventory-alerts__item.is-muted {
+  color: var(--br-text-muted);
+}
+
+@media (max-width: 768px) {
+  .br-notification-detail,
+  .br-inventory-alerts {
+    grid-template-columns: 1fr;
+  }
+
+  .br-inventory-alerts {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .br-inventory-alerts__list {
+    justify-content: flex-start;
+  }
+}

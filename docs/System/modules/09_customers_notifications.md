@@ -39,3 +39,6 @@ Permite revisar emails relacionados a suscripciones y su estado de envio.
 - Los reintentos usan espera incremental y terminan al alcanzar `max_attempts`.
 - `PATCH /tracking_notifications/{id}/retry` reinicia intentos, limpia el error, agenda ejecución inmediata y registra auditoría empresarial.
 - El disparador HTTP heredado permanece autenticado, limitado y protegido por permisos; no existe una ruta pública de envío.
+- La vista System permite filtrar por estado, ver destinatario, asunto, fecha, intentos, próximo intento y último error.
+- El reintento manual se muestra solo para registros `failed`, usa Swal de carga y refresca la lista conservando filtros.
+- El detalle se abre en modal estática `br-entity-modal`; el usuario cierra explícitamente por X o footer.

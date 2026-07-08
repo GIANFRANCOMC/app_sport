@@ -50,6 +50,8 @@ Administra usuarios internos, perfiles, alcance operativo y seguridad de acceso 
 - `EnsureAuthenticatedSession` invalida una sesión cuya versión ya no coincide o cuyo usuario está inactivo.
 - `GET /users/{id}/authentication-events` lista eventos de acceso de ese usuario, siempre limitado por empresa.
 - El historial conserva evento, resultado, tenant, IP, agente, motivo y hash de sesión; nunca guarda contraseña ni ID de sesión reutilizable.
+- La vista de Colaboradores expone un botón compacto de historial por usuario. El modal permite filtrar por evento, resultado, fecha desde y fecha hasta, y pagina sin perder filtros.
+- El historial se presenta como lectura de seguridad; no permite modificar eventos ni mostrar secretos.
 - Cambios de usuario, perfil, estado y contraseña generan auditoría de negocio sin almacenar secretos.
 - El alta de huella valida que el dispositivo esté activo y pertenezca a la empresa antes de reservar el identificador biométrico.
 

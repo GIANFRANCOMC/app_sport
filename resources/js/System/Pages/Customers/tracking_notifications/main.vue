@@ -1,119 +1,177 @@
 <template>
     <Breadcrumb :list="breadcrumbTitles"/>
 
-    <!-- Content -->
-    <div class="table-responsive">
-        <table class="table table-hover">
-            <thead>
-                <tr class="text-center align-middle">
-                    <th class="bg-secondary text-white fw-semibold min-w-150px" style="width: 25%;">DESTINATARIO</th>
-                    <th class="bg-secondary text-white fw-semibold min-w-150px" style="width: 30%;">ASUNTO</th>
-                    <th class="bg-secondary text-white fw-semibold min-w-150px" style="width: 15%;">FECHA DE CREACIÓN</th>
-                    <th class="bg-secondary text-white fw-semibold min-w-150px" style="width: 15%;">ESTADO</th>
-                    <th class="bg-secondary text-white fw-semibold min-w-150px" style="width: 15%;">ACCIONES</th>
-                </tr>
-            </thead>
-            <tbody class="table-border-bottom-0 bg-white">
-                <template v-if="lists.entity.extras.loading">
-                    <tr class="text-center">
-                        <td colspan="99" class="py-4">
+    <section class="br-entity-page br-tracking-notifications">
+        <section class="br-filter-bar">
+            <div class="row align-items-end g-2">
+                <InputSlot
+                    hasDiv
+                    title="Estado"
+                    :titleClass="[config.forms.classes.title]"
+                    xl="3"
+                    lg="3">
+                    <template #input>
+                        <v-select
+                            v-model="lists.entity.filters.status"
+                            :options="statusOptions"
+                            :class="config.forms.classes.select2"
+                            :clearable="false"
+                            :searchable="false"
+                            append-to-body/>
+                    </template>
+                </InputSlot>
+
+                <InputSlot
+                    hasDiv
+                    :isInputGroup="false"
+                    :divInputClass="['br-filter-bar__actions']"
+                    xl="9"
+                    lg="9">
+                    <template #input>
+                        <button
+                            type="button"
+                            class="br-btn br-btn-sm br-btn-action-search"
+                            :disabled="lists.entity.extras.loading"
+                            @click="listEntity({})">
+                            <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+                            <span>Buscar</span>
+                        </button>
+                    </template>
+                </InputSlot>
+            </div>
+        </section>
+
+        <div class="table-responsive br-entity-table-wrap">
+            <table class="table br-entity-table mb-0">
+                <thead>
+                    <tr>
+                        <th style="width: 26%;">Destinatario</th>
+                        <th style="width: 27%;">Mensaje</th>
+                        <th style="width: 16%;">Intentos</th>
+                        <th style="width: 16%;">Estado</th>
+                        <th class="text-center" style="width: 15%;">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-if="lists.entity.extras.loading">
+                        <td colspan="5" class="text-center py-4">
                             <Loader/>
                         </td>
                     </tr>
-                </template>
-                <template v-else>
-                    <template v-if="lists.entity.records.total > 0">
-                        <tr v-for="record in lists.entity.records.data" :key="record.id" class="text-center">
-                            <td class="text-start">
-                                <span class="ms-2" v-text="isDefined({value: record?.formatted_extras_json?.customer?.name}) ? record?.formatted_extras_json?.customer?.name : 'N/A'"></span>
-                                <ul>
-                                    <li>
-                                        <i class="fa fa-envelope"></i>
-                                        <span class="ms-2" v-text="isDefined({value: record.to}) ? record.to : 'N/A'"></span>
-                                    </li>
-                                    <li>
-                                        <i class="fa fa-phone"></i>
-                                        <span class="ms-2" v-text="isDefined({value: record?.formatted_extras_json?.customer?.phone}) ? record?.formatted_extras_json?.customer?.phone : 'N/A'"></span>
-                                    </li>
-                                </ul>
-                            </td>
-                            <td class="text-start">
-                                <span v-text="record.subject" class="fw-bold d-block"></span>
+                    <template v-else-if="lists.entity.records.total > 0">
+                        <tr v-for="record in lists.entity.records.data" :key="record.id">
+                            <td>
+                                <strong class="br-entity-primary">{{ customerName(record) }}</strong>
+                                <span class="br-entity-table__meta">
+                                    <i class="fa-solid fa-envelope" aria-hidden="true"></i>
+                                    {{ record.to || "Sin correo" }}
+                                </span>
+                                <span v-if="customerPhone(record)" class="br-entity-table__meta">
+                                    <i class="fa-solid fa-phone" aria-hidden="true"></i>
+                                    {{ customerPhone(record) }}
+                                </span>
                             </td>
                             <td>
-                                <span v-text="legibleFormatDate({dateString: record.created_at, type: 'date'})" class="d-block fw-semibold"></span>
-                                <span v-text="legibleFormatDate({dateString: record.created_at, type: 'time'})" class="d-block fw-semibold"></span>
+                                <strong class="br-entity-primary">{{ record.subject || "Sin asunto" }}</strong>
+                                <span class="br-entity-table__meta">
+                                    Creada {{ formatDate(record.created_at) }}
+                                </span>
+                                <span v-if="record.last_error" class="br-notification-error">
+                                    {{ record.last_error }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="br-notification-attempts">
+                                    {{ record.attempts || 0 }} / {{ record.max_attempts || 0 }}
+                                </span>
+                                <span v-if="record.next_attempt_at" class="br-entity-table__meta">
+                                    Próximo {{ formatDate(record.next_attempt_at) }}
+                                </span>
                             </td>
                             <td>
                                 <StatusBadge :status="record.status" :formatted-status="record.formatted_status"/>
                             </td>
-                            <td>
-                                <InputSlot
-                                    hasDiv
-                                    :isInputGroup="false"
-                                    :divInputClass="['d-flex flex-wrap justify-content-center gap-2 gap-md-1']"
-                                    xl="12"
-                                    lg="12">
-                                    <template v-slot:input>
-                                        <button type="button" class="btn btn-sm btn-primary waves-effect" @click="modalActionsEntity({record})">
-                                            <i class="fa fa-eye"></i>
-                                            <span class="ms-2">Detalle</span>
-                                        </button>
-                                    </template>
-                                </InputSlot>
+                            <td class="text-center">
+                                <div class="br-table-actions">
+                                    <button
+                                        type="button"
+                                        class="br-icon-action br-icon-action-info"
+                                        data-bs-toggle="tooltip"
+                                        data-bs-placement="top"
+                                        title="Ver detalle"
+                                        :aria-label="`Ver detalle de ${record.subject || 'notificación'}`"
+                                        @click="openDetail(record)">
+                                        <i class="fa-solid fa-eye" aria-hidden="true"></i>
+                                    </button>
+                                    <button
+                                        v-if="canRetry(record)"
+                                        type="button"
+                                        class="br-icon-action br-icon-action-retry"
+                                        data-bs-toggle="tooltip"
+                                        data-bs-placement="top"
+                                        title="Reintentar"
+                                        :aria-label="`Reintentar ${record.subject || 'notificación'}`"
+                                        :disabled="retryingId === record.id"
+                                        @click="retryNotification(record)">
+                                        <i class="fa-solid fa-rotate-right" aria-hidden="true"></i>
+                                    </button>
+                                </div>
                             </td>
                         </tr>
                     </template>
-                    <template v-else>
-                        <tr>
-                            <td class="text-center" colspan="99">
-                                <WithoutData type="image"/>
-                            </td>
-                        </tr>
-                    </template>
-                </template>
-            </tbody>
-        </table>
-    </div>
-    <div class="d-flex justify-content-center" v-if="!lists.entity.extras.loading && lists.entity.records?.total > 0">
-        <Paginator :links="lists.entity.records.links" @clickPage="listEntity"/>
-    </div>
+                    <tr v-else>
+                        <td colspan="5">
+                            <WithoutData type="image"/>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
 
-    <div class="modal fade" :id="forms.entity.createUpdate.extras.modals.actions.id" data-bs-backdrop="static" tabindex="-1" aria-hidden="true">
+        <nav v-if="!lists.entity.extras.loading && lists.entity.records.total > 0" class="d-flex justify-content-center mt-3">
+            <Paginator :links="lists.entity.records.links" @clickPage="listEntity"/>
+        </nav>
+    </section>
+
+    <div class="modal fade" :id="detailModalId" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title text-uppercase fw-bold">Detalle</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="row justify-content-center g-1">
-                        <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12">
-                            <span class="fw-semibold">• Destinatario:</span>
-                            <span class="ms-2" v-text="forms.entity.createUpdate.extras.modals.actions.data?.to"></span>
-                        </div>
-                        <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12">
-                            <span class="fw-semibold">• Asunto:</span>
-                            <span class="ms-2" v-text="forms.entity.createUpdate.extras.modals.actions.data?.subject"></span>
-                        </div>
-                        <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12">
-                            <span class="fw-semibold">• Fecha de creación:</span>
-                            <span class="ms-2" v-text="legibleFormatDate({dateString: forms.entity.createUpdate.extras.modals.actions.data?.created_at, type: 'datetime'})"></span>
-                        </div>
-                        <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 d-flex align-items-center flex-wrap gap-2">
-                            <span class="fw-semibold">• Estado:</span>
-                            <StatusBadge
-                                :status="forms.entity.createUpdate.extras.modals.actions.data?.status"
-                                :formatted-status="forms.entity.createUpdate.extras.modals.actions.data?.formatted_status"/>
-                        </div>
-                        <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12">
-                            <span class="fw-semibold">• Contenido <small>(Referencia)</small></span>
-                            <p ref="emailIframe" v-html="forms.entity.createUpdate.extras.modals.actions.data?.body" class="mt-2 user-select-none pe-none border"></p>
-                        </div>
+            <div class="modal-content br-entity-modal">
+                <button type="button" class="br-modal-close" data-bs-dismiss="modal" aria-label="Cerrar">
+                    <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+                </button>
+                <div class="modal-header br-entity-modal__header">
+                    <div>
+                        <p class="br-entity-modal__eyebrow mb-1">Seguimiento</p>
+                        <h5 class="modal-title">Detalle de notificación</h5>
                     </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary waves-effect" data-bs-dismiss="modal">Cerrar</button>
+                <div class="modal-body br-entity-modal__body">
+                    <div class="br-notification-detail">
+                        <div>
+                            <span>Destinatario</span>
+                            <strong>{{ selectedRecord?.to || "Sin correo" }}</strong>
+                        </div>
+                        <div>
+                            <span>Asunto</span>
+                            <strong>{{ selectedRecord?.subject || "Sin asunto" }}</strong>
+                        </div>
+                        <div>
+                            <span>Creación</span>
+                            <strong>{{ formatDate(selectedRecord?.created_at) }}</strong>
+                        </div>
+                        <div>
+                            <span>Estado</span>
+                            <StatusBadge :status="selectedRecord?.status" :formatted-status="selectedRecord?.formatted_status"/>
+                        </div>
+                    </div>
+
+                    <section class="br-notification-preview">
+                        <h6>Contenido enviado</h6>
+                        <div v-html="selectedRecord?.body || '<p>Sin contenido.</p>'"></div>
+                    </section>
+                </div>
+                <div class="modal-footer br-entity-modal__footer">
+                    <button type="button" class="br-btn br-btn-cancel" data-bs-dismiss="modal">Cerrar</button>
                 </div>
             </div>
         </div>
@@ -121,31 +179,37 @@
 </template>
 
 <script>
-import * as Alerts    from "@System/Helpers/Alerts.js";
+import * as Alerts from "@System/Helpers/Alerts.js";
 import * as Constants from "@System/Helpers/Constants.js";
-import * as Requests  from "@System/Helpers/Requests.js";
-import * as Utils     from "@System/Helpers/Utils.js";
+import * as Requests from "@System/Helpers/Requests.js";
+import * as Utils from "@System/Helpers/Utils.js";
+
+const STATUS_OPTIONS = [
+    {code: "", label: "Todos los estados"},
+    {code: "pending", label: "Pendiente"},
+    {code: "sent", label: "Enviada"},
+    {code: "failed", label: "Fallida"}
+];
 
 export default {
+    name: "TrackingNotificationsMain",
     mounted: async function() {
-
         Utils.navbarItem("menu-parent-customers", {addClass: "open"});
         Utils.navbarItem(this.config.entity.page.menu.id, {});
         Alerts.swals({type: "initParams"});
 
-        let initParams = await this.initParams({}),
-            initOthers = await this.initOthers({});
+        const initParams = await this.initParams({});
 
-        if(initParams && initOthers) {
-
+        if(initParams) {
             Alerts.swals({show: false});
             this.listEntity({});
-
         }
-
     },
     data() {
         return {
+            detailModalId: Utils.uuid(),
+            selectedRecord: null,
+            retryingId: null,
             lists: {
                 entity: {
                     extras: {
@@ -153,35 +217,11 @@ export default {
                         route: Requests.config({entity: "tracking_notifications", type: "list"})
                     },
                     filters: {
-                        status: ""
+                        status: STATUS_OPTIONS[0]
                     },
-                    records: {
-                        total: 0
-                    }
+                    records: {total: 0, data: [], links: []}
                 }
             },
-            forms: {
-                entity: {
-                    createUpdate: {
-                        extras: {
-                            modals: {
-                                actions: {
-                                    id: Utils.uuid(),
-                                    data: {
-                                        id: null
-                                    }
-                                }
-                            }
-                        },
-                        data: {
-                            id: null,
-                            status: null
-                        },
-                        errors: {}
-                    }
-                }
-            },
-            options: {},
             config: {
                 ...Constants.generalConfig,
                 entity: {
@@ -189,132 +229,93 @@ export default {
                     page: {
                         title: "Notificaciones",
                         active: true,
-                        menu: {
-                            id: "menu-customers-notifications"
-                        }
+                        menu: {id: "menu-customers-notifications"}
                     }
                 }
             }
         };
     },
     methods: {
-        // Init
         async initParams({}) {
-
-            let initParams = await Requests.get({route: this.config.entity.routes.initParams, data: {page: "main"}, showAlert: true});
-
-            return Requests.valid({result: initParams});
-
-        },
-        async initOthers({}) {
-
-            return new Promise(resolve => {
-
-                resolve(true);
-
+            const initParams = await Requests.get({
+                route: this.config.entity.routes.initParams,
+                data: {page: "main"},
+                showAlert: true
             });
 
+            return Requests.valid({result: initParams});
         },
-        // Entity forms
         async listEntity({url = null}) {
+            const filterData = {status: this.lists.entity.filters.status?.code || ""};
+            let route = url || this.lists.entity.extras.route;
+            let data = filterData;
 
-            let filters = Utils.cloneJson(this.lists.entity.filters);
-            const filterJson = {};
+            if(url) {
+                const urlObj = new URL(url, window.location.origin);
+                Object.entries(filterData).forEach(([key, value]) => {
+                    if(value && !urlObj.searchParams.has(key)) urlObj.searchParams.set(key, value);
+                });
+                route = `${urlObj.pathname}${urlObj.search}`;
+                data = {};
+            }
 
             this.lists.entity.extras.loading = true;
-            this.lists.entity.records        = (await Requests.get({route: url || this.lists.entity.extras.route, data: filterJson}))?.data;
+            const result = await Requests.get({
+                route,
+                data
+            });
+            this.lists.entity.records = result?.data || {total: 0, data: [], links: []};
             this.lists.entity.extras.loading = false;
-
         },
-        // Forms
-        modalActionsEntity({record = null}) {
-
-            this.forms.entity.createUpdate.extras.modals.actions.data = record;
-
-            Alerts.modals({type: "show", id: this.forms.entity.createUpdate.extras.modals.actions.id});
-
+        openDetail(record) {
+            this.selectedRecord = record;
+            Alerts.modals({type: "show", id: this.detailModalId});
         },
-        // Forms utils
-        clearForm({functionName}) {
+        async retryNotification(record) {
+            if(this.retryingId) return;
 
-            switch(functionName) {
-                case "modalCreateUpdateEntity":
-                case "createUpdateEntity":
-                    //
-                    break;
+            this.retryingId = record.id;
+            Alerts.swals({type: "loading", message: "Preparando reintento"});
+
+            const result = await Requests.patch({
+                route: `${this.config.entity.routes.consult}/${record.id}/retry`
+            });
+
+            this.retryingId = null;
+            Alerts.swals({show: false});
+
+            if(Requests.valid({result})) {
+                Alerts.generateAlert({type: "success", msgContent: result.data.msg || "La notificación quedó lista para reintento."});
+                this.listEntity({});
+                return;
             }
 
+            Alerts.generateAlert({type: "error", messages: [result?.data?.msg || "No se pudo preparar el reintento."]});
         },
-        formErrors({functionName, type = "clear", errors = []}) {
-
-            if(["modalCreateUpdateEntity", "createUpdateEntity"].includes(functionName)) {
-
-                this.forms.entity.createUpdate.errors = ["set"].includes(type) ? errors : [];
-
-            }
-
+        canRetry(record) {
+            return record?.status === "failed";
         },
-        validateForm({functionName, form = null, extras = null}) {
-
-            let result = {
-                bool: true
-            };
-
-            if(["createUpdateEntity"].includes(functionName)) {
-
-                //
-
-            }
-
-            return result;
-
+        customerName(record) {
+            return record?.formatted_extras_json?.customer?.name || "Cliente no identificado";
         },
-        // Others
-        isDefined({value}) {
-
-            return Utils.isDefined({value});
-
+        customerPhone(record) {
+            return record?.formatted_extras_json?.customer?.phone || "";
         },
-        legibleFormatDate({dateString = null, type = "datetime"}) {
-
-            return Utils.legibleFormatDate({dateString, type});
-
+        formatDate(value) {
+            return Utils.legibleFormatDate({dateString: value, type: "datetime"}) || "Sin fecha";
         }
     },
     computed: {
-        breadcrumbTitles: function() {
-
+        breadcrumbTitles() {
             return [{title: "Seguimiento"}, this.config.entity.page];
-
+        },
+        statusOptions() {
+            return STATUS_OPTIONS;
         }
     },
     watch: {
-        "lists.entity.filters.status": function(newValue, oldValue) {
-
-            // this.listEntity({});
-
-        },
-        "forms.entity.createUpdate.extras.modals.actions.data.body": function(newValue, oldValue) {
-
-            this.$nextTick(() => {
-
-                if(this.$refs.emailIframe) {
-
-                    const iframe = this.$refs.emailIframe;
-
-                    if(!iframe || !iframe.contentWindow) return;
-
-                    const doc = iframe.contentDocument || iframe.contentWindow.document;
-                    if (!doc) return;
-
-                    doc.open();
-                    doc.write(newValue || "");
-                    doc.close();
-
-                }
-
-            });
-
+        "lists.entity.filters.status": function() {
+            this.listEntity({});
         }
     }
 };

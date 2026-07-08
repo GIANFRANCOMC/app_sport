@@ -185,6 +185,8 @@ El módulo Compras está conectado. Crear el documento no cambia existencias; ca
 
 - `inventory_stock_alerts` abre o actualiza una alerta al alcanzar el mínimo y la resuelve automáticamente al recuperar stock.
 - `GET /stocks_management/alerts` permite consultar alertas abiertas/resueltas por almacén.
+- Control de stock consume `GET /stocks_management/alerts` para mostrar una franja compacta de alertas abiertas del almacén seleccionado.
+- La alerta visual no reemplaza el estado por fila; funciona como resumen rápido para orientar al usuario antes de revisar la tabla.
 - `inventory_guides` e `inventory_guide_items` respaldan guías confirmadas de entrada/salida; cada detalle genera su movimiento inmutable.
 - Cantidades, saldos y movimientos conservan cuatro decimales. Esto evita perder consumos pequeños de recetas, insumos fraccionados o traslados medidos por peso/volumen.
 

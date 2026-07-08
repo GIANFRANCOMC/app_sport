@@ -65,9 +65,28 @@
                             <StatusBadge class="flex-shrink-none" :status="record.status" :formatted-status="record.formatted_status"/>
                         </td>
                         <td class="text-center">
-                            <button type="button" class="btn btn-xs btn-warning waves-effect" @click="openModal(record)">
-                                <span v-text="MODULE.texts.actions.edit"></span>
-                            </button>
+                            <div class="br-table-actions">
+                                <button
+                                    type="button"
+                                    class="br-icon-action br-icon-action-info"
+                                    data-bs-toggle="tooltip"
+                                    data-bs-placement="top"
+                                    title="Historial de acceso"
+                                    :aria-label="`Ver historial de acceso de ${record.name}`"
+                                    @click="openAuthenticationEvents(record)">
+                                    <i class="fa-solid fa-shield-halved" aria-hidden="true"></i>
+                                </button>
+                                <button
+                                    type="button"
+                                    class="br-icon-action br-icon-action-edit"
+                                    data-bs-toggle="tooltip"
+                                    data-bs-placement="top"
+                                    :title="MODULE.texts.actions.edit"
+                                    :aria-label="`${MODULE.texts.actions.edit} ${record.name}`"
+                                    @click="openModal(record)">
+                                    <i class="fa-solid fa-pen" aria-hidden="true"></i>
+                                </button>
+                            </div>
                         </td>
                     </tr>
                 </template>
@@ -84,6 +103,135 @@
     <nav v-if="!entityList.extras.loading && entityList.records.total > 0" class="d-flex justify-content-center">
         <Paginator :links="entityList.records.links" @clickPage="listEntity"/>
     </nav>
+
+    <!-- Modal: Authentication events -->
+    <div class="modal fade" :id="authenticationEvents.modalId" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-dialog-centered modal-xl" role="document">
+            <div class="modal-content br-entity-modal">
+                <button type="button" class="br-modal-close" data-bs-dismiss="modal" aria-label="Cerrar">
+                    <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+                </button>
+                <div class="modal-header br-entity-modal__header">
+                    <div>
+                        <p class="br-entity-modal__eyebrow mb-1">Seguridad</p>
+                        <h5 class="modal-title">Historial de acceso</h5>
+                        <small v-if="authenticationEvents.user" class="br-entity-table__meta">
+                            {{ authenticationEvents.user.name }} · {{ authenticationEvents.user.email }}
+                        </small>
+                    </div>
+                </div>
+                <div class="modal-body br-entity-modal__body">
+                    <section class="br-filter-bar br-auth-events__filters">
+                        <div class="row align-items-end g-2">
+                            <InputSlot hasDiv title="Evento" :titleClass="[config.forms.classes.title]" xl="3" lg="3">
+                                <template #input>
+                                    <v-select
+                                        v-model="authenticationEvents.filters.eventType"
+                                        :options="authenticationEventTypes"
+                                        :class="config.forms.classes.select2"
+                                        :clearable="false"
+                                        :searchable="false"
+                                        append-to-body/>
+                                </template>
+                            </InputSlot>
+                            <InputSlot hasDiv title="Resultado" :titleClass="[config.forms.classes.title]" xl="3" lg="3">
+                                <template #input>
+                                    <v-select
+                                        v-model="authenticationEvents.filters.result"
+                                        :options="authenticationResults"
+                                        :class="config.forms.classes.select2"
+                                        :clearable="false"
+                                        :searchable="false"
+                                        append-to-body/>
+                                </template>
+                            </InputSlot>
+                            <InputDate
+                                v-model="authenticationEvents.filters.dateFrom"
+                                hasDiv
+                                title="Desde"
+                                :titleClass="[config.forms.classes.title]"
+                                xl="2"
+                                lg="2"/>
+                            <InputDate
+                                v-model="authenticationEvents.filters.dateTo"
+                                hasDiv
+                                title="Hasta"
+                                :titleClass="[config.forms.classes.title]"
+                                xl="2"
+                                lg="2"/>
+                            <InputSlot
+                                hasDiv
+                                :isInputGroup="false"
+                                :divInputClass="['br-filter-bar__actions']"
+                                xl="2"
+                                lg="2">
+                                <template #input>
+                                    <button
+                                        type="button"
+                                        class="br-btn br-btn-sm br-btn-action-search"
+                                        :disabled="authenticationEvents.loading"
+                                        @click="listAuthenticationEvents({})">
+                                        <i class="fa-solid fa-filter" aria-hidden="true"></i>
+                                        <span>Filtrar</span>
+                                    </button>
+                                </template>
+                            </InputSlot>
+                        </div>
+                    </section>
+
+                    <div class="table-responsive br-entity-table-wrap">
+                        <table class="table br-entity-table mb-0">
+                            <thead>
+                                <tr>
+                                    <th style="width: 18%;">Fecha</th>
+                                    <th style="width: 18%;">Evento</th>
+                                    <th style="width: 14%;">Resultado</th>
+                                    <th style="width: 18%;">Origen</th>
+                                    <th>Detalle técnico</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-if="authenticationEvents.loading">
+                                    <td colspan="5" class="text-center py-4"><Loader/></td>
+                                </tr>
+                                <template v-else-if="authenticationEvents.records.total > 0">
+                                    <tr v-for="event in authenticationEvents.records.data" :key="event.id">
+                                        <td>{{ legibleFormatDate({dateString: event.occurred_at, type: 'datetime'}) }}</td>
+                                        <td>
+                                            <strong class="br-entity-primary">{{ authEventLabel(event.event_type) }}</strong>
+                                        </td>
+                                        <td>
+                                            <span :class="['br-status-label', event.result === 'success' ? 'br-status-active' : 'br-status-inactive']">
+                                                {{ authResultLabel(event.result) }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span class="br-entity-table__meta">IP {{ event.ip_address || "No registrada" }}</span>
+                                            <span class="br-entity-table__meta">Tenant {{ event.tenant_key || "Actual" }}</span>
+                                        </td>
+                                        <td>
+                                            <span class="br-entity-table__meta">{{ event.reason || "Sin observación" }}</span>
+                                            <span class="br-auth-events__agent" :title="event.user_agent">{{ event.user_agent || "Agente no registrado" }}</span>
+                                        </td>
+                                    </tr>
+                                </template>
+                                <tr v-else>
+                                    <td colspan="5"><WithoutData type="image"/></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <nav v-if="!authenticationEvents.loading && authenticationEvents.records.total > 0" class="d-flex justify-content-center mt-3">
+                        <Paginator :links="authenticationEvents.records.links" @clickPage="listAuthenticationEvents"/>
+                    </nav>
+                </div>
+                <div class="modal-footer br-entity-modal__footer">
+                    <button type="button" class="br-btn br-btn-cancel" data-bs-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Modal: Create/Update -->
     <div class="modal fade" :id="forms[entity].createUpdate.extras.modals.default.id" data-bs-backdrop="static" tabindex="-1" role="dialog">
@@ -455,6 +603,21 @@ const FILTER_OPTIONS = [
     {code: "phone_number", label: "Celular"}
 ];
 
+const AUTHENTICATION_EVENT_TYPES = [
+    {code: "", label: "Todos los eventos"},
+    {code: "login", label: "Inicio de sesión"},
+    {code: "logout", label: "Cierre de sesión"},
+    {code: "session_revoked", label: "Sesión revocada"},
+    {code: "password_changed", label: "Contraseña modificada"}
+];
+
+const AUTHENTICATION_RESULTS = [
+    {code: "", label: "Todos los resultados"},
+    {code: "success", label: "Correcto"},
+    {code: "failed", label: "Fallido"},
+    {code: "blocked", label: "Bloqueado"}
+];
+
 const TEXTS = {
     filters: {
         filterBy: "Filtrar por",
@@ -519,7 +682,19 @@ export default {
             ...crudModule,
             MODULE: MODULE,
             isInitialized: false,
-            isSaving: false
+            isSaving: false,
+            authenticationEvents: {
+                modalId: Utils.uuid(),
+                loading: false,
+                user: null,
+                records: {total: 0, data: [], links: []},
+                filters: {
+                    eventType: AUTHENTICATION_EVENT_TYPES[0],
+                    result: AUTHENTICATION_RESULTS[0],
+                    dateFrom: "",
+                    dateTo: ""
+                }
+            }
         };
 
     },
@@ -619,6 +794,68 @@ export default {
         handleSearch() {
 
             this.listEntity({});
+
+        },
+        async openAuthenticationEvents(record) {
+
+            this.authenticationEvents.user = record;
+            this.authenticationEvents.records = {total: 0, data: [], links: []};
+            this.authenticationEvents.filters = {
+                eventType: AUTHENTICATION_EVENT_TYPES[0],
+                result: AUTHENTICATION_RESULTS[0],
+                dateFrom: "",
+                dateTo: ""
+            };
+
+            Alerts.modals({type: "show", id: this.authenticationEvents.modalId});
+            await this.listAuthenticationEvents({});
+
+        },
+        async listAuthenticationEvents(params = null) {
+
+            const userId = this.authenticationEvents.user?.id;
+            if(!userId) return;
+
+            const url = this.isDefined(params) && typeof params === "object" ? params.url : params;
+            const filters = {
+                event_type: this.authenticationEvents.filters.eventType?.code || "",
+                result: this.authenticationEvents.filters.result?.code || "",
+                date_from: this.authenticationEvents.filters.dateFrom || "",
+                date_to: this.authenticationEvents.filters.dateTo || ""
+            };
+            let route = url || `${this.routeActions.consult}/${userId}/authentication-events`;
+            let data = filters;
+
+            if(url) {
+                const urlObj = new URL(url, window.location.origin);
+                Object.entries(filters).forEach(([key, value]) => {
+                    if(value && !urlObj.searchParams.has(key)) urlObj.searchParams.set(key, value);
+                });
+                route = `${urlObj.pathname}${urlObj.search}`;
+                data = {};
+            }
+
+            this.authenticationEvents.loading = true;
+
+            try {
+
+                const response = await Requests.get({
+                    route,
+                    data,
+                    showAlert: true
+                });
+
+                this.authenticationEvents.records = response?.data || {total: 0, data: [], links: []};
+
+            }catch(error) {
+
+                this.authenticationEvents.records = {total: 0, data: [], links: []};
+
+            }finally {
+
+                this.authenticationEvents.loading = false;
+
+            }
 
         },
         onEmailInput(value) {
@@ -835,6 +1072,16 @@ export default {
             Alerts.tooltips({show, time});
 
         },
+        authEventLabel(value) {
+
+            return AUTHENTICATION_EVENT_TYPES.find(option => option.code === value)?.label || value || "Sin evento";
+
+        },
+        authResultLabel(value) {
+
+            return AUTHENTICATION_RESULTS.find(option => option.code === value)?.label || value || "Sin resultado";
+
+        },
         branchAccessLabel(record) {
 
             const branches = record?.branches || [];
@@ -936,6 +1183,16 @@ export default {
         filterByOptions() {
 
             return this.MODULE.filterOptions;
+
+        },
+        authenticationEventTypes() {
+
+            return AUTHENTICATION_EVENT_TYPES;
+
+        },
+        authenticationResults() {
+
+            return AUTHENTICATION_RESULTS;
 
         },
         filterByValue: {
