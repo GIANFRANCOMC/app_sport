@@ -1362,6 +1362,25 @@ input.input-number-no-range[type=number] {
     padding-inline: 0;
 }
 
+.swal2-popup.br-swal-alert .br-swal-alert__input {
+    grid-column: 1 / 4 !important;
+    justify-self: center;
+    width: min(100%, 24rem);
+    height: 2.55rem;
+    margin: 0.7rem auto 0;
+    border: 1px solid var(--br-border, #dbe3ec);
+    border-radius: var(--br-radius-sm, 0.35rem);
+    color: var(--br-secondary, #1a1a35);
+    font-size: 0.86rem;
+    font-weight: 600;
+    box-shadow: none;
+}
+
+.swal2-popup.br-swal-alert .br-swal-alert__input:focus {
+    border-color: var(--br-primary, #2899e5);
+    box-shadow: var(--br-focus-ring, 0 0 0 0.16rem rgba(40, 153, 229, 0.2));
+}
+
 .swal2-popup.br-swal-alert .swal2-actions {
     grid-column: 1 / 4 !important;
     justify-self: center;
@@ -6495,6 +6514,45 @@ body.br-layout .br-entity-table > thead > tr > th {
 
 .br-inventory-alerts__item.is-muted {
   color: var(--br-text-muted);
+}
+
+/* --- [br-reports] Parametros y ayuda --- */
+.br-reports {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.br-reports__help {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  width: fit-content;
+  max-width: 100%;
+  padding: 0.45rem 0.65rem;
+  border: 1px solid color-mix(in srgb, var(--br-primary) 14%, var(--br-border));
+  border-radius: var(--br-radius-md);
+  background: color-mix(in srgb, var(--br-primary-soft) 50%, #ffffff);
+  color: var(--br-text-muted);
+  font-size: 0.78rem;
+  font-weight: 650;
+}
+
+.br-reports__help i {
+  color: var(--br-primary-active);
+}
+
+.br-reports__results {
+  overflow: hidden;
+  margin-top: 0.15rem;
+}
+
+.br-reports__empty-hint {
+  display: block;
+  padding: 1.75rem 1rem;
+  color: var(--br-text-muted);
+  font-size: 0.84rem;
+  font-weight: 650;
+  text-align: center;
 }
 
 @media (max-width: 768px) {

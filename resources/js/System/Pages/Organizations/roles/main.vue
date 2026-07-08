@@ -75,16 +75,29 @@
                                     </span>
                                 </td>
                                 <td class="text-center">
+                                    <div class="br-table-actions">
                                     <button
                                         type="button"
                                         class="br-icon-action br-icon-action-edit"
                                         data-bs-toggle="modal"
                                         data-bs-target="#roleModal"
+                                        data-bs-placement="top"
                                         title="Editar perfil"
                                         :aria-label="`Editar perfil ${role.name}`"
                                         @click="openModal(role)">
                                         <i class="fa-solid fa-pen" aria-hidden="true"></i>
                                     </button>
+                                    <button
+                                        type="button"
+                                        class="br-icon-action br-icon-action-info"
+                                        data-bs-toggle="tooltip"
+                                        data-bs-placement="top"
+                                        title="Duplicar perfil"
+                                        :aria-label="`Duplicar perfil ${role.name}`"
+                                        @click="duplicateRole(role)">
+                                        <i class="fa-solid fa-copy" aria-hidden="true"></i>
+                                    </button>
+                                    </div>
                                 </td>
                             </tr>
                         </template>
@@ -548,6 +561,90 @@ export default {
                     ? Object.values(this.errors).flat()
                     : [result?.data?.msg || "No se pudo guardar el perfil."]
             });
+        },
+        async duplicateRole(role) {
+            if(this.saving || !role?.id) return;
+
+            Alerts.tooltips({show: false});
+
+            const confirmation = await Swal.fire({
+                title: "Duplicar perfil",
+                text: "Asigna un nombre para el nuevo perfil. Se copiarán sus permisos y alcances operativos.",
+                icon: "question",
+                input: "text",
+                inputValue: this.suggestDuplicateName(role),
+                inputAttributes: {
+                    maxlength: 80,
+                    autocapitalize: "off",
+                    autocomplete: "off"
+                },
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                showCancelButton: true,
+                buttonsStyling: false,
+                confirmButtonText: "Duplicar perfil",
+                cancelButtonText: "Cancelar",
+                customClass: {
+                    container: "br-swal-backdrop",
+                    popup: "br-swal-alert br-swal-alert--question",
+                    confirmButton: "br-btn br-swal-alert__confirm br-swal-alert__confirm--question",
+                    cancelButton: "br-btn br-btn-cancel ms-2",
+                    input: "br-swal-alert__input"
+                },
+                inputValidator: value => {
+                    const name = String(value || "").trim();
+
+                    if(!name) return "Ingresa el nombre del nuevo perfil.";
+                    if(name.length > 80) return "El nombre no debe superar 80 caracteres.";
+
+                    return null;
+                }
+            });
+
+            if(!confirmation.isConfirmed) {
+                Alerts.tooltips({time: 250});
+                return;
+            }
+
+            this.saving = true;
+            Alerts.swals({type: "loading", message: "Duplicando perfil"});
+
+            const result = await Requests.post({
+                route: `${this.config.entity.routes.store}/${role.id}/duplicate`,
+                data: {name: confirmation.value.trim()}
+            });
+
+            this.saving = false;
+            Alerts.swals({show: false});
+
+            if(Requests.valid({result})) {
+                Alerts.generateAlert({type: "success", msgContent: result.data.msg});
+                await this.listRoles({});
+                return;
+            }
+
+            const errors = result?.errors || result?.data?.errors || {};
+            const messages = Object.values(errors).flat();
+
+            Alerts.generateAlert({
+                type: "error",
+                messages: messages.length ? messages : [result?.data?.msg || "No se pudo duplicar el perfil."]
+            });
+        },
+        suggestDuplicateName(role) {
+            const baseName = `Copia de ${role.name || "perfil"}`.slice(0, 80);
+            const existingNames = (this.records.data || []).map(record => String(record.name || "").toLowerCase());
+
+            if(!existingNames.includes(baseName.toLowerCase())) return baseName;
+
+            for(let index = 2; index <= 20; index++) {
+                const suffix = ` ${index}`;
+                const candidate = `${baseName.slice(0, 80 - suffix.length)}${suffix}`;
+
+                if(!existingNames.includes(candidate.toLowerCase())) return candidate;
+            }
+
+            return baseName;
         },
         firstError(error) {
             return Array.isArray(error) ? error[0] : error;

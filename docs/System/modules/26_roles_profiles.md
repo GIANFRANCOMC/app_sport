@@ -15,3 +15,10 @@ Define qué módulos, acciones, sucursales, cajas y almacenes puede utilizar cad
 - `DuplicateRoleRequest` normaliza el nombre y valida unicidad dentro de la empresa antes de copiar el perfil.
 - Cambios de perfil, permiso y recursos invalidan únicamente las cachés afectadas.
 - `business_audit_logs` registra los cambios sensibles sin guardar secretos.
+
+## Frontend
+
+- El listado permite crear, editar y duplicar perfiles de acceso.
+- La acción `Duplicar perfil` solicita un nombre nuevo, copia permisos y alcances mediante `POST /roles/{id}/duplicate` y refresca el listado al terminar.
+- El nombre sugerido usa `Copia de {perfil}` y evita repetir nombres ya visibles en la página actual; la validación final queda en el backend por empresa.
+- Las acciones de tabla se mantienen compactas con `br-table-actions` y botones `br-icon-action-*` para conservar la línea visual de Productos.

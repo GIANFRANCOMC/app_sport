@@ -1,175 +1,202 @@
 <template>
     <Breadcrumb :list="breadcrumbTitles"/>
 
-    <!-- Content -->
-    <div class="row align-items-end g-3 mb-3 mb-md-4">
-        <InputSlot
-            hasDiv
-            title="Serie"
-            :titleClass="[config.forms.classes.title]"
-            xl="6"
-            lg="12">
-            <template v-slot:input>
-                <v-select
-                    v-model="lists.entity.filters.serie"
-                    :options="series"
-                    :class="config.forms.classes.select2"
-                    :clearable="true"
-                    :searchable="false"
-                    placeholder="Seleccione">
-                    <template #option="{ data }">
-                        <span v-text="`${data?.legible_serie} - ${data?.document_type?.name}`" class="d-block fw-bold"></span>
-                        <small v-text="data?.branch?.name" class="d-block"></small>
-                    </template>
-                    <template #selected-option="{ label }">
-                        <span v-text="truncate({value: label, length: 50})"></span>
-                    </template>
-                </v-select>
-            </template>
-        </InputSlot>
-        <InputText
-            v-model="lists.entity.filters.sequential"
-            @enterKeyPressed="listEntity({})"
-            hasDiv
-            title="Secuencia"
-            :titleClass="[config.forms.classes.title]"
-            xl="3"
-            lg="6"/>
-        <InputDate
-            v-model="lists.entity.filters.issue_date"
-            @enterKeyPressed="listEntity({})"
-            hasDiv
-            title="Fecha de emisión"
-            :titleClass="[config.forms.classes.title]"
-            :max="maxIssueDate"
-            xl="3"
-            lg="6"/>
-        <InputSlot
-            hasDiv
-            title="Cliente"
-            :titleClass="[config.forms.classes.title]"
-            xl="6"
-            lg="6">
-            <template v-slot:input>
-                <v-select
-                    v-model="lists.entity.filters.holder"
-                    :options="holders"
-                    :class="config.forms.classes.select2"
-                    :clearable="true"
-                    placeholder="Seleccione">
-                    <template #option="{ label }">
-                        <span v-text="truncate({value: label, length: 50})" class="d-block"></span>
-                    </template>
-                    <template #selected-option="{ label }">
-                        <span v-text="truncate({value: label, length: 50})"></span>
-                    </template>
-                </v-select>
-            </template>
-        </InputSlot>
-        <InputSlot
-            hasDiv
-            title="Estado"
-            :titleClass="[config.forms.classes.title]"
-            xl="3"
-            lg="6">
-            <template v-slot:input>
-                <v-select
-                    v-model="lists.entity.filters.status"
-                    :options="statuses"
-                    :class="config.forms.classes.select2"
-                    :clearable="true"
-                    :searchable="false"
-                    placeholder="Seleccione"/>
-            </template>
-        </InputSlot>
-        <InputSlot
-            hasDiv
-            :isInputGroup="false"
-            :divInputClass="['d-flex flex-wrap justify-content-start gap-2 gap-md-3']"
-            xl="3"
-            lg="6">
-            <template v-slot:input>
-                <button type="button" class="btn btn-info-1 waves-effect" @click="listEntity({})" :disabled="lists.entity.extras.loading">
-                    <i class="fa fa-search"></i>
-                    <span class="ms-2">Buscar</span>
-                </button>
-            </template>
-        </InputSlot>
-    </div>
-    <div class="table-responsive">
-        <table class="table table-hover">
+    <section class="br-filter-bar br-sales-list__filters">
+        <div class="row align-items-end g-2">
+            <InputSlot hasDiv title="Sucursal" :titleClass="[config.forms.classes.title]" xl="3" lg="4">
+                <template #input>
+                    <v-select
+                        v-model="lists.entity.filters.branch"
+                        :options="branches"
+                        :class="config.forms.classes.select2"
+                        :clearable="true"
+                        :searchable="branches.length > 6"
+                        append-to-body
+                        placeholder="Todas las sucursales">
+                        <template #selected-option="{ label }">
+                            <span class="br-select-selected-text" :title="label">{{ label }}</span>
+                        </template>
+                    </v-select>
+                </template>
+            </InputSlot>
+
+            <InputSlot hasDiv title="Serie" :titleClass="[config.forms.classes.title]" xl="3" lg="4">
+                <template #input>
+                    <v-select
+                        v-model="lists.entity.filters.serie"
+                        :options="series"
+                        :class="config.forms.classes.select2"
+                        :clearable="true"
+                        :searchable="false"
+                        append-to-body
+                        placeholder="Todas las series">
+                        <template #option="{ data }">
+                            <span v-text="`${data?.legible_serie} - ${data?.document_type?.name}`" class="d-block fw-bold"></span>
+                            <small v-text="data?.branch?.name" class="d-block"></small>
+                        </template>
+                        <template #selected-option="{ label }">
+                            <span class="br-select-selected-text" :title="label">{{ label }}</span>
+                        </template>
+                    </v-select>
+                </template>
+            </InputSlot>
+
+            <InputText
+                v-model="lists.entity.filters.sequential"
+                @enterKeyPressed="listEntity({})"
+                hasDiv
+                title="Secuencia"
+                :titleClass="[config.forms.classes.title]"
+                xl="2"
+                lg="4"/>
+
+            <InputDate
+                v-model="lists.entity.filters.start_date"
+                @enterKeyPressed="listEntity({})"
+                hasDiv
+                title="Desde"
+                :titleClass="[config.forms.classes.title]"
+                :max="maxIssueDate"
+                xl="2"
+                lg="6"/>
+
+            <InputDate
+                v-model="lists.entity.filters.end_date"
+                @enterKeyPressed="listEntity({})"
+                hasDiv
+                title="Hasta"
+                :titleClass="[config.forms.classes.title]"
+                :max="maxIssueDate"
+                xl="2"
+                lg="6"/>
+
+            <InputSlot hasDiv title="Cliente" :titleClass="[config.forms.classes.title]" xl="4" lg="6">
+                <template #input>
+                    <v-select
+                        v-model="lists.entity.filters.holder"
+                        :options="holders"
+                        :class="config.forms.classes.select2"
+                        :clearable="true"
+                        append-to-body
+                        placeholder="Todos los clientes">
+                        <template #option="{ label }">
+                            <span v-text="truncate({value: label, length: 50})" class="d-block"></span>
+                        </template>
+                        <template #selected-option="{ label }">
+                            <span class="br-select-selected-text" :title="label">{{ label }}</span>
+                        </template>
+                    </v-select>
+                </template>
+            </InputSlot>
+
+            <InputSlot hasDiv title="Estado" :titleClass="[config.forms.classes.title]" xl="3" lg="6">
+                <template #input>
+                    <v-select
+                        v-model="lists.entity.filters.status"
+                        :options="statuses"
+                        :class="config.forms.classes.select2"
+                        :clearable="true"
+                        :searchable="false"
+                        append-to-body
+                        placeholder="Todos los estados"/>
+                </template>
+            </InputSlot>
+
+            <InputSlot
+                hasDiv
+                :isInputGroup="false"
+                :divInputClass="['br-filter-bar__actions']"
+                xl="5"
+                lg="6">
+                <template #input>
+                    <button type="button" class="br-btn br-btn-sm br-btn-action-search" @click="listEntity({})" :disabled="lists.entity.extras.loading">
+                        <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+                        <span>Buscar</span>
+                    </button>
+                    <button type="button" class="br-btn br-btn-sm br-btn-outline-secondary" @click="clearFilters" :disabled="lists.entity.extras.loading">
+                        <i class="fa-solid fa-eraser" aria-hidden="true"></i>
+                        <span>Limpiar</span>
+                    </button>
+                </template>
+            </InputSlot>
+        </div>
+    </section>
+
+    <div class="table-responsive br-entity-table-wrap">
+        <table class="table br-entity-table mb-0">
             <thead>
-                <tr class="text-center align-middle">
-                    <th class="bg-secondary text-white fw-semibold min-w-150px" style="width: 20%;">DOCUMENTO</th>
-                    <th class="bg-secondary text-white fw-semibold min-w-150px" style="width: 25%;">CLIENTE</th>
-                    <th class="bg-secondary text-white fw-semibold min-w-150px" style="width: 15%;">FECHA DE EMISIÓN</th>
-                    <th class="bg-secondary text-white fw-semibold min-w-150px" style="width: 15%;">TOTAL</th>
-                    <th class="bg-secondary text-white fw-semibold min-w-150px" style="width: 15%;">ESTADO</th>
-                    <th class="bg-secondary text-white fw-semibold min-w-150px" style="width: 10%;">ACCIONES</th>
+                <tr>
+                    <th style="width: 18%;">Documento</th>
+                    <th style="width: 22%;">Cliente</th>
+                    <th style="width: 16%;">Sucursal</th>
+                    <th style="width: 14%;">Emisión</th>
+                    <th class="text-end" style="width: 12%;">Total</th>
+                    <th style="width: 10%;">Estado</th>
+                    <th class="text-center" style="width: 8%;"><span class="visually-hidden">Acciones</span></th>
                 </tr>
             </thead>
-            <tbody class="table-border-bottom-0 bg-white">
-                <template v-if="lists.entity.extras.loading">
-                    <tr class="text-center">
-                        <td colspan="99" class="py-4">
-                            <Loader/>
+            <tbody>
+                <tr v-if="lists.entity.extras.loading" class="text-center">
+                    <td colspan="7" class="py-4">
+                        <Loader/>
+                    </td>
+                </tr>
+                <template v-else-if="lists.entity.records.total > 0">
+                    <tr v-for="record in lists.entity.records.data" :key="record.id" class="text-center">
+                        <td class="text-start">
+                            <strong class="br-entity-primary" v-text="record.serie_sequential"></strong>
+                            <span class="br-entity-table__meta" v-text="record.serie?.document_type?.name"></span>
+                        </td>
+                        <td class="text-start">
+                            <strong class="br-entity-primary" v-text="record.holder?.name || 'Cliente no identificado'"></strong>
+                            <span class="br-entity-table__meta" v-text="record.holder?.document_number || 'Sin documento'"></span>
+                        </td>
+                        <td class="text-start">
+                            <strong class="br-entity-primary" v-text="record.serie?.branch?.name || 'Sin sucursal'"></strong>
+                            <span class="br-entity-table__meta" v-text="record.serie?.legible_serie || record.serie?.serie"></span>
+                        </td>
+                        <td>
+                            <span v-text="legibleFormatDate({dateString: record.issue_date, type: 'weekday_date', separator: '/'})" class="d-block fw-semibold"></span>
+                            <span
+                                :class="['br-sales-relative-pill', { 'br-sales-relative-pill--today': record.diff_days_issue_date === 0 }]"
+                                v-text="diffDaysLegible({diff: record.diff_days_issue_date})"></span>
+                        </td>
+                        <td class="text-end align-middle pe-3" title="Total">
+                            <span class="br-amount-inline">
+                                <span class="br-amount-inline__sign" v-text="record.currency?.sign ?? ''"></span>
+                                <span class="br-amount-inline__amount" v-text="separatorNumber(record.total)"></span>
+                            </span>
+                        </td>
+                        <td>
+                            <StatusBadge :status="record.status" :formatted-status="record.formatted_status"/>
+                        </td>
+                        <td>
+                            <InputSlot hasDiv :isInputGroup="false" :divInputClass="['br-table-actions']" xl="12" lg="12">
+                                <template #input>
+                                    <button
+                                        type="button"
+                                        class="br-icon-action br-icon-action-info"
+                                        data-bs-toggle="tooltip"
+                                        data-bs-placement="top"
+                                        title="Ver acciones"
+                                        :aria-label="`Ver acciones de ${record.serie_sequential}`"
+                                        @click="modalActionsEntity({record})">
+                                        <i class="fa-solid fa-gear" aria-hidden="true"></i>
+                                    </button>
+                                </template>
+                            </InputSlot>
                         </td>
                     </tr>
                 </template>
-                <template v-else>
-                    <template v-if="lists.entity.records.total > 0">
-                        <tr v-for="record in lists.entity.records.data" :key="record.id" class="text-center">
-                            <td class="text-start">
-                                <span v-text="record.serie_sequential" class="fw-bold d-block"></span>
-                                <small v-text="record.serie?.document_type?.name" class="d-block"></small>
-                            </td>
-                            <td class="text-start">
-                                <span v-text="record.holder?.name" class="fw-bold d-block"></span>
-                                <small v-text="record.holder?.document_number" class="d-block"></small>
-                            </td>
-                            <td>
-                                <span v-text="legibleFormatDate({dateString: record.issue_date, type: 'weekday_date', separator: '/'})" class="d-block fw-semibold"></span>
-                                <span
-                                    :class="['br-sales-relative-pill', { 'br-sales-relative-pill--today': record.diff_days_issue_date === 0 }]"
-                                    v-text="diffDaysLegible({diff: record.diff_days_issue_date})"></span>
-                            </td>
-                            <td class="text-end align-middle pe-3" title="Total">
-                                <span class="br-amount-inline">
-                                    <span class="br-amount-inline__sign" v-text="record.currency?.sign ?? ''"></span>
-                                    <span class="br-amount-inline__amount" v-text="separatorNumber(record.total)"></span>
-                                </span>
-                            </td>
-                            <td>
-                                <StatusBadge :status="record.status" :formatted-status="record.formatted_status"/>
-                            </td>
-                            <td>
-                                <InputSlot
-                                    hasDiv
-                                    :isInputGroup="false"
-                                    :divInputClass="['d-flex flex-wrap justify-content-center gap-2 gap-md-1']"
-                                    xl="12"
-                                    lg="12">
-                                    <template v-slot:input>
-                                        <button type="button" class="br-btn br-btn-sm br-btn-secondary" @click="modalActionsEntity({record})">
-                                            <i class="fa fa-gear"></i>
-                                            <span>Acciones</span>
-                                        </button>
-                                    </template>
-                                </InputSlot>
-                            </td>
-                        </tr>
-                    </template>
-                    <template v-else>
-                        <tr>
-                            <td class="text-center" colspan="99">
-                                <WithoutData type="image"/>
-                            </td>
-                        </tr>
-                    </template>
-                </template>
+                <tr v-else>
+                    <td class="text-center" colspan="7">
+                        <WithoutData type="image"/>
+                    </td>
+                </tr>
             </tbody>
         </table>
     </div>
+
     <div class="d-flex justify-content-center" v-if="!lists.entity.extras.loading && lists.entity.records?.total > 0">
         <Paginator :links="lists.entity.records.links" @clickPage="listEntity"/>
     </div>
@@ -257,15 +284,11 @@ export default {
                         loading: false,
                         route: Requests.config({entity: "sales", type: "list"})
                     },
-                    filters: {
-                        serie: null,
-                        sequential: "",
-                        issue_date: "",
-                        holder: null,
-                        status: null
-                    },
+                    filters: this.defaultFilters(),
                     records: {
-                        total: 0
+                        total: 0,
+                        data: [],
+                        links: []
                     }
                 }
             },
@@ -309,7 +332,17 @@ export default {
         };
     },
     methods: {
-        // Init
+        defaultFilters() {
+            return {
+                branch: null,
+                serie: null,
+                sequential: "",
+                start_date: "",
+                end_date: "",
+                holder: null,
+                status: null
+            };
+        },
         async initParams({}) {
 
             let initParams = await Requests.get({route: this.config.entity.routes.initParams, data: {page: "list"}, showAlert: true});
@@ -330,16 +363,42 @@ export default {
             });
 
         },
-        // Entity forms
         async listEntity({url = null}) {
 
-            let filters = Utils.cloneJson(this.lists.entity.filters);
-            const filterJson = {serie_id: filters?.serie?.code, sequential: filters?.sequential, issue_date: filters.issue_date, holder_id: filters?.holder?.code, status: filters?.status?.code};
+            const filterJson = this.requestFilters();
+            let requestUrl = url || this.lists.entity.extras.route;
+            let requestData = filterJson;
+
+            if(url) {
+                const urlObj = new URL(url, window.location.origin);
+                Object.entries(filterJson).forEach(([key, value]) => {
+                    if(this.isDefined({value}) && !urlObj.searchParams.has(key)) urlObj.searchParams.set(key, value);
+                });
+                requestUrl = `${urlObj.pathname}${urlObj.search}`;
+                requestData = {};
+            }
 
             this.lists.entity.extras.loading = true;
-            this.lists.entity.records        = (await Requests.get({route: url || this.lists.entity.extras.route, data: {...filterJson}}))?.data;
+            this.lists.entity.records = (await Requests.get({route: requestUrl, data: requestData}))?.data || {total: 0, data: [], links: []};
             this.lists.entity.extras.loading = false;
 
+        },
+        requestFilters() {
+            const filters = Utils.cloneJson(this.lists.entity.filters);
+
+            return {
+                branch_id: filters?.branch?.code,
+                serie_id: filters?.serie?.code,
+                sequential: filters?.sequential,
+                start_date: filters?.start_date,
+                end_date: filters?.end_date,
+                holder_id: filters?.holder?.code,
+                status: filters?.status?.code
+            };
+        },
+        clearFilters() {
+            this.lists.entity.filters = this.defaultFilters();
+            this.listEntity({});
         },
         modalActionsEntity({record = null}) {
 
@@ -398,7 +457,7 @@ export default {
                             Alerts.toastrs({type: "success", subtitle: cancel?.data?.msg});
                             Alerts.swals({show: false});
 
-                            el.listEntity({})
+                            el.listEntity({});
 
                         }else {
 
@@ -407,13 +466,9 @@ export default {
 
                         }
 
-                    }else if(result.isDismissed) {
-
-                        //
-
                     }
 
-                })
+                });
 
             }else {
 
@@ -424,23 +479,17 @@ export default {
             Alerts.tooltips({show: false});
 
         },
-        // Forms utils
         clearForm({functionName}) {
 
             switch(functionName) {
                 case "createUpdateEntity":
-                    //
                     break;
             }
 
         },
         formErrors({functionName, type = "clear", errors = []}) {
 
-            if(["createUpdateEntity"].includes(functionName)) {
-
-                //
-
-            }else if(["cancelEntity"].includes(functionName)) {
+            if(["cancelEntity"].includes(functionName)) {
 
                 this.forms.entity.createUpdate.extras.modals.actions.errors = ["set"].includes(type) ? errors : [];
 
@@ -453,11 +502,7 @@ export default {
                 bool: true
             };
 
-            if(["createUpdateEntity"].includes(functionName)) {
-
-                //
-
-            }else if(["cancelEntity"].includes(functionName)) {
+            if(["cancelEntity"].includes(functionName)) {
 
                 result.sale = [];
 
@@ -473,7 +518,6 @@ export default {
             return result;
 
         },
-        // Others
         isDefined({value}) {
 
             return Utils.isDefined({value});
@@ -543,13 +587,24 @@ export default {
             return DateUtils.getCurrentDate("date");
 
         },
+        branches() {
+
+            return (this.options?.branches?.records ?? []).map(branch => ({
+                code: branch.id,
+                label: branch.name,
+                data: branch
+            }));
+
+        },
         series: function() {
 
             let series = [];
-
+            const selectedBranchId = this.lists.entity.filters.branch?.code;
             let branches = (this.options?.branches?.records ?? []);
 
             for(let branch of branches) {
+
+                if(selectedBranchId && Number(branch.id) !== Number(selectedBranchId)) continue;
 
                 for(let branchSerie of branch.series) {
 
@@ -564,13 +619,20 @@ export default {
         },
         holders: function() {
 
-            return this.options?.holders?.records.map(e => ({code: e.id, label: `${e.document_number} - ${e.name}`, data: e}));
+            return (this.options?.holders?.records ?? []).map(e => ({code: e.id, label: `${e.document_number} - ${e.name}`, data: e}));
 
         },
         statuses: function() {
 
-            return this.options?.salesHeader?.statuses.map(e => ({code: e.code, label: e.label}));
+            return (this.options?.salesHeader?.statuses ?? []).map(e => ({code: e.code, label: e.label}));
 
+        }
+    },
+    watch: {
+        "lists.entity.filters.branch": function(value) {
+            const serie = this.lists.entity.filters.serie;
+            if(!value?.code || !serie?.data?.branch?.id) return;
+            if(Number(serie.data.branch.id) !== Number(value.code)) this.lists.entity.filters.serie = null;
         }
     }
 };

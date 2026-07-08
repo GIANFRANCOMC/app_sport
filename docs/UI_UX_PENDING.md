@@ -49,7 +49,6 @@ Cuando una pantalla queda implementada, responsive, accesible, con errores por c
 ## Ventas, POS y Caja
 
 - Nueva venta: terminar la visualización de tributos opcionales, cantidad para cargos fijos y pagos mixtos en todas las variantes legacy.
-- Listado de ventas: rango de fechas, sucursal y detalle de reposición al cancelar.
 - Caja: separar Cajas, Aperturas y cierres, Movimientos y Resumen en páginas independientes con filtros y exportación.
 - Cierre principal: conteo físico de inventario, diferencias y observaciones antes de confirmar.
 
@@ -64,7 +63,7 @@ Cuando una pantalla queda implementada, responsive, accesible, con errores por c
 
 ## Personal, Perfiles y Seguridad
 
-- Perfiles: duplicar perfil, auditoría, usuarios afectados y advertencia al retirar el último administrador.
+- Perfiles: auditoría, usuarios afectados y advertencia al retirar el último administrador.
 - Colaboradores: contraseña en flujo separado, bloqueo sin eliminación y auditoría sensible.
 - Asistencia laboral: horarios, pausas, tardanzas, horas ordinarias/extra, correcciones y exportación de nómina.
 - Biométricos: rotación de credenciales, secreto visible una sola vez, último contacto y eventos fallidos.
@@ -78,7 +77,5 @@ Cuando una pantalla queda implementada, responsive, accesible, con errores por c
 
 ## Reportes
 
-- Reportes: formulario estándar de parámetros, nombres de archivo, progreso y mensajes por límites.
 - Series: auditoría, exportación e indicadores de saltos de correlativo.
-- Reportes financieros: consumir `/reports/settlements` para tributos y métodos de pago por alcance.
 - Mi empresa/Sucursales: separar configuración pública, fiscal y operativa.
