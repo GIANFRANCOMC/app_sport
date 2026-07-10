@@ -315,6 +315,7 @@ const ENTITY_SPECIAL_ROUTES = {
         cancel: "cancel"
     },
     tracking_attendances: {
+        export: "export",
         cancel: "cancel",
         qrCamera: "qrCamera",
         qrScanner: "qrScanner"
@@ -351,6 +352,10 @@ const ENTITY_SPECIAL_ROUTES = {
         open: "open",
         close: "close",
         movement: "movement"
+    },
+    branches: {
+        seriesAudit: "series/audit",
+        seriesAuditExport: "series/audit/export"
     },
     user_attendances: {
         weekly: "weekly-summary",

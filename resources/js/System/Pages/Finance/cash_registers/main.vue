@@ -5,7 +5,8 @@
         <div class="br-cash__context">
             <div class="br-cash__heading">
                 <p class="br-cash__eyebrow mb-1">Operación de caja</p>
-                <h1 class="br-cash__title mb-0">Caja</h1>
+                <h1 class="br-cash__title mb-0">{{ activeViewMeta.label }}</h1>
+                <p class="br-cash__subtitle mb-0">{{ activeViewMeta.description }}</p>
             </div>
             <div class="br-cash__selector">
                 <label class="form-label">Caja de trabajo</label>
@@ -15,6 +16,7 @@
                     class="bg-white"
                     :clearable="false"
                     :searchable="false"
+                    append-to-body
                     placeholder="Seleccione una caja"
                     @option:selected="refreshAll"/>
             </div>
@@ -88,7 +90,7 @@
             <Loader v-if="loading.registers"/>
             <div v-else-if="registers.length" class="table-responsive">
                 <table class="table br-entity-table mb-0">
-                    <thead>
+                    <thead class="br-table-header-surface">
                         <tr>
                             <th>Caja</th>
                             <th>Sucursal</th>
@@ -146,7 +148,7 @@
             <Loader v-if="loading.sessions"/>
             <div v-else-if="sessions.data?.length" class="table-responsive">
                 <table class="table br-entity-table mb-0">
-                    <thead>
+                    <thead class="br-table-header-surface">
                         <tr>
                             <th>Caja</th>
                             <th>Apertura</th>
@@ -205,7 +207,7 @@
             </div>
             <div v-if="summary.payments.length" class="table-responsive mt-3">
                 <table class="table br-entity-table mb-0">
-                    <thead>
+                    <thead class="br-table-header-surface">
                         <tr>
                             <th>Método de pago</th>
                             <th class="text-end">Importe</th>
@@ -225,7 +227,7 @@
             <Loader v-if="loading.movements"/>
             <div v-else-if="movements.data?.length" class="table-responsive">
                 <table class="table br-entity-table mb-0">
-                    <thead>
+                    <thead class="br-table-header-surface">
                         <tr>
                             <th>Fecha</th>
                             <th>Caja</th>
@@ -491,6 +493,13 @@ const ROUTE_VIEW_MAP = {
     summary: "summary"
 };
 
+const VIEW_ROUTE_MAP = {
+    registers: "/cash_registers/page/registers",
+    sessions: "/cash_registers/page/sessions",
+    movements: "/cash_registers/page/movements",
+    summary: "/cash_registers/page/summary"
+};
+
 const VIEW_MENU_MAP = {
     registers: "menu-cash-registers",
     sessions: "menu-cash-sessions",
@@ -576,6 +585,9 @@ export default {
         },
         paymentMethodOptions() {
             return this.options.paymentMethods.map(method => ({...method, label: method.name}));
+        },
+        activeViewMeta() {
+            return this.views.find(view => view.id === this.activeView) || this.views[0];
         }
     },
     mounted() {
@@ -623,9 +635,19 @@ export default {
             return this.getRegisters();
         },
         setView(view) {
+            if(this.activeView === view) return;
+
             this.activeView = view;
             Utils.navbarItem(this.activeMenuId(), {addClass: "active"});
+            this.updateBrowserUrl(view);
             this.$nextTick(() => this.refreshActiveView());
+        },
+        updateBrowserUrl(view) {
+            const path = VIEW_ROUTE_MAP[view];
+
+            if(path && window.location.pathname !== path) {
+                window.history.pushState({}, "", path);
+            }
         },
         baseFilters() {
             return {
@@ -803,7 +825,7 @@ export default {
             await this.refreshAll();
         },
         async downloadMovements() {
-            Alerts.loading?.({message: "Preparando descarga"});
+            Alerts.swals({type: "loading", message: "Preparando descarga"});
 
             const result = await Requests.download({
                 route: this.config.routes.export,
@@ -812,8 +834,7 @@ export default {
                 showAlert: true
             });
 
-            Alerts.close?.();
-            window.Swal?.close?.();
+            Alerts.swals({show: false});
 
             if(result.bool) {
                 Alerts.toastrs({type: "success", subtitle: "Descarga preparada correctamente."});

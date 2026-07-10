@@ -59,6 +59,8 @@ La vista se monta desde:
 - Accion `Registrar movimiento`: permite ingresos, salidas y ajustes manuales sobre una caja abierta, y solo se muestra dentro de la sección **Movimientos**.
 - Accion `Descargar`: exporta movimientos filtrados en CSV compatible con Excel.
 - Modales con `data-bs-backdrop="static"` y `data-bs-keyboard="false"` para evitar cierre accidental.
+- Cada acceso de menu abre la vista correspondiente mediante `/cash_registers/page/{registers|sessions|movements|summary}`; al cambiar de seccion dentro de la pantalla se actualiza la URL con `history.pushState` sin recargar.
+- La cabecera de Caja es compacta: muestra la seccion activa y prioriza el selector de caja de trabajo, manteniendo el contexto operativo visible.
 
 ## Backend implementado
 

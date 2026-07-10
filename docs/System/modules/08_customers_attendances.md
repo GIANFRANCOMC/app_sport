@@ -65,3 +65,10 @@ Para entradas biométricas, el dispositivo y `device_user_id` deben resolver una
 - `biometric_duplicate_tolerance_seconds` evita duplicados en la ventana configurada.
 - `attendance_corrections` conserva valor anterior, valor solicitado, motivo, solicitante, revisor y decisión.
 - `GET /tracking_attendances/export` reutiliza filtros y alcance de sucursal del listado, descarga CSV y exige reducir el rango si supera 10 000 registros.
+
+## Estado UI Implementado
+
+- El listado muestra el origen del registro: dispositivo biometrico, fuente informada o registro manual.
+- Se agrego exportacion desde la vista con los filtros activos del listado.
+- Cada asistencia activa o finalizada permite solicitar una correccion auditada con fechas opcionales y motivo obligatorio.
+- Cuando una asistencia tiene correcciones, el listado muestra el estado mas reciente de esa solicitud.

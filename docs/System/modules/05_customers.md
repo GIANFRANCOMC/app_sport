@@ -41,3 +41,9 @@ Administra los clientes de una empresa. Un cliente puede comprar, recibir membre
 - `RegisterCustomerFingerprintRequest` valida `biometric_device_id`, `device_user_id` y `finger_index` antes de registrar una huella.
 - Si no se envia `device_user_id`, el backend reserva el siguiente disponible para el dispositivo.
 - La combinacion `device_user_id + finger_index` no puede repetirse dentro del mismo dispositivo.
+
+## Estado UI Implementado
+
+- El formulario de cliente muestra un bloque opcional de contacto de emergencia y salud.
+- El bloque registra contacto, celular de emergencia y observaciones medicas sin mezclar estos datos con informacion comercial.
+- Las tarjetas de clientes muestran contacto de emergencia y observaciones medicas solo cuando existen, manteniendo placeholders discretos cuando no hay informacion.

@@ -1,4 +1,4 @@
-<template>
+﻿<template>
     <Breadcrumb :list="breadcrumbTitles"/>
 
     <!-- Content -->
@@ -13,7 +13,7 @@
                 <template v-if="isDefined({value: customerCurrent?.customer})">
                     <button type="button" class="btn btn-primary btn-sm waves-effect" @click="modalCreateUpdateEntity({})">
                         <i class="fa fa-search"></i>
-                        <span class="ms-2">Realizar otra búsqueda</span>
+                        <span class="ms-2">Realizar otra bÃºsqueda</span>
                     </button>
                     <button type="button" class="btn btn-info-1 btn-sm waves-effect" @click="getTrackingCustomers({refresh: true})">
                         <i class="fa fa-sync"></i>
@@ -33,39 +33,49 @@
         <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 ps-1 ps-md-3 pe-0 pe-md-3" v-if="isDefined({value: customerCurrent?.customer})">
             <Timeline :data="customerCurrent ?? {}">
                 <template v-slot:statisticsPrepend>
-                    <div class="col-xl-6 col-lg-6 col-md-12 col-sm-12">
-                        <div class="d-flex justify-content-start align-items-center h-100 text-start">
-                            <div class="w-100">
-                                <div>
-                                    👤 <span class="fs-4 fw-bold" v-text="customerCurrent?.customer?.name ?? ''"></span>
-                                </div>
-                                <div>
-                                    <span v-text="customerCurrent?.customer?.identity_document_type?.name ?? ''" class="fw-bold colon-at-end"></span>
-                                    <span class="fw-bold ms-1" v-text="customerCurrent?.customer?.document_number ?? ''"></span>
-                                </div>
-                                <span v-text="'Periodo: '+periodTypeCurrent" class="text-primary fw-semibold"></span>
+                    <div class="col-xl-5 col-lg-5 col-md-12 col-sm-12">
+                        <div class="br-customer-tracking-profile">
+                            <span class="br-customer-tracking-profile__avatar">
+                                <i class="fa-solid fa-user" aria-hidden="true"></i>
+                            </span>
+                            <div class="flex-grow-1 flex-min-w-0">
+                                <span class="br-customer-tracking-profile__name" v-text="customerCurrent?.customer?.name ?? ''"></span>
+                                <span class="br-customer-tracking-profile__meta">
+                                    <strong v-text="customerCurrent?.customer?.identity_document_type?.name ?? ''"></strong>
+                                    <span v-text="customerCurrent?.customer?.document_number ?? ''"></span>
+                                </span>
+                                <span class="br-customer-tracking-profile__period" v-text="periodTypeCurrent"></span>
                             </div>
                         </div>
                     </div>
-                    <div class="col-xl-6 col-lg-6 col-md-12 col-sm-12">
-                        <div class="d-flex justify-content-start align-items-center h-100 text-start">
-                            <div class="w-100" v-if="(customerCurrent?.extras?.options?.information ?? []).some(e => ['sales', 'subscriptions', 'attendances'].includes(e))">
-                                <span class="fw-bold colon-at-end">📅 Membresía vigente hasta</span>
-                                <template v-if="(customerCurrent?.functions?.subscription_end_dates ?? []).length > 0">
-                                    <ul>
-                                        <li v-for="(record, indexRecord) in (customerCurrent?.functions?.subscription_end_dates ?? [])" :key="indexRecord">
-                                            <span v-text="record?.branch?.name" class="colon-at-end fw-bold"></span>
-                                            <span v-text="legibleFormatDate({dateString: record?.max_end_date})" class="ms-2"></span>
-                                        </li>
-                                    </ul>
-                                </template>
-                                <template v-else>
-                                    <div class="alert alert-warning py-0 text-center">
-                                        <i class="fa fa-warning"></i>
-                                        <span class="ms-2">Sin membresías.</span>
-                                    </div>
-                                </template>
-                            </div>
+                    <div class="col-xl-7 col-lg-7 col-md-12 col-sm-12">
+                        <div class="br-customer-tracking-summary">
+                            <article v-for="item in trackingSummaryCards" :key="item.key" class="br-customer-tracking-summary__item">
+                                <span :class="['br-customer-tracking-summary__icon', item.tone]">
+                                    <i :class="item.icon" aria-hidden="true"></i>
+                                </span>
+                                <span class="br-customer-tracking-summary__label" v-text="item.label"></span>
+                                <strong class="br-customer-tracking-summary__value" v-text="item.value"></strong>
+                            </article>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="br-customer-tracking-memberships" v-if="(customerCurrent?.extras?.options?.information ?? []).some(e => ['sales', 'subscriptions', 'attendances'].includes(e))">
+                            <span class="br-customer-tracking-memberships__title">
+                                <i class="fa-solid fa-calendar-check" aria-hidden="true"></i>
+                                Membresía vigente hasta
+                            </span>
+                            <template v-if="(customerCurrent?.functions?.subscription_end_dates ?? []).length > 0">
+                                <ul class="br-customer-tracking-memberships__list">
+                                    <li v-for="(record, indexRecord) in (customerCurrent?.functions?.subscription_end_dates ?? [])" :key="indexRecord">
+                                        <strong v-text="record?.branch?.name"></strong>
+                                        <span v-text="legibleFormatDate({dateString: record?.max_end_date})"></span>
+                                    </li>
+                                </ul>
+                            </template>
+                            <template v-else>
+                                <span class="br-customer-tracking-memberships__empty">Sin membresías vigentes en el periodo.</span>
+                            </template>
                         </div>
                     </div>
                 </template>
@@ -117,9 +127,29 @@
                                     placeholder="Seleccione un periodo ..."/>
                             </template>
                         </InputSlot>
+                        <template v-if="isCustomPeriodSelected">
+                            <InputDate
+                                v-model="forms.entity.createUpdate.data.startDate"
+                                hasDiv
+                                title="Fecha inicial"
+                                isRequired
+                                hasTextBottom
+                                :textBottomInfo="forms.entity.createUpdate.errors?.start_date?.[0]"
+                                xl="6"
+                                lg="6"/>
+                            <InputDate
+                                v-model="forms.entity.createUpdate.data.endDate"
+                                hasDiv
+                                title="Fecha final"
+                                isRequired
+                                hasTextBottom
+                                :textBottomInfo="forms.entity.createUpdate.errors?.end_date?.[0]"
+                                xl="6"
+                                lg="6"/>
+                        </template>
                         <InputSlot
                             hasDiv
-                            title="¿Qué deseas visualizar?"
+                            title="Â¿QuÃ© deseas visualizar?"
                             isRequired
                             :isInputGroup="false"
                             :divInputClass="['d-flex flex-wrap justify-content-center align-items-end gap-2 gap-md-3 pt-2 pt-md-2']"
@@ -135,7 +165,7 @@
                                 <div class="form-check ms-2">
                                     <label class="cursor-pointer">
                                         <input class="form-check-input" type="checkbox" value="subscriptions" v-model="forms.entity.createUpdate.data.options.information"/>
-                                        <span class="fw-bold text-secondary">Membresías</span>
+                                        <span class="fw-bold text-secondary">MembresÃ­as</span>
                                     </label>
                                 </div>
                                 <div class="form-check ms-2">
@@ -197,7 +227,7 @@ export default {
                                 default: {
                                     id: Utils.uuid(),
                                     titles: {
-                                        default: "Búsqueda"
+                                        default: "BÃºsqueda"
                                     }
                                 }
                             }
@@ -205,6 +235,8 @@ export default {
                         data: {
                             customer: null,
                             periodType: null,
+                            startDate: "",
+                            endDate: "",
                             options: {
                                 information: []
                             }
@@ -213,6 +245,8 @@ export default {
                             customers: {},
                             customerCurrent: null,
                             periodTypeCurrent: null,
+                            startDateCurrent: null,
+                            endDateCurrent: null,
                             optionsCurrent: null
                         },
                         errors: {}
@@ -315,6 +349,8 @@ export default {
                 const response = await Utils.getTrackingCustomers({
                     customer: {id: history.customerCurrent.code},
                     period_type: history.periodTypeCurrent.code,
+                    start_date: history.startDateCurrent,
+                    end_date: history.endDateCurrent,
                     options: history.optionsCurrent
                 });
 
@@ -338,6 +374,8 @@ export default {
 
             if(!validateForm?.bool) {
 
+                this.forms.entity.createUpdate.errors = validateForm;
+
                 Alerts.generateAlert({
                     messages: Utils.getErrors({errors: validateForm}),
                     msgContent: `<div class="fw-semibold mb-2">${this.config.messages.errorSearchValidate}</div>`
@@ -346,6 +384,8 @@ export default {
                 return;
 
             }
+
+            this.forms.entity.createUpdate.errors = {};
 
             Alerts.modals({
                 type: "hide",
@@ -359,6 +399,8 @@ export default {
                 const response = await Utils.getTrackingCustomers({
                     customer: {id: form.customer.code},
                     period_type: form.periodType.code,
+                    start_date: form.startDate,
+                    end_date: form.endDate,
                     options: form.options
                 });
 
@@ -369,6 +411,8 @@ export default {
                     history.customers[form.customer.code] = response?.data?.tracking;
                     history.customerCurrent   = form.customer;
                     history.periodTypeCurrent = form.periodType;
+                    history.startDateCurrent  = form.startDate;
+                    history.endDateCurrent    = form.endDate;
                     history.optionsCurrent    = form.options;
 
                 }else {
@@ -408,6 +452,8 @@ export default {
                 bool: true,
                 customer: [],
                 period_type: [],
+                start_date: [],
+                end_date: [],
                 options_information: []
             };
 
@@ -433,10 +479,35 @@ export default {
 
             }
 
+            if(form?.periodType?.code === "custom") {
+
+                if(!this.isDefined({value: form.startDate})) {
+
+                    result.start_date.push("Debe seleccionar la fecha inicial.");
+                    result.bool = false;
+
+                }
+
+                if(!this.isDefined({value: form.endDate})) {
+
+                    result.end_date.push("Debe seleccionar la fecha final.");
+                    result.bool = false;
+
+                }
+
+                if(this.isDefined({value: form.startDate}) && this.isDefined({value: form.endDate}) && form.startDate > form.endDate) {
+
+                    result.end_date.push("La fecha final no puede ser menor que la fecha inicial.");
+                    result.bool = false;
+
+                }
+
+            }
+
             // Validate options information
             if((form?.options?.information ?? []).length === 0) {
 
-                result.options_information.push("Debe seleccionar al menos un tipo de información.");
+                result.options_information.push("Debe seleccionar al menos un tipo de informaciÃ³n.");
                 result.bool = false;
 
             }
@@ -457,6 +528,16 @@ export default {
 
             return Utils.legibleFormatDate({dateString, type});
 
+        },
+        separatorNumber(value) {
+
+            return Utils.separatorNumber(value || 0);
+
+        },
+        formatCurrency(value) {
+
+            return `S/ ${this.separatorNumber(value)}`;
+
         }
     },
     computed: {
@@ -473,16 +554,16 @@ export default {
         periodTypes: function() {
 
             return [
-                {code: "last_1_days", label: "Último día"},
-                {code: "last_7_days", label: "Últimos 7 días"},
-                {code: "last_14_days", label: "Últimos 14 días"},
-                {code: "last_21_days", label: "Últimos 21 días"},
-                {code: "last_1_months", label: "Último mes"},
-                {code: "last_3_months", label: "Últimos 3 meses"},
-                {code: "last_6_months", label: "Últimos 6 meses"},
-                {code: "last_9_months", label: "Últimos 9 meses"},
-                {code: "this_year", label: "Este año"},
-                // {code: "custom", label: "Seleccionar mes y año"}
+                {code: "last_1_days", label: "Ãšltimo dÃ­a"},
+                {code: "last_7_days", label: "Ãšltimos 7 dÃ­as"},
+                {code: "last_14_days", label: "Ãšltimos 14 dÃ­as"},
+                {code: "last_21_days", label: "Ãšltimos 21 dÃ­as"},
+                {code: "last_1_months", label: "Ãšltimo mes"},
+                {code: "last_3_months", label: "Ãšltimos 3 meses"},
+                {code: "last_6_months", label: "Ãšltimos 6 meses"},
+                {code: "last_9_months", label: "Ãšltimos 9 meses"},
+                {code: "this_year", label: "Este aÃ±o"},
+                {code: "custom", label: "Rango personalizado"}
             ];
 
         },
@@ -498,9 +579,67 @@ export default {
 
             return found?.label ?? "No identificado";
 
+        },
+        isCustomPeriodSelected: function() {
+
+            return this.forms.entity.createUpdate.data.periodType?.code === "custom";
+
+        },
+        trackingSummary: function() {
+
+            return this.customerCurrent?.summary ?? {};
+
+        },
+        trackingSummaryCards: function() {
+
+            const summary = this.trackingSummary;
+
+            return [
+                {
+                    key: "active_sales_total",
+                    label: "Ventas activas",
+                    value: this.formatCurrency(summary.active_sales_total ?? 0),
+                    icon: "fa-solid fa-receipt",
+                    tone: "is-primary"
+                },
+                {
+                    key: "canceled_sales_total",
+                    label: "Ventas anuladas",
+                    value: this.formatCurrency(summary.canceled_sales_total ?? 0),
+                    icon: "fa-solid fa-ban",
+                    tone: "is-danger"
+                },
+                {
+                    key: "attendances",
+                    label: "Asistencias",
+                    value: summary.attendances ?? 0,
+                    icon: "fa-solid fa-person-walking-arrow-right",
+                    tone: "is-success"
+                },
+                {
+                    key: "active_subscriptions",
+                    label: "Membresías activas",
+                    value: summary.active_subscriptions ?? 0,
+                    icon: "fa-solid fa-id-card",
+                    tone: "is-secondary"
+                }
+            ];
+
         }
     },
     watch: {
+        "forms.entity.createUpdate.data.periodType": function(newValue) {
+
+            if(newValue?.code !== "custom") {
+
+                this.forms.entity.createUpdate.data.startDate = "";
+                this.forms.entity.createUpdate.data.endDate = "";
+                this.forms.entity.createUpdate.errors.start_date = [];
+                this.forms.entity.createUpdate.errors.end_date = [];
+
+            }
+
+        },
         "forms.entity.createUpdate.data.customer": function(newValue, oldValue) {
 
             //

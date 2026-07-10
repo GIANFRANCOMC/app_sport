@@ -20,6 +20,76 @@
         @search="handleSearch"
         @add="openModal()"/>
 
+    <section class="br-branch-audit-toolbar">
+        <button
+            type="button"
+            class="br-btn br-btn-sm br-btn-action-export"
+            data-bs-toggle="tooltip"
+            title="Auditar correlativos emitidos y anulados"
+            @click="toggleSeriesAudit">
+            <i class="fa-solid fa-list-check" aria-hidden="true"></i>
+            <span>Auditoría de series</span>
+        </button>
+        <button
+            v-if="seriesAudit.visible"
+            type="button"
+            class="br-btn br-btn-sm br-btn-action-download"
+            data-bs-toggle="tooltip"
+            title="Descargar auditoría de correlativos"
+            :disabled="seriesAudit.loading"
+            @click="downloadSeriesAudit">
+            <i class="fa-solid fa-file-excel" aria-hidden="true"></i>
+            <span class="d-inline d-lg-none">Descargar</span>
+        </button>
+    </section>
+
+    <section v-if="seriesAudit.visible" class="br-entity-list br-branch-series-audit">
+        <div class="br-branch-series-audit__summary">
+            <span>
+                <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
+                Bitácora de emisiones, anulaciones y saltos de correlativo.
+            </span>
+            <strong :class="seriesAudit.gaps.length ? 'text-warning' : 'text-success'">
+                {{ seriesAudit.gaps.length ? `${seriesAudit.gaps.length} saltos detectados` : 'Sin saltos detectados' }}
+            </strong>
+        </div>
+        <Loader v-if="seriesAudit.loading"/>
+        <div v-else-if="seriesAudit.records.total > 0" class="table-responsive">
+            <table class="table br-entity-table mb-0">
+                <thead class="br-table-header-surface">
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Sucursal</th>
+                        <th>Serie</th>
+                        <th class="text-end">Correlativo</th>
+                        <th>Acción</th>
+                        <th>Origen</th>
+                        <th>Responsable</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="record in seriesAudit.records.data" :key="record.id">
+                        <td>{{ formatDateTime(record.occurred_at) }}</td>
+                        <td>{{ record.branch_name || '-' }}</td>
+                        <td>
+                            <strong class="br-entity-primary">{{ record.serie_code }}{{ record.serie_number }}</strong>
+                        </td>
+                        <td class="text-end fw-bold">{{ record.sequential }}</td>
+                        <td>
+                            <span :class="['br-status-label', record.action === 'issued' ? 'br-status-active' : 'br-status-inactive']">
+                                {{ seriesActionLabel(record.action) }}
+                            </span>
+                        </td>
+                        <td>{{ record.source || '-' }}</td>
+                        <td>{{ record.user_name || '-' }}</td>
+                    </tr>
+                </tbody>
+            </table>
+            <Paginator :links="seriesAudit.records.links" @clickPage="loadSeriesAudit"/>
+        </div>
+        <WithoutData v-else type="image"/>
+    </section>
+
     <!-- Records -->
     <div class="list-section mb-1 mb-md-1">
         <Loader v-if="entityList.extras.loading"/>
@@ -364,7 +434,13 @@ export default {
             ...crudModule,
             MODULE: MODULE,
             isInitialized: false,
-            isSaving: false
+            isSaving: false,
+            seriesAudit: {
+                visible: false,
+                loading: false,
+                records: {total: 0, data: [], links: []},
+                gaps: []
+            }
         };
 
     },
@@ -459,6 +535,58 @@ export default {
         handleSearch() {
 
             this.listEntity({});
+
+        },
+        async toggleSeriesAudit() {
+
+            this.seriesAudit.visible = !this.seriesAudit.visible;
+
+            if(this.seriesAudit.visible && !this.seriesAudit.records.total) {
+
+                await this.loadSeriesAudit({});
+
+            }
+
+            Alerts.tooltips({time: 250});
+
+        },
+        async loadSeriesAudit(params = null) {
+
+            this.seriesAudit.loading = true;
+
+            const url = this.isDefined(params) && typeof params === "object" ? params.url : params;
+            const response = await Requests.get({
+                route: url || this.routeActions.seriesAudit,
+                data: {per_page: 10},
+                showAlert: true
+            });
+
+            this.seriesAudit.loading = false;
+
+            if(!Requests.valid({result: response})) return;
+
+            this.seriesAudit.records = response.data.data || {total: 0, data: [], links: []};
+            this.seriesAudit.gaps = response.data.gaps || [];
+
+        },
+        async downloadSeriesAudit() {
+
+            Alerts.swals({type: "loading", message: "Preparando auditoría de series"});
+
+            const result = await Requests.download({
+                route: this.routeActions.seriesAuditExport,
+                data: {},
+                fileName: "auditoria-correlativos.csv",
+                showAlert: true
+            });
+
+            Alerts.swals({show: false});
+
+            if(result.bool) {
+
+                Alerts.toastrs({type: "success", subtitle: "Auditoría descargada correctamente."});
+
+            }
 
         },
         // Forms
@@ -602,6 +730,18 @@ export default {
         generateCode({length}) {
 
             return Utils.generateCode({length});
+
+        },
+        formatDateTime(value) {
+
+            if(!value) return "-";
+
+            return new Date(value).toLocaleString("es-PE");
+
+        },
+        seriesActionLabel(action) {
+
+            return {issued: "Emitido", cancelled: "Anulado"}[action] || action || "-";
 
         },
     },

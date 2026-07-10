@@ -1,4 +1,4 @@
-<template>
+﻿<template>
     <Breadcrumb :list="breadcrumbTitles"/>
 
     <!-- Content -->
@@ -149,7 +149,11 @@
                 </button>
                 <button type="button" class="btn btn-success waves-effect" @click="modalAutomaticEntity({type: 'generate'})" :disabled="lists.entity.extras.loading">
                     <i class="fa fa-globe"></i>
-                    <span class="ms-2">Modo público</span>
+                    <span class="ms-2">Modo pÃºblico</span>
+                </button>
+                <button type="button" class="br-btn br-btn-action-export waves-effect" @click="exportEntity" :disabled="lists.entity.extras.loading" data-bs-toggle="tooltip" data-bs-placement="top" title="Exportar asistencias">
+                    <i class="fa-solid fa-file-excel" aria-hidden="true"></i>
+                    <span class="ms-2 d-inline d-md-none">Exportar</span>
                 </button>
                 <a href="javascript:void(0)" class="fw-bold ms-2" @click="forms.entity.createUpdate.config.viewFilters = !forms.entity.createUpdate.config.viewFilters;">
                     <i :class="['fa', forms.entity.createUpdate.config.viewFilters ? 'fa-eye-slash' : 'fa-eye']"></i>
@@ -199,12 +203,24 @@
                                             <i class="fa fa-times"></i>
                                             <span class="ms-2">Anular</span>
                                         </button>
+                                        <button type="button" class="btn btn-xs btn-info waves-effect" @click="requestCorrectionEntity(record)">
+                                            <i class="fa-solid fa-pen-to-square"></i>
+                                            <span class="ms-2">Corregir</span>
+                                        </button>
                                     </template>
                                 </InputSlot>
                             </td>
                             <td class="text-start">
                                 <span v-text="record.customer?.name" class="fw-bold d-block"></span>
                                 <small v-text="record.customer?.document_number" class="d-block"></small>
+                                <small class="br-attendance-device-detail">
+                                    <i class="fa-solid fa-fingerprint" aria-hidden="true"></i>
+                                    <span v-text="getAttendanceDeviceLabel(record)"></span>
+                                </small>
+                                <small v-if="latestAttendanceCorrection(record)" class="br-attendance-device-detail is-warning">
+                                    <i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i>
+                                    <span v-text="latestAttendanceCorrectionLabel(record)"></span>
+                                </small>
                             </td>
                             <td>
                                 <template v-if="isDefined({value: record.start_date})">
@@ -264,8 +280,8 @@
                             </template>
                         </div>
                         <!-- <a class="text-muted" @click="rememberModeEntity('manual')" href="javascript:void(0)">
-                            <span>¿Recordar modalidad?</span>
-                            <span :class="[forms.entity.createUpdate.config.rememberMode ? 'text-success' : 'text-primary', 'fw-bold ms-1']" v-text="forms.entity.createUpdate.config.rememberMode ? 'Sí' : 'No'"></span>
+                            <span>Â¿Recordar modalidad?</span>
+                            <span :class="[forms.entity.createUpdate.config.rememberMode ? 'text-success' : 'text-primary', 'fw-bold ms-1']" v-text="forms.entity.createUpdate.config.rememberMode ? 'SÃ­' : 'No'"></span>
                         </a> -->
                     </div>
                     <div class="row g-3">
@@ -336,7 +352,7 @@
                         </InputSlot>
                     </div>
                     <!-- <div v-if="['store'].includes(forms.entity.createUpdate.extras.modals.default.type)" class="alert alert-secondary small mt-3 mb-0" role="alert">
-                        El sistema detectará automáticamente si estás registrando un ingreso o una salida.
+                        El sistema detectarÃ¡ automÃ¡ticamente si estÃ¡s registrando un ingreso o una salida.
                     </div> -->
                 </div>
                 <div class="modal-footer">
@@ -369,8 +385,8 @@
                             </template>
                         </div>
                         <!-- <a class="text-muted" @click="rememberModeEntity('qrCamera')" href="javascript:void(0)">
-                            <span>¿Recordar modalidad?</span>
-                            <span :class="[forms.entity.createUpdate.config.rememberMode ? 'text-success' : 'text-primary', 'fw-bold ms-1']" v-text="forms.entity.createUpdate.config.rememberMode ? 'Sí' : 'No'"></span>
+                            <span>Â¿Recordar modalidad?</span>
+                            <span :class="[forms.entity.createUpdate.config.rememberMode ? 'text-success' : 'text-primary', 'fw-bold ms-1']" v-text="forms.entity.createUpdate.config.rememberMode ? 'SÃ­' : 'No'"></span>
                         </a> -->
                     </div>
                     <div class="row g-3">
@@ -393,7 +409,7 @@
                         </InputSlot>
                         <InputSlot
                             hasDiv
-                            title="Cámara interna"
+                            title="CÃ¡mara interna"
                             :isInputGroup="false"
                             xl="12"
                             lg="12">
@@ -494,7 +510,7 @@
                         </InputSlot>
                     </div>
                     <!-- <div v-if="['store'].includes(forms.entity.qrCamera.extras.modals.default.type)" class="alert alert-secondary small mt-3 mb-0" role="alert">
-                        El sistema detectará automáticamente si estás registrando un ingreso o una salida.
+                        El sistema detectarÃ¡ automÃ¡ticamente si estÃ¡s registrando un ingreso o una salida.
                     </div> -->
                 </div>
                 <div class="modal-footer">
@@ -527,8 +543,8 @@
                             </template>
                         </div>
                         <!-- <a class="text-muted" @click="rememberModeEntity('qrScanner')" href="javascript:void(0)">
-                            <span>¿Recordar modalidad?</span>
-                            <span :class="[forms.entity.createUpdate.config.rememberMode ? 'text-success' : 'text-primary', 'fw-bold ms-1']" v-text="forms.entity.createUpdate.config.rememberMode ? 'Sí' : 'No'"></span>
+                            <span>Â¿Recordar modalidad?</span>
+                            <span :class="[forms.entity.createUpdate.config.rememberMode ? 'text-success' : 'text-primary', 'fw-bold ms-1']" v-text="forms.entity.createUpdate.config.rememberMode ? 'SÃ­' : 'No'"></span>
                         </a> -->
                     </div>
                     <div class="row g-3">
@@ -586,7 +602,7 @@
                                     v-model="forms.entity.qrScanner.data.code"
                                     type="text"
                                     class="form-control text-center fw-bold"
-                                    placeholder="Escanea el código QR aquí"
+                                    placeholder="Escanea el cÃ³digo QR aquÃ­"
                                     @input="onResultQrScanner"
                                     @change="onResultQrScanner"
                                     @keyup.enter="onResultQrScanner"
@@ -628,7 +644,7 @@
                         </InputSlot>
                     </div>
                     <!-- <div v-if="['store'].includes(forms.entity.qrScanner.extras.modals.default.type)" class="alert alert-secondary small mt-3 mb-0" role="alert">
-                        El sistema detectará automáticamente si estás registrando un ingreso o una salida.
+                        El sistema detectarÃ¡ automÃ¡ticamente si estÃ¡s registrando un ingreso o una salida.
                     </div> -->
                 </div>
                 <div class="modal-footer">
@@ -656,7 +672,7 @@
                                     <tr class="text-center align-middle">
                                         <th class="bg-secondary text-white fw-semibold" style="width: 10%;">#</th>
                                         <th class="bg-secondary text-white fw-semibold min-w-150px" style="width: 20%;">SUCURSAL</th>
-                                        <th class="bg-secondary text-white fw-semibold min-w-150pxs" style="width: 30%;">DIRECCIÓN</th>
+                                        <th class="bg-secondary text-white fw-semibold min-w-150pxs" style="width: 30%;">DIRECCIÃ“N</th>
                                         <th class="bg-secondary text-white fw-semibold min-w-150px" style="width: 40%;">ACCIONES</th>
                                     </tr>
                                 </thead>
@@ -1259,6 +1275,124 @@ export default {
             this.initChart("doughnut");
 
         },
+        async exportEntity() {
+
+            const filters = Utils.cloneJson(this.lists.entity.filters);
+            const params = {};
+
+            if(this.isDefined({value: filters?.branch?.code})) params.branch_id = filters.branch.code;
+            if(this.isDefined({value: filters?.customer?.code})) params.customer_id = filters.customer.code;
+            if(this.isDefined({value: filters?.start_date})) params.start_date = filters.start_date;
+            if(this.isDefined({value: filters?.status})) params.status = filters.status;
+
+            Alerts.swals({type: "loading", message: "Preparando exportación"});
+
+            try {
+
+                await Requests.download({
+                    route: this.config.entity.routes.export,
+                    data: params,
+                    fileName: "asistencias-clientes.xlsx",
+                    showAlert: true
+                });
+
+            }finally {
+
+                Alerts.swals({show: false});
+
+            }
+
+        },
+        async requestCorrectionEntity(record) {
+
+            const self = this;
+
+            const result = await Swal.fire({
+                title: "Solicitar corrección",
+                html: `<div class="text-start">
+                           <p class="small text-muted mb-3">Indica las fechas correctas solo si deben cambiar. El motivo es obligatorio para auditoría.</p>
+                           <div class="row g-2">
+                               <div class="col-12 col-md-6">
+                                   <label class="form-label colon-at-end">Ingreso corregido</label>
+                                   <input type="datetime-local" class="form-control" id="attendanceCorrectionStart">
+                               </div>
+                               <div class="col-12 col-md-6">
+                                   <label class="form-label colon-at-end">Salida corregida</label>
+                                   <input type="datetime-local" class="form-control" id="attendanceCorrectionEnd">
+                               </div>
+                               <div class="col-12">
+                                   <label class="form-label colon-at-end">Motivo</label>
+                                   <textarea class="form-control no-resize" maxlength="500" rows="3" id="attendanceCorrectionReason"></textarea>
+                               </div>
+                           </div>
+                       </div>`,
+                icon: "question",
+                allowOutsideClick: false,
+                showCancelButton: true,
+                confirmButtonText: "Registrar corrección",
+                cancelButtonText: "Cancelar",
+                customClass: {
+                    confirmButton: "btn btn-primary waves-effect",
+                    cancelButton: "btn btn-secondary waves-effect ms-3"
+                },
+                preConfirm() {
+
+                    const startDate = document.getElementById("attendanceCorrectionStart")?.value;
+                    const endDate = document.getElementById("attendanceCorrectionEnd")?.value;
+                    const reason = document.getElementById("attendanceCorrectionReason")?.value?.trim();
+
+                    if(!reason) {
+
+                        Swal.showValidationMessage("Ingresa el motivo de la corrección.");
+                        return false;
+
+                    }
+
+                    if(startDate && endDate && startDate >= endDate) {
+
+                        Swal.showValidationMessage("La salida corregida debe ser mayor al ingreso corregido.");
+                        return false;
+
+                    }
+
+                    return {
+                        start_date: startDate ? startDate.replace("T", " ") : null,
+                        end_date: endDate ? endDate.replace("T", " ") : null,
+                        reason
+                    };
+
+                }
+            });
+
+            if(!result.isConfirmed) return;
+
+            Alerts.swals({type: "loading", message: "Registrando corrección"});
+
+            try {
+
+                const route = `${this.config.entity.routes.consult}/${record.id}/corrections`;
+                const response = await Requests.post({route, data: result.value});
+
+                if(Requests.valid({result: response})) {
+
+                    Alerts.swals({show: false});
+                    Alerts.generateAlert({type: "success", msgContent: response?.data?.msg || "Corrección registrada correctamente."});
+                    await self.listEntity({});
+
+                }else {
+
+                    Alerts.swals({show: false});
+                    Alerts.generateAlert({type: "warning", msgContent: response?.data?.msg || "No fue posible registrar la corrección."});
+
+                }
+
+            }finally {
+
+                Alerts.swals({show: false});
+
+            }
+
+        },
 
         // ============================================
         // Mode Management Methods
@@ -1646,11 +1780,11 @@ export default {
                 let el = this;
 
                 Swal.fire({
-                    html: `<span>¿Desea eliminar a <b>${form?.label}</b> de los clientes escaneados?</span>`,
+                    html: `<span>Â¿Desea eliminar a <b>${form?.label}</b> de los clientes escaneados?</span>`,
                     icon: "warning",
                     allowOutsideClick: false,
                     showCancelButton: true,
-                    confirmButtonText: "Sí, eliminar",
+                    confirmButtonText: "SÃ­, eliminar",
                     cancelButtonText: "Cancelar",
                     customClass: {
                         confirmButton: "btn btn-danger waves-effect",
@@ -1943,7 +2077,7 @@ export default {
                 let el = this;
 
                 Swal.fire({
-                    html: `<span class="d-block my-1">¿Desea anular la asistencia de <b>${form?.customer?.label}</b>?</span>
+                    html: `<span class="d-block my-1">Â¿Desea anular la asistencia de <b>${form?.customer?.label}</b>?</span>
                            <div class="form-group text-start mt-2">
                                 <label class="form-label colon-at-end">Motivo</label>
                                 <div class="input-group">
@@ -1953,7 +2087,7 @@ export default {
                     icon: "warning",
                     allowOutsideClick: false,
                     showCancelButton: true,
-                    confirmButtonText: "Sí, anular",
+                    confirmButtonText: "SÃ­, anular",
                     cancelButtonText: "Cancelar",
                     customClass: {
                         confirmButton: "btn btn-danger waves-effect",
@@ -2242,6 +2376,36 @@ export default {
 
         },
         // Others
+        getAttendanceDeviceLabel(record) {
+
+            const device = record?.biometric_device || record?.biometricDevice;
+            const source = record?.source || record?.formatted_source;
+
+            if(this.isDefined({value: device?.name})) return `Dispositivo: ${device.name}`;
+            if(this.isDefined({value: source})) return `Origen: ${source}`;
+
+            return "Registro manual";
+
+        },
+        latestAttendanceCorrection(record) {
+
+            return (record?.corrections ?? [])[0] ?? null;
+
+        },
+        latestAttendanceCorrectionLabel(record) {
+
+            const correction = this.latestAttendanceCorrection(record);
+            const status = correction?.status ?? "pending";
+
+            const labels = {
+                pending: "Corrección pendiente",
+                approved: "Corrección aprobada",
+                rejected: "Corrección rechazada"
+            };
+
+            return labels[status] ?? "Corrección registrada";
+
+        },
         isDefined({value}) {
 
             return Utils.isDefined({value});
@@ -2273,17 +2437,17 @@ export default {
 
             return [
                 {code: "manual", label: "Manual", label_sm: "Manual", icon: "fa-hand"},
-                {code: "qrCamera", label: "Cámara interna", label_sm: "Cámara", icon: "fa-camera"},
-                {code: "qrScanner", label: "Escáner externo", label_sm: "Escáner", icon: "fa-qrcode"}
+                {code: "qrCamera", label: "CÃ¡mara interna", label_sm: "CÃ¡mara", icon: "fa-camera"},
+                {code: "qrScanner", label: "EscÃ¡ner externo", label_sm: "EscÃ¡ner", icon: "fa-qrcode"}
             ];
 
         },
         qrCameraModes: function() {
 
             return [
-                {code: "carnet", label: "Carnet", tooltip: "Carnet generado por el sistema con código QR.", icon: "fa fa-id-badge", color: "primary"},
-                {code: "dni", label: "DNI", tooltip: "Escanea el código de barras posterior del DNI físico.", icon: "fa fa-id-card", color: "info"},
-                {code: "dnie", label: "DNIe", tooltip: "DNI electrónico: escanea el código de barras (no el chip).", icon: "fa fa-barcode", color: "dark"}
+                {code: "carnet", label: "Carnet", tooltip: "Carnet generado por el sistema con cÃ³digo QR.", icon: "fa fa-id-badge", color: "primary"},
+                {code: "dni", label: "DNI", tooltip: "Escanea el cÃ³digo de barras posterior del DNI fÃ­sico.", icon: "fa fa-id-card", color: "info"},
+                {code: "dnie", label: "DNIe", tooltip: "DNI electrÃ³nico: escanea el cÃ³digo de barras (no el chip).", icon: "fa fa-barcode", color: "dark"}
             ];
 
         }

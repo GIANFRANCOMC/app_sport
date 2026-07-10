@@ -42,3 +42,9 @@ Lista y administra membresias reales asignadas a clientes. Estas pueden originar
 - `POST /tracking_subscriptions/{id}/renew` crea una nueva membresía manual y conserva `renewed_from_id`.
 - La renovación respeta empresa, sucursal, alcance, fechas y política de solapamiento.
 - Las pruebas se añadirán cuando sean solicitadas expresamente.
+
+## Estado UI Implementado
+
+- La modal de detalle permite renovar una membresia activa con fecha inicial, fecha final, limite diario opcional y observacion.
+- La renovacion usa `POST /tracking_subscriptions/{id}/renew` y deja que el backend bloquee solapamientos segun `company_settings.subscriptions.overlap_policy`.
+- Los mensajes del flujo explican que una membresia superpuesta sera bloqueada para evitar vigencias ambiguas.

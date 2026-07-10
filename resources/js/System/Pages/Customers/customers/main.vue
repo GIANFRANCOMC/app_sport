@@ -199,6 +199,54 @@
                                         :searchable="false"/>
                                 </template>
                             </InputSlot>
+                            <div class="col-12">
+                                <div class="br-customer-optional-block">
+                                    <div class="br-customer-optional-block__header">
+                                        <span class="br-customer-optional-block__icon">
+                                            <i class="fa-solid fa-kit-medical" aria-hidden="true"></i>
+                                        </span>
+                                        <div>
+                                            <strong v-text="MODULE.texts.form.emergencyBlockTitle"></strong>
+                                            <small v-text="MODULE.texts.form.emergencyBlockSubtitle"></small>
+                                        </div>
+                                    </div>
+                                    <div class="row g-3">
+                                        <InputText
+                                            v-model="forms[entity].createUpdate.data.emergency_contact_name"
+                                            hasDiv
+                                            :title="MODULE.texts.form.emergencyContactName"
+                                            :titleClass="[config.forms.classes.title]"
+                                            maxlength="255"
+                                            showCharCounter
+                                            hasTextBottom
+                                            :textBottomInfo="forms[entity].createUpdate.errors?.emergency_contact_name"
+                                            xl="6"
+                                            lg="6"/>
+                                        <InputText
+                                            v-model="forms[entity].createUpdate.data.emergency_contact_phone"
+                                            hasDiv
+                                            :title="MODULE.texts.form.emergencyContactPhone"
+                                            :titleClass="[config.forms.classes.title]"
+                                            maxlength="50"
+                                            showCharCounter
+                                            hasTextBottom
+                                            :textBottomInfo="forms[entity].createUpdate.errors?.emergency_contact_phone"
+                                            xl="6"
+                                            lg="6"/>
+                                        <InputTextArea
+                                            v-model="forms[entity].createUpdate.data.medical_notes"
+                                            hasDiv
+                                            :title="MODULE.texts.form.medicalNotes"
+                                            :titleClass="[config.forms.classes.title]"
+                                            maxlength="5000"
+                                            rows="3"
+                                            hasTextBottom
+                                            :textBottomInfo="forms[entity].createUpdate.errors?.medical_notes"
+                                            xl="12"
+                                            lg="12"/>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </form>
                 </div>
@@ -376,6 +424,9 @@ const FORM_FIELDS = {
     phone_number: "",
     gender: null,
     birthdate: "",
+    emergency_contact_name: "",
+    emergency_contact_phone: "",
+    medical_notes: "",
     status: null
 };
 
@@ -387,6 +438,9 @@ const FORM_FIELD_CONFIG = {
     phone_number: {normalize: true},
     gender: {getCode: true},
     birthdate: {normalize: true},
+    emergency_contact_name: {trim: true},
+    emergency_contact_phone: {trim: true},
+    medical_notes: {trim: true},
     status: {getCode: true}
 };
 
@@ -398,6 +452,9 @@ const VALIDATION_RULES = {
     phone_number: {required: false},
     gender: {required: false},
     birthdate: {required: false},
+    emergency_contact_name: {required: false},
+    emergency_contact_phone: {required: false},
+    medical_notes: {required: false},
     status: {required: true}
 };
 
@@ -409,6 +466,9 @@ const ERROR_LABELS = {
     phone_number: "Celular",
     gender: "Género",
     birthdate: "Fecha de nacimiento",
+    emergency_contact_name: "Contacto de emergencia",
+    emergency_contact_phone: "Celular de emergencia",
+    medical_notes: "Observaciones médicas",
     status: "Estado"
 };
 
@@ -460,6 +520,8 @@ const TEXTS = {
         noEmail: "Sin correo electrónico",
         noPhoneNumber: "Sin celular",
         noBirthdate: "Sin fecha de nacimiento",
+        noEmergencyContact: "Sin contacto de emergencia",
+        noMedicalNotes: "Sin observaciones médicas",
         noGender: "Sin género"
     },
     form: {
@@ -470,6 +532,11 @@ const TEXTS = {
         phoneNumber: "Celular",
         gender: "Género",
         birthdate: "Fecha de nacimiento",
+        emergencyBlockTitle: "Contacto de emergencia y salud",
+        emergencyBlockSubtitle: "Opcional. Úsalo cuando el equipo necesite actuar rápido ante una incidencia.",
+        emergencyContactName: "Contacto de emergencia",
+        emergencyContactPhone: "Celular de emergencia",
+        medicalNotes: "Observaciones médicas",
         status: "Estado",
         searchDocumentTooltip: "Buscar N° documento",
         customer: "Cliente",
@@ -673,6 +740,9 @@ export default {
                 entityForms.data.phone_number           = record.phone_number;
                 entityForms.data.gender                 = genderOption;
                 entityForms.data.birthdate              = record.birthdate;
+                entityForms.data.emergency_contact_name  = record.emergency_contact_name;
+                entityForms.data.emergency_contact_phone = record.emergency_contact_phone;
+                entityForms.data.medical_notes           = record.medical_notes;
                 entityForms.data.status                 = statusOption;
 
             }else {
@@ -874,9 +944,23 @@ export default {
             return [
                 {key: "email", icon: "fa fa-envelope text-primary", value: this.isDefined(record.email) ? record.email : null, placeholder: this.MODULE.texts.card.noEmail},
                 {key: "phone_number", icon: "fa fa-phone text-primary", value: this.isDefined(record.phone_number) ? record.phone_number : null, placeholder: this.MODULE.texts.card.noPhoneNumber},
+                {key: "emergency_contact", icon: "fa fa-kit-medical text-danger", value: this.getEmergencyContactLabel(record), placeholder: this.MODULE.texts.card.noEmergencyContact},
+                {key: "medical_notes", icon: "fa fa-notes-medical text-success", value: this.isDefined(record.medical_notes) ? record.medical_notes : null, placeholder: this.MODULE.texts.card.noMedicalNotes},
                 {key: "birthdate", icon: "fa fa-birthday-cake text-warning", value: this.isDefined(record.birthdate) ? this.legibleFormatDate({dateString: record.birthdate, type: "date"}) : null, placeholder: this.MODULE.texts.card.noBirthdate},
                 {key: "gender", icon: "fa fa-venus-mars text-info", value: this.isDefined(record.formatted_gender) ? record.formatted_gender : null, placeholder: this.MODULE.texts.card.noGender}
             ];
+
+        },
+        getEmergencyContactLabel(record) {
+
+            const name = record.emergency_contact_name;
+            const phone = record.emergency_contact_phone;
+
+            if(this.isDefined(name) && this.isDefined(phone)) return `${name} - ${phone}`;
+            if(this.isDefined(name)) return name;
+            if(this.isDefined(phone)) return phone;
+
+            return null;
 
         },
         async searchDocumentNumber() {

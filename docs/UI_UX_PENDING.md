@@ -29,14 +29,6 @@ Cuando una pantalla queda implementada, responsive, accesible, con errores por c
 - Libro de reclamaciones: CAPTCHA, consulta por código, carga múltiple y respuesta pública clara.
 - Asistencia pública: enlaces firmados, sucursal, estado del registro y respuestas antiabuso sin detalles internos.
 
-## Clientes
-
-- Contacto de emergencia y observaciones médicas como bloque opcional.
-- Historial con rango personalizado, resumen financiero y resumen de asistencias.
-- Membresías: solapamiento, renovación y límite diario con mensajes claros.
-- Asistencia de clientes: correcciones auditadas, exportación y detalle de dispositivo.
-- Reclamaciones internas: separar respuesta pública/interna, historial y adjuntos.
-
 ## Catálogo Comercial
 
 - Productos: impresión por lote de etiquetas, lectura por escáner en ventas y publicación en catálogo/PDF.
@@ -49,7 +41,6 @@ Cuando una pantalla queda implementada, responsive, accesible, con errores por c
 ## Ventas, POS y Caja
 
 - Nueva venta: terminar la visualización de tributos opcionales, cantidad para cargos fijos y pagos mixtos en todas las variantes legacy.
-- Caja: separar Cajas, Aperturas y cierres, Movimientos y Resumen en páginas independientes con filtros y exportación.
 - Cierre principal: conteo físico de inventario, diferencias y observaciones antes de confirmar.
 
 ## Inventario y Compras
@@ -77,5 +68,4 @@ Cuando una pantalla queda implementada, responsive, accesible, con errores por c
 
 ## Reportes
 
-- Series: auditoría, exportación e indicadores de saltos de correlativo.
 - Mi empresa/Sucursales: separar configuración pública, fiscal y operativa.

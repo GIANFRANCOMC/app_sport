@@ -22,9 +22,9 @@ export function getSubscriptions({customer}) {
  * @param {Object} options - {customer: Object, period_type: string, options: Object}
  * @returns {Promise} Promesa con el tracking
  */
-export function getTrackingCustomers({customer, period_type = null, options = {}}) {
+export function getTrackingCustomers({customer, period_type = null, start_date = null, end_date = null, options = {}}) {
     const route = Requests.config({entity: "tracking_customers", type: "getTracking"});
-    return Requests.get({route: `${route}/${customer?.id}`, data: {period_type, options}});
+    return Requests.get({route: `${route}/${customer?.id}`, data: {period_type, start_date, end_date, options}});
 }
 
 /**

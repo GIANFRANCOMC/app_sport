@@ -1,4 +1,4 @@
-<template>
+﻿<template>
     <Breadcrumb :list="breadcrumbTitles"/>
 
     <!-- Filters Section -->
@@ -149,6 +149,43 @@
                             <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12">
                                 <div class="card shadow-sm">
                                     <div class="card-header bg-secondary text-white py-0 text-center">
+                                        <span v-text="MODULE.texts.sections.evidence"></span>
+                                    </div>
+                                    <div class="card-body py-3">
+                                        <div class="row g-3">
+                                            <div class="col-xl-6 col-lg-6 col-md-12 col-sm-12">
+                                                <span class="text-dark fw-bold colon-at-end d-block mb-2" v-text="MODULE.texts.form.attachments"></span>
+                                                <div v-if="(forms[entity].createUpdate.data.attachments ?? []).length > 0" class="d-flex flex-wrap gap-2">
+                                                    <a
+                                                        v-for="attachment in forms[entity].createUpdate.data.attachments"
+                                                        :key="attachment.id"
+                                                        class="br-book-complaint-attachment"
+                                                        :href="bookComplaintAttachmentUrl(attachment)"
+                                                        target="_blank"
+                                                        rel="noopener noreferrer">
+                                                        <i class="fa-solid fa-paperclip" aria-hidden="true"></i>
+                                                        <span v-text="attachment.file_name"></span>
+                                                    </a>
+                                                </div>
+                                                <span v-else class="text-muted small" v-text="MODULE.texts.card.notRegistered"></span>
+                                            </div>
+                                            <div class="col-xl-6 col-lg-6 col-md-12 col-sm-12">
+                                                <span class="text-dark fw-bold colon-at-end d-block mb-2" v-text="MODULE.texts.form.statusHistory"></span>
+                                                <div v-if="(forms[entity].createUpdate.data.status_histories ?? []).length > 0" class="br-book-complaint-history">
+                                                    <span v-for="history in forms[entity].createUpdate.data.status_histories" :key="history.id" class="br-book-complaint-history__item">
+                                                        <strong v-text="history.new_status || history.status"></strong>
+                                                        <small v-text="legibleFormatDate({dateString: history.changed_at || history.created_at, type: 'datetime'})"></small>
+                                                    </span>
+                                                </div>
+                                                <span v-else class="text-muted small" v-text="MODULE.texts.card.notRegistered"></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12">
+                                <div class="card shadow-sm">
+                                    <div class="card-header bg-secondary text-white py-0 text-center">
                                         <span v-text="MODULE.texts.sections.technicalInfo"></span>
                                     </div>
                                     <div class="card-body py-3">
@@ -197,6 +234,17 @@
                                                 </template>
                                             </InputSlot>
                                             <InputTextArea
+                                                v-model="forms[entity].createUpdate.data.public_response"
+                                                hasDiv
+                                                :title="MODULE.texts.form.publicResponse"
+                                                :titleClass="[config.forms.classes.title, 'fw-semibold']"
+                                                maxlength="600"
+                                                rows="4"
+                                                hasTextBottom
+                                                :textBottomInfo="forms[entity].createUpdate.errors?.public_response"
+                                                xl="12"
+                                                lg="12"/>
+                                            <InputTextArea
                                                 v-model="forms[entity].createUpdate.data.admin_response"
                                                 hasDiv
                                                 :title="MODULE.texts.form.adminResponse"
@@ -206,6 +254,17 @@
                                                 rows="5"
                                                 hasTextBottom
                                                 :textBottomInfo="forms[entity].createUpdate.errors?.admin_response"
+                                                xl="12"
+                                                lg="12"/>
+                                            <InputTextArea
+                                                v-model="forms[entity].createUpdate.data.status_note"
+                                                hasDiv
+                                                :title="MODULE.texts.form.statusNote"
+                                                :titleClass="[config.forms.classes.title, 'fw-semibold']"
+                                                maxlength="500"
+                                                rows="2"
+                                                hasTextBottom
+                                                :textBottomInfo="forms[entity].createUpdate.errors?.status_note"
                                                 xl="12"
                                                 lg="12"/>
                                         </div>
@@ -248,7 +307,7 @@ const MODULE_CONFIG = {
     entity: "book_complaints",
     menuId: "menu-customers-book_complaints",
     pageTitle: "Libro de reclamaciones y sugerencias",
-    breadcrumbParent: "Atención al cliente",
+    breadcrumbParent: "AtenciÃ³n al cliente",
     perPage: 6
 };
 
@@ -264,11 +323,15 @@ const FORM_FIELDS = {
     request: "",
     evidence: "",
     admin_response: "",
+    public_response: "",
+    status_note: "",
     submitted_ip: "",
     submitted_user_agent: "",
     submitted_platform: "",
     submitted_browser: "",
     status: null,
+    attachments: [],
+    status_histories: [],
     created_at: "",
     copy: null
 };
@@ -285,6 +348,8 @@ const FORM_FIELD_CONFIG = {
     request: {normalize: true},
     evidence: {normalize: true},
     admin_response: {trim: true},
+    public_response: {trim: true},
+    status_note: {trim: true},
     submitted_ip: {normalize: true},
     submitted_user_agent: {normalize: true},
     submitted_platform: {normalize: true},
@@ -294,12 +359,16 @@ const FORM_FIELD_CONFIG = {
 
 const VALIDATION_RULES = {
     status: {required: true},
-    admin_response: {required: true}
+    admin_response: {required: false},
+    public_response: {required: false},
+    status_note: {required: false}
 };
 
 const ERROR_LABELS = {
     status: "Estado",
     admin_response: "Respuesta del administrador",
+    public_response: "Respuesta pÃºblica",
+    status_note: "Nota de cambio de estado",
     required: "Es obligatorio"
 };
 
@@ -307,7 +376,7 @@ const TEXTS = {
     loading: `Cargando ${MODULE_CONFIG.pageTitle}...`,
     filters: {
         filterBy: "Filtrar por",
-        search: "Búsqueda"
+        search: "BÃºsqueda"
     },
     actions: {
         search: "Buscar",
@@ -317,9 +386,9 @@ const TEXTS = {
     },
     card: {
         noEmail: "Sin correo registrado",
-        noPhone: "Sin teléfono registrado",
-        noContact: "Sin información de contacto",
-        noDescription: "Sin descripción registrada",
+        noPhone: "Sin telÃ©fono registrado",
+        noContact: "Sin informaciÃ³n de contacto",
+        noDescription: "Sin descripciÃ³n registrada",
         noRequest: "Sin pedido registrado",
         notSpecified: "No especifica",
         notRegistered: "No registrado"
@@ -327,22 +396,27 @@ const TEXTS = {
     sections: {
         clientData: "Datos del cliente",
         complaintDetail: "Detalle",
-        technicalInfo: "Información técnica",
-        adminManagement: "Gestión administrativa"
+        technicalInfo: "InformaciÃ³n tÃ©cnica",
+        adminManagement: "Gestión administrativa",
+        evidence: "Adjuntos e historial"
     },
     form: {
         branch: "Sucursal",
-        documentNumber: "Número de documento",
+        documentNumber: "NÃºmero de documento",
         identityDocumentType: "Tipo de documento",
         name: "Nombre",
-        email: "Correo electrónico",
+        email: "Correo electrÃ³nico",
         phoneNumber: "Celular",
-        description: "Descripción",
+        description: "DescripciÃ³n",
         request: "Pedido del cliente",
         dateTime: "Fecha y hora",
         currentStatus: "Estado actual",
         status: "Estado",
-        adminResponse: "Respuesta del administrador",
+        adminResponse: "Respuesta interna",
+        publicResponse: "Respuesta pública",
+        statusNote: "Nota de cambio de estado",
+        attachments: "Adjuntos",
+        statusHistory: "Historial",
         submittedIp: "IP enviada",
         submittedPlatform: "Plataforma",
         submittedBrowser: "Navegador",
@@ -356,9 +430,9 @@ const TEXTS = {
 
 const FILTER_OPTIONS = [
     {code: "all", label: "Todos los filtros"},
-    {code: "document_number", label: "Número de documento"},
+    {code: "document_number", label: "NÃºmero de documento"},
     {code: "name", label: "Nombre"},
-    {code: "email", label: "Correo electrónico"},
+    {code: "email", label: "Correo electrÃ³nico"},
     {code: "phone_number", label: "Celular"}
 ];
 
@@ -552,10 +626,12 @@ export default {
                 const requestMethod  = isUpdate ? "patch" : "post";
                 const route          = this.routeActions[isUpdate ? "update" : "store"];
 
-                // Preparar datos para envío
+                // Preparar datos para envÃ­o
                 const dataToSend = {
                     status: preparedData.status,
-                    admin_response: preparedData.admin_response
+                    admin_response: preparedData.admin_response,
+                    public_response: preparedData.public_response,
+                    status_note: preparedData.status_note
                 };
 
                 const result = await Requests[requestMethod]({route, data: dataToSend, id});
@@ -604,6 +680,11 @@ export default {
         getType(record) {
 
             return (this.types ?? []).find(e => e.code === record?.type) ?? null;
+
+        },
+        bookComplaintAttachmentUrl(attachment) {
+
+            return `${this.config.entity.routes.consult}/attachments/${attachment.id}`;
 
         },
         // Others

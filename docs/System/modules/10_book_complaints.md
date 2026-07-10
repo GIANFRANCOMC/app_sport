@@ -43,3 +43,9 @@ Permite administrar reclamos, quejas y sugerencias recibidas desde System o Gues
 - `book_complaint_attachments` admite evidencia múltiple sin sobrecargar la cabecera.
 - Cada transición genera un registro inmutable en `book_complaint_status_histories`.
 - La consulta interna incluye adjuntos, historial, autor de cambios y responsable de respuesta.
+
+## Estado UI Implementado
+
+- La gestion interna separa respuesta publica y respuesta interna.
+- La modal muestra adjuntos descargables y el historial de estados sin mezclarlos con la respuesta administrativa.
+- La nota de cambio de estado se envia como `status_note` para mantener trazabilidad de la atencion.

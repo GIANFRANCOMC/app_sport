@@ -221,6 +221,14 @@
                             <span class="ms-2" v-text="forms.entity.createUpdate.extras.modals.actions.data?.motive"></span>
                         </div>
                         <div v-if="['active'].includes(forms.entity.createUpdate.extras.modals.actions.data?.status)" class="col-xl-3 col-lg-3 col-md-3 col-sm-3 mt-4">
+                            <div class="text-center cursor-pointer p-1" @click="renewEntity({})">
+                                <div class="badge bg-primary p-3 rounded mb-1">
+                                    <i class="fa-solid fa-rotate-right fs-3"></i>
+                                </div>
+                                <span class="d-block fw-semibold text-primary">Renovar membresía</span>
+                            </div>
+                        </div>
+                        <div v-if="['active'].includes(forms.entity.createUpdate.extras.modals.actions.data?.status)" class="col-xl-3 col-lg-3 col-md-3 col-sm-3 mt-4">
                             <div class="text-center cursor-pointer p-1" @click="cancelEntity({})">
                                 <div class="badge bg-danger p-3 rounded mb-1">
                                     <i class="fa-solid fa-rectangle-xmark fs-3"></i>
@@ -397,6 +405,116 @@ export default {
                 type: "show",
                 id: this.forms.entity.createUpdate.extras.modals.actions.id
             });
+
+        },
+        renewEntity({}) {
+
+            const form = Utils.cloneJson(this.forms.entity.createUpdate.extras.modals.actions.data);
+
+            Alerts.modals({
+                type: "hide",
+                id: this.forms.entity.createUpdate.extras.modals.actions.id
+            });
+
+            const self = this;
+
+            Swal.fire({
+                title: "Renovar membresía",
+                html: `<div class="text-start">
+                           <p class="small text-muted mb-3">Registra el nuevo rango de vigencia. Si se superpone con otra membresía activa, el sistema lo bloqueará.</p>
+                           <div class="row g-2">
+                               <div class="col-12 col-md-6">
+                                   <label class="form-label colon-at-end">Fecha inicial</label>
+                                   <input type="datetime-local" class="form-control" id="renewStartDate">
+                               </div>
+                               <div class="col-12 col-md-6">
+                                   <label class="form-label colon-at-end">Fecha final</label>
+                                   <input type="datetime-local" class="form-control" id="renewEndDate">
+                               </div>
+                               <div class="col-12">
+                                   <label class="form-label colon-at-end">Límite diario de asistencias</label>
+                                   <input type="number" min="1" max="100" class="form-control" id="renewAttendanceLimit" placeholder="Usar límite actual">
+                               </div>
+                               <div class="col-12">
+                                   <label class="form-label colon-at-end">Observación</label>
+                                   <textarea class="form-control no-resize" maxlength="500" rows="2" id="renewObservation"></textarea>
+                               </div>
+                           </div>
+                       </div>`,
+                icon: "question",
+                allowOutsideClick: false,
+                showCancelButton: true,
+                confirmButtonText: "Renovar",
+                cancelButtonText: "Cancelar",
+                customClass: {
+                    confirmButton: "btn btn-primary waves-effect",
+                    cancelButton: "btn btn-secondary waves-effect ms-3"
+                },
+                preConfirm() {
+
+                    const startDate = document.getElementById("renewStartDate")?.value;
+                    const endDate = document.getElementById("renewEndDate")?.value;
+                    const attendanceLimit = document.getElementById("renewAttendanceLimit")?.value;
+                    const observation = document.getElementById("renewObservation")?.value;
+
+                    if(!startDate || !endDate) {
+
+                        Swal.showValidationMessage("Selecciona la fecha inicial y final.");
+                        return false;
+
+                    }
+
+                    if(startDate >= endDate) {
+
+                        Swal.showValidationMessage("La fecha final debe ser mayor a la fecha inicial.");
+                        return false;
+
+                    }
+
+                    return {
+                        start_date: startDate.replace("T", " "),
+                        end_date: endDate.replace("T", " "),
+                        attendance_limit_per_day: attendanceLimit || null,
+                        observation
+                    };
+
+                }
+            }).then(async function(result) {
+
+                if(result.isConfirmed) await self.processRenewal(form, result.value);
+
+                Alerts.tooltips({show: false});
+
+            });
+
+        },
+        async processRenewal(form, payload) {
+
+            Alerts.swals({type: "loading", message: "Renovando membresía"});
+
+            try {
+
+                const route = `${this.config.entity.routes.consult}/${form.id}/renew`;
+                const response = await Requests.post({route, data: payload});
+
+                if(Requests.valid({result: response})) {
+
+                    Alerts.swals({show: false});
+                    Alerts.generateAlert({type: "success", msgContent: response?.data?.msg || "Membresía renovada correctamente."});
+                    this.listEntity({});
+
+                }else {
+
+                    Alerts.swals({show: false});
+                    Alerts.generateAlert({type: "warning", msgContent: response?.data?.msg || "No fue posible renovar la membresía."});
+
+                }
+
+            }finally {
+
+                Alerts.swals({show: false});
+
+            }
 
         },
         cancelEntity({}) {

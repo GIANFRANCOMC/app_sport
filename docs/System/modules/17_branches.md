@@ -36,6 +36,8 @@ Administra sedes fisicas de la empresa.
 - Crear una sucursal genera sus series activas por tipo documental y un almacén predeterminado con relaciones de producto en cero.
 - `capacity` se valida como entero no negativo y queda disponible para aforo de mesas/estaciones.
 - No puede inactivarse una sucursal con activos asignados a colaboradores.
+- La vista incorpora una seccion plegable de auditoria de series para consultar emisiones, anulaciones, responsable, origen y saltos de correlativo.
+- La auditoria de series reutiliza `GET /branches/series/audit` y descarga CSV mediante `GET /branches/series/audit/export`.
 
 ## Configuración y validación compartida
 
