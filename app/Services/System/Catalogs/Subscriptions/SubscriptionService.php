@@ -34,6 +34,8 @@ class SubscriptionService {
         "price_includes_tax",
         "min_price",
         "max_price",
+        "commission_type",
+        "commission_value",
         "currency_id",
         "duration_type",
         "duration_value",

@@ -129,7 +129,8 @@ class Attendance extends Model {
 
     public function corrections() {
 
-        return $this->hasMany(AttendanceCorrection::class, "attendance_id");
+        return $this->hasMany(AttendanceCorrection::class, "attendance_id")
+                    ->orderByDesc("id");
 
     }
 

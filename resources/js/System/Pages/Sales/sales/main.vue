@@ -551,6 +551,41 @@
                                 <input class="form-control" disabled :value="separatorNumber(totalModalDetail)"/>
                             </template>
                         </InputSlot>
+                        <InputSlot
+                            hasDiv
+                            :title="MODULE.texts.form.commissionType"
+                            :titleClass="[config.forms.classes.title]"
+                            xl="6"
+                            lg="6">
+                            <template v-slot:input>
+                                <v-select
+                                    v-model="forms[entity].createUpdate.extras.modals.details.data.commission_type"
+                                    :options="commissionTypeOptions"
+                                    :reduce="option => option.code"
+                                    :class="config.forms.classes.select2"
+                                    :clearable="false"
+                                    :searchable="false"
+                                    @close="tooltips({show: true, time: 500})"/>
+                            </template>
+                        </InputSlot>
+                        <InputNumber
+                            v-model="forms[entity].createUpdate.extras.modals.details.data.commission_value"
+                            hasDiv
+                            :title="MODULE.texts.form.commissionValue"
+                            :titleClass="[config.forms.classes.title]"
+                            :disabled="forms[entity].createUpdate.extras.modals.details.data.commission_type === 'none'"
+                            :minValue="0"
+                            :maxValue="forms[entity].createUpdate.extras.modals.details.data.commission_type === 'percentage' ? 100 : null"
+                            xl="6"
+                            lg="6">
+                            <template v-slot:inputGroupPrepend>
+                                <div class="input-group-text br-input-currency-addon">
+                                    <span
+                                        class="br-input-currency-addon__sign"
+                                        v-text="forms[entity].createUpdate.extras.modals.details.data.commission_type === 'percentage' ? '%' : (forms[entity].createUpdate.extras.modals.details.data.item?.data?.currency?.sign || forms[entity].createUpdate.data.currency?.data?.sign || '')"></span>
+                                </div>
+                            </template>
+                        </InputNumber>
                         <template v-if="isSubscription(forms[entity].createUpdate.extras.modals.details.data.type)">
                             <InputDatetime
                                 v-model="forms[entity].createUpdate.extras.modals.details.data.extras.start_date"
@@ -879,6 +914,8 @@ const TEXTS = {
         quantityPeriods: "Cantidad de períodos",
         price: "Precio",
         total: "Total",
+        commissionType: "Comision",
+        commissionValue: "Valor de comision",
         footerTotalLabel: "Importe total:",
         membershipDetail: "Detalle de la membresía",
         detailRowMembershipLabel: "Membresía",
@@ -950,6 +987,8 @@ export default {
                             name: "",
                             quantity: 1,
                             price: 0,
+                            commission_type: "none",
+                            commission_value: 0,
                             observation: "",
                             extras: {
                                 min_price: "",
@@ -2030,6 +2069,15 @@ export default {
             return this.options?.items?.records.map(e => ({code: e.id, label: e.name, data: e}));
 
         },
+        commissionTypeOptions() {
+
+            return [
+                {code: "none", label: "Sin comision"},
+                {code: "percentage", label: "Porcentaje"},
+                {code: "fixed", label: "Monto fijo por unidad"}
+            ];
+
+        },
         saleTaxes() {
 
             return (this.options?.taxes?.records || []).map(tax => ({
@@ -2288,6 +2336,14 @@ export default {
             modalData.currency = data?.currency;
             modalData.name     = data?.name;
             modalData.price    = Number(data?.price ?? 0);
+            modalData.commission_type = data?.commission_type || (Number(data?.commission_rate || 0) > 0 ? "percentage" : "none");
+            modalData.commission_value = Number(data?.commission_value ?? data?.commission_rate ?? 0);
+
+            if(modalData.commission_type === "none") {
+
+                modalData.commission_value = 0;
+
+            }
 
             // Set quantity decimals
             const quantity = modalData?.quantity ?? 1,

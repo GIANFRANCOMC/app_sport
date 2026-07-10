@@ -37,6 +37,8 @@ class ServiceService {
         "currency_id",
         "estimated_duration_minutes",
         "commission_rate",
+        "commission_type",
+        "commission_value",
         "see_my_web",
         "see_my_web_price",
         "status"
@@ -105,7 +107,7 @@ class ServiceService {
 
         }
 
-        return $itemData;
+        return self::syncLegacyCommissionRate($itemData);
 
     }
 
@@ -154,7 +156,23 @@ class ServiceService {
 
         }
 
-        return $updateData;
+        return self::syncLegacyCommissionRate($updateData);
+
+    }
+
+    private static function syncLegacyCommissionRate(array $itemData): array {
+
+        if(($itemData["commission_type"] ?? null) === "percentage") {
+
+            $itemData["commission_rate"] = $itemData["commission_value"] ?? 0;
+
+        }elseif(array_key_exists("commission_type", $itemData)) {
+
+            $itemData["commission_rate"] = null;
+
+        }
+
+        return $itemData;
 
     }
 

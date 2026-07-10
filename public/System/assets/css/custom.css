@@ -4210,6 +4210,41 @@ body.br-layout .br-entity-table > thead > tr > th {
   margin-left: auto;
 }
 
+.br-service-report-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.6rem;
+  margin-bottom: 1rem;
+}
+
+.br-service-report-grid > article {
+  padding: 0.75rem 0.85rem;
+  border: 1px solid var(--br-border);
+  border-top: 2px solid var(--br-secondary);
+  border-radius: var(--br-radius-sm);
+  background: #ffffff;
+}
+
+.br-service-report-grid span {
+  display: block;
+  color: var(--br-text-muted);
+  font-size: 0.68rem;
+  font-weight: 750;
+}
+
+.br-service-report-grid strong {
+  display: block;
+  margin-top: 0.1rem;
+  color: var(--br-secondary);
+  font-size: 1rem;
+}
+
+.br-service-report-grid small {
+  color: var(--br-primary-active);
+  font-size: 0.68rem;
+  font-weight: 650;
+}
+
 .br-service-legend {
   display: flex;
   flex-wrap: wrap;
@@ -4415,6 +4450,13 @@ body.br-layout .br-entity-table > thead > tr > th {
   padding-bottom: 0.8rem;
 }
 
+.br-service-detail__operations {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) repeat(4, auto);
+  gap: 0.45rem;
+  padding-bottom: 0.8rem;
+}
+
 .br-service-detail__items {
   flex: 1 1 auto;
   min-height: 0;
@@ -4423,7 +4465,7 @@ body.br-layout .br-entity-table > thead > tr > th {
 
 .br-service-detail__items article {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto auto;
+  grid-template-columns: minmax(0, 1fr) auto auto auto auto;
   align-items: center;
   gap: 0.55rem;
   padding: 0.7rem 0;
@@ -4456,6 +4498,57 @@ body.br-layout .br-entity-table > thead > tr > th {
   gap: 0.5rem;
   padding-top: 0.8rem;
   border-top: 1px solid var(--br-border);
+}
+
+.br-service-timeline {
+  margin-top: 0.8rem;
+  padding-top: 0.8rem;
+  border-top: 1px solid var(--br-border);
+}
+
+.br-service-timeline h3 {
+  margin: 0 0 0.55rem;
+  color: var(--br-secondary);
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.br-service-timeline ol {
+  display: grid;
+  gap: 0.55rem;
+  max-height: 12rem;
+  margin: 0;
+  padding: 0;
+  overflow: auto;
+  list-style: none;
+}
+
+.br-service-timeline li {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.55rem;
+}
+
+.br-service-timeline li > span {
+  width: 0.55rem;
+  height: 0.55rem;
+  margin-top: 0.25rem;
+  border-radius: 50%;
+  background: var(--br-primary);
+  box-shadow: 0 0 0 0.18rem var(--br-primary-soft);
+}
+
+.br-service-timeline strong {
+  display: block;
+  color: var(--br-secondary);
+  font-size: 0.74rem;
+}
+
+.br-service-timeline small,
+.br-service-timeline p {
+  margin: 0;
+  color: var(--br-text-muted);
+  font-size: 0.68rem;
 }
 
 .br-service-selected-station {
@@ -4509,6 +4602,15 @@ body.br-layout .br-entity-table > thead > tr > th {
     grid-template-columns: 1fr;
   }
 
+  .br-service-report-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .br-service-detail__operations,
+  .br-service-detail__items article {
+    grid-template-columns: 1fr;
+  }
+
   .br-service-detail {
     top: 0;
     height: 100vh;
@@ -4527,6 +4629,12 @@ body.br-layout .br-entity-table > thead > tr > th {
   gap: 0.45rem;
   padding: 0.2rem 0 0.75rem;
   overflow-x: auto;
+}
+
+.br-service-floor-nav__group {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
 }
 
 .br-service-floor-nav__item {
@@ -4572,6 +4680,27 @@ body.br-layout .br-entity-table > thead > tr > th {
 .br-service-floor-nav__item.is-active small {
   background: rgba(255, 255, 255, 0.16);
   color: #ffffff;
+}
+
+.br-service-floor-nav__edit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  border: 1px solid var(--br-border);
+  border-radius: var(--br-radius-sm);
+  background: #ffffff;
+  color: var(--br-secondary);
+  font-size: 0.68rem;
+  transition: var(--br-transition);
+}
+
+.br-service-floor-nav__edit:hover {
+  border-color: var(--br-primary-muted);
+  color: var(--br-primary-active);
+  background: var(--br-primary-soft);
 }
 
 .br-service-floor-meta {
@@ -4701,7 +4830,8 @@ body.br-layout .br-entity-table > thead > tr > th {
 }
 
 .br-service-map-station__drag,
-.br-service-map-station__color {
+.br-service-map-station__color,
+.br-service-map-station__edit {
   position: absolute;
   z-index: 2;
   top: 0.35rem;
@@ -4733,8 +4863,13 @@ body.br-layout .br-entity-table > thead > tr > th {
   right: 0.35rem;
 }
 
+.br-service-map-station__edit {
+  right: 1.9rem;
+}
+
 .br-service-map-station__drag:hover,
-.br-service-map-station__color:hover {
+.br-service-map-station__color:hover,
+.br-service-map-station__edit:hover {
   background: var(--br-primary-soft);
   color: var(--br-primary-active);
 }

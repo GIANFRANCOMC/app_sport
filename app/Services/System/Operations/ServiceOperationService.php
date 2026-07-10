@@ -76,6 +76,38 @@ final class ServiceOperationService {
 
     }
 
+    private static function calculateDetailCommission(ServiceSessionItem $detail): float {
+
+        $item = $detail->item;
+        $quantity = (float) $detail->quantity;
+        $unitPrice = (float) $detail->unit_price;
+        $type = $item?->commission_type ?? "none";
+        $value = (float) ($item?->commission_value ?? 0);
+        $legacyRate = (float) ($item?->commission_rate ?? 0);
+
+        if($type === "none" && $legacyRate > 0) {
+
+            $type = "percentage";
+            $value = $legacyRate;
+
+        }
+
+        if($type === "percentage") {
+
+            return Utilities::round(($quantity * $unitPrice) * (min($value, 100) / 100));
+
+        }
+
+        if($type === "fixed") {
+
+            return Utilities::round($quantity * max($value, 0));
+
+        }
+
+        return 0.0;
+
+    }
+
     public static function createFloor(int $companyId, int $actorId, array $data): ServiceFloor {
 
         self::requireBranch($companyId, (int) $data["branch_id"], $actorId);
@@ -119,6 +151,51 @@ final class ServiceOperationService {
             ->orderBy("level_number")
             ->orderBy("name")
             ->get();
+
+    }
+
+    public static function updateFloor(int $companyId, int $actorId, int $floorId, array $data): ServiceFloor {
+
+        return DB::transaction(function() use($companyId, $actorId, $floorId, $data) {
+            $branchId = (int) $data["branch_id"];
+            self::requireBranch($companyId, $branchId, $actorId);
+
+            $floor = ServiceFloor::query()
+                ->where("company_id", $companyId)
+                ->lockForUpdate()
+                ->find($floorId);
+
+            if(!$floor) {
+                throw new DomainException("El piso no está disponible.");
+            }
+
+            $duplicate = ServiceFloor::query()
+                ->where("company_id", $companyId)
+                ->where("branch_id", $branchId)
+                ->where("code", trim((string) $data["code"]))
+                ->where("id", "!=", $floorId)
+                ->exists();
+
+            if($duplicate) {
+                throw new DomainException("Ya existe un piso con ese código en la sucursal.");
+            }
+
+            $floor->fill([
+                "branch_id" => $branchId,
+                "code" => trim((string) $data["code"]),
+                "name" => trim((string) $data["name"]),
+                "level_number" => (int) ($data["level_number"] ?? $floor->level_number),
+                "sort_order" => (int) ($data["sort_order"] ?? $floor->sort_order),
+                "background_color" => (string) ($data["background_color"] ?? $floor->background_color),
+                "description" => $data["description"] ?? $floor->description,
+                "status" => (string) ($data["status"] ?? $floor->status),
+                "updated_at" => now(),
+                "updated_by" => $actorId
+            ]);
+            $floor->save();
+
+            return $floor->fresh();
+        });
 
     }
 
@@ -184,6 +261,56 @@ final class ServiceOperationService {
             ])
             ->orderBy("name")
             ->get();
+
+    }
+
+    public static function updateStation(int $companyId, int $actorId, int $stationId, array $data): ServiceStation {
+
+        return DB::transaction(function() use($companyId, $actorId, $stationId, $data) {
+            $branchId = (int) $data["branch_id"];
+            self::requireBranch($companyId, $branchId, $actorId);
+
+            $station = ServiceStation::query()
+                ->where("company_id", $companyId)
+                ->lockForUpdate()
+                ->find($stationId);
+
+            if(!$station) {
+                throw new DomainException("La mesa o estación no está disponible.");
+            }
+
+            $floor = self::requireOptionalFloor($companyId, $branchId, $data["service_floor_id"] ?? null);
+            $duplicate = ServiceStation::query()
+                ->where("company_id", $companyId)
+                ->where("branch_id", $branchId)
+                ->where("code", trim((string) $data["code"]))
+                ->where("id", "!=", $stationId)
+                ->exists();
+
+            if($duplicate) {
+                throw new DomainException("Ya existe una mesa o estación con ese código en la sucursal.");
+            }
+
+            $station->fill([
+                "branch_id" => $branchId,
+                "service_floor_id" => $floor?->id,
+                "code" => trim((string) $data["code"]),
+                "name" => trim((string) $data["name"]),
+                "station_type" => (string) ($data["station_type"] ?? $station->station_type),
+                "capacity" => (int) ($data["capacity"] ?? $station->capacity),
+                "position_x" => self::percentage($data["position_x"] ?? $station->position_x),
+                "position_y" => self::percentage($data["position_y"] ?? $station->position_y),
+                "color" => (string) ($data["color"] ?? $station->color),
+                "shape" => (string) ($data["shape"] ?? $station->shape),
+                "description" => $data["description"] ?? $station->description,
+                "status" => (string) ($data["status"] ?? $station->status),
+                "updated_at" => now(),
+                "updated_by" => $actorId
+            ]);
+            $station->save();
+
+            return $station->fresh(["floor", "activeSession.customer", "activeSession.items"]);
+        });
 
     }
 
@@ -269,7 +396,16 @@ final class ServiceOperationService {
 
         $session = ServiceSession::query()
             ->where("company_id", $companyId)
-            ->with(["branch", "station", "customer", "assignedUser", "items.item", "items.assignedUser", "sale"])
+            ->with([
+                "branch",
+                "station",
+                "customer",
+                "assignedUser",
+                "items.item",
+                "items.assignedUser",
+                "sale",
+                "events.user"
+            ])
             ->find($sessionId);
 
         if(!$session) {
@@ -379,7 +515,7 @@ final class ServiceOperationService {
             self::requireOptionalUser($companyId, $data["assigned_user_id"] ?? null);
             $startedAt = !empty($data["start_immediately"]) ? now() : null;
 
-            return ServiceSessionItem::create([
+            $detail = ServiceSessionItem::create([
                 "company_id" => $companyId,
                 "service_session_id" => $session->id,
                 "item_id" => $item->id,
@@ -394,6 +530,18 @@ final class ServiceOperationService {
                 "created_at" => now(),
                 "created_by" => $actorId
             ]);
+
+            self::recordEvent(
+                $session,
+                $actorId,
+                "item_added",
+                null,
+                $detail->status,
+                null,
+                ["service_session_item_id" => $detail->id, "item_name" => $detail->name]
+            );
+
+            return $detail;
 
         });
 
@@ -690,6 +838,75 @@ final class ServiceOperationService {
 
     }
 
+    public static function reports(int $companyId, int $actorId, array $filters = []): array {
+
+        $dateFrom = !empty($filters["date_from"])
+            ? Carbon::parse($filters["date_from"])->startOfDay()
+            : now()->copy()->startOfMonth();
+        $dateTo = !empty($filters["date_to"])
+            ? Carbon::parse($filters["date_to"])->endOfDay()
+            : now()->copy()->endOfDay();
+
+        $query = ServiceSession::query()
+            ->where("company_id", $companyId)
+            ->whereBetween("created_at", [$dateFrom, $dateTo])
+            ->with(["branch", "station", "assignedUser", "items.item", "items.assignedUser"]);
+
+        $branchIds = CompanyReferenceDataService::for($companyId, $actorId)->allowedBranchIds();
+        if($branchIds !== null) {
+            $query->whereIn("branch_id", $branchIds);
+        }
+
+        foreach(["branch_id", "service_station_id", "assigned_user_id", "session_type"] as $field) {
+            if(!empty($filters[$field])) {
+                $query->where($field, $filters[$field]);
+            }
+        }
+
+        $sessions = $query->get();
+        $completed = $sessions->where("status", self::STATUS_COMPLETED);
+        $withSla = $completed->filter(function(ServiceSession $session) {
+            return !empty($session->expected_end_at);
+        });
+        $late = $withSla->filter(function(ServiceSession $session) {
+            $limit = Carbon::parse($session->expected_end_at)
+                ->addMinutes((int) ($session->tolerance_minutes ?? 0));
+
+            return $session->ended_at && Carbon::parse($session->ended_at)->greaterThan($limit);
+        });
+        $commissionTotal = 0.0;
+
+        $sessions->each(function(ServiceSession $session) use(&$commissionTotal) {
+            $session->items->each(function(ServiceSessionItem $detail) use(&$commissionTotal) {
+                $commissionTotal += self::calculateDetailCommission($detail);
+            });
+        });
+
+        return [
+            "period" => [
+                "date_from" => $dateFrom->toDateString(),
+                "date_to" => $dateTo->toDateString()
+            ],
+            "summary" => [
+                "total_sessions" => $sessions->count(),
+                "open_sessions" => $sessions->whereIn("status", [self::STATUS_PENDING, self::STATUS_IN_PROGRESS])->count(),
+                "completed_sessions" => $completed->count(),
+                "canceled_sessions" => $sessions->where("status", self::STATUS_CANCELED)->count(),
+                "average_duration_minutes" => round((float) $completed->avg("duration_minutes"), 2),
+                "sla_late_sessions" => $late->count(),
+                "sla_compliance_rate" => $withSla->count()
+                    ? round((($withSla->count() - $late->count()) / $withSla->count()) * 100, 2)
+                    : null,
+                "commission_total" => round($commissionTotal, 2)
+            ],
+            "by_branch" => self::reportGroup($sessions, "branch", "Sucursal"),
+            "by_station" => self::reportGroup($sessions, "station", "Estación"),
+            "by_responsible" => self::reportGroup($sessions, "assignedUser", "Responsable"),
+            "by_service" => self::reportItemsGroup($sessions)
+        ];
+
+    }
+
     private static function changeItemTiming(
         int $companyId,
         int $actorId,
@@ -714,6 +931,8 @@ final class ServiceOperationService {
 
             self::requireBranch($companyId, (int) $item->session->branch_id, $actorId);
 
+            $previousStatus = (string) $item->status;
+
             if($complete) {
                 $endedAt = now();
                 $startedAt = $item->started_at ? Carbon::parse($item->started_at) : Carbon::parse($item->created_at);
@@ -737,6 +956,16 @@ final class ServiceOperationService {
             $item->updated_at = now();
             $item->updated_by = $actorId;
             $item->save();
+
+            self::recordEvent(
+                $item->session,
+                $actorId,
+                $complete ? "item_completed" : "item_started",
+                $previousStatus,
+                $item->status,
+                null,
+                ["service_session_item_id" => $item->id, "item_name" => $item->name]
+            );
 
             return $item->fresh(["item", "assignedUser"]);
         });
@@ -864,6 +1093,55 @@ final class ServiceOperationService {
 
     }
 
+    private static function reportGroup($sessions, string $relation, string $fallback): array {
+
+        return $sessions
+            ->groupBy(fn(ServiceSession $session) => optional($session->{$relation})->id ?? 0)
+            ->map(function($records) use($relation, $fallback) {
+                $first = $records->first();
+                $related = $first ? $first->{$relation} : null;
+                $completed = $records->where("status", self::STATUS_COMPLETED);
+
+                return [
+                    "id" => $related?->id,
+                    "name" => $related?->name ?? "Sin {$fallback}",
+                    "total_sessions" => $records->count(),
+                    "completed_sessions" => $completed->count(),
+                    "average_duration_minutes" => round((float) $completed->avg("duration_minutes"), 2)
+                ];
+            })
+            ->values()
+            ->all();
+
+    }
+
+    private static function reportItemsGroup($sessions): array {
+
+        $details = $sessions->flatMap(fn(ServiceSession $session) => $session->items);
+
+        return $details
+            ->groupBy("item_id")
+            ->map(function($records) {
+                $first = $records->first();
+                $commission = $records->sum(function(ServiceSessionItem $detail) {
+                    return self::calculateDetailCommission($detail);
+                });
+
+                return [
+                    "id" => $first?->item_id,
+                    "name" => $first?->name ?? "Detalle sin nombre",
+                    "quantity" => round((float) $records->sum("quantity"), 4),
+                    "total" => round((float) $records->sum(fn(ServiceSessionItem $detail) => (float) $detail->quantity * (float) $detail->unit_price), 2),
+                    "commission_total" => round($commission, 2),
+                    "average_duration_minutes" => round((float) $records->avg("duration_minutes"), 2)
+                ];
+            })
+            ->sortByDesc("quantity")
+            ->values()
+            ->all();
+
+    }
+
     private static function recordEvent(
         ServiceSession $session,
         ?int $actorId,
@@ -877,7 +1155,7 @@ final class ServiceOperationService {
         DB::table("service_session_events")->insert([
             "company_id" => $session->company_id,
             "service_session_id" => $session->id,
-            "service_session_item_id" => $metadata["item_id"] ?? null,
+            "service_session_item_id" => $metadata["service_session_item_id"] ?? $metadata["item_id"] ?? null,
             "user_id" => $actorId,
             "event_type" => $eventType,
             "previous_status" => $previousStatus,

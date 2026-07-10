@@ -9,6 +9,7 @@ use App\Helpers\System\{TranslationHelper, Utilities};
 use Illuminate\Support\Facades\DB;
 use stdClass;
 
+use App\Models\System\Catalogs\Item;
 use App\Models\System\Customers\Subscription;
 use App\Models\System\Finance\{CashMovement, CashSession};
 use App\Models\System\Organizations\{Serie, User};
@@ -34,6 +35,7 @@ class SaleService {
     private const TRANSLATION_NAMESPACE = "System.Sales.sale";
     private const CORRELATIVE_ISSUED = "issued";
     private const CORRELATIVE_CANCELED = "canceled";
+    private const COMMISSION_TYPES = ["none", "percentage", "fixed"];
 
     /**
      * Get translation with fallback
@@ -61,6 +63,84 @@ class SaleService {
             return $carry + Utilities::round(floatval($detail["quantity"]) * floatval($detail["price"]));
 
         }, 0);
+
+    }
+
+    private static function normalizeCommissionType(?string $type): string {
+
+        return in_array($type, self::COMMISSION_TYPES, true) ? $type : "none";
+
+    }
+
+    private static function normalizeCommissionValue(string $type, mixed $value): float {
+
+        $normalized = is_numeric($value) ? max(0, (float) $value) : 0.0;
+
+        if($type === "percentage") {
+
+            return min($normalized, 100);
+
+        }
+
+        return $type === "fixed" ? $normalized : 0.0;
+
+    }
+
+    private static function calculateCommissionAmount(float $quantity, float $price, string $type, float $value): float {
+
+        if($type === "percentage") {
+
+            return Utilities::round(($quantity * $price) * ($value / 100));
+
+        }
+
+        if($type === "fixed") {
+
+            return Utilities::round($quantity * $value);
+
+        }
+
+        return 0.0;
+
+    }
+
+    private static function normalizeCommissionDetails(array $details, int $companyId): array {
+
+        $items = Item::query()
+                     ->where("company_id", $companyId)
+                     ->whereIn("id", collect($details)->pluck("item_id")->filter()->unique()->values())
+                     ->get(["id", "commission_rate", "commission_type", "commission_value"])
+                     ->keyBy("id");
+
+        return array_map(function(array $detail) use($items) {
+
+            $item = $items->get((int) ($detail["item_id"] ?? 0));
+            $fallbackRate = (float) ($item?->commission_rate ?? 0);
+            $type = self::normalizeCommissionType($detail["commission_type"] ?? $item?->commission_type ?? null);
+
+            if($type === "none" && $fallbackRate > 0) {
+
+                $type = "percentage";
+
+            }
+
+            $value = self::normalizeCommissionValue(
+                $type,
+                $detail["commission_value"] ?? $item?->commission_value ?? $fallbackRate
+            );
+
+            $detail["commission_type"] = $type;
+            $detail["commission_value"] = $value;
+            $detail["commission_amount"] = self::calculateCommissionAmount(
+                (float) ($detail["quantity"] ?? 0),
+                (float) ($detail["price"] ?? 0),
+                $type,
+                $value
+            );
+
+            return $detail;
+
+        }, $details);
 
     }
 
@@ -118,6 +198,9 @@ class SaleService {
         $saleBody->price          = $detail["price"];
         $saleBody->price_includes_tax = filter_var($detail["price_includes_tax"] ?? true, FILTER_VALIDATE_BOOL);
         $saleBody->total          = Utilities::round((floatval($saleBody->quantity) * floatval($saleBody->price)));
+        $saleBody->commission_type = $detail["commission_type"] ?? "none";
+        $saleBody->commission_value = $detail["commission_value"] ?? 0;
+        $saleBody->commission_amount = $detail["commission_amount"] ?? 0;
         $saleBody->customer_id    = $saleHeader->holder_id;
         $saleBody->type           = $detail["type"];
         $saleBody->observation    = $detail["observation"] ?? "";
@@ -448,6 +531,7 @@ class SaleService {
             $warehouse = self::resolveWarehouse($data, (int) $companyId);
             $cashSession = self::resolveCashSession($data, (int) $companyId, (int) $userId);
             self::validateSerieBelongsToBranch((int) $data["serie_id"], (int) $data["branch_id"]);
+            $data["details"] = self::normalizeCommissionDetails($data["details"], (int) $companyId);
 
             // Get new sequential number
             $newSequential = SaleHeader::getNewSequential($data["serie_id"]);
@@ -460,6 +544,11 @@ class SaleService {
 
             // Calculate totals
             $grossSubtotal = self::calculateTotal($data["details"]);
+            $commissionTotal = Utilities::round(array_reduce($data["details"], function($carry, $detail) {
+
+                return $carry + (float) ($detail["commission_amount"] ?? 0);
+
+            }, 0));
             $selectedTaxIds = collect($data["taxes"] ?? [])
                 ->pluck("tax_id")
                 ->filter()
@@ -504,6 +593,7 @@ class SaleService {
             $saleHeader->issue_date  = $data["issue_date"];
             $saleHeader->subtotal    = $subtotal;
             $saleHeader->tax         = $taxTotal;
+            $saleHeader->commission_total = $commissionTotal;
             $saleHeader->total       = $total;
             $saleHeader->observation = $data["observation"] ?? "";
             $saleHeader->status      = "active";

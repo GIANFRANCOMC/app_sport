@@ -68,6 +68,8 @@ En escritorio, la descarga se presenta como un botón verde compacto con el icon
 - `items.price_includes_tax`: indica si el precio de venta ya incluye IGV. Por defecto queda activo para venta al público.
 - `items.min_price`: límite inferior opcional.
 - `items.max_price`: límite superior opcional.
+- `items.commission_type`: regla interna de comisión para ventas del producto (`none`, `percentage`, `fixed`).
+- `items.commission_value`: valor de la comisión. Si es porcentaje aplica sobre el total de línea; si es monto fijo aplica por unidad vendida.
 
 ### Publicación
 
@@ -140,6 +142,8 @@ Si un almacén activo no tiene valores explícitos, se crea con cantidad y míni
 - El código de barras es único entre todos los items de la empresa.
 - Precio, stock inicial y stock mínimo no pueden ser negativos.
 - `price_includes_tax` se guarda como booleano y se usa en ventas para decidir si los impuestos configurados incrementan o no el total del detalle.
+- La comisión es opcional y no altera el precio ni el total cobrado al cliente; se guarda como dato interno para liquidaciones y reportes.
+- Si la comisión es porcentual, no puede superar el 100%. Si es monto fijo, se calcula por unidad vendida.
 - El precio debe respetar los límites mínimo y máximo configurados.
 - Los almacenes enviados deben estar activos y pertenecer a sucursales activas de la empresa autenticada.
 - Las categorías deben estar activas y pertenecer a la empresa autenticada.

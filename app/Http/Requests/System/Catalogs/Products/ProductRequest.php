@@ -30,6 +30,8 @@ abstract class ProductRequest extends CompanyFormRequest {
             "price_includes_tax" => ["nullable", "boolean"],
             "min_price" => ["nullable", "numeric", "min:0", "max:{$maxValue}", "decimal:0,{$round}"],
             "max_price" => ["nullable", "numeric", "min:0", "max:{$maxValue}", "decimal:0,{$round}"],
+            "commission_type" => ["required", "in:none,percentage,fixed"],
+            "commission_value" => ["nullable", "numeric", "min:0", "max:{$maxValue}", "decimal:0,{$round}"],
             "currency_id" => ["bail", "required", "integer", new BelongsToCompany("currencies", ["status" => "active"], "La moneda seleccionada no pertenece a la empresa.")],
             "categories" => ["nullable", "array", "max:50"],
             "categories.*.category_id" => ["bail", "required", "integer", "distinct", new BelongsToCompany("categories", ["status" => "active"], "Una o más categorías no pertenecen a la empresa o no están activas.")],
@@ -68,6 +70,8 @@ abstract class ProductRequest extends CompanyFormRequest {
             "min_price" => "precio mínimo",
             "max_price" => "precio máximo",
             "currency_id" => "moneda",
+            "commission_type" => "tipo de comision",
+            "commission_value" => "valor de comision",
             "categories" => "categorías",
             "inventory" => "inventario por almacén",
             "status" => "estado"
@@ -90,6 +94,7 @@ abstract class ProductRequest extends CompanyFormRequest {
             function(Validator $validator) {
 
                 $this->validatePriceRange($validator);
+                $this->validateCommission($validator);
                 $this->validateBrandStatus($validator);
 
             }
@@ -120,8 +125,37 @@ abstract class ProductRequest extends CompanyFormRequest {
             ),
             "brand_id" => $this->filled("brand_id") ? (int) $this->input("brand_id") : null,
             "min_price" => $this->normalizeOptionalNumber($this->input("min_price")),
-            "max_price" => $this->normalizeOptionalNumber($this->input("max_price"))
+            "max_price" => $this->normalizeOptionalNumber($this->input("max_price")),
+            "commission_type" => $this->input("commission_type") ?: "none",
+            "commission_value" => $this->input("commission_type") === "none"
+                ? 0
+                : ($this->normalizeOptionalNumber($this->input("commission_value")) ?? 0)
         ]);
+
+    }
+
+    private function validateCommission(Validator $validator): void {
+
+        if($validator->errors()->hasAny(["commission_type", "commission_value"])) {
+
+            return;
+
+        }
+
+        $type = (string) $this->input("commission_type", "none");
+        $value = (float) ($this->input("commission_value") ?? 0);
+
+        if($type !== "none" && $value <= 0) {
+
+            $validator->errors()->add("commission_value", "Debe ser mayor que 0 cuando el producto tiene comision.");
+
+        }
+
+        if($type === "percentage" && $value > 100) {
+
+            $validator->errors()->add("commission_value", "No puede superar el 100%.");
+
+        }
 
     }
 

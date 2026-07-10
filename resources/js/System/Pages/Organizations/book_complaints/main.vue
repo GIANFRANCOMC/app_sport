@@ -173,7 +173,7 @@
                                                 <span class="text-dark fw-bold colon-at-end d-block mb-2" v-text="MODULE.texts.form.statusHistory"></span>
                                                 <div v-if="(forms[entity].createUpdate.data.status_histories ?? []).length > 0" class="br-book-complaint-history">
                                                     <span v-for="history in forms[entity].createUpdate.data.status_histories" :key="history.id" class="br-book-complaint-history__item">
-                                                        <strong v-text="history.new_status || history.status"></strong>
+                                                        <strong v-text="getStatusHistoryLabel(history)"></strong>
                                                         <small v-text="legibleFormatDate({dateString: history.changed_at || history.created_at, type: 'datetime'})"></small>
                                                     </span>
                                                 </div>
@@ -680,6 +680,14 @@ export default {
         getType(record) {
 
             return (this.types ?? []).find(e => e.code === record?.type) ?? null;
+
+        },
+        getStatusHistoryLabel(history) {
+
+            const status = history?.new_status || history?.status;
+            const found = (this.statuses ?? []).find(e => e.code === status);
+
+            return found?.label ?? status ?? this.MODULE.texts.card.notSpecified;
 
         },
         bookComplaintAttachmentUrl(attachment) {

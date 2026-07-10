@@ -34,6 +34,7 @@ Permite crear una venta con productos, servicios o membresias. Una venta puede g
 - `issue_date`
 - `details[]`
 - Por detalle: `item_id`, `currency_id`, `name`, `quantity`, `price`, `type`, `extras`
+- Por detalle, opcional: `commission_type`, `commission_value`. Si no se envian, el backend toma la configuracion vigente del item.
 
 ## Estado de mejoras
 
@@ -54,6 +55,17 @@ Permite crear una venta con productos, servicios o membresias. Una venta puede g
 - Los pagos aplicados se guardan como foto del documento en `sale_payments`.
 - La vista `resources/js/System/Pages/Sales/sales/main.vue` muestra un bloque lateral de liquidacion con impuestos aplicados automaticamente, metodos de pago, subtotal, impuestos, total, pagado y diferencia.
 - Si solo hay un metodo de pago, el importe se sincroniza con el total para facilitar el registro.
+
+## Actualizacion: comisiones de venta
+
+- Toda venta puede guardar comision por detalle, sin importar si el item es producto, servicio o membresia.
+- `items.commission_type` define la regla comercial por defecto: `none`, `percentage` o `fixed`.
+- `items.commission_value` guarda el valor de la regla. En `percentage` representa porcentaje sobre el total de linea; en `fixed` representa monto fijo por unidad vendida.
+- `items.commission_rate` se conserva por compatibilidad con servicios existentes; si existe un porcentaje antiguo y no se envia la regla nueva, `SaleService` lo interpreta como `percentage`.
+- `sales_body.commission_type`, `sales_body.commission_value` y `sales_body.commission_amount` guardan la foto de la comision aplicada a cada detalle.
+- `sales_header.commission_total` guarda la suma de comisiones de toda la venta para reportes, liquidaciones y comisiones por colaborador.
+- La comision es informacion interna de la empresa: no modifica subtotal, impuestos ni total cobrado al cliente.
+- La venta normal permite ajustar la comision por detalle antes de agregarlo. Venta POS toma la regla configurada en el item para mantener rapidez operativa.
 
 ## Actualizacion: IGV incluido, almacen de venta y caja
 

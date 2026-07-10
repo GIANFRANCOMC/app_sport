@@ -366,7 +366,8 @@ const ENTITY_SPECIAL_ROUTES = {
     service_operations: {
         floors: "floors",
         stations: "stations",
-        sessions: "sessions"
+        sessions: "sessions",
+        reports: "reports"
     },
     purchases: {
         receive: "receive",

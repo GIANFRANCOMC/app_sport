@@ -99,4 +99,11 @@ final class ServiceSession extends Model {
 
     }
 
+    public function events() {
+
+        return $this->hasMany(ServiceSessionEvent::class, "service_session_id", "id")
+            ->orderByDesc("occurred_at");
+
+    }
+
 }

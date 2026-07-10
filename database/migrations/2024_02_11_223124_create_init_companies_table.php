@@ -204,6 +204,8 @@ return new class extends Migration {
             $table->integer("duration_value")->nullable();
             $table->unsignedInteger("estimated_duration_minutes")->nullable();
             $table->decimal("commission_rate", 7, 4)->nullable();
+            $table->enum("commission_type", ["none", "percentage", "fixed"])->default("none");
+            $table->decimal("commission_value", 16, 4)->default(0);
             $table->unsignedSmallInteger("attendance_limit_per_day")->nullable();
             $table->json("benefits")->nullable();
             $table->json("restrictions")->nullable();

@@ -45,5 +45,6 @@ Administra los clientes de una empresa. Un cliente puede comprar, recibir membre
 ## Estado UI Implementado
 
 - El formulario de cliente muestra un bloque opcional de contacto de emergencia y salud.
+- El componente reutilizable `AddCustomer` usa el mismo bloque opcional para que clientes creados desde POS u otros modulos guarden la misma informacion.
 - El bloque registra contacto, celular de emergencia y observaciones medicas sin mezclar estos datos con informacion comercial.
 - Las tarjetas de clientes muestran contacto de emergencia y observaciones medicas solo cuando existen, manteniendo placeholders discretos cuando no hay informacion.

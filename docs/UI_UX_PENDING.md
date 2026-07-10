@@ -15,6 +15,7 @@ Cuando una pantalla queda implementada, responsive, accesible, con errores por c
 - POS con categorías sólidas, contador flotante, check activo, cards separadas por tipo y panel derecho fijo en escritorio.
 - Dashboard consumiendo agregados oficiales: ventas netas, ventas anuladas, asistencias del día, membresías por vencer y sucursales activas.
 - Compras con selector explícito de entrega inmediata o recepción pendiente.
+- Restaurante POS y Servicios en curso usan plano editable, KDS, línea de tiempo, agenda, cola, pausas, reasignación y métricas base.
 
 ## Pendientes Transversales
 
@@ -58,13 +59,6 @@ Cuando una pantalla queda implementada, responsive, accesible, con errores por c
 - Colaboradores: contraseña en flujo separado, bloqueo sin eliminación y auditoría sensible.
 - Asistencia laboral: horarios, pausas, tardanzas, horas ordinarias/extra, correcciones y exportación de nómina.
 - Biométricos: rotación de credenciales, secreto visible una sola vez, último contacto y eventos fallidos.
-
-## Restaurante y Servicios
-
-- KDS: estados `pending -> preparing -> ready -> delivered` con trazabilidad visible.
-- Pisos y mesas: editor visual de nombre, orden, fondo y disposición.
-- Servicios en curso: agenda, cola, tolerancia, pausas, reasignación, cancelación y línea de tiempo.
-- Reportes de servicios: SLA, comisiones y métricas por sucursal, estación, servicio y responsable.
 
 ## Reportes
 

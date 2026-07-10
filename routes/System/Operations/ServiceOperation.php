@@ -10,10 +10,13 @@ Route::get("/services", [ServiceOperationController::class, "index"])->name("ser
 Route::get("/initParams", [ServiceOperationController::class, "initParams"])->name("service_operations.initParams");
 Route::get("/floors", [ServiceOperationController::class, "floors"])->name("service_operations.floors");
 Route::post("/floors", [ServiceOperationController::class, "storeFloor"])->name("service_operations.floors.store");
+Route::patch("/floors/{id}", [ServiceOperationController::class, "updateFloor"])->name("service_operations.floors.update");
 Route::get("/stations", [ServiceOperationController::class, "stations"])->name("service_operations.stations");
 Route::post("/stations", [ServiceOperationController::class, "storeStation"])->name("service_operations.stations.store");
+Route::patch("/stations/{id}", [ServiceOperationController::class, "updateStation"])->name("service_operations.stations.update");
 Route::patch("/stations/{id}/layout", [ServiceOperationController::class, "updateStationLayout"])->name("service_operations.stations.layout");
 Route::get("/sessions", [ServiceOperationController::class, "sessions"])->name("service_operations.sessions");
+Route::get("/reports", [ServiceOperationController::class, "reports"])->name("service_operations.reports");
 Route::post("/sessions", [ServiceOperationController::class, "openSession"])->name("service_operations.sessions.store");
 Route::get("/sessions/{id}", [ServiceOperationController::class, "show"])->name("service_operations.sessions.show");
 Route::post("/sessions/{id}/items", [ServiceOperationController::class, "addItem"])->name("service_operations.items.store");

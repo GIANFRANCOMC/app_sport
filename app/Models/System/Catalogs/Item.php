@@ -41,6 +41,8 @@ class Item extends Model {
         "duration_value",
         "estimated_duration_minutes",
         "commission_rate",
+        "commission_type",
+        "commission_value",
         "attendance_limit_per_day",
         "benefits",
         "restrictions",
@@ -57,6 +59,7 @@ class Item extends Model {
         "price_includes_tax" => "boolean",
         "estimated_duration_minutes" => "integer",
         "commission_rate" => "decimal:4",
+        "commission_value" => "decimal:4",
         "attendance_limit_per_day" => "integer",
         "benefits" => "array",
         "restrictions" => "array"

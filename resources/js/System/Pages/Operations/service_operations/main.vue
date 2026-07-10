@@ -53,19 +53,54 @@
 
         <Loader v-if="loading"/>
 
+        <div v-if="!loading && !isRestaurant && reports" class="br-service-report-grid">
+            <article>
+                <span>Atenciones</span>
+                <strong>{{ reports.summary.total_sessions }}</strong>
+                <small>{{ reports.summary.open_sessions }} abiertas</small>
+            </article>
+            <article>
+                <span>SLA</span>
+                <strong>{{ reports.summary.sla_compliance_rate === null ? '-' : `${reports.summary.sla_compliance_rate}%` }}</strong>
+                <small>{{ reports.summary.sla_late_sessions }} fuera de tolerancia</small>
+            </article>
+            <article>
+                <span>Tiempo promedio</span>
+                <strong>{{ minutesLabel(reports.summary.average_duration_minutes) }}</strong>
+                <small>Servicios finalizados</small>
+            </article>
+            <article>
+                <span>Comisiones</span>
+                <strong>S/ {{ money(reports.summary.commission_total) }}</strong>
+                <small>Estimado del periodo</small>
+            </article>
+        </div>
+
         <template v-else-if="isRestaurant">
             <template v-if="floors.length">
                 <div class="br-service-floor-nav">
-                    <button
+                    <div
                         v-for="floor in floors"
                         :key="floor.id"
-                        type="button"
-                        class="br-service-floor-nav__item"
-                        :class="{'is-active': selectedFloor?.id === floor.id}"
-                        @click="selectFloor(floor)">
-                        <span>{{ floor.name }}</span>
-                        <small>{{ floor.stations_count || 0 }}</small>
-                    </button>
+                        class="br-service-floor-nav__group">
+                        <button
+                            type="button"
+                            class="br-service-floor-nav__item"
+                            :class="{'is-active': selectedFloor?.id === floor.id}"
+                            @click="selectFloor(floor)">
+                            <span>{{ floor.name }}</span>
+                            <small>{{ floor.stations_count || 0 }}</small>
+                        </button>
+                        <button
+                            type="button"
+                            class="br-service-floor-nav__edit"
+                            data-bs-toggle="tooltip"
+                            title="Editar piso"
+                            aria-label="Editar piso"
+                            @click.stop="openFloorModal(floor)">
+                            <i class="fa-solid fa-pen" aria-hidden="true"></i>
+                        </button>
+                    </div>
                 </div>
 
                 <div class="br-service-floor-meta">
@@ -103,6 +138,14 @@
                             aria-label="Cambiar color"
                             @click.stop="cycleStationColor(station)">
                             <i class="fa-solid fa-palette" aria-hidden="true"></i>
+                        </button>
+                        <button
+                            type="button"
+                            class="br-service-map-station__edit"
+                            title="Editar mesa"
+                            aria-label="Editar mesa"
+                            @click.stop="openStationModal(station)">
+                            <i class="fa-solid fa-pen" aria-hidden="true"></i>
                         </button>
                         <button
                             type="button"
@@ -200,6 +243,53 @@
                 <span><small>Detalles</small><strong>{{ selectedSession.items?.length || 0 }}</strong></span>
             </div>
 
+            <div
+                v-if="['pending', 'in_progress'].includes(selectedSession.status)"
+                class="br-service-detail__operations">
+                <v-select
+                    v-model="operationForm.user"
+                    :options="userOptions"
+                    :clearable="true"
+                    :searchable="true"
+                    placeholder="Reasignar responsable"/>
+                <input
+                    v-model.trim="operationForm.note"
+                    type="text"
+                    class="form-control"
+                    maxlength="500"
+                    placeholder="Motivo, pausa o cancelación"/>
+                <button
+                    type="button"
+                    class="br-btn br-btn-sm br-btn-secondary"
+                    :disabled="saving || !operationForm.user"
+                    @click="reassignSession">
+                    Reasignar
+                </button>
+                <button
+                    v-if="!isSessionPaused(selectedSession)"
+                    type="button"
+                    class="br-btn br-btn-sm br-btn-action-import"
+                    :disabled="saving"
+                    @click="pauseSession">
+                    Pausar
+                </button>
+                <button
+                    v-else
+                    type="button"
+                    class="br-btn br-btn-sm br-btn-success"
+                    :disabled="saving"
+                    @click="resumeSession">
+                    Reanudar
+                </button>
+                <button
+                    type="button"
+                    class="br-btn br-btn-sm br-btn-danger"
+                    :disabled="saving || !operationForm.note"
+                    @click="cancelSession">
+                    Cancelar
+                </button>
+            </div>
+
             <div class="br-service-add-item">
                 <v-select
                     v-model="detailForm.item"
@@ -229,7 +319,17 @@
                         <strong>{{ item.name }}</strong>
                         <small>{{ item.assigned_user?.name || 'Sin responsable' }} · {{ elapsedLabel(item) }}</small>
                     </div>
-                    <span class="br-status-label" :class="statusClass(item.status)">{{ statusLabel(item.status) }}</span>
+                    <span class="br-status-label" :class="preparationStatusClass(item.preparation_status)">
+                        {{ preparationStatusLabel(item.preparation_status) }}
+                    </span>
+                    <button
+                        v-if="nextPreparationAction(item)"
+                        type="button"
+                        class="br-btn br-btn-sm br-btn-secondary"
+                        @click="changePreparationStatus(item, nextPreparationAction(item).status)">
+                        {{ nextPreparationAction(item).label }}
+                    </button>
+                    <span v-else class="br-status-label br-status-completed">Entregado</span>
                     <button
                         v-if="item.status === 'pending'"
                         type="button"
@@ -246,6 +346,23 @@
                     </button>
                 </article>
             </div>
+
+            <section v-if="selectedSession.events?.length" class="br-service-timeline" aria-label="Línea de tiempo">
+                <h3>Línea de tiempo</h3>
+                <ol>
+                    <li v-for="event in selectedSession.events" :key="event.id">
+                        <span></span>
+                        <div>
+                            <strong>{{ eventLabel(event) }}</strong>
+                            <small>
+                                {{ formatDateTime(event.occurred_at) }}
+                                <template v-if="event.user"> · {{ event.user.name }}</template>
+                            </small>
+                            <p v-if="event.note">{{ event.note }}</p>
+                        </div>
+                    </li>
+                </ol>
+            </section>
 
             <footer class="br-service-detail__footer">
                 <button
@@ -281,7 +398,7 @@
                 <div class="modal-header br-entity-modal__header">
                     <div>
                         <p class="br-entity-modal__eyebrow mb-1">Restaurante POS</p>
-                        <h2 class="modal-title br-entity-modal__title">Agregar piso</h2>
+                        <h2 class="modal-title br-entity-modal__title">{{ editingFloorId ? 'Editar piso' : 'Agregar piso' }}</h2>
                     </div>
                     <button type="button" class="br-modal-close" data-bs-dismiss="modal" aria-label="Cerrar">
                         <i class="fa-solid fa-xmark" aria-hidden="true"></i>
@@ -292,6 +409,7 @@
                         <InputText v-model="floorForm.name" title="Nombre" :isRequired="true" :xl="8" :lg="8" :md="12" :sm="12"/>
                         <InputText v-model="floorForm.code" title="Código" :isRequired="true" :xl="4" :lg="4" :md="12" :sm="12"/>
                         <InputNumber v-model="floorForm.levelNumber" title="Nivel" :hasNegative="true" :decimals="0" :hasDiv="true" :xl="6" :lg="6" :md="12" :sm="12"/>
+                        <InputNumber v-model="floorForm.sortOrder" title="Orden" :decimals="0" :hasDiv="true" :xl="6" :lg="6" :md="12" :sm="12"/>
                         <div class="form-group col-md-6">
                             <label class="form-label">Fondo del plano</label>
                             <div class="br-service-color-options">
@@ -309,7 +427,9 @@
                 </div>
                 <div class="modal-footer br-entity-modal__footer">
                     <button type="button" class="br-btn br-btn-cancel" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="button" class="br-btn br-btn-action-create" :disabled="saving" @click="saveFloor">Agregar piso</button>
+                    <button type="button" class="br-btn br-btn-action-create" :disabled="saving" @click="saveFloor">
+                        {{ editingFloorId ? 'Editar piso' : 'Agregar piso' }}
+                    </button>
                 </div>
             </div>
         </div>
@@ -321,7 +441,7 @@
                 <div class="modal-header br-entity-modal__header">
                     <div>
                         <p class="br-entity-modal__eyebrow mb-1">Operación</p>
-                        <h2 class="modal-title br-entity-modal__title">Agregar mesa</h2>
+                        <h2 class="modal-title br-entity-modal__title">{{ editingStationId ? 'Editar mesa' : 'Agregar mesa' }}</h2>
                     </div>
                     <button type="button" class="br-modal-close" data-bs-dismiss="modal" aria-label="Cerrar">
                         <i class="fa-solid fa-xmark" aria-hidden="true"></i>
@@ -361,7 +481,9 @@
                 </div>
                 <div class="modal-footer br-entity-modal__footer">
                     <button type="button" class="br-btn br-btn-cancel" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="button" class="br-btn br-btn-action-create" :disabled="saving" @click="saveStation">Agregar mesa</button>
+                    <button type="button" class="br-btn br-btn-action-create" :disabled="saving" @click="saveStation">
+                        {{ editingStationId ? 'Editar mesa' : 'Agregar mesa' }}
+                    </button>
                 </div>
             </div>
         </div>
@@ -400,6 +522,18 @@
                             <v-select v-model="sessionForm.item" :options="itemOptions" :clearable="true" :searchable="true" placeholder="Puede agregarse después"/>
                         </div>
                         <InputNumber v-model="sessionForm.quantity" title="Cantidad" :minValue="0.0001" :decimals="4" :hasDiv="true" :xl="4" :lg="4" :md="12" :sm="12"/>
+                        <template v-if="!isRestaurant">
+                            <div class="form-group col-md-4">
+                                <label class="form-label">Agenda</label>
+                                <input v-model="sessionForm.scheduledAt" type="datetime-local" class="form-control">
+                            </div>
+                            <div class="form-group col-md-4">
+                                <label class="form-label">Fin esperado</label>
+                                <input v-model="sessionForm.expectedEndAt" type="datetime-local" class="form-control">
+                            </div>
+                            <InputNumber v-model="sessionForm.toleranceMinutes" title="Tolerancia" :decimals="0" :hasDiv="true" :xl="4" :lg="4" :md="12" :sm="12"/>
+                            <InputText v-model="sessionForm.queueCode" title="Turno o cola" :xl="4" :lg="4" :md="12" :sm="12"/>
+                        </template>
                         <div class="col-12">
                             <label class="br-entity-switch" for="startServiceImmediately">
                                 <input id="startServiceImmediately" v-model="sessionForm.startImmediately" class="form-check-input" type="checkbox" role="switch">
@@ -450,6 +584,7 @@ export default {
             selectedFloor: null,
             stations: [],
             sessions: {data: [], links: []},
+            reports: null,
             selectedSession: null,
             loading: false,
             saving: false,
@@ -457,10 +592,24 @@ export default {
             timer: null,
             dragState: null,
             dragHandlers: null,
-            floorForm: {name: "", code: "", levelNumber: 1, backgroundColor: "#f7f8fa"},
+            editingFloorId: null,
+            editingStationId: null,
+            floorForm: {name: "", code: "", levelNumber: 1, sortOrder: 1, backgroundColor: "#f7f8fa"},
             stationForm: {floor: null, name: "", code: "", type: null, capacity: 2, color: "#2899e5", shape: null},
-            sessionForm: {station: null, customer: null, user: null, item: null, quantity: 1, startImmediately: true},
-            detailForm: {item: null, user: null}
+            sessionForm: {
+                station: null,
+                customer: null,
+                user: null,
+                item: null,
+                quantity: 1,
+                startImmediately: true,
+                scheduledAt: "",
+                expectedEndAt: "",
+                toleranceMinutes: 0,
+                queueCode: ""
+            },
+            detailForm: {item: null, user: null},
+            operationForm: {user: null, note: ""}
         };
     },
     computed: {
@@ -553,6 +702,7 @@ export default {
             }
 
             await this.getSessions();
+            await this.getReports();
         },
         async handleBranchChange() {
             this.selectedSession = null;
@@ -606,7 +756,40 @@ export default {
                 this.sessions = result.data.data;
             }
         },
-        openStationModal() {
+        async getReports() {
+            if(this.isRestaurant || !this.selectedBranch) return;
+
+            const result = await Requests.get({
+                route: this.config.routes.reports,
+                data: {
+                    branch_id: this.selectedBranch.id,
+                    session_type: "catalog_service"
+                }
+            });
+
+            if(Requests.valid({result})) {
+                this.reports = result.data.data;
+            }
+        },
+        openStationModal(station = null) {
+            this.editingStationId = station?.id || null;
+
+            if(station) {
+                this.stationForm = {
+                    floor: this.floorOptions.find(floor => floor.id === station.service_floor_id) || this.floorOptions[0] || null,
+                    name: station.name,
+                    code: station.code,
+                    type: this.stationTypeOptions.find(type => type.code === station.station_type) || this.stationTypeOptions[0] || null,
+                    capacity: station.capacity,
+                    color: station.color || this.stationColorOptions[0],
+                    shape: this.stationShapeOptions.find(shape => shape.code === station.shape) || this.stationShapeOptions[0] || null,
+                    positionX: station.position_x,
+                    positionY: station.position_y
+                };
+                Alerts.modals({type: "show", id: "brServiceStationModal"});
+                return;
+            }
+
             const sequence = this.stations.length + 1;
             const floorCode = this.selectedFloor?.code || "P";
             this.stationForm = {
@@ -616,16 +799,33 @@ export default {
                 type: this.stationTypeOptions.find(type => type.code === "table") || this.stationTypeOptions[0] || null,
                 capacity: 2,
                 color: this.stationColorOptions[0],
-                shape: this.stationShapeOptions.find(shape => shape.code === "round") || this.stationShapeOptions[0] || null
+                shape: this.stationShapeOptions.find(shape => shape.code === "round") || this.stationShapeOptions[0] || null,
+                positionX: null,
+                positionY: null
             };
             Alerts.modals({type: "show", id: "brServiceStationModal"});
         },
-        openFloorModal() {
+        openFloorModal(floor = null) {
+            this.editingFloorId = floor?.id || null;
+
+            if(floor) {
+                this.floorForm = {
+                    name: floor.name,
+                    code: floor.code,
+                    levelNumber: floor.level_number,
+                    sortOrder: floor.sort_order,
+                    backgroundColor: floor.background_color || "#f7f8fa"
+                };
+                Alerts.modals({type: "show", id: "brServiceFloorModal"});
+                return;
+            }
+
             const sequence = this.floors.length + 1;
             this.floorForm = {
                 name: `Piso ${sequence}`,
                 code: `P${String(sequence).padStart(2, "0")}`,
                 levelNumber: sequence,
+                sortOrder: sequence,
                 backgroundColor: "#f7f8fa"
             };
             Alerts.modals({type: "show", id: "brServiceFloorModal"});
@@ -637,15 +837,15 @@ export default {
             }
 
             this.saving = true;
-            Alerts.loading({message: "Registrando piso"});
-            const result = await Requests.post({
-                route: this.config.routes.floors,
+            Alerts.loading({message: this.editingFloorId ? "Actualizando piso" : "Registrando piso"});
+            const result = await Requests[this.editingFloorId ? "patch" : "post"]({
+                route: this.editingFloorId ? `${this.config.routes.floors}/${this.editingFloorId}` : this.config.routes.floors,
                 data: {
                     branch_id: this.selectedBranch.id,
                     name: this.floorForm.name,
                     code: this.floorForm.code,
                     level_number: this.floorForm.levelNumber,
-                    sort_order: this.floors.length + 1,
+                    sort_order: this.floorForm.sortOrder || this.floors.length + 1,
                     background_color: this.floorForm.backgroundColor,
                     status: "active"
                 }
@@ -662,10 +862,22 @@ export default {
             await this.getFloors();
             this.selectedFloor = this.floors.find(floor => floor.id === result.data.data?.id) || this.selectedFloor;
             await this.getStations();
-            this.notify(result, "Piso registrado correctamente.", "success");
+            this.editingFloorId = null;
+            this.notify(result, "Piso guardado correctamente.", "success");
         },
         openSessionModal(station = null) {
-            this.sessionForm = {station, customer: null, user: null, item: null, quantity: 1, startImmediately: true};
+            this.sessionForm = {
+                station,
+                customer: null,
+                user: null,
+                item: null,
+                quantity: 1,
+                startImmediately: true,
+                scheduledAt: "",
+                expectedEndAt: "",
+                toleranceMinutes: 0,
+                queueCode: ""
+            };
             Alerts.modals({type: "show", id: "brServiceSessionModal"});
         },
         async saveStation() {
@@ -675,9 +887,9 @@ export default {
             }
 
             await this.perform({
-                message: "Registrando mesa",
-                request: () => Requests.post({
-                    route: this.config.routes.stations,
+                message: this.editingStationId ? "Actualizando mesa" : "Registrando mesa",
+                request: () => Requests[this.editingStationId ? "patch" : "post"]({
+                    route: this.editingStationId ? `${this.config.routes.stations}/${this.editingStationId}` : this.config.routes.stations,
                     data: {
                         branch_id: this.selectedBranch.id,
                         service_floor_id: this.stationForm.floor?.id,
@@ -685,12 +897,15 @@ export default {
                         code: this.stationForm.code,
                         station_type: this.stationForm.type?.code,
                         capacity: this.stationForm.capacity,
+                        position_x: this.stationForm.positionX,
+                        position_y: this.stationForm.positionY,
                         color: this.stationForm.color,
                         shape: this.stationForm.shape?.code,
                         status: "active"
                     }
                 }),
-                modalId: "brServiceStationModal"
+                modalId: "brServiceStationModal",
+                afterSuccess: () => { this.editingStationId = null; }
             });
         },
         async saveSession() {
@@ -706,7 +921,11 @@ export default {
                         item_id: this.sessionForm.item?.id,
                         quantity: this.sessionForm.quantity,
                         session_type: this.isRestaurant ? "restaurant" : "catalog_service",
-                        start_immediately: this.sessionForm.startImmediately
+                        start_immediately: this.sessionForm.startImmediately,
+                        scheduled_at: this.sessionForm.scheduledAt || null,
+                        expected_end_at: this.sessionForm.expectedEndAt || null,
+                        tolerance_minutes: this.sessionForm.toleranceMinutes || 0,
+                        queue_code: this.sessionForm.queueCode || null
                     }
                 }),
                 modalId: "brServiceSessionModal",
@@ -718,6 +937,10 @@ export default {
             if(Requests.valid({result})) {
                 this.selectedSession = result.data.data;
                 this.detailForm = {item: null, user: this.userOptions.find(user => user.id === this.selectedSession.assigned_user_id) || null};
+                this.operationForm = {
+                    user: this.userOptions.find(user => user.id === this.selectedSession.assigned_user_id) || null,
+                    note: ""
+                };
             }
         },
         async addSessionItem() {
@@ -752,7 +975,64 @@ export default {
                 sessionId: this.selectedSession.id
             });
         },
-        async perform({message, request, modalId = null, sessionId = null, selectResult = false}) {
+        async changePreparationStatus(item, status) {
+            await this.perform({
+                message: "Actualizando preparación",
+                request: () => Requests.patch({
+                    route: `${this.config.routes.consult}/items/${item.id}/preparation-status`,
+                    data: {status}
+                }),
+                sessionId: this.selectedSession.id
+            });
+        },
+        async reassignSession() {
+            const sessionId = this.selectedSession.id;
+            await this.perform({
+                message: "Reasignando responsable",
+                request: () => Requests.patch({
+                    route: `${this.config.routes.sessions}/${sessionId}/reassign`,
+                    data: {
+                        assigned_user_id: this.operationForm.user?.id,
+                        note: this.operationForm.note || null
+                    }
+                }),
+                sessionId,
+                afterSuccess: () => { this.operationForm = {user: null, note: ""}; }
+            });
+        },
+        async pauseSession() {
+            const sessionId = this.selectedSession.id;
+            await this.perform({
+                message: "Registrando pausa",
+                request: () => Requests.post({
+                    route: `${this.config.routes.sessions}/${sessionId}/pause`,
+                    data: {reason: this.operationForm.note || null}
+                }),
+                sessionId
+            });
+        },
+        async resumeSession() {
+            const sessionId = this.selectedSession.id;
+            await this.perform({
+                message: "Reanudando atención",
+                request: () => Requests.patch({route: `${this.config.routes.sessions}/${sessionId}/resume`}),
+                sessionId,
+                afterSuccess: () => { this.operationForm.note = ""; }
+            });
+        },
+        async cancelSession() {
+            const sessionId = this.selectedSession.id;
+            await this.perform({
+                message: "Cancelando atención",
+                request: () => Requests.patch({
+                    route: `${this.config.routes.sessions}/${sessionId}/cancel`,
+                    data: {reason: this.operationForm.note}
+                }),
+                sessionId,
+                afterSuccess: () => { this.operationForm = {user: null, note: ""}; }
+            });
+        },
+        async perform({message, request, modalId = null, sessionId = null, selectResult = false, afterSuccess = null}) {
             this.saving = true;
             Alerts.loading?.({message});
             const result = await request();
@@ -767,6 +1047,7 @@ export default {
 
             if(modalId) Alerts.modals({type: "hide", id: modalId});
             this.notify(result, "Operación completada correctamente.", "success");
+            if(typeof afterSuccess === "function") afterSuccess(result);
             await this.refresh();
 
             const targetId = sessionId || (selectResult ? result.data.data?.id : null);
@@ -848,6 +1129,44 @@ export default {
         },
         statusLabel(status) {
             return {pending: "Pendiente", in_progress: "En curso", completed: "Finalizada", canceled: "Cancelada"}[status] || status;
+        },
+        preparationStatusLabel(status) {
+            return {pending: "Pendiente", preparing: "Preparando", ready: "Listo", delivered: "Entregado"}[status || "pending"] || status;
+        },
+        preparationStatusClass(status) {
+            return {
+                pending: "br-status-pending",
+                preparing: "br-status-active",
+                ready: "br-status-completed",
+                delivered: "br-status-completed"
+            }[status || "pending"];
+        },
+        nextPreparationAction(item) {
+            return {
+                pending: {status: "preparing", label: "Preparar"},
+                preparing: {status: "ready", label: "Marcar listo"},
+                ready: {status: "delivered", label: "Entregar"}
+            }[item.preparation_status || "pending"] || null;
+        },
+        isSessionPaused(session) {
+            return session.events?.[0]?.event_type === "paused";
+        },
+        eventLabel(event) {
+            const labels = {
+                opened: "Atención creada",
+                started: "Atención iniciada",
+                completed: "Atención finalizada",
+                canceled: "Atención cancelada",
+                reassigned: "Responsable reasignado",
+                paused: "Atención pausada",
+                resumed: "Atención reanudada",
+                item_added: "Detalle agregado",
+                item_started: "Detalle iniciado",
+                item_completed: "Detalle finalizado",
+                preparation_status_changed: `Preparación: ${this.preparationStatusLabel(event.new_status)}`
+            };
+
+            return labels[event.event_type] || event.event_type;
         },
         statusClass(status) {
             return {

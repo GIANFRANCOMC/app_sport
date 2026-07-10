@@ -1088,6 +1088,8 @@ export default {
                     quantity: line.quantity,
                     price: line.price,
                     price_includes_tax: this.includesTax(line.item),
+                    commission_type: line.item?.commission_type || (Number(line.item?.commission_rate || 0) > 0 ? "percentage" : "none"),
+                    commission_value: Number(line.item?.commission_value ?? line.item?.commission_rate ?? 0),
                     observation: null
                 })),
                 taxes: this.taxSummary.map(tax => ({

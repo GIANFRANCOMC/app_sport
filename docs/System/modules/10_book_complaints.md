@@ -49,3 +49,4 @@ Permite administrar reclamos, quejas y sugerencias recibidas desde System o Gues
 - La gestion interna separa respuesta publica y respuesta interna.
 - La modal muestra adjuntos descargables y el historial de estados sin mezclarlos con la respuesta administrativa.
 - La nota de cambio de estado se envia como `status_note` para mantener trazabilidad de la atencion.
+- El listado interno carga adjuntos e historial para que la modal de gestion tenga informacion completa sin una segunda consulta.

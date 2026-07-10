@@ -43,6 +43,7 @@ class SaleHeader extends Model {
         "issue_date",
         "subtotal",
         "tax",
+        "commission_total",
         "total",
         "observation",
         "status",

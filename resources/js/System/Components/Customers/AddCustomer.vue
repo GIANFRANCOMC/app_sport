@@ -154,6 +154,54 @@
                                         :searchable="false"/>
                                 </template>
                             </InputSlot>
+                            <div class="col-12">
+                                <div class="br-customer-optional-block">
+                                    <div class="br-customer-optional-block__header">
+                                        <span class="br-customer-optional-block__icon">
+                                            <i class="fa-solid fa-kit-medical" aria-hidden="true"></i>
+                                        </span>
+                                        <div>
+                                            <strong v-text="MODULE.texts.form.emergencyBlockTitle"></strong>
+                                            <small v-text="MODULE.texts.form.emergencyBlockSubtitle"></small>
+                                        </div>
+                                    </div>
+                                    <div class="row g-3">
+                                        <InputText
+                                            v-model="forms[entity].createUpdate.data.emergency_contact_name"
+                                            hasDiv
+                                            :title="MODULE.texts.form.emergencyContactName"
+                                            :titleClass="[config.forms.classes.title]"
+                                            maxlength="255"
+                                            showCharCounter
+                                            hasTextBottom
+                                            :textBottomInfo="forms[entity].createUpdate.errors?.emergency_contact_name"
+                                            xl="6"
+                                            lg="6"/>
+                                        <InputText
+                                            v-model="forms[entity].createUpdate.data.emergency_contact_phone"
+                                            hasDiv
+                                            :title="MODULE.texts.form.emergencyContactPhone"
+                                            :titleClass="[config.forms.classes.title]"
+                                            maxlength="50"
+                                            showCharCounter
+                                            hasTextBottom
+                                            :textBottomInfo="forms[entity].createUpdate.errors?.emergency_contact_phone"
+                                            xl="6"
+                                            lg="6"/>
+                                        <InputTextArea
+                                            v-model="forms[entity].createUpdate.data.medical_notes"
+                                            hasDiv
+                                            :title="MODULE.texts.form.medicalNotes"
+                                            :titleClass="[config.forms.classes.title]"
+                                            maxlength="5000"
+                                            rows="3"
+                                            hasTextBottom
+                                            :textBottomInfo="forms[entity].createUpdate.errors?.medical_notes"
+                                            xl="12"
+                                            lg="12"/>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </form>
                 </div>
@@ -188,6 +236,8 @@ import * as Utils from "@System/Helpers/Utils.js";
 import { validateOnlyDigits } from "@System/Helpers/ValidationHelpers.js";
 import InputDate from "@System/Components/InputDate.vue";
 import InputSlot from "@System/Components/InputSlot.vue";
+import InputText from "@System/Components/InputText.vue";
+import InputTextArea from "@System/Components/InputTextArea.vue";
 
 const MODULE_CONFIG = {
     entity: "customers",
@@ -204,6 +254,9 @@ const FORM_FIELDS = {
     phone_number: "",
     gender: null,
     birthdate: "",
+    emergency_contact_name: "",
+    emergency_contact_phone: "",
+    medical_notes: "",
     status: null
 };
 
@@ -215,6 +268,9 @@ const FORM_FIELD_CONFIG = {
     phone_number: {trim: true, normalize: true},
     gender: {getCode: true, removeIfEmpty: true},
     birthdate: {normalize: true},
+    emergency_contact_name: {trim: true},
+    emergency_contact_phone: {trim: true},
+    medical_notes: {trim: true},
     status: {getCode: true}
 };
 
@@ -226,6 +282,9 @@ const VALIDATION_RULES = {
     phone_number: {required: false},
     gender: {required: false},
     birthdate: {required: false},
+    emergency_contact_name: {required: false},
+    emergency_contact_phone: {required: false},
+    medical_notes: {required: false},
     status: {required: true}
 };
 
@@ -238,6 +297,9 @@ const ERROR_LABELS = {
     phone_number: "Celular",
     gender: "Género",
     birthdate: "Fecha de nacimiento",
+    emergency_contact_name: "Contacto de emergencia",
+    emergency_contact_phone: "Celular de emergencia",
+    medical_notes: "Observaciones médicas",
     status: "Estado"
 };
 
@@ -250,6 +312,11 @@ const TEXTS = {
         phoneNumber: "Celular",
         gender: "Género",
         birthdate: "Fecha de nacimiento",
+        emergencyBlockTitle: "Contacto de emergencia y salud",
+        emergencyBlockSubtitle: "Opcional. Úsalo si el equipo necesita actuar rápido ante una incidencia.",
+        emergencyContactName: "Contacto de emergencia",
+        emergencyContactPhone: "Celular de emergencia",
+        medicalNotes: "Observaciones médicas",
         status: "Estado",
         searchDocumentTooltip: "Buscar N° documento"
     },
@@ -272,7 +339,9 @@ export default {
     name: "AddCustomer",
     components: {
         InputDate,
-        InputSlot
+        InputSlot,
+        InputText,
+        InputTextArea
     },
     emits: ["postAction"],
     props: {

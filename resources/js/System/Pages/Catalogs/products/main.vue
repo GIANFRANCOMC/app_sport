@@ -440,6 +440,45 @@
 
                                 <InputSlot
                                     hasDiv
+                                    title="Comision"
+                                    :titleClass="[config.forms.classes.title]"
+                                    hasTextBottom
+                                    :textBottomInfo="productForm.errors?.commission_type"
+                                    xl="4"
+                                    lg="4">
+                                    <template v-slot:input>
+                                        <v-select
+                                            v-model="productForm.data.commission_type"
+                                            :options="commissionTypeOptions"
+                                            :reduce="option => option.code"
+                                            :class="config.forms.classes.select2"
+                                            :clearable="false"
+                                            :searchable="false"
+                                            append-to-body/>
+                                    </template>
+                                </InputSlot>
+
+                                <InputNumber
+                                    v-model="productForm.data.commission_value"
+                                    hasDiv
+                                    title="Valor de comision"
+                                    :titleClass="[config.forms.classes.title]"
+                                    :disabled="productForm.data.commission_type === 'none'"
+                                    :minValue="0"
+                                    :maxValue="productForm.data.commission_type === 'percentage' ? 100 : null"
+                                    hasTextBottom
+                                    :textBottomInfo="productForm.errors?.commission_value"
+                                    xl="4"
+                                    lg="4">
+                                    <template v-slot:inputGroupPrepend>
+                                        <span class="input-group-text br-currency-prefix">
+                                            <span class="br-currency-prefix__symbol" v-text="productForm.data.commission_type === 'percentage' ? '%' : currencySign"></span>
+                                        </span>
+                                    </template>
+                                </InputNumber>
+
+                                <InputSlot
+                                    hasDiv
                                     :title="MODULE.texts.form.brand"
                                     :titleClass="[config.forms.classes.title]"
                                     hasTextBottom
@@ -783,7 +822,7 @@ const FORM_TABS = [
         id: "general",
         label: "Datos y precio",
         description: "Identidad y rango de precios",
-        fields: ["internal_code", "barcode", "name", "price", "min_price", "max_price", "currency", "currency_id", "brand", "brand_id", "status"]
+        fields: ["internal_code", "barcode", "name", "price", "min_price", "max_price", "price_includes_tax", "commission_type", "commission_value", "currency", "currency_id", "brand", "brand_id", "status"]
     },
     {
         id: "inventory",
@@ -806,6 +845,8 @@ const FORM_FIELDS = {
     description: "",
     price: "",
     price_includes_tax: true,
+    commission_type: "none",
+    commission_value: "",
     min_price: "",
     max_price: "",
     currency: null,
@@ -824,6 +865,7 @@ const FORM_FIELD_CONFIG = {
     description: {normalize: true},
     price: {toNumber: true, minValue: 0},
     price_includes_tax: {toBoolean: true},
+    commission_value: {toNumber: true, minValue: 0},
     min_price: {toNumber: true, minValue: 0},
     max_price: {toNumber: true, minValue: 0},
     currency: {mapToField: "currency_id"},
@@ -841,6 +883,8 @@ const VALIDATION_RULES = {
     description: {required: false},
     price: {required: true, number: true, min: 0},
     price_includes_tax: {required: false},
+    commission_type: {required: true},
+    commission_value: {required: false, number: true, min: 0},
     min_price: {required: false, number: true, min: 0},
     max_price: {required: false, number: true, min: 0},
     currency: {required: true},
@@ -862,6 +906,8 @@ const ERROR_LABELS = {
     min_price: "Precio mínimo",
     max_price: "Precio máximo",
     currency: "Moneda",
+    commission_type: "Tipo de comision",
+    commission_value: "Valor de comision",
     categories: "Categorías",
     brand: "Marca",
     inventory: "Inventario por almacén",
@@ -1219,6 +1265,8 @@ export default {
                     description: record.description,
                     price: record.price,
                     price_includes_tax: Boolean(record.price_includes_tax ?? true),
+                    commission_type: record.commission_type ?? (Number(record.commission_rate || 0) > 0 ? "percentage" : "none"),
+                    commission_value: Number(record.commission_value ?? record.commission_rate ?? 0),
                     min_price: record.min_price,
                     max_price: record.max_price,
                     currency: this.currencies.find(currency => currency.code === record.currency_id) ?? null,
@@ -1239,6 +1287,8 @@ export default {
                     categories: [],
                     brand: null,
                     price_includes_tax: true,
+                    commission_type: "none",
+                    commission_value: "",
                     see_my_web: true,
                     see_my_web_price: false,
                     inventory: this.buildInventory(),
@@ -1339,6 +1389,7 @@ export default {
 
                 const preparedData = Forms.prepareFormData(formData, this.MODULE.formFieldConfig);
                 if(!preparedData.see_my_web) preparedData.see_my_web_price = false;
+                if(preparedData.commission_type === "none") preparedData.commission_value = 0;
 
                 const id = preparedData.id;
                 const isUpdate = this.isDefined(id);
@@ -1661,6 +1712,15 @@ export default {
                 code: status.code,
                 label: status.label
             }));
+
+        },
+        commissionTypeOptions() {
+
+            return [
+                {code: "none", label: "Sin comision"},
+                {code: "percentage", label: "Porcentaje"},
+                {code: "fixed", label: "Monto fijo por unidad"}
+            ];
 
         },
         submitButtonText() {

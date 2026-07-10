@@ -8,6 +8,7 @@ use App\Helpers\System\Utilities;
 use App\Http\Requests\System\Base\CompanyFormRequest;
 use App\Http\Requests\System\Concerns\AppliesInternalCodePrefix;
 use App\Rules\System\Defaults\{BelongsToCompany, UniqueInCompany};
+use Illuminate\Validation\Validator;
 
 class UpdateServiceRequest extends CompanyFormRequest {
 
@@ -46,6 +47,8 @@ class UpdateServiceRequest extends CompanyFormRequest {
             "currency_id"   => ["required", "integer", new BelongsToCompany("currencies", ["status" => "active"], "La moneda seleccionada no pertenece a la empresa.")],
             "estimated_duration_minutes" => "nullable|integer|min:1|max:10080",
             "commission_rate" => "nullable|numeric|min:0|max:100|decimal:0,4",
+            "commission_type" => "nullable|in:none,percentage,fixed",
+            "commission_value" => "nullable|numeric|min:0|max:$maxValue|decimal:0,$round",
             "status"        => "required|in:active,inactive"
         ];
 
@@ -56,6 +59,33 @@ class UpdateServiceRequest extends CompanyFormRequest {
         }
 
         return $validations;
+
+    }
+
+    public function after(): array {
+
+        return [
+            fn(Validator $validator) => $this->validateCommission($validator)
+        ];
+
+    }
+
+    private function validateCommission(Validator $validator): void {
+
+        if($validator->errors()->hasAny(["commission_type", "commission_value"])) {
+
+            return;
+
+        }
+
+        $type = (string) $this->input("commission_type", "none");
+        $value = (float) ($this->input("commission_value") ?? 0);
+
+        if($type === "percentage" && $value > 100) {
+
+            $validator->errors()->add("commission_value", "No puede superar el 100%.");
+
+        }
 
     }
 

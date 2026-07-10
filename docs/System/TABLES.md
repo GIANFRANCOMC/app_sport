@@ -354,13 +354,15 @@ Foto histórica de los pagos del documento. Guardan método, nombre, monto, refe
 
 ### sales_header
 
-Cabecera de venta. Campos: `serie_id`, `sequential`, `holder_id`, `seller_id`, `currency_id`, `issue_date`, `total`, `observation`, `status`.
+Cabecera de venta. Campos: `serie_id`, `sequential`, `holder_id`, `seller_id`, `currency_id`, `issue_date`, `subtotal`, `tax`, `commission_total`, `total`, `observation`, `status`.
 
 Relaciones: pertenece a serie, cliente comprador, vendedor y moneda; tiene detalles.
 
 ### sales_body
 
-Detalle de venta. Campos: `sale_header_id`, `item_id`, `currency_id`, `name`, `quantity`, `price`, `total`, `customer_id`, `type`, `observation`, `extras`, `status`.
+Detalle de venta. Campos: `sale_header_id`, `item_id`, `currency_id`, `name`, `quantity`, `price`, `price_includes_tax`, `total`, `commission_type`, `commission_value`, `commission_amount`, `customer_id`, `type`, `observation`, `extras`, `status`.
+
+La comision del detalle es una foto historica. `commission_type` admite `none`, `percentage` o `fixed`; `commission_amount` guarda el monto calculado y no modifica el total cobrado.
 
 Relaciones: pertenece a cabecera, item, moneda y cliente.
 

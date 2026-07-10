@@ -37,6 +37,8 @@ class ProductService {
         "price_includes_tax",
         "min_price",
         "max_price",
+        "commission_type",
+        "commission_value",
         "currency_id",
         "see_my_web",
         "see_my_web_price",

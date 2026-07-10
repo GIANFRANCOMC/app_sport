@@ -8,6 +8,7 @@ use App\Helpers\System\Utilities;
 use App\Http\Requests\System\Base\CompanyFormRequest;
 use App\Http\Requests\System\Concerns\AppliesInternalCodePrefix;
 use App\Rules\System\Defaults\{BelongsToCompany, UniqueInCompany};
+use Illuminate\Validation\Validator;
 
 class StoreSubscriptionRequest extends CompanyFormRequest {
 
@@ -44,6 +45,8 @@ class StoreSubscriptionRequest extends CompanyFormRequest {
             "duration_type"  => "required|in:hour,day,today,month,year",
             "price"          => "required|numeric|min:$minValue|max:$maxValue|decimal:0,$round",
             "price_includes_tax" => "nullable|boolean",
+            "commission_type" => "nullable|in:none,percentage,fixed",
+            "commission_value" => "nullable|numeric|min:0|max:$maxValue|decimal:0,$round",
             "currency_id"    => ["required", "integer", new BelongsToCompany("currencies", ["status" => "active"], "La moneda seleccionada no pertenece a la empresa.")],
             "attendance_limit_per_day" => "nullable|integer|min:1|max:1000",
             "benefits" => "nullable|array|max:50",
@@ -60,6 +63,33 @@ class StoreSubscriptionRequest extends CompanyFormRequest {
         }
 
         return $validations;
+
+    }
+
+    public function after(): array {
+
+        return [
+            fn(Validator $validator) => $this->validateCommission($validator)
+        ];
+
+    }
+
+    private function validateCommission(Validator $validator): void {
+
+        if($validator->errors()->hasAny(["commission_type", "commission_value"])) {
+
+            return;
+
+        }
+
+        $type = (string) $this->input("commission_type", "none");
+        $value = (float) ($this->input("commission_value") ?? 0);
+
+        if($type === "percentage" && $value > 100) {
+
+            $validator->errors()->add("commission_value", "No puede superar el 100%.");
+
+        }
 
     }
 

@@ -72,3 +72,4 @@ Para entradas biométricas, el dispositivo y `device_user_id` deben resolver una
 - Se agrego exportacion desde la vista con los filtros activos del listado.
 - Cada asistencia activa o finalizada permite solicitar una correccion auditada con fechas opcionales y motivo obligatorio.
 - Cuando una asistencia tiene correcciones, el listado muestra el estado mas reciente de esa solicitud.
+- La relacion `corrections` se ordena descendente para que el estado visible corresponda a la ultima correccion registrada.

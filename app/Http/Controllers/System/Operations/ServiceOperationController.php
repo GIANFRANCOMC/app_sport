@@ -85,6 +85,20 @@ final class ServiceOperationController extends BaseController {
 
     }
 
+    public function updateFloor(StoreServiceFloorRequest $request, int $id): JsonResponse {
+
+        return $this->execute(
+            fn() => ServiceOperationService::updateFloor(
+                $this->getCompanyId(),
+                $this->getUserId(),
+                $id,
+                $request->validated()
+            ),
+            "Piso actualizado correctamente."
+        );
+
+    }
+
     public function sessions(Request $request): JsonResponse {
 
         return response()->json([
@@ -107,6 +121,26 @@ final class ServiceOperationController extends BaseController {
 
     }
 
+    public function reports(Request $request): JsonResponse {
+
+        return response()->json([
+            "bool" => true,
+            "data" => ServiceOperationService::reports(
+                $this->getCompanyId(),
+                $this->getUserId(),
+                $request->only([
+                    "branch_id",
+                    "service_station_id",
+                    "assigned_user_id",
+                    "session_type",
+                    "date_from",
+                    "date_to"
+                ])
+            )
+        ]);
+
+    }
+
     public function show(int $id): JsonResponse {
 
         return $this->execute(
@@ -124,6 +158,20 @@ final class ServiceOperationController extends BaseController {
                 $request->validated()
             ),
             "Estación registrada correctamente."
+        );
+
+    }
+
+    public function updateStation(StoreServiceStationRequest $request, int $id): JsonResponse {
+
+        return $this->execute(
+            fn() => ServiceOperationService::updateStation(
+                $this->getCompanyId(),
+                $this->getUserId(),
+                $id,
+                $request->validated()
+            ),
+            "Mesa actualizada correctamente."
         );
 
     }

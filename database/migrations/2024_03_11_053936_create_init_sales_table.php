@@ -23,6 +23,7 @@ return new class extends Migration {
             $table->date("issue_date");
             $table->decimal("subtotal", 16, 4)->default(0);
             $table->decimal("tax", 16, 4)->default(0);
+            $table->decimal("commission_total", 16, 4)->default(0);
             $table->decimal("total", 16, 4);
             $table->text("observation")->nullable();
             $table->enum("status", ["active", "canceled", "inactive"])->default("active");
@@ -78,6 +79,9 @@ return new class extends Migration {
             $table->decimal("price", 16, 4);
             $table->boolean("price_includes_tax")->default(true);
             $table->decimal("total", 16, 4);
+            $table->enum("commission_type", ["none", "percentage", "fixed"])->default("none");
+            $table->decimal("commission_value", 16, 4)->default(0);
+            $table->decimal("commission_amount", 16, 4)->default(0);
             $table->unsignedBigInteger("customer_id");
             $table->enum("type", ["product", "service", "subscription"])->default("product");
             $table->text("observation")->nullable();

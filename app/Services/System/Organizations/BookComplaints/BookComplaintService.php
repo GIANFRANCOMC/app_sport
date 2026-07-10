@@ -39,16 +39,16 @@ class BookComplaintService {
 
         return BookComplaint::query()
             ->where("company_id", $companyId)
-            ->with(["branch", "identityDocumentType", "respondedBy"])
-            ->when(Utilities::isDefined($filters["status"] ?? null), fn($query) =>
-                $query->where("status", $filters["status"])
-            )
-            ->when(Utilities::isDefined($filters["type"] ?? null), fn($query) =>
-                $query->where("type", $filters["type"])
-            )
-            ->when(Utilities::isDefined($filters["branch_id"] ?? null), fn($query) =>
-                $query->where("branch_id", $filters["branch_id"])
-            )
+            ->with(["branch", "identityDocumentType", "attachments", "statusHistories.changedBy", "respondedBy"])
+            ->when(Utilities::isDefined($filters["status"] ?? null), function($query) use($filters) {
+                $query->where("status", $filters["status"]);
+            })
+            ->when(Utilities::isDefined($filters["type"] ?? null), function($query) use($filters) {
+                $query->where("type", $filters["type"]);
+            })
+            ->when(Utilities::isDefined($filters["branch_id"] ?? null), function($query) use($filters) {
+                $query->where("branch_id", $filters["branch_id"]);
+            })
             ->when(Utilities::isDefined($filters["word"] ?? null), function($query) use($filters) {
 
                 $word = trim((string) $filters["word"]);
@@ -86,7 +86,7 @@ class BookComplaintService {
 
     /**
      * Update an existing book complaint
-     * Only allows updating admin_response and status
+     * Only allows updating internal/public responses and status
      *
      * @param BookComplaint $bookComplaint Book complaint instance to update
      * @param array $data Updated book complaint data
