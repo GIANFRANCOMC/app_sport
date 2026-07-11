@@ -7,6 +7,7 @@ namespace App\Services\System\Organizations\Roles;
 use App\Helpers\System\Utilities;
 use App\Models\System\Organizations\{Role, RoleSubSection, User};
 use App\Services\System\Organizations\AccessScopeService;
+use App\Services\System\Organizations\BusinessAuditService;
 use Illuminate\Auth\Access\AuthorizationException;
 use App\Services\System\Organizations\Companies\CompanySectionService;
 use Illuminate\Database\Eloquent\Builder;
@@ -76,6 +77,7 @@ final class RoleService {
 
             self::syncPermissions($companyId, $role, $data, $userId);
             self::syncScopes($companyId, $role, $data, $userId);
+            self::auditRoleSecurityChange($companyId, $role->id, $userId, [], self::roleSnapshot(self::find($companyId, $role->id)), "created");
 
             return self::find($companyId, $role->id);
 
@@ -90,6 +92,7 @@ final class RoleService {
 
         return DB::transaction(function() use($companyId, $roleId, $userId, $data) {
 
+            $before = self::roleSnapshot(self::find($companyId, $roleId));
             $role = Role::query()
                 ->where("company_id", $companyId)
                 ->findOrFail($roleId);
@@ -106,6 +109,7 @@ final class RoleService {
 
             self::syncPermissions($companyId, $role, $data, $userId);
             self::syncScopes($companyId, $role, $data, $userId);
+            self::auditRoleSecurityChange($companyId, $role->id, $userId, $before, self::roleSnapshot(self::find($companyId, $role->id)), "updated");
 
             return self::find($companyId, $role->id);
 
@@ -276,6 +280,66 @@ final class RoleService {
         return ($data["{$type}_scope_mode"] ?? "all") === "restricted"
             ? "restricted"
             : "all";
+
+    }
+
+    private static function roleSnapshot(?Role $role): array {
+
+        if(!$role) {
+
+            return [];
+
+        }
+
+        return [
+            "name" => $role->name,
+            "is_full_access" => (bool) $role->is_full_access,
+            "status" => $role->status,
+            "branch_scope_mode" => $role->branch_scope_mode,
+            "cash_register_scope_mode" => $role->cash_register_scope_mode,
+            "warehouse_scope_mode" => $role->warehouse_scope_mode,
+            "permissions" => $role->is_full_access
+                ? ["full_access"]
+                : $role->roleSubSections
+                    ->map(fn(RoleSubSection $permission) => [
+                        "sub_section_id" => (int) $permission->sub_section_id,
+                        "actions" => $permission->actions
+                    ])
+                    ->sortBy("sub_section_id")
+                    ->values()
+                    ->all(),
+            "branch_ids" => $role->branches->pluck("id")->sort()->values()->all(),
+            "cash_register_ids" => $role->cashRegisters->pluck("id")->sort()->values()->all(),
+            "warehouse_ids" => $role->warehouses->pluck("id")->sort()->values()->all()
+        ];
+
+    }
+
+    private static function auditRoleSecurityChange(
+        int $companyId,
+        int $roleId,
+        int $userId,
+        array $before,
+        array $after,
+        string $action
+    ): void {
+
+        if($before === $after) {
+            return;
+        }
+
+        BusinessAuditService::record(
+            $companyId,
+            "roles",
+            "security_{$action}",
+            "Permisos y alcances actualizados para el perfil #{$roleId}.",
+            Role::query()->where("company_id", $companyId)->find($roleId),
+            $before,
+            $after,
+            ["affected_users" => User::query()->where("company_id", $companyId)->where("role_id", $roleId)->where("status", "active")->count()],
+            null,
+            $userId
+        );
 
     }
 

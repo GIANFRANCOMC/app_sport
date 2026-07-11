@@ -13,6 +13,7 @@ use Illuminate\Auth\Access\AuthorizationException;
 
 use App\Models\System\Organizations\{Role, User};
 use App\Services\System\Organizations\AccessScopeService;
+use App\Services\System\Organizations\BusinessAuditService;
 use App\Services\System\Organizations\Roles\RolePermissionService;
 
 /**
@@ -183,6 +184,8 @@ class UserService {
                 (int) ($data["role_id"] ?? $user->role_id)
             );
 
+            $sensitiveBefore = self::sensitiveSnapshot($user);
+
             // Prepare update data with only changed fields
             $updateData = self::prepareUserDataForUpdate($user, $data);
 
@@ -210,6 +213,14 @@ class UserService {
             self::syncBranches($user, $data["branch_ids"] ?? [], (int) $user->company_id, $userId);
             self::syncResourceScopes($user, $data, (int) $user->company_id, $userId);
 
+            self::auditSensitiveChange(
+                (int) $user->company_id,
+                $user,
+                $userId,
+                $sensitiveBefore,
+                self::sensitiveSnapshot($user->fresh(["branches", "cashRegisters", "warehouses"]))
+            );
+
         });
 
         return $user->fresh(["identityDocumentType", "role", "branches", "cashRegisters", "warehouses"]);
@@ -229,6 +240,19 @@ class UserService {
             ])->save();
 
             $user->tokens()->delete();
+
+            BusinessAuditService::record(
+                (int) $user->company_id,
+                "users",
+                "password_changed",
+                "Contraseña actualizada para el colaborador #{$user->id}.",
+                $user,
+                [],
+                ["session_version" => $user->session_version],
+                ["target_user_id" => (int) $user->id],
+                null,
+                $userId
+            );
 
         });
 
@@ -336,6 +360,49 @@ class UserService {
         }
 
         AccessScopeService::clearUserCache($companyId, (int) $user->id);
+
+    }
+
+    private static function sensitiveSnapshot(User $user): array {
+
+        return [
+            "role_id" => $user->role_id,
+            "branch_scope_mode" => $user->branch_scope_mode,
+            "cash_register_scope_mode" => $user->cash_register_scope_mode,
+            "warehouse_scope_mode" => $user->warehouse_scope_mode,
+            "status" => $user->status,
+            "session_version" => $user->session_version,
+            "branch_ids" => $user->relationLoaded("branches") ? $user->branches->pluck("id")->sort()->values()->all() : [],
+            "cash_register_ids" => $user->relationLoaded("cashRegisters") ? $user->cashRegisters->pluck("id")->sort()->values()->all() : [],
+            "warehouse_ids" => $user->relationLoaded("warehouses") ? $user->warehouses->pluck("id")->sort()->values()->all() : []
+        ];
+
+    }
+
+    private static function auditSensitiveChange(
+        int $companyId,
+        User $user,
+        int $actorId,
+        array $before,
+        array $after
+    ): void {
+
+        if($before === $after) {
+            return;
+        }
+
+        BusinessAuditService::record(
+            $companyId,
+            "users",
+            "security_updated",
+            "Seguridad actualizada para el colaborador #{$user->id}.",
+            $user,
+            $before,
+            $after,
+            ["target_user_id" => (int) $user->id],
+            null,
+            $actorId
+        );
 
     }
 

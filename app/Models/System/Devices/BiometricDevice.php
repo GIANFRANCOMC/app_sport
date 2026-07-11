@@ -74,4 +74,10 @@ class BiometricDevice extends Model {
 
     }
 
+    public function events() {
+
+        return $this->hasMany(BiometricDeviceEvent::class, "biometric_device_id", "id");
+
+    }
+
 }

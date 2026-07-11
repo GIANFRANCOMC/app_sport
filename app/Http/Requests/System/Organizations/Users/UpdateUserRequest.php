@@ -37,7 +37,7 @@ class UpdateUserRequest extends FormRequest {
             "phone_number"              => "nullable|string|max:15",
             "gender"                    => "nullable|in:male,female,other",
             "birthdate"                 => "nullable|date",
-            "status"                    => "required|in:active,inactive",
+            "status"                    => "required|in:active,inactive,blocked",
             "branch_ids"                => "nullable|array",
             "branch_ids.*"              => ["integer", "distinct", new BelongsToCompany("branches", [], null)],
             "cash_register_ids"         => "nullable|array",

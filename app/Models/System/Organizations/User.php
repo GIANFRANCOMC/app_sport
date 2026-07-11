@@ -129,7 +129,8 @@ class User extends Authenticatable {
 
         $statuses = [
             ["code" => "active", "label" => "Activo"],
-            ["code" => "inactive", "label" => "Inactivo"]
+            ["code" => "inactive", "label" => "Inactivo"],
+            ["code" => "blocked", "label" => "Bloqueado"]
         ];
 
         return Utilities::getValues($statuses, $type, $code);

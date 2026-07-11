@@ -196,7 +196,7 @@ return new class extends Migration {
             $table->string("phone_number", 255)->nullable();
             $table->enum("gender", ["male", "female", "other"])->nullable();
             $table->date("birthdate")->nullable();
-            $table->enum("status", ["active", "inactive"])->default("active");
+            $table->enum("status", ["active", "inactive", "blocked"])->default("active");
 
             $table->timestamp("created_at")->useCurrent()->nullable();
             $table->integer("created_by")->nullable();

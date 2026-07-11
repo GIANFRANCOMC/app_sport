@@ -21,6 +21,16 @@
                         <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
                         <span>Consultar</span>
                     </button>
+                    <button
+                        type="button"
+                        class="br-btn br-btn-action-export"
+                        data-bs-toggle="tooltip"
+                        data-bs-placement="top"
+                        title="Exportar nómina"
+                        @click="exportPayroll">
+                        <i class="fa-solid fa-file-excel" aria-hidden="true"></i>
+                        <span class="d-xl-none">Exportar</span>
+                    </button>
                 </div>
             </div>
         </div>
@@ -75,7 +85,10 @@
                             <th>Ingreso</th>
                             <th>Salida</th>
                             <th class="text-end">Tiempo</th>
+                            <th class="text-end">Ordinarias / Extra</th>
+                            <th>Pausas y correcciones</th>
                             <th class="text-center">Estado</th>
+                            <th class="text-center">Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -85,10 +98,77 @@
                             <td>{{ formatDateTime(record.checked_in_at) }}</td>
                             <td>{{ formatDateTime(record.checked_out_at) }}</td>
                             <td class="text-end fw-semibold">{{ formatMinutes(record.worked_minutes) }}</td>
+                            <td class="text-end">
+                                <div class="br-attendance-metrics">
+                                    <strong>{{ formatMinutes(record.ordinary_minutes) }}</strong>
+                                    <small>Extra: {{ formatMinutes(record.overtime_minutes) }}</small>
+                                    <small v-if="record.late_minutes" class="text-danger">Tardanza: {{ formatMinutes(record.late_minutes) }}</small>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="br-entity-table__meta d-block">
+                                    Pausas: {{ formatMinutes(record.break_minutes) }}
+                                </span>
+                                <span v-if="activeBreak(record)" class="br-status-label br-status-label--warning">Pausa en curso</span>
+                                <span v-if="pendingCorrection(record)" class="br-status-label br-status-inactive">Corrección pendiente</span>
+                            </td>
                             <td class="text-center">
                                 <span class="br-status-label" :class="statusClass(record.status)">
                                     {{ statusLabel(record.status) }}
                                 </span>
+                            </td>
+                            <td class="text-center">
+                                <div class="br-table-actions">
+                                    <button
+                                        v-if="record.status === 'active' && !activeBreak(record)"
+                                        type="button"
+                                        class="br-icon-action br-icon-action-info"
+                                        data-bs-toggle="tooltip"
+                                        data-bs-placement="top"
+                                        title="Iniciar pausa"
+                                        @click="startBreak(record)">
+                                        <i class="fa-solid fa-mug-hot" aria-hidden="true"></i>
+                                    </button>
+                                    <button
+                                        v-if="record.status === 'active' && activeBreak(record)"
+                                        type="button"
+                                        class="br-icon-action br-icon-action-primary"
+                                        data-bs-toggle="tooltip"
+                                        data-bs-placement="top"
+                                        title="Finalizar pausa"
+                                        @click="endBreak(record)">
+                                        <i class="fa-solid fa-play" aria-hidden="true"></i>
+                                    </button>
+                                    <button
+                                        type="button"
+                                        class="br-icon-action br-icon-action-edit"
+                                        data-bs-toggle="tooltip"
+                                        data-bs-placement="top"
+                                        title="Solicitar corrección"
+                                        @click="requestCorrection(record)">
+                                        <i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i>
+                                    </button>
+                                    <button
+                                        v-if="pendingCorrection(record)"
+                                        type="button"
+                                        class="br-icon-action br-icon-action-primary"
+                                        data-bs-toggle="tooltip"
+                                        data-bs-placement="top"
+                                        title="Aprobar corrección"
+                                        @click="reviewCorrection(record, true)">
+                                        <i class="fa-solid fa-check" aria-hidden="true"></i>
+                                    </button>
+                                    <button
+                                        v-if="pendingCorrection(record)"
+                                        type="button"
+                                        class="br-icon-action br-icon-action-danger"
+                                        data-bs-toggle="tooltip"
+                                        data-bs-placement="top"
+                                        title="Rechazar corrección"
+                                        @click="reviewCorrection(record, false)">
+                                        <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+                                    </button>
+                                </div>
                             </td>
                         </tr>
                     </tbody>
@@ -205,6 +285,135 @@ export default {
             });
             this.finishAction(result);
         },
+        async startBreak(record) {
+            const confirmation = await Swal.fire({
+                title: "Iniciar pausa",
+                input: "text",
+                inputLabel: "Motivo",
+                inputPlaceholder: "Almuerzo, descanso, gestión interna...",
+                showCancelButton: true,
+                buttonsStyling: false,
+                confirmButtonText: "Iniciar pausa",
+                cancelButtonText: "Cancelar",
+                customClass: {
+                    container: "br-swal-backdrop",
+                    popup: "br-swal-alert br-swal-alert--question",
+                    confirmButton: "br-btn br-swal-alert__confirm br-swal-alert__confirm--question",
+                    cancelButton: "br-btn br-btn-cancel ms-2"
+                }
+            });
+
+            if(!confirmation.isConfirmed) return;
+
+            this.saving = true;
+            Alerts.swals({type: "loading", message: "Registrando pausa"});
+            const result = await Requests.post({
+                route: `${this.config.routes.store}/${record.id}/breaks`,
+                data: {reason: confirmation.value || ""}
+            });
+            this.finishAction(result);
+        },
+        async endBreak(record) {
+            this.saving = true;
+            Alerts.swals({type: "loading", message: "Finalizando pausa"});
+            const result = await Requests.patch({
+                route: `${this.config.routes.store}/${record.id}/breaks/end`
+            });
+            this.finishAction(result);
+        },
+        async requestCorrection(record) {
+            const confirmation = await Swal.fire({
+                title: "Solicitar corrección",
+                html: `
+                    <p class="mb-2">Indica los horarios corregidos y el motivo. La corrección queda pendiente de revisión.</p>
+                    <input id="brCorrectionIn" class="swal2-input" type="datetime-local" value="${this.datetimeInputValue(record.checked_in_at)}">
+                    <input id="brCorrectionOut" class="swal2-input" type="datetime-local" value="${this.datetimeInputValue(record.checked_out_at)}">
+                    <textarea id="brCorrectionReason" class="swal2-textarea" placeholder="Motivo de la corrección"></textarea>
+                `,
+                showCancelButton: true,
+                buttonsStyling: false,
+                confirmButtonText: "Solicitar",
+                cancelButtonText: "Cancelar",
+                customClass: {
+                    container: "br-swal-backdrop",
+                    popup: "br-swal-alert br-swal-alert--question",
+                    confirmButton: "br-btn br-swal-alert__confirm br-swal-alert__confirm--question",
+                    cancelButton: "br-btn br-btn-cancel ms-2"
+                },
+                preConfirm: () => {
+                    const reason = document.getElementById("brCorrectionReason")?.value?.trim();
+                    if(!reason) {
+                        Swal.showValidationMessage("Ingresa el motivo de la corrección.");
+                        return false;
+                    }
+
+                    return {
+                        checked_in_at: document.getElementById("brCorrectionIn")?.value || null,
+                        checked_out_at: document.getElementById("brCorrectionOut")?.value || null,
+                        reason
+                    };
+                }
+            });
+
+            if(!confirmation.isConfirmed) return;
+
+            this.saving = true;
+            Alerts.swals({type: "loading", message: "Registrando corrección"});
+            const result = await Requests.post({
+                route: `${this.config.routes.store}/${record.id}/corrections`,
+                data: confirmation.value
+            });
+            this.finishAction(result);
+        },
+        async reviewCorrection(record, approve) {
+            const correction = this.pendingCorrection(record);
+            if(!correction) return;
+
+            const confirmation = await Swal.fire({
+                title: approve ? "Aprobar corrección" : "Rechazar corrección",
+                input: "textarea",
+                inputLabel: "Nota de revisión",
+                inputPlaceholder: approve ? "Observación opcional" : "Indica el motivo del rechazo",
+                showCancelButton: true,
+                buttonsStyling: false,
+                confirmButtonText: approve ? "Aprobar" : "Rechazar",
+                cancelButtonText: "Cancelar",
+                customClass: {
+                    container: "br-swal-backdrop",
+                    popup: approve ? "br-swal-alert br-swal-alert--question" : "br-swal-alert br-swal-alert--warning",
+                    confirmButton: approve ? "br-btn br-swal-alert__confirm br-swal-alert__confirm--question" : "br-btn br-swal-alert__confirm br-swal-alert__confirm--warning",
+                    cancelButton: "br-btn br-btn-cancel ms-2"
+                },
+                preConfirm: value => {
+                    if(!approve && !value?.trim()) {
+                        Swal.showValidationMessage("Indica el motivo del rechazo.");
+                        return false;
+                    }
+
+                    return value || "";
+                }
+            });
+
+            if(!confirmation.isConfirmed) return;
+
+            this.saving = true;
+            Alerts.swals({type: "loading", message: approve ? "Aprobando corrección" : "Rechazando corrección"});
+            const result = await Requests.patch({
+                route: `${this.config.routes.store}/corrections/${correction.id}`,
+                data: {
+                    approve,
+                    note: confirmation.value || null
+                }
+            });
+            this.finishAction(result);
+        },
+        exportPayroll() {
+            const url = new URL(this.config.routes.export, window.location.origin);
+            url.searchParams.set("branch_id", this.filters.branch?.id || "");
+            url.searchParams.set("user_id", this.filters.user?.id || "");
+            url.searchParams.set("date_from", this.filters.weekStart || "");
+            window.location.href = `${url.pathname}${url.search}`;
+        },
         async finishAction(result) {
             this.saving = false;
             Alerts.close?.();
@@ -227,6 +436,18 @@ export default {
         },
         statusClass(status) {
             return {active: "br-status-active", finalized: "br-status-inactive", canceled: "br-status-inactive"}[status];
+        },
+        activeBreak(record) {
+            return (record.breaks || []).find(item => item.status === "active") || null;
+        },
+        pendingCorrection(record) {
+            return (record.corrections || []).find(item => item.status === "pending") || null;
+        },
+        datetimeInputValue(value) {
+            if(!value) return "";
+            const date = new Date(value);
+            date.setMinutes(date.getMinutes() - date.getTimezoneOffset());
+            return date.toISOString().slice(0, 16);
         }
     }
 };

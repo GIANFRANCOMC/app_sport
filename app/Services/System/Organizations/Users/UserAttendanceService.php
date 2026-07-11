@@ -362,7 +362,12 @@ final class UserAttendanceService {
 
         $query = UserAttendance::query()
             ->where("company_id", $companyId)
-            ->with(["branch", "user"]);
+            ->with([
+                "branch",
+                "user",
+                "breaks" => fn($query) => $query->orderByDesc("started_at"),
+                "corrections" => fn($query) => $query->orderByDesc("id")
+            ]);
 
         if($allowedBranchIds !== null) {
             $query->whereIn("branch_id", $allowedBranchIds);

@@ -9,8 +9,16 @@
 - `PATCH /biometric_devices/{id}/credentials` ejecuta la rotacion, audita el actor y devuelve el nuevo secreto una sola vez.
 - `last_seen_at` registra el ultimo evento procesado.
 - `biometric_device_events` conserva eventos idempotentes, intentos, error y estado.
+- `GET /biometric_devices/{id}/events` lista contactos, errores y eventos procesados por dispositivo dentro de la empresa actual.
 - Clientes y colaboradores usan tablas de huellas separadas, pero comparten la reserva de `device_user_id`.
 - Clientes usan `RegisterCustomerFingerprintRequest` y colaboradores usan `RegisterUserFingerprintRequest`; ambos validan pertenencia empresarial del dispositivo antes de persistir.
+
+## UI/UX Implementado
+
+- El listado muestra ultimo contacto y conteo de eventos fallidos o pendientes.
+- La accion de rotar credenciales solicita confirmacion y muestra `access_key` y secreto nuevo en una modal de lectura unica.
+- La accion de eventos abre un historial paginado con fecha, tipo, sujeto, intentos, estado y error.
+- Los secretos se presentan en bloques monoespaciados reutilizables para evitar confundirlos con texto editable.
 
 ## Endpoint
 

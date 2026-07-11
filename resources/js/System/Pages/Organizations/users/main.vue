@@ -78,6 +78,16 @@
                                 </button>
                                 <button
                                     type="button"
+                                    class="br-icon-action br-icon-action-primary"
+                                    data-bs-toggle="tooltip"
+                                    data-bs-placement="top"
+                                    title="Cambiar contraseña"
+                                    :aria-label="`Cambiar contraseña de ${record.name}`"
+                                    @click="openPasswordModal(record)">
+                                    <i class="fa-solid fa-key" aria-hidden="true"></i>
+                                </button>
+                                <button
+                                    type="button"
                                     class="br-icon-action br-icon-action-edit"
                                     data-bs-toggle="tooltip"
                                     data-bs-placement="top"
@@ -473,18 +483,19 @@
                                         :searchable="false"/>
                                 </template>
                             </InputSlot>
-                            <InputText
-                                v-model="forms[entity].createUpdate.data.password"
-                                hasDiv
-                                :title="isUpdate ? MODULE.texts.form.changePassword : MODULE.texts.form.password"
-                                :titleClass="[config.forms.classes.title]"
-                                :isRequired="!isUpdate"
-                                maxlength="20"
-                                showCharCounter
-                                hasTextBottom
-                                :textBottomInfo="forms[entity].createUpdate.errors?.password"
-                                xl="4"
-                                lg="4"/>
+                            <div v-if="!isUpdate" class="form-group col-xl-4 col-lg-4 col-md-12 col-sm-12">
+                                <label :class="['form-label', config.forms.classes.title]">{{ MODULE.texts.form.password }}</label>
+                                <label class="text-danger ms-1 fw-bold">*</label>
+                                <div class="input-group">
+                                    <input
+                                        v-model.trim="forms[entity].createUpdate.data.password"
+                                        type="password"
+                                        class="form-control"
+                                        maxlength="20"
+                                        autocomplete="new-password">
+                                </div>
+                                <small class="text-danger">{{ errorMessage(forms[entity].createUpdate.errors?.password) }}</small>
+                            </div>
                         </div>
                     </form>
                 </div>
@@ -502,6 +513,62 @@
                         :disabled="isSaving">
                         <i class="fa fa-save"></i>
                         <span class="ms-2" v-text="MODULE.texts.modal.save"></span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade br-entity-modal br-modal-standard" :id="passwordModal.id" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-dialog-centered modal-md" role="document">
+            <div class="modal-content">
+                <div class="modal-header br-entity-modal__header">
+                    <div>
+                        <p class="br-entity-modal__eyebrow mb-1">Seguridad</p>
+                        <h2 class="modal-title br-entity-modal__title">Cambiar contraseña</h2>
+                        <p v-if="passwordModal.user" class="br-entity-table__meta mb-0">{{ passwordModal.user.name }} - {{ passwordModal.user.email }}</p>
+                    </div>
+                    <button type="button" class="br-modal-close" data-bs-dismiss="modal" aria-label="Cerrar">
+                        <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+                    </button>
+                </div>
+                <div class="modal-body br-entity-modal__body br-modal-standard__body">
+                    <div class="row g-3">
+                        <div class="form-group col-12">
+                            <label class="form-label fw-semibold">Nueva contraseña</label>
+                            <label class="text-danger ms-1 fw-bold">*</label>
+                            <div class="input-group">
+                                <input
+                                    v-model.trim="passwordModal.form.password"
+                                    type="password"
+                                    class="form-control"
+                                    maxlength="20"
+                                    autocomplete="new-password">
+                            </div>
+                            <small class="text-danger">{{ errorMessage(passwordModal.errors?.password) }}</small>
+                        </div>
+                        <div class="form-group col-12">
+                            <label class="form-label fw-semibold">Confirmar contraseña</label>
+                            <label class="text-danger ms-1 fw-bold">*</label>
+                            <div class="input-group">
+                                <input
+                                    v-model.trim="passwordModal.form.password_confirmation"
+                                    type="password"
+                                    class="form-control"
+                                    maxlength="20"
+                                    autocomplete="new-password">
+                            </div>
+                            <small class="text-danger">{{ errorMessage(passwordModal.errors?.password_confirmation) }}</small>
+                        </div>
+                    </div>
+                    <p class="br-field-help mt-2 mb-0">
+                        El cambio revoca sesiones activas y queda auditado sin guardar la contraseña en claro.
+                    </p>
+                </div>
+                <div class="modal-footer br-entity-modal__footer">
+                    <button type="button" class="br-btn br-btn-cancel" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="br-btn br-btn-action-update" :disabled="passwordModal.saving" @click="savePassword">
+                        Actualizar contraseña
                     </button>
                 </div>
             </div>
@@ -614,7 +681,7 @@ const AUTHENTICATION_EVENT_TYPES = [
 const AUTHENTICATION_RESULTS = [
     {code: "", label: "Todos los resultados"},
     {code: "success", label: "Correcto"},
-    {code: "failed", label: "Fallido"},
+    {code: "failure", label: "Fallido"},
     {code: "blocked", label: "Bloqueado"}
 ];
 
@@ -694,6 +761,16 @@ export default {
                     dateFrom: "",
                     dateTo: ""
                 }
+            },
+            passwordModal: {
+                id: Utils.uuid(),
+                saving: false,
+                user: null,
+                form: {
+                    password: "",
+                    password_confirmation: ""
+                },
+                errors: {}
             }
         };
 
@@ -913,6 +990,65 @@ export default {
 
             Alerts.modals({type: "show", id: entityForms.extras.modals.default.id});
             Alerts.tooltips({show: true, time: 500});
+
+        },
+        openPasswordModal(record) {
+
+            Alerts.tooltips({show: false});
+            this.passwordModal.user = record;
+            this.passwordModal.errors = {};
+            this.passwordModal.form = {
+                password: "",
+                password_confirmation: ""
+            };
+            Alerts.modals({type: "show", id: this.passwordModal.id});
+
+        },
+        async savePassword() {
+
+            if(this.passwordModal.saving || !this.passwordModal.user?.id) return;
+
+            this.passwordModal.errors = {};
+
+            if(!this.passwordModal.form.password) {
+                this.passwordModal.errors.password = "Campo obligatorio.";
+                return;
+            }
+
+            if(this.passwordModal.form.password !== this.passwordModal.form.password_confirmation) {
+                this.passwordModal.errors.password_confirmation = "Debe coincidir con la nueva contraseña.";
+                return;
+            }
+
+            this.passwordModal.saving = true;
+            Alerts.swals({type: "loading", message: "Actualizando contraseña"});
+
+            const result = await Requests.patch({
+                route: `${this.routeActions.store}/${this.passwordModal.user.id}/password`,
+                data: this.passwordModal.form
+            });
+
+            this.passwordModal.saving = false;
+            Alerts.swals({show: false});
+
+            if(Requests.valid({result})) {
+                Alerts.modals({type: "hide", id: this.passwordModal.id});
+                Alerts.generateAlert({type: "success", msgContent: "Contraseña actualizada. Las sesiones activas fueron revocadas."});
+                return;
+            }
+
+            this.passwordModal.errors = result?.errors || result?.data?.errors || {};
+            Alerts.generateAlert({
+                type: "error",
+                messages: Object.values(this.passwordModal.errors).flat().length
+                    ? Object.values(this.passwordModal.errors).flat()
+                    : [result?.data?.msg || "No se pudo cambiar la contraseña."]
+            });
+
+        },
+        errorMessage(error) {
+
+            return Array.isArray(error) ? (error[0] || "") : (error || "");
 
         },
         async saveEntity() {

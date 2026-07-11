@@ -34,3 +34,10 @@ Registra jornadas laborales de colaboradores, separadas de las visitas de client
 - Correcciones: `POST /{attendanceId}/corrections` y `PATCH /corrections/{correctionId}`.
 
 El listado, resumen y exportación respetan las sucursales efectivas del colaborador autenticado. La exportación aplica `company_settings.reports.export_max_rows`, usa CSV UTF-8 y conserva minutos ordinarios, tardanza, horas extra y pausas.
+
+## UI/UX Implementado
+
+- El listado muestra horas trabajadas, ordinarias, extra, tardanzas, pausas acumuladas, pausa en curso y correcciones pendientes.
+- Desde cada jornada se puede iniciar/finalizar pausa, solicitar corrección y aprobar o rechazar solicitudes pendientes.
+- La exportación de nómina usa el mismo filtro visible para evitar reportes distintos a lo consultado.
+- Los mensajes de corrección obligan a justificar rechazos y mantienen al usuario dentro del flujo sin salir de la pantalla.

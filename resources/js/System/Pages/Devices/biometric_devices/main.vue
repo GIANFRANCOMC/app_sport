@@ -27,8 +27,9 @@
                 <tr>
                     <th class="text-white" style="width: 20%;">NOMBRE</th>
                     <th class="text-white" style="width: 20%;">MARCA / MODELO</th>
-                    <th class="text-white" style="width: 20%;">IP / PUERTO</th>
+                    <th class="text-white" style="width: 15%;">IP / PUERTO</th>
                     <th class="text-white" style="width: 15%;">SUCURSAL</th>
+                    <th class="text-white" style="width: 15%;">ÚLTIMO CONTACTO</th>
                     <th class="text-white" style="width: 10%;">ESTADO</th>
                     <th class="text-white" style="width: 15%;">ACCIONES</th>
                 </tr>
@@ -46,8 +47,8 @@
                             <small v-if="record.serial_number" v-text="`Serie: ${record.serial_number}`" class="text-muted"></small>
                         </td>
                         <td class="text-center">
-                            <span v-text="record.brand" class="fw-semibold d-block"></span>
-                            <small v-text="record.model" class="text-muted"></small>
+                            <span v-text="record.brand_name" class="fw-semibold d-block"></span>
+                            <small v-text="record.model_name" class="text-muted"></small>
                         </td>
                         <td class="text-center">
                             <span v-text="record.ip_address" class="fw-semibold d-block"></span>
@@ -57,12 +58,39 @@
                             <span v-text="record.branch?.name"></span>
                         </td>
                         <td class="text-center">
+                            <span class="fw-semibold d-block">{{ formatDateTime(record.last_seen_at) }}</span>
+                            <small v-if="record.failed_events_count || record.pending_events_count" class="text-danger">
+                                {{ record.failed_events_count || 0 }} fallidos / {{ record.pending_events_count || 0 }} pendientes
+                            </small>
+                            <small v-else class="text-muted">Sin alertas</small>
+                        </td>
+                        <td class="text-center">
                             <StatusBadge class="flex-shrink-none" :status="record.status" :formatted-status="record.formatted_status"/>
                         </td>
                         <td class="text-center">
-                            <button type="button" class="btn btn-xs btn-warning waves-effect" @click="openModal(record)">
-                                <span v-text="MODULE.texts.actions.edit"></span>
-                            </button>
+                            <div class="br-table-actions justify-content-center">
+                                <button
+                                    type="button"
+                                    class="br-icon-action br-icon-action-info"
+                                    data-bs-toggle="tooltip"
+                                    data-bs-placement="top"
+                                    title="Ver eventos"
+                                    @click="openEvents(record)">
+                                    <i class="fa-solid fa-list-check" aria-hidden="true"></i>
+                                </button>
+                                <button
+                                    type="button"
+                                    class="br-icon-action br-icon-action-primary"
+                                    data-bs-toggle="tooltip"
+                                    data-bs-placement="top"
+                                    title="Rotar credenciales"
+                                    @click="rotateCredentials(record)">
+                                    <i class="fa-solid fa-arrows-rotate" aria-hidden="true"></i>
+                                </button>
+                                <button type="button" class="br-icon-action br-icon-action-edit" data-bs-toggle="tooltip" data-bs-placement="top" :title="MODULE.texts.actions.edit" @click="openModal(record)">
+                                    <i class="fa-solid fa-pen" aria-hidden="true"></i>
+                                </button>
+                            </div>
                         </td>
                     </tr>
                 </template>
@@ -256,6 +284,91 @@
             </div>
         </div>
     </div>
+
+    <div class="modal fade br-entity-modal br-modal-standard" :id="secretModal.id" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header br-entity-modal__header">
+                    <div>
+                        <p class="br-entity-modal__eyebrow mb-1">Credenciales</p>
+                        <h2 class="modal-title br-entity-modal__title">Secreto visible una sola vez</h2>
+                    </div>
+                    <button type="button" class="br-modal-close" data-bs-dismiss="modal" aria-label="Cerrar">
+                        <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+                    </button>
+                </div>
+                <div class="modal-body br-entity-modal__body br-modal-standard__body">
+                    <p class="br-field-help mb-3">Guarda estas credenciales ahora. Por seguridad, el secreto no podrá consultarse nuevamente.</p>
+                    <div class="br-credential-box">
+                        <small>Access key</small>
+                        <strong>{{ secretModal.data.access_key }}</strong>
+                    </div>
+                    <div class="br-credential-box mt-2">
+                        <small>Secreto</small>
+                        <strong>{{ secretModal.data.secret }}</strong>
+                    </div>
+                </div>
+                <div class="modal-footer br-entity-modal__footer">
+                    <button type="button" class="br-btn br-btn-cancel" data-bs-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade br-entity-modal br-modal-standard" :id="eventsModal.id" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-dialog-centered modal-xl" role="document">
+            <div class="modal-content">
+                <div class="modal-header br-entity-modal__header">
+                    <div>
+                        <p class="br-entity-modal__eyebrow mb-1">Biométricos</p>
+                        <h2 class="modal-title br-entity-modal__title">Eventos del dispositivo</h2>
+                        <p v-if="eventsModal.device" class="br-entity-table__meta mb-0">{{ eventsModal.device.name }} - {{ eventsModal.device.branch?.name }}</p>
+                    </div>
+                    <button type="button" class="br-modal-close" data-bs-dismiss="modal" aria-label="Cerrar">
+                        <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+                    </button>
+                </div>
+                <div class="modal-body br-entity-modal__body br-modal-standard__body">
+                    <div class="table-responsive br-entity-table-wrap">
+                        <table class="table br-entity-table mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Fecha</th>
+                                    <th>Evento</th>
+                                    <th>Sujeto</th>
+                                    <th>Intentos</th>
+                                    <th>Estado</th>
+                                    <th>Error</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-if="eventsModal.loading">
+                                    <td colspan="6" class="py-4"><Loader/></td>
+                                </tr>
+                                <template v-else-if="eventsModal.records.total > 0">
+                                    <tr v-for="event in eventsModal.records.data" :key="event.id">
+                                        <td>{{ formatDateTime(event.occurred_at) }}</td>
+                                        <td>{{ eventTypeLabel(event.event_type) }}</td>
+                                        <td>{{ event.subject_type }} #{{ event.device_user_id }}</td>
+                                        <td>{{ event.attempts }}</td>
+                                        <td><span :class="['br-status-label', eventStatusClass(event.processing_status)]">{{ eventStatusLabel(event.processing_status) }}</span></td>
+                                        <td>{{ event.last_error || "-" }}</td>
+                                    </tr>
+                                </template>
+                                <tr v-else>
+                                    <td colspan="6"><WithoutData type="image"/></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <Paginator v-if="eventsModal.records.total > 0" :links="eventsModal.records.links" @clickPage="listEvents"/>
+                </div>
+                <div class="modal-footer br-entity-modal__footer">
+                    <button type="button" class="br-btn br-btn-cancel" data-bs-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
 </template>
 
 <script>
@@ -392,7 +505,17 @@ export default {
             ...crudModule,
             MODULE: MODULE,
             isInitialized: false,
-            isSaving: false
+            isSaving: false,
+            secretModal: {
+                id: Utils.uuid(),
+                data: {}
+            },
+            eventsModal: {
+                id: Utils.uuid(),
+                device: null,
+                loading: false,
+                records: {total: 0, data: [], links: []}
+            }
         };
 
     },
@@ -489,6 +612,64 @@ export default {
         handleSearch() {
 
             this.listEntity({});
+
+        },
+        async rotateCredentials(record) {
+
+            const confirmation = await Swal.fire({
+                title: "Rotar credenciales",
+                text: "El dispositivo dejará de aceptar las credenciales anteriores. El nuevo secreto se mostrará una sola vez.",
+                icon: "warning",
+                showCancelButton: true,
+                buttonsStyling: false,
+                confirmButtonText: "Rotar",
+                cancelButtonText: "Cancelar",
+                customClass: {
+                    container: "br-swal-backdrop",
+                    popup: "br-swal-alert br-swal-alert--warning",
+                    confirmButton: "br-btn br-swal-alert__confirm br-swal-alert__confirm--warning",
+                    cancelButton: "br-btn br-btn-cancel ms-2"
+                }
+            });
+
+            if(!confirmation.isConfirmed) return;
+
+            Alerts.swals({type: "loading", message: "Rotando credenciales"});
+            const result = await Requests.patch({route: `${this.routeActions.store}/${record.id}/credentials`});
+            Alerts.swals({show: false});
+
+            if(Requests.valid({result})) {
+                this.secretModal.data = result.data.data || {};
+                Alerts.modals({type: "show", id: this.secretModal.id});
+                await this.listEntity({});
+                return;
+            }
+
+            Alerts.generateAlert({type: "error", msgContent: result?.data?.msg || "No se pudieron rotar las credenciales."});
+
+        },
+        async openEvents(record) {
+
+            this.eventsModal.device = record;
+            this.eventsModal.records = {total: 0, data: [], links: []};
+            Alerts.modals({type: "show", id: this.eventsModal.id});
+            await this.listEvents();
+
+        },
+        async listEvents(url = null) {
+
+            if(!this.eventsModal.device?.id) return;
+
+            const requestUrl = typeof url === "object" ? url.url : url;
+            this.eventsModal.loading = true;
+            const result = await Requests.get({
+                route: requestUrl || `${this.routeActions.store}/${this.eventsModal.device.id}/events`,
+                data: {per_page: 10},
+                showAlert: true
+            });
+            this.eventsModal.loading = false;
+
+            if(Requests.valid({result})) this.eventsModal.records = result.data.data;
 
         },
         // Forms
@@ -603,6 +784,42 @@ export default {
         isDefined(value) {
 
             return Utils.isDefined({value});
+
+        },
+        formatDateTime(value) {
+
+            return value ? Utils.legibleFormatDate({dateString: value, type: "datetime"}) : "Sin contacto";
+
+        },
+        eventStatusLabel(status) {
+
+            return {
+                pending: "Pendiente",
+                processed: "Procesado",
+                failed: "Fallido",
+                ignored: "Ignorado"
+            }[status] || status || "-";
+
+        },
+        eventStatusClass(status) {
+
+            return {
+                pending: "br-status-label--warning",
+                processed: "br-status-active",
+                failed: "br-status-inactive",
+                ignored: "br-status-inactive"
+            }[status] || "br-status-inactive";
+
+        },
+        eventTypeLabel(type) {
+
+            return {
+                check_in: "Ingreso",
+                check_out: "Salida",
+                fingerprint_sync: "Sincronizacion de huella",
+                heartbeat: "Contacto",
+                error: "Error"
+            }[type] || type || "-";
 
         },
     },

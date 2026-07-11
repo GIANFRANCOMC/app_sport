@@ -39,13 +39,6 @@ Cuando una pantalla queda implementada, responsive, accesible, con errores por c
 - Compras: vistas dedicadas para Nuevo y Listado; la modal actual ya envía `delivery_mode`, pero falta convertir el flujo a páginas completas.
 - Proveedores: contactos, cuentas bancarias, condiciones, historial y desempeño.
 
-## Personal, Perfiles y Seguridad
-
-- Perfiles: auditoría, usuarios afectados y advertencia al retirar el último administrador.
-- Colaboradores: contraseña en flujo separado, bloqueo sin eliminación y auditoría sensible.
-- Asistencia laboral: horarios, pausas, tardanzas, horas ordinarias/extra, correcciones y exportación de nómina.
-- Biométricos: rotación de credenciales, secreto visible una sola vez, último contacto y eventos fallidos.
-
 ## Reportes
 
 - Mi empresa/Sucursales: separar configuración pública, fiscal y operativa.

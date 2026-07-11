@@ -12,7 +12,7 @@ use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 
 use App\Models\System\Customers\{Customer};
-use App\Models\System\Devices\{BiometricDevice, CustomerBiometricFingerprint, UserBiometricFingerprint};
+use App\Models\System\Devices\{BiometricDevice, BiometricDeviceEvent, CustomerBiometricFingerprint, UserBiometricFingerprint};
 use App\Models\System\Organizations\User;
 use App\Services\System\Organizations\BusinessAuditService;
 
@@ -257,7 +257,11 @@ class BiometricDeviceService {
     public static function getPaginatedList(int $companyId, array $filters = [], int $perPage = 15): LengthAwarePaginator {
 
         $query = BiometricDevice::where("company_id", $companyId)
-                                ->with(["branch", "model.brand"]);
+                                ->with(["branch", "model.brand"])
+                                ->withCount([
+                                    "events as failed_events_count" => fn($eventQuery) => $eventQuery->where("processing_status", "failed"),
+                                    "events as pending_events_count" => fn($eventQuery) => $eventQuery->where("processing_status", "pending")
+                                ]);
 
         // Apply filters
         $filterBy = $filters["filter_by"] ?? null;
@@ -316,6 +320,29 @@ class BiometricDeviceService {
                               ->where("company_id", $companyId)
                               ->where("status", "active")
                               ->first();
+
+    }
+
+    public static function getDeviceEvents(
+        int $companyId,
+        int $deviceId,
+        array $filters = [],
+        int $perPage = 15
+    ): LengthAwarePaginator {
+
+        if(!self::findByIdAndCompany($deviceId, $companyId, null, [])) {
+
+            throw new DomainException("El dispositivo biometrico no existe o no pertenece a la empresa actual.");
+
+        }
+
+        return BiometricDeviceEvent::query()
+            ->where("company_id", $companyId)
+            ->where("biometric_device_id", $deviceId)
+            ->when($filters["processing_status"] ?? null, fn($query, $status) => $query->where("processing_status", $status))
+            ->when($filters["event_type"] ?? null, fn($query, $eventType) => $query->where("event_type", $eventType))
+            ->orderByDesc("occurred_at")
+            ->paginate($perPage);
 
     }
 

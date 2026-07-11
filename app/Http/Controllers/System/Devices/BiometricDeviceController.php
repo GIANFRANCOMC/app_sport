@@ -160,6 +160,23 @@ class BiometricDeviceController extends BaseController {
 
     }
 
+    public function events(Request $request, int $id): JsonResponse {
+
+        return response()->json([
+            "bool" => true,
+            "data" => BiometricDeviceService::getDeviceEvents(
+                $this->getCompanyId(),
+                $id,
+                [
+                    "processing_status" => $request->input("processing_status"),
+                    "event_type" => $request->input("event_type")
+                ],
+                $this->getPerPage($request, Utilities::$per_page_default)
+            )
+        ]);
+
+    }
+
 
     /**
      * Prepare record data from request

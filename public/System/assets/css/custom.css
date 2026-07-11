@@ -6601,6 +6601,19 @@ body.br-layout .br-entity-table > thead > tr > th {
   color: var(--br-primary-active);
 }
 
+.br-icon-action-danger {
+  border-color: color-mix(in srgb, var(--br-danger, #ef4444) 24%, var(--br-border));
+  background: color-mix(in srgb, var(--br-danger-soft, #fee2e2) 74%, #ffffff);
+  color: var(--br-danger-hover, #dc2626);
+}
+
+.br-icon-action-danger:hover,
+.br-icon-action-danger:focus-visible {
+  border-color: color-mix(in srgb, var(--br-danger, #ef4444) 42%, var(--br-border));
+  background: var(--br-danger-soft, #fee2e2);
+  color: var(--br-danger-hover, #dc2626);
+}
+
 .br-icon-action-retry {
   border-color: color-mix(in srgb, var(--br-secondary) 20%, var(--br-border));
   background: color-mix(in srgb, var(--br-secondary-soft) 64%, #ffffff);
@@ -7118,6 +7131,53 @@ body.br-layout .br-entity-table > thead > tr > th {
 }
 
 .br-book-complaint-history__item small {
+  color: var(--br-text-muted);
+  font-size: 0.68rem;
+  font-weight: 650;
+}
+
+.br-sensitive-credential-box,
+.br-credential-box {
+  display: grid;
+  gap: 0.2rem;
+  padding: 0.65rem 0.75rem;
+  border: 1px solid color-mix(in srgb, var(--br-secondary) 14%, var(--br-border));
+  border-radius: var(--br-radius-sm);
+  background: #f7f8fa;
+}
+
+.br-sensitive-credential-box small,
+.br-credential-box small {
+  color: var(--br-text-muted);
+  font-size: 0.68rem;
+  font-weight: 750;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.br-sensitive-credential-box strong,
+.br-credential-box strong {
+  color: var(--br-secondary);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  font-size: 0.8rem;
+  font-weight: 750;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.br-attendance-metrics {
+  display: grid;
+  gap: 0.15rem;
+  justify-items: end;
+}
+
+.br-attendance-metrics strong {
+  color: var(--br-secondary);
+  font-size: 0.82rem;
+  font-weight: 750;
+}
+
+.br-attendance-metrics small {
   color: var(--br-text-muted);
   font-size: 0.68rem;
   font-weight: 650;

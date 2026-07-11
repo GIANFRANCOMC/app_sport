@@ -13,4 +13,5 @@ Route::get("/list",       [BiometricDeviceController::class, "list"])->name("$en
 Route::post("",           [BiometricDeviceController::class, "store"])->name("$entity.store");
 Route::patch("/{id}/credentials", [BiometricDeviceController::class, "rotateCredentials"])
     ->name("$entity.credentials.rotate");
+Route::get("/{id}/events", [BiometricDeviceController::class, "events"])->name("$entity.events");
 Route::patch("/{id}",     [BiometricDeviceController::class, "update"])->name("$entity.update");

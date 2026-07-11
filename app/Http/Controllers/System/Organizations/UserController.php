@@ -15,6 +15,7 @@ use App\Http\Requests\System\Organizations\Users\{
     UpdateUserRequest
 };
 use App\Services\System\Base\{InitParamsCacheInvalidationService};
+use App\Services\System\Auth\AuthenticationAuditService;
 use App\Services\System\Organizations\Users\{UserConfigService, UserService};
 use App\Services\System\Devices\BiometricDevices\BiometricDeviceService;
 use App\Models\System\Organizations\AuthenticationEvent;
@@ -187,6 +188,16 @@ class UserController extends BaseController {
                 $user,
                 $request->password,
                 $this->getUserId()
+            );
+
+            AuthenticationAuditService::record(
+                $request,
+                "password_changed",
+                "success",
+                $user,
+                $this->getCompanyId(),
+                $user->email,
+                "Contraseña actualizada desde Colaboradores."
             );
 
             return $this->updatedResponse($user, "updated", "user");

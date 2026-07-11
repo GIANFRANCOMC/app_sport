@@ -358,10 +358,24 @@ const ENTITY_SPECIAL_ROUTES = {
         seriesAuditExport: "series/audit/export"
     },
     user_attendances: {
+        export: "export",
         weekly: "weekly-summary",
         checkIn: "check-in",
         biometricCheckIn: "biometric/check-in",
-        checkOut: "check-out"
+        checkOut: "check-out",
+        breakStart: "breaks",
+        breakEnd: "breaks/end",
+        correction: "corrections",
+        correctionReview: "corrections"
+    },
+    users: {
+        password: "password",
+        authenticationEvents: "authentication-events",
+        registerBiometricFingerprint: "biometric-fingerprints"
+    },
+    biometric_devices: {
+        credentials: "credentials",
+        events: "events"
     },
     service_operations: {
         floors: "floors",

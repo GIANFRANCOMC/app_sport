@@ -518,6 +518,9 @@ export default {
         async saveRole() {
             if(this.saving) return;
 
+            const canContinue = await this.confirmRoleImpact();
+            if(!canContinue) return;
+
             this.saving = true;
             this.errors = {};
             Alerts.swals({
@@ -561,6 +564,44 @@ export default {
                     ? Object.values(this.errors).flat()
                     : [result?.data?.msg || "No se pudo guardar el perfil."]
             });
+        },
+        async confirmRoleImpact() {
+
+            if(!this.editingId) return true;
+
+            const currentRole = (this.records.data || []).find(role => Number(role.id) === Number(this.editingId));
+            const affectedUsers = Number(currentRole?.users_count || 0);
+
+            if(affectedUsers <= 0) return true;
+
+            const willDisable = this.form.status?.code !== "active";
+            const removesFullAccess = Boolean(currentRole?.is_full_access) && !this.form.isFullAccess;
+
+            if(!willDisable && !removesFullAccess) return true;
+
+            const confirmation = await Swal.fire({
+                title: "Revisar perfil asignado",
+                html: `
+                    <p>Este perfil está asignado a <strong>${affectedUsers}</strong> colaborador${affectedUsers === 1 ? "" : "es"} activo${affectedUsers === 1 ? "" : "s"}.</p>
+                    <p class="mb-0">Si continúas, sus accesos cambiarán de inmediato. El backend bloqueará la operación si este cambio deja a la empresa sin administrador activo.</p>
+                `,
+                icon: "warning",
+                showCancelButton: true,
+                buttonsStyling: false,
+                confirmButtonText: "Continuar",
+                cancelButtonText: "Cancelar",
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                customClass: {
+                    container: "br-swal-backdrop",
+                    popup: "br-swal-alert br-swal-alert--warning",
+                    confirmButton: "br-btn br-swal-alert__confirm br-swal-alert__confirm--warning",
+                    cancelButton: "br-btn br-btn-cancel ms-2"
+                }
+            });
+
+            return confirmation.isConfirmed;
+
         },
         async duplicateRole(role) {
             if(this.saving || !role?.id) return;
