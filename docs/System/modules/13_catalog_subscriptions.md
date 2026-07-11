@@ -12,3 +12,10 @@ Administra ítems `subscription` que, al venderse, generan una membresía real p
 - `price_includes_tax` determina si el IGV ya está incluido.
 - `commission_type` y `commission_value` permiten configurar comision por membresia vendida; la venta guarda la foto en `sales_body` y suma el total interno en `sales_header.commission_total`.
 - Código, moneda, categorías y pertenencia se validan por empresa.
+
+## Interfaz
+
+- El listado muestra límite diario y comisión junto al nombre para distinguir planes comerciales sin abrir el formulario.
+- El formulario permite definir límite diario de asistencias, comisión y valor de comisión.
+- `benefits` y `restrictions` se editan como textos separados por coma para mantener una captura rápida; el frontend los normaliza a arreglos antes de enviarlos al backend.
+- Los beneficios describen lo que incluye el plan; las restricciones deben usarse para reglas comerciales claras como horarios, sedes o condiciones de uso.

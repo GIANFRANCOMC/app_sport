@@ -37,6 +37,9 @@ Campos:
 - `internal_code`: código interno; su unicidad dentro de la empresa se valida en backend.
 - `name`: nombre comercial; su unicidad dentro de la empresa se valida en backend.
 - `description`: descripción opcional de hasta 250 caracteres en la API.
+- `logo_path`: ruta o URL del logotipo de la marca.
+- `origin_country_code`: país de origen en código de tres caracteres.
+- `website_url`: sitio oficial de la marca.
 - `status`: `active` o `inactive`.
 - Auditoría: `created_at`, `created_by`, `updated_at`, `updated_by`.
 
@@ -87,10 +90,11 @@ Esto limpia:
 
 ## Interfaz
 
-- Barra de filtros reutilizable con búsqueda por todos los campos, código, nombre o descripción.
-- Tabla con nombre, descripción, código interno copiable, cantidad de productos activos, estado y edición.
+- Barra de filtros reutilizable con búsqueda por código, nombre, descripción, país de origen o sitio oficial.
+- Tabla con nombre, descripción, logotipo configurado, código interno copiable, país de origen, sitio oficial, cantidad de productos activos, estado y edición.
 - Modal alineado con `br-entity-modal`, cierre reutilizable, botón Cancelar discreto y acciones diferenciadas para agregar o editar.
 - Generación opcional de código interno con tooltip.
+- El formulario completo permite registrar logotipo, país de origen y sitio oficial sin mezclar estos datos con proveedor o fabricante.
 - Select de estado con el mismo comportamiento y menú flotante que el resto de System.
 
 ## Alta rápida reutilizable
@@ -111,7 +115,7 @@ Esto limpia:
 ## Criterios para crecer
 
 - No agregar columnas específicas de proveedor a `brands`; proveedor y marca son conceptos distintos.
-- Si una marca requiere logotipo, sitio web o país, añadir campos opcionales y actualizar migración, Request, servicio, Vue y documentación en el mismo cambio.
+- Si se requiere país con catálogo formal, crear un maestro de países y migrar `origin_country_code` a una relación explícita sin retirar el valor actual hasta terminar la transición.
 - Si se necesita una marca global compartida por empresas, crear un maestro separado y una relación explícita; no retirar `company_id` de esta tabla.
 - Antes de implementar eliminación desde UI, definir si debe bloquearse cuando existen productos o si debe conservarse el comportamiento `SET NULL`.
 

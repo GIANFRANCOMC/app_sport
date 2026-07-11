@@ -14,3 +14,10 @@ Administra ítems `service`: se venden, no descuentan stock y pueden medirse den
 - `price_includes_tax` define si el precio ya contiene IGV.
 - Moneda, categoría y código interno se validan por empresa.
 - Crear o editar invalida las configuraciones dependientes de ventas y catálogo.
+
+## Interfaz
+
+- El listado muestra duración estimada y comisión para que el usuario compare servicios sin abrir cada modal.
+- El formulario permite definir duración estimada en minutos, tipo de comisión (`Sin comisión`, `Porcentaje` o `Monto fijo por unidad`) y valor.
+- Si la comisión está en `Sin comisión`, el valor queda deshabilitado para evitar montos huérfanos.
+- La duración sirve como base para agenda, servicios en curso, SLA y medición del tiempo real del responsable.

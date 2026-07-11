@@ -131,6 +131,10 @@ class CategoryController extends BaseController {
 
             return $this->updatedResponse($category, "updated", "category");
 
+        }catch(\DomainException $exception) {
+
+            return response()->json(["bool" => false, "msg" => $exception->getMessage()], 422);
+
         }catch(\Exception $e) {
 
             return $this->handleException($e, "update");

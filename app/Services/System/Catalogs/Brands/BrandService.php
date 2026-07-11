@@ -26,7 +26,9 @@ final class BrandService {
     private const SEARCHABLE_FIELDS = [
         "internal_code",
         "name",
-        "description"
+        "description",
+        "origin_country_code",
+        "website_url"
     ];
 
     public static function create(array $data, int $companyId, int $userId): Brand {

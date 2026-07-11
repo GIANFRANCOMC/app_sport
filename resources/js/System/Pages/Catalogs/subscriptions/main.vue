@@ -48,6 +48,9 @@
                         <td>
                             <span v-text="record.name" class="fw-semibold d-block"></span>
                             <small v-if="record.description" v-text="record.description" class="text-muted"></small>
+                            <small class="text-muted d-block">
+                                Límite diario: {{ record.attendance_limit_per_day || "Sin límite" }} - Comisión: {{ commissionLabel(record) }}
+                            </small>
                         </td>
                         <td class="text-center">
                             <span v-text="record.formatted_duration" class="fw-semibold text-lowercase"></span>
@@ -244,6 +247,66 @@
                                     </label>
                                 </div>
                             </div>
+                            <InputNumber
+                                v-model="forms[entity].createUpdate.data.attendance_limit_per_day"
+                                hasDiv
+                                :title="MODULE.texts.form.attendanceLimit"
+                                :titleClass="[config.forms.classes.title]"
+                                :decimals="0"
+                                :minValue="1"
+                                hasTextBottom
+                                :textBottomInfo="forms[entity].createUpdate.errors?.attendance_limit_per_day"
+                                xl="4"
+                                lg="4"/>
+                            <InputSlot
+                                hasDiv
+                                :title="MODULE.texts.form.commissionType"
+                                :titleClass="[config.forms.classes.title]"
+                                hasTextBottom
+                                :textBottomInfo="forms[entity].createUpdate.errors?.commission_type"
+                                xl="4"
+                                lg="4">
+                                <template v-slot:input>
+                                    <v-select
+                                        v-model="forms[entity].createUpdate.data.commission_type"
+                                        :options="commissionTypeOptions"
+                                        :class="config.forms.classes.select2"
+                                        :clearable="false"
+                                        :searchable="false"/>
+                                </template>
+                            </InputSlot>
+                            <InputNumber
+                                v-model="forms[entity].createUpdate.data.commission_value"
+                                hasDiv
+                                :title="MODULE.texts.form.commissionValue"
+                                :titleClass="[config.forms.classes.title]"
+                                :disabled="forms[entity].createUpdate.data.commission_type?.code === 'none'"
+                                :minValue="0"
+                                :maxValue="forms[entity].createUpdate.data.commission_type?.code === 'percentage' ? 100 : undefined"
+                                hasTextBottom
+                                :textBottomInfo="forms[entity].createUpdate.errors?.commission_value"
+                                xl="4"
+                                lg="4"/>
+                            <InputText
+                                v-model="forms[entity].createUpdate.data.benefits_text"
+                                hasDiv
+                                :title="MODULE.texts.form.benefits"
+                                :titleClass="[config.forms.classes.title]"
+                                maxlength="500"
+                                hasTextBottom
+                                :textBottomInfo="forms[entity].createUpdate.errors?.benefits"
+                                xl="6"
+                                lg="6"/>
+                            <InputText
+                                v-model="forms[entity].createUpdate.data.restrictions_text"
+                                hasDiv
+                                :title="MODULE.texts.form.restrictions"
+                                :titleClass="[config.forms.classes.title]"
+                                maxlength="500"
+                                hasTextBottom
+                                :textBottomInfo="forms[entity].createUpdate.errors?.restrictions"
+                                xl="6"
+                                lg="6"/>
                             <InputSlot
                                 v-if="false"
                                 hasDiv
@@ -377,6 +440,11 @@ const FORM_FIELDS = {
     price_includes_tax: true,
     min_price: "",
     max_price: "",
+    attendance_limit_per_day: "",
+    commission_type: null,
+    commission_value: "",
+    benefits_text: "",
+    restrictions_text: "",
     currency: null,
     categories: [],
     see_my_web: false,
@@ -394,6 +462,9 @@ const FORM_FIELD_CONFIG = {
     price_includes_tax: {toBoolean: true},
     min_price: {toNumber: true, minValue: 0},
     max_price: {toNumber: true, minValue: 0},
+    attendance_limit_per_day: {toNumber: true, minValue: 1},
+    commission_type: {getCode: true},
+    commission_value: {toNumber: true, minValue: 0},
     currency: {mapToField: "currency_id"},
     categories: {getArray: {mapTo: "category_id"}},
     see_my_web: {toBoolean: true},
@@ -411,6 +482,9 @@ const VALIDATION_RULES = {
     price_includes_tax: {required: false},
     min_price: {required: false, number: true, min: 0},
     max_price: {required: false, number: true, min: 0},
+    attendance_limit_per_day: {required: false, number: true, min: 1},
+    commission_type: {required: false},
+    commission_value: {required: false, number: true, min: 0},
     currency: {required: true},
     categories: {required: false},
     see_my_web: {required: false},
@@ -428,6 +502,11 @@ const ERROR_LABELS = {
     price_includes_tax: "Precio incluye IGV",
     min_price: "Precio mínimo",
     max_price: "Precio máximo",
+    attendance_limit_per_day: "Límite diario",
+    commission_type: "Tipo de comisión",
+    commission_value: "Valor de comisión",
+    benefits: "Beneficios",
+    restrictions: "Restricciones",
     currency: "Moneda",
     categories: "Categorías",
     see_my_web: "Visualizar en mi página",
@@ -462,6 +541,11 @@ const TEXTS = {
         price: "Precio de venta",
         minPrice: "Precio mínimo",
         maxPrice: "Precio máximo",
+        attendanceLimit: "Límite diario de asistencias",
+        commissionType: "Tipo de comisión",
+        commissionValue: "Valor de comisión",
+        benefits: "Beneficios (separados por coma)",
+        restrictions: "Restricciones (separadas por coma)",
         currency: "Moneda",
         categories: "Categorías",
         status: "Estado",
@@ -631,6 +715,11 @@ export default {
                 entityForms.data.price_includes_tax = Boolean(record.price_includes_tax ?? true);
                 entityForms.data.min_price        = record.min_price;
                 entityForms.data.max_price        = record.max_price;
+                entityForms.data.attendance_limit_per_day = record.attendance_limit_per_day;
+                entityForms.data.commission_type  = this.commissionTypeOptions.find(e => e.code === (record.commission_type || "none")) ?? this.commissionTypeOptions[0];
+                entityForms.data.commission_value = record.commission_value;
+                entityForms.data.benefits_text    = this.arrayToText(record.benefits);
+                entityForms.data.restrictions_text = this.arrayToText(record.restrictions);
                 entityForms.data.currency         = currencyOption;
                 entityForms.data.categories       = this.categories.filter(e => categoryItems.includes(e.code));
                 entityForms.data.see_my_web       = Boolean(record.see_my_web ?? false);
@@ -645,6 +734,8 @@ export default {
                 entityForms.data.duration_type  = this.durationTypes.length > 0 ? this.durationTypes[0] : null;
                 entityForms.data.currency       = this.currencies.length > 0 ? this.currencies[0] : null;
                 entityForms.data.price_includes_tax = true;
+                entityForms.data.commission_type = this.commissionTypeOptions[0];
+                entityForms.data.commission_value = "";
                 entityForms.data.status         = this.statuses.length > 0 ? this.statuses[0] : null;
 
             }
@@ -690,6 +781,10 @@ export default {
                 }
 
                 const preparedData  = Forms.prepareFormData(formData, this.MODULE.formFieldConfig);
+                preparedData.benefits = this.textToArray(formData.benefits_text);
+                preparedData.restrictions = this.textToArray(formData.restrictions_text);
+                delete preparedData.benefits_text;
+                delete preparedData.restrictions_text;
                 const id            = preparedData.id;
                 const isUpdate      = this.isDefined(id);
                 const requestMethod = isUpdate ? "patch" : "post";
@@ -796,6 +891,30 @@ export default {
             return Utils.separatorNumber(value);
 
         },
+        textToArray(value) {
+
+            return String(value ?? "")
+                .split(",")
+                .map(item => item.trim())
+                .filter(Boolean);
+
+        },
+        arrayToText(value) {
+
+            return Array.isArray(value) ? value.filter(Boolean).join(", ") : "";
+
+        },
+        commissionLabel(record) {
+
+            const type = record?.commission_type || "none";
+            const value = Number(record?.commission_value || 0);
+
+            if(type === "percentage") return `${this.separatorNumber(value)}%`;
+            if(type === "fixed") return `${record?.currency?.sign || ""} ${this.separatorNumber(value)}`.trim();
+
+            return "Sin comisión";
+
+        },
     },
     computed: {
         entity() {
@@ -839,6 +958,15 @@ export default {
         statuses() {
 
             return (this.options?.statuses ?? []).map(e => ({code: e.code, label: e.label}));
+
+        },
+        commissionTypeOptions() {
+
+            return [
+                {code: "none", label: "Sin comisión"},
+                {code: "percentage", label: "Porcentaje"},
+                {code: "fixed", label: "Monto fijo por unidad"}
+            ];
 
         },
         isUpdate() {

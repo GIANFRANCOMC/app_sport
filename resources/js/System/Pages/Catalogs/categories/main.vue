@@ -25,8 +25,11 @@
         <table class="table table-hover">
             <thead class="align-middle bg-secondary text-center">
                 <tr>
-                    <th class="text-white" style="width: 20%;">CÓDIGO INTERNO</th>
-                    <th class="text-white" style="width: 60%;" v-text="MODULE.config.pageTitleSingular"></th>
+                    <th class="text-white" style="width: 16%;">CÓDIGO INTERNO</th>
+                    <th class="text-white" style="width: 34%;" v-text="MODULE.config.pageTitleSingular"></th>
+                    <th class="text-white" style="width: 10%;">ORDEN</th>
+                    <th class="text-white" style="width: 14%;">PUBLICACIÓN</th>
+                    <th class="text-white" style="width: 16%;">USO</th>
                     <th class="text-white" style="width: 10%;">ESTADO</th>
                     <th class="text-white" style="width: 10%;">ACCIONES</th>
                 </tr>
@@ -45,6 +48,20 @@
                         <td>
                             <span v-text="record.name" class="fw-semibold d-block"></span>
                             <small v-if="record.description" v-text="record.description" class="text-muted"></small>
+                        </td>
+                        <td class="text-center">
+                            <span class="br-entity-code" v-text="record.sort_order || 1"></span>
+                        </td>
+                        <td class="text-center">
+                            <span :class="['br-status-label', record.is_public ? 'br-status-active' : 'br-status-inactive']">
+                                {{ record.is_public ? "Pública" : "Interna" }}
+                            </span>
+                        </td>
+                        <td class="text-center">
+                            <span class="br-entity-table__meta">
+                                {{ record.active_items_count || 0 }}
+                                {{ Number(record.active_items_count || 0) === 1 ? "producto activo" : "productos activos" }}
+                            </span>
                         </td>
                         <td class="text-center">
                             <StatusBadge class="flex-shrink-none" :status="record.status" :formatted-status="record.formatted_status"/>
@@ -127,6 +144,37 @@
                                 :textBottomInfo="forms[entity].createUpdate.errors?.description"
                                 xl="12"
                                 lg="12"/>
+                            <InputNumber
+                                v-model="forms[entity].createUpdate.data.sort_order"
+                                hasDiv
+                                :title="MODULE.texts.form.sortOrder"
+                                :titleClass="[config.forms.classes.title]"
+                                :decimals="0"
+                                :minValue="1"
+                                hasTextBottom
+                                :textBottomInfo="forms[entity].createUpdate.errors?.sort_order"
+                                xl="3"
+                                lg="3"/>
+                            <div class="form-group col-xl-6 col-lg-6 col-md-12 col-sm-12">
+                                <label class="form-label colon-at-end" v-text="MODULE.texts.form.publication"></label>
+                                <div class="br-entity-publication-settings">
+                                    <label class="br-entity-switch" for="category_is_public">
+                                        <input
+                                            id="category_is_public"
+                                            v-model="forms[entity].createUpdate.data.is_public"
+                                            class="form-check-input"
+                                            type="checkbox"
+                                            role="switch">
+                                        <span>
+                                            <strong>Visible públicamente</strong>
+                                            <small>Permite usar esta categoría en catálogo web, PDF o carta pública.</small>
+                                        </span>
+                                    </label>
+                                </div>
+                                <div>
+                                    <small class="text-danger br-form-error" v-text="forms[entity].createUpdate.errors?.is_public?.[0] || ''"></small>
+                                </div>
+                            </div>
                             <InputSlot
                                 hasDiv
                                 :title="MODULE.texts.form.status"
@@ -191,6 +239,8 @@ const FORM_FIELDS = {
     internal_code: "",
     name: "",
     description: "",
+    sort_order: 1,
+    is_public: true,
     status: null
 };
 
@@ -198,6 +248,8 @@ const FORM_FIELD_CONFIG = {
     internal_code: {trim: true},
     name: {trim: true},
     description: {normalize: true},
+    sort_order: {toNumber: true, minValue: 1},
+    is_public: {toBoolean: true},
     status: {getCode: true}
 };
 
@@ -205,6 +257,7 @@ const VALIDATION_RULES = {
     internal_code: {required: true},
     name: {required: true},
     description: {required: false},
+    sort_order: {required: false, number: true, min: 1},
     status: {required: true}
 };
 
@@ -212,6 +265,8 @@ const ERROR_LABELS = {
     internal_code: "Código interno",
     name: "Nombre",
     description: "Descripción",
+    sort_order: "Orden",
+    is_public: "Visibilidad pública",
     status: "Estado"
 };
 
@@ -236,6 +291,8 @@ const TEXTS = {
         internalCode: "Código interno",
         name: "Nombre",
         description: "Descripción",
+        sortOrder: "Orden",
+        publication: "Publicación",
         status: "Estado",
         generateCodeTooltip: "Generar aleatoriamente"
     },
@@ -388,12 +445,16 @@ export default {
                 entityForms.data.internal_code = this.stripInternalCodePrefix(record.internal_code);
                 entityForms.data.name          = record.name;
                 entityForms.data.description   = record.description;
+                entityForms.data.sort_order    = record.sort_order || 1;
+                entityForms.data.is_public     = Boolean(record.is_public);
                 entityForms.data.status        = statusOption;
 
             }else {
 
                 // Set defaults for new record
                 entityForms.data.internal_code = this.generateCode({length: 7});
+                entityForms.data.sort_order    = 1;
+                entityForms.data.is_public     = true;
                 entityForms.data.status         = this.statuses.length > 0 ? this.statuses[0] : null;
 
             }

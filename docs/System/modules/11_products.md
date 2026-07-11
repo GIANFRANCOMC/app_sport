@@ -268,6 +268,7 @@ Si un almacén activo no tiene valores explícitos, se crea con cantidad y míni
 - El loading de persistencia informa la acción actual: `Agregando producto` o `Editando producto`.
 - Código interno y código de barras usan el componente reutilizable `CopyButton`; por defecto muestra `Copiar` y `Copiado`, y puede activar `useLabelInTooltip` para mostrar textos contextuales como `Copiar código interno` y `Código interno copiado`.
 - El código de barras incorpora además `BarcodeDownloadButton`, una acción con fondo celeste primary suave e icono secondary navy que genera y descarga su etiqueta. No usa verde para evitar confundirse con estados como `Activo`; sigue diferenciándose de `CopyButton`, que conserva una superficie neutral. El tooltip comunica `Descargar` y confirma `Descargado`.
+- La barra de filtros incorpora `Etiquetas`, acción reutilizable de impresión por lote. Toma los registros visibles del listado filtrado, genera etiquetas EAN-13 en una hoja imprimible y omite registros sin código de barras válido para evitar impresiones incorrectas.
 - Las filas de identificación reservan una columna uniforme para acciones alineada desde la izquierda. Copiar ocupa siempre la primera posición; Código de barras añade Descargar como segunda acción sin alterar la alineación de los valores.
 - En pantallas pequeñas, los identificadores conservan su contenido completo y nunca usan puntos suspensivos. La tabla prioriza exactitud mediante desplazamiento horizontal antes que recortar un código interno o código de barras.
 - El valor y sus acciones ocupan columnas independientes con ancho reservado; los botones Copiar y Descargar no pueden superponerse sobre los identificadores.
@@ -286,6 +287,13 @@ Si un almacén activo no tiene valores explícitos, se crea con cantidad y míni
 - `CopyButton` conserva esa variante compacta al alternar entre `Copiar` y `Copiado`, porque recrea su instancia mediante la configuración centralizada de `Alerts.createTooltip`.
 - Los switches `Publicar producto` y `Mostrar precio` usan verde success al seleccionarse, foco verde suave y estado neutral al desmarcarse o deshabilitarse, sin heredar el morado del tema base.
 - En edición, el stock actual conserva su comportamiento de solo lectura y se presenta mediante un `span` neutral formateado con `separatorNumber`; no se renderiza como un control deshabilitado porque la cantidad se modifica desde Inventario, no desde Productos. En creación se conserva `InputNumber` para registrar el stock inicial.
+
+## Publicación y venta asistida
+
+- `see_my_web` controla si el producto puede salir en catálogo visible para clientes o PDF comercial.
+- `see_my_web_price` solo tiene efecto cuando `see_my_web` está activo; permite ocultar precio sin retirar el producto del catálogo público.
+- El selector de ítems de Nueva venta busca por nombre, código interno y código de barras. Esto permite usar lector de código de barras como entrada rápida: el lector escribe el código y el selector encuentra el ítem sin agregar otro campo visual.
+- La impresión por lote es una ayuda operativa, no una mutación: no altera productos, stock ni movimientos de inventario.
 
 ## Carga masiva básica
 

@@ -322,7 +322,8 @@
                                 title=""
                                 :inputClass="['form-control', 'br-tax-quantity']"
                                 :decimals="0"
-                                :minValue="1"
+                                :minValue="taxQuantityMinimum(tax.data)"
+                                :maxValue="taxQuantityMaximum(tax.data)"
                                 :hasNegative="false"
                                 @change="normalizeSelectedTaxQuantity(tax.code)">
                                 <template v-slot:inputGroupPrepend>
@@ -1118,17 +1119,42 @@ export default {
             return (tax?.calculation_type || "percentage") === "fixed";
 
         },
+        taxQuantityMinimum(tax = {}) {
+
+            return Math.max(1, Number(tax?.min_apply_quantity ?? 1));
+
+        },
+        taxQuantityMaximum(tax = {}) {
+
+            return tax?.max_apply_quantity == null ? undefined : Math.max(this.taxQuantityMinimum(tax), Number(tax.max_apply_quantity));
+
+        },
+        taxById(taxId) {
+
+            return this.saleTaxes.find(tax => Number(tax.code) === Number(taxId))?.data || {};
+
+        },
+        clampTaxQuantity(taxId, quantity) {
+
+            const tax = this.taxById(taxId);
+            const minimum = this.taxQuantityMinimum(tax);
+            const maximum = this.taxQuantityMaximum(tax);
+            const normalized = Math.max(minimum, parseInt(Number(quantity || minimum), 10));
+
+            return maximum === undefined ? normalized : Math.min(normalized, maximum);
+
+        },
         selectedTaxQuantity(taxId) {
 
             const quantities = this.forms[this.entity].createUpdate.data.selected_tax_quantities || {};
 
-            return Math.max(1, parseInt(Number(quantities[taxId] || 1), 10));
+            return this.clampTaxQuantity(taxId, quantities[taxId]);
 
         },
         normalizeSelectedTaxQuantity(taxId) {
 
             const quantities = this.forms[this.entity].createUpdate.data.selected_tax_quantities || {};
-            quantities[taxId] = Math.max(1, parseInt(Number(quantities[taxId] || 1), 10));
+            quantities[taxId] = this.clampTaxQuantity(taxId, quantities[taxId]);
             this.forms[this.entity].createUpdate.data.selected_tax_quantities = quantities;
 
         },
@@ -1140,7 +1166,7 @@ export default {
 
             if(this.selectedTaxIds().includes(tax.id)) {
 
-                quantities[tax.id] = 1;
+                quantities[tax.id] = this.taxQuantityMinimum(tax);
 
             }else {
 
@@ -2066,7 +2092,11 @@ export default {
         },
         items: function() {
 
-            return this.options?.items?.records.map(e => ({code: e.id, label: e.name, data: e}));
+            return this.options?.items?.records.map(e => ({
+                code: e.id,
+                label: [e.name, e.internal_code, e.barcode].filter(Boolean).join(" · "),
+                data: e
+            }));
 
         },
         commissionTypeOptions() {

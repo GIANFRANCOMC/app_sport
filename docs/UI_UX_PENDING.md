@@ -30,20 +30,6 @@ Cuando una pantalla queda implementada, responsive, accesible, con errores por c
 - Libro de reclamaciones: CAPTCHA, consulta por código, carga múltiple y respuesta pública clara.
 - Asistencia pública: enlaces firmados, sucursal, estado del registro y respuestas antiabuso sin detalles internos.
 
-## Catálogo Comercial
-
-- Productos: impresión por lote de etiquetas, lectura por escáner en ventas y publicación en catálogo/PDF.
-- Servicios y membresías: duración, comisión, beneficios, restricciones y límites cuando correspondan.
-- Categorías: orden, visibilidad pública y bloqueo legible cuando tenga productos activos.
-- Marcas: logotipo, país de origen y sitio oficial.
-- Recetas y platillos: toppings, sabores, combinaciones parciales, costo teórico, merma y conexión con KDS.
-- Activos: alta rápida de categorías de activo desde la pantalla.
-
-## Ventas, POS y Caja
-
-- Nueva venta: terminar la visualización de tributos opcionales, cantidad para cargos fijos y pagos mixtos en todas las variantes legacy.
-- Cierre principal: conteo físico de inventario, diferencias y observaciones antes de confirmar.
-
 ## Inventario y Compras
 
 - Control de stock: vista consolidada entre almacenes y navegación rápida a alertas entre múltiples almacenes.

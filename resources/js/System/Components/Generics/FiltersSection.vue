@@ -104,6 +104,19 @@
                         <i class="fa-solid fa-file-excel" aria-hidden="true"></i>
                         <span class="br-btn-action-export__label" v-text="downloadButtonText"></span>
                     </button>
+                    <button
+                        v-if="showLabelsButton"
+                        type="button"
+                        class="br-btn br-btn-sm br-btn-action-print waves-effect"
+                        @click="$emit('labels')"
+                        :disabled="loading || labelsLoading"
+                        data-bs-toggle="tooltip"
+                        data-bs-placement="top"
+                        :title="labelsButtonTooltip"
+                        :aria-label="labelsButtonTooltip">
+                        <i class="fa-solid fa-tags" aria-hidden="true"></i>
+                        <span class="br-btn-action-print__label" v-text="labelsButtonText"></span>
+                    </button>
                 </template>
             </InputSlot>
         </div>
@@ -118,7 +131,7 @@ export default {
     components: {
         SelectNoOptions
     },
-    emits: ["search", "add", "import", "download", "update:filterByValue", "update:filterWordValue"],
+    emits: ["search", "add", "import", "download", "labels", "update:filterByValue", "update:filterWordValue"],
     props: {
         filterByValue: {
             type: Object,
@@ -179,6 +192,11 @@ export default {
             required: false,
             default: false
         },
+        showLabelsButton: {
+            type: Boolean,
+            required: false,
+            default: false
+        },
         importButtonText: {
             type: String,
             required: false,
@@ -213,6 +231,21 @@ export default {
             type: String,
             required: false,
             default: "Descargar Excel"
+        },
+        labelsButtonText: {
+            type: String,
+            required: false,
+            default: "Etiquetas"
+        },
+        labelsButtonTooltip: {
+            type: String,
+            required: false,
+            default: "Imprimir etiquetas"
+        },
+        labelsLoading: {
+            type: Boolean,
+            required: false,
+            default: false
         },
         titleClass: {
             type: Array,

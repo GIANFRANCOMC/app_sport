@@ -3734,6 +3734,65 @@ body.br-layout .br-entity-table > thead > tr > th {
   background: var(--br-primary-soft);
 }
 
+.br-cash-inventory-count {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 0.85rem;
+  border: 1px solid color-mix(in srgb, var(--br-secondary) 10%, var(--br-border));
+  border-radius: var(--br-radius-md);
+  background: #f7f8fa;
+}
+
+.br-cash-inventory-count__header,
+.br-cash-inventory-count__summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.br-cash-inventory-count__header strong {
+  display: block;
+  color: var(--br-secondary);
+  font-size: 0.9rem;
+  font-weight: 800;
+}
+
+.br-cash-inventory-count__header span,
+.br-cash-inventory-count__summary span,
+.br-cash-inventory-count__empty {
+  color: var(--br-text-muted);
+  font-size: 0.78rem;
+  font-weight: 650;
+}
+
+.br-cash-inventory-count__summary {
+  padding: 0.55rem 0.7rem;
+  border: 1px solid var(--br-border);
+  border-radius: var(--br-radius-sm);
+  background: #ffffff;
+}
+
+.br-cash-inventory-count__summary strong {
+  font-size: 0.82rem;
+}
+
+.br-cash-inventory-count .table-responsive {
+  border: 1px solid var(--br-border);
+  border-radius: var(--br-radius-sm);
+  background: #ffffff;
+  overflow: auto;
+}
+
+.br-cash-inventory-count .br-entity-table td {
+  vertical-align: middle;
+}
+
+.br-cash-inventory-count .input-group {
+  min-width: 7rem;
+}
+
 .br-icon-action-primary {
   color: var(--br-primary);
   border-color: color-mix(in srgb, var(--br-primary) 28%, var(--br-border));
@@ -3745,6 +3804,19 @@ body.br-layout .br-entity-table > thead > tr > th {
   color: var(--br-primary-active);
   border-color: color-mix(in srgb, var(--br-primary) 42%, var(--br-border));
   background: var(--br-primary-soft);
+}
+
+.br-btn-action-print {
+  color: var(--br-secondary);
+  border-color: color-mix(in srgb, var(--br-secondary) 20%, var(--br-border));
+  background: color-mix(in srgb, var(--br-secondary-soft) 68%, #ffffff);
+}
+
+.br-btn-action-print:hover,
+.br-btn-action-print:focus-visible {
+  color: var(--br-on-secondary);
+  border-color: var(--br-secondary);
+  background: var(--br-secondary);
 }
 
 @media (max-width: 992px) {

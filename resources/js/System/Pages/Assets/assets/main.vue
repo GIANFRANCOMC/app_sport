@@ -116,6 +116,32 @@
                                 :textBottomInfo="forms[entity].createUpdate.errors?.name"
                                 xl="8"
                                 lg="8"/>
+                            <InputSlot
+                                hasDiv
+                                :title="MODULE.texts.form.category"
+                                :titleClass="[config.forms.classes.title]"
+                                hasTextBottom
+                                :textBottomInfo="forms[entity].createUpdate.errors?.asset_category_id"
+                                xl="6"
+                                lg="6">
+                                <template v-slot:defaultAppend>
+                                    <button
+                                        type="button"
+                                        class="br-quick-create-trigger br-quick-create-trigger--link"
+                                        @click="openAssetCategoryModal">
+                                        <i class="fa-solid fa-circle-plus" aria-hidden="true"></i>
+                                        <span>Agregar</span>
+                                    </button>
+                                </template>
+                                <template v-slot:input>
+                                    <v-select
+                                        v-model="forms[entity].createUpdate.data.asset_category"
+                                        :options="assetCategories"
+                                        :class="config.forms.classes.select2"
+                                        :clearable="true"
+                                        :searchable="true"/>
+                                </template>
+                            </InputSlot>
                             <InputText
                                 v-model="forms[entity].createUpdate.data.description"
                                 hasDiv
@@ -125,8 +151,8 @@
                                 showCharCounter
                                 hasTextBottom
                                 :textBottomInfo="forms[entity].createUpdate.errors?.description"
-                                xl="12"
-                                lg="12"/>
+                                xl="6"
+                                lg="6"/>
                             <InputSlot
                                 hasDiv
                                 :title="MODULE.texts.form.status"
@@ -167,6 +193,53 @@
             </div>
         </div>
     </div>
+
+    <div class="modal fade br-entity-modal" id="assetCategoryQuickModal" data-bs-backdrop="static" tabindex="-1" role="dialog" aria-modal="true">
+        <div class="modal-dialog modal-dialog-centered modal-md" role="document">
+            <div class="modal-content">
+                <div class="modal-header br-entity-modal__header">
+                    <div>
+                        <p class="br-entity-modal__eyebrow mb-1">Activos</p>
+                        <h2 class="modal-title br-entity-modal__title">Agregar categoría</h2>
+                    </div>
+                    <button type="button" class="br-modal-close" data-bs-dismiss="modal" aria-label="Cerrar">
+                        <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+                    </button>
+                </div>
+                <div class="modal-body br-entity-modal__body">
+                    <div class="row g-3">
+                        <InputText
+                            v-model="quickCategory.name"
+                            hasDiv
+                            title="Nombre"
+                            :titleClass="[config.forms.classes.title]"
+                            isRequired
+                            maxlength="150"
+                            hasTextBottom
+                            :textBottomInfo="quickCategory.errors?.name"
+                            xl="12"
+                            lg="12"/>
+                        <InputText
+                            v-model="quickCategory.description"
+                            hasDiv
+                            title="Descripción"
+                            :titleClass="[config.forms.classes.title]"
+                            maxlength="500"
+                            hasTextBottom
+                            :textBottomInfo="quickCategory.errors?.description"
+                            xl="12"
+                            lg="12"/>
+                    </div>
+                </div>
+                <div class="modal-footer br-entity-modal__footer">
+                    <button type="button" class="br-btn br-btn-cancel" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="br-btn br-btn-action-create" :disabled="quickCategory.saving" @click="saveAssetCategory">
+                        Agregar categoría
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 </template>
 
 <script>
@@ -189,6 +262,7 @@ const MODULE_CONFIG = {
 
 const FORM_FIELDS = {
     internal_code: "",
+    asset_category: null,
     name: "",
     description: "",
     status: null
@@ -196,6 +270,7 @@ const FORM_FIELDS = {
 
 const FORM_FIELD_CONFIG = {
     internal_code: {trim: true},
+    asset_category: {mapToField: "asset_category_id"},
     name: {trim: true},
     description: {normalize: true},
     status: {getCode: true}
@@ -203,6 +278,7 @@ const FORM_FIELD_CONFIG = {
 
 const VALIDATION_RULES = {
     internal_code: {required: true},
+    asset_category: {required: false},
     name: {required: true},
     description: {required: false},
     status: {required: true}
@@ -210,6 +286,7 @@ const VALIDATION_RULES = {
 
 const ERROR_LABELS = {
     internal_code: "Código interno",
+    asset_category: "Categoría",
     name: "Nombre",
     description: "Descripción",
     status: "Estado"
@@ -234,6 +311,7 @@ const TEXTS = {
     },
     form: {
         internalCode: "Código interno",
+        category: "Categoría",
         name: "Nombre",
         description: "Descripción",
         status: "Estado",
@@ -274,7 +352,13 @@ export default {
             ...crudModule,
             MODULE: MODULE,
             isInitialized: false,
-            isSaving: false
+            isSaving: false,
+            quickCategory: {
+                name: "",
+                description: "",
+                errors: {},
+                saving: false
+            }
         };
 
     },
@@ -309,6 +393,7 @@ export default {
             if(response?.data?.config) {
 
                 this.options.statuses = response.data.config.statuses;
+                this.options.categories = response.data.config.categories || [];
                 this.options.internal_code_prefixes = response.data.config.internal_code_prefixes ?? {};
 
             }
@@ -386,6 +471,7 @@ export default {
 
                 entityForms.data.id            = record.id;
                 entityForms.data.internal_code = this.stripInternalCodePrefix(record.internal_code);
+                entityForms.data.asset_category = this.assetCategories.find(e => Number(e.code) === Number(record.asset_category_id)) ?? null;
                 entityForms.data.name          = record.name;
                 entityForms.data.description   = record.description;
                 entityForms.data.status        = statusOption;
@@ -394,6 +480,7 @@ export default {
 
                 // Set defaults for new record
                 entityForms.data.internal_code = this.generateCode({length: 7});
+                entityForms.data.asset_category = null;
                 entityForms.data.status         = this.statuses.length > 0 ? this.statuses[0] : null;
 
             }
@@ -408,6 +495,54 @@ export default {
 
             Alerts.toastrs({type: "success", subtitle: "Código interno generado correctamente."});
             Alerts.tooltips({show: false});
+
+        },
+        openAssetCategoryModal() {
+
+            this.quickCategory = {name: "", description: "", errors: {}, saving: false};
+            Alerts.modals({type: "show", id: "assetCategoryQuickModal"});
+
+        },
+        async saveAssetCategory() {
+
+            if(this.quickCategory.saving) return;
+
+            this.quickCategory.errors = {};
+
+            if(!this.quickCategory.name?.trim()) {
+
+                this.quickCategory.errors = {name: ["Campo obligatorio."]};
+                return;
+
+            }
+
+            this.quickCategory.saving = true;
+
+            const result = await Requests.post({
+                route: `${this.routeActions.store}/categories`,
+                data: {
+                    name: this.quickCategory.name,
+                    description: this.quickCategory.description,
+                    status: "active"
+                }
+            });
+
+            this.quickCategory.saving = false;
+
+            if(Requests.valid({result})) {
+
+                const record = result.data.data;
+                this.options.categories = [...(this.options.categories || []), record]
+                    .sort((first, second) => String(first.name).localeCompare(String(second.name), "es", {sensitivity: "base"}));
+                this.forms[this.entity].createUpdate.data.asset_category = {code: record.id, label: record.name, data: record};
+                Alerts.modals({type: "hide", id: "assetCategoryQuickModal"});
+                Alerts.generateAlert({type: "success", msgContent: result.data.msg});
+
+            }else {
+
+                this.quickCategory.errors = result.errors || {};
+
+            }
 
         },
         async saveEntity() {
@@ -525,6 +660,11 @@ export default {
         statuses() {
 
             return (this.options?.statuses ?? []).map(e => ({code: e.code, label: e.label}));
+
+        },
+        assetCategories() {
+
+            return (this.options?.categories ?? []).map(e => ({code: e.id, label: e.name, data: e}));
 
         },
         isUpdate() {

@@ -61,10 +61,10 @@ abstract class BrandRequest extends CompanyFormRequest {
         return [
             "internal_code",
             "name",
-            "description"
-            ,"logo_path"
-            ,"origin_country_code"
-            ,"website_url"
+            "description",
+            "logo_path",
+            "origin_country_code",
+            "website_url"
         ];
 
     }

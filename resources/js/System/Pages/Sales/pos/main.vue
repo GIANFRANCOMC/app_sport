@@ -380,7 +380,8 @@
                                 title=""
                                 :inputClass="['form-control', 'br-tax-quantity']"
                                 :decimals="0"
-                                :minValue="1"
+                                :minValue="taxQuantityMinimum(tax)"
+                                :maxValue="taxQuantityMaximum(tax)"
                                 :hasNegative="false"
                                 @change="normalizeSelectedTaxQuantity(tax.id)">
                                 <template v-slot:inputGroupPrepend>
@@ -724,15 +725,32 @@ export default {
         isFixedTax(tax = {}) {
             return (tax?.calculation_type || "percentage") === "fixed";
         },
+        taxQuantityMinimum(tax = {}) {
+            return Math.max(1, Number(tax?.min_apply_quantity ?? 1));
+        },
+        taxQuantityMaximum(tax = {}) {
+            return tax?.max_apply_quantity == null ? undefined : Math.max(this.taxQuantityMinimum(tax), Number(tax.max_apply_quantity));
+        },
+        taxById(taxId) {
+            return this.taxes.find(tax => Number((tax?.data || tax)?.id) === Number(taxId))?.data || this.taxes.find(tax => Number(tax?.id) === Number(taxId)) || {};
+        },
+        clampTaxQuantity(taxId, quantity) {
+            const tax = this.taxById(taxId);
+            const minimum = this.taxQuantityMinimum(tax);
+            const maximum = this.taxQuantityMaximum(tax);
+            const normalized = Math.max(minimum, parseInt(Number(quantity || minimum), 10));
+
+            return maximum === undefined ? normalized : Math.min(normalized, maximum);
+        },
         selectedTaxQuantity(taxId) {
-            return Math.max(1, parseInt(Number(this.selectedTaxQuantities[taxId] || 1), 10));
+            return this.clampTaxQuantity(taxId, this.selectedTaxQuantities[taxId]);
         },
         normalizeSelectedTaxQuantity(taxId) {
-            this.selectedTaxQuantities[taxId] = Math.max(1, parseInt(Number(this.selectedTaxQuantities[taxId] || 1), 10));
+            this.selectedTaxQuantities[taxId] = this.clampTaxQuantity(taxId, this.selectedTaxQuantities[taxId]);
         },
         syncSelectedTaxQuantity(tax = {}) {
             if(!this.isFixedTax(tax)) return;
-            this.selectedTaxQuantities[tax.id] = this.selectedTaxIds.includes(tax.id) ? 1 : 0;
+            this.selectedTaxQuantities[tax.id] = this.selectedTaxIds.includes(tax.id) ? this.taxQuantityMinimum(tax) : 0;
         },
         taxIsRequired(tax = {}) {
             return [true, 1, "1", "true"].includes(tax?.is_required);

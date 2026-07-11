@@ -18,6 +18,13 @@ Administra bienes fisicos por empresa, con clasificacion, identificacion interna
 - Los requests de gestion de activos validan arrays completos antes de llegar al servicio; el servicio conserva la validacion de pertenencia a sucursal y activo como segunda barrera.
 - Busqueda de activos por codigo interno, codigo patrimonial, serie, nombre o descripcion.
 
+## Interfaz
+
+- El formulario de Activos permite seleccionar categoría de activo junto al nombre y descripción.
+- La acción contextual `Agregar` abre una modal rápida para crear una categoría sin abandonar el alta o edición del activo.
+- La categoría rápida solicita nombre y descripción, se crea activa y queda seleccionada automáticamente en el formulario actual.
+- La modal reutiliza `br-entity-modal`, botones `br-btn-*` y validación inline para mantener consistencia con Catálogo comercial.
+
 ## Seguridad
 
 - Ninguna asignacion acepta `company_id` desde frontend.

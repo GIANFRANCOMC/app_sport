@@ -24,9 +24,10 @@
             <div class="table-responsive">
                 <table class="table br-entity-table mb-0">
                     <colgroup>
-                        <col style="width: 35%;">
-                        <col style="width: 25%;">
-                        <col style="width: 20%;">
+                        <col style="width: 30%;">
+                        <col style="width: 24%;">
+                        <col style="width: 18%;">
+                        <col style="width: 8%;">
                         <col style="width: 12%;">
                         <col style="width: 8%;">
                     </colgroup>
@@ -34,6 +35,7 @@
                         <tr>
                             <th>Marca</th>
                             <th>Identificación</th>
+                            <th>Origen y sitio</th>
                             <th>Uso actual</th>
                             <th class="text-center">Estado</th>
                             <th><span class="visually-hidden">Acciones</span></th>
@@ -41,11 +43,17 @@
                     </thead>
                     <tbody>
                         <tr v-if="entityList.extras.loading">
-                            <td colspan="5" class="py-4"><Loader/></td>
+                            <td colspan="6" class="py-4"><Loader/></td>
                         </tr>
                         <template v-else-if="entityList.records.total > 0">
                             <tr v-for="record in entityList.records.data" :key="record.id">
                                 <td>
+                                    <span v-if="record.logo_path" class="br-entity-table__attribute mb-1">
+                                        <span class="br-entity-table__attribute-icon" aria-hidden="true">
+                                            <i class="fa-solid fa-image"></i>
+                                        </span>
+                                        <strong>Logo configurado</strong>
+                                    </span>
                                     <span class="br-entity-table__name" v-text="record.name"></span>
                                     <span
                                         v-if="record.description"
@@ -61,6 +69,22 @@
                                             <CopyButton :value="record.internal_code" label="Código interno"/>
                                         </span>
                                     </div>
+                                </td>
+                                <td>
+                                    <span v-if="record.origin_country_code" class="br-entity-table__meta d-block">
+                                        País: {{ record.origin_country_code }}
+                                    </span>
+                                    <a
+                                        v-if="record.website_url"
+                                        class="br-entity-table__meta d-block"
+                                        :href="record.website_url"
+                                        target="_blank"
+                                        rel="noopener noreferrer">
+                                        Sitio oficial
+                                    </a>
+                                    <span v-if="!record.origin_country_code && !record.website_url" class="br-entity-table__meta">
+                                        Sin datos públicos
+                                    </span>
                                 </td>
                                 <td>
                                     <span class="br-entity-table__name">
@@ -88,7 +112,7 @@
                             </tr>
                         </template>
                         <tr v-else>
-                            <td colspan="5" class="py-4"><WithoutData type="image"/></td>
+                            <td colspan="6" class="py-4"><WithoutData type="image"/></td>
                         </tr>
                     </tbody>
                 </table>
@@ -181,6 +205,39 @@
                                     xl="12"
                                     lg="12"/>
 
+                                <InputText
+                                    v-model="brandForm.data.logo_path"
+                                    hasDiv
+                                    title="Logotipo"
+                                    :titleClass="[config.forms.classes.title]"
+                                    maxlength="500"
+                                    hasTextBottom
+                                    :textBottomInfo="brandForm.errors?.logo_path"
+                                    xl="12"
+                                    lg="12"/>
+
+                                <InputText
+                                    v-model="brandForm.data.origin_country_code"
+                                    hasDiv
+                                    title="País de origen"
+                                    :titleClass="[config.forms.classes.title]"
+                                    maxlength="3"
+                                    hasTextBottom
+                                    :textBottomInfo="brandForm.errors?.origin_country_code"
+                                    xl="4"
+                                    lg="4"/>
+
+                                <InputText
+                                    v-model="brandForm.data.website_url"
+                                    hasDiv
+                                    title="Sitio oficial"
+                                    :titleClass="[config.forms.classes.title]"
+                                    maxlength="500"
+                                    hasTextBottom
+                                    :textBottomInfo="brandForm.errors?.website_url"
+                                    xl="8"
+                                    lg="8"/>
+
                                 <InputSlot
                                     hasDiv
                                     title="Estado"
@@ -257,24 +314,36 @@ const MODULE = {
         internal_code: "",
         name: "",
         description: "",
+        logo_path: "",
+        origin_country_code: "",
+        website_url: "",
         status: null
     },
     fieldConfig: {
         internal_code: {trim: true},
         name: {trim: true},
         description: {normalize: true},
+        logo_path: {normalize: true},
+        origin_country_code: {trim: true},
+        website_url: {normalize: true},
         status: {getCode: true}
     },
     validationRules: {
         internal_code: {required: true},
         name: {required: true},
         description: {required: false},
+        logo_path: {required: false},
+        origin_country_code: {required: false},
+        website_url: {required: false},
         status: {required: true}
     },
     errorLabels: {
         internal_code: "Código interno",
         name: "Nombre",
         description: "Descripción",
+        logo_path: "Logotipo",
+        origin_country_code: "País de origen",
+        website_url: "Sitio oficial",
         status: "Estado"
     },
     filters: [
@@ -417,6 +486,9 @@ export default {
                     internal_code: this.stripInternalCodePrefix(record.internal_code),
                     name: record.name,
                     description: record.description,
+                    logo_path: record.logo_path,
+                    origin_country_code: record.origin_country_code,
+                    website_url: record.website_url,
                     status: this.statuses.find(status => status.code === record.status) ?? null
                 });
 

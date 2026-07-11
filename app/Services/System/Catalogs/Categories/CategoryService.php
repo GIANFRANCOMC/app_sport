@@ -154,6 +154,16 @@ class CategoryService {
 
         DB::transaction(function() use($category, $data, $userId) {
 
+            if(($data["status"] ?? null) === "inactive" && $category->status !== "inactive") {
+
+                self::assertCategoryHasNoActiveItems(
+                    (int) $category->company_id,
+                    (int) $category->id,
+                    "No puedes inactivar una categoría asociada a productos activos."
+                );
+
+            }
+
             // Prepare update data with only changed fields
             $updateData = self::prepareCategoryDataForUpdate($category, $data);
 
@@ -212,7 +222,18 @@ class CategoryService {
      */
     public static function getPaginatedList(int $companyId, array $filters = [], int $perPage = 15): LengthAwarePaginator {
 
-        $query = Category::where("company_id", $companyId);
+        $query = Category::where("company_id", $companyId)
+                         ->withCount([
+                             "items as active_items_count" => function($builder) {
+
+                                 $builder->whereHas("item", function($itemQuery) {
+
+                                     $itemQuery->where("status", "active");
+
+                                 });
+
+                             }
+                         ]);
 
         // Apply filters
         $filterBy = $filters["filter_by"] ?? null;
@@ -266,20 +287,28 @@ class CategoryService {
                 ->where("company_id", $companyId)
                 ->lockForUpdate()
                 ->findOrFail($categoryId);
-            $hasActiveItems = DB::table("category_items")
-                ->join("items", "items.id", "=", "category_items.item_id")
-                ->where("category_items.company_id", $companyId)
-                ->where("category_items.category_id", $categoryId)
-                ->where("category_items.status", "active")
-                ->where("items.status", "active")
-                ->exists();
-
-            if($hasActiveItems) {
-                throw new \DomainException("No puedes eliminar una categoría asociada a productos activos.");
-            }
+            self::assertCategoryHasNoActiveItems($companyId, $categoryId, "No puedes eliminar una categoría asociada a productos activos.");
 
             $category->delete();
         });
+
+    }
+
+    private static function assertCategoryHasNoActiveItems(int $companyId, int $categoryId, string $message): void {
+
+        $hasActiveItems = DB::table("category_items")
+            ->join("items", "items.id", "=", "category_items.item_id")
+            ->where("category_items.company_id", $companyId)
+            ->where("category_items.category_id", $categoryId)
+            ->where("category_items.status", "active")
+            ->where("items.status", "active")
+            ->exists();
+
+        if($hasActiveItems) {
+
+            throw new \DomainException($message);
+
+        }
 
     }
 

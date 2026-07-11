@@ -289,6 +289,8 @@ final class CashRegisterService {
 
             $this->assertRegisterAccess($companyId, $userId, (int) $session->cash_register_id);
 
+            $inventoryCounts = is_array($data["inventory_counts"] ?? null) ? $data["inventory_counts"] : [];
+
             if($session->register?->is_main) {
 
                 $hasOpenSecondarySessions = CashSession::query()
@@ -302,6 +304,12 @@ final class CashRegisterService {
                 if($hasOpenSecondarySessions) {
 
                     throw new RuntimeException("Primero cierra las cajas secundarias de la sucursal antes de cerrar la caja principal.");
+
+                }
+
+                if(empty($inventoryCounts) && $this->branchHasCountableInventory($companyId, (int) $session->branch_id)) {
+
+                    throw new RuntimeException("Completa el conteo físico de inventario antes de cerrar la caja principal.");
 
                 }
 
@@ -364,7 +372,7 @@ final class CashRegisterService {
                 $companyId,
                 $userId,
                 $session,
-                is_array($data["inventory_counts"] ?? null) ? $data["inventory_counts"] : []
+                $inventoryCounts
             );
 
             CashMovement::create([
@@ -636,6 +644,29 @@ final class CashRegisterService {
             ]);
 
         }
+
+    }
+
+    private function branchHasCountableInventory(int $companyId, int $branchId): bool {
+
+        return WarehouseItem::query()
+                            ->where("company_id", $companyId)
+                            ->where("status", "active")
+                            ->whereHas("warehouse", function($query) use($companyId, $branchId) {
+
+                                $query->where("company_id", $companyId)
+                                      ->where("branch_id", $branchId)
+                                      ->where("status", "active");
+
+                            })
+                            ->whereHas("item", function($query) use($companyId) {
+
+                                $query->where("company_id", $companyId)
+                                      ->where("type", "product")
+                                      ->where("status", "active");
+
+                            })
+                            ->exists();
 
     }
 

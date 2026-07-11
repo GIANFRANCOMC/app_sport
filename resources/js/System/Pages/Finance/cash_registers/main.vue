@@ -368,7 +368,7 @@
     </div>
 
     <div class="modal fade" id="cashCloseModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-dialog modal-dialog-centered modal-xl">
             <div class="modal-content br-entity-modal">
                 <div class="modal-header br-entity-modal__header">
                     <div>
@@ -395,6 +395,78 @@
                             xl="6"
                             lg="6"/>
                     </div>
+                    <section v-if="forms.close.requires_inventory_count" class="br-cash-inventory-count mt-3">
+                        <header class="br-cash-inventory-count__header">
+                            <div>
+                                <strong>Conteo físico de inventario</strong>
+                                <span>Revisa las existencias reales antes de cerrar la caja principal.</span>
+                            </div>
+                            <button
+                                type="button"
+                                class="br-btn br-btn-sm br-btn-action-search"
+                                @click="fillInventoryCountWithSystemStock">
+                                <i class="fa-solid fa-check-double" aria-hidden="true"></i>
+                                <span>Usar saldo sistema</span>
+                            </button>
+                        </header>
+                        <div class="br-cash-inventory-count__summary">
+                            <span>{{ forms.close.inventory_counts.length }} productos por almacén</span>
+                            <strong :class="differenceClass(inventoryCountDifferenceTotal)">
+                                Diferencia neta: {{ separatorNumber(inventoryCountDifferenceTotal) }}
+                            </strong>
+                        </div>
+                        <div v-if="forms.close.inventory_counts.length" class="table-responsive">
+                            <table class="table br-entity-table mb-0">
+                                <thead class="br-table-header-surface">
+                                    <tr>
+                                        <th>Producto</th>
+                                        <th>Almacén</th>
+                                        <th class="text-end">Sistema</th>
+                                        <th class="text-end">Conteo real</th>
+                                        <th class="text-end">Diferencia</th>
+                                        <th>Observación</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-for="row in forms.close.inventory_counts" :key="`${row.warehouse_id}-${row.item_id}`">
+                                        <td>
+                                            <strong>{{ row.item_name }}</strong>
+                                            <span class="br-cash__muted d-block">
+                                                {{ [row.item_internal_code, row.brand_name].filter(Boolean).join(' · ') || 'Producto sin referencia' }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span>{{ row.warehouse_name }}</span>
+                                            <span class="br-cash__muted d-block">{{ row.branch_name }}</span>
+                                        </td>
+                                        <td class="text-end fw-semibold">{{ separatorNumber(row.system_quantity) }}</td>
+                                        <td class="text-end">
+                                            <InputNumber
+                                                v-model="row.counted_quantity"
+                                                title=""
+                                                :titleClass="[]"
+                                                :inputClass="['form-control', {'is-invalid': row.counted_quantity === '' || row.counted_quantity === null}]"
+                                                :minValue="0"/>
+                                        </td>
+                                        <td class="text-end fw-semibold" :class="differenceClass(inventoryRowDifference(row))">
+                                            {{ separatorNumber(inventoryRowDifference(row)) }}
+                                        </td>
+                                        <td>
+                                            <input
+                                                v-model.trim="row.observation"
+                                                type="text"
+                                                class="form-control"
+                                                maxlength="500"
+                                                placeholder="Opcional"/>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <p v-else class="br-cash-inventory-count__empty mb-0">
+                            No hay productos con stock configurado para la sucursal de esta caja.
+                        </p>
+                    </section>
                     <InputText
                         v-model="forms.close.observation"
                         hasDiv
@@ -521,6 +593,7 @@ export default {
             options: {
                 registers: [],
                 branches: [],
+                inventoryItems: [],
                 paymentMethods: [],
                 statuses: [],
                 movementTypes: []
@@ -528,7 +601,7 @@ export default {
             forms: {
                 register: {branch: null, name: "", code: "", status: null},
                 open: {cash_register: null, opening_amount: "", observation: ""},
-                close: {cash_session_id: null, expected_amount: 0, payments: [], observation: ""},
+                close: {cash_session_id: null, expected_amount: 0, payments: [], inventory_counts: [], requires_inventory_count: false, observation: ""},
                 movement: {
                     type: null,
                     payment_method: null,
@@ -588,6 +661,9 @@ export default {
         },
         activeViewMeta() {
             return this.views.find(view => view.id === this.activeView) || this.views[0];
+        },
+        inventoryCountDifferenceTotal() {
+            return this.forms.close.inventory_counts.reduce((total, row) => total + this.inventoryRowDifference(row), 0);
         }
     },
     mounted() {
@@ -615,6 +691,7 @@ export default {
             const data = result.data.config;
             this.options.registers = data.registers || [];
             this.options.branches = data.branches || [];
+            this.options.inventoryItems = data.inventoryItems || [];
             this.options.paymentMethods = data.paymentMethods || [];
             this.options.statuses = data.statuses || [];
             this.options.movementTypes = data.movementTypes || [];
@@ -735,13 +812,46 @@ export default {
             }
 
             const session = register?.open_session || this.currentSession;
+            const closeRegister = register || this.selectedRegister || {};
             this.forms.close = {
                 cash_session_id: session?.id,
                 expected_amount: session?.expected_amount || 0,
                 observation: "",
-                payments: this.closePaymentRows()
+                payments: this.closePaymentRows(),
+                requires_inventory_count: Boolean(closeRegister?.is_main),
+                inventory_counts: this.inventoryCountRows(closeRegister)
             };
             this.showModal("cashCloseModal");
+        },
+        inventoryCountRows(register = {}) {
+            if(!register?.is_main) return [];
+
+            const branchId = Number(register?.branch?.id || register?.branch_id || register?.open_session?.branch_id || 0);
+
+            return (this.options.inventoryItems || [])
+                .filter(row => Number(row.branch_id) === branchId)
+                .map(row => ({
+                    ...row,
+                    system_quantity: Number(row.system_quantity || 0),
+                    counted_quantity: "",
+                    observation: ""
+                }));
+        },
+        fillInventoryCountWithSystemStock() {
+            this.forms.close.inventory_counts = this.forms.close.inventory_counts.map(row => ({
+                ...row,
+                counted_quantity: Number(row.system_quantity || 0)
+            }));
+        },
+        inventoryRowDifference(row) {
+            if(row.counted_quantity === "" || row.counted_quantity === null) return 0;
+
+            return Number(row.counted_quantity || 0) - Number(row.system_quantity || 0);
+        },
+        inventoryCountsAreComplete() {
+            if(!this.forms.close.requires_inventory_count) return true;
+
+            return this.forms.close.inventory_counts.every(row => row.counted_quantity !== "" && row.counted_quantity !== null);
         },
         closePaymentRows() {
             const rows = this.options.paymentMethods.map(method => ({
@@ -790,10 +900,30 @@ export default {
             await this.refreshAll();
         },
         async submitClose() {
+            if(!this.inventoryCountsAreComplete()) {
+                Alerts.toastrs({
+                    type: "warning",
+                    subtitle: "Completa el conteo físico de inventario antes de cerrar la caja principal."
+                });
+                return;
+            }
+
             this.saving = true;
+            const payload = {
+                ...this.forms.close,
+                inventory_counts: this.forms.close.requires_inventory_count
+                    ? this.forms.close.inventory_counts.map(row => ({
+                        warehouse_id: row.warehouse_id,
+                        item_id: row.item_id,
+                        counted_quantity: Number(row.counted_quantity || 0),
+                        observation: row.observation || null
+                    }))
+                    : []
+            };
+            delete payload.requires_inventory_count;
             const result = await Requests.post({
                 route: this.config.routes.close,
-                data: this.forms.close
+                data: payload
             });
             this.saving = false;
 

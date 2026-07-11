@@ -79,6 +79,7 @@ Permite crear una venta con productos, servicios o membresias. Una venta puede g
 - Si el precio incluye IGV, el resumen muestra el IGV contenido sin aumentar el total. Si el precio no incluye IGV, el IGV se suma al total.
 - Los tributos fijos de venta, como ICBP, son cargos de documento: no dependen de la base porcentual y se calculan al estar obligatorios o seleccionados.
 - Los tributos fijos opcionales de venta permiten indicar cantidad entera. Ejemplo: si la venta usa 2 bolsas, el usuario marca `ICBP` y coloca cantidad 2. Al quitar el check, el campo se oculta y no se envia el tributo.
+- La venta normal y Venta POS respetan `taxes.min_apply_quantity` y `taxes.max_apply_quantity` para tributos fijos opcionales. El frontend normaliza la cantidad con `InputNumber` y el backend recalcula el importe final para evitar diferencias.
 - `sales_header.warehouse_id` guarda el almacen afectado por la venta.
 - El frontend muestra el selector de almacen junto a Sucursal y Tipo de comprobante. Si la sucursal solo tiene un almacen, lo selecciona automaticamente.
 - `SaleService::resolveWarehouse()` valida que el almacen pertenezca a la sucursal y a la empresa autenticada. Si hay varios almacenes y no se envia uno, el backend rechaza la venta con un mensaje accionable.
@@ -122,6 +123,7 @@ Permite crear una venta con productos, servicios o membresias. Una venta puede g
 
 - La vista principal del POS se enfoca en seleccionar catálogo, caja y revisar el detalle de la venta.
 - Los métodos de pago se revisan y editan únicamente en la modal **Confirmar venta**. Por defecto se muestra un resumen legible; si el pago será mixto, el usuario puede usar **Cambiar método de pago** y ajustar importes antes de confirmar.
+- Los pagos mixtos usan el mismo contrato en venta normal y POS: cada fila conserva `payment_method_id`, nombre histórico, referencia opcional y monto aplicado; el total pagado debe cuadrar con el total del documento.
 - El cliente también se selecciona dentro de **Confirmar venta**, junto al resumen y los pagos, para que la pantalla principal quede enfocada en armar el detalle.
 - El botón **Revisar venta** queda visible cuando hay caja abierta y solo se bloquea si el detalle está vacío.
 - El botón **Confirmar venta** dentro de la modal se mantiene visible y solo se bloquea si el detalle está vacío; las validaciones de cliente, caja y pagos se comunican al confirmar.

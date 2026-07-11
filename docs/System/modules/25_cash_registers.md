@@ -32,6 +32,8 @@ La vista se monta desde:
 - Una caja puede tener una sesion abierta o cerrada.
 - La apertura crea una sesion `open` y registra un movimiento `opening`.
 - El cierre calcula el esperado desde `cash_movements`, registra el contado por metodo de pago y crea un movimiento `closing` con importe cero para trazabilidad.
+- Si la caja es principal y la sucursal tiene productos inventariables, el cierre exige conteo físico de inventario antes de confirmar.
+- El conteo físico compara saldo del sistema contra conteo real. Cada diferencia genera un movimiento de inventario de tipo corrección con origen `physical_count` y deja una foto en `cash_session_inventory_counts`.
 - Las ventas pueden asociarse a `cash_session_id` para que sus pagos alimenten `cash_movements`.
 - Los metodos de pago conservan nombre y referencia en la venta; caja usa esos datos para cuadrar efectivo, tarjeta, transferencia, billeteras digitales, Yape, Plin u otros medios configurados.
 - Caja registra dinero; Kardex e inventario registran unidades fisicas.
@@ -59,6 +61,7 @@ La vista se monta desde:
 - Accion `Registrar movimiento`: permite ingresos, salidas y ajustes manuales sobre una caja abierta, y solo se muestra dentro de la sección **Movimientos**.
 - Accion `Descargar`: exporta movimientos filtrados en CSV compatible con Excel.
 - Modales con `data-bs-backdrop="static"` y `data-bs-keyboard="false"` para evitar cierre accidental.
+- Al cerrar una caja principal, la modal muestra un bloque de conteo físico con producto, almacén, saldo del sistema, conteo real, diferencia y observación por línea. El botón **Usar saldo sistema** precarga el conteo cuando no hay diferencias.
 - Cada acceso de menu abre la vista correspondiente mediante `/cash_registers/page/{registers|sessions|movements|summary}`; al cambiar de seccion dentro de la pantalla se actualiza la URL con `history.pushState` sin recargar.
 - La cabecera de Caja es compacta: muestra la seccion activa y prioriza el selector de caja de trabajo, manteniendo el contexto operativo visible.
 
@@ -72,6 +75,8 @@ La vista se monta desde:
 - `resources/js/System/Helpers/Requests.js` expone rutas especiales: `sessions`, `movements`, `summary`, `open`, `close`.
 - `movement`: registra ingresos, salidas y ajustes manuales.
 - `export`: descarga movimientos de caja.
+- `CashRegisterConfigService` entrega productos inventariables por almacén y sucursal permitida para preparar el conteo físico del cierre principal.
+- `CashRegisterService::closeSession()` valida que una caja principal con inventario contable no cierre sin recibir conteos y sincroniza `cash_session_inventory_counts`.
 - Los errores `422` usan el contrato común de `CompanyFormRequest` y no duplican validadores dentro del controlador.
 
 ## Alta de cajas por sucursal

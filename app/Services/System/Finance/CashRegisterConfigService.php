@@ -6,6 +6,7 @@ namespace App\Services\System\Finance;
 
 use stdClass;
 
+use App\Models\System\Warehouses\WarehouseItem;
 use App\Services\System\Base\{BaseConfigService, CompanyReferenceDataService};
 
 final class CashRegisterConfigService extends BaseConfigService {
@@ -25,6 +26,7 @@ final class CashRegisterConfigService extends BaseConfigService {
         return self::data([
             "branches" => $references->activeBranches(),
             "registers" => $references->cashRegisters(),
+            "inventoryItems" => self::inventoryItems($companyId, $references),
             "paymentMethods" => $references->paymentMethodsFor("sale"),
             "statuses" => [
                 ["id" => "open", "label" => "Abierta"],
@@ -40,6 +42,49 @@ final class CashRegisterConfigService extends BaseConfigService {
                 ["id" => "closing", "label" => "Cierre"]
             ]
         ]);
+
+    }
+
+    private static function inventoryItems(int $companyId, CompanyReferenceDataService $references) {
+
+        $branchIds = $references->activeBranches()->pluck("id")->all();
+
+        return WarehouseItem::query()
+            ->with(["warehouse.branch", "item.brand"])
+            ->where("company_id", $companyId)
+            ->where("status", "active")
+            ->whereHas("warehouse", function($query) use($companyId, $branchIds) {
+
+                $query->where("company_id", $companyId)
+                      ->where("status", "active")
+                      ->whereIn("branch_id", $branchIds);
+
+            })
+            ->whereHas("item", function($query) use($companyId) {
+
+                $query->where("company_id", $companyId)
+                      ->where("type", "product")
+                      ->where("status", "active");
+
+            })
+            ->orderBy("warehouse_id")
+            ->get()
+            ->map(function(WarehouseItem $warehouseItem) {
+
+                return [
+                    "warehouse_id" => $warehouseItem->warehouse_id,
+                    "warehouse_name" => $warehouseItem->warehouse?->name,
+                    "branch_id" => $warehouseItem->warehouse?->branch_id,
+                    "branch_name" => $warehouseItem->warehouse?->branch?->name,
+                    "item_id" => $warehouseItem->item_id,
+                    "item_name" => $warehouseItem->item?->name,
+                    "item_internal_code" => $warehouseItem->item?->internal_code,
+                    "brand_name" => $warehouseItem->item?->brand?->name,
+                    "system_quantity" => (float) $warehouseItem->quantity
+                ];
+
+            })
+            ->values();
 
     }
 

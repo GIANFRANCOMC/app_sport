@@ -26,8 +26,10 @@
             <thead class="align-middle bg-secondary text-center">
                 <tr>
                     <th class="text-white" style="width: 20%;">CÓDIGO INTERNO</th>
-                    <th class="text-white" style="width: 30%;" v-text="MODULE.config.pageTitleSingular"></th>
-                    <th class="text-white" style="width: 25%;">PRECIO DE VENTA</th>
+                    <th class="text-white" style="width: 25%;" v-text="MODULE.config.pageTitleSingular"></th>
+                    <th class="text-white" style="width: 12%;">DURACIÓN</th>
+                    <th class="text-white" style="width: 18%;">PRECIO DE VENTA</th>
+                    <th class="text-white" style="width: 10%;">COMISIÓN</th>
                     <th class="text-white" style="width: 5%;"></th>
                     <th class="text-white" style="width: 10%;">ESTADO</th>
                     <th class="text-white" style="width: 10%;">ACCIONES</th>
@@ -49,6 +51,9 @@
                             <small v-if="record.description" v-text="record.description" class="text-muted"></small>
                         </td>
                         <td class="text-center">
+                            <span class="fw-semibold" v-text="serviceDurationLabel(record)"></span>
+                        </td>
+                        <td class="text-center">
                             <span class="fw-semibold d-block">
                                 <span v-text="`${record.currency?.sign} ${separatorNumber(record.price)}`"></span>
                             </span>
@@ -56,6 +61,9 @@
                                 <small v-if="isDefined(record.min_price)" class="text-muted" v-text="`Min: ${record.currency?.sign} ${separatorNumber(record.min_price)}`"></small>
                                 <small v-if="isDefined(record.max_price)" class="text-muted" v-text="`Max: ${record.currency?.sign} ${separatorNumber(record.max_price)}`"></small>
                             </div>
+                        </td>
+                        <td class="text-center">
+                            <span class="br-entity-table__meta" v-text="commissionLabel(record)"></span>
                         </td>
                         <td class="text-center">
                             <div class="d-flex justify-content-center align-items-center gap-2">
@@ -144,6 +152,46 @@
                                 :textBottomInfo="forms[entity].createUpdate.errors?.description"
                                 xl="12"
                                 lg="12"/>
+                            <InputNumber
+                                v-model="forms[entity].createUpdate.data.estimated_duration_minutes"
+                                hasDiv
+                                :title="MODULE.texts.form.estimatedDuration"
+                                :titleClass="[config.forms.classes.title]"
+                                :decimals="0"
+                                :minValue="1"
+                                hasTextBottom
+                                :textBottomInfo="forms[entity].createUpdate.errors?.estimated_duration_minutes"
+                                xl="4"
+                                lg="4"/>
+                            <InputSlot
+                                hasDiv
+                                :title="MODULE.texts.form.commissionType"
+                                :titleClass="[config.forms.classes.title]"
+                                hasTextBottom
+                                :textBottomInfo="forms[entity].createUpdate.errors?.commission_type"
+                                xl="4"
+                                lg="4">
+                                <template v-slot:input>
+                                    <v-select
+                                        v-model="forms[entity].createUpdate.data.commission_type"
+                                        :options="commissionTypeOptions"
+                                        :class="config.forms.classes.select2"
+                                        :clearable="false"
+                                        :searchable="false"/>
+                                </template>
+                            </InputSlot>
+                            <InputNumber
+                                v-model="forms[entity].createUpdate.data.commission_value"
+                                hasDiv
+                                :title="MODULE.texts.form.commissionValue"
+                                :titleClass="[config.forms.classes.title]"
+                                :disabled="forms[entity].createUpdate.data.commission_type?.code === 'none'"
+                                :minValue="0"
+                                :maxValue="forms[entity].createUpdate.data.commission_type?.code === 'percentage' ? 100 : undefined"
+                                hasTextBottom
+                                :textBottomInfo="forms[entity].createUpdate.errors?.commission_value"
+                                xl="4"
+                                lg="4"/>
                             <InputNumber
                                 v-model="forms[entity].createUpdate.data.price"
                                 hasDiv
@@ -342,6 +390,9 @@ const FORM_FIELDS = {
     price_includes_tax: true,
     min_price: "",
     max_price: "",
+    estimated_duration_minutes: "",
+    commission_type: null,
+    commission_value: "",
     currency: null,
     categories: [],
     see_my_web: false,
@@ -357,6 +408,9 @@ const FORM_FIELD_CONFIG = {
     price_includes_tax: {toBoolean: true},
     min_price: {toNumber: true, minValue: 0},
     max_price: {toNumber: true, minValue: 0},
+    estimated_duration_minutes: {toNumber: true, minValue: 1},
+    commission_type: {getCode: true},
+    commission_value: {toNumber: true, minValue: 0},
     currency: {mapToField: "currency_id"},
     categories: {getArray: {mapTo: "category_id"}},
     see_my_web: {toBoolean: true},
@@ -372,6 +426,9 @@ const VALIDATION_RULES = {
     price_includes_tax: {required: false},
     min_price: {required: false, number: true, min: 0},
     max_price: {required: false, number: true, min: 0},
+    estimated_duration_minutes: {required: false, number: true, min: 1},
+    commission_type: {required: false},
+    commission_value: {required: false, number: true, min: 0},
     currency: {required: true},
     categories: {required: false},
     see_my_web: {required: false},
@@ -387,6 +444,9 @@ const ERROR_LABELS = {
     price_includes_tax: "Precio incluye IGV",
     min_price: "Precio mínimo",
     max_price: "Precio máximo",
+    estimated_duration_minutes: "Duración estimada",
+    commission_type: "Tipo de comisión",
+    commission_value: "Valor de comisión",
     currency: "Moneda",
     categories: "Categorías",
     see_my_web: "Visualizar en mi página",
@@ -419,6 +479,9 @@ const TEXTS = {
         price: "Precio de venta",
         minPrice: "Precio mínimo",
         maxPrice: "Precio máximo",
+        estimatedDuration: "Duración estimada (minutos)",
+        commissionType: "Tipo de comisión",
+        commissionValue: "Valor de comisión",
         currency: "Moneda",
         categories: "Categorías",
         status: "Estado",
@@ -584,6 +647,9 @@ export default {
                 entityForms.data.price_includes_tax = Boolean(record.price_includes_tax ?? true);
                 entityForms.data.min_price        = record.min_price;
                 entityForms.data.max_price        = record.max_price;
+                entityForms.data.estimated_duration_minutes = record.estimated_duration_minutes;
+                entityForms.data.commission_type  = this.commissionTypeOptions.find(e => e.code === (record.commission_type || "none")) ?? this.commissionTypeOptions[0];
+                entityForms.data.commission_value = record.commission_value;
                 entityForms.data.currency         = currencyOption;
                 entityForms.data.categories       = this.categories.filter(e => categoryItems.includes(e.code));
                 entityForms.data.see_my_web       = Boolean(record.see_my_web ?? false);
@@ -596,6 +662,8 @@ export default {
                 entityForms.data.internal_code = this.generateCode({length: 7});
                 entityForms.data.currency      = this.currencies.length > 0 ? this.currencies[0] : null;
                 entityForms.data.price_includes_tax = true;
+                entityForms.data.commission_type = this.commissionTypeOptions[0];
+                entityForms.data.commission_value = "";
                 entityForms.data.status        = this.statuses.length > 0 ? this.statuses[0] : null;
 
             }
@@ -747,6 +815,30 @@ export default {
             return Utils.separatorNumber(value);
 
         },
+        serviceDurationLabel(record) {
+
+            const minutes = Number(record?.estimated_duration_minutes || 0);
+
+            if(minutes <= 0) return "No definida";
+            if(minutes < 60) return `${minutes} min`;
+
+            const hours = Math.floor(minutes / 60);
+            const rest = minutes % 60;
+
+            return rest > 0 ? `${hours} h ${rest} min` : `${hours} h`;
+
+        },
+        commissionLabel(record) {
+
+            const type = record?.commission_type || "none";
+            const value = Number(record?.commission_value || 0);
+
+            if(type === "percentage") return `${this.separatorNumber(value)}%`;
+            if(type === "fixed") return `${record?.currency?.sign || ""} ${this.separatorNumber(value)}`.trim();
+
+            return "Sin comisión";
+
+        },
     },
     computed: {
         entity() {
@@ -785,6 +877,15 @@ export default {
         statuses() {
 
             return (this.options?.statuses ?? []).map(e => ({code: e.code, label: e.label}));
+
+        },
+        commissionTypeOptions() {
+
+            return [
+                {code: "none", label: "Sin comisión"},
+                {code: "percentage", label: "Porcentaje"},
+                {code: "fixed", label: "Monto fijo por unidad"}
+            ];
 
         },
         isUpdate() {

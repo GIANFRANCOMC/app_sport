@@ -40,6 +40,13 @@
 
 La base de datos ya soporta formulas y opciones. El descuento automatico de insumos debe activarse cuando POS permita seleccionar receta, toppings y sabores vendidos. No se debe descontar una receta completa sin conocer las opciones elegidas, porque generaria kardex incorrecto.
 
+## KDS y operación
+
+- Los platillos vendidos con receta pueden alimentar KDS mediante el detalle de venta, conservando toppings, extras, sabores y combinaciones parciales seleccionadas.
+- KDS debe mostrar la receta vendida como pedido operativo, no como movimiento de inventario. El consumo de insumos se registra cuando la venta queda confirmada.
+- El costo teórico se calcula desde insumos base, toppings, sabores y merma esperada; sirve para margen operativo, no reemplaza el costo real registrado en kardex.
+- La merma real se registra aparte en `recipe_waste_records` y genera movimiento de inventario para conservar trazabilidad.
+
 ## Cierre de caja principal e inventario fisico
 
 Se agrega `cash_session_inventory_counts` para registrar conteos fisicos al cierre de caja principal. La caja principal no debe cerrar si existen cajas secundarias abiertas en la misma sucursal. Cuando el conteo real difiere del sistema, la diferencia debe generar un movimiento de inventario con origen `physical_count`, observacion y responsable.

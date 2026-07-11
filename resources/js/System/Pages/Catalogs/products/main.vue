@@ -17,10 +17,13 @@
             :show-add-button="true"
             :show-download-button="MODULE.config.hasDownloadRecords"
             :show-import-button="MODULE.config.hasImportRecords"
+            :show-labels-button="true"
             :import-button-text="MODULE.texts.actions.import"
             :import-button-tooltip="MODULE.texts.actions.import"
             :download-button-text="MODULE.texts.actions.download"
             :download-button-tooltip="MODULE.texts.actions.download"
+            labels-button-text="Etiquetas"
+            labels-button-tooltip="Imprimir etiquetas"
             :download-icon-only-on-desktop="true"
             :downloading="isExporting"
             :title-class="[config.forms.classes.title]"
@@ -28,7 +31,8 @@
             @search="handleSearch"
             @add="openModal()"
             @import="openImportModal"
-            @download="downloadRecords"/>
+            @download="downloadRecords"
+            @labels="printVisibleLabels"/>
 
         <ProductImportModal
             ref="productImportModal"
@@ -804,6 +808,7 @@ import BarcodeDownloadButton from "@System/Components/BarcodeDownloadButton.vue"
 import SelectNoOptions from "@System/Components/Generics/SelectNoOptions.vue";
 import ProductImportModal from "@System/Components/Catalogs/Products/ProductImportModal.vue";
 import InternalCodePrefixMixin from "@System/Mixins/InternalCodePrefixMixin.js";
+import JsBarcode from "jsbarcode";
 
 const MODULE_CONFIG = {
     entity: "products",
@@ -1235,6 +1240,101 @@ export default {
                 this.isExporting = false;
 
             }
+
+        },
+        printVisibleLabels() {
+
+            const records = (this.entityList.records?.data || [])
+                .filter(record => this.isDefined(record.barcode) && isValidEan13(record.barcode));
+
+            if(records.length === 0) {
+
+                Alerts.toastrs({
+                    type: "warning",
+                    subtitle: "No hay productos con código de barras válido en el listado actual."
+                });
+                return;
+
+            }
+
+            const labelMarkup = records.map(record => this.buildBarcodeLabelMarkup(record)).join("");
+            const printWindow = window.open("", "_blank", "width=920,height=720");
+
+            if(!printWindow) {
+
+                Alerts.toastrs({
+                    type: "warning",
+                    subtitle: "Permite ventanas emergentes para imprimir etiquetas."
+                });
+                return;
+
+            }
+
+            printWindow.document.write(this.buildLabelsPrintDocument(labelMarkup));
+            printWindow.document.close();
+            printWindow.focus();
+            printWindow.print();
+
+        },
+        buildBarcodeLabelMarkup(record) {
+
+            const canvas = document.createElement("canvas");
+
+            JsBarcode(canvas, String(record.barcode), {
+                format: "EAN13",
+                width: 2,
+                height: 70,
+                displayValue: true,
+                font: "Arial",
+                fontSize: 14,
+                fontOptions: "bold",
+                textMargin: 5,
+                margin: 4,
+                background: "rgba(255, 255, 255, 0)",
+                lineColor: "#000000"
+            });
+
+            return `
+                <article class="label">
+                    <strong>${this.escapeHtml(record.name)}</strong>
+                    <span>${this.escapeHtml(record.internal_code || "")}</span>
+                    <img src="${canvas.toDataURL("image/png")}" alt="Código de barras ${this.escapeHtml(record.barcode)}">
+                </article>
+            `;
+
+        },
+        buildLabelsPrintDocument(labelMarkup) {
+
+            return `
+                <!doctype html>
+                <html lang="es">
+                <head>
+                    <meta charset="utf-8">
+                    <title>Etiquetas de productos</title>
+                    <style>
+                        @page { size: A4; margin: 10mm; }
+                        * { box-sizing: border-box; }
+                        body { margin: 0; font-family: Arial, sans-serif; color: #1a1a35; }
+                        .sheet { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8mm; }
+                        .label { min-height: 34mm; padding: 4mm; border: 1px dashed #9a9ab0; border-radius: 4px; break-inside: avoid; text-align: center; }
+                        .label strong { display: block; font-size: 11px; line-height: 1.2; }
+                        .label span { display: block; margin-top: 1mm; font-size: 9px; color: #5d6682; }
+                        .label img { width: 100%; max-height: 22mm; object-fit: contain; margin-top: 2mm; }
+                    </style>
+                </head>
+                <body><main class="sheet">${labelMarkup}</main></body>
+                </html>
+            `;
+
+        },
+        escapeHtml(value) {
+
+            return String(value ?? "")
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
 
         },
         openImportModal() {
