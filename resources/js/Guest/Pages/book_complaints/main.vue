@@ -74,7 +74,7 @@
                     </div>
                     <div class="br-guest-field br-guest-field--full">
                         <label>Adjuntos</label>
-                        <input class="form-control" type="file" multiple accept=".pdf,.jpg,.jpeg,.png" @change="setAttachments">
+                        <input ref="attachmentsInput" class="form-control" type="file" multiple accept=".pdf,.jpg,.jpeg,.png" @change="setAttachments">
                         <small class="br-guest-help">Puedes adjuntar hasta 5 archivos PDF, JPG o PNG de máximo 5 MB cada uno.</small>
                         <div class="br-guest-files" v-if="attachments.length">
                             <span v-for="file in attachments" :key="file.name">{{ file.name }}</span>
@@ -108,7 +108,7 @@
                         <label>Código de seguimiento</label>
                         <input v-model.trim="trackingCode" class="form-control" type="text" maxlength="20" placeholder="Ej. ABC123XYZ789" @keyup.enter="consultStatus">
                     </div>
-                    <button type="button" class="br-guest-btn br-guest-btn-secondary" :disabled="consulting || !trackingCode" @click="consultStatus">
+                    <button type="button" class="br-guest-btn br-guest-btn-secondary" :disabled="consulting || !normalizedTrackingCode" @click="consultStatus">
                         <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
                         <span>{{ consulting ? "Consultando" : "Consultar" }}</span>
                     </button>
@@ -157,6 +157,7 @@ export default {
             form: emptyBookComplaintForm(),
             errors: {},
             options: {},
+            captchaWidgetId: null,
             captchaRenderAttempts: 0,
             config: {
                 ...Constants.generalConfig,
@@ -200,7 +201,7 @@ export default {
                     return;
                 }
 
-                window.turnstile.render(this.$refs.turnstile, {
+                this.captchaWidgetId = window.turnstile.render(this.$refs.turnstile, {
                     sitekey: this.captchaSiteKey
                 });
                 this.$refs.turnstile.dataset.rendered = "true";
@@ -225,7 +226,9 @@ export default {
             });
             this.attachments.forEach(file => formData.append("attachments[]", file));
 
-            const captchaResponse = document.querySelector(`input[name="cf-turnstile-response"]`)?.value || "";
+            const captchaResponse = this.$refs.turnstile?.querySelector(`input[name="cf-turnstile-response"]`)?.value
+                || document.querySelector(`input[name="cf-turnstile-response"]`)?.value
+                || "";
             if(this.captchaSiteKey) formData.append("cf-turnstile-response", captchaResponse);
 
             this.saving = true;
@@ -247,6 +250,7 @@ export default {
                 this.form = this.emptyForm();
                 this.form.identity_document_type = this.identityDocumentTypes[0] || null;
                 this.attachments = [];
+                this.clearAttachmentInput();
                 this.resetCaptcha();
             }else {
                 Alerts.swals({show: false});
@@ -258,12 +262,12 @@ export default {
             }
         },
         async consultStatus() {
-            if(!this.trackingCode) return;
+            if(!this.normalizedTrackingCode) return;
 
             this.statusResult = null;
             this.consulting = true;
             const result = await Requests.get({
-                route: `${this.config.entity.routes.status}/${this.trackingCode}`,
+                route: `${this.config.entity.routes.status}/${encodeURIComponent(this.normalizedTrackingCode)}`,
                 showAlert: false
             });
             this.consulting = false;
@@ -278,7 +282,17 @@ export default {
             }
         },
         resetCaptcha() {
-            if(window.turnstile) window.turnstile.reset();
+            if(!window.turnstile) return;
+
+            if(this.captchaWidgetId !== null) {
+                window.turnstile.reset(this.captchaWidgetId);
+                return;
+            }
+
+            window.turnstile.reset();
+        },
+        clearAttachmentInput() {
+            if(this.$refs.attachmentsInput) this.$refs.attachmentsInput.value = "";
         },
         firstError(key) {
             return this.errors?.[key]?.[0] || "";
@@ -290,6 +304,9 @@ export default {
     computed: {
         captchaSiteKey() {
             return this.config.essential.captchaSiteKey;
+        },
+        normalizedTrackingCode() {
+            return this.trackingCode.trim().toUpperCase();
         },
         identityDocumentTypes() {
             return (this.options.identityDocumentTypes?.records || []).map(record => ({

@@ -36,6 +36,7 @@ La ruta pública sin firma responde 404 y no concede acceso.
 
 - La pantalla muestra empresa, sucursal y vencimiento del enlace.
 - El estado del scanner indica: listo, validando, aceptado, advertencia o error.
+- El POST usa la sucursal del enlace firmado como prioridad sobre cualquier contexto visual.
 - Los mensajes de error no revelan datos internos ni datos personales del cliente.
 - Si el QR no corresponde, se pide reintentar sin describir reglas internas.
-- El lector conserva controles simples para iniciar o detener cámara.
+- El lector conserva controles simples para iniciar o detener cámara y muestra errores claros si el navegador no permite acceder a la cámara.

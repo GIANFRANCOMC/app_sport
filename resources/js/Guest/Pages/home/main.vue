@@ -7,7 +7,7 @@
                     <h1>{{ companyName }}</h1>
                     <p>{{ companyDescription }}</p>
                     <div class="br-guest-hero__actions">
-                        <a v-if="company.whatsapp" class="br-guest-btn br-guest-btn-primary" :href="whatsappUrl" target="_blank" rel="noopener noreferrer">
+                        <a v-if="whatsappNumber" class="br-guest-btn br-guest-btn-primary" :href="whatsappUrl" target="_blank" rel="noopener noreferrer">
                             <i class="fa-brands fa-whatsapp" aria-hidden="true"></i>
                             <span>Consultar por WhatsApp</span>
                         </a>
@@ -62,7 +62,7 @@
                                 <i class="fa-solid fa-lock" aria-hidden="true"></i>
                                 Precio a consultar
                             </span>
-                            <a v-if="company.whatsapp" :href="itemWhatsappUrl(item)" class="br-guest-item__link" target="_blank" rel="noopener noreferrer" aria-label="Consultar item por WhatsApp">
+                            <a v-if="whatsappNumber" :href="itemWhatsappUrl(item)" class="br-guest-item__link" target="_blank" rel="noopener noreferrer" :aria-label="`Consultar ${item.name} por WhatsApp`">
                                 <i class="fa-brands fa-whatsapp" aria-hidden="true"></i>
                             </a>
                         </div>
@@ -148,7 +148,7 @@ export default {
         },
         itemWhatsappUrl(item) {
             const message = `Hola, quiero información sobre ${item.name}.`;
-            return `https://wa.me/${this.company.whatsapp}?text=${encodeURIComponent(message)}`;
+            return `https://wa.me/${this.whatsappNumber}?text=${encodeURIComponent(message)}`;
         }
     },
     computed: {
@@ -161,6 +161,9 @@ export default {
         companyDescription() {
             return this.company.description || this.company.tagline || "Explora la información pública disponible para clientes.";
         },
+        whatsappNumber() {
+            return String(this.company.whatsapp || "").replace(/\D/g, "");
+        },
         companyLogo() {
             const logo = this.company.combinationmark || this.company.logotype || this.company.logomark;
 
@@ -169,7 +172,7 @@ export default {
                 : Utils.getAsset(this.config.essential.ownerApp?.assets?.img?.combinationmark, {type: "none", back: 1});
         },
         whatsappUrl() {
-            return `https://wa.me/${this.company.whatsapp}?text=${encodeURIComponent(`Hola, quiero información de ${this.companyName}.`)}`;
+            return `https://wa.me/${this.whatsappNumber}?text=${encodeURIComponent(`Hola, quiero información de ${this.companyName}.`)}`;
         },
         items() {
             return this.options.items?.records || [];

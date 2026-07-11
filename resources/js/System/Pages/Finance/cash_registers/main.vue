@@ -19,6 +19,10 @@
                     append-to-body
                     placeholder="Seleccione una caja"
                     @option:selected="refreshAll"/>
+                <p class="br-operational-scope mt-2 mb-0">
+                    <i class="fa-solid fa-cash-register" aria-hidden="true"></i>
+                    <span>{{ selectedRegister ? `${selectedRegister.name} · ${selectedRegister.branch?.name || 'Sucursal no definida'}` : 'Seleccione una caja para definir el alcance' }}</span>
+                </p>
             </div>
         </div>
 

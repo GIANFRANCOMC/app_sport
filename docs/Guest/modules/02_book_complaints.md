@@ -21,6 +21,9 @@ Permite que un visitante registre quejas, reclamos o sugerencias sin iniciar ses
 - La pantalla separa dos modos: **Registrar solicitud** y **Consultar código**.
 - El formulario muestra tipos como opciones claras: queja, reclamo o sugerencia.
 - El CAPTCHA se renderiza solo cuando existe `CAPTCHA_KEY_FRONTEND`.
+- Si Turnstile carga tarde, la pantalla reintenta el render por unos segundos sin bloquear el formulario.
 - La carga múltiple muestra los nombres de archivos seleccionados antes de enviar.
+- Al registrar correctamente, el formulario limpia campos, adjuntos y CAPTCHA para evitar reenvíos accidentales.
 - Al registrar correctamente, el usuario ve el código de seguimiento en una alerta clara.
+- La consulta normaliza el código de seguimiento antes de llamar al backend.
 - La consulta por código no expone datos personales ni información interna de gestión.

@@ -44,6 +44,9 @@ export default defineConfig({
                 'resources/js/System/Pages/Essentials/home/main.js',
                 'resources/js/System/Pages/Essentials/reports/main.js',
 
+                // System Pages - General
+                'resources/js/System/Pages/General/master_data/main.js',
+
                 // System Pages - Customers (Tracking Notifications)
                 'resources/js/System/Pages/Customers/tracking_notifications/main.js',
 

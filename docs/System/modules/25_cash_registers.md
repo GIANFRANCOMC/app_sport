@@ -96,6 +96,7 @@ La vista se monta desde:
 ## Alcance operativo
 
 - Caja aplica el alcance efectivo de perfil y colaborador para sucursales y cajas.
+- La cabecera muestra `br-operational-scope` con caja y sucursal activas para que aperturas, cierres, movimientos y resúmenes no parezcan globales.
 - Un colaborador sin selección propia hereda el perfil; no obtiene acceso total automáticamente.
 - Solo puede listar, abrir, cerrar o usar cajas incluidas en `role_cash_registers`/`user_cash_registers` y en sus sucursales permitidas.
 - Venta POS reutiliza esta misma restricción para evitar que un usuario cobre en una caja de una sucursal que no le corresponde.

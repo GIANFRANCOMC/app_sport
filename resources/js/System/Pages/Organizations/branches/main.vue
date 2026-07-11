@@ -1,6 +1,24 @@
 <template>
     <Breadcrumb :list="breadcrumbTitles"/>
 
+    <section class="br-config-scope-grid">
+        <article class="br-config-scope-card">
+            <span>Fiscal</span>
+            <strong>Series y documento</strong>
+            <p>Identifica la sede que emite comprobantes y usa correlativos propios.</p>
+        </article>
+        <article class="br-config-scope-card">
+            <span>Pública</span>
+            <strong>Ubicación y contacto</strong>
+            <p>Dirección, referencia, teléfono, correo y mapa visible para clientes.</p>
+        </article>
+        <article class="br-config-scope-card">
+            <span>Operativa</span>
+            <strong>Capacidad y estado</strong>
+            <p>Define disponibilidad de la sede para ventas, caja, almacenes y reportes.</p>
+        </article>
+    </section>
+
     <!-- Filters -->
     <FiltersSection
         :filter-by-value="filterByValue"

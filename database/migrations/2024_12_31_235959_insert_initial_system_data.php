@@ -121,6 +121,8 @@ return new class extends Migration {
             ["id" => 71, "section_id" => 7, "slug" => "sc_configuration-users", "name" => "configuration-users", "description" => "Administra usuarios internos, roles y accesos.", "order" => 2, "dom_id" => "menu-configuration-users", "dom_label" => "Colaboradores", "dom_route" => "users.index"],
             ["id" => 72, "section_id" => 7, "slug" => "sc_configuration-roles", "name" => "configuration-roles", "description" => "Define perfiles de acceso y módulos disponibles para cada colaborador.", "order" => 3, "dom_id" => "menu-configuration-roles", "dom_label" => "Perfiles de acceso", "dom_route" => "roles.index"],
 
+            ["id" => 73, "section_id" => 7, "slug" => "sc_configuration-master_data", "name" => "configuration-master_data", "description" => "Administra configuraciones, tributos, métodos de pago y maestros internos por empresa.", "order" => 4, "dom_id" => "menu-configuration-master_data", "dom_label" => "Maestros internos", "dom_route" => "master_data.index"],
+
             // Reports
             ["id" => 80, "section_id" => 8, "slug" => "sc_reports", "name" => "reports", "description" => "Genera consultas y reportes para análisis operativo.", "order" => 1, "dom_id" => "menu-reports", "dom_label" => "Reportes", "dom_route" => "reports.index"],
         ]);
@@ -165,6 +167,7 @@ return new class extends Migration {
             ["company_id" => 1, "sub_section_id" => 70],
             ["company_id" => 1, "sub_section_id" => 71],
             ["company_id" => 1, "sub_section_id" => 72],
+            ["company_id" => 1, "sub_section_id" => 73],
             // ["company_id" => 1, "sub_section_id" => 80]
         ]);
 
@@ -178,7 +181,7 @@ return new class extends Migration {
         DB::table("companies_sub_sections")->where("company_id", 1)->whereIn("sub_section_id", [50, 51, 52, 53, 55, 59])->update(["section_order" => 7]);
         DB::table("companies_sub_sections")->where("company_id", 1)->whereIn("sub_section_id", [54, 56, 57, 107, 58])->update(["section_order" => 8]);
         DB::table("companies_sub_sections")->where("company_id", 1)->whereIn("sub_section_id", [60, 61, 62, 63])->update(["section_order" => 9]);
-        DB::table("companies_sub_sections")->where("company_id", 1)->whereIn("sub_section_id", [70, 71, 72])->update(["section_order" => 10]);
+        DB::table("companies_sub_sections")->where("company_id", 1)->whereIn("sub_section_id", [70, 71, 72, 73])->update(["section_order" => 10]);
         DB::table("companies_sub_sections")->where("company_id", 1)->whereIn("sub_section_id", [80])->update(["section_order" => 11]);
 
         $companySubSectionOrders = [
@@ -221,6 +224,7 @@ return new class extends Migration {
             70 => 1,
             71 => 2,
             72 => 3,
+            73 => 4,
             80 => 1
         ];
 

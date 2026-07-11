@@ -13,9 +13,9 @@
                     :clearable="false"
                     :searchable="true"/>
             </div>
-            <p>
+            <p class="br-operational-scope mb-0">
                 <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
-                Las consultas y operaciones se aplicarán al almacén seleccionado.
+                <span>Alcance activo: {{ filters.warehouse?.label || 'Seleccione un almacén' }}</span>
             </p>
         </div>
 

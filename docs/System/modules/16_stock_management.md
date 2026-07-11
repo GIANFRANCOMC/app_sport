@@ -221,6 +221,7 @@ La navegación funcional evita nombres duplicados:
 ## Alcance operativo
 
 - Inventario carga almacenes desde `CompanyReferenceDataService::stockWarehouses()`, respetando perfil, colaborador y sucursales efectivas.
+- La cabecera muestra el alcance activo con `br-operational-scope`, indicando el almacén o vista consolidada sobre la que se aplican consultas, exportaciones y operaciones.
 - Un selector vacío en Colaboradores hereda el perfil; no elimina sus restricciones.
 - `resource.scope` bloquea consultas, exportaciones, movimientos y traslados con almacenes no permitidos.
 - Control de stock, Kardex, Traslados y Kardex valorizado conservan permisos por acción independientes aunque reutilicen controlador y componente Vue.

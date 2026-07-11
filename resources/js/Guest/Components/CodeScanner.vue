@@ -126,7 +126,7 @@ export default {
                 });
         },
         decrementScanCounter() {
-            if(this.counterScan !== -1) this.counterScan--;
+            if(this.limitScan !== -1 && this.counterScan > 0) this.counterScan--;
         }
     },
     mounted() {

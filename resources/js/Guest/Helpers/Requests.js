@@ -121,17 +121,20 @@ export function post({route = "", data = {}, id = "", formData = null}) {
 		})
 		.catch(error => {
 
+            const responseData = error?.response?.data;
+            const responseMessage = responseData?.msg || responseData?.message || error?.message || "No se pudo completar la solicitud.";
+
             if([405].includes(error?.response?.status)) {
 
-                resolve({data: {msg: `${error?.response?.data?.message} (Code ${error?.response?.status})`}, bool: false});
+                resolve({data: {msg: `${responseMessage} (Code ${error?.response?.status})`}, bool: false});
 
             }else if([422].includes(error?.response?.status)) {
 
-                resolve({data: {msg: `${error?.response?.data?.message} (Code ${error?.response?.status})`}, errors: error?.response?.data?.errors, bool: false});
+                resolve({data: {...responseData, msg: `${responseMessage} (Code ${error?.response?.status})`}, errors: responseData?.errors, bool: false});
 
             }else {
 
-                resolve({data: {msg: error},  bool: false});
+                resolve({data: responseData || {msg: responseMessage},  bool: false});
 
             }
 
@@ -168,17 +171,20 @@ export function patch({route = "", data = {}, id = "", formData = null}) {
 		})
 		.catch(error => {
 
+            const responseData = error?.response?.data;
+            const responseMessage = responseData?.msg || responseData?.message || error?.message || "No se pudo completar la solicitud.";
+
             if([405].includes(error?.response?.status)) {
 
-                resolve({data: {msg: `${error?.response?.data?.message} (Code ${error?.response?.status})`}, bool: false});
+                resolve({data: {msg: `${responseMessage} (Code ${error?.response?.status})`}, bool: false});
 
             }else if([422].includes(error?.response?.status)) {
 
-                resolve({data: {msg: `${error?.response?.data?.message} (Code ${error?.response?.status})`}, errors: error?.response?.data?.errors, bool: false});
+                resolve({data: {...responseData, msg: `${responseMessage} (Code ${error?.response?.status})`}, errors: responseData?.errors, bool: false});
 
             }else {
 
-                resolve({data: {msg: error},  bool: false});
+                resolve({data: responseData || {msg: responseMessage},  bool: false});
 
             }
 

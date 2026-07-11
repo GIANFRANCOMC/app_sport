@@ -237,7 +237,6 @@ export default {
 
             if(valueString === "") {
 
-                // console.log(valueString);
                 this.emitValue({reset: false, result: defaultValue});
 
             }else {
@@ -255,17 +254,14 @@ export default {
 
                     if(isNaN(numericValue)) {
 
-                        // console.log("isNaN");
                         this.emitValue({reset: false, result: defaultValue});
 
                     }else if(numericValue < minValue) {
 
-                        // console.log("minValue");
                         this.emitValue({reset: false, result: minValue});
 
                     }else if(numericValue > maxValue) {
 
-                        // console.log("maxValue");
                         this.emitValue({reset: false, result: maxValue});
 
                     }else {

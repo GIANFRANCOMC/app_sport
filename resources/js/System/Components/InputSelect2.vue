@@ -206,6 +206,7 @@ export default {
         .wrap(`<div class="position-relative w-100"></div>`)
         .select2({
             placeholder: `Seleccione`,
+            language: this.select2Language(),
             dropdownParent: $this.parent()
         });
 
@@ -222,13 +223,20 @@ export default {
             .wrap(`<div class="position-relative w-100"></div>`)
             .select2({
                 placeholder: `Seleccione`,
+                language: this.select2Language(),
                 dropdownParent: $this.parent()
             });
 
         }
     },
     methods: {
-        //
+        select2Language() {
+            return {
+                noResults: () => "Sin opciones disponibles",
+                searching: () => "Buscando...",
+                inputTooShort: () => "Escribe para buscar"
+            };
+        }
     }
 };
 </script>

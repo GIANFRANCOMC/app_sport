@@ -1,6 +1,24 @@
 <template>
     <Breadcrumb :list="breadcrumbTitles"/>
 
+    <section class="br-config-scope-grid">
+        <article class="br-config-scope-card">
+            <span>Fiscal</span>
+            <strong>Identificación legal</strong>
+            <p>Documento, razón social, moneda y datos usados para comprobantes y reportes.</p>
+        </article>
+        <article class="br-config-scope-card">
+            <span>Pública</span>
+            <strong>Presencia comercial</strong>
+            <p>Marca, contacto, redes, logotipo y datos visibles para clientes.</p>
+        </article>
+        <article class="br-config-scope-card">
+            <span>Operativa</span>
+            <strong>Reglas internas</strong>
+            <p>Parámetros, módulos, integraciones y configuración que impacta la operación.</p>
+        </article>
+    </section>
+
     <!-- Content -->
     <div class="nav-align-top" ref="navTabs">
         <ul class="nav nav-tabs nav-fill" role="tablist">

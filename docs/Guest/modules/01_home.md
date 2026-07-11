@@ -29,3 +29,5 @@ Muestra información pública de la empresa, categorías visibles y catálogo co
 - Cada item publicado permite iniciar consulta por WhatsApp.
 - La vista muestra **Precio a consultar** cuando la empresa decide ocultar importes.
 - Los textos públicos usan lenguaje directo para visitantes y no mencionan configuraciones internas.
+- El número de WhatsApp se normaliza en frontend para evitar enlaces rotos por espacios, guiones o prefijos escritos con `+`.
+- Los controles públicos tienen foco visible para navegación por teclado.

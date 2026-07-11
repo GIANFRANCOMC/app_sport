@@ -11,6 +11,12 @@ use Illuminate\Http\JsonResponse;
 
 final class MasterDataController extends BaseController {
 
+    public function index() {
+
+        return view("System/general/General/master_data/main");
+
+    }
+
     public function list(string $resource): JsonResponse {
 
         try {
