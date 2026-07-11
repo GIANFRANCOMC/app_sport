@@ -83,7 +83,10 @@ export function get({route = "", data = {}, showAlert = false}) {
 
             }
 
-			resolve({data: {data: [], msg: error}, bool: false});
+			resolve({
+                data: error?.response?.data || {data: [], msg: error?.message || "No se pudo completar la consulta."},
+                bool: false
+            });
 
 		})
 		.finally(() => {
@@ -212,6 +215,12 @@ export function generateRoutes({entity, requestRoute}) {
 
         routes.cancel = `${requestRoute}/${entity}/cancel`;
         routes.qrCamera  = `${requestRoute}/${entity}/qrCamera`;
+
+    }
+
+    if(["book_complaints"].includes(entity)) {
+
+        routes.status = `${requestRoute}/${entity}/status`;
 
     }
 

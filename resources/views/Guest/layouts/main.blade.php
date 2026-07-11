@@ -5,7 +5,7 @@
 @endphp
 
 <html
-    lang="en"
+    lang="es"
     class="light-style layout-navbar-fixed layout-wide"
     dir="ltr"
     data-theme="theme-default"
@@ -18,6 +18,8 @@
             window.withMenu = {{ json_encode($withMenu ?? true) }};
             window.company  = @json($company);
             window.branch   = @json($branch ?? null);
+            window.captchaSiteKey = @json(config("app.CAPTCHA_KEY_FRONTEND"));
+            window.publicAttendanceAccess = @json($publicAttendanceAccess ?? null);
         </script>
     </head>
     <style>
@@ -58,7 +60,7 @@
             left: 1px;
         }
     </style>
-    <body class="bg-down-color-secondary">
+    <body class="br-guest-page">
         @if($withMenu ?? true)
             <nav class="layout-navbar shadow-none">
                 <div class="container">
@@ -77,13 +79,13 @@
                             </button>
                             <ul class="navbar-nav me-auto d-flex gap-4 mx-3 mx-md-5 px-0 px-md-4">
                                 <li class="nav-item">
-                                    <a class="fw-semibold fs-5 text-white-custom a-primary-custom" href="home">
+                                    <a class="fw-semibold fs-6 text-white-custom a-primary-custom" href="{{ url($company->slug.'/home') }}">
                                         <span class="text-uppercase">Inicio</span>
                                     </a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="fw-semibold fs-5 text-white-custom a-primary-custom" href="book_complaints">
-                                        <span class="text-uppercase">Libro de reclamaciones y sugerencias</span>
+                                    <a class="fw-semibold fs-6 text-white-custom a-primary-custom" href="{{ url($company->slug.'/book_complaints') }}">
+                                        <span class="text-uppercase">Libro de reclamaciones</span>
                                     </a>
                                 </li>
                             </ul>

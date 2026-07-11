@@ -47,7 +47,18 @@ class TrackingAttendanceController extends Controller {
         return view("Guest/general/tracking_attendances/main", [
             "company" => $company,
             "branch" => $record,
-            "withMenu" => false
+            "withMenu" => false,
+            "publicAttendanceAccess" => [
+                "branch_id" => (int) $record->id,
+                "branch_name" => $record->name,
+                "branch_address" => $record->address,
+                "expires_at" => (int) $request->query('expires', now()->addMinutes(15)->timestamp)
+            ],
+            "meta" => [
+                "title" => "Asistencia pública | {$company->commercial_name}",
+                "description" => "Registro público de asistencia para la sucursal {$record->name}.",
+                "image" => $company->combinationmark ?: $company->logotype ?: $company->logomark
+            ]
         ]);
 
     }

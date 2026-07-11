@@ -1,192 +1,122 @@
 <template>
-    <br/>
-    <div class="d-flex container-p-y mt-5 mb-5">
-        <div class="text-center w-100 mt-4">
-            <div class="mt-3">
-                <span class="text-primary-custom fs-1 fw-bold d-block" v-text="forms.entity.home.data.tagline"></span>
-                <span class="text-white-custom fs-5 d-block" v-text="forms.entity.home.data.description"></span>
-            </div>
-        </div>
-    </div>
-    <div class="container flex-grow-1 container-p-y my-0 my-md-2" v-if="isDefined({value: forms.entity.home.data.document_number})">
-        <div class="row g-3 align-items-center bg-down-color-primary px-4 py-4 mx-0">
-            <div class="col-lg-9">
-                <span class="text-primary-custom fw-bold text-uppercase fs-4 d-block mb-2">🏋️ ¡Es tu momento!</span>
-                <span class="text-white-custom d-block mb-3">Empieza hoy tu transformación.<br/>No esperes más para alcanzar tu mejor versión.</span>
-                <a href="javascript:void(0)" class="btn btn-success waves-effect animation-pulse" @click="openUrl(forms.entity.home.data.whatsapp)">
-                    <i class="tf-icons fa-brands fa-whatsapp"></i>
-                    <span class="ms-2">Contáctanos en Whatsapp</span>
-                </a>
-            </div>
-            <div class="col-lg-3 text-center">
-                <img :src="isDefined({value: forms.entity.home.data.combinationmark}) ? getAsset(forms.entity.home.data.combinationmark, {type: 'storage'}) : getAsset(config.essential.ownerApp.assets.img.combinationmark, {type: 'none', back: 1})" class="img-fluid w-60">
-            </div>
-        </div>
-    </div>
-    <div class="container flex-grow-1 container-p-y my-0 my-md-2" v-if="items.length > 0">
-        <div class="text-center mb-1">
-            <span class="text-primary-custom fw-bold text-uppercase fs-4 d-block">Nuestros productos destacados</span>
-            <span class="text-white-custom d-block">Conoce nuestros productos, planes y encuentra el ideal para ti.</span>
-        </div>
-        <div class="row mt-4">
-            <div class="col-12">
-                <div class="swiper" id="swiper-items">
-                    <div class="swiper-wrapper">
-                        <div class="swiper-slide" v-for="item in items" :key="item.id">
-                            <div class="card bg-down-color-primary cursor-pointer" @click="openUrl(forms.entity.home.data.whatsapp)">
-                                <div class="card-body pt-2 pb-0">
-                                    <div class="d-flex justify-content-between flex-wrap">
-                                        <template v-if="isDefined({value: item?.currency?.sign}) && isDefined({value: item?.price})">
-                                            <div class="text-nowrap">
-                                                <span>🤩</span>
-                                                <small class="text-primary-custom fw-semibold ms-2">Lo quiero</small>
-                                            </div>
-                                            <span class="text-white-custom text-nowrap" v-text="item?.currency?.sign+' '+item?.price"></span>
-                                        </template>
-                                        <div v-else class="text-nowrap">
-                                            <span>🤩</span>
-                                            <small class="text-primary-custom fw-semibold ms-2">Lo quiero</small>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="card-body py-3">
-                                    <span class="fw-bold fs-5 text-white-custom text-start d-block" v-text="truncate({value: item?.name, length: 13})"></span>
-                                </div>
-                                <div class="card-footer py-1 bg-primary-custom text-white-custom text-center fw-semibold">
-                                    <span v-text="item.type === 'product' ? '📦' : item.type === 'service' ? '🛠️' : item.type === 'subscription' ? '🎫' : ''"></span>
-                                    <span v-text="item?.formatted_type" class="ms-2"></span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="swiper-pagination swiper-pagination-custom"></div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="container flex-grow-1 container-p-y my-0 mt-md-2" v-if="isDefined({value: forms.entity.home.data.document_number})">
-        <div class="text-center mb-1">
-            <span class="text-primary-custom fw-bold text-uppercase fs-4 d-block">Conecta con nosotros</span>
-            <span class="text-white-custom d-block">Estamos activos en redes sociales. ¡Escríbenos o síguenos para estar al tanto de nuestras novedades!</span>
-        </div>
-        <div class="row mt-4">
-            <div class="col-lg-12">
-                <div class="card bg-down-color-primary">
-                    <div class="card-body px-5">
-                        <div class="row justify-content-start align-items-center my-3">
-                            <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12">
-                                <p>
-                                    <span>📍</span>
-                                    <span class="colon-at-end text-primary-custom ms-2 text-uppercase fw-semibold">Dirección</span>
-                                    <span class="ms-2 text-white-custom" v-text="forms.entity.home.data.address"></span>
-                                </p>
-                            </div>
-                            <div class="col-xl-6 col-lg-12 col-md-12 col-sm-12">
-                                <p>
-                                    <span>📞</span>
-                                    <span class="colon-at-end text-primary-custom ms-2 text-uppercase fw-semibold">Teléfono</span>
-                                    <span class="ms-2 text-white-custom" v-text="forms.entity.home.data.telephone"></span>
-                                </p>
-                            </div>
-                            <div class="col-xl-6 col-lg-12 col-md-12 col-sm-12">
-                                <p>
-                                    <span>📧</span>
-                                    <span class="colon-at-end text-primary-custom ms-2 text-uppercase fw-semibold">Correo electrónico</span>
-                                    <span class="ms-2 text-white-custom" v-text="forms.entity.home.data.email"></span>
-                                </p>
-                            </div>
-                        </div>
-                        <div class="row g-md-4 g-2 justify-content-center align-items-center mb-3">
-                            <div class="col-xl-auto col-lg-6 col-md-12 col-sm-12 text-center">
-                                <a href="javascript:void(0)" class="btn btn-info-1 waves-effect w-100" @click="openUrl(forms.entity.home.data.facebook)">
-                                    <i class="tf-icons fa-brands fa-facebook-square"></i>
-                                    <span class="ms-2">Visítanos en Facebook</span>
-                                </a>
-                            </div>
-                            <div class="col-xl-auto col-lg-6 col-md-12 col-sm-12 text-center">
-                                <a href="javascript:void(0)" class="btn btn-danger waves-effect w-100" @click="openUrl(forms.entity.home.data.instagram)">
-                                    <i class="tf-icons fa-brands fa-instagram"></i>
-                                    <span class="ms-2">Visítanos en Instagram</span>
-                                </a>
-                            </div>
-                            <div class="col-xl-auto col-lg-12 col-md-12 col-sm-12 text-center">
-                                <a href="javascript:void(0)" class="btn btn-success waves-effect w-100" @click="openUrl(forms.entity.home.data.whatsapp)">
-                                    <i class="tf-icons fa-brands fa-whatsapp"></i>
-                                    <span class="ms-2">Contáctanos en Whatsapp</span>
-                                </a>
-                            </div>
-                        </div>
+    <main class="br-guest-home">
+        <section class="br-guest-hero">
+            <div class="br-guest-container br-guest-hero__grid">
+                <div class="br-guest-hero__content">
+                    <p class="br-guest-eyebrow">Catálogo público</p>
+                    <h1>{{ companyName }}</h1>
+                    <p>{{ companyDescription }}</p>
+                    <div class="br-guest-hero__actions">
+                        <a v-if="company.whatsapp" class="br-guest-btn br-guest-btn-primary" :href="whatsappUrl" target="_blank" rel="noopener noreferrer">
+                            <i class="fa-brands fa-whatsapp" aria-hidden="true"></i>
+                            <span>Consultar por WhatsApp</span>
+                        </a>
+                        <a class="br-guest-btn br-guest-btn-secondary" href="#catalogo">
+                            <i class="fa-solid fa-table-cells-large" aria-hidden="true"></i>
+                            <span>Ver catálogo</span>
+                        </a>
                     </div>
                 </div>
+                <div class="br-guest-hero__brand" aria-hidden="true">
+                    <img :src="companyLogo" :alt="companyName">
+                </div>
             </div>
-        </div>
-    </div>
+        </section>
+
+        <section id="catalogo" class="br-guest-section">
+            <div class="br-guest-container">
+                <div class="br-guest-section__header">
+                    <div>
+                        <p class="br-guest-eyebrow">Disponible para clientes</p>
+                        <h2>Productos, servicios y membresías</h2>
+                    </div>
+                    <div class="br-guest-catalog-count">
+                        <strong>{{ filteredItems.length }}</strong>
+                        <span>{{ filteredItems.length === 1 ? "registro visible" : "registros visibles" }}</span>
+                    </div>
+                </div>
+
+                <div class="br-guest-categories" v-if="categoryOptions.length > 1">
+                    <button
+                        v-for="category in categoryOptions"
+                        :key="category.code"
+                        type="button"
+                        :class="['br-guest-category', {'is-active': selectedCategory === category.code}]"
+                        @click="selectedCategory = category.code">
+                        <span>{{ category.label }}</span>
+                        <strong>{{ category.count }}</strong>
+                    </button>
+                </div>
+
+                <div class="br-guest-catalog" v-if="filteredItems.length > 0">
+                    <article class="br-guest-item" v-for="item in filteredItems" :key="item.id">
+                        <div class="br-guest-item__top">
+                            <span :class="['br-guest-item__type', `is-${item.type}`]">{{ item.formatted_type }}</span>
+                            <span v-if="item.formatted_duration" class="br-guest-item__duration">{{ item.formatted_duration }}</span>
+                        </div>
+                        <h3>{{ item.name }}</h3>
+                        <p>{{ item.description || "Consulta más información con nuestro equipo de atención." }}</p>
+                        <div class="br-guest-item__footer">
+                            <strong v-if="hasVisiblePrice(item)">{{ priceLabel(item) }}</strong>
+                            <span v-else class="br-guest-item__hidden-price">
+                                <i class="fa-solid fa-lock" aria-hidden="true"></i>
+                                Precio a consultar
+                            </span>
+                            <a v-if="company.whatsapp" :href="itemWhatsappUrl(item)" class="br-guest-item__link" target="_blank" rel="noopener noreferrer" aria-label="Consultar item por WhatsApp">
+                                <i class="fa-brands fa-whatsapp" aria-hidden="true"></i>
+                            </a>
+                        </div>
+                    </article>
+                </div>
+
+                <div class="br-guest-empty" v-else>
+                    <i class="fa-solid fa-box-open" aria-hidden="true"></i>
+                    <strong>No hay registros públicos disponibles</strong>
+                    <span>Cuando la empresa publique productos, servicios o membresías, aparecerán aquí.</span>
+                </div>
+            </div>
+        </section>
+
+        <section class="br-guest-section br-guest-section--contact">
+            <div class="br-guest-container br-guest-contact">
+                <div>
+                    <p class="br-guest-eyebrow">Contacto</p>
+                    <h2>Conecta con {{ companyName }}</h2>
+                    <p>Usa los canales oficiales para resolver dudas antes de comprar o visitar una sede.</p>
+                </div>
+                <div class="br-guest-contact__grid">
+                    <a v-if="company.telephone" :href="`tel:${company.telephone}`">
+                        <i class="fa-solid fa-phone" aria-hidden="true"></i>
+                        <span>{{ company.telephone }}</span>
+                    </a>
+                    <a v-if="company.email" :href="`mailto:${company.email}`">
+                        <i class="fa-solid fa-envelope" aria-hidden="true"></i>
+                        <span>{{ company.email }}</span>
+                    </a>
+                    <span v-if="company.address">
+                        <i class="fa-solid fa-location-dot" aria-hidden="true"></i>
+                        <span>{{ company.address }}</span>
+                    </span>
+                </div>
+            </div>
+        </section>
+    </main>
 </template>
 
 <script>
-import * as Alerts    from "../../Helpers/Alerts.js";
 import * as Constants from "../../Helpers/Constants.js";
-import * as Requests  from "../../Helpers/Requests.js";
-import * as Utils     from "../../Helpers/Utils.js";
+import * as Requests from "../../Helpers/Requests.js";
+import * as Utils from "../../Helpers/Utils.js";
 
 export default {
-    components: {
-        //
-    },
-    mounted: async function() {
-
-        // Alerts.swals({type: "initParams"});
-
-        let initParams = await this.initParams({}),
-            initOthers = await this.initOthers({});
-
-        if(initParams && initOthers) {
-
-            // Alerts.swals({show: false});
-
-        }
-
-    },
     data() {
         return {
-            forms: {
-                entity: {
-                    home: {
-                        extras: {
-                            modals: {
-                                actions: {
-                                    id: Utils.uuid(),
-                                    data: {
-                                        id: null,
-                                        extras: {},
-                                        whatsapp: "",
-                                        email: ""
-                                    },
-                                    errors: {}
-                                }
-                            }
-                        },
-                        data: {
-                            document_number: "",
-                            legal_name: "",
-                            commercial_name: "",
-                            tagline: "",
-                            description: "",
-                            address: "",
-                            telephone: "",
-                            email: "",
-                            logotype: "",
-                            combinationmark: "",
-                            logomark: "",
-                            facebook: "",
-                            instagram: "",
-                            whatsapp: "",
-                            ownerApp: null
-                        }
-                    }
-                }
+            selectedCategory: "all",
+            options: {
+                company: {records: []},
+                items: {records: []},
+                categories: {records: []}
             },
-            options: {},
             config: {
                 ...Constants.generalConfig,
                 entity: {
@@ -195,134 +125,74 @@ export default {
             }
         };
     },
+    async mounted() {
+        await this.initParams();
+    },
     methods: {
-        // Init
-        async initParams({}) {
-
-            let initParams = await Requests.get({route: this.config.entity.routes.initParams, data: {page: "main"}, showAlert: true});
-
-            this.options.companies = initParams.data?.config?.companies;
-            this.options.company   = initParams.data?.config?.company;
-            this.options.items     = initParams.data?.config?.items;
-
-            return Requests.valid({result: initParams});
-
-        },
-        async initOthers({}) {
-
-            return new Promise(resolve => {
-
-                const company = (this.options.company?.records ?? []).length > 0 ? this.options.company?.records[0] : null;
-
-                this.forms.entity.home.data.document_number = company?.document_number;
-                this.forms.entity.home.data.legal_name      = company?.legal_name;
-                this.forms.entity.home.data.commercial_name = company?.commercial_name;
-                this.forms.entity.home.data.tagline         = company?.tagline;
-                this.forms.entity.home.data.description     = company?.description;
-                this.forms.entity.home.data.address         = company?.address;
-                this.forms.entity.home.data.telephone       = company?.telephone;
-                this.forms.entity.home.data.email           = company?.email;
-                this.forms.entity.home.data.logotype        = company?.logotype;
-                this.forms.entity.home.data.combinationmark = company?.combinationmark;
-                this.forms.entity.home.data.logomark        = company?.logomark;
-                this.forms.entity.home.data.facebook        = company?.facebook;
-                this.forms.entity.home.data.instagram       = company?.instagram;
-                this.forms.entity.home.data.whatsapp        = company?.whatsapp;
-                this.forms.entity.home.data.ownerApp        = company?.ownerApp;
-
-                const swiper = new Swiper('#swiper-items', {
-                    direction: "horizontal",
-                    loop: true,
-                    slidesPerView: 4,
-                    spaceBetween: 14,
-                    speed: 400,
-                    autoplay: {
-                        delay: 2000,
-                        disableOnInteraction: false
-                    },
-                    pagination: {
-                        el: ".swiper-pagination",
-                        clickable: true
-                    },
-                    breakpoints: {
-                        0: {
-                            slidesPerView: 2,
-                        },
-                        576: {
-                            slidesPerView: 2,
-                        },
-                        768: {
-                            slidesPerView: 3,
-                        },
-                        992: {
-                            slidesPerView: 4,
-                        },
-                    }
-                });
-
-                resolve(true);
-
+        async initParams() {
+            const initParams = await Requests.get({
+                route: this.config.entity.routes.initParams,
+                data: {page: "main"},
+                showAlert: true
             });
 
+            this.options.company = initParams.data?.config?.company || {records: []};
+            this.options.items = initParams.data?.config?.items || {records: []};
+            this.options.categories = initParams.data?.config?.categories || {records: []};
         },
-        // Entity forms
-        modalActionsEntity({record = null}) {
-
-            const whatsapp = record?.holder?.phone_number ?? "";
-            const email    = record?.holder?.email ?? "";
-
-            this.forms.entity.home.extras.modals.actions.data = {...record, extras: {}, whatsapp, email};
-
-            Alerts.modals({type: "show", id: this.forms.entity.home.extras.modals.actions.id});
-
+        hasVisiblePrice(item) {
+            return item?.see_my_web_price && Utils.isDefined({value: item?.price}) && Utils.isDefined({value: item?.currency?.sign});
         },
-        // Others
-        isDefined({value}) {
-
-            return Utils.isDefined({value});
-
+        priceLabel(item) {
+            return `${item.currency.sign} ${Utils.separatorNumber(item.price)}`;
         },
-        fixedNumber(value) {
-
-            return Utils.fixedNumber(value);
-
-        },
-        separatorNumber(value) {
-
-            return Utils.separatorNumber(value);
-
-        },
-        legibleFormatDate({dateString = null, type = "datetime"}) {
-
-            return Utils.legibleFormatDate({dateString, type});
-
-        },
-        truncate({value, length}) {
-
-            return Utils.truncate({value, length});
-
-        },
-        openUrl(url = null) {
-
-            window.open(url, "_blank")
-
-        },
-        getAsset(path, {type, back}) {
-
-            return Utils.getAsset(path, {type, back});
-
+        itemWhatsappUrl(item) {
+            const message = `Hola, quiero información sobre ${item.name}.`;
+            return `https://wa.me/${this.company.whatsapp}?text=${encodeURIComponent(message)}`;
         }
     },
     computed: {
-        breadcrumbTitles: function() {
-
-            return [this.config.entity.page];
-
+        company() {
+            return this.options.company?.records?.[0] || this.config.essential.company || {};
         },
-        items: function() {
+        companyName() {
+            return this.company.commercial_name || this.company.legal_name || "Catálogo";
+        },
+        companyDescription() {
+            return this.company.description || this.company.tagline || "Explora la información pública disponible para clientes.";
+        },
+        companyLogo() {
+            const logo = this.company.combinationmark || this.company.logotype || this.company.logomark;
 
-            return (this.options?.items?.records ?? []).slice(0, 8);
+            return logo
+                ? Utils.getAsset(logo, {type: "storage"})
+                : Utils.getAsset(this.config.essential.ownerApp?.assets?.img?.combinationmark, {type: "none", back: 1});
+        },
+        whatsappUrl() {
+            return `https://wa.me/${this.company.whatsapp}?text=${encodeURIComponent(`Hola, quiero información de ${this.companyName}.`)}`;
+        },
+        items() {
+            return this.options.items?.records || [];
+        },
+        categories() {
+            return this.options.categories?.records || [];
+        },
+        categoryOptions() {
+            const options = this.categories.map(category => ({
+                code: category.id,
+                label: category.name,
+                count: this.items.filter(item => (item.categories || []).some(itemCategory => itemCategory.id === category.id)).length
+            })).filter(category => category.count > 0);
 
+            return [
+                {code: "all", label: "Todo", count: this.items.length},
+                ...options
+            ];
+        },
+        filteredItems() {
+            if(this.selectedCategory === "all") return this.items;
+
+            return this.items.filter(item => (item.categories || []).some(category => category.id === this.selectedCategory));
         }
     }
 };

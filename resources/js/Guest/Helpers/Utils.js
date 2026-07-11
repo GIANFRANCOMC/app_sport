@@ -10,7 +10,9 @@ export function getEssential() {
         withMenu: window?.withMenu ?? true,
         ownerApp: window?.ownerApp ?? null,
         company: window?.company ?? null,
-        branch: window?.branch ?? null
+        branch: window?.branch ?? null,
+        captchaSiteKey: window?.captchaSiteKey ?? "",
+        publicAttendanceAccess: window?.publicAttendanceAccess ?? null
     };
 
 }

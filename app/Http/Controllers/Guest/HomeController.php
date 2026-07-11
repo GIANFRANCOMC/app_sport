@@ -68,7 +68,14 @@ class HomeController extends Controller {
 
         $company = $request->get("company");
 
-        return view("Guest/general/home/main", ["company" => $company]);
+        return view("Guest/general/home/main", [
+            "company" => $company,
+            "meta" => [
+                "title" => "{$company->commercial_name} | Catálogo y atención",
+                "description" => $company->description ?: "Conoce productos, servicios, membresías y canales de atención de {$company->commercial_name}.",
+                "image" => $company->combinationmark ?: $company->logotype ?: $company->logomark
+            ]
+        ]);
 
     }
 

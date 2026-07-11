@@ -24,12 +24,6 @@ Cuando una pantalla queda implementada, responsive, accesible, con errores por c
 - Agregar confirmaciones accesibles a acciones destructivas que todavía usen confirmación simple.
 - Mostrar el alcance operativo activo cuando una acción dependa de sucursal, caja o almacén en pantallas legacy.
 
-## Guest
-
-- Inicio público: SEO, metadatos sociales y catálogo responsive respetando precios ocultos.
-- Libro de reclamaciones: CAPTCHA, consulta por código, carga múltiple y respuesta pública clara.
-- Asistencia pública: enlaces firmados, sucursal, estado del registro y respuestas antiabuso sin detalles internos.
-
 ## Reportes
 
 - Mi empresa/Sucursales: separar configuración pública, fiscal y operativa.

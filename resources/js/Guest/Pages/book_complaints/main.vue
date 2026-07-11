@@ -1,280 +1,163 @@
 <template>
-    <div class="container flex-grow-1 container-p-y mt-5">
-        <h4 class="text-center text-primary-custom mb-1 mt-5">
-            <span class="position-relative fw-extrabold z-1">Registra tu queja, reclamo o sugerencia</span>
-        </h4>
-        <div class="text-center text-white-custom pb-2 mb-3">
-            <span class="d-block fw-regular">Cuéntanos lo ocurrido o propon ideas para mejorar nuestro servicio.</span>
-            <div class="d-block fw-regular">Todos los campos con <span class="text-danger">*</span> son obligatorios. </div>
-        </div>
+    <main class="br-guest-section">
+        <div class="br-guest-container">
+            <header class="br-guest-public-header">
+                <p class="br-guest-eyebrow">Canal público</p>
+                <h1>Libro de reclamaciones</h1>
+                <p>Registra una queja, reclamo o sugerencia. También puedes consultar el estado usando tu código de seguimiento.</p>
+            </header>
 
-        <!-- Content -->
-        <div class="nav-align-top mt-3 shadow-lg">
-            <ul class="nav nav-tabs nav-fill" role="tablist" v-show="false">
-                <li class="nav-item" role="presentation">
-                    <button type="button" class="nav-link waves-effect" role="tab" data-bs-toggle="tab" data-bs-target="#navs-pills-1" aria-controls="navs-pills-1" aria-selected="false" tabindex="-1">
-                        <span class="d-none d-sm-inline-flex align-items-center fw-bold">
-                            <i class="fa fa-info-circle me-1_5"></i>
-                            <span class="ms-2">Tipo</span>
-                        </span>
-                        <i class="fa fa-info-circle d-sm-none"></i>
-                    </button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button type="button" class="nav-link waves-effect" role="tab" data-bs-toggle="tab" data-bs-target="#navs-pills-2" aria-controls="navs-pills-2" aria-selected="false" tabindex="-1">
-                        <span class="d-none d-sm-inline-flex align-items-center fw-bold">
-                            <i class="fa fa-info-circle me-1_5"></i>
-                            <span class="ms-2">Identificación</span>
-                        </span>
-                        <i class="fa fa-info-circle d-sm-none"></i>
-                    </button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button type="button" class="nav-link waves-effect" role="tab" data-bs-toggle="tab" data-bs-target="#navs-pills-3" aria-controls="navs-pills-3" aria-selected="false" tabindex="-1">
-                        <span class="d-none d-sm-inline-flex align-items-center fw-bold">
-                            <i class="fa fa-info-circle me-1_5"></i>
-                            <span class="ms-2">Detalle</span>
-                        </span>
-                        <i class="fa fa-info-circle d-sm-none"></i>
-                    </button>
-                </li>
-            </ul>
-            <div class="tab-content px-5">
-                <ul class="list-inline d-flex flex-wrap justify-content-center align-items-center mb-4 mt-3">
-                    <li class="list-inline-item me-4 text-center">
-                        <span :class="['badge rounded-pill px-3 py-2', forms.entity.createUpdate.data.step >= 1 ? 'bg-primary' : 'bg-secondary']">1</span>
-                        <small class="d-block mt-1">Tipo</small>
-                    </li>
-                    <li class="list-inline-item me-4  text-center">
-                        <span :class="['badge rounded-pill px-3 py-2', forms.entity.createUpdate.data.step >= 2 ? 'bg-primary' : 'bg-secondary']">2</span>
-                        <small class="d-block mt-1">Identificación</small>
-                    </li>
-                    <li class="list-inline-item  text-center">
-                        <span :class="['badge rounded-pill px-3 py-2', forms.entity.createUpdate.data.step >= 3 ? 'bg-primary' : 'bg-secondary']">3</span>
-                        <small class="d-block mt-1">Detalle</small>
-                    </li>
-                </ul>
-                <div class="tab-pane fade" id="navs-pills-1" role="tabpanel">
-                    <h2 class="fw-bold text-heading my-0 text-center">¿Qué tipo de comunicación deseas realizar?</h2>
-                    <p class="text-muted fw-semibold text-center mb-4">Selecciona una de las opciones que mejor describa tu solicitud.</p>
-                    <div class="row g-3 py-8">
-                        <div class="col-xl-4 col-lg-6 col-md-12 col-sm-12" v-for="record in types" :key="record.code">
-                            <div class="form-check custom-option custom-option-basic">
-                                <label class="form-check-label custom-option-content form-check-input-payment gap-4 align-items-center">
-                                    <input v-model="forms.entity.createUpdate.data.type" class="form-check-input my-2" type="radio" :value="record.code">
-                                    <span class="custom-option-body">
-                                        <div class="ms-3 fw-bold text-heading fs-5">
-                                            <span :class="[record?.data?.icon, 'text-'+record?.data?.color]"></span>
-                                            <span v-text="record?.label" :class="['ms-3', 'text-'+record?.data?.color]"></span>
-                                        </div>
-                                        <p class="ms-1 mt-2 fw-semibold text-muted" v-text="record?.data?.description"></p>
-                                    </span>
-                                </label>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="d-flex flex-wrap flex-row-reverse mt-4">
-                        <button type="button" class="btn waves-effect btn-primary" @click="changeStep('2')" :disabled="!isDefined({value: forms.entity.createUpdate.data.type})">
-                            <span class="ms-2">Siguiente: Identificación</span>
-                            <i class="fa fa-arrow-right ms-2"></i>
-                        </button>
-                    </div>
-                </div>
-                <div class="tab-pane fade" id="navs-pills-2" role="tabpanel">
-                    <legend class="fw-bold text-heading my-0 text-center">Completa tus datos personales</legend>
-                    <p class="text-muted fw-semibold text-center mb-4">Necesitamos esta información para continuar con tu solicitud</p>
-                    <div class="row g-3">
-                        <InputSlot
-                            hasDiv
-                            title="Tipo de documento"
-                            isRequired
-                            hasTextBottom
-                            :textBottomInfo="forms.entity.createUpdate.errors?.identity_document_type"
-                            xl="6"
-                            lg="6">
-                            <template v-slot:input>
-                                <v-select
-                                    v-model="forms.entity.createUpdate.data.identity_document_type"
-                                    @close="validateForm({functionName: 'createUpdateEntity', form: forms.entity.createUpdate.data, extras: {setErrors: true}})"
-                                    :options="identityDocumentTypes"
-                                    :clearable="false"
-                                    :searchable="false"/>
-                            </template>
-                        </InputSlot>
-                        <InputText
-                            v-model="forms.entity.createUpdate.data.document_number"
-                            @input="validateForm({functionName: 'createUpdateEntity', form: forms.entity.createUpdate.data, extras: {setErrors: true}})"
-                            hasDiv
-                            title="Número de documento"
-                            isRequired
-                            placeholder="Ej. 12345678"
-                            hasTextBottom
-                            :textBottomInfo="forms.entity.createUpdate.errors?.document_number"
-                            xl="6"
-                            lg="6"/>
-                        <InputText
-                            v-model="forms.entity.createUpdate.data.name"
-                            @input="validateForm({functionName: 'createUpdateEntity', form: forms.entity.createUpdate.data, extras: {setErrors: true}})"
-                            hasDiv
-                            title="Nombre"
-                            placeholder="Ej. Juan Pérez"
-                            isRequired
-                            hasTextBottom
-                            :textBottomInfo="forms.entity.createUpdate.errors?.name"
-                            xl="6"
-                            lg="6"/>
-                        <InputText
-                            v-model="forms.entity.createUpdate.data.email"
-                            @input="validateForm({functionName: 'createUpdateEntity', form: forms.entity.createUpdate.data, extras: {setErrors: true}})"
-                            hasDiv
-                            title="Correo electrónico"
-                            placeholder="Ej. juan@hotmail.com"
-                            hasTextBottom
-                            :textBottomInfo="forms.entity.createUpdate.errors?.email"
-                            xl="6"
-                            lg="6"/>
-                        <InputText
-                            v-model="forms.entity.createUpdate.data.phone_number"
-                            @input="validateForm({functionName: 'createUpdateEntity', form: forms.entity.createUpdate.data, extras: {setErrors: true}})"
-                            hasDiv
-                            title="Celular"
-                            placeholder="Ej. 987876762"
-                            hasTextBottom
-                            :textBottomInfo="forms.entity.createUpdate.errors?.phone_number"
-                            xl="6"
-                            lg="6"/>
-                    </div>
-                    <div class="d-flex flex-wrap flex-row-reverse gap-2 mt-4">
-                        <button type="button" class="btn waves-effect btn-primary" @click="changeStep('3')" :disabled="!isDefined({value: forms.entity.createUpdate.data.identity_document_type}) || !isDefined({value: forms.entity.createUpdate.data.document_number}) || !isDefined({value: forms.entity.createUpdate.data.name})">
-                            <span>Siguiente: Detalle</span>
-                            <i class="fa fa-arrow-right ms-2"></i>
-                        </button>
-                        <button type="button" class="btn waves-effect btn-secondary" @click="changeStep('1')">
-                            <i class="fa fa-arrow-left"></i>
-                            <span class="ms-2">Anterior: Tipo</span>
-                        </button>
-                    </div>
-                </div>
-                <div class="tab-pane fade" id="navs-pills-3" role="tabpanel">
-                    <h2 class="fw-bold text-heading my-0 text-center">Describe lo ocurrido</h2>
-                    <p class="text-muted fw-semibold text-center mb-4">Proporciónanos los detalles de lo sucedido y lo que deseas que hagamos al respecto.</p>
-                    <div class="row g-3">
-                        <InputTextArea
-                            v-model="forms.entity.createUpdate.data.description"
-                            @input="validateForm({functionName: 'createUpdateEntity', form: forms.entity.createUpdate.data, extras: {setErrors: true}})"
-                            hasDiv
-                            title="Descripción"
-                            isRequired
-                            placeholder="Ej: El producto llegó dañado"
-                            maxlength="200"
-                            rows="3"
-                            hasTextBottom
-                            :textBottomInfo="forms.entity.createUpdate.errors?.description"
-                            xl="12"
-                            lg="12"/>
-                        <InputTextArea
-                            v-model="forms.entity.createUpdate.data.request"
-                            @input="validateForm({functionName: 'createUpdateEntity', form: forms.entity.createUpdate.data, extras: {setErrors: true}})"
-                            hasDiv
-                            title="Pedido del cliente"
-                            placeholder="Ej: Solicito un reemplazo o reembolso"
-                            maxlength="200"
-                            rows="3"
-                            hasTextBottom
-                            :textBottomInfo="forms.entity.createUpdate.errors?.request"
-                            xl="12"
-                            lg="12"/>
-                    </div>
-                    <div class="d-flex flex-wrap flex-row-reverse gap-2 mt-4">
-                        <button type="button" class="btn waves-effect btn-success" @click="createUpdateEntity()" :disabled="!isDefined({value: forms.entity.createUpdate.data.description})" v-if="isDefined({value: forms.entity.createUpdate.data.type})">
-                            <i class="fa fa-check-circle"></i>
-                            <span class="ms-2" v-text="'Enviar '+(currentType?.label).toLowerCase()"></span>
-                        </button>
-                        <button type="button" class="btn waves-effect btn-secondary" @click="changeStep('2')">
-                            <i class="fa fa-arrow-left"></i>
-                            <span class="ms-2">Anterior: Detalle</span>
-                        </button>
-                    </div>
-                </div>
+            <div class="br-guest-switch">
+                <button type="button" :class="{'is-active': mode === 'form'}" @click="mode = 'form'">
+                    <i class="fa-solid fa-pen-to-square" aria-hidden="true"></i>
+                    Registrar solicitud
+                </button>
+                <button type="button" :class="{'is-active': mode === 'status'}" @click="mode = 'status'">
+                    <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+                    Consultar código
+                </button>
             </div>
+
+            <section v-if="mode === 'form'" class="br-guest-card">
+                <div class="br-guest-form-grid">
+                    <div class="br-guest-field br-guest-field--full">
+                        <label>Tipo <span>*</span></label>
+                        <div class="br-guest-type-grid">
+                            <button
+                                v-for="type in types"
+                                :key="type.code"
+                                type="button"
+                                :class="['br-guest-type', {'is-active': form.type === type.code}]"
+                                @click="form.type = type.code">
+                                <i :class="type.data?.icon" aria-hidden="true"></i>
+                                <strong>{{ type.label }}</strong>
+                                <small>{{ type.data?.description }}</small>
+                            </button>
+                        </div>
+                        <small class="br-guest-error">{{ firstError("type") }}</small>
+                    </div>
+
+                    <div class="br-guest-field">
+                        <label>Tipo de documento <span>*</span></label>
+                        <v-select v-model="form.identity_document_type" :options="identityDocumentTypes" :clearable="false" :searchable="false"/>
+                        <small class="br-guest-error">{{ firstError("identity_document_type_id") || firstError("identity_document_type") }}</small>
+                    </div>
+                    <div class="br-guest-field">
+                        <label>Número de documento <span>*</span></label>
+                        <input v-model.trim="form.document_number" class="form-control" type="text" maxlength="30" placeholder="Ej. 12345678">
+                        <small class="br-guest-error">{{ firstError("document_number") }}</small>
+                    </div>
+                    <div class="br-guest-field">
+                        <label>Nombre completo <span>*</span></label>
+                        <input v-model.trim="form.name" class="form-control" type="text" maxlength="255" placeholder="Nombre y apellido">
+                        <small class="br-guest-error">{{ firstError("name") }}</small>
+                    </div>
+                    <div class="br-guest-field">
+                        <label>Correo electrónico</label>
+                        <input v-model.trim="form.email" class="form-control" type="email" maxlength="255" placeholder="correo@ejemplo.com">
+                        <small class="br-guest-error">{{ firstError("email") }}</small>
+                    </div>
+                    <div class="br-guest-field">
+                        <label>Celular</label>
+                        <input v-model.trim="form.phone_number" class="form-control" type="text" maxlength="30" placeholder="987654321">
+                        <small class="br-guest-error">{{ firstError("phone_number") }}</small>
+                    </div>
+                    <div class="br-guest-field br-guest-field--full">
+                        <label>Descripción <span>*</span></label>
+                        <textarea v-model.trim="form.description" class="form-control" rows="4" maxlength="5000" placeholder="Cuéntanos qué ocurrió, cuándo ocurrió y qué necesitas que revisemos."></textarea>
+                        <small class="br-guest-error">{{ firstError("description") }}</small>
+                    </div>
+                    <div class="br-guest-field br-guest-field--full">
+                        <label>Pedido o solución esperada</label>
+                        <textarea v-model.trim="form.request" class="form-control" rows="3" maxlength="5000" placeholder="Ej. Solicito revisión, cambio, respuesta o devolución."></textarea>
+                        <small class="br-guest-error">{{ firstError("request") }}</small>
+                    </div>
+                    <div class="br-guest-field br-guest-field--full">
+                        <label>Adjuntos</label>
+                        <input class="form-control" type="file" multiple accept=".pdf,.jpg,.jpeg,.png" @change="setAttachments">
+                        <small class="br-guest-help">Puedes adjuntar hasta 5 archivos PDF, JPG o PNG de máximo 5 MB cada uno.</small>
+                        <div class="br-guest-files" v-if="attachments.length">
+                            <span v-for="file in attachments" :key="file.name">{{ file.name }}</span>
+                        </div>
+                        <small class="br-guest-error">{{ firstError("attachments") || firstError("attachments.0") }}</small>
+                    </div>
+
+                    <div class="br-guest-field br-guest-field--full d-none">
+                        <label>Sitio web</label>
+                        <input v-model="form.website" type="text" tabindex="-1" autocomplete="off">
+                    </div>
+
+                    <div v-if="captchaSiteKey" class="br-guest-field br-guest-field--full">
+                        <div ref="turnstile" class="cf-turnstile" :data-sitekey="captchaSiteKey" data-size="flexible"></div>
+                        <small class="br-guest-error">{{ firstError("captcha") || firstError("cf-turnstile-response") }}</small>
+                    </div>
+                </div>
+
+                <footer class="br-guest-card__footer">
+                    <span>Usaremos estos datos solo para atender esta solicitud.</span>
+                    <button type="button" class="br-guest-btn br-guest-btn-primary" :disabled="saving" @click="submit">
+                        <i class="fa-solid fa-paper-plane" aria-hidden="true"></i>
+                        <span>{{ saving ? "Enviando" : "Enviar solicitud" }}</span>
+                    </button>
+                </footer>
+            </section>
+
+            <section v-if="mode === 'status'" class="br-guest-card">
+                <div class="br-guest-status-search">
+                    <div class="br-guest-field">
+                        <label>Código de seguimiento</label>
+                        <input v-model.trim="trackingCode" class="form-control" type="text" maxlength="20" placeholder="Ej. ABC123XYZ789" @keyup.enter="consultStatus">
+                    </div>
+                    <button type="button" class="br-guest-btn br-guest-btn-secondary" :disabled="consulting || !trackingCode" @click="consultStatus">
+                        <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+                        <span>{{ consulting ? "Consultando" : "Consultar" }}</span>
+                    </button>
+                </div>
+
+                <div class="br-guest-result" v-if="statusResult">
+                    <span class="br-guest-result__badge">{{ statusResult.status }}</span>
+                    <strong>{{ statusResult.type }} {{ statusResult.tracking_code }}</strong>
+                    <p v-if="statusResult.public_response">{{ statusResult.public_response }}</p>
+                    <p v-else>Aún no hay una respuesta pública registrada. Conserva tu código para volver a consultar.</p>
+                    <small>Registrado: {{ formatDate(statusResult.created_at) }}</small>
+                </div>
+            </section>
         </div>
-    </div>
+    </main>
 </template>
 
 <script>
-import * as Alerts    from "../../Helpers/Alerts.js";
+import * as Alerts from "../../Helpers/Alerts.js";
 import * as Constants from "../../Helpers/Constants.js";
-import * as Requests  from "../../Helpers/Requests.js";
-import * as Utils     from "../../Helpers/Utils.js";
+import * as Requests from "../../Helpers/Requests.js";
+import * as Utils from "../../Helpers/Utils.js";
+
+const emptyBookComplaintForm = () => ({
+    identity_document_type: null,
+    document_number: "",
+    name: "",
+    email: "",
+    phone_number: "",
+    type: null,
+    description: "",
+    request: "",
+    evidence: "",
+    website: ""
+});
 
 export default {
-    components: {
-        //
-    },
-    mounted: async function() {
-
-        Alerts.swals({type: "initParams"});
-
-        let initParams = await this.initParams({}),
-            initOthers = await this.initOthers({});
-
-        if(initParams && initOthers) {
-
-            Alerts.swals({show: false});
-            // this.listEntity({});
-
-        }
-
-    },
     data() {
         return {
-            lists: {
-                entity: {
-                    extras: {
-                        loading: false,
-                        route: Requests.config({entity: "book_complaints", type: "list"})
-                    },
-                    filters: {
-                        filter_by: null,
-                        word: ""
-                    },
-                    records: {
-                        total: 0
-                    }
-                }
-            },
-            forms: {
-                entity: {
-                    createUpdate: {
-                        extras: {
-                            modals: {
-                                default: {
-                                    id: Utils.uuid(),
-                                    titles: {
-                                        store: "Agregar",
-                                        update: "Editar"
-                                    }
-                                }
-                            }
-                        },
-                        data: {
-                            id: null,
-                            step: 0,
-                            identity_document_type: null,
-                            document_number: "",
-                            name: "",
-                            email: "",
-                            phone_number: "",
-                            type: null,
-                            description: "",
-                            request: "",
-                            status: null
-                        },
-                        errors: {}
-                    }
-                }
-            },
+            mode: "form",
+            saving: false,
+            consulting: false,
+            trackingCode: "",
+            statusResult: null,
+            attachments: [],
+            form: emptyBookComplaintForm(),
+            errors: {},
             options: {},
+            captchaRenderAttempts: 0,
             config: {
                 ...Constants.generalConfig,
                 entity: {
@@ -283,272 +166,148 @@ export default {
             }
         };
     },
+    async mounted() {
+        Alerts.swals({type: "initParams"});
+        await this.initParams();
+        Alerts.swals({show: false});
+        this.renderCaptcha();
+    },
     methods: {
-        // Init
-        async initParams({}) {
-
-            let initParams = await Requests.get({route: this.config.entity.routes.initParams, data: {page: "main"}, showAlert: true});
-
-            this.options.bookComplaints        = initParams.data?.config?.bookComplaints;
-            this.options.identityDocumentTypes = initParams.data?.config?.identityDocumentTypes;
-
-            return Requests.valid({result: initParams});
-
+        emptyForm() {
+            return emptyBookComplaintForm();
         },
-        async initOthers({}) {
-
-            return new Promise(resolve => {
-
-                this.forms.entity.createUpdate.data.identity_document_type = (this.identityDocumentTypes).length > 0 ? this.identityDocumentTypes[0] : null;
-
-                this.changeStep("1");
-
-                resolve(true);
-
+        async initParams() {
+            const initParams = await Requests.get({
+                route: this.config.entity.routes.initParams,
+                data: {page: "main"},
+                showAlert: true
             });
 
+            this.options.bookComplaints = initParams.data?.config?.bookComplaints || {};
+            this.options.identityDocumentTypes = initParams.data?.config?.identityDocumentTypes || {records: []};
+            this.form.identity_document_type = this.identityDocumentTypes[0] || null;
         },
-        // Entity forms
-        async listEntity({url = null}) {
+        renderCaptcha() {
+            this.$nextTick(() => {
+                if(!this.captchaSiteKey || !this.$refs.turnstile) return;
+                if(this.$refs.turnstile.dataset.rendered) return;
 
-            let filters = Utils.cloneJson(this.lists.entity.filters);
-            const filterJson = {filter_by: filters?.filter_by?.code, word: filters.word};
-
-            this.lists.entity.extras.loading = true;
-            this.lists.entity.records        = (await Requests.get({route: url || this.lists.entity.extras.route, data: filterJson}))?.data;
-            this.lists.entity.extras.loading = false;
-
-        },
-        // Forms
-        changeStep(step) {
-
-            this.formErrors({functionName: "createUpdateEntity", type: "clear"});
-
-            const tabTrigger = document.querySelector(`[data-bs-target="#navs-pills-${step}"]`);
-            const tab = new bootstrap.Tab(tabTrigger);
-            tab.show();
-
-            this.forms.entity.createUpdate.data.step = step;
-
-        },
-        modalCreateUpdateEntity({record = null}) {
-
-            const functionName = "modalCreateUpdateEntity";
-
-            // Alerts.swals({});
-            this.clearForm({functionName});
-            this.formErrors({functionName, type: "clear"});
-
-            if(this.isDefined({value: record})) {
-
-                let status = this.statuses.filter(e => e.code === record?.status)[0];
-
-                this.forms.entity.createUpdate.data.id          = record?.id;
-                this.forms.entity.createUpdate.data.name        = record?.name;
-                this.forms.entity.createUpdate.data.status      = status;
-
-            }else {
-
-                this.forms.entity.createUpdate.data.status = this.statuses[0];
-
-            }
-
-            // Alerts.swals({show: false});
-            Alerts.modals({type: "show", id: this.forms.entity.createUpdate.extras.modals.default.id});
-
-        },
-        async createUpdateEntity() {
-
-            const functionName = "createUpdateEntity";
-
-            Alerts.swals({});
-            this.formErrors({functionName, type: "clear"});
-
-            let form = Utils.cloneJson(this.forms.entity.createUpdate.data);
-
-            const validateForm = this.validateForm({functionName, form, extras: {type: "descriptive"}});
-
-            if(validateForm?.bool) {
-
-                form.identity_document_type_id = form?.identity_document_type?.code;
-
-                delete form.identity_document_type;
-
-                let createUpdate = await (this.isDefined({value: form.id}) ? Requests.patch({route: this.config.entity.routes.update, data: form, id: form.id}) :
-                                                                             Requests.post({route: this.config.entity.routes.store, data: form}));
-
-                if(Requests.valid({result: createUpdate})) {
-
-                    // Alerts.modals({type: "hide", id: this.forms.entity.createUpdate.extras.modals.default.id});
-                    // Alerts.toastrs({type: "success", subtitle: createUpdate?.data?.msg});
-                    // Alerts.swals({show: false});
-                    Alerts.generateAlert({type: "success", msgContent: createUpdate?.data?.msg});
-
-                    this.clearForm({functionName});
-                    // this.listEntity({url: `${this.lists.entity.extras.route}?page=${this.lists.entity.records?.current_page ?? 1}`});
-                    this.changeStep("1");
-
-                }else {
-
-                    this.formErrors({functionName, type: "set", errors: createUpdate?.errors ?? []});
-                    // Alerts.toastrs({type: "error", subtitle: createUpdate?.data?.msg});
-                    // Alerts.swals({show: false});
-                    Alerts.generateAlert({type: "error", msgContent: createUpdate?.data?.msg});
-
+                if(!window.turnstile) {
+                    if(this.captchaRenderAttempts < 10) {
+                        this.captchaRenderAttempts++;
+                        setTimeout(() => this.renderCaptcha(), 300);
+                    }
+                    return;
                 }
 
-            }else {
-
-                // this.formErrors({functionName, type: "set", errors: validateForm});
-                // Alerts.toastrs({type: "error", subtitle: this.config.messages.errorValidate});
-                // Alerts.swals({show: false});
-                Alerts.generateAlert({messages: Utils.getErrors({errors: validateForm}), msgContent: `<div class="fw-semibold mb-2">${this.config.messages.errorValidate}</div>`});
-
-            }
-
+                window.turnstile.render(this.$refs.turnstile, {
+                    sitekey: this.captchaSiteKey
+                });
+                this.$refs.turnstile.dataset.rendered = "true";
+            });
         },
-        // Forms utils
-        clearForm({functionName}) {
-
-            switch(functionName) {
-                case "modalCreateUpdateEntity":
-                case "createUpdateEntity":
-                    this.forms.entity.createUpdate.data.id                     = null;
-                    // this.forms.entity.createUpdate.data.identity_document_type = null;
-                    this.forms.entity.createUpdate.data.document_number        = "";
-                    this.forms.entity.createUpdate.data.name                   = "";
-                    this.forms.entity.createUpdate.data.email                  = "";
-                    this.forms.entity.createUpdate.data.phone_number           = "";
-                    // this.forms.entity.createUpdate.data.type                   = null;
-                    this.forms.entity.createUpdate.data.description            = "";
-                    this.forms.entity.createUpdate.data.request                = "";
-                    break;
-            }
-
+        setAttachments(event) {
+            this.attachments = Array.from(event.target.files || []).slice(0, 5);
         },
-        formErrors({functionName, type = "clear", errors = []}) {
-
-            if(["modalCreateUpdateEntity", "createUpdateEntity"].includes(functionName)) {
-
-                this.forms.entity.createUpdate.errors = ["set"].includes(type) ? errors : [];
-
-            }
-
-        },
-        validateForm({functionName, form = null, extras = null}) {
-
-            let result = {
-                bool: true
+        async submit() {
+            this.errors = {};
+            const formData = new FormData();
+            const payload = {
+                ...this.form,
+                identity_document_type_id: this.form.identity_document_type?.code || ""
             };
 
-            if(["createUpdateEntity"].includes(functionName)) {
+            delete payload.identity_document_type;
 
-                result.type                   = [];
-                result.identity_document_type = [];
-                result.document_number        = [];
-                result.name                   = [];
-                result.email                  = [];
-                result.phone_number           = [];
-                result.description            = [];
-                result.request                = [];
+            Object.keys(payload).forEach(key => {
+                if(key === "website" && !payload[key]) return;
+                formData.append(key, payload[key] ?? "");
+            });
+            this.attachments.forEach(file => formData.append("attachments[]", file));
 
-                const isDescriptive = ["descriptive"].includes(extras?.type);
+            const captchaResponse = document.querySelector(`input[name="cf-turnstile-response"]`)?.value || "";
+            if(this.captchaSiteKey) formData.append("cf-turnstile-response", captchaResponse);
 
-                if(!this.isDefined({value: form?.type})) {
+            this.saving = true;
+            Alerts.swals({type: "saveForm"});
+            const result = await Requests.post({
+                route: this.config.entity.routes.store,
+                formData
+            });
+            this.saving = false;
 
-                    result.type.push(`${isDescriptive ? "Tipo:" : ""} ${this.config.forms.errors.labels.required}`);
-                    result.bool = false;
-
-                }
-
-                if(!this.isDefined({value: form?.identity_document_type})) {
-
-                    result.identity_document_type.push(`${isDescriptive ? "Tipo de documento:" : ""} ${this.config.forms.errors.labels.required}`);
-                    result.bool = false;
-
-                }
-
-                if(!this.isDefined({value: form?.document_number})) {
-
-                    result.document_number.push(`${isDescriptive ? "Número de documento:" : ""} ${this.config.forms.errors.labels.required}`);
-                    result.bool = false;
-
-                }
-
-                if(!this.isDefined({value: form?.name})) {
-
-                    result.name.push(`${isDescriptive ? "Nombre:" : ""} ${this.config.forms.errors.labels.required}`);
-                    result.bool = false;
-
-                }
-
-                if(!this.isDefined({value: form?.description})) {
-
-                    result.description.push(`${isDescriptive ? "Descripción:" : ""} ${this.config.forms.errors.labels.required}`);
-                    result.bool = false;
-
-                }
-
-                if(extras?.setErrors) {
-
-                    this.formErrors({functionName, type: "set", errors: result});
-
-                }
-
+            if(Requests.valid({result})) {
+                Alerts.swals({show: false});
+                Alerts.generateAlert({
+                    type: "success",
+                    headerTitle: "Solicitud registrada",
+                    msgContent: `<p class="mb-2">Guarda este código para consultar el estado:</p><strong class="fs-4">${result.data.tracking_code}</strong>`
+                });
+                this.trackingCode = result.data.tracking_code;
+                this.form = this.emptyForm();
+                this.form.identity_document_type = this.identityDocumentTypes[0] || null;
+                this.attachments = [];
+                this.resetCaptcha();
+            }else {
+                Alerts.swals({show: false});
+                this.errors = result.errors || {};
+                Alerts.generateAlert({
+                    type: "error",
+                    msgContent: result.data?.msg || "Revisa los datos ingresados."
+                });
             }
-
-            return result;
-
         },
-        // Others
-        isDefined({value}) {
+        async consultStatus() {
+            if(!this.trackingCode) return;
 
-            return Utils.isDefined({value});
+            this.statusResult = null;
+            this.consulting = true;
+            const result = await Requests.get({
+                route: `${this.config.entity.routes.status}/${this.trackingCode}`,
+                showAlert: false
+            });
+            this.consulting = false;
 
+            if(Requests.valid({result})) {
+                this.statusResult = result.data.data;
+            }else {
+                Alerts.generateAlert({
+                    type: "warning",
+                    msgContent: result.data?.msg || "No encontramos una solicitud con ese código."
+                });
+            }
         },
-        tooltips({show = true, time = 10}) {
-
-            Alerts.tooltips({show, time});
-
+        resetCaptcha() {
+            if(window.turnstile) window.turnstile.reset();
+        },
+        firstError(key) {
+            return this.errors?.[key]?.[0] || "";
+        },
+        formatDate(value) {
+            return Utils.legibleFormatDate({dateString: value, type: "datetime"});
         }
     },
     computed: {
-        filterByOptions: function() {
-
-            return [
-                {code: "all", label: "Todos"},
-                {code: "name", label: "Nombre"}
-            ];
-
+        captchaSiteKey() {
+            return this.config.essential.captchaSiteKey;
         },
-        identityDocumentTypes: function() {
-
-            return this.options?.identityDocumentTypes?.records.map(e => ({code: e.id, label: e.name}));
-
+        identityDocumentTypes() {
+            return (this.options.identityDocumentTypes?.records || []).map(record => ({
+                code: record.id,
+                label: record.name
+            }));
         },
-        types: function() {
-
-            return this.options?.bookComplaints?.types.map(e => ({code: e.code, label: e.label, data: e}));
-
-        },
-        statuses: function() {
-
-            return this.options?.bookComplaints?.statuses.map(e => ({code: e.code, label: e.label}));
-
-        },
-        currentType() {
-
-            const currentType = (this.types ?? []).filter(e => e.code == this.forms.entity.createUpdate.data.type);
-
-            return currentType.length > 0 ? currentType[0] : null;
-
+        types() {
+            return (this.options.bookComplaints?.types || []).map(record => ({
+                code: record.code,
+                label: record.label,
+                data: record
+            }));
         }
     },
     watch: {
-        "lists.entity.filters.filter_by": function(newValue, oldValue) {
-
-            // this.listEntity({});
-
+        mode(value) {
+            if(value === "form") this.renderCaptcha();
         }
     }
 };

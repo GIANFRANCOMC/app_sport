@@ -45,8 +45,15 @@ final class BookComplaintController extends Controller {
 
     public function index(Request $request) {
 
+        $company = $request->get("company");
+
         return view("Guest/general/book_complaints/main", [
-            "company" => $request->get("company")
+            "company" => $company,
+            "meta" => [
+                "title" => "Libro de reclamaciones | {$company->commercial_name}",
+                "description" => "Registra o consulta una queja, reclamo o sugerencia enviada a {$company->commercial_name}.",
+                "image" => $company->combinationmark ?: $company->logotype ?: $company->logomark
+            ]
         ]);
 
     }
@@ -142,10 +149,18 @@ final class BookComplaintController extends Controller {
         $complaint = BookComplaint::query()
             ->where("company_id", $company->id)
             ->where("tracking_code", Str::upper($trackingCode))
-            ->firstOrFail();
+            ->first();
+
+        if(!$complaint) {
+            return response()->json([
+                "bool" => false,
+                "msg" => "No encontramos una solicitud con ese código. Revisa que lo hayas escrito correctamente."
+            ], 404);
+        }
 
         return response()->json([
             "bool" => true,
+            "msg" => "Solicitud encontrada.",
             "data" => [
                 "tracking_code" => $complaint->tracking_code,
                 "type" => $complaint->formatted_type,

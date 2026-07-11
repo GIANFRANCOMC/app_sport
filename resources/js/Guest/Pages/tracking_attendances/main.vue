@@ -1,110 +1,64 @@
 <template>
-    <div :class="['container flex-grow-1 container-p-y', config.essential?.withMenu ? 'mt-5' : '']">
-        <div class="text-end mb-3 mb-md-1">
-            <div class="badge bg-info-1 rounded-pill ">
-                <i class="fa-solid fa-location-dot"></i>
-                <span class="ms-2" v-text="config.essential?.branch?.name+(isDefined({value: config.essential?.branch?.address}) ? ' / '+config.essential?.branch?.address : '')"></span>
-            </div>
-        </div>
-        <div class="text-center mb-2 mb-md-1">
-            <img :src="'/storage/'+config.essential?.company?.logotype" alt="Logo" style="max-height: 80px;" class="border border-light shadow-sm">
-        </div>
-        <div class="text-center mb-2 mb-md-2">
-            <span class="position-relative fw-extrabold z-1 h5">Escanea tu carnet para registrar tu ingreso o salida</span>
-        </div>
+    <main class="br-guest-section br-guest-attendance">
+        <div class="br-guest-container br-guest-attendance__grid">
+            <aside class="br-guest-attendance__context">
+                <img :src="companyLogo" :alt="companyName" class="br-guest-attendance__logo">
+                <p class="br-guest-eyebrow">Asistencia pública</p>
+                <h1>Escanea tu carnet</h1>
+                <p>Este enlace solo funciona para la sucursal indicada y durante el tiempo autorizado por la empresa.</p>
 
-        <!-- Content -->
-        <div class="row justify-content-center g-3">
-            <div class="col-xl-6 col-lg-6 col-md-12 col-sm-12">
-                <div class="card shadow-sm p-3">
-                    <div class="row justify-content-center g-3">
-                        <InputSlot
-                            :hasDiv="true"
-                            :isInputGroup="false"
-                            xl="10"
-                            lg="10">
-                            <template v-slot:input>
-                                <div class="w-100">
-                                    <CodeScanner
-                                        ref="scannerQr"
-                                        :showControls="true"
-                                        :qrbox="290"
-                                        :fps="23"
-                                        :limitScan="-1"
-                                        :canProcess="!forms.entity.qrCamera.config.isProcessing"
-                                        @result="onScanCustomer"/>
-                                </div>
-                            </template>
-                        </InputSlot>
+                <div class="br-guest-attendance__branch">
+                    <i class="fa-solid fa-location-dot" aria-hidden="true"></i>
+                    <div>
+                        <strong>{{ access.branch_name || branch.name }}</strong>
+                        <span v-if="access.branch_address || branch.address">{{ access.branch_address || branch.address }}</span>
                     </div>
                 </div>
-            </div>
+
+                <div class="br-guest-attendance__expires" v-if="access.expires_at">
+                    <span>Enlace vigente hasta</span>
+                    <strong>{{ expiresAtLabel }}</strong>
+                </div>
+            </aside>
+
+            <section class="br-guest-card br-guest-attendance__scanner">
+                <div class="br-guest-scanner-state" :class="scannerStateClass">
+                    <i :class="scannerStateIcon" aria-hidden="true"></i>
+                    <div>
+                        <strong>{{ scannerStateTitle }}</strong>
+                        <span>{{ scannerStateMessage }}</span>
+                    </div>
+                </div>
+
+                <CodeScanner
+                    ref="scannerQr"
+                    :showControls="true"
+                    :qrbox="270"
+                    :fps="20"
+                    :limitScan="-1"
+                    :canProcess="!processing"
+                    @result="onScanCustomer"/>
+
+                <p class="br-guest-help mt-3 mb-0">
+                    Si el lector no reconoce el código, ajusta la distancia, mejora la luz o solicita apoyo al personal.
+                </p>
+            </section>
         </div>
-    </div>
+    </main>
 </template>
 
 <script>
-import * as Alerts    from "../../Helpers/Alerts.js";
+import * as Alerts from "../../Helpers/Alerts.js";
 import * as Constants from "../../Helpers/Constants.js";
-import * as Requests  from "../../Helpers/Requests.js";
-import * as Utils     from "../../Helpers/Utils.js";
+import * as Requests from "../../Helpers/Requests.js";
+import * as Utils from "../../Helpers/Utils.js";
 
 export default {
-    components: {
-        //
-    },
-    mounted: async function() {
-
-        Alerts.swals({type: "initParams"});
-
-        let initParams = await this.initParams({}),
-            initOthers = await this.initOthers({});
-
-        if(initParams && initOthers) {
-
-            Alerts.swals({show: false});
-            // this.listEntity({});
-
-            if(this.$refs?.scannerQr?.startScanner) {
-
-                this.$refs.scannerQr.startScanner();
-
-            }
-
-        }
-
-    },
     data() {
         return {
-            lists: {
-                entity: {
-                    extras: {
-                        loading: false,
-                        route: Requests.config({entity: "tracking_attendances", type: "list"})
-                    },
-                    filters: {
-                        branch: null
-                    },
-                    records: {
-                        total: 0
-                    }
-                }
-            },
-            forms: {
-                entity: {
-                    qrCamera: {
-                        data: {
-                            branch: null,
-                            customers: []
-                        },
-                        config: {
-                            isProcessing: false
-                        },
-                        errors: {}
-                    }
-                }
-            },
-            options: {},
+            processing: false,
+            scannerState: "ready",
+            scannerMessage: "Coloca el QR frente a la cámara para registrar tu asistencia.",
             config: {
                 ...Constants.generalConfig,
                 entity: {
@@ -113,185 +67,128 @@ export default {
             }
         };
     },
+    async mounted() {
+        Alerts.swals({type: "initParams"});
+        await this.initParams();
+        Alerts.swals({show: false});
+
+        this.$nextTick(() => this.$refs.scannerQr?.startScanner?.());
+    },
     methods: {
-        // Init
-        async initParams({}) {
-
-            let initParams = await Requests.get({route: this.config.entity.routes.initParams, data: {page: "main"}, showAlert: true});
-
-            return Requests.valid({result: initParams});
-
-        },
-        async initOthers({}) {
-
-            return new Promise(resolve => {
-
-                this.lists.entity.filters.branch = {code: this.config.essential?.branch?.id, label: this.config.essential?.branch?.name};
-                this.forms.entity.qrCamera.data.branch = this.config.essential?.branch;
-
-                resolve(true);
-
+        async initParams() {
+            const initParams = await Requests.get({
+                route: this.config.entity.routes.initParams,
+                data: {page: "main"},
+                showAlert: true
             });
 
+            return Requests.valid({result: initParams});
         },
-        // Entity forms
-        async listEntity({url = null}) {
-
-            let filters = Utils.cloneJson(this.lists.entity.filters);
-            const filterJson = {branch_id: filters?.branch?.code};
-
-            this.lists.entity.extras.loading = true;
-            this.lists.entity.records        = (await Requests.get({route: url || this.lists.entity.extras.route, data: filterJson}))?.data;
-            this.lists.entity.extras.loading = false;
-
-        },
-        // QrCamera
         async onScanCustomer(decodedText, decodedResult) {
-
-            const functionName = "onScanCustomer";
-
-            if(this.forms.entity.qrCamera.config.isProcessing) return;
+            if(this.processing) return;
 
             try {
-
                 Utils.playSound("attendances/scan.mp3");
+                const raw = JSON.parse(decodedResult?.result?.text || decodedText || "{}");
+                const decodedPayload = Utils.decodeBase64UTF8(raw?.bp || "");
+                const payload = JSON.parse(decodedPayload || "{}");
+                const customerId = parseInt(payload?.id);
 
-                console.log(decodedText, decodedResult);
-                let dataScan = JSON.parse(decodedResult?.result?.text);
-
-                const dataScanBp = Utils.decodeBase64UTF8(dataScan?.bp);
-                const bp = JSON.parse(dataScanBp);
-
-                if(!this.isDefined({value: dataScanBp}) || !this.isDefined({value: bp})) {
-
-                    this.$refs.scannerQr.decrementScanCounter();
-                    Alerts.generateAlert({type: "warning", msgContent: `<span class="d-block fw-semibold">No pudimos validar el QR. Intenta escanearlo nuevamente o verifica que sea el correcto.</span>`});
-
-                }else {
-
-                    let el = this;
-
-                    const id = parseInt(bp?.id);
-
-                    if(id > 0) {
-
-                        Alerts.swals({});
-
-                        // Set data
-                        this.forms.entity.qrCamera.config.isProcessing = true;
-
-                        this.forms.entity.qrCamera.data.customers = [{customer_id: id}];
-
-                        // Validate form
-                        let form = Utils.cloneJson(this.forms.entity.qrCamera.data);
-
-                        form.branch_id = form?.branch?.id;
-
-                        delete form.branch;
-
-                        const qrCamera = await Requests.post({route: this.config.entity.routes.qrCamera, data: form});
-
-                        const isValid = Requests.valid({result: qrCamera});
-
-                        if(isValid) {
-
-                            // Alerts.toastrs({type: "success", subtitle: qrCamera?.data?.msg});
-                            // Alerts.swals({show: false});
-
-                            this.clearForm({functionName});
-
-                        }else {
-
-                            // this.formErrors({functionName, type: "set", errors: qrCamera?.errors ?? []});
-                            // Alerts.toastrs({type: "error", subtitle: qrCamera?.data?.msg});
-                            // Alerts.swals({show: false});
-
-                        }
-
-                        // Show response
-                        if((qrCamera?.data?.attendances ?? []).length === 0) {
-
-                            Alerts.generateAlert({type: isValid ? "success" : "error", msgContent: qrCamera?.data?.msg});
-
-                        }else if((qrCamera?.data?.attendances ?? []).length === 1) {
-
-                            Alerts.generateAlert({type: qrCamera?.data?.attendances[0]?.bool ? "success" : "error", msgContent: qrCamera?.data?.attendances[0]?.msg});
-
-                        }else {
-
-                            Alerts.generateAlert({type: isValid ? "success" : "error", messages: qrCamera?.data?.attendances.map(e => `${e.bool ? "<i class='fa fa-check-circle text-success'></i>" : "<i class='fa fa-times-circle text-danger'></i>"} <span class='ms-1'>${e.msg}</span>`), msgContent: `<div class="fw-semibold mb-2">${qrCamera?.data?.msg}</div>`});
-
-                        }
-
-                        setTimeout(() => {
-
-                            Alerts.swals({show: false});
-                            el.forms.entity.qrCamera.config.isProcessing = false;
-
-                        }, 5000);
-
-                    }else {
-
-                        this.$refs.scannerQr.decrementScanCounter();
-                        Alerts.generateAlert({type: "warning", msgContent: `<span class="d-block fw-semibold">Intenta escanearlo nuevamente o verifica que sea el correcto.</span>`});
-
-                    }
-
+                if(!customerId) {
+                    this.showScanProblem("No pudimos leer el carnet. Intenta nuevamente.");
+                    return;
                 }
 
-            }catch(e) {
+                this.processing = true;
+                this.scannerState = "processing";
+                this.scannerMessage = "Estamos validando la membresía y la sucursal autorizada.";
 
-                console.log(e);
-                this.$refs.scannerQr.decrementScanCounter();
-                Alerts.generateAlert({type: "warning", msgContent: `<span class="d-block fw-semibold">No pudimos validar el QR. Intenta escanearlo nuevamente o verifica que sea el correcto.</span>`});
+                const result = await Requests.post({
+                    route: this.config.entity.routes.qrCamera,
+                    data: {
+                        branch_id: this.access.branch_id || this.branch.id,
+                        customers: [{customer_id: customerId}]
+                    }
+                });
 
+                const attendance = result.data?.attendances?.[0] || null;
+
+                if(Requests.valid({result}) && (!attendance || attendance.bool)) {
+                    this.scannerState = "success";
+                    this.scannerMessage = attendance?.msg || result.data?.msg || "Asistencia registrada correctamente.";
+                }else {
+                    this.scannerState = "error";
+                    this.scannerMessage = attendance?.msg || result.data?.msg || "No se pudo registrar la asistencia.";
+                }
+            }catch(error) {
+                this.showScanProblem("El QR no corresponde a un carnet válido para este registro.");
+            }finally {
+                setTimeout(() => {
+                    this.processing = false;
+                    if(this.scannerState !== "ready") {
+                        this.scannerState = "ready";
+                        this.scannerMessage = "Puedes escanear el siguiente carnet.";
+                    }
+                }, 2500);
             }
-
         },
-        // Forms utils
-        clearForm({functionName}) {
-
-            switch(functionName) {
-                case "onScanCustomer":
-                    this.forms.entity.qrCamera.data.customers = [];
-                    break;
-            }
-
+        showScanProblem(message) {
+            this.$refs.scannerQr?.decrementScanCounter?.();
+            this.scannerState = "warning";
+            this.scannerMessage = message;
+        }
+    },
+    computed: {
+        company() {
+            return this.config.essential.company || {};
         },
-        formErrors({functionName, type = "clear", errors = []}) {
-
-            if(["onScanCustomer"].includes(functionName)) {
-
-                this.forms.entity.qrCamera.errors = ["set"].includes(type) ? errors : [];
-
-            }
-
+        branch() {
+            return this.config.essential.branch || {};
         },
-        validateForm({functionName, form = null, extras = null}) {
-
-            let result = {
-                bool: true
-            };
-
-            if(["onScanCustomer"].includes(functionName)) {
-
-                //
-
-            }
-
-            return result;
-
+        access() {
+            return this.config.essential.publicAttendanceAccess || {};
         },
-        // Others
-        isDefined({value}) {
-
-            return Utils.isDefined({value});
-
+        companyName() {
+            return this.company.commercial_name || this.company.legal_name || "Empresa";
         },
-        legibleFormatDate({dateString = null, type = "datetime"}) {
+        companyLogo() {
+            const logo = this.company.logotype || this.company.combinationmark || this.company.logomark;
 
-            return Utils.legibleFormatDate({dateString, type});
+            return logo
+                ? Utils.getAsset(logo, {type: "storage"})
+                : Utils.getAsset(this.config.essential.ownerApp?.assets?.img?.logomark, {type: "none", back: 1});
+        },
+        expiresAtLabel() {
+            if(!this.access.expires_at) return "";
 
+            return Utils.legibleFormatDate({
+                dateString: new Date(this.access.expires_at * 1000).toISOString().slice(0, 16).replace("T", " "),
+                type: "datetime"
+            });
+        },
+        scannerStateClass() {
+            return `is-${this.scannerState}`;
+        },
+        scannerStateIcon() {
+            return {
+                ready: "fa-solid fa-qrcode",
+                processing: "fa-solid fa-spinner fa-spin",
+                success: "fa-solid fa-circle-check",
+                warning: "fa-solid fa-triangle-exclamation",
+                error: "fa-solid fa-circle-xmark"
+            }[this.scannerState] || "fa-solid fa-qrcode";
+        },
+        scannerStateTitle() {
+            return {
+                ready: "Listo para escanear",
+                processing: "Validando asistencia",
+                success: "Registro aceptado",
+                warning: "Revisa el QR",
+                error: "No se registró"
+            }[this.scannerState] || "Listo para escanear";
+        },
+        scannerStateMessage() {
+            return this.scannerMessage;
         }
     }
 };

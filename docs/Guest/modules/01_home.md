@@ -1,8 +1,8 @@
-# 01 - Inicio público
+# 01 - Inicio Público
 
-## Qué hace
+## Qué Hace
 
-Muestra información pública de la empresa, categorías y catálogo visible para clientes.
+Muestra información pública de la empresa, categorías visibles y catálogo comercial disponible para clientes.
 
 ## Archivos
 
@@ -11,13 +11,21 @@ Muestra información pública de la empresa, categorías y catálogo visible par
 - Servicio: `app/Services/Guest/GuestCatalogService.php`
 - Modelos públicos: `App\Models\Guest\Company`, `Item` y `Category`
 - Vista/Vue: `resources/views/Guest/general/home`, `resources/js/Guest/Pages/home`
-- Tablas: `companies`, `company_socials_media`, `items`, `categories`, `categories_items`, `currencies`
+- Tablas: `companies`, `company_socials_media`, `items`, `categories`, `category_items`, `currencies`
 
 ## Reglas
 
 - La empresa debe estar activa y se resuelve por slug dentro del tenant actual.
-- Solo se consultan ítems activos con `see_my_web = true`.
+- Solo se consultan items activos con `see_my_web = true`.
 - El precio se expone únicamente cuando `see_my_web_price = true`.
-- Moneda y categorías se precargan para evitar consultas repetidas.
+- Si el precio está oculto, el backend no entrega `price`, `min_price`, `max_price` ni `currency`.
 - Categorías públicas deben estar activas, visibles y ordenadas.
-- El contrato excluye tokens externos, campos de auditoría y columnas internas que el visitante no necesita.
+- El contrato excluye tokens externos, auditoría y columnas internas que el visitante no necesita.
+
+## UI/UX Implementado
+
+- El layout público genera metadatos SEO, Open Graph y Twitter Card por empresa.
+- El catálogo es responsive y permite filtrar por categorías públicas.
+- Cada item publicado permite iniciar consulta por WhatsApp.
+- La vista muestra **Precio a consultar** cuando la empresa decide ocultar importes.
+- Los textos públicos usan lenguaje directo para visitantes y no mencionan configuraciones internas.

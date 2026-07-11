@@ -1,201 +1,161 @@
 <template>
-    <div>
+    <div class="br-guest-code-scanner">
         <select v-model="selectedCameraId" class="form-select mb-2" v-if="cameras.length > 1">
-            <template v-for="camera in cameras" :key="camera.id">
-                <option :value="camera.id" v-text="camera.label || 'Cámara ' + camera.id"></option>
-            </template>
+            <option v-for="camera in cameras" :key="camera.id" :value="camera.id">
+                {{ camera.label || `Cámara ${camera.id}` }}
+            </option>
         </select>
-        <div ref="scannerContainer" style="width: 100%;"></div>
-        <template v-if="cameras.length > 0">
-            <template v-if="showControls">
-                <div :class="['d-flex gap-2', isScanning ? 'mt-2' : '']">
-                    <button @click="startScanner()" v-if="!isScanning" type="button" class="btn btn-success btn-sm waves-effect">📷 Escanear QR</button>
-                    <button @click="stopScanner()" v-if="isScanning" type="button" class="btn btn-danger btn-sm waves-effect">🛑 Detener escáner</button>
-                </div>
-            </template>
-        </template>
-        <template v-else>
-            <div class="d-flex">
-                <span class="alert alert-danger w-100">Sin alguna cámara detectada.</span>
-            </div>
-        </template>
+
+        <div ref="scannerContainer" class="br-guest-code-scanner__box"></div>
+
+        <div v-if="cameras.length > 0 && showControls" :class="['d-flex gap-2', isScanning ? 'mt-2' : '']">
+            <button @click="startScanner()" v-if="!isScanning" type="button" class="btn btn-success btn-sm waves-effect">
+                <i class="fa-solid fa-camera" aria-hidden="true"></i>
+                <span class="ms-2">Escanear QR</span>
+            </button>
+            <button @click="stopScanner()" v-if="isScanning" type="button" class="btn btn-danger btn-sm waves-effect">
+                <i class="fa-solid fa-stop" aria-hidden="true"></i>
+                <span class="ms-2">Detener escáner</span>
+            </button>
+        </div>
+
+        <div v-if="cameras.length === 0" class="d-flex">
+            <span class="alert alert-danger w-100">No se detectó una cámara disponible.</span>
+        </div>
     </div>
 </template>
 
 <script>
-    import * as Alerts  from "../Helpers/Alerts.js";
+import * as Alerts from "../Helpers/Alerts.js";
 
-    export default {
-        name: "CodeScanner",
-        emits: ["result"],
-        computed: {
-            canScan: function() {
-
-                return this.limitScan == -1 || this.counterScan < this.limitScan;
-
-            }
+export default {
+    name: "CodeScanner",
+    emits: ["result"],
+    props: {
+        showControls: {
+            type: Boolean,
+            default: true
         },
-        props: {
-            showControls: {
-                type: Boolean,
-                required: false,
-                default: true
-            },
-            qrbox: {
-                type: Number,
-                required: false,
-                default: 250
-            },
-            fps: {
-                type: Number,
-                required: false,
-                default: 10
-            },
-            limitScan: {
-                type: Number,
-                required: false,
-                default: -1
-            },
-            canProcess: {
-                type: Boolean,
-                required: false,
-                default: true
-            }
+        qrbox: {
+            type: Number,
+            default: 250
         },
-        data() {
-            return {
-                scanner: null,
-                isScanning: false,
-                counterScan: 0,
-                cameras: [],
-                selectedCameraId: null
+        fps: {
+            type: Number,
+            default: 10
+        },
+        limitScan: {
+            type: Number,
+            default: -1
+        },
+        canProcess: {
+            type: Boolean,
+            default: true
+        }
+    },
+    data() {
+        return {
+            scanner: null,
+            isScanning: false,
+            counterScan: 0,
+            cameras: [],
+            selectedCameraId: null
+        };
+    },
+    computed: {
+        canScan() {
+            return this.limitScan === -1 || this.counterScan < this.limitScan;
+        }
+    },
+    methods: {
+        async startScanner() {
+            if(!window.Html5Qrcode) {
+                Alerts.generateAlert({
+                    type: "error",
+                    msgContent: "No se pudo cargar el lector QR. Actualiza la página e intenta nuevamente."
+                });
+                return;
+            }
+
+            const config = {
+                fps: this.fps,
+                qrbox: {width: this.qrbox, height: this.qrbox}
             };
-        },
-        methods: {
-            async startScanner() {
+            const scannerId = this.$refs.scannerContainer.id || "html5qr-code";
 
-                const config = {
-                    fps: this.fps,
-                    qrbox: { width: this.qrbox, height: this.qrbox }
-                };
+            if(!this.scanner) this.scanner = new window.Html5Qrcode(scannerId);
 
-                const scannerId = this.$refs.scannerContainer.id || "html5qr-code";
-
-                if(!this.scanner) {
-
-                    this.scanner = new window.Html5Qrcode(scannerId);
-
-                }
-
-                const cameras = this.cameras;
-
-                if(cameras.length > 0) {
-
-                    this.scanner.start(
-                        this.selectedCameraId,
-                        config,
-                        (decodedText, decodedResult) => {
-
-                            if(!this.canProcess) return;
-
-                            if(this.limitScan != -1) {
-
-                                this.counterScan++;
-
-                            }
-
-                            this.$emit("result", decodedText, decodedResult);
-
-                            if(!this.canScan) {
-
-                                this.stopScanner();
-
-                            }
-
-                        }
-                    );
-
-                    this.isScanning = true;
-
-                }else {
-
-                    Alerts.generateAlert({type: "error", msgContent: `No se detectaron cámaras.`});
-
-                }
-
-            },
-            stopScanner() {
-
-                if(this.scanner && this.isScanning) {
-
-                    this.scanner.stop()
-                    .then(() => {
-
-                        this.isScanning = false;
-
-                    })
-                    .catch(err => {
-
-                        console.error("Error al detener escáner", err);
-
-                    });
-
-                }
-
-            },
-            decrementScanCounter() {
-
-                if(this.counterScan != -1) {
-
-                    this.counterScan--;
-
-                }
-
-            }
-        },
-        mounted() {
-
-            // Set force: ID
-            if(!this.$refs.scannerContainer.id) {
-
-                this.$refs.scannerContainer.id = "html5qr-code";
-
+            if(this.cameras.length === 0) {
+                Alerts.generateAlert({type: "error", msgContent: "No se detectaron cámaras."});
+                return;
             }
 
-            window.Html5Qrcode
+            try {
+                await this.scanner.start(
+                    this.selectedCameraId,
+                    config,
+                    (decodedText, decodedResult) => {
+                        if(!this.canProcess) return;
+
+                        if(this.limitScan !== -1) this.counterScan++;
+
+                        this.$emit("result", decodedText, decodedResult);
+
+                        if(!this.canScan) this.stopScanner();
+                    }
+                );
+
+                this.isScanning = true;
+            }catch(error) {
+                console.error("Error al iniciar escáner", error);
+                Alerts.generateAlert({
+                    type: "error",
+                    msgContent: "No pudimos iniciar la cámara. Revisa los permisos del navegador."
+                });
+            }
+        },
+        stopScanner() {
+            if(!this.scanner || !this.isScanning) return;
+
+            this.scanner.stop()
+                .then(() => {
+                    this.isScanning = false;
+                })
+                .catch(error => {
+                    console.error("Error al detener escáner", error);
+                });
+        },
+        decrementScanCounter() {
+            if(this.counterScan !== -1) this.counterScan--;
+        }
+    },
+    mounted() {
+        if(!this.$refs.scannerContainer.id) this.$refs.scannerContainer.id = "html5qr-code";
+
+        if(!window.Html5Qrcode) {
+            Alerts.toastrs({type: "error", subtitle: "No se pudo cargar el lector QR."});
+            return;
+        }
+
+        window.Html5Qrcode
             .getCameras()
             .then(cameras => {
-
                 this.cameras = cameras;
 
                 if(cameras.length > 0) {
-
-                    let camerasBack = cameras.filter(e => (e.label.toLowerCase()).includes("back"));
-
-                    this.selectedCameraId = camerasBack.length > 0 ? camerasBack[0].id :cameras[0].id;
-
+                    const backCameras = cameras.filter(camera => camera.label.toLowerCase().includes("back"));
+                    this.selectedCameraId = backCameras.length > 0 ? backCameras[0].id : cameras[0].id;
                 }
-
             })
-            .catch(err => {
-
-                console.error("Error al obtener cámaras:", err);
+            .catch(error => {
+                console.error("Error al obtener cámaras:", error);
                 Alerts.toastrs({type: "error", subtitle: "No se detectaron cámaras."});
-                // Alerts.generateAlert({ type: "error", msgContent: `No se detectaron cámaras.` });
-
             });
-
-        },
-        watch: {
-            selectedCameraId(newVal, oldVal) {
-
-                if(this.isScanning && newVal !== oldVal) {
-
-                    this.stopScanner();
-
-                }
-
-            }
+    },
+    watch: {
+        selectedCameraId(newValue, oldValue) {
+            if(this.isScanning && newValue !== oldValue) this.stopScanner();
         }
-    };
+    }
+};
 </script>
