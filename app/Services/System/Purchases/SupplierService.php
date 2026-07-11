@@ -14,7 +14,9 @@ final class SupplierService {
 
         $query = Supplier::query()
             ->where("company_id", $companyId)
-            ->with(["contacts", "bankAccounts"]);
+            ->with(["contacts", "bankAccounts"])
+            ->withCount(["purchases"])
+            ->withSum("purchases as purchased_total", "total");
         $word = trim($word);
 
         if($word !== "") {

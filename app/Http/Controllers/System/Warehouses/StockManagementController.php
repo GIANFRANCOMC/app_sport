@@ -55,7 +55,10 @@ class StockManagementController extends BaseController {
         $warehouseId = intval($request->input("warehouse_id"));
         $perPage     = $this->getPerPage($request, Utilities::$per_page_max);
 
-        if(!StockManagementService::validateWarehouse($warehouseId, $this->getCompanyId())) {
+        if(
+            !StockManagementService::validateWarehouse($warehouseId, $this->getCompanyId())
+            || !AccessScopeService::canAccess($this->getAuthUser(), AccessScopeService::WAREHOUSE, $warehouseId)
+        ) {
 
             return response()->json([
                 "data" => [],
@@ -70,6 +73,24 @@ class StockManagementController extends BaseController {
             $perPage,
             (string) $request->input("product_search", "")
         );
+
+    }
+
+    public function summary(Request $request): JsonResponse {
+
+        $allowedWarehouseIds = AccessScopeService::allowedIds(
+            $this->getAuthUser(),
+            AccessScopeService::WAREHOUSE
+        );
+
+        return response()->json([
+            "bool" => true,
+            "data" => StockManagementService::getConsolidatedStock(
+                $this->getCompanyId(),
+                (string) $request->input("product_search", ""),
+                $allowedWarehouseIds
+            )
+        ]);
 
     }
 
@@ -89,24 +110,36 @@ class StockManagementController extends BaseController {
     public function movements(Request $request) {
 
         $perPage = $this->getPerPage($request, Utilities::$per_page_max);
+        $filters = $request->only([
+            "warehouse_id",
+            "item_id",
+            "movement_type",
+            "origin_types",
+            "product_search",
+            "date_from",
+            "date_to"
+        ]);
+        $warehouseId = (int) ($filters["warehouse_id"] ?? 0);
+
+        if($warehouseId > 0 && !AccessScopeService::canAccess($this->getAuthUser(), AccessScopeService::WAREHOUSE, $warehouseId)) {
+            return response()->json(["data" => [], "total" => 0]);
+        }
 
         return StockManagementService::getKardex(
             $this->getCompanyId(),
-            $request->only([
-                "warehouse_id",
-                "item_id",
-                "movement_type",
-                "origin_types",
-                "product_search",
-                "date_from",
-                "date_to"
-            ]),
+            $filters,
             $perPage
         );
 
     }
 
     public function alerts(Request $request) {
+
+        $warehouseId = (int) $request->input("warehouse_id");
+
+        if($warehouseId > 0 && !AccessScopeService::canAccess($this->getAuthUser(), AccessScopeService::WAREHOUSE, $warehouseId)) {
+            return response()->json(["data" => [], "total" => 0]);
+        }
 
         return StockManagementService::getStockAlerts(
             $this->getCompanyId(),
@@ -173,7 +206,7 @@ class StockManagementController extends BaseController {
                 $this->getCompanyId()
             );
 
-            if(!$warehouse) {
+            if(!$warehouse || !AccessScopeService::canAccess($this->getAuthUser(), AccessScopeService::WAREHOUSE, (int) $warehouse->id)) {
 
                 return $this->errorResponse("warehouse_not_available");
 
@@ -210,7 +243,7 @@ class StockManagementController extends BaseController {
 
     public function export(Request $request): BinaryFileResponse {
 
-        $view = in_array($request->input("view"), ["stock", "kardex", "transfers", "valued"], true)
+        $view = in_array($request->input("view"), ["stock", "kardex", "transfers", "valued", "guides"], true)
             ? (string) $request->input("view")
             : "stock";
         $filters = $request->only([
@@ -219,14 +252,24 @@ class StockManagementController extends BaseController {
             "movement_type",
             "origin_types",
             "product_search",
+            "guide_type",
             "date_from",
             "date_to"
         ]);
 
-        StockManagementService::validateWarehouse(
-            (int) ($filters["warehouse_id"] ?? 0),
-            $this->getCompanyId()
-        ) ?? abort(404, "El almacén seleccionado no está disponible.");
+        if(($filters["warehouse_id"] ?? null) !== "all") {
+            $warehouseId = (int) ($filters["warehouse_id"] ?? 0);
+            $warehouse = StockManagementService::validateWarehouse($warehouseId, $this->getCompanyId());
+
+            if(!$warehouse || !AccessScopeService::canAccess($this->getAuthUser(), AccessScopeService::WAREHOUSE, $warehouseId)) {
+                abort(404, "El almacén seleccionado no está disponible.");
+            }
+        }else {
+            $filters["allowed_warehouse_ids"] = AccessScopeService::allowedIds(
+                $this->getAuthUser(),
+                AccessScopeService::WAREHOUSE
+            );
+        }
         $fileName = "inventario_{$view}_" . now()->format("Y-m-d_His") . ".xlsx";
 
         return Excel::download(
@@ -247,7 +290,7 @@ class StockManagementController extends BaseController {
                 $this->getCompanyId()
             );
 
-            if(!$warehouse) {
+            if(!$warehouse || !AccessScopeService::canAccess($this->getAuthUser(), AccessScopeService::WAREHOUSE, (int) $warehouse->id)) {
 
                 return $this->errorResponse("warehouse_not_available");
 
@@ -287,6 +330,13 @@ class StockManagementController extends BaseController {
         $data = $request->validated();
 
         try {
+
+            if(
+                !AccessScopeService::canAccess($this->getAuthUser(), AccessScopeService::WAREHOUSE, (int) $data["source_warehouse_id"])
+                || !AccessScopeService::canAccess($this->getAuthUser(), AccessScopeService::WAREHOUSE, (int) $data["destination_warehouse_id"])
+            ) {
+                return $this->errorResponse("warehouse_not_available", [], 403);
+            }
 
             $transfer = StockManagementService::transfer([
                 "company_id"              => $this->getCompanyId(),

@@ -75,8 +75,9 @@ return new class extends Migration {
             ["id" => 32, "section_id" => 10, "slug" => "sc_sales-pos", "name" => "sales-pos", "description" => "Venta rápida para mostrador, vinculada a almacén y caja activa.", "order" => 1, "dom_id" => "menu-sales-pos", "dom_label" => "Venta POS", "dom_route" => "sales.pos"],
 
             // Purchases
-            ["id" => 90, "section_id" => 9, "slug" => "sc_purchases-list", "name" => "purchases-list", "description" => "Registra órdenes y facturas, controla recepciones y costos de inventario.", "order" => 1, "dom_id" => "menu-purchases-list", "dom_label" => "Compras", "dom_route" => "purchases.index"],
-            ["id" => 91, "section_id" => 9, "slug" => "sc_purchases-suppliers", "name" => "purchases-suppliers", "description" => "Administra proveedores y sus datos comerciales.", "order" => 2, "dom_id" => "menu-purchases-suppliers", "dom_label" => "Proveedores", "dom_route" => "suppliers.index"],
+            ["id" => 90, "section_id" => 9, "slug" => "sc_purchases-list", "name" => "purchases-list", "description" => "Consulta compras registradas, recepción, estado de pago y trazabilidad.", "order" => 1, "dom_id" => "menu-purchases-list", "dom_label" => "Listado", "dom_route" => "purchases.list.index"],
+            ["id" => 92, "section_id" => 9, "slug" => "sc_purchases-new", "name" => "purchases-new", "description" => "Registra una compra nueva con productos, costos, tributos, pagos y recepción.", "order" => 2, "dom_id" => "menu-purchases-new", "dom_label" => "Nuevo", "dom_route" => "purchases.new.index"],
+            ["id" => 91, "section_id" => 9, "slug" => "sc_purchases-suppliers", "name" => "purchases-suppliers", "description" => "Administra proveedores y sus datos comerciales.", "order" => 3, "dom_id" => "menu-purchases-suppliers", "dom_label" => "Proveedores", "dom_route" => "suppliers.index"],
 
             // Customers
             ["id" => 40, "section_id" => 4, "slug" => "sc_customers", "name" => "customers", "description" => "Administra los datos y el estado de los clientes.", "order" => 1, "dom_id" => "menu-customers", "dom_label" => "Clientes", "dom_route" => "customers.index"],
@@ -97,7 +98,8 @@ return new class extends Migration {
             ["id" => 54, "section_id" => 11, "slug" => "sc_inventory-stock", "name" => "inventory-stock", "description" => "Consulta existencias actuales, mínimos y alertas por almacén.", "order" => 1, "dom_id" => "menu-inventory-stock", "dom_label" => "Control de stock", "dom_route" => "stocks_management.stock.index"],
             ["id" => 56, "section_id" => 11, "slug" => "sc_inventory-kardex", "name" => "inventory-kardex", "description" => "Consulta la trazabilidad de entradas, salidas, correcciones y saldos resultantes.", "order" => 2, "dom_id" => "menu-inventory-kardex", "dom_label" => "Kardex", "dom_route" => "stocks_management.kardex.index"],
             ["id" => 57, "section_id" => 11, "slug" => "sc_inventory-transfers", "name" => "inventory-transfers", "description" => "Registra y consulta traslados de productos entre almacenes.", "order" => 3, "dom_id" => "menu-inventory-transfers", "dom_label" => "Traslados", "dom_route" => "stocks_management.transfers.index"],
-            ["id" => 58, "section_id" => 11, "slug" => "sc_inventory-valued", "name" => "inventory-valued", "description" => "Consulta el kardex valorizado con costo unitario, valor de movimiento y saldo valorizado.", "order" => 4, "dom_id" => "menu-inventory-valued", "dom_label" => "Kardex valorizado", "dom_route" => "stocks_management.valued.index"],
+            ["id" => 107, "section_id" => 11, "slug" => "sc_inventory-guides", "name" => "inventory-guides", "description" => "Consulta guías numeradas de entrada y salida con estado, almacén y detalle.", "order" => 4, "dom_id" => "menu-inventory-guides", "dom_label" => "Guías", "dom_route" => "stocks_management.guides.index"],
+            ["id" => 58, "section_id" => 11, "slug" => "sc_inventory-valued", "name" => "inventory-valued", "description" => "Consulta el kardex valorizado con costo unitario, valor de movimiento y saldo valorizado.", "order" => 5, "dom_id" => "menu-inventory-valued", "dom_label" => "Kardex valorizado", "dom_route" => "stocks_management.valued.index"],
 
             // Cash registers
             ["id" => 100, "section_id" => 10, "slug" => "sc_cash-registers", "name" => "cash-registers", "description" => "Gestiona cajas configuradas por sucursal y su estado operativo.", "order" => 2, "dom_id" => "menu-cash-registers", "dom_label" => "Cajas", "dom_route" => "cash_registers.registers.index"],
@@ -130,6 +132,7 @@ return new class extends Migration {
             ["company_id" => 1, "sub_section_id" => 31],
             ["company_id" => 1, "sub_section_id" => 32],
             ["company_id" => 1, "sub_section_id" => 90],
+            ["company_id" => 1, "sub_section_id" => 92],
             ["company_id" => 1, "sub_section_id" => 91],
             ["company_id" => 1, "sub_section_id" => 40],
             ["company_id" => 1, "sub_section_id" => 41],
@@ -146,6 +149,7 @@ return new class extends Migration {
             ["company_id" => 1, "sub_section_id" => 54],
             ["company_id" => 1, "sub_section_id" => 56],
             ["company_id" => 1, "sub_section_id" => 57],
+            ["company_id" => 1, "sub_section_id" => 107],
             ["company_id" => 1, "sub_section_id" => 58],
             ["company_id" => 1, "sub_section_id" => 100],
             ["company_id" => 1, "sub_section_id" => 101],
@@ -169,10 +173,10 @@ return new class extends Migration {
         DB::table("companies_sub_sections")->where("company_id", 1)->whereIn("sub_section_id", [20])->update(["section_order" => 2]);
         DB::table("companies_sub_sections")->where("company_id", 1)->whereIn("sub_section_id", [32, 100, 101, 102, 103, 104, 105, 106])->update(["section_order" => 3]);
         DB::table("companies_sub_sections")->where("company_id", 1)->whereIn("sub_section_id", [30, 31])->update(["section_order" => 4]);
-        DB::table("companies_sub_sections")->where("company_id", 1)->whereIn("sub_section_id", [90, 91])->update(["section_order" => 5]);
+        DB::table("companies_sub_sections")->where("company_id", 1)->whereIn("sub_section_id", [90, 92, 91])->update(["section_order" => 5]);
         DB::table("companies_sub_sections")->where("company_id", 1)->whereIn("sub_section_id", [40, 41, 42, 43, 44, 45])->update(["section_order" => 6]);
         DB::table("companies_sub_sections")->where("company_id", 1)->whereIn("sub_section_id", [50, 51, 52, 53, 55, 59])->update(["section_order" => 7]);
-        DB::table("companies_sub_sections")->where("company_id", 1)->whereIn("sub_section_id", [54, 56, 57, 58])->update(["section_order" => 8]);
+        DB::table("companies_sub_sections")->where("company_id", 1)->whereIn("sub_section_id", [54, 56, 57, 107, 58])->update(["section_order" => 8]);
         DB::table("companies_sub_sections")->where("company_id", 1)->whereIn("sub_section_id", [60, 61, 62, 63])->update(["section_order" => 9]);
         DB::table("companies_sub_sections")->where("company_id", 1)->whereIn("sub_section_id", [70, 71, 72])->update(["section_order" => 10]);
         DB::table("companies_sub_sections")->where("company_id", 1)->whereIn("sub_section_id", [80])->update(["section_order" => 11]);
@@ -191,7 +195,8 @@ return new class extends Migration {
             30 => 1,
             31 => 2,
             90 => 1,
-            91 => 2,
+            92 => 2,
+            91 => 3,
             40 => 1,
             41 => 2,
             42 => 3,
@@ -207,7 +212,8 @@ return new class extends Migration {
             54 => 1,
             56 => 2,
             57 => 3,
-            58 => 4,
+            107 => 4,
+            58 => 5,
             60 => 1,
             61 => 2,
             62 => 3,
@@ -237,6 +243,8 @@ return new class extends Migration {
             ["company_id" => 1, "role_id" => 2, "sub_section_id" => 30],
             ["company_id" => 1, "role_id" => 2, "sub_section_id" => 31],
             ["company_id" => 1, "role_id" => 2, "sub_section_id" => 32],
+            ["company_id" => 1, "role_id" => 2, "sub_section_id" => 90],
+            ["company_id" => 1, "role_id" => 2, "sub_section_id" => 92],
             ["company_id" => 1, "role_id" => 2, "sub_section_id" => 40],
             ["company_id" => 1, "role_id" => 2, "sub_section_id" => 50],
             ["company_id" => 1, "role_id" => 2, "sub_section_id" => 51],
@@ -247,6 +255,7 @@ return new class extends Migration {
             ["company_id" => 1, "role_id" => 2, "sub_section_id" => 54],
             ["company_id" => 1, "role_id" => 2, "sub_section_id" => 56],
             ["company_id" => 1, "role_id" => 2, "sub_section_id" => 57],
+            ["company_id" => 1, "role_id" => 2, "sub_section_id" => 107],
             ["company_id" => 1, "role_id" => 2, "sub_section_id" => 58],
             ["company_id" => 1, "role_id" => 2, "sub_section_id" => 100],
             ["company_id" => 1, "role_id" => 2, "sub_section_id" => 101],

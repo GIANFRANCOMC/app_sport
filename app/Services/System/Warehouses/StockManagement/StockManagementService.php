@@ -47,6 +47,58 @@ class StockManagementService {
 
     }
 
+    public static function getConsolidatedStock(
+        int $companyId,
+        string $search = "",
+        ?array $allowedWarehouseIds = null
+    ): Collection {
+
+        return Item::query()
+            ->where("company_id", $companyId)
+            ->where("type", "product")
+            ->with([
+                "warehouseItems" => function($query) use($allowedWarehouseIds) {
+                    $query->with(["warehouse.branch:id,name"]);
+
+                    if($allowedWarehouseIds !== null) {
+                        $query->whereIn("warehouse_id", $allowedWarehouseIds);
+                    }
+                }
+            ])
+            ->when(trim($search) !== "", function($query) use($search) {
+                $query->where(function($query) use($search) {
+                    $query->where("name", "like", "%{$search}%")
+                        ->orWhere("internal_code", "like", "%{$search}%")
+                        ->orWhere("barcode", "like", "%{$search}%");
+                });
+            })
+            ->orderBy("name")
+            ->get()
+            ->map(function(Item $item) {
+                $warehouses = $item->warehouseItems->map(function(WarehouseItem $warehouseItem) {
+                    $quantity = (float) ($warehouseItem->quantity ?? 0);
+                    $minimum = (float) ($warehouseItem->minimum_stock ?? 0);
+
+                    return [
+                        "warehouse_id" => (int) $warehouseItem->warehouse_id,
+                        "warehouse_name" => $warehouseItem->warehouse?->name,
+                        "branch_name" => $warehouseItem->warehouse?->branch?->name,
+                        "quantity" => $quantity,
+                        "minimum_stock" => $minimum,
+                        "requires_attention" => $quantity <= $minimum
+                    ];
+                })->values();
+
+                $item->setAttribute("stock_quantity", round((float) $warehouses->sum("quantity"), 4));
+                $item->setAttribute("minimum_stock", round((float) $warehouses->sum("minimum_stock"), 4));
+                $item->setAttribute("warehouse_breakdown", $warehouses);
+                $item->setAttribute("alert_warehouses_count", $warehouses->where("requires_attention", true)->count());
+
+                return $item;
+            });
+
+    }
+
     private static function stockQuery(
         int $companyId,
         int $warehouseId,

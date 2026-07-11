@@ -96,6 +96,7 @@
                             v-if="activeView === 'stock'"
                             type="button"
                             class="br-btn br-btn-sm br-btn-primary br-inventory__register-action"
+                            :disabled="isConsolidatedStock"
                             data-bs-toggle="modal"
                             data-bs-target="#inventoryMovementModal"
                             title="Registrar una operación para uno o varios productos"
@@ -156,12 +157,13 @@
                                 <th>Producto</th>
                                 <th class="text-end">Stock actual</th>
                                 <th class="text-end">Stock mínimo</th>
+                                <th v-if="isConsolidatedStock">Almacenes</th>
                                 <th>Situación</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr v-if="loadingStock">
-                                <td colspan="4" class="text-center py-4"><Loader/></td>
+                                <td :colspan="isConsolidatedStock ? 5 : 4" class="text-center py-4"><Loader/></td>
                             </tr>
                             <template v-else-if="stockRecords.total > 0">
                                 <tr
@@ -183,6 +185,20 @@
                                     </td>
                                     <td class="text-end"><strong>{{ separatorNumber(record.stock_quantity) }}</strong></td>
                                     <td class="text-end">{{ separatorNumber(record.minimum_stock) }}</td>
+                                    <td v-if="isConsolidatedStock">
+                                        <div class="br-inventory-warehouses">
+                                            <span
+                                                v-for="warehouse in (record.warehouse_breakdown || []).slice(0, 3)"
+                                                :key="`${record.id}-${warehouse.warehouse_id}`"
+                                                :class="['br-inventory-warehouse-pill', {'is-alert': warehouse.requires_attention}]">
+                                                {{ warehouse.branch_name }} / {{ warehouse.warehouse_name }}:
+                                                <strong>{{ separatorNumber(warehouse.quantity) }}</strong>
+                                            </span>
+                                            <span v-if="(record.warehouse_breakdown || []).length > 3" class="br-inventory-warehouse-pill is-muted">
+                                                +{{ record.warehouse_breakdown.length - 3 }} más
+                                            </span>
+                                        </div>
+                                    </td>
                                     <td>
                                         <span :class="['br-inventory-status', stockStatus(record).className]">
                                             <i :class="stockStatus(record).icon" aria-hidden="true"></i>
@@ -192,13 +208,17 @@
                                 </tr>
                             </template>
                             <tr v-else>
-                                <td colspan="4"><WithoutData type="image"/></td>
+                                <td :colspan="isConsolidatedStock ? 5 : 4"><WithoutData type="image"/></td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
 
                 <div v-else-if="['kardex', 'valued'].includes(activeView)" class="br-inventory__kardex">
+                    <p v-if="activeView === 'valued'" class="br-inventory-help">
+                        <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
+                        El costo unitario se registra en cada entrada. Si se omite, el sistema conserva el costo promedio ponderado del almacén.
+                    </p>
                     <div class="br-inventory__kardex-filters br-inventory__secondary-filters">
                         <div>
                             <label for="movementType" class="form-label">Movimiento</label>
@@ -498,10 +518,96 @@
                     </div>
                 </div>
 
+                <div v-else-if="activeView === 'guides'" class="br-inventory__kardex">
+                    <div class="br-inventory__kardex-filters br-inventory__secondary-filters">
+                        <div>
+                            <label for="guideType" class="form-label">Tipo de guía</label>
+                            <v-select
+                                id="guideType"
+                                v-model="filters.guideType"
+                                :options="guideTypes"
+                                :class="config.forms.classes.select2"
+                                :clearable="false"
+                                :searchable="false"/>
+                        </div>
+                        <div>
+                            <label for="guideDateFrom" class="form-label">Desde</label>
+                            <input id="guideDateFrom" v-model="filters.dateFrom" type="date" class="form-control">
+                        </div>
+                        <div>
+                            <label for="guideDateTo" class="form-label">Hasta</label>
+                            <input id="guideDateTo" v-model="filters.dateTo" type="date" class="form-control">
+                        </div>
+                        <button
+                            type="button"
+                            class="br-btn br-btn-action-search"
+                            :disabled="loadingGuides"
+                            @click="listGuides({})">
+                            <i class="fa-solid fa-filter" aria-hidden="true"></i>
+                            <span>Aplicar filtros</span>
+                        </button>
+                    </div>
+
+                    <div class="table-responsive br-inventory__table-wrap">
+                        <table class="table br-entity-table br-inventory__kardex-table mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Número y fecha</th>
+                                    <th>Almacén</th>
+                                    <th>Tipo</th>
+                                    <th>Detalle</th>
+                                    <th>Referencia</th>
+                                    <th>Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-if="loadingGuides">
+                                    <td colspan="6" class="text-center py-4"><Loader/></td>
+                                </tr>
+                                <template v-else-if="guideRecords.total > 0">
+                                    <tr v-for="guide in guideRecords.data" :key="`guide-${guide.id}`">
+                                        <td>
+                                            <strong>{{ guide.number }}</strong>
+                                            <span class="br-inventory__meta">{{ formatSimpleDate(guide.issue_date) }}</span>
+                                        </td>
+                                        <td>
+                                            <strong>{{ guide.warehouse?.name }}</strong>
+                                            <span class="br-inventory__meta">{{ guide.warehouse?.branch?.name }}</span>
+                                        </td>
+                                        <td>
+                                            <span :class="['br-inventory-movement', guide.guide_type === 'entry' ? 'is-entry' : 'is-exit']">
+                                                {{ guide.guide_type === "entry" ? "Entrada" : "Salida" }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <strong>{{ (guide.items || []).length }} producto{{ (guide.items || []).length === 1 ? "" : "s" }}</strong>
+                                            <span class="br-inventory__meta">
+                                                {{ (guide.items || []).slice(0, 2).map(item => item.item?.name).join(", ") }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <strong>{{ guide.reference || "-" }}</strong>
+                                            <span class="br-inventory__meta">{{ guide.reason }}</span>
+                                        </td>
+                                        <td>
+                                            <span class="br-status-label br-status-active">
+                                                {{ guide.status === "confirmed" ? "Confirmada" : guide.status }}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                </template>
+                                <tr v-else>
+                                    <td colspan="6"><WithoutData type="image"/></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
             </section>
 
             <div
-                v-if="['stock', 'kardex', 'transfers', 'valued'].includes(activeView) && currentRecords.links"
+                v-if="['stock', 'kardex', 'transfers', 'valued', 'guides'].includes(activeView) && currentRecords.links"
                 class="d-flex justify-content-center mt-3">
                 <Paginator :links="currentRecords.links" @clickPage="listCurrentView"/>
             </div>
@@ -700,6 +806,13 @@ const VIEWS = [
         description: "Costos y valoración",
         longDescription: "Consulta cantidades y valores según el método contable configurado.",
         icon: "fa-solid fa-calculator"
+    },
+    {
+        code: "guides",
+        title: "Guías",
+        description: "Entradas y salidas",
+        longDescription: "Consulta guías numeradas con estado, almacén y productos asociados.",
+        icon: "fa-solid fa-clipboard-list"
     }
 ];
 
@@ -707,14 +820,16 @@ const ROUTE_VIEW_MAP = {
     stock: "stock",
     kardex: "kardex",
     transfers: "transfers",
-    valued: "valued"
+    valued: "valued",
+    guides: "guides"
 };
 
 const VIEW_MENU_MAP = {
     stock: "menu-inventory-stock",
     kardex: "menu-inventory-kardex",
     transfers: "menu-inventory-transfers",
-    valued: "menu-inventory-valued"
+    valued: "menu-inventory-valued",
+    guides: "menu-inventory-guides"
 };
 
 const MOVEMENT_TYPES = [
@@ -722,6 +837,12 @@ const MOVEMENT_TYPES = [
     {code: "entry", label: "Entrada"},
     {code: "exit", label: "Salida"},
     {code: "correction", label: "Corrección"}
+];
+
+const GUIDE_TYPES = [
+    {code: "", label: "Todas las guías"},
+    {code: "entry", label: "Entrada"},
+    {code: "exit", label: "Salida"}
 ];
 
 const INVENTORY_OPERATIONS = [
@@ -743,7 +864,9 @@ export default {
         Alerts.swals({show: false});
 
         if(initialized && this.warehouses.length) {
-            this.filters.warehouse = this.warehouses[0];
+            this.filters.warehouse = this.activeView === "stock"
+                ? this.warehouses[0]
+                : (this.realWarehouses[0] || this.warehouses[0]);
         }
     },
     data() {
@@ -753,6 +876,7 @@ export default {
             loadingStock: false,
             loadingKardex: false,
             loadingAlerts: false,
+            loadingGuides: false,
             savingMovement: false,
             savingTransfer: false,
             exporting: false,
@@ -760,10 +884,12 @@ export default {
             stockRecords: {total: 0, data: []},
             stockAlerts: {total: 0, data: []},
             kardexRecords: {total: 0, data: []},
+            guideRecords: {total: 0, data: []},
             filters: {
                 warehouse: null,
                 productSearch: "",
                 movementType: MOVEMENT_TYPES[0],
+                guideType: GUIDE_TYPES[0],
                 dateFrom: "",
                 dateTo: ""
             },
@@ -825,15 +951,24 @@ export default {
             if(!this.filters.warehouse?.code) return;
             this.loadingStock = true;
             const result = await Requests.get({
-                route: url || Requests.config({entity: "stocks_management", type: "list"}),
+                route: url || Requests.config({
+                    entity: "stocks_management",
+                    type: this.isConsolidatedStock ? "summary" : "list"
+                }),
                 data: {
                     warehouse_id: this.filters.warehouse.code,
                     product_search: this.filters.productSearch
                 }
             });
-            this.stockRecords = result?.data || {total: 0, data: []};
+            this.stockRecords = this.isConsolidatedStock
+                ? {total: result?.data?.data?.length || 0, data: result?.data?.data || [], links: null}
+                : (result?.data || {total: 0, data: []});
             this.loadingStock = false;
-            this.listStockAlerts({});
+            if(this.isConsolidatedStock) {
+                this.stockAlerts = {total: 0, data: []};
+            }else {
+                this.listStockAlerts({});
+            }
         },
         async listStockAlerts({url = null} = {}) {
             if(!this.filters.warehouse?.code) return;
@@ -858,6 +993,21 @@ export default {
             this.kardexRecords = result?.data || {total: 0, data: []};
             this.loadingKardex = false;
         },
+        async listGuides({url = null} = {}) {
+            if(!this.filters.warehouse?.code) return;
+            this.loadingGuides = true;
+            const result = await Requests.get({
+                route: url || Requests.config({entity: "stocks_management", type: "guides"}),
+                data: {
+                    warehouse_id: this.isConsolidatedStock ? "" : this.filters.warehouse?.code,
+                    guide_type: this.filters.guideType?.code || "",
+                    date_from: this.filters.dateFrom,
+                    date_to: this.filters.dateTo
+                }
+            });
+            this.guideRecords = result?.data || {total: 0, data: []};
+            this.loadingGuides = false;
+        },
         changeView(view) {
             this.activeView = view;
             Utils.navbarItem(this.activeMenuId(), {});
@@ -865,6 +1015,10 @@ export default {
 
             if(["kardex", "valued", "transfers"].includes(view) && !this.kardexRecords.data.length) {
                 this.listKardex({});
+            }
+
+            if(view === "guides" && !this.guideRecords.data.length) {
+                this.listGuides({});
             }
 
             if(view === "transfers" && !this.transferForm.destination) {
@@ -921,6 +1075,7 @@ export default {
         listCurrentView({url = null} = {}) {
             if(this.activeView === "stock") return this.listStock({url});
             if(["kardex", "transfers", "valued"].includes(this.activeView)) return this.listKardex({url});
+            if(this.activeView === "guides") return this.listGuides({url});
             return Promise.resolve();
         },
         currentReportFilters() {
@@ -935,6 +1090,10 @@ export default {
             if(this.activeView === "transfers") {
                 filters.origin_types = ["transfer_out", "transfer_in"];
                 filters.movement_type = "";
+            }
+
+            if(this.activeView === "guides") {
+                filters.guide_type = this.filters.guideType?.code || "";
             }
 
             return filters;
@@ -1121,6 +1280,11 @@ export default {
             if(!value) return "";
             return new Intl.DateTimeFormat("es-PE", {dateStyle: "short", timeStyle: "short"}).format(new Date(value));
         },
+        formatSimpleDate(value) {
+            if(!value) return "";
+            const normalized = typeof value === "string" && value.length <= 10 ? `${value}T00:00:00` : value;
+            return new Intl.DateTimeFormat("es-PE").format(new Date(normalized));
+        },
         signedNumber(value) {
             const number = Number(value || 0);
             return `${number > 0 ? "+" : ""}${this.separatorNumber(number)}`;
@@ -1155,13 +1319,18 @@ export default {
             return this.views.find(view => view.code === this.activeView) || this.views[0];
         },
         warehouses() {
-            return (this.options.warehouses || []).map(record => ({
+            return [
+                {code: "all", label: "Todos los almacenes"}
+            ].concat((this.options.warehouses || []).map(record => ({
                 code: record.id,
                 label: `${record.branch?.name ? `${record.branch.name} - ` : ""}${record.name}`
-            }));
+            })));
         },
         destinationWarehouses() {
-            return this.warehouses.filter(warehouse => Number(warehouse.code) !== Number(this.filters.warehouse?.code));
+            return this.realWarehouses.filter(warehouse => Number(warehouse.code) !== Number(this.filters.warehouse?.code));
+        },
+        realWarehouses() {
+            return this.warehouses.filter(warehouse => warehouse.code !== "all");
         },
         products() {
             return (this.options.products || []).map(product => ({
@@ -1175,6 +1344,9 @@ export default {
         movementTypes() {
             return MOVEMENT_TYPES;
         },
+        guideTypes() {
+            return GUIDE_TYPES;
+        },
         inventoryOperations() {
             return INVENTORY_OPERATIONS;
         },
@@ -1184,13 +1356,22 @@ export default {
                 : "quantity";
         },
         currentRecords() {
-            return this.activeView === "stock" ? this.stockRecords : this.kardexRecords;
+            if(this.activeView === "stock") return this.stockRecords;
+            if(this.activeView === "guides") return this.guideRecords;
+
+            return this.kardexRecords;
         },
         openStockAlerts() {
             return this.stockAlerts?.data || [];
         },
         isCurrentViewLoading() {
-            return this.activeView === "stock" ? this.loadingStock : this.loadingKardex;
+            if(this.activeView === "stock") return this.loadingStock;
+            if(this.activeView === "guides") return this.loadingGuides;
+
+            return this.loadingKardex;
+        },
+        isConsolidatedStock() {
+            return this.filters.warehouse?.code === "all";
         }
     },
     watch: {
@@ -1198,6 +1379,7 @@ export default {
             if(!value?.code) return;
             this.stockRecords = {total: 0, data: []};
             this.kardexRecords = {total: 0, data: []};
+            this.guideRecords = {total: 0, data: []};
             this.listCurrentView({});
             this.transferForm.destination = this.destinationWarehouses[0] ?? null;
         }

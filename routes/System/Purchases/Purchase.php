@@ -6,6 +6,8 @@ use Illuminate\Support\Facades\Route;
 $entity = "purchases";
 
 Route::get("", [PurchaseController::class, "index"])->name("$entity.index");
+Route::get("/page/list", [PurchaseController::class, "index"])->name("$entity.list.index");
+Route::get("/page/new", [PurchaseController::class, "index"])->name("$entity.new.index");
 Route::get("/initParams", [PurchaseController::class, "initParams"])->name("$entity.initParams");
 Route::get("/list", [PurchaseController::class, "list"])->name("$entity.list");
 Route::get("/export", [PurchaseController::class, "export"])->name("$entity.export");

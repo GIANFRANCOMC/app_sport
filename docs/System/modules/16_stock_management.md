@@ -75,17 +75,19 @@ La toma física usa el origen `physical_count`, separado de entradas y salidas m
   - **Control de stock**: existencias actuales, mínimos y alertas.
   - **Kardex**: historial completo y trazabilidad.
   - **Traslados**: movimientos multiproducto entre almacenes.
+  - **Guías**: entradas y salidas numeradas, con estado y detalle de productos.
   - **Kardex valorizado**: costo unitario, valor del movimiento y valor resultante por almacén.
 - Las pestañas reutilizan la estructura visual de Productos: título, descripción breve y estado activo discreto, sin tarjeta exterior.
 - No se repite un encabezado dentro de cada pestaña. El título y la descripción viven únicamente en la navegación.
-- La cabecera `Inventario` expone accesos independientes para perfiles: `Control de stock`, `Kardex`, `Traslados` y `Kardex valorizado`. Todos reutilizan el mismo componente, pero cada ruta abre su vista inicial correspondiente.
+- La cabecera `Inventario` expone accesos independientes para perfiles: `Control de stock`, `Kardex`, `Traslados`, `Guías` y `Kardex valorizado`. Todos reutilizan el mismo componente, pero cada ruta abre su vista inicial correspondiente.
 - La barra de búsqueda y acciones reutiliza la estructura `br-filter-bar` usada por Productos: mismas alturas, etiquetas, espaciados y botones compactos.
 - El buscador principal y **Registrar operación** solo aparecen en **Control de stock**. Kardex y Kardex valorizado conservan sus filtros propios; Traslados usa su formulario especializado.
 - Las tablas usan una sola superficie delimitada, sin contenedores exteriores adicionales.
-- **Control de stock** muestra saldo actual, stock mínimo y situación por producto.
+- **Control de stock** muestra saldo actual, stock mínimo y situación por producto. También permite seleccionar **Todos los almacenes** para una vista consolidada por empresa, con desglose por almacén y contador de almacenes que requieren atención.
 - **Registrar operación** es una acción general del control de stock; no se repite por fila para evitar duplicidad visual. Abre un formulario para uno o hasta 100 productos e incluye entrada, salida, toma física, reposición, devolución de cliente y devolución a proveedor.
 - **Kardex** muestra fecha, usuario, producto, tipo, variación, saldo anterior/resultante, motivo y origen.
 - **Traslados** mueve uno o varios productos entre almacenes de la misma empresa mediante salidas y entradas atómicas.
+- **Guías** lista documentos de entrada/salida con número, fecha, almacén, productos, referencia, motivo y estado.
 - **Kardex valorizado** reutiliza filtros, búsqueda y paginación del Kardex operativo.
 - El almacén seleccionado limita tanto existencias como kardex.
 - Los selectores muestran sucursal y almacén porque una sucursal puede administrar varios almacenes.
@@ -114,9 +116,10 @@ La toma física usa el origen `physical_count`, separado de entradas y salidas m
 ## Exportación
 
 - Todas las pestañas permiten descargar un Excel con los filtros visibles.
-- **Control de stock** exporta código interno, código de barras, producto, stock actual, stock mínimo y situación.
+- **Control de stock** exporta código interno, código de barras, producto, stock actual, stock mínimo, almacenes, cantidad de almacenes con alerta y situación.
 - **Kardex** exporta fecha, almacén, identificación, producto, movimiento, origen, saldos, motivo, referencia y responsable.
 - **Traslados** exporta los movimientos `transfer_in` y `transfer_out` del almacén seleccionado.
+- **Guías** exporta número, fecha, almacén, sucursal, tipo, productos, referencia, motivo, estado y responsable.
 - La exportación usa las mismas consultas de la pantalla sin paginación, evitando diferencias entre listado y reporte.
 - Códigos internos y códigos de barras se escriben como texto para impedir notación científica o pérdida de ceros.
 - Las existencias bajo el mínimo se resaltan suavemente en el Excel.
@@ -134,6 +137,14 @@ La toma física usa el origen `physical_count`, separado de entradas y salidas m
 - Las entradas manuales y reposiciones aceptan costo unitario opcional; si se omite, conservan el promedio actual.
 - Nunca usa el precio de venta como costo.
 - La pestaña y su Excel están activas y usan los mismos filtros del Kardex.
+- La vista muestra una ayuda compacta: `unit_cost` es el costo usado para valorizar el movimiento, y si una entrada manual no lo informa se conserva el promedio ponderado vigente del almacén.
+
+## Guías de entrada y salida
+
+- `stocks_management.guides.index` es una página independiente dentro de Inventario y puede habilitarse por perfil.
+- Permite filtrar por almacén, tipo de guía, rango de fechas y producto.
+- Las guías se consultan con su numeración, estado, detalle de productos, referencia, motivo y responsable.
+- Su Excel usa el mismo alcance operativo que la vista; si el usuario solo tiene acceso a ciertos almacenes, no exporta información fuera de ese alcance.
 
 ## Traslados entre almacenes
 

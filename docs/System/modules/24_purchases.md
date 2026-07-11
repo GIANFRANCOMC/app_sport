@@ -43,7 +43,9 @@ El método inicial es promedio ponderado por producto y almacén. Los impuestos 
 
 ## Interfaz
 
+- Compras tiene accesos dedicados para **Listado** y **Nuevo**. Ambos reutilizan la misma página Vue, pero el modo inicial se resuelve por la ruta para reducir clics y separar mentalmente consulta vs registro.
 - El listado permite buscar por proveedor, documento o producto y filtrar por estado.
+- El modo **Nuevo** abre el flujo de registro con proveedor, almacén, productos, tributos, pagos y recepción. La modal existente se conserva como contenedor de captura para no duplicar reglas ni validaciones.
 - La modal de nueva compra expone `Entrega`: **Entrega inmediata** envía `delivery_mode = immediate` y **Recepción pendiente** envía `delivery_mode = pending`.
 - La recepción muestra únicamente cantidades pendientes.
 - El progreso diferencia pendiente, parcial, recibido y anulado.

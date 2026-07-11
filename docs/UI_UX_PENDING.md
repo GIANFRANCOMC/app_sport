@@ -30,15 +30,6 @@ Cuando una pantalla queda implementada, responsive, accesible, con errores por c
 - Libro de reclamaciones: CAPTCHA, consulta por código, carga múltiple y respuesta pública clara.
 - Asistencia pública: enlaces firmados, sucursal, estado del registro y respuestas antiabuso sin detalles internos.
 
-## Inventario y Compras
-
-- Control de stock: vista consolidada entre almacenes y navegación rápida a alertas entre múltiples almacenes.
-- Kardex: filtros avanzados, exportación, valorización y ayuda sobre costo unitario/promedio.
-- Traslados: pulir UX multiproducto con origen/destino, responsable y trazabilidad.
-- Guías: pantallas de entrada/salida con numeración, estado y detalle.
-- Compras: vistas dedicadas para Nuevo y Listado; la modal actual ya envía `delivery_mode`, pero falta convertir el flujo a páginas completas.
-- Proveedores: contactos, cuentas bancarias, condiciones, historial y desempeño.
-
 ## Reportes
 
 - Mi empresa/Sucursales: separar configuración pública, fiscal y operativa.

@@ -3,21 +3,37 @@
 
     <main class="br-entity br-purchases">
         <section class="br-entity-modebar">
-            <button type="button" class="br-entity-modebar__item is-active">
+            <button
+                type="button"
+                :class="['br-entity-modebar__item', {'is-active': activeMode === 'list'}]"
+                @click="changeMode('list')">
                 <i class="fa-solid fa-list" aria-hidden="true"></i>
                 <span>Listado</span>
             </button>
             <button
                 type="button"
-                class="br-entity-modebar__item"
-                data-bs-toggle="modal"
-                data-bs-target="#purchaseModal"
-                @click="preparePurchase">
+                :class="['br-entity-modebar__item', {'is-active': activeMode === 'new'}]"
+                @click="changeMode('new')">
                 <i class="fa-solid fa-plus" aria-hidden="true"></i>
                 <span>Nuevo</span>
             </button>
         </section>
-        <section class="br-filter-bar">
+        <section v-if="activeMode === 'new'" class="br-purchases__new-panel">
+            <div>
+                <strong>Nueva compra</strong>
+                <span>Registra proveedor, productos, impuestos, pagos y recepción en el mismo flujo.</span>
+            </div>
+            <button
+                type="button"
+                class="br-btn br-btn-action-create"
+                data-bs-toggle="modal"
+                data-bs-target="#purchaseModal"
+                @click="preparePurchase">
+                <i class="fa-solid fa-plus" aria-hidden="true"></i>
+                <span>Registrar compra</span>
+            </button>
+        </section>
+        <section v-if="activeMode === 'list'" class="br-filter-bar">
             <div class="row align-items-end g-2">
                 <InputText
                     v-model="filters.word"
@@ -65,7 +81,7 @@
             </div>
         </section>
 
-        <section class="br-entity-list">
+        <section v-if="activeMode === 'list'" class="br-entity-list">
             <div class="table-responsive">
                 <table class="table br-entity-table mb-0">
                     <thead class="br-table-header-surface">
@@ -420,15 +436,20 @@ import * as Utils from "@System/Helpers/Utils.js";
 
 export default {
     async mounted() {
+        this.activeMode = this.initialModeFromPath();
         Utils.navbarItem("menu-parent-purchases", {addClass: "open"});
-        Utils.navbarItem("menu-purchases-list", {});
+        Utils.navbarItem(this.activeMode === "new" ? "menu-purchases-new" : "menu-purchases-list", {});
         Alerts.swals({type: "initParams"});
         await this.initParams();
         Alerts.swals({show: false});
         await this.listPurchases({});
+        if(this.activeMode === "new") {
+            this.preparePurchase();
+        }
     },
     data() {
         return {
+            activeMode: "list",
             loading: false,
             saving: false,
             loadingReceipt: false,
@@ -462,6 +483,15 @@ export default {
         };
     },
     methods: {
+        initialModeFromPath() {
+            const segment = window.location.pathname.split("?")[0].split("/").filter(Boolean).pop();
+
+            return segment === "new" ? "new" : "list";
+        },
+        changeMode(mode) {
+            this.activeMode = mode;
+            if(mode === "new") this.preparePurchase();
+        },
         taxLabel(tax = {}) {
 
             const name = tax?.name || "IGV";
