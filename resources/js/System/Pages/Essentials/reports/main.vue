@@ -2,43 +2,39 @@
     <Breadcrumb :list="breadcrumbTitles"/>
 
     <section class="br-reports">
-        <section class="br-filter-bar br-reports__parameters">
-            <div class="row align-items-end g-2">
-                <InputSlot
-                    hasDiv
-                    title="Reporte"
-                    :titleClass="[config.forms.classes.title]"
-                    isRequired
-                    xl="4"
-                    lg="5">
-                    <template #input>
-                        <v-select
-                            v-model="forms.entity.createUpdate.data.report"
-                            :options="reports"
-                            :class="config.forms.classes.select2"
-                            :clearable="false"
-                            :searchable="false"
-                            append-to-body/>
-                    </template>
-                </InputSlot>
-
+        <FiltersSection
+            class="br-reports__parameters"
+            :filter-by-value="forms.entity.createUpdate.data.report"
+            @update:filterByValue="changeReport"
+            :filter-word-value="quickSearch"
+            @update:filterWordValue="quickSearch = $event"
+            :filter-by-options="reports"
+            :search-placeholder="quickSearchPlaceholder"
+            :loading="isExporting"
+            filter-by-title="Reporte"
+            search-title="Búsqueda rápida"
+            :show-search-input="reportUsesQuickSearch"
+            :show-add-button="false"
+            :show-search-button="false"
+            :show-download-button="true"
+            :download-button-text="primaryActionLabel"
+            :download-button-tooltip="primaryActionTooltip"
+            :download-button-icon="primaryActionIcon"
+            :download-button-class="primaryActionClass"
+            :title-class="[config.forms.classes.title]"
+            :select-class="config.forms.classes.select2"
+            @download="exportReport({})">
+            <template #extraFilters>
                 <template v-if="selectedReportCode === 'customers'">
                     <InputText v-model="forms.entity.createUpdate.data.customers.document_number" hasDiv title="Número de documento" :titleClass="[config.forms.classes.title]" xl="3" lg="4"/>
-                    <InputText v-model="forms.entity.createUpdate.data.customers.name" hasDiv title="Nombre" :titleClass="[config.forms.classes.title]" xl="3" lg="4"/>
                 </template>
 
                 <template v-else-if="selectedReportCode === 'users'">
                     <InputText v-model="forms.entity.createUpdate.data.users.document_number" hasDiv title="Número de documento" :titleClass="[config.forms.classes.title]" xl="3" lg="4"/>
-                    <InputText v-model="forms.entity.createUpdate.data.users.name" hasDiv title="Nombre" :titleClass="[config.forms.classes.title]" xl="3" lg="4"/>
                 </template>
 
                 <template v-else-if="selectedReportCode === 'items'">
-                    <InputText v-model="forms.entity.createUpdate.data.items.name" hasDiv title="Nombre" :titleClass="[config.forms.classes.title]" xl="3" lg="4"/>
                     <InputText v-model="forms.entity.createUpdate.data.items.description" hasDiv title="Descripción" :titleClass="[config.forms.classes.title]" xl="3" lg="4"/>
-                </template>
-
-                <template v-else-if="selectedReportCode === 'branches'">
-                    <InputText v-model="forms.entity.createUpdate.data.branches.name" hasDiv title="Nombre" :titleClass="[config.forms.classes.title]" xl="3" lg="4"/>
                 </template>
 
                 <template v-else-if="selectedReportCode === 'sales'">
@@ -161,25 +157,8 @@
                         lg="4"/>
                 </template>
 
-                <InputSlot
-                    hasDiv
-                    :isInputGroup="false"
-                    :divInputClass="['br-filter-bar__actions']"
-                    xl="2"
-                    lg="3">
-                    <template #input>
-                        <button
-                            class="br-btn br-btn-sm br-btn-action-export"
-                            type="button"
-                            :disabled="isExporting"
-                            @click="exportReport({})">
-                            <i :class="primaryActionIcon" aria-hidden="true"></i>
-                            <span>{{ primaryActionLabel }}</span>
-                        </button>
-                    </template>
-                </InputSlot>
-            </div>
-        </section>
+            </template>
+        </FiltersSection>
 
         <section class="br-reports__help">
             <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
@@ -281,6 +260,7 @@ export default {
     data() {
         return {
             isExporting: false,
+            quickSearch: "",
             forms: {
                 entity: {
                     createUpdate: {
@@ -339,6 +319,13 @@ export default {
             this.forms.entity.createUpdate.data.settlements.scope = this.settlementScope[0];
             return true;
         },
+        changeReport(report) {
+            this.forms.entity.createUpdate.data.report = report;
+            this.quickSearch = "";
+            this.forms.entity.createUpdate.errors = {};
+            this.settlements.hasConsulted = false;
+            this.settlements.records = [];
+        },
         async exportReport({}) {
             if(this.isExporting) return;
 
@@ -383,6 +370,15 @@ export default {
         },
         reportPayload(report) {
             const form = Utils.cloneJson(this.forms.entity.createUpdate.data[report?.code] || {});
+            const quickSearch = this.quickSearch.trim();
+
+            if(quickSearch && ["customers", "users", "branches"].includes(report?.code)) {
+                form.name = quickSearch;
+            }
+
+            if(quickSearch && report?.code === "items") {
+                form.name = quickSearch;
+            }
 
             if(report?.code === "sales") {
                 form.type = form?.type?.code;
@@ -532,6 +528,29 @@ export default {
             return this.selectedReportCode === "settlements"
                 ? "fa-solid fa-chart-simple"
                 : "fa-solid fa-file-excel";
+        },
+        primaryActionTooltip() {
+            return this.selectedReportCode === "settlements"
+                ? "Consultar resumen financiero"
+                : "Exportar reporte";
+        },
+        primaryActionClass() {
+            return this.selectedReportCode === "settlements"
+                ? "br-btn-action-search"
+                : "br-btn-action-export";
+        },
+        quickSearchPlaceholder() {
+            return {
+                customers: "Buscar por nombre del cliente",
+                users: "Buscar por nombre del colaborador",
+                items: "Buscar por nombre del ítem",
+                branches: "Buscar por nombre de sucursal",
+                sales: "Usa el rango de fechas o meses",
+                settlements: "Usa alcance y fechas del resumen"
+            }[this.selectedReportCode] || "Buscar";
+        },
+        reportUsesQuickSearch() {
+            return ["customers", "users", "items", "branches"].includes(this.selectedReportCode);
         },
         selectedReportHelp() {
             return this.forms.entity.createUpdate.data.report?.help || "Selecciona un reporte y completa los parámetros necesarios.";

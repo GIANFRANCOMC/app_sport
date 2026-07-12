@@ -18,7 +18,7 @@
 6. Registro mínimo de IP/agente cuando exista obligación de trazabilidad.
 7. Respuesta sin IDs o secretos innecesarios.
 8. Documentación en `docs/Guest/modules`.
-9. Tarea visual, si existe, únicamente en `docs/UI_UX_PENDING.md`.
+9. Tarea visual, si existe, documentada en el módulo Guest afectado y alineada con `docs/GENERALIDADES.md`.
 
 ## Verificación mínima
 

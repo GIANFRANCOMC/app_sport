@@ -1,6 +1,6 @@
 # Convenciones Backend System
 
-Este archivo concentra reglas backend aplicables a controladores, requests y servicios de `System`. Si una regla visual queda pendiente, debe documentarse en `docs/UI_UX_PENDING.md`, no en este documento.
+Este archivo concentra reglas backend aplicables a controladores, requests y servicios de `System`. Las reglas visuales transversales viven en `docs/GENERALIDADES.md` y las mejoras puntuales se documentan en el módulo afectado.
 
 ## Flujo Base
 
@@ -51,5 +51,4 @@ Este archivo concentra reglas backend aplicables a controladores, requests y ser
 
 - Cada cambio backend debe actualizar el modulo en `docs/System/modules`.
 - Cambios transversales se documentan aqui, en `DEVELOPMENT_GUIDE.md` o `SECURITY_AND_AUTH.md` segun corresponda.
-- Pendientes visuales se colocan unicamente en `docs/UI_UX_PENDING.md`.
-
+- Las mejoras visuales implementadas se documentan en el módulo correspondiente; no mantener pendientes visuales globales fuera de `GENERALIDADES.md`.

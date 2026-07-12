@@ -25,11 +25,12 @@ Genera reportes y exportes de clientes, items, sucursales, ventas, usuarios y co
 - `reports.export_max_rows` rechaza exportaciones excesivas con un mensaje accionable.
 - Los archivos usan `gympe-{recurso}-{Ymd-His}.{extensión}`.
 - Ventas admite `by_month`, `range_months`, `by_date` y `range_dates`; clientes, usuarios, items y sucursales aceptan sus filtros documentados por endpoint.
-- La vista usa `br-filter-bar`, `v-select` estándar y componentes `InputText`, `InputDate` e `InputMonth` para mantener la misma estructura visual de los demás módulos.
+- La vista usa `FiltersSection` como barra principal: selector de reporte, búsqueda rápida, acción de exportar/consultar y filtros avanzados mediante slot, manteniendo la misma estructura visual de Productos y demás módulos migrados.
 - La exportación usa `Requests.download`, muestra Swal de carga y conserva el nombre de archivo entregado por el backend.
 - Las validaciones frontend muestran mensajes directos por parámetro requerido antes de consultar el backend.
 - Cada reporte muestra una ayuda breve para explicar qué se exportará y reducir errores de selección.
 - `Resumen financiero` consume `GET /reports/settlements` desde la vista de Reportes para consultar tributos o métodos de pago por ventas, compras o ambos, con rango de fechas opcional.
 - El resumen financiero se muestra en tabla dentro de la pantalla porque el endpoint entrega datos agregados JSON, no un archivo Excel.
+- La búsqueda rápida alimenta el campo principal del recurso: nombre de cliente, colaborador, ítem o sucursal. Los filtros avanzados conservan documento, descripción, rango de ventas o alcance financiero según corresponda.
 - El PDF obtiene la empresa actual, verifica alcance de sucursal, valida base64 estricto y admite la fecha de expiración completa.
 - Las pruebas PDF se añadirán cuando sean solicitadas expresamente.

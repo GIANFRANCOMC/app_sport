@@ -49,6 +49,6 @@ Route -> Middleware -> FormRequest -> Controller -> Service -> Model
 - Seguridad: `docs/System/SECURITY_AND_AUTH.md`
 - Multi-tenant: `docs/System/MULTITENANT.md`
 - Tablas: `docs/System/TABLES.md`
-- Pendientes de interfaz: `docs/UI_UX_PENDING.md`
+- Criterios visuales: `docs/GENERALIDADES.md` y documentación del módulo afectado.
 
 Las pruebas PHP se crean o ejecutan cuando el usuario las solicita expresamente. Las validaciones rutinarias de esta fase son sintaxis, carga de rutas y consistencia documental.

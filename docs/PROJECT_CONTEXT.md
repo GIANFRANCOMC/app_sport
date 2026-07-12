@@ -103,5 +103,5 @@ El sistema combina administracion interna y portal publico por empresa. Internam
 - Operaciones críticas conservan auditoría de negocio o trazabilidad propia.
 - Los servicios de escritura principales reciben empresa y usuario explícitos.
 - Los comandos tenant, instalación local y despliegue productivo están documentados.
-- Los trabajos exclusivamente visuales se concentran en `docs/UI_UX_PENDING.md`.
+- Los criterios visuales transversales viven en `docs/GENERALIDADES.md`; cada mejora visual implementada se documenta en su módulo.
 - Las pruebas PHP se agregan o ejecutan únicamente cuando el usuario las solicita para el flujo correspondiente.

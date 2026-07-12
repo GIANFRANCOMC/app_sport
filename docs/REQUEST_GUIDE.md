@@ -126,4 +126,4 @@ Si el cambio afecta UI, mencionar si debe respetar branding, componentes `br-*`,
 - **Compras:** proveedor, almacén, entrega inmediata/pendiente, tributos, pagos y recepciones.
 - **Catálogo:** tipo de ítem, publicación, precio, impuestos, inventario y relaciones comerciales.
 
-Los ejemplos deben usar módulos y rutas vigentes; una propuesta visual se registra en `UI_UX_PENDING.md` y una regla backend en el módulo afectado.
+Los ejemplos deben usar módulos y rutas vigentes; una propuesta visual o backend se documenta en el módulo afectado cuando queda implementada.

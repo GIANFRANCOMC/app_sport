@@ -17,6 +17,7 @@ import Paginator    from "@System/Components/Paginator.vue";
 import Loader       from "@System/Components/Loader.vue";
 import WithoutData  from "@System/Components/WithoutData.vue";
 import StatusBadge  from "@System/Components/Generics/StatusBadge.vue";
+import FiltersSection from "@System/Components/Generics/FiltersSection.vue";
 
 // App creation and mounted
 createApp(App)
@@ -33,4 +34,5 @@ createApp(App)
 .component("Loader", Loader)
 .component("WithoutData", WithoutData)
 .component("StatusBadge", StatusBadge)
+.component("FiltersSection", FiltersSection)
 .mount("#app");

@@ -201,7 +201,7 @@ Formato recomendado por módulo:
 
 ## Criterios Transversales Vigentes
 
-Los pendientes exclusivamente visuales se administran en `docs/UI_UX_PENDING.md` y no deben duplicarse en `new_requirements` ni en los módulos.
+Las reglas visuales transversales se administran en este archivo. Las mejoras puntuales de una pantalla se documentan en el módulo correspondiente al implementarse.
 
 - Las migraciones se separan por dependencia y dominio cuando ello conserva un `migrate:fresh` determinista; no se crean migraciones correctivas si la base puede editarse directamente.
 - Los servicios de escritura, configuración y referencias reciben `companyId` y `userId` explícitos. Los observers de auditoría pueden obtener el actor desde el request de frontera, sin consultar `Auth` dentro del dominio.

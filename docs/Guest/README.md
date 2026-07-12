@@ -27,6 +27,5 @@
 3. [TABLES.md](TABLES.md)
 4. [modules](modules)
 5. [new_requirements](new_requirements)
-6. [Pendientes UI/UX](../UI_UX_PENDING.md)
 
-Las reglas transversales viven en [GENERALIDADES.md](../GENERALIDADES.md). Toda capacidad backend implementada se documenta en el módulo; las tareas puramente visuales permanecen únicamente en `UI_UX_PENDING.md`.
+Las reglas transversales viven en [GENERALIDADES.md](../GENERALIDADES.md). Toda capacidad implementada, sea backend o visual, se documenta en el módulo afectado.

@@ -50,4 +50,4 @@ Antes de tocar cualquier modulo System, revisar [../GENERALIDADES.md](../GENERAL
 - Mantener la lista de modulos sincronizada con seeds de `sections`, `sub_sections`, perfiles y menu lateral.
 - Cada modulo documenta tablas, rutas, reglas y comportamiento backend vigente.
 - Evitar duplicar criterios visuales aqui; si aplica a varios modulos, moverlo a `GENERALIDADES.md`.
-- Los pendientes exclusivamente visuales se mantienen en `docs/UI_UX_PENDING.md`.
+- Las decisiones visuales transversales se mantienen en `GENERALIDADES.md`; cada pantalla documenta sus mejoras en su módulo.

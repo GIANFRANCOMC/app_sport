@@ -139,6 +139,10 @@
                     <i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i>
                     <span>{{ posConfigurationIssue }}</span>
                 </div>
+                <p v-if="hasOpenCashSessions" class="br-operational-scope mb-0">
+                    <i class="fa-solid fa-cash-register" aria-hidden="true"></i>
+                    <span>{{ activePosScopeLabel }}</span>
+                </p>
             </section>
 
             <section class="br-pos-ticket__items">
@@ -585,6 +589,13 @@ export default {
             }
 
             return null;
+        },
+        activePosScopeLabel() {
+            const cash = this.selectedCashSession?.register?.name || "Caja no seleccionada";
+            const branch = this.selectedBranch?.name || this.selectedCashSession?.branch?.name || "Sucursal no seleccionada";
+            const warehouse = this.selectedWarehouse?.name || "Almacén no seleccionado";
+
+            return `${cash} · ${branch} · ${warehouse}`;
         },
         visibleCategories() {
             return this.categories.filter(category => this.countByCategory(category.id) > 0);

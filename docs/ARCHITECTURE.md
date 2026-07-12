@@ -150,7 +150,7 @@ Hay `FormRequest` para muchos CRUDs internos. Cuando se agreguen campos a un mod
 - Autorización funcional usa módulo + acción; el alcance operativo intersecta empresa, sucursal, caja y almacén.
 - La invalidación de caché se centraliza por dependencia y las claves tenant no usan versiones paralelas.
 - Guest usa modelos/servicios con contrato público y límites antiabuso centralizados.
-- Migraciones, servicios y módulos documentan sus tablas y reglas; los trabajos visuales viven únicamente en `UI_UX_PENDING.md`.
+- Migraciones, servicios y módulos documentan sus tablas, reglas y mejoras visuales implementadas; los criterios visuales transversales viven en `GENERALIDADES.md`.
 
 ## Criterios de evolución
 

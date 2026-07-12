@@ -38,6 +38,7 @@
                 </template>
             </InputSlot>
             <InputText
+                v-if="showSearchInput"
                 :model-value="filterWordValue"
                 @update:model-value="$emit('update:filterWordValue', $event)"
                 @enterKeyPressed="$emit('search')"
@@ -48,6 +49,7 @@
                 :disabled="loading"
                 xl="5"
                 lg="5"/>
+            <slot name="extraFilters"></slot>
             <InputSlot
                 hasDiv
                 :isInputGroup="false"
@@ -56,6 +58,7 @@
                 lg="4">
                 <template v-slot:input>
                     <button
+                        v-if="showSearchButton"
                         type="button"
                         class="br-btn br-btn-sm br-btn-action-search waves-effect"
                         @click="$emit('search')"
@@ -91,7 +94,7 @@
                         :class="[
                             'br-btn',
                             'br-btn-sm',
-                            'br-btn-action-export',
+                            downloadButtonClass,
                             'waves-effect',
                             {'br-btn-action-export--desktop-icon': downloadIconOnlyOnDesktop}
                         ]"
@@ -101,7 +104,7 @@
                         data-bs-placement="top"
                         :title="downloadButtonTooltip"
                         :aria-label="downloadButtonTooltip">
-                        <i class="fa-solid fa-file-excel" aria-hidden="true"></i>
+                        <i :class="downloadButtonIcon" aria-hidden="true"></i>
                         <span class="br-btn-action-export__label" v-text="downloadButtonText"></span>
                     </button>
                     <button
@@ -172,6 +175,16 @@ export default {
             required: false,
             default: "Buscar"
         },
+        showSearchInput: {
+            type: Boolean,
+            required: false,
+            default: true
+        },
+        showSearchButton: {
+            type: Boolean,
+            required: false,
+            default: true
+        },
         addButtonText: {
             type: String,
             required: false,
@@ -216,6 +229,16 @@ export default {
             type: String,
             required: false,
             default: "Descargar Excel"
+        },
+        downloadButtonIcon: {
+            type: String,
+            required: false,
+            default: "fa-solid fa-file-excel"
+        },
+        downloadButtonClass: {
+            type: String,
+            required: false,
+            default: "br-btn-action-export"
         },
         downloading: {
             type: Boolean,

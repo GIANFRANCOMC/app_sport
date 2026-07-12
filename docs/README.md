@@ -40,4 +40,4 @@ No mezclar documentacion ni logica entre `System` y `Guest`.
 - Mantener `GENERALIDADES.md` como fuente transversal antes de duplicar reglas por módulo.
 - Cada módulo debe referenciar tablas, rutas, reglas y estado backend vigente.
 - Corregir encoding heredado al intervenir un archivo, sin mezclar cambios masivos ajenos al objetivo funcional.
-- Los únicos pendientes de interfaz se concentran en [UI_UX_PENDING.md](UI_UX_PENDING.md).
+- Las decisiones visuales transversales se documentan en `GENERALIDADES.md`; las mejoras implementadas se registran en el módulo afectado.

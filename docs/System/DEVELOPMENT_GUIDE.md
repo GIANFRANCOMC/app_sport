@@ -14,6 +14,7 @@ Las reglas compartidas de branding, formularios, modales, SweetAlert, cache, mig
 - Mantener nombres técnicos en inglés y textos de UI en español, con tildes y signos de apertura correctos.
 - Aplicar la misma estructura de rutas, controladores, requests, servicios, Vue, CSS y documentación en módulos equivalentes.
 - Los entries Vue de módulos CRUD deben usar `mountEntityApp(App)` desde `resources/js/System/Helpers/MountEntityApp.js` para registrar componentes compartidos como `Breadcrumb`, `InputText`, `Paginator`, `Loader`, `WithoutData`, `FiltersSection`, `StatusBadge`, `CopyButton` y `vue-select` sin repetir imports por módulo.
+- Las pantallas nuevas o migradas no deben depender de JavaScript de plantilla ubicado en `public/System/assets/js/app-*`. Esos archivos permanecen como legado visual del template y cualquier comportamiento operativo debe vivir en Vue, helpers `System` o componentes reutilizables.
 
 ## Al modificar un módulo CRUD
 
@@ -140,6 +141,7 @@ $config->currencies->records = MasterReferenceDataService::currencies($companyId
 - El loader global de SweetAlert no usa bordes decorativos ni órbitas. Mantiene el logomark centrado con respiración sutil y pulsos primary/secondary como único indicador de actividad. Su HTML vive en `Alerts.js` y toda la presentación reutilizable en `br-branding.css`.
 - `Alerts.swals()` acepta `type`, `entity` y `title`. Preferir acciones semánticas como `{type: "create", entity: "producto"}` o `{type: "update", entity: "producto"}`; usar `title` únicamente cuando el proceso requiera un texto específico.
 - Para exportes filtrados, reutilizar la consulta del listado y añadir únicamente la estrategia de salida. `FiltersSection` expone `showDownloadButton` desactivado por defecto, `downloadButtonText`, `downloading` y el evento `download`; cada módulo decide si habilita la capacidad mediante su configuración.
+- `FiltersSection` puede ocultar el input de búsqueda con `showSearchInput`, ocultar el botón Buscar con `showSearchButton`, personalizar el botón de descarga/consulta con `downloadButtonIcon` y `downloadButtonClass`, y recibir filtros avanzados mediante el slot `extraFilters`. Usarlo para reportes o barras con parámetros dinámicos antes de crear una barra local.
 - `FiltersSection.downloadIconOnlyOnDesktop` permite mostrar únicamente el icono del archivo desde `992px`, conservando texto completo en móvil. Siempre debe acompañarse de tooltip y `aria-label`.
 - Las descargas autenticadas de archivos deben usar `Requests.download()`: centraliza `responseType: "blob"`, nombre de archivo, liberación de URL temporal y lectura de errores JSON devueltos como blob.
 - Los códigos de barras imprimibles deben reutilizar `BarcodeDownloadButton`. El componente usa `JsBarcode`, genera en frontend un PNG transparente con barras y numeración, recibe valor, nombre de archivo y formato, y comunica el resultado en su propio tooltip.
