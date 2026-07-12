@@ -144,6 +144,117 @@ class SaleService {
 
     }
 
+    private static function lockCatalogItemsForSale(array $details, int $companyId) {
+
+        $itemIds = collect($details)
+            ->pluck("item_id")
+            ->filter()
+            ->map(fn($id) => (int) $id)
+            ->unique()
+            ->values();
+
+        return Item::query()
+                   ->where("company_id", $companyId)
+                   ->whereIn("id", $itemIds)
+                   ->lockForUpdate()
+                   ->get()
+                   ->keyBy("id");
+
+    }
+
+    private static function validateSaleCatalogItems(array $details, $items): void {
+
+        foreach($details as $detail) {
+
+            $item = $items->get((int) ($detail["item_id"] ?? 0));
+
+            if(!$item) {
+
+                throw new Exception("Uno de los ítems seleccionados no pertenece a la empresa.");
+
+            }
+
+            if(!$item->isAvailableForSale()) {
+
+                throw new Exception("{$item->name} no está disponible para la venta.");
+
+            }
+
+            if($item->hasCapacityControl()) {
+
+                $requiredCapacity = self::capacityQuantity($detail["quantity"] ?? 0);
+
+                if($item->availableCapacity() < $requiredCapacity) {
+
+                    throw new Exception("{$item->name} no tiene cupos disponibles suficientes.");
+
+                }
+
+            }
+
+        }
+
+    }
+
+    private static function capacityQuantity(mixed $quantity): int {
+
+        return max(1, (int) ceil((float) $quantity));
+
+    }
+
+    private static function consumeItemCapacity(?Item $item, SaleBody $saleBody, int $userId): void {
+
+        if(!$item
+            || !$item->hasCapacityControl()
+            || !in_array($saleBody->type, ["service", "subscription"], true)) {
+
+            return;
+
+        }
+
+        $item->capacity_used = max(0, (int) $item->capacity_used) + self::capacityQuantity($saleBody->quantity);
+        $item->updated_at = now();
+        $item->updated_by = $userId;
+        $item->save();
+
+    }
+
+    private static function restoreItemCapacityForCanceledSale($positions, int $companyId, int $userId): void {
+
+        $capacityPositions = $positions->filter(fn($position) => in_array($position->type, ["service", "subscription"], true));
+
+        if($capacityPositions->isEmpty()) {
+
+            return;
+
+        }
+
+        $items = Item::query()
+                     ->where("company_id", $companyId)
+                     ->whereIn("id", $capacityPositions->pluck("item_id")->filter()->unique()->values())
+                     ->lockForUpdate()
+                     ->get()
+                     ->keyBy("id");
+
+        foreach($capacityPositions as $position) {
+
+            $item = $items->get((int) $position->item_id);
+
+            if(!$item || !$item->hasCapacityControl()) {
+
+                continue;
+
+            }
+
+            $item->capacity_used = max(0, (int) $item->capacity_used - self::capacityQuantity($position->quantity));
+            $item->updated_at = now();
+            $item->updated_by = $userId;
+            $item->save();
+
+        }
+
+    }
+
     /**
      * Prepare sale body extras for subscription
      *
@@ -532,6 +643,8 @@ class SaleService {
             $cashSession = self::resolveCashSession($data, (int) $companyId, (int) $userId);
             self::validateSerieBelongsToBranch((int) $data["serie_id"], (int) $data["branch_id"]);
             $data["details"] = self::normalizeCommissionDetails($data["details"], (int) $companyId);
+            $catalogItems = self::lockCatalogItemsForSale($data["details"], (int) $companyId);
+            self::validateSaleCatalogItems($data["details"], $catalogItems);
 
             // Get new sequential number
             $newSequential = SaleHeader::getNewSequential($data["serie_id"]);
@@ -591,6 +704,13 @@ class SaleService {
             $saleHeader->warehouse_id = $warehouse->id;
             $saleHeader->cash_session_id = $cashSession?->id;
             $saleHeader->issue_date  = $data["issue_date"];
+            $deliveryMode = $data["delivery_mode"] ?? "immediate";
+            $deliveryStatus = $data["delivery_status"] ?? ($deliveryMode === "immediate" ? "delivered" : "pending");
+            $saleHeader->delivery_mode = $deliveryMode;
+            $saleHeader->delivery_status = $deliveryStatus;
+            $saleHeader->delivered_at = $deliveryStatus === "delivered" ? now() : null;
+            $saleHeader->delivered_by = $deliveryStatus === "delivered" ? $userId : null;
+            $saleHeader->delivery_observation = $data["delivery_observation"] ?? null;
             $saleHeader->subtotal    = $subtotal;
             $saleHeader->tax         = $taxTotal;
             $saleHeader->commission_total = $commissionTotal;
@@ -643,6 +763,7 @@ class SaleService {
 
                 // Create subscription for subscription items
                 self::createSubscription($saleHeader, $saleBody, $detail, $companyId, $data["branch_id"], $userId);
+                self::consumeItemCapacity($catalogItems->get((int) $detail["item_id"]), $saleBody, $userId);
 
             }
 
@@ -705,6 +826,8 @@ class SaleService {
             );
 
             $allPositions = $saleHeader->allPositions;
+            self::restoreItemCapacityForCanceledSale($allPositions, (int) $companyId, (int) $userId);
+
             $productPositions = $allPositions->where("type", "product");
             $fallbackWarehouse = $restoreStockPolicyEnabled && $productPositions->isNotEmpty()
                 ? $saleHeader->serie?->branch?->warehouses?->first()

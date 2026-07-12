@@ -33,6 +33,7 @@ Suma una cantidad positiva al saldo. Orígenes implementados:
 - `customer_return`: devolución física recibida de un cliente.
 
 - `purchase`: recepción parcial o total de una compra.
+- `purchase_cancellation`: reversa automática de recepción cuando una compra se anula y la política empresarial lo permite.
 
 ### Salida
 
@@ -41,8 +42,6 @@ Resta una cantidad positiva del saldo. Orígenes implementados:
 - `sale`: salida automática al vender un producto.
 - `manual`: salida justificada desde Inventario.
 - `supplier_return`: devolución física enviada a un proveedor.
-
-Origen preparado: `purchase_cancellation`, para revertir una recepción.
 
 ### Corrección
 
@@ -63,6 +62,8 @@ La toma física usa el origen `physical_count`, separado de entradas y salidas m
 - La anulación consulta `company_settings.inventory.restore_stock_on_sale_cancellation`.
 - La política es `false` por defecto: anular no modifica stock y una devolución recibida debe registrarse como `customer_return`.
 - Con la política activa, la anulación repone cantidades mediante entradas `sale_cancellation`; nunca elimina la salida original.
+- La anulación de compras consulta `company_settings.inventory.restore_stock_on_purchase_cancellation`.
+- Por defecto, una compra con recepción se bloquea al anular para que el usuario registre una devolución a proveedor. Si la política está activa, se generan salidas `purchase_cancellation` por cada recepción y las recepciones quedan canceladas.
 - El stock inicial de Productos se registra como entrada `product_opening`.
 - Editar precio, descripción, marca, categorías o stock mínimo no genera kardex.
 - Las salidas manuales no permiten saldo negativo.

@@ -9,10 +9,13 @@ use stdClass;
 use App\Models\System\Organizations\BookComplaint;
 use App\Services\System\Base\{
     BaseConfigService,
+    CompanyReferenceDataService,
     MasterReferenceDataService
 };
 
 final class BookComplaintConfigService extends BaseConfigService {
+
+    protected const USER_SCOPED_CACHE = true;
 
     protected static function getCachePrefix(): string {
 
@@ -22,7 +25,12 @@ final class BookComplaintConfigService extends BaseConfigService {
 
     protected static function buildConfig(int $companyId, string $page, ?int $userId = null): stdClass {
 
+        $references = CompanyReferenceDataService::for($companyId, $userId);
+
         return self::data([
+            "branches" => self::data([
+                "records" => $references->activeBranches()
+            ]),
             "identity_document_types" => self::data([
                 "records" => MasterReferenceDataService::customerIdentityDocuments($companyId)
             ]),

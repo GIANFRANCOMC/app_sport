@@ -312,7 +312,8 @@ const ENTITY_SPECIAL_ROUTES = {
         cancel: "cancel"
     },
     tracking_subscriptions: {
-        cancel: "cancel"
+        cancel: "cancel",
+        manual: "manual"
     },
     tracking_attendances: {
         export: "export",

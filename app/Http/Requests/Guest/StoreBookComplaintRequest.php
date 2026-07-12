@@ -22,6 +22,11 @@ final class StoreBookComplaintRequest extends FormRequest {
         $companyId = (int) $this->attributes->get("company")?->id;
 
         return [
+            "branch_id" => [
+                "required",
+                "integer",
+                Rule::exists("branches", "id")->where("company_id", $companyId)->where("status", "active")
+            ],
             "identity_document_type_id" => [
                 "required",
                 "integer",

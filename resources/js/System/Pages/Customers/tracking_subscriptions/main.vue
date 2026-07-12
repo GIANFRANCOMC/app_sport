@@ -104,6 +104,10 @@
                     <i class="fa fa-filter"></i>
                     <span class="ms-2">Filtrar membresías</span>
                 </button>
+                <button type="button" class="br-btn br-btn-action-create waves-effect" @click="createManualEntity">
+                    <i class="fa-solid fa-plus" aria-hidden="true"></i>
+                    <span>Agregar membresía</span>
+                </button>
             </template>
         </InputSlot>
     </div>
@@ -344,6 +348,7 @@ export default {
 
                 this.options.branches  = initParams.data.config.branches;
                 this.options.customers = initParams.data.config.customers;
+                this.options.subscription_items = initParams.data.config.subscription_items;
 
             }
 
@@ -405,6 +410,146 @@ export default {
                 type: "show",
                 id: this.forms.entity.createUpdate.extras.modals.actions.id
             });
+
+        },
+        createManualEntity() {
+
+            const self = this;
+
+            Swal.fire({
+                title: "Agregar membresía manual",
+                html: `<div class="text-start">
+                           <p class="small text-muted mb-3">Registra una vigencia sin generar una venta. El sistema validará solapamientos según la política de la empresa.</p>
+                           <div class="row g-2">
+                               <div class="col-12 col-md-6">
+                                   <label class="form-label colon-at-end">Sucursal</label>
+                                   <select class="form-select" id="manualBranch"></select>
+                               </div>
+                               <div class="col-12 col-md-6">
+                                   <label class="form-label colon-at-end">Cliente</label>
+                                   <select class="form-select" id="manualCustomer"></select>
+                               </div>
+                               <div class="col-12">
+                                   <label class="form-label colon-at-end">Membresía de catálogo</label>
+                                   <select class="form-select" id="manualItem"></select>
+                                   <small class="text-muted">Opcional. Si la seleccionas, se toma como referencia de duración.</small>
+                               </div>
+                               <div class="col-12 col-md-6">
+                                   <label class="form-label colon-at-end">Fecha inicial</label>
+                                   <input type="datetime-local" class="form-control" id="manualStartDate">
+                               </div>
+                               <div class="col-12 col-md-6">
+                                   <label class="form-label colon-at-end">Fecha final</label>
+                                   <input type="datetime-local" class="form-control" id="manualEndDate">
+                               </div>
+                               <div class="col-12 col-md-6">
+                                   <label class="form-label colon-at-end">Límite diario</label>
+                                   <input type="number" min="1" max="999" class="form-control" id="manualAttendanceLimit" value="1">
+                               </div>
+                               <div class="col-12 col-md-6 d-flex align-items-end">
+                                   <label class="form-check mb-2">
+                                       <input class="form-check-input" type="checkbox" id="manualWelcomeEmail" checked>
+                                       <span class="form-check-label">Enviar correo de agradecimiento</span>
+                                   </label>
+                               </div>
+                               <div class="col-12">
+                                   <label class="form-label colon-at-end">Observación</label>
+                                   <textarea class="form-control no-resize" maxlength="500" rows="2" id="manualObservation"></textarea>
+                               </div>
+                           </div>
+                       </div>`,
+                icon: "question",
+                allowOutsideClick: false,
+                showCancelButton: true,
+                confirmButtonText: "Agregar membresía",
+                cancelButtonText: "Cancelar",
+                customClass: {
+                    confirmButton: "br-btn br-btn-action-create",
+                    cancelButton: "br-btn br-btn-cancel ms-3"
+                },
+                didOpen() {
+                    self.fillSwalSelect("manualBranch", self.branches, self.lists.entity.filters.branch?.code);
+                    self.fillSwalSelect("manualCustomer", self.customers, self.lists.entity.filters.customer?.code);
+                    self.fillSwalSelect("manualItem", [{code: "", label: "Sin plan de catálogo"}].concat(self.subscriptionItems), "");
+                },
+                preConfirm() {
+                    const branchId = document.getElementById("manualBranch")?.value;
+                    const customerId = document.getElementById("manualCustomer")?.value;
+                    const itemId = document.getElementById("manualItem")?.value;
+                    const startDate = document.getElementById("manualStartDate")?.value;
+                    const endDate = document.getElementById("manualEndDate")?.value;
+                    const attendanceLimit = document.getElementById("manualAttendanceLimit")?.value;
+                    const observation = document.getElementById("manualObservation")?.value;
+                    const sendWelcomeEmail = document.getElementById("manualWelcomeEmail")?.checked;
+
+                    if(!branchId || !customerId || !startDate || !endDate) {
+                        Swal.showValidationMessage("Selecciona sucursal, cliente y rango de vigencia.");
+                        return false;
+                    }
+
+                    if(startDate >= endDate) {
+                        Swal.showValidationMessage("La fecha final debe ser mayor o igual a la fecha inicial.");
+                        return false;
+                    }
+
+                    return {
+                        branch_id: branchId,
+                        customer_id: customerId,
+                        item_id: itemId || null,
+                        start_date: startDate.replace("T", " "),
+                        end_date: endDate.replace("T", " "),
+                        attendance_limit_per_day: attendanceLimit || 1,
+                        observation,
+                        send_welcome_email: sendWelcomeEmail
+                    };
+                }
+            }).then(async function(result) {
+                if(result.isConfirmed) await self.processManualCreation(result.value);
+                Alerts.tooltips({show: false});
+            });
+
+        },
+        fillSwalSelect(id, options, selectedCode = null) {
+
+            const select = document.getElementById(id);
+            if(!select) return;
+
+            select.innerHTML = "";
+            options.forEach(option => {
+                const element = document.createElement("option");
+                element.value = option.code;
+                element.textContent = option.label;
+                if(String(option.code) === String(selectedCode ?? "")) element.selected = true;
+                select.appendChild(element);
+            });
+
+        },
+        async processManualCreation(payload) {
+
+            Alerts.swals({type: "loading", message: "Agregando membresía"});
+
+            try {
+
+                const response = await Requests.post({
+                    route: this.config.entity.routes.manual,
+                    data: payload
+                });
+
+                Alerts.swals({show: false});
+
+                if(Requests.valid({result: response})) {
+                    Alerts.generateAlert({type: "success", msgContent: response?.data?.msg || "Membresía agregada correctamente."});
+                    this.listEntity({});
+                    return;
+                }
+
+                Alerts.generateAlert({type: "warning", msgContent: response?.data?.msg || "No fue posible agregar la membresía."});
+
+            }finally {
+
+                Alerts.swals({show: false});
+
+            }
 
         },
         renewEntity({}) {
@@ -688,6 +833,11 @@ export default {
         customers: function() {
 
             return this.options?.customers?.records.map(e => ({code: e.id, label: `${e.document_number} - ${e.name}`, data: e}));
+
+        },
+        subscriptionItems: function() {
+
+            return this.options?.subscription_items?.records.map(e => ({code: e.id, label: e.name, data: e})) ?? [];
 
         },
         statusBadgeSubscriptionVariants() {

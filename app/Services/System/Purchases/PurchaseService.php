@@ -21,6 +21,7 @@ use App\Models\System\Purchases\{
 };
 use App\Services\System\Finance\CommercialDocumentSettlementService;
 use App\Services\System\Warehouses\Inventory\InventoryMovementService;
+use App\Services\System\Organizations\Companies\CompanySettingService;
 use App\Services\System\Warehouses\StockManagement\StockManagementService;
 
 final class PurchaseService {
@@ -481,24 +482,77 @@ final class PurchaseService {
 
         return DB::transaction(function() use($companyId, $purchaseId, $userId) {
 
+            $restoreStockPolicyEnabled = (bool) CompanySettingService::value(
+                $companyId,
+                CompanySettingService::INVENTORY_POLICIES,
+                "restore_stock_on_purchase_cancellation",
+                false
+            );
+
             $purchase = PurchaseHeader::query()
                 ->where("company_id", $companyId)
                 ->whereKey($purchaseId)
-                ->with("items")
+                ->with(["items", "receipts.items"])
                 ->lockForUpdate()
                 ->firstOrFail();
-
-            if($purchase->items->contains(fn($item) => (float) $item->received_quantity > 0)) {
-
-                throw new DomainException(
-                    "La compra tiene mercadería recibida. Registra una devolución a proveedor desde Inventario."
-                );
-
-            }
 
             if($purchase->status === "canceled") {
 
                 throw new DomainException("La compra ya está anulada.");
+
+            }
+
+            if($purchase->items->contains(fn($item) => (float) $item->received_quantity > 0)
+                && !$restoreStockPolicyEnabled) {
+
+                throw new DomainException(
+                    "La compra tiene mercadería recibida. Registra una devolución a proveedor desde Inventario o activa la política de reversa automática al anular compras."
+                );
+
+            }
+
+            $hadReceipts = $purchase->items->contains(fn($item) => (float) $item->received_quantity > 0);
+
+            if($restoreStockPolicyEnabled) {
+
+                foreach($purchase->receipts as $receipt) {
+
+                    if($receipt->status !== "received") {
+
+                        continue;
+
+                    }
+
+                    foreach($receipt->items as $receiptItem) {
+
+                        InventoryMovementService::apply([
+                            "company_id" => $companyId,
+                            "warehouse_id" => (int) $receipt->warehouse_id,
+                            "item_id" => (int) $receiptItem->item_id,
+                            "user_id" => $userId,
+                            "movement_type" => InventoryMovementService::TYPE_EXIT,
+                            "origin_type" => InventoryMovementService::ORIGIN_PURCHASE_CANCELLATION,
+                            "origin_id" => (int) $purchase->id,
+                            "quantity" => (float) $receiptItem->quantity,
+                            "unit_cost" => (float) $receiptItem->unit_cost,
+                            "reason" => "Reversa automática por anulación de compra.",
+                            "reference" => $purchase->reference,
+                            "metadata" => [
+                                "purchase_header_id" => (int) $purchase->id,
+                                "purchase_receipt_id" => (int) $receipt->id,
+                                "purchase_receipt_item_id" => (int) $receiptItem->id
+                            ]
+                        ]);
+
+                    }
+
+                    $receipt->update([
+                        "status" => "canceled",
+                        "canceled_at" => now(),
+                        "canceled_by" => $userId
+                    ]);
+
+                }
 
             }
 
@@ -511,11 +565,16 @@ final class PurchaseService {
             ]);
             PurchaseItem::where("purchase_header_id", $purchase->id)->update([
                 "status" => "canceled",
+                "received_quantity" => $restoreStockPolicyEnabled ? 0 : DB::raw("received_quantity"),
                 "updated_at" => now(),
                 "updated_by" => $userId
             ]);
 
-            return self::find($companyId, $purchase->id);
+            $result = self::find($companyId, $purchase->id);
+            $result->setAttribute("inventory_reverted_on_cancellation", $restoreStockPolicyEnabled && $hadReceipts);
+            $result->setAttribute("had_inventory_receipts", $hadReceipts);
+
+            return $result;
 
         });
 

@@ -10,7 +10,8 @@ use Illuminate\Http\{JsonResponse, Request};
 
 use App\Http\Requests\System\Customers\TrackingSubscriptions\{
     CancelTrackingSubscriptionRequest,
-    RenewTrackingSubscriptionRequest
+    RenewTrackingSubscriptionRequest,
+    StoreManualTrackingSubscriptionRequest
 };
 use App\Services\System\Organizations\AccessScopeService;
 use App\Services\System\Customers\Tracking\{TrackingSubscriptionConfigService, TrackingSubscriptionService};
@@ -69,6 +70,37 @@ class TrackingSubscriptionController extends BaseController {
     }
 
 
+
+
+
+
+    public function storeManual(StoreManualTrackingSubscriptionRequest $request): JsonResponse {
+
+        try {
+
+            $validated = $request->validated();
+
+            if(!AccessScopeService::canAccess($this->getAuthUser(), AccessScopeService::BRANCH, (int) $validated["branch_id"])) {
+
+                return $this->notFoundResponse();
+
+            }
+
+            $subscription = TrackingSubscriptionService::createManual(
+                $this->getCompanyId(),
+                $validated,
+                $this->getUserId()
+            );
+
+            return $this->createdResponse($subscription, "created", "subscription");
+
+        }catch(\Exception $e) {
+
+            return $this->handleException($e, "create");
+
+        }
+
+    }
 
 
 

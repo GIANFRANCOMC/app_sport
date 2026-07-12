@@ -364,3 +364,9 @@ El seeder es idempotente por `company_id + internal_code`: si se vuelve a ejecut
 - El estado `active` permite que el producto, servicio o membresía participe en ventas, Venta POS, compras e inventario.
 - El estado `inactive` conserva el registro en catálogo para consulta o edición, pero lo excluye de operaciones nuevas.
 - Esta regla evita vender, comprar o mover inventario de ítems deshabilitados sin borrar información histórica.
+
+## Actualizacion funcional: vencimiento comercial
+
+- `items.expires_at` es opcional para productos. Al vencer, el backend inactiva el producto al listar catalogo o referencias comerciales y bloquea ventas con datos obsoletos.
+- Productos no usa cupos comerciales; su disponibilidad se controla mediante `warehouse_items` e inventario/Kardex.
+- El formulario de productos muestra fecha de vencimiento junto a datos y precio. Si no se informa, el producto no vence automaticamente.

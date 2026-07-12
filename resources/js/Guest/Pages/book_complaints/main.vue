@@ -43,6 +43,11 @@
                         <small class="br-guest-error">{{ firstError("identity_document_type_id") || firstError("identity_document_type") }}</small>
                     </div>
                     <div class="br-guest-field">
+                        <label>Sucursal <span>*</span></label>
+                        <v-select v-model="form.branch" :options="branches" :clearable="false" :searchable="branches.length > 6"/>
+                        <small class="br-guest-error">{{ firstError("branch_id") || firstError("branch") }}</small>
+                    </div>
+                    <div class="br-guest-field">
                         <label>Número de documento <span>*</span></label>
                         <input v-model.trim="form.document_number" class="form-control" type="text" maxlength="30" placeholder="Ej. 12345678">
                         <small class="br-guest-error">{{ firstError("document_number") }}</small>
@@ -133,6 +138,7 @@ import * as Requests from "../../Helpers/Requests.js";
 import * as Utils from "../../Helpers/Utils.js";
 
 const emptyBookComplaintForm = () => ({
+    branch: null,
     identity_document_type: null,
     document_number: "",
     name: "",
@@ -186,7 +192,9 @@ export default {
 
             this.options.bookComplaints = initParams.data?.config?.bookComplaints || {};
             this.options.identityDocumentTypes = initParams.data?.config?.identityDocumentTypes || {records: []};
+            this.options.branches = initParams.data?.config?.branches || {records: []};
             this.form.identity_document_type = this.identityDocumentTypes[0] || null;
+            this.form.branch = this.branches[0] || null;
         },
         renderCaptcha() {
             this.$nextTick(() => {
@@ -215,9 +223,11 @@ export default {
             const formData = new FormData();
             const payload = {
                 ...this.form,
+                branch_id: this.form.branch?.code || "",
                 identity_document_type_id: this.form.identity_document_type?.code || ""
             };
 
+            delete payload.branch;
             delete payload.identity_document_type;
 
             Object.keys(payload).forEach(key => {
@@ -249,6 +259,7 @@ export default {
                 this.trackingCode = result.data.tracking_code;
                 this.form = this.emptyForm();
                 this.form.identity_document_type = this.identityDocumentTypes[0] || null;
+                this.form.branch = this.branches[0] || null;
                 this.attachments = [];
                 this.clearAttachmentInput();
                 this.resetCaptcha();
@@ -312,6 +323,12 @@ export default {
             return (this.options.identityDocumentTypes?.records || []).map(record => ({
                 code: record.id,
                 label: record.name
+            }));
+        },
+        branches() {
+            return (this.options.branches?.records || []).map(record => ({
+                code: record.id,
+                label: record.address ? `${record.name} - ${record.address}` : record.name
             }));
         },
         types() {

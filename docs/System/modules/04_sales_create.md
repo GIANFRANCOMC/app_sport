@@ -32,6 +32,9 @@ Permite crear una venta con productos, servicios o membresias. Una venta puede g
 - `holder_id`
 - `currency_id`
 - `issue_date`
+- `delivery_mode` opcional: `immediate` o `pending`.
+- `delivery_status` opcional: `delivered`, `pending` o `partial`.
+- `delivery_observation` opcional.
 - `details[]`
 - Por detalle: `item_id`, `currency_id`, `name`, `quantity`, `price`, `type`, `extras`
 - Por detalle, opcional: `commission_type`, `commission_value`. Si no se envian, el backend toma la configuracion vigente del item.
@@ -87,6 +90,14 @@ Permite crear una venta con productos, servicios o membresias. Una venta puede g
 - `sales_header.cash_session_id` permite vincular la venta con una caja abierta cuando el modulo de caja este activo.
 - Si la venta incluye `cash_session_id`, cada pago genera un registro en `cash_movements`, manteniendo trazabilidad por metodo de pago para apertura, cierre, arqueo y resumen de caja.
 - Los metodos de pago iniciales incluyen `Efectivo`, `Tarjeta`, `Transferencia`, `Billetera digital`, `Yape` y `Plin`; todos siguen siendo configurables por empresa y por alcance (`sale`, `purchase`, `both`).
+
+## Actualizacion: seguimiento de entrega
+
+- `sales_header.delivery_mode` indica si la venta nace con entrega inmediata o queda pendiente.
+- `sales_header.delivery_status` permite consultar si la venta está `delivered`, `pending`, `partial` o `canceled`.
+- En venta normal y POS, si no se envia seguimiento, el backend asume `delivery_mode = immediate` y `delivery_status = delivered`.
+- Cuando el estado es `delivered`, se guarda `delivered_at` y `delivered_by`.
+- Esta trazabilidad no cambia todavía el momento del movimiento de inventario: el stock se descuenta al confirmar la venta, como venia funcionando. Si luego se implementa despacho diferido, este campo será la base para mover el descuento al evento de entrega.
 # Venta POS
 
 - `sales.pos` se muestra bajo la cabecera `Operacion`, junto con `Cajas`, para agrupar el trabajo de mostrador debajo de Dashboard y reducir pasos operativos.

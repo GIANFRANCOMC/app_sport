@@ -21,6 +21,11 @@ return new class extends Migration {
             $table->unsignedBigInteger("warehouse_id")->nullable();
             $table->unsignedBigInteger("cash_session_id")->nullable();
             $table->date("issue_date");
+            $table->enum("delivery_mode", ["immediate", "pending"])->default("immediate");
+            $table->enum("delivery_status", ["pending", "partial", "delivered", "canceled"])->default("delivered");
+            $table->timestamp("delivered_at")->nullable();
+            $table->integer("delivered_by")->nullable();
+            $table->string("delivery_observation", 500)->nullable();
             $table->decimal("subtotal", 16, 4)->default(0);
             $table->decimal("tax", 16, 4)->default(0);
             $table->decimal("commission_total", 16, 4)->default(0);
@@ -41,6 +46,7 @@ return new class extends Migration {
             $table->foreign("currency_id")->references("id")->on("currencies")->onDelete("cascade");
             $table->foreign("warehouse_id")->references("id")->on("warehouses")->nullOnDelete();
             $table->foreign("cash_session_id")->references("id")->on("cash_sessions")->nullOnDelete();
+            $table->foreign("delivered_by")->references("id")->on("users")->nullOnDelete();
             $table->foreign("company_id")->references("id")->on("companies")->onDelete("cascade");
             $table->unique(["company_id", "serie_id", "sequential"]);
         });

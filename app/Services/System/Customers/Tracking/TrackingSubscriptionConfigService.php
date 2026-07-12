@@ -31,6 +31,9 @@ final class TrackingSubscriptionConfigService extends BaseConfigService {
             ]),
             "customers" => self::data([
                 "records" => $references->activeCustomers()
+            ]),
+            "subscription_items" => self::data([
+                "records" => $references->subscriptionItems()
             ])
         ]);
 

@@ -442,6 +442,16 @@
                                     </div>
                                 </div>
 
+                                <InputDate
+                                    v-model="productForm.data.expires_at"
+                                    hasDiv
+                                    :title="MODULE.texts.form.expiresAt"
+                                    :titleClass="[config.forms.classes.title]"
+                                    hasTextBottom
+                                    :textBottomInfo="productForm.errors?.expires_at"
+                                    xl="4"
+                                    lg="4"/>
+
                                 <InputSlot
                                     hasDiv
                                     title="Comision"
@@ -827,7 +837,7 @@ const FORM_TABS = [
         id: "general",
         label: "Datos y precio",
         description: "Identidad y rango de precios",
-        fields: ["internal_code", "barcode", "name", "price", "min_price", "max_price", "price_includes_tax", "commission_type", "commission_value", "currency", "currency_id", "brand", "brand_id", "status"]
+        fields: ["internal_code", "barcode", "name", "price", "min_price", "max_price", "price_includes_tax", "expires_at", "commission_type", "commission_value", "currency", "currency_id", "brand", "brand_id", "status"]
     },
     {
         id: "inventory",
@@ -850,6 +860,7 @@ const FORM_FIELDS = {
     description: "",
     price: "",
     price_includes_tax: true,
+    expires_at: "",
     commission_type: "none",
     commission_value: "",
     min_price: "",
@@ -870,6 +881,7 @@ const FORM_FIELD_CONFIG = {
     description: {normalize: true},
     price: {toNumber: true, minValue: 0},
     price_includes_tax: {toBoolean: true},
+    expires_at: {normalize: true},
     commission_value: {toNumber: true, minValue: 0},
     min_price: {toNumber: true, minValue: 0},
     max_price: {toNumber: true, minValue: 0},
@@ -888,6 +900,7 @@ const VALIDATION_RULES = {
     description: {required: false},
     price: {required: true, number: true, min: 0},
     price_includes_tax: {required: false},
+    expires_at: {required: false},
     commission_type: {required: true},
     commission_value: {required: false, number: true, min: 0},
     min_price: {required: false, number: true, min: 0},
@@ -908,6 +921,7 @@ const ERROR_LABELS = {
     description: "Descripción comercial adicional",
     price: "Precio de venta",
     price_includes_tax: "Precio incluye IGV",
+    expires_at: "Fecha de vencimiento",
     min_price: "Precio mínimo",
     max_price: "Precio máximo",
     currency: "Moneda",
@@ -952,6 +966,7 @@ const TEXTS = {
         price: "Precio de venta",
         minPrice: "Precio mínimo",
         maxPrice: "Precio máximo",
+        expiresAt: "Fecha de vencimiento",
         categories: "Categorías",
         brand: "Marca",
         status: "Estado",
@@ -1365,6 +1380,7 @@ export default {
                     description: record.description,
                     price: record.price,
                     price_includes_tax: Boolean(record.price_includes_tax ?? true),
+                    expires_at: record.expires_at ? String(record.expires_at).slice(0, 10) : "",
                     commission_type: record.commission_type ?? (Number(record.commission_rate || 0) > 0 ? "percentage" : "none"),
                     commission_value: Number(record.commission_value ?? record.commission_rate ?? 0),
                     min_price: record.min_price,
@@ -1387,6 +1403,7 @@ export default {
                     categories: [],
                     brand: null,
                     price_includes_tax: true,
+                    expires_at: "",
                     commission_type: "none",
                     commission_value: "",
                     see_my_web: true,

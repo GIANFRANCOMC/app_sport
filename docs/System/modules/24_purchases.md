@@ -34,7 +34,8 @@ Registra órdenes y facturas de compra, controla lo pendiente por recibir y alim
 - Un documento no anulado no puede repetirse para el mismo proveedor, tipo y número.
 - La recepción no puede superar la cantidad pendiente.
 - La recepción y todos sus movimientos se procesan en una sola transacción.
-- Una compra con mercadería recibida no puede anularse. La salida física se registra como devolución a proveedor desde Inventario.
+- Una compra con mercadería recibida no puede anularse por defecto. La salida física se registra como devolución a proveedor desde Inventario.
+- Si `company_settings.inventory.restore_stock_on_purchase_cancellation` está activo, la anulación registra salidas `purchase_cancellation` por cada recepción y cancela las recepciones asociadas sin borrar la trazabilidad original.
 - No se actualiza `warehouse_items` directamente; los saldos cambian mediante movimientos de inventario.
 
 ## Valorización
@@ -60,6 +61,7 @@ El método inicial es promedio ponderado por producto y almacén. Los impuestos 
 - Cada detalle conserva costo original, gasto asignado y `inventory_unit_cost`; las recepciones valorizan inventario con este último.
 - La cabecera conserva gasto total, pagado, saldo y estado de pago.
 - La aprobación pendiente bloquea recepciones; aprobar no simula una recepción física.
+- La anulación con recepción usa una política explícita por empresa: por defecto se bloquea y exige devolución a proveedor; si se habilita reversa automática, genera movimientos de inventario compensatorios.
 
 ## Estado backend implementado
 

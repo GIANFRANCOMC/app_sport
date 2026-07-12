@@ -40,6 +40,7 @@ class ProductService {
         "commission_type",
         "commission_value",
         "currency_id",
+        "expires_at",
         "see_my_web",
         "see_my_web_price",
         "status"
@@ -316,6 +317,8 @@ class ProductService {
      * @return LengthAwarePaginator
      */
     public static function getPaginatedList(int $companyId, array $filters = [], int $perPage = 15): LengthAwarePaginator {
+
+        Item::expireActiveItems($companyId);
 
         return self::getFilteredListQuery($companyId, $filters)
                    ->paginate($perPage);

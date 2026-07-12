@@ -39,7 +39,10 @@ class SubscriptionService {
         "currency_id",
         "duration_type",
         "duration_value",
+        "capacity_control_enabled",
+        "capacity_limit",
         "attendance_limit_per_day",
+        "expires_at",
         "benefits",
         "restrictions",
         "see_my_web",
@@ -83,6 +86,9 @@ class SubscriptionService {
         $itemData = [
             "company_id" => $companyId,
             "type"       => "subscription",
+            "brand_id"   => null,
+            "barcode"    => null,
+            "capacity_used" => 0,
             "status"     => $data["status"] ?? "active",
             "created_at" => now(),
             "created_by" => $userId
@@ -110,7 +116,7 @@ class SubscriptionService {
 
         }
 
-        return $itemData;
+        return self::normalizeCapacity($itemData);
 
     }
 
@@ -159,7 +165,60 @@ class SubscriptionService {
 
         }
 
+        if($item->brand_id !== null) {
+
+            $updateData["brand_id"] = null;
+
+        }
+
+        if($item->barcode !== null) {
+
+            $updateData["barcode"] = null;
+
+        }
+
+        $updateData = self::normalizeCapacity($updateData);
+
+        $capacityEnabled = array_key_exists("capacity_control_enabled", $updateData)
+            ? (bool) $updateData["capacity_control_enabled"]
+            : (bool) $item->capacity_control_enabled;
+        $capacityLimit = array_key_exists("capacity_limit", $updateData)
+            ? (int) ($updateData["capacity_limit"] ?? 0)
+            : (int) ($item->capacity_limit ?? 0);
+
+        if($capacityEnabled && $capacityLimit < (int) $item->capacity_used) {
+
+            throw new \InvalidArgumentException("El límite de cupos no puede ser menor que los cupos ya vendidos.");
+
+        }
+
         return $updateData;
+
+    }
+
+    private static function normalizeCapacity(array $itemData): array {
+
+        if(!array_key_exists("capacity_control_enabled", $itemData)) {
+
+            return $itemData;
+
+        }
+
+        $enabled = (bool) $itemData["capacity_control_enabled"];
+        $itemData["capacity_control_enabled"] = $enabled;
+
+        if(!$enabled) {
+
+            $itemData["capacity_limit"] = null;
+            $itemData["capacity_used"] = 0;
+
+            return $itemData;
+
+        }
+
+        $itemData["capacity_limit"] = max(1, (int) ($itemData["capacity_limit"] ?? 1));
+
+        return $itemData;
 
     }
 
@@ -273,6 +332,8 @@ class SubscriptionService {
      * @return LengthAwarePaginator
      */
     public static function getPaginatedList(int $companyId, array $filters = [], int $perPage = 15): LengthAwarePaginator {
+
+        Item::expireActiveItems($companyId);
 
         $query = Item::where("company_id", $companyId)
                      ->where("type", "subscription")

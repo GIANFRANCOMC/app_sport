@@ -33,6 +33,7 @@ Permite administrar reclamos, quejas y sugerencias recibidas desde System o Gues
 - Estados: `pending`, `in_progress`, `resolved`.
 - Debe poder responderse desde System.
 - Guest puede crear, System administra.
+- Todo reclamo debe asociarse a una sucursal activa de la empresa.
 - `BookComplaintConfigService` contiene tipos, estados y documentos de identidad.
 - Actualizar un reclamo no invalida `initParams`, porque esos maestros no cambian.
 
@@ -43,6 +44,8 @@ Permite administrar reclamos, quejas y sugerencias recibidas desde System o Gues
 - `book_complaint_attachments` admite evidencia múltiple sin sobrecargar la cabecera.
 - Cada transición genera un registro inmutable en `book_complaint_status_histories`.
 - La consulta interna incluye adjuntos, historial, autor de cambios y responsable de respuesta.
+- `book_complaints.branch_id` es obligatorio en nuevas migraciones; el formulario público carga las sucursales activas para que el cliente indique dónde ocurrió el caso.
+- La configuración interna usa caché por usuario porque las sucursales disponibles dependen del alcance operativo del colaborador.
 
 ## Estado UI Implementado
 

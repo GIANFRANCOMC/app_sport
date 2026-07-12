@@ -92,12 +92,30 @@
                             lg="6"/>
                         <InputSlot
                             hasDiv
+                            :title="MODULE.texts.form.deliveryMode"
+                            :titleClass="[config.forms.classes.title]"
+                            hasTextBottom
+                            :textBottomInfo="forms[entity].createUpdate.errors?.delivery_mode"
+                            xl="3"
+                            lg="6">
+                            <template v-slot:input>
+                                <v-select
+                                    v-model="forms[entity].createUpdate.data.delivery_mode"
+                                    :options="deliveryModes"
+                                    :class="config.forms.classes.select2"
+                                    :clearable="false"
+                                    :searchable="false"
+                                    placeholder="Seleccione"/>
+                            </template>
+                        </InputSlot>
+                        <InputSlot
+                            hasDiv
                             :title="MODULE.texts.form.holder"
                             :titleClass="[config.forms.classes.title]"
                             isRequired
                             hasTextBottom
                             :textBottomInfo="forms[entity].createUpdate.errors?.holder_id"
-                            xl="9"
+                            xl="6"
                             lg="12">
                             <template v-slot:default>
                                 <AddCustomer
@@ -914,6 +932,7 @@ const TEXTS = {
         serie: "Tipo de comprobante",
         warehouse: "Almacén",
         issueDate: "Fecha de emisión",
+        deliveryMode: "Entrega",
         holder: "Cliente",
         observation: "Observaciones",
         commercialCatalog: "Catálogo comercial",
@@ -1046,6 +1065,7 @@ export default {
                 serie: null,
                 warehouse: null,
                 issue_date: "",
+                delivery_mode: {code: "immediate", label: "Entrega inmediata"},
                 holder: null,
                 currency: null,
                 observation: "",
@@ -1539,6 +1559,7 @@ export default {
                 form.warehouse_id = form?.warehouse?.code;
                 form.holder_id   = form?.holder?.code;
                 form.currency_id = form?.currency?.code;
+                form.delivery_mode = form?.delivery_mode?.code || "immediate";
                 form.payments = this.salePaymentPayload;
                 form.taxes = this.saleTaxBreakdown.map(tax => ({
                     tax_id: tax.id,
@@ -1553,6 +1574,7 @@ export default {
                 delete form.warehouse;
                 delete form.holder;
                 delete form.currency;
+                delete form.delivery_status;
                 delete form.selected_taxes;
                 delete form.selected_tax_quantities;
 
@@ -2057,6 +2079,14 @@ export default {
                     label: `${e?.branch?.name ?? "Sucursal"} - ${e.name}`,
                     data: e
                 }));
+
+        },
+        deliveryModes() {
+
+            return [
+                {code: "immediate", label: "Entrega inmediata"},
+                {code: "pending", label: "Entrega pendiente"}
+            ];
 
         },
         saleConfigurationIssue() {

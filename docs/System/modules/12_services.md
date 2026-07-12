@@ -21,3 +21,13 @@ Administra ítems `service`: se venden, no descuentan stock y pueden medirse den
 - El formulario permite definir duración estimada en minutos, tipo de comisión (`Sin comisión`, `Porcentaje` o `Monto fijo por unidad`) y valor.
 - Si la comisión está en `Sin comisión`, el valor queda deshabilitado para evitar montos huérfanos.
 - La duración sirve como base para agenda, servicios en curso, SLA y medición del tiempo real del responsable.
+
+## Actualizacion funcional: cupos y vencimiento
+
+- Servicios no usa `barcode`, `brand_id` ni `warehouse_items`: no tiene codigo de barras, marca comercial ni inventario fisico por unidades.
+- `capacity_control_enabled`, `capacity_limit` y `capacity_used` controlan cupos opcionales. Si el control esta apagado, el servicio es ilimitado.
+- `expires_at` es opcional. Al vencer, el backend inactiva el servicio al listar catalogo o referencias comerciales y bloquea ventas con datos obsoletos.
+- El listado muestra cupos disponibles como dato compacto: ilimitado o disponibles contra limite.
+- El formulario permite activar cupos y definir fecha de vencimiento. Si cupos esta apagado, el limite queda deshabilitado para evitar datos que no aplican.
+- Ventas y Venta POS solo reciben servicios `active`, no vencidos y con cupos disponibles cuando el control esta activo.
+- Cada venta consume cupos segun la cantidad vendida. La anulacion de una venta repone esos cupos para servicios y membresias.

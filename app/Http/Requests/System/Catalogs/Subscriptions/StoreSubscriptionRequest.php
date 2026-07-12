@@ -48,6 +48,9 @@ class StoreSubscriptionRequest extends CompanyFormRequest {
             "commission_type" => "nullable|in:none,percentage,fixed",
             "commission_value" => "nullable|numeric|min:0|max:$maxValue|decimal:0,$round",
             "currency_id"    => ["required", "integer", new BelongsToCompany("currencies", ["status" => "active"], "La moneda seleccionada no pertenece a la empresa.")],
+            "capacity_control_enabled" => "nullable|boolean",
+            "capacity_limit" => "nullable|integer|min:1|max:1000000",
+            "expires_at" => "nullable|date",
             "attendance_limit_per_day" => "nullable|integer|min:1|max:1000",
             "benefits" => "nullable|array|max:50",
             "benefits.*" => "string|max:255",
@@ -69,8 +72,47 @@ class StoreSubscriptionRequest extends CompanyFormRequest {
     public function after(): array {
 
         return [
-            fn(Validator $validator) => $this->validateCommission($validator)
+            function(Validator $validator) {
+
+                $this->validateCommission($validator);
+                $this->validateCapacity($validator);
+
+            }
         ];
+
+    }
+
+    protected function prepareForValidation(): void {
+
+        parent::prepareForValidation();
+
+        $capacityEnabled = $this->boolean("capacity_control_enabled");
+
+        $this->merge([
+            "capacity_control_enabled" => $capacityEnabled,
+            "capacity_limit" => $capacityEnabled ? $this->input("capacity_limit") : null,
+            "expires_at" => $this->filled("expires_at") ? $this->input("expires_at") : null,
+            "commission_type" => $this->input("commission_type") ?: "none",
+            "commission_value" => $this->input("commission_type") === "none"
+                ? 0
+                : ($this->input("commission_value") ?? 0)
+        ]);
+
+    }
+
+    private function validateCapacity(Validator $validator): void {
+
+        if($validator->errors()->has("capacity_limit") || !$this->boolean("capacity_control_enabled")) {
+
+            return;
+
+        }
+
+        if(!$this->filled("capacity_limit")) {
+
+            $validator->errors()->add("capacity_limit", "Indica cuántos cupos estarán disponibles.");
+
+        }
 
     }
 

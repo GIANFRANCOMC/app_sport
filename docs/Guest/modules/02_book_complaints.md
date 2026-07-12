@@ -7,6 +7,7 @@ Permite que un visitante registre quejas, reclamos o sugerencias sin iniciar ses
 ## Backend
 
 - Valida documento, contacto, tipo, descripción y pedido mediante `StoreBookComplaintRequest`.
+- Valida `branch_id` contra sucursales activas de la empresa para que cada solicitud quede asociada al local donde ocurrió el caso.
 - Limita solicitudes por minuto, día, empresa e IP.
 - Usa honeypot `website` y Turnstile cuando `CAPTCHA_ENABLED=true`.
 - Genera `tracking_code` aleatorio y único por empresa.
@@ -20,6 +21,7 @@ Permite que un visitante registre quejas, reclamos o sugerencias sin iniciar ses
 
 - La pantalla separa dos modos: **Registrar solicitud** y **Consultar código**.
 - El formulario muestra tipos como opciones claras: queja, reclamo o sugerencia.
+- El formulario muestra un selector de sucursal antes de registrar datos personales.
 - El CAPTCHA se renderiza solo cuando existe `CAPTCHA_KEY_FRONTEND`.
 - Si Turnstile carga tarde, la pantalla reintenta el render por unos segundos sin bloquear el formulario.
 - La carga múltiple muestra los nombres de archivos seleccionados antes de enviar.

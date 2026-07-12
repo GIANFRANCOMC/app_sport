@@ -6,7 +6,7 @@ namespace App\Http\Controllers\Guest;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Guest\StoreBookComplaintRequest;
-use App\Models\Guest\{BookComplaint, IdentityDocumentType};
+use App\Models\Guest\{BookComplaint, Branch, IdentityDocumentType};
 use App\Services\System\Tenancy\TenantStoragePath;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -33,6 +33,13 @@ final class BookComplaintController extends Controller {
                     ->where("company_id", $request->get("company")->id)
                     ->whereIn("id", [1, 2, 4])
                     ->get()
+            ];
+            $config->branches = (object) [
+                "records" => Branch::query()
+                    ->where("company_id", $request->get("company")->id)
+                    ->where("status", "active")
+                    ->orderBy("name")
+                    ->get(["id", "name", "address"])
             ];
         }
 

@@ -52,6 +52,7 @@
                         </td>
                         <td class="text-center">
                             <span class="fw-semibold" v-text="serviceDurationLabel(record)"></span>
+                            <small class="text-muted d-block" v-text="capacityLabel(record)"></small>
                         </td>
                         <td class="text-center">
                             <span class="fw-semibold d-block">
@@ -163,6 +164,35 @@
                                 :textBottomInfo="forms[entity].createUpdate.errors?.estimated_duration_minutes"
                                 xl="4"
                                 lg="4"/>
+                            <div class="form-group col-xl-4 col-lg-4 col-md-12 col-sm-12">
+                                <label class="form-label fw-bold colon-at-end fs-6" v-text="MODULE.texts.form.capacityControl"></label>
+                                <div class="br-entity-publication-settings br-tax-inclusion-control">
+                                    <label class="br-entity-switch" for="service_capacity_control_enabled">
+                                        <input
+                                            id="service_capacity_control_enabled"
+                                            v-model="forms[entity].createUpdate.data.capacity_control_enabled"
+                                            class="form-check-input"
+                                            type="checkbox"
+                                            role="switch">
+                                        <span>
+                                            <strong>Controlar cupos</strong>
+                                            <small>Actívalo solo si este servicio tiene una cantidad máxima disponible.</small>
+                                        </span>
+                                    </label>
+                                </div>
+                            </div>
+                            <InputNumber
+                                v-model="forms[entity].createUpdate.data.capacity_limit"
+                                hasDiv
+                                :title="MODULE.texts.form.capacityLimit"
+                                :titleClass="[config.forms.classes.title]"
+                                :disabled="!forms[entity].createUpdate.data.capacity_control_enabled"
+                                :decimals="0"
+                                :minValue="1"
+                                hasTextBottom
+                                :textBottomInfo="forms[entity].createUpdate.errors?.capacity_limit"
+                                xl="4"
+                                lg="4"/>
                             <InputSlot
                                 hasDiv
                                 :title="MODULE.texts.form.commissionType"
@@ -242,6 +272,15 @@
                                     </span>
                                 </template>
                             </InputNumber>
+                            <InputDate
+                                v-model="forms[entity].createUpdate.data.expires_at"
+                                hasDiv
+                                :title="MODULE.texts.form.expiresAt"
+                                :titleClass="[config.forms.classes.title]"
+                                hasTextBottom
+                                :textBottomInfo="forms[entity].createUpdate.errors?.expires_at"
+                                xl="4"
+                                lg="4"/>
                             <div class="form-group col-xl-4 col-lg-4 col-md-12 col-sm-12">
                                 <label class="form-label fw-bold colon-at-end fs-6">Precio incluye IGV</label>
                                 <div class="br-entity-publication-settings br-tax-inclusion-control">
@@ -391,8 +430,11 @@ const FORM_FIELDS = {
     min_price: "",
     max_price: "",
     estimated_duration_minutes: "",
+    capacity_control_enabled: false,
+    capacity_limit: "",
     commission_type: null,
     commission_value: "",
+    expires_at: "",
     currency: null,
     categories: [],
     see_my_web: false,
@@ -409,8 +451,11 @@ const FORM_FIELD_CONFIG = {
     min_price: {toNumber: true, minValue: 0},
     max_price: {toNumber: true, minValue: 0},
     estimated_duration_minutes: {toNumber: true, minValue: 1},
+    capacity_control_enabled: {toBoolean: true},
+    capacity_limit: {toNumber: true, minValue: 1},
     commission_type: {getCode: true},
     commission_value: {toNumber: true, minValue: 0},
+    expires_at: {normalize: true},
     currency: {mapToField: "currency_id"},
     categories: {getArray: {mapTo: "category_id"}},
     see_my_web: {toBoolean: true},
@@ -427,8 +472,11 @@ const VALIDATION_RULES = {
     min_price: {required: false, number: true, min: 0},
     max_price: {required: false, number: true, min: 0},
     estimated_duration_minutes: {required: false, number: true, min: 1},
+    capacity_control_enabled: {required: false},
+    capacity_limit: {required: false, number: true, min: 1},
     commission_type: {required: false},
     commission_value: {required: false, number: true, min: 0},
+    expires_at: {required: false},
     currency: {required: true},
     categories: {required: false},
     see_my_web: {required: false},
@@ -445,8 +493,11 @@ const ERROR_LABELS = {
     min_price: "Precio mínimo",
     max_price: "Precio máximo",
     estimated_duration_minutes: "Duración estimada",
+    capacity_control_enabled: "Control de cupos",
+    capacity_limit: "Cupos disponibles",
     commission_type: "Tipo de comisión",
     commission_value: "Valor de comisión",
+    expires_at: "Fecha de vencimiento",
     currency: "Moneda",
     categories: "Categorías",
     see_my_web: "Visualizar en mi página",
@@ -480,8 +531,11 @@ const TEXTS = {
         minPrice: "Precio mínimo",
         maxPrice: "Precio máximo",
         estimatedDuration: "Duración estimada (minutos)",
+        capacityControl: "Cupos",
+        capacityLimit: "Cantidad de cupos",
         commissionType: "Tipo de comisión",
         commissionValue: "Valor de comisión",
+        expiresAt: "Fecha de vencimiento",
         currency: "Moneda",
         categories: "Categorías",
         status: "Estado",
@@ -648,8 +702,11 @@ export default {
                 entityForms.data.min_price        = record.min_price;
                 entityForms.data.max_price        = record.max_price;
                 entityForms.data.estimated_duration_minutes = record.estimated_duration_minutes;
+                entityForms.data.capacity_control_enabled = Boolean(record.capacity_control_enabled ?? false);
+                entityForms.data.capacity_limit = record.capacity_limit ?? "";
                 entityForms.data.commission_type  = this.commissionTypeOptions.find(e => e.code === (record.commission_type || "none")) ?? this.commissionTypeOptions[0];
                 entityForms.data.commission_value = record.commission_value;
+                entityForms.data.expires_at       = record.expires_at ? String(record.expires_at).slice(0, 10) : "";
                 entityForms.data.currency         = currencyOption;
                 entityForms.data.categories       = this.categories.filter(e => categoryItems.includes(e.code));
                 entityForms.data.see_my_web       = Boolean(record.see_my_web ?? false);
@@ -662,8 +719,11 @@ export default {
                 entityForms.data.internal_code = this.generateCode({length: 7});
                 entityForms.data.currency      = this.currencies.length > 0 ? this.currencies[0] : null;
                 entityForms.data.price_includes_tax = true;
+                entityForms.data.capacity_control_enabled = false;
+                entityForms.data.capacity_limit = "";
                 entityForms.data.commission_type = this.commissionTypeOptions[0];
                 entityForms.data.commission_value = "";
+                entityForms.data.expires_at = "";
                 entityForms.data.status        = this.statuses.length > 0 ? this.statuses[0] : null;
 
             }
@@ -709,6 +769,7 @@ export default {
                 }
 
                 const preparedData  = Forms.prepareFormData(formData, this.MODULE.formFieldConfig);
+                if(!preparedData.capacity_control_enabled) preparedData.capacity_limit = null;
                 const id            = preparedData.id;
                 const isUpdate      = this.isDefined(id);
                 const requestMethod = isUpdate ? "patch" : "post";
@@ -796,6 +857,13 @@ export default {
 
             }
 
+            if(formData.capacity_control_enabled && !Number(formData.capacity_limit || 0)) {
+
+                result.errors.capacity_limit = ["Indica cuántos cupos estarán disponibles."];
+                result.bool = false;
+
+            }
+
             return result;
 
         },
@@ -837,6 +905,16 @@ export default {
             if(type === "fixed") return `${record?.currency?.sign || ""} ${this.separatorNumber(value)}`.trim();
 
             return "Sin comisión";
+
+        },
+        capacityLabel(record) {
+
+            if(!record?.capacity_control_enabled) return "Cupos ilimitados";
+
+            const available = Number(record?.available_capacity ?? 0);
+            const limit = Number(record?.capacity_limit ?? 0);
+
+            return `${available} disponibles de ${limit}`;
 
         },
     },

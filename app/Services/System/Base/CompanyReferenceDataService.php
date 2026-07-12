@@ -138,11 +138,27 @@ final class CompanyReferenceDataService {
 
     public function saleItems(): Collection {
 
+        Item::expireActiveItems($this->companyId);
+
         return Item::query()
                    ->where("company_id", $this->companyId)
-                   ->where("status", "active")
+                   ->availableForSale()
                    ->with(["currency", "brand", "categoryItems.category", "warehouseItems.warehouse"])
                    ->orderBy("type")
+                   ->orderBy("name")
+                   ->get();
+
+    }
+
+    public function subscriptionItems(): Collection {
+
+        Item::expireActiveItems($this->companyId);
+
+        return Item::query()
+                   ->where("company_id", $this->companyId)
+                   ->where("type", "subscription")
+                   ->availableForSale()
+                   ->with("currency")
                    ->orderBy("name")
                    ->get();
 

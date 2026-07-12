@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace App\Services\System\Customers\Tracking;
 
 use App\Helpers\System\{TranslationHelper, Utilities};
-use App\Models\System\Customers\Subscription;
+use App\Models\System\Catalogs\Item;
+use App\Models\System\Customers\{Customer, Subscription, SubscriptionEmail};
 use App\Models\System\Organizations\Branch;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
@@ -217,6 +218,115 @@ class TrackingSubscriptionService {
             ]);
 
         });
+
+    }
+
+    public static function createManual(int $companyId, array $data, ?int $userId = null): Subscription {
+
+        return DB::transaction(function() use($companyId, $data, $userId) {
+
+            $customer = Customer::query()
+                ->where("company_id", $companyId)
+                ->where("status", "active")
+                ->findOrFail((int) $data["customer_id"]);
+
+            $catalogSubscription = null;
+
+            if(!empty($data["item_id"])) {
+
+                $catalogSubscription = Item::query()
+                    ->where("company_id", $companyId)
+                    ->where("type", "subscription")
+                    ->where("status", "active")
+                    ->findOrFail((int) $data["item_id"]);
+
+            }
+
+            self::assertDatesAvailable(
+                $companyId,
+                (int) $data["branch_id"],
+                (int) $customer->id,
+                (string) $data["start_date"],
+                (string) $data["end_date"],
+                (bool) ($data["force"] ?? false)
+            );
+
+            $subscription = Subscription::create([
+                "company_id" => $companyId,
+                "branch_id" => (int) $data["branch_id"],
+                "sale_header_id" => null,
+                "sale_body_id" => null,
+                "renewed_from_id" => null,
+                "customer_id" => (int) $customer->id,
+                "duration_type" => $data["duration_type"] ?? $catalogSubscription?->duration_type,
+                "duration_value" => $data["duration_value"] ?? $catalogSubscription?->duration_value,
+                "start_date" => $data["start_date"],
+                "end_date" => $data["end_date"],
+                "set_end_of_day" => (bool) ($data["set_end_of_day"] ?? false),
+                "force" => (bool) ($data["force"] ?? false),
+                "attendance_limit_per_day" => $data["attendance_limit_per_day"] ?? 1,
+                "observation" => $data["observation"] ?? null,
+                "type" => "manual",
+                "status" => "active",
+                "created_at" => now(),
+                "created_by" => $userId
+            ]);
+
+            if((bool) ($data["send_welcome_email"] ?? true)) {
+
+                self::queueWelcomeEmail($subscription, $customer, $catalogSubscription, $userId);
+
+            }
+
+            return $subscription->fresh(["branch", "customer"]);
+
+        });
+
+    }
+
+    private static function queueWelcomeEmail(
+        Subscription $subscription,
+        Customer $customer,
+        ?Item $catalogSubscription = null,
+        ?int $userId = null
+    ): void {
+
+        if(!Utilities::isDefined($customer->email)) {
+
+            return;
+
+        }
+
+        $membershipName = $catalogSubscription?->name ?? "tu membresía";
+        $body = view()->exists("emails.subscriptions.welcome.default")
+            ? view("emails.subscriptions.welcome.default", compact("subscription", "customer", "catalogSubscription", "membershipName"))->render()
+            : "<p>Hola {$customer->name},</p><p>Gracias por suscribirte a {$membershipName}. Tu membresía está activa desde {$subscription->start_date} hasta {$subscription->end_date}.</p>";
+
+        SubscriptionEmail::create([
+            "company_id" => $subscription->company_id,
+            "to" => $customer->email,
+            "subject" => "Gracias por tu suscripción",
+            "body" => $body,
+            "extras_json" => json_encode([
+                "customer" => [
+                    "id" => $customer->id,
+                    "name" => $customer->name,
+                    "email" => $customer->email
+                ],
+                "subscription" => [
+                    "id" => $subscription->id,
+                    "start_date" => $subscription->start_date,
+                    "end_date" => $subscription->end_date
+                ],
+                "catalog_item_id" => $catalogSubscription?->id
+            ]),
+            "type" => "SubscriptionWelcome",
+            "model_id" => $subscription->id,
+            "model_type" => Subscription::class,
+            "status" => "pending",
+            "created_at" => now(),
+            "created_by" => $userId
+        ]);
 
     }
 

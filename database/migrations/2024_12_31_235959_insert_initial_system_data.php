@@ -315,6 +315,14 @@ return new class extends Migration {
             [
                 "company_id" => 1,
                 "group" => "inventory",
+                "key" => "restore_stock_on_purchase_cancellation",
+                "value" => "false",
+                "description" => "Define si al anular una compra con recepciones se revierte automáticamente el ingreso de mercadería en inventario. Por defecto es false: la anulación se bloquea y la devolución a proveedor debe registrarse desde Inventario para mantener trazabilidad física.",
+                "value_type" => "boolean"
+            ],
+            [
+                "company_id" => 1,
+                "group" => "inventory",
                 "key" => "valuation_method",
                 "value" => "weighted_average",
                 "description" => "Método usado para valorizar inventario y kardex. El valor inicial weighted_average calcula costo promedio ponderado sobre entradas y saldos.",

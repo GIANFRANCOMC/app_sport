@@ -13,7 +13,7 @@ return new class extends Migration {
         Schema::create("book_complaints", function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger("company_id");
-            $table->unsignedBigInteger("branch_id")->nullable();
+            $table->unsignedBigInteger("branch_id");
             $table->unsignedBigInteger("identity_document_type_id");
             $table->string("document_number", 255);
             $table->string("name", 255);

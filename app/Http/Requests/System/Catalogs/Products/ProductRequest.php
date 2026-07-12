@@ -33,6 +33,7 @@ abstract class ProductRequest extends CompanyFormRequest {
             "commission_type" => ["required", "in:none,percentage,fixed"],
             "commission_value" => ["nullable", "numeric", "min:0", "max:{$maxValue}", "decimal:0,{$round}"],
             "currency_id" => ["bail", "required", "integer", new BelongsToCompany("currencies", ["status" => "active"], "La moneda seleccionada no pertenece a la empresa.")],
+            "expires_at" => ["nullable", "date"],
             "categories" => ["nullable", "array", "max:50"],
             "categories.*.category_id" => ["bail", "required", "integer", "distinct", new BelongsToCompany("categories", ["status" => "active"], "Una o más categorías no pertenecen a la empresa o no están activas.")],
             "see_my_web" => ["required", "boolean"],
@@ -70,6 +71,7 @@ abstract class ProductRequest extends CompanyFormRequest {
             "min_price" => "precio mínimo",
             "max_price" => "precio máximo",
             "currency_id" => "moneda",
+            "expires_at" => "fecha de vencimiento",
             "commission_type" => "tipo de comision",
             "commission_value" => "valor de comision",
             "categories" => "categorías",
@@ -129,7 +131,8 @@ abstract class ProductRequest extends CompanyFormRequest {
             "commission_type" => $this->input("commission_type") ?: "none",
             "commission_value" => $this->input("commission_type") === "none"
                 ? 0
-                : ($this->normalizeOptionalNumber($this->input("commission_value")) ?? 0)
+                : ($this->normalizeOptionalNumber($this->input("commission_value")) ?? 0),
+            "expires_at" => $this->filled("expires_at") ? $this->input("expires_at") : null
         ]);
 
     }

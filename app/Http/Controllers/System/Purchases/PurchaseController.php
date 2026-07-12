@@ -124,9 +124,15 @@ final class PurchaseController extends BaseController {
                 $this->getUserId()
             );
 
+            $message = match(true) {
+                (bool) $purchase->getAttribute("inventory_reverted_on_cancellation") => "Compra anulada correctamente. Las recepciones asociadas fueron revertidas en inventario.",
+                (bool) $purchase->getAttribute("had_inventory_receipts") => "Compra anulada correctamente. Revisa si corresponde registrar devolución a proveedor desde Inventario.",
+                default => "Compra anulada. No se modificó el inventario porque no tenía recepciones."
+            };
+
             return response()->json([
                 "bool" => true,
-                "msg" => "Compra anulada. No se modificó el inventario porque no tenía recepciones.",
+                "msg" => $message,
                 "data" => $purchase
             ]);
 

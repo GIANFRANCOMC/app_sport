@@ -490,6 +490,7 @@ export default {
 
             this.options[this.entity] = response?.data?.config?.[this.entity] ?? {};
             this.options.identity_document_types = response?.data?.config?.identity_document_types ?? {};
+            this.options.branches = response?.data?.config?.branches ?? {};
 
             return Requests.valid({result: response});
 

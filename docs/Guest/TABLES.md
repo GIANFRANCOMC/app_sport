@@ -40,7 +40,7 @@ Se crea desde asistencia publica QR cuando el cliente cumple reglas de membresia
 
 ## book_complaints
 
-Guarda quejas, reclamos y sugerencias publicas. Incluye datos del reclamante, descripcion, solicitud, evidencia, IP, user agent, plataforma y navegador.
+Guarda quejas, reclamos y sugerencias publicas. Incluye sucursal, datos del reclamante, descripcion, solicitud, evidencia, IP, user agent, plataforma y navegador.
 
 ## identity_document_types
 

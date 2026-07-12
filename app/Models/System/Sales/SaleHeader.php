@@ -28,7 +28,9 @@ class SaleHeader extends Model {
         "formatted_issue_date",
         "diff_days_issue_date",
         "legible_total",
-        "formatted_status"
+        "formatted_status",
+        "formatted_delivery_mode",
+        "formatted_delivery_status"
     ];
 
     protected $fillable = [
@@ -38,12 +40,17 @@ class SaleHeader extends Model {
         "holder_id",
         "seller_id",
         "currency_id",
-        "warehouse_id",
-        "cash_session_id",
-        "issue_date",
-        "subtotal",
-        "tax",
-        "commission_total",
+            "warehouse_id",
+            "cash_session_id",
+            "issue_date",
+            "delivery_mode",
+            "delivery_status",
+            "delivered_at",
+            "delivered_by",
+            "delivery_observation",
+            "subtotal",
+            "tax",
+            "commission_total",
         "total",
         "observation",
         "status",
@@ -114,12 +121,48 @@ class SaleHeader extends Model {
 
     }
 
+    public function getFormattedDeliveryModeAttribute() {
+
+        return self::getDeliveryModes("first", $this->attributes["delivery_mode"] ?? "")["label"] ?? "";
+
+    }
+
+    public function getFormattedDeliveryStatusAttribute() {
+
+        return self::getDeliveryStatuses("first", $this->attributes["delivery_status"] ?? "")["label"] ?? "";
+
+    }
+
     // Functions
     public static function getStatuses($type = "all", $code = "") {
 
         $statuses = [
             ["code" => "active", "label" => "Activo"],
             ["code" => "inactive", "label" => "Inactivo"],
+            ["code" => "canceled", "label" => "Anulado"]
+        ];
+
+        return Utilities::getValues($statuses, $type, $code);
+
+    }
+
+    public static function getDeliveryModes($type = "all", $code = "") {
+
+        $modes = [
+            ["code" => "immediate", "label" => "Entrega inmediata"],
+            ["code" => "pending", "label" => "Entrega pendiente"]
+        ];
+
+        return Utilities::getValues($modes, $type, $code);
+
+    }
+
+    public static function getDeliveryStatuses($type = "all", $code = "") {
+
+        $statuses = [
+            ["code" => "pending", "label" => "Pendiente"],
+            ["code" => "partial", "label" => "Parcial"],
+            ["code" => "delivered", "label" => "Entregado"],
             ["code" => "canceled", "label" => "Anulado"]
         ];
 
@@ -201,6 +244,12 @@ class SaleHeader extends Model {
     public function cashSession() {
 
         return $this->belongsTo(CashSession::class, "cash_session_id", "id");
+
+    }
+
+    public function deliveredBy() {
+
+        return $this->belongsTo(User::class, "delivered_by", "id");
 
     }
 

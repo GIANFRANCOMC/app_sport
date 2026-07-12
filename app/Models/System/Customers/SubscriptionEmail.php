@@ -74,7 +74,8 @@ class SubscriptionEmail extends Model {
     public static function getTypes($type = "all", $code = "") {
 
         $types = [
-            ["code" => "SubscriptionExpired", "label" => "SubscriptionExpired"]
+            ["code" => "SubscriptionExpired", "label" => "Membresía vencida"],
+            ["code" => "SubscriptionWelcome", "label" => "Agradecimiento por suscripción"]
         ];
 
         return Utilities::getValues($types, $type, $code);

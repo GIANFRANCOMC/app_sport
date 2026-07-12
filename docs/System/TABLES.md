@@ -196,9 +196,13 @@ Relaciones: pertenece a empresa; se une a items por `category_items`.
 
 ### items
 
-Productos, servicios y membresias de catalogo. Campos: `company_id`, `brand_id`, `currency_id`, `internal_code`, `barcode`, `name`, `description`, `price`, `min_price`, `max_price`, `type`, `duration_type`, `duration_value`, `see_my_web`, `see_my_web_price`, `status`.
+Productos, servicios y membresias de catalogo. Campos: `company_id`, `brand_id`, `currency_id`, `internal_code`, `barcode`, `name`, `description`, `price`, `price_includes_tax`, `min_price`, `max_price`, `type`, `duration_type`, `duration_value`, `estimated_duration_minutes`, `capacity_control_enabled`, `capacity_limit`, `capacity_used`, `expires_at`, `see_my_web`, `see_my_web_price`, `status`.
 
-`barcode` almacena un EAN-13 opcional a nivel de tabla. No declara un índice único ni un índice compuesto adicional; la unicidad por empresa es una regla de negocio validada en backend mediante `UniqueInCompany`. El módulo Productos lo exige para nuevos productos. `see_my_web` controla la publicación del item en el catálogo comercial y `see_my_web_price` controla si también se expone el precio.
+`barcode` almacena un EAN-13 opcional a nivel de tabla. No declara un índice único ni un índice compuesto adicional; la unicidad por empresa es una regla de negocio validada en backend mediante `UniqueInCompany`. El módulo Productos lo exige para nuevos productos; Servicios y Membresías no usan código de barras, marca ni inventario físico.
+
+`capacity_control_enabled`, `capacity_limit` y `capacity_used` controlan cupos comerciales para ítems no inventariables, principalmente servicios y membresías. Si el control está desactivado, el ítem se considera ilimitado y `capacity_limit` queda nulo. `expires_at` es opcional para todos los tipos; cuando vence, el backend inactiva el ítem en listados y lo bloquea en ventas.
+
+`see_my_web` controla la publicación del item en el catálogo comercial y `see_my_web_price` controla si también se expone el precio.
 
 Relaciones: pertenece a empresa, moneda y opcionalmente marca; tiene categorias; usado por ventas, stock y portal publico. `brand_id` usa `ON DELETE SET NULL`.
 
@@ -250,9 +254,9 @@ Relaciones: pertenece a empresa y tipo de documento; tiene ventas, membresias, a
 
 ### subscriptions
 
-Membresias reales de clientes. Campos: `company_id`, `branch_id`, `sale_header_id`, `sale_body_id`, `customer_id`, `duration_type`, `duration_value`, `start_date`, `end_date`, `set_end_of_day`, `force`, `attendance_limit_per_day`, `observation`, `motive`, `type`, `status`.
+Membresias reales de clientes. Campos: `company_id`, `branch_id`, `sale_header_id`, `sale_body_id`, `renewed_from_id`, `customer_id`, `duration_type`, `duration_value`, `start_date`, `end_date`, `set_end_of_day`, `force`, `attendance_limit_per_day`, `observation`, `motive`, `type`, `status`.
 
-Relaciones: pertenece a empresa, sucursal y cliente; puede venir de venta.
+Relaciones: pertenece a empresa, sucursal y cliente; puede venir de venta, renovación o alta manual directa.
 
 ### attendances
 
@@ -278,7 +282,7 @@ Relaciones: pertenece a empresa, colaborador y dispositivo. El servicio biométr
 
 Emails relacionados a membresias. Campos: `to`, `subject`, `body`, `extras_json`, `type`, `model_id`, `model_type`, `status`.
 
-Relaciones: puede referenciar modelos mediante `model_id`/`model_type`.
+Relaciones: puede referenciar modelos mediante `model_id`/`model_type`. Los tipos iniciales son `SubscriptionExpired` y `SubscriptionWelcome`; este último se crea al agregar una membresía manual con correo de agradecimiento activo.
 
 ## Operaciones y servicios
 
@@ -354,9 +358,9 @@ Foto histórica de los pagos del documento. Guardan método, nombre, monto, refe
 
 ### sales_header
 
-Cabecera de venta. Campos: `serie_id`, `sequential`, `holder_id`, `seller_id`, `currency_id`, `issue_date`, `subtotal`, `tax`, `commission_total`, `total`, `observation`, `status`.
+Cabecera de venta. Campos: `serie_id`, `sequential`, `holder_id`, `seller_id`, `currency_id`, `warehouse_id`, `cash_session_id`, `issue_date`, `delivery_mode`, `delivery_status`, `delivered_at`, `delivered_by`, `delivery_observation`, `subtotal`, `tax`, `commission_total`, `total`, `observation`, `status`.
 
-Relaciones: pertenece a serie, cliente comprador, vendedor y moneda; tiene detalles.
+Relaciones: pertenece a serie, cliente comprador, vendedor, moneda, almacén, caja y usuario que confirmó entrega; tiene detalles. El seguimiento de entrega registra estado operativo sin cambiar todavía el momento del movimiento de inventario.
 
 ### sales_body
 
@@ -465,7 +469,7 @@ Relaciones: referencia asignaciones y usuarios origen/destino.
 
 ### book_complaints
 
-Reclamos, quejas o sugerencias. Campos: `company_id`, `branch_id`, `identity_document_type_id`, `document_number`, `name`, `email`, `phone_number`, `type`, `description`, `request`, `evidence`, `admin_response`, datos de dispositivo/IP, `status`.
+Reclamos, quejas o sugerencias. Campos: `company_id`, `branch_id`, `identity_document_type_id`, `document_number`, `name`, `email`, `phone_number`, `type`, `description`, `request`, `evidence`, `admin_response`, datos de dispositivo/IP, `status`. `branch_id` es obligatorio para ubicar la atención por sucursal desde Guest y System.
 
 Relaciones: pertenece a empresa, sucursal y tipo de documento.
 

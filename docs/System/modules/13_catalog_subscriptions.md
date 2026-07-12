@@ -19,3 +19,11 @@ Administra ítems `subscription` que, al venderse, generan una membresía real p
 - El formulario permite definir límite diario de asistencias, comisión y valor de comisión.
 - `benefits` y `restrictions` se editan como textos separados por coma para mantener una captura rápida; el frontend los normaliza a arreglos antes de enviarlos al backend.
 - Los beneficios describen lo que incluye el plan; las restricciones deben usarse para reglas comerciales claras como horarios, sedes o condiciones de uso.
+
+## Actualizacion funcional: cupos y vencimiento
+
+- Las membresias de catalogo no usan `barcode`, `brand_id` ni `warehouse_items`; su disponibilidad no depende de inventario fisico.
+- `capacity_control_enabled`, `capacity_limit` y `capacity_used` permiten vender membresias con cupos limitados o tratarlas como ilimitadas.
+- `expires_at` es opcional. Cuando vence, el backend inactiva la membresia al listar catalogo o referencias comerciales y la bloquea en ventas.
+- El listado muestra cupos disponibles para diferenciar planes ilimitados, promociones cerradas o paquetes con disponibilidad limitada.
+- Al vender una membresia limitada se consume cupo segun la cantidad vendida. Al anular la venta se repone el cupo consumido.

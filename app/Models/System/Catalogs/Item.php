@@ -21,6 +21,8 @@ class Item extends Model {
     protected $appends = [
         "formatted_type",
         "formatted_duration",
+        "available_capacity",
+        "is_expired",
         "formatted_status"
     ];
 
@@ -40,6 +42,10 @@ class Item extends Model {
         "duration_type",
         "duration_value",
         "estimated_duration_minutes",
+        "capacity_control_enabled",
+        "capacity_limit",
+        "capacity_used",
+        "expires_at",
         "commission_rate",
         "commission_type",
         "commission_value",
@@ -58,6 +64,10 @@ class Item extends Model {
     protected $casts = [
         "price_includes_tax" => "boolean",
         "estimated_duration_minutes" => "integer",
+        "capacity_control_enabled" => "boolean",
+        "capacity_limit" => "integer",
+        "capacity_used" => "integer",
+        "expires_at" => "datetime",
         "commission_rate" => "decimal:4",
         "commission_value" => "decimal:4",
         "attendance_limit_per_day" => "integer",
@@ -97,6 +107,24 @@ class Item extends Model {
         $status = $this->attributes["status"] ?? null;
 
         return $status ? (self::getStatuses("first", $status)["label"] ?? "") : "";
+
+    }
+
+    public function getAvailableCapacityAttribute(): ?int {
+
+        if(!$this->hasCapacityControl()) {
+
+            return null;
+
+        }
+
+        return $this->availableCapacity();
+
+    }
+
+    public function getIsExpiredAttribute(): bool {
+
+        return $this->isExpired();
 
     }
 
@@ -142,6 +170,85 @@ class Item extends Model {
         ];
 
         return Utilities::getValues($statuses, $type, $code);
+
+    }
+
+    public function hasCapacityControl(): bool {
+
+        return (bool) ($this->attributes["capacity_control_enabled"] ?? false);
+
+    }
+
+    public function availableCapacity(): int {
+
+        if(!$this->hasCapacityControl()) {
+
+            return 0;
+
+        }
+
+        $limit = max(0, (int) ($this->attributes["capacity_limit"] ?? 0));
+        $used  = max(0, (int) ($this->attributes["capacity_used"] ?? 0));
+
+        return max(0, $limit - $used);
+
+    }
+
+    public function isExpired(): bool {
+
+        $expiresAt = $this->getAttribute("expires_at");
+
+        return $expiresAt !== null && $expiresAt->lte(now());
+
+    }
+
+    public function isAvailableForSale(): bool {
+
+        if(($this->attributes["status"] ?? null) !== "active" || $this->isExpired()) {
+
+            return false;
+
+        }
+
+        return !$this->hasCapacityControl() || $this->availableCapacity() > 0;
+
+    }
+
+    public static function expireActiveItems(int $companyId): int {
+
+        return self::query()
+                   ->where("company_id", $companyId)
+                   ->where("status", "active")
+                   ->whereNotNull("expires_at")
+                   ->where("expires_at", "<=", now())
+                   ->update([
+                       "status"     => "inactive",
+                       "updated_at" => now()
+                   ]);
+
+    }
+
+    public function scopeAvailableForSale($query) {
+
+        return $query->where("status", "active")
+                     ->where(function($subQuery) {
+
+                         $subQuery->whereNull("expires_at")
+                                  ->orWhere("expires_at", ">", now());
+
+                     })
+                     ->where(function($subQuery) {
+
+                         $subQuery->where("capacity_control_enabled", false)
+                                  ->orWhere(function($capacityQuery) {
+
+                                      $capacityQuery->where("capacity_control_enabled", true)
+                                                    ->whereNotNull("capacity_limit")
+                                                    ->whereColumn("capacity_used", "<", "capacity_limit");
+
+                                  });
+
+                     });
 
     }
 

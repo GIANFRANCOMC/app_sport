@@ -203,6 +203,10 @@ return new class extends Migration {
             $table->enum("duration_type", ["hour", "day", "today", "month", "year"])->nullable();
             $table->integer("duration_value")->nullable();
             $table->unsignedInteger("estimated_duration_minutes")->nullable();
+            $table->boolean("capacity_control_enabled")->default(false);
+            $table->unsignedInteger("capacity_limit")->nullable();
+            $table->unsignedInteger("capacity_used")->default(0);
+            $table->dateTime("expires_at")->nullable();
             $table->decimal("commission_rate", 7, 4)->nullable();
             $table->enum("commission_type", ["none", "percentage", "fixed"])->default("none");
             $table->decimal("commission_value", 16, 4)->default(0);
