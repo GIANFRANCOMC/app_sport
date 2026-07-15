@@ -22,9 +22,9 @@ export const generalConfig = {
         inputs: {
             maxlength: 999,
             required: "*",
-            round: 2,
+            round: 4,
             minValue: 0,
-            maxValue: 9999999,
+            maxValue: 999999999999.9999,
             maxSize: 2048
         },
         errors: {

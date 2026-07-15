@@ -177,8 +177,8 @@ class StockManagementService {
                                               ->where("item_id", $item["id"])
                                               ->first();
 
-                $currentQuantity = round((float) ($warehouseItem?->quantity ?? 0), 2);
-                $resultingBalance = round((float) ($item["stock_quantity"] ?? 0), 2);
+                $currentQuantity = round((float) ($warehouseItem?->quantity ?? 0), 4);
+                $resultingBalance = round((float) ($item["stock_quantity"] ?? 0), 4);
 
                 if(abs($currentQuantity - $resultingBalance) < 0.00001) {
 

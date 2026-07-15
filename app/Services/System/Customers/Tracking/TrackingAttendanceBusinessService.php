@@ -35,12 +35,12 @@ class TrackingAttendanceBusinessService {
      *
      * @param string|int $code Customer ID or document number
      * @param int $companyId Company ID
-     * @param string $type Search type: "dni", "dnie", or "carnet"
+     * @param string $type Search type: "document_number" or "carnet"
      * @return Customer|null
      */
     public function getValidCustomer($code, int $companyId, string $type = ""): ?Customer {
 
-        if(in_array($type, ["dni", "dnie"])) {
+        if($this->normalizeLookupType($type) === "document_number") {
 
             return Customer::where("document_number", $code)
                            ->where("company_id", $companyId)
@@ -90,7 +90,10 @@ class TrackingAttendanceBusinessService {
 
         $dailyAttendances = Attendance::where("company_id", $companyId)
             ->where("customer_id", $customerId)
-            ->whereDate("start_date", $startDate->format("Y-m-d"));
+            ->whereBetween("start_date", [
+                $startDate->copy()->startOfDay(),
+                $startDate->copy()->endOfDay()
+            ]);
 
         $scope = (string) CompanySettingService::value(
             $companyId,
@@ -170,7 +173,7 @@ class TrackingAttendanceBusinessService {
         $customerId  = $data["customer_id"] ?? "";
         $customerDocumentNumber = $data["customer_document_number"] ?? "";
         $customerAttendanceType = Utilities::isDefined($data["customer_attendance_type"] ?? "")
-            ? $data["customer_attendance_type"]
+            ? $this->normalizeLookupType((string) $data["customer_attendance_type"])
             : "carnet";
         $startDate   = $data["start_date"] ?? null;
         $endDate     = $data["end_date"] ?? null;
@@ -218,7 +221,7 @@ class TrackingAttendanceBusinessService {
                 $companyId
             );
 
-        } elseif (in_array($customerAttendanceType, ["dni", "dnie"])) {
+        } elseif ($customerAttendanceType === "document_number") {
 
             $customer = $this->getValidCustomer($customerDocumentNumber, $companyId, $customerAttendanceType);
 
@@ -296,6 +299,8 @@ class TrackingAttendanceBusinessService {
             ->latest("start_date")
             ->first();
 
+        $maxActiveHours = $this->maxActiveHours($companyId);
+
         // Handle checkout
         if(in_array($action, ["checkout"])) {
 
@@ -323,6 +328,13 @@ class TrackingAttendanceBusinessService {
 
             }
 
+            if($this->attendanceExceedsMaxDuration($activeAttendance, $proposedEndDate, $maxActiveHours)) {
+
+                $response["msg"] = "$customer->name: La asistencia supera {$maxActiveHours} horas. Registra una corrección o crea una nueva asistencia.";
+                return $response;
+
+            }
+
             $activeAttendance->end_date   = $proposedEndDate;
             $activeAttendance->status     = "finalized";
             $activeAttendance->updated_at = now();
@@ -346,6 +358,17 @@ class TrackingAttendanceBusinessService {
         }
 
         // Check for active attendance (checkin)
+        if(Utilities::isDefined($activeAttendance)) {
+
+            if($this->attendanceExceedsMaxDuration($activeAttendance, $startDate, $maxActiveHours)) {
+
+                $this->closeExpiredAttendance($activeAttendance, $maxActiveHours, $userId);
+                $activeAttendance = null;
+
+            }
+
+        }
+
         if(Utilities::isDefined($activeAttendance)) {
 
             $response["msg"] = "$customer->name: Cuenta con un registro de asistencia 'En curso'.";
@@ -402,6 +425,48 @@ class TrackingAttendanceBusinessService {
         $response["action"] = "checkin";
 
         return $response;
+
+    }
+
+    private function normalizeLookupType(string $type): string {
+
+        return in_array($type, ["dni", "dnie", "document_number"], true)
+            ? "document_number"
+            : $type;
+
+    }
+
+    private function maxActiveHours(int $companyId): int {
+
+        return max(1, (int) CompanySettingService::value(
+            $companyId,
+            CompanySettingService::CUSTOMER_ATTENDANCE,
+            "max_active_hours",
+            20
+        ));
+
+    }
+
+    private function attendanceExceedsMaxDuration(Attendance $attendance, Carbon $endDate, int $maxHours): bool {
+
+        $startDate = Carbon::parse($attendance->start_date);
+
+        return $endDate->diffInMinutes($startDate) > ($maxHours * 60);
+
+    }
+
+    private function closeExpiredAttendance(Attendance $attendance, int $maxHours, ?int $userId): void {
+
+        $endDate = Carbon::parse($attendance->start_date)->addHours($maxHours);
+        $note = "Finalizada automáticamente por superar {$maxHours} horas sin salida.";
+        $currentObservation = trim((string) $attendance->observation);
+
+        $attendance->end_date = $endDate;
+        $attendance->status = "finalized";
+        $attendance->observation = trim($currentObservation === "" ? $note : "{$currentObservation}\n{$note}");
+        $attendance->updated_at = now();
+        $attendance->updated_by = $userId;
+        $attendance->save();
 
     }
 

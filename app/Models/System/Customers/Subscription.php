@@ -3,6 +3,7 @@
 namespace App\Models\System\Customers;
 
 use App\Helpers\System\Utilities;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 
 use App\Models\System\Organizations\{Branch, Company};
@@ -19,7 +20,9 @@ class Subscription extends Model {
     protected $appends = [
         "formatted_duration",
         "formatted_type",
-        "formatted_status"
+        "formatted_status",
+        "remaining_days",
+        "remaining_time_label"
     ];
 
     protected $fillable = [
@@ -48,8 +51,7 @@ class Subscription extends Model {
         "canceled_by"
     ];
 
-    // Appends
-    public function getFormattedDurationAttribute() {
+    public function getFormattedDurationAttribute(): string {
 
         if(Utilities::isDefined($this->duration_type) && Utilities::isDefined($this->duration_value)) {
 
@@ -64,19 +66,60 @@ class Subscription extends Model {
 
     }
 
-    public function getFormattedTypeAttribute() {
+    public function getFormattedTypeAttribute(): string {
 
         return self::getTypes("first", $this->attributes["type"] ?? "")["label"] ?? "";
 
     }
 
-    public function getFormattedStatusAttribute() {
+    public function getFormattedStatusAttribute(): string {
 
         return self::getStatuses("first", $this->attributes["status"] ?? "")["label"] ?? "";
 
     }
 
-    // Functions
+    public function getRemainingDaysAttribute(): ?int {
+
+        $endDate = $this->attributes["end_date"] ?? null;
+
+        if(!Utilities::isDefined($endDate)) {
+
+            return null;
+
+        }
+
+        return now()->startOfDay()->diffInDays(Carbon::parse($endDate)->startOfDay(), false);
+
+    }
+
+    public function getRemainingTimeLabelAttribute(): string {
+
+        $remainingDays = $this->remaining_days;
+
+        if($remainingDays === null) {
+
+            return "";
+
+        }
+
+        if($remainingDays < 0) {
+
+            $days = abs($remainingDays);
+
+            return $days === 1 ? "Venció hace 1 día" : "Venció hace {$days} días";
+
+        }
+
+        if($remainingDays === 0) {
+
+            return "Vence hoy";
+
+        }
+
+        return $remainingDays === 1 ? "Falta 1 día" : "Faltan {$remainingDays} días";
+
+    }
+
     public static function getDurationTypes($type = "all", $code = "") {
 
         $types = [
@@ -114,7 +157,6 @@ class Subscription extends Model {
 
     }
 
-    // Relationships
     public function company() {
 
         return $this->belongsTo(Company::class, "company_id", "id");

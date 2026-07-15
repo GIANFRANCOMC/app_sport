@@ -63,7 +63,7 @@ class WarehouseItemService {
 
             $warehouseItem->save();
 
-            $initialStock = round((float) ($inventoryRecord["initial_stock"] ?? 0), 2);
+            $initialStock = round((float) ($inventoryRecord["initial_stock"] ?? 0), 4);
 
             if($isNew && $setInitialStock && $initialStock > 0) {
 

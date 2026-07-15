@@ -28,9 +28,9 @@ final class PurchaseReceiptItem extends Model {
     ];
 
     protected $casts = [
-        "quantity" => "decimal:2",
+        "quantity" => "decimal:4",
         "unit_cost" => "decimal:4",
-        "total_cost" => "decimal:2",
+        "total_cost" => "decimal:4",
         "created_at" => "datetime"
     ];
 

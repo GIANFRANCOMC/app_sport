@@ -42,6 +42,7 @@ class SaleHeader extends Model {
         "currency_id",
             "warehouse_id",
             "cash_session_id",
+            "quotation_header_id",
             "issue_date",
             "delivery_mode",
             "delivery_status",
@@ -244,6 +245,12 @@ class SaleHeader extends Model {
     public function cashSession() {
 
         return $this->belongsTo(CashSession::class, "cash_session_id", "id");
+
+    }
+
+    public function quotation() {
+
+        return $this->belongsTo(QuotationHeader::class, "quotation_header_id", "id");
 
     }
 

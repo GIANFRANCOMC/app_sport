@@ -386,11 +386,11 @@ final class UserAttendanceService {
         }
 
         if(!empty($filters["date_from"])) {
-            $query->whereDate("work_date", ">=", $filters["date_from"]);
+            $query->where("work_date", ">=", $filters["date_from"]);
         }
 
         if(!empty($filters["date_to"])) {
-            $query->whereDate("work_date", "<=", $filters["date_to"]);
+            $query->where("work_date", "<=", $filters["date_to"]);
         }
 
         return $query;

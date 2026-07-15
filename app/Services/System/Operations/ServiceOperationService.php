@@ -381,11 +381,11 @@ final class ServiceOperationService {
         }
 
         if(!empty($filters["date_from"])) {
-            $query->whereDate("created_at", ">=", $filters["date_from"]);
+            $query->where("created_at", ">=", Utilities::startOfDay($filters["date_from"]));
         }
 
         if(!empty($filters["date_to"])) {
-            $query->whereDate("created_at", "<=", $filters["date_to"]);
+            $query->where("created_at", "<=", Utilities::endOfDay($filters["date_to"]));
         }
 
         return $query->orderByDesc("id")->paginate($perPage);
@@ -897,7 +897,7 @@ final class ServiceOperationService {
                 "sla_compliance_rate" => $withSla->count()
                     ? round((($withSla->count() - $late->count()) / $withSla->count()) * 100, 2)
                     : null,
-                "commission_total" => round($commissionTotal, 2)
+                "commission_total" => round($commissionTotal, 4)
             ],
             "by_branch" => self::reportGroup($sessions, "branch", "Sucursal"),
             "by_station" => self::reportGroup($sessions, "station", "Estación"),
@@ -1131,8 +1131,8 @@ final class ServiceOperationService {
                     "id" => $first?->item_id,
                     "name" => $first?->name ?? "Detalle sin nombre",
                     "quantity" => round((float) $records->sum("quantity"), 4),
-                    "total" => round((float) $records->sum(fn(ServiceSessionItem $detail) => (float) $detail->quantity * (float) $detail->unit_price), 2),
-                    "commission_total" => round($commission, 2),
+                    "total" => round((float) $records->sum(fn(ServiceSessionItem $detail) => (float) $detail->quantity * (float) $detail->unit_price), 4),
+                    "commission_total" => round($commission, 4),
                     "average_duration_minutes" => round((float) $records->avg("duration_minutes"), 2)
                 ];
             })

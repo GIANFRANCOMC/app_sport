@@ -159,8 +159,8 @@ class UserController extends BaseController {
             ->where("user_id", $user->id)
             ->when($request->input("event_type"), fn($query, $eventType) => $query->where("event_type", $eventType))
             ->when($request->input("result"), fn($query, $result) => $query->where("result", $result))
-            ->when($request->input("date_from"), fn($query, $date) => $query->whereDate("occurred_at", ">=", $date))
-            ->when($request->input("date_to"), fn($query, $date) => $query->whereDate("occurred_at", "<=", $date))
+            ->when($request->input("date_from"), fn($query, $date) => $query->where("occurred_at", ">=", Utilities::startOfDay($date)))
+            ->when($request->input("date_to"), fn($query, $date) => $query->where("occurred_at", "<=", Utilities::endOfDay($date)))
             ->latest("occurred_at")
             ->paginate($this->getPerPage($request));
 

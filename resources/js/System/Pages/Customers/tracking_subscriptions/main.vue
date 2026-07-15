@@ -154,6 +154,10 @@
                             <td>
                                 <span v-text="legibleFormatDate({dateString: record.end_date, type: 'date'})" class="d-block fw-semibold"></span>
                                 <span v-text="legibleFormatDate({dateString: record.end_date, type: 'time'})" class="d-block fw-semibold"></span>
+                                <small
+                                    v-if="record.remaining_time_label"
+                                    :class="['d-block fw-semibold mt-1', remainingTimeClass(record)]"
+                                    v-text="record.remaining_time_label"></small>
                             </td>
                             <td>
                                 <InputSlot
@@ -207,6 +211,12 @@
                         <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12">
                             <span class="fw-semibold">• Fecha de finalización:</span>
                             <span class="ms-2" v-text="legibleFormatDate({dateString: forms.entity.createUpdate.extras.modals.actions.data?.end_date, type: 'datetime'})"></span>
+                        </div>
+                        <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12" v-if="forms.entity.createUpdate.extras.modals.actions.data?.remaining_time_label">
+                            <span class="fw-semibold">Tiempo restante:</span>
+                            <span
+                                :class="['ms-2 fw-semibold', remainingTimeClass(forms.entity.createUpdate.extras.modals.actions.data)]"
+                                v-text="forms.entity.createUpdate.extras.modals.actions.data?.remaining_time_label"></span>
                         </div>
                         <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12">
                             <span class="fw-semibold">• Origen:</span>
@@ -816,6 +826,16 @@ export default {
         legibleFormatDate({dateString = null, type = "datetime"}) {
 
             return Utils.legibleFormatDate({dateString, type});
+
+        },
+        remainingTimeClass(record = {}) {
+
+            const days = Number(record?.remaining_days ?? 0);
+
+            if(days < 0) return "text-danger";
+            if(days <= 3) return "text-warning";
+
+            return "text-success";
 
         }
     },

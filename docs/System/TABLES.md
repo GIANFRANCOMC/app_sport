@@ -60,19 +60,55 @@ El grupo `inventory` contiene `allow_negative_stock_on_sale`, booleano con valor
 
 El grupo `inventory` también contiene `restore_stock_on_sale_cancellation`, booleano con valor predeterminado `false`. Cuando está desactivado, anular una venta no modifica existencias; una devolución física se registra posteriormente desde Inventario. Cuando está activo, la anulación repone automáticamente los productos en el almacén asociado a la venta.
 
+El grupo `inventory` contiene `stock_alert_email_enabled` y `stock_alert_email_to`. La primera clave activa el correo de alerta cuando se abre una nueva alerta de stock bajo o en el mínimo; la segunda define el destinatario. Si el destinatario queda vacío, se usa el correo de la empresa cuando exista. Las actualizaciones de una alerta ya abierta no reenvían correo.
+
+El grupo `external_api` contiene `document_lookup_monthly_warning_threshold`, entero usado para advertir cuando la empresa supera una cantidad mensual de consultas externas de DNI/RUC.
+
+El grupo `customer_attendance` contiene reglas operativas para asistencias de clientes: `max_active_hours` limita asistencias abiertas demasiado antiguas, `auto_close_stale_enabled` habilita el cierre técnico, `auto_close_after_time` define desde qué hora puede ejecutarse el cierre de pendientes del día anterior, `auto_close_end_time` define la hora técnica de salida usada al cerrar automáticamente y `retention_months` define la retención mínima de historial. La retención nunca debe configurarse por debajo de cuatro meses.
+
+El grupo `subscriptions` contiene `send_welcome_email_on_sale`, booleano que permite registrar un correo de agradecimiento cuando una venta genera una membresía real.
+
+El grupo `loyalty` contiene `enabled` y `reverse_points_on_sale_cancellation`. `enabled` activa el sistema de puntos por empresa; `reverse_points_on_sale_cancellation` descuenta puntos previamente otorgados cuando una venta se anula.
+
 El grupo `localization` contiene `timezone`, con valor inicial `America/Lima`. Debe almacenar una zona horaria IANA y se usa para construir límites diarios coherentes en Dashboard y procesos operativos.
 
 El grupo `dashboard` contiene `membership_expiration_window_days`, entero con valor inicial `7`. Define cuántos días calendario, incluyendo la fecha consultada, abarca el KPI de membresías próximas a vencer.
 
+El grupo `reports` contiene `sale_share_ttl_minutes`, entero con valor inicial `4320`. Define la vigencia de enlaces firmados para compartir, imprimir o enviar comprobantes de venta fuera de la sesión autenticada. Estos enlaces no exponen ids simples sin firma y Laravel rechaza cualquier alteración o vencimiento antes de renderizar el PDF.
+
 La combinación `company_id + group + key` es única: una empresa no puede tener dos valores activos o históricos ambiguos para la misma configuración.
 
 Relaciones: cada configuración pertenece a `companies` mediante `company_id`.
+
+### external_api_request_logs
+
+Bitácora mensual de consultas a proveedores externos. Campos: `company_id`, `user_id`, `service`, `action`, `document_type`, `document_number`, `result`, `ip_address` y `requested_at`.
+
+Uso: permite medir cuántas solicitudes de DNI/RUC lleva una empresa por mes, mostrar advertencias cuando supera el umbral configurado y auditar bloqueos o fallos del proveedor. No almacena tokens ni secretos.
+
+Relaciones: pertenece a `companies` y opcionalmente a `users`.
 
 ### company_socials_media
 
 Redes sociales y enlaces publicos de empresa. Campos: `company_id`, `type`, `link`, `status`.
 
 Relaciones: pertenece a `companies`.
+
+### business_industries
+
+Rubros configurables por empresa. Campos: `company_id`, `slug`, `name`, `description` y `status`.
+
+Uso: define un set base de módulos sugeridos para el tipo de negocio, por ejemplo gimnasio, restaurante o retail. No reemplaza la personalización manual por empresa; sirve como punto de partida operativo.
+
+Relaciones: pertenece a `companies`; se asocia a `companies.business_industry_id` como rubro activo.
+
+### business_industry_module_sets
+
+Set base de módulos por rubro. Campos: `company_id`, `business_industry_id`, `sub_section_id`, `is_enabled_by_default`, `reason` y `status`.
+
+Uso: permite activar o desactivar módulos de forma masiva según el rubro de la empresa. Ejemplo: un rubro restaurante puede sugerir recetas y POS restaurante, mientras un rubro gimnasio puede priorizar membresías y asistencias.
+
+Relaciones: pertenece a empresa, rubro y `sub_sections`. La aplicación del rubro actualiza `companies_sub_sections` e invalida la caché del menú de la empresa.
 
 ### sections
 
@@ -256,7 +292,7 @@ Relaciones: pertenece a empresa y tipo de documento; tiene ventas, membresias, a
 
 Membresias reales de clientes. Campos: `company_id`, `branch_id`, `sale_header_id`, `sale_body_id`, `renewed_from_id`, `customer_id`, `duration_type`, `duration_value`, `start_date`, `end_date`, `set_end_of_day`, `force`, `attendance_limit_per_day`, `observation`, `motive`, `type`, `status`.
 
-Relaciones: pertenece a empresa, sucursal y cliente; puede venir de venta, renovación o alta manual directa.
+Relaciones: pertenece a empresa, sucursal y cliente; puede venir de venta, renovación o alta manual directa. Cuando una venta incluye una membresía, el detalle puede indicar un `customer_id` beneficiario diferente al titular de la venta; si no se informa, se usa el titular.
 
 ### attendances
 
@@ -264,7 +300,7 @@ Registros de asistencia de clientes. Campos: `company_id`, `branch_id`, `custome
 
 Relaciones: pertenece a empresa, sucursal y cliente.
 
-La asistencia activa es única por empresa, sucursal y cliente. El límite diario procede de la membresía y considera asistencias finalizadas del mismo día y sucursal.
+La asistencia activa es única por empresa, sucursal y cliente. El límite diario procede de la membresía y considera asistencias finalizadas del mismo día y sucursal. `status` incluye `absent` para cierres técnicos de asistencias que quedaron abiertas sin salida del cliente.
 
 ### user_attendances
 
@@ -282,7 +318,31 @@ Relaciones: pertenece a empresa, colaborador y dispositivo. El servicio biométr
 
 Emails relacionados a membresias. Campos: `to`, `subject`, `body`, `extras_json`, `type`, `model_id`, `model_type`, `status`.
 
-Relaciones: puede referenciar modelos mediante `model_id`/`model_type`. Los tipos iniciales son `SubscriptionExpired` y `SubscriptionWelcome`; este último se crea al agregar una membresía manual con correo de agradecimiento activo.
+Relaciones: puede referenciar modelos mediante `model_id`/`model_type`. Los tipos iniciales son `SubscriptionExpired` y `SubscriptionWelcome`; este último se crea al agregar una membresía manual con correo de agradecimiento activo o cuando una venta genera una membresía y `company_settings.subscriptions.send_welcome_email_on_sale` está activo.
+
+### loyalty_point_rules
+
+Reglas de puntos por empresa. Campos: `company_id`, `name`, `description`, `trigger_type`, `apply_scope`, `amount_step`, `points_per_amount`, `points_per_unit`, `minimum_sale_total`, `starts_at`, `ends_at`, `status` y auditoría.
+
+Uso: define si una venta otorga puntos por monto total, cantidad de ítems o venta de membresía. `apply_scope` permite reglas globales, solo productos, solo servicios, solo membresías o una selección concreta de ítems mediante `loyalty_point_rule_items`.
+
+### loyalty_point_rule_items
+
+Detalle opcional de ítems a los que aplica una regla de puntos. Campos: `company_id`, `loyalty_point_rule_id`, `item_id`, `status` y auditoría.
+
+Relaciones: une reglas con productos, servicios o membresías del catálogo.
+
+### customer_point_balances
+
+Saldo materializado de puntos por cliente. Campos: `company_id`, `customer_id`, `points_balance` y auditoría.
+
+Uso: permite consultar rápidamente los puntos vigentes sin recalcular todos los movimientos históricos.
+
+### customer_point_movements
+
+Kardex de puntos del cliente. Campos: `company_id`, `customer_id`, `sale_header_id`, `loyalty_point_rule_id`, `movement_type`, `points`, `reason`, `status` y auditoría.
+
+Uso: conserva los puntos otorgados por venta y las reversas por anulación. Un movimiento no se elimina; si una venta se anula y la política lo permite, se registra un movimiento negativo asociado.
 
 ## Operaciones y servicios
 
@@ -350,17 +410,35 @@ Foto histórica del tributo aplicado al documento. Guardan `name`, `description`
 Métodos de pago configurables por empresa y alcance. Campos: `company_id`, `code`, `sunat_code`, `name`, `image_path`, `scope`, `requires_reference`, `is_default` y `status`.
 
 Relaciones: pertenece a `companies`. `sunat_code` conserva la referencia SUNAT cuando exista y `image_path` almacena la ruta pública generada por backend dentro del tenant. `scope` define si el método aplica a ventas, compras o ambos.
+Nota vigente: `sunat_code` conserva la referencia SUNAT cuando exista y `image_path` apunta al icono visible para el usuario. El catalogo base incluye efectivo, deposito, transferencia, tarjetas, cheque, billetera digital, Yape y Plin, pero cada empresa puede activar, inactivar o ajustar sus metodos desde BD.
+
 ### sale_payments / purchase_payments
 
 Foto histórica de los pagos del documento. Guardan método, nombre, monto, referencia y nota.
+
+Nota vigente: estas tablas son la foto historica de los pagos aplicados. Conservan metodo, nombre, monto, referencia y nota para que ventas y compras mantengan trazabilidad aunque luego cambie la configuracion de `payment_methods`.
+
+### misc_expense_categories
+
+Categorías de gastos varios por empresa. Campos: `company_id`, `name`, `description` y `status`.
+
+Uso: clasifica egresos operativos que no representan una compra de inventario, como reparaciones, mantenimiento, suministros menores o servicios básicos.
+
+### misc_expenses
+
+Gastos varios. Campos: `company_id`, `branch_id`, `cash_session_id`, `payment_method_id`, `currency_id`, `misc_expense_category_id`, `responsible_user_id`, `expense_date`, `reference`, `concept`, `amount`, `description`, `observation` y `status`.
+
+Uso: registra egresos financieros no asociados a mercadería. Si se vincula a una caja abierta, crea un movimiento de caja de tipo `expense` para que el cierre y los estados financieros reflejen el gasto. La anulación cancela el gasto y el movimiento de caja relacionado.
 
 ## Ventas
 
 ### sales_header
 
-Cabecera de venta. Campos: `serie_id`, `sequential`, `holder_id`, `seller_id`, `currency_id`, `warehouse_id`, `cash_session_id`, `issue_date`, `delivery_mode`, `delivery_status`, `delivered_at`, `delivered_by`, `delivery_observation`, `subtotal`, `tax`, `commission_total`, `total`, `observation`, `status`.
+Cabecera de venta. Campos: `serie_id`, `sequential`, `holder_id`, `seller_id`, `currency_id`, `warehouse_id`, `cash_session_id`, `quotation_header_id`, `issue_date`, `delivery_mode`, `delivery_status`, `delivered_at`, `delivered_by`, `delivery_observation`, `subtotal`, `tax`, `commission_total`, `total`, `observation`, `status`.
 
-Relaciones: pertenece a serie, cliente comprador, vendedor, moneda, almacén, caja y usuario que confirmó entrega; tiene detalles. El seguimiento de entrega registra estado operativo sin cambiar todavía el momento del movimiento de inventario.
+Relaciones: pertenece a serie, cliente comprador, vendedor, moneda, almacén, caja, cotización opcional y usuario que confirmó entrega; tiene detalles. El seguimiento de entrega registra estado operativo sin cambiar todavía el momento del movimiento de inventario.
+
+Cuando `quotation_header_id` tiene valor, la venta se originó desde una cotización. Al concretarse, la cotización pasa a `converted` y conserva la referencia a la venta.
 
 ### sales_body
 
@@ -369,6 +447,24 @@ Detalle de venta. Campos: `sale_header_id`, `item_id`, `currency_id`, `name`, `q
 La comision del detalle es una foto historica. `commission_type` admite `none`, `percentage` o `fixed`; `commission_amount` guarda el monto calculado y no modifica el total cobrado.
 
 Relaciones: pertenece a cabecera, item, moneda y cliente.
+
+### quotation_headers
+
+Cabecera de cotización. Campos: `company_id`, `branch_id`, `holder_id`, `seller_id`, `currency_id`, `sale_header_id`, `reference`, `issue_date`, `valid_until`, `subtotal`, `tax`, `total`, `observation` y `status`.
+
+Uso: registra propuestas comerciales antes de convertirse en venta. Desde nueva venta se puede jalar una cotización; el backend recalcula los precios vigentes del catálogo antes de armar el borrador de venta.
+
+Estados: `draft`, `sent`, `accepted`, `converted`, `canceled` y `expired`.
+
+### quotation_items
+
+Detalle histórico de la cotización. Guarda `item_id`, `currency_id`, `name`, `type`, `quantity`, `price`, `price_includes_tax`, `total` y `observation`.
+
+El precio guardado es la foto de la propuesta. Al convertir a venta se compara contra el precio vigente y se marca si fue recalculado.
+
+### quotation_taxes
+
+Foto histórica de tributos aplicados a la cotización. Conserva nombre, descripción, tasa, tipo de cálculo, tipo de operación, obligatoriedad, cantidad, base y monto.
 
 ## Inventario
 
@@ -492,6 +588,8 @@ Relaciones: pertenece a empresa y marca; tiene muchos dispositivos.
 Dispositivos biométricos por empresa/sucursal. Campos: `company_id`, `branch_id`, `biometric_device_model_id`, `name`, `serial_number`, `ip_address`, `port`, `device_id`, `description` y `status`.
 
 Relaciones: pertenece a empresa, sucursal y modelo; por el modelo se obtiene la marca. Tiene huellas de clientes.
+
+Nota vigente: al crear un dispositivo sin estado explicito se registra como `active`. No genera un activo patrimonial automaticamente hasta que se defina esa politica por empresa.
 
 ### customer_biometric_fingerprints
 

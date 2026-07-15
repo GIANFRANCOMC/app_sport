@@ -321,7 +321,7 @@ export default {
         },
         getMostFrequentSerie(sales) {
 
-            let branchs = {};
+            let branches = {};
 
             sales.forEach(e => {
 
@@ -329,7 +329,7 @@ export default {
 
                 if(code !== undefined && code !== null) {
 
-                    branchs[code] = (branchs[code] || 0) + 1;
+                    branches[code] = (branches[code] || 0) + 1;
 
                 }
 
@@ -339,11 +339,11 @@ export default {
             let maxCount = 0;
             let mostFrequent = null;
 
-            for(const code in branchs) {
+            for(const code in branches) {
 
-                if(branchs[code] > maxCount) {
+                if(branches[code] > maxCount) {
 
-                    maxCount = branchs[code];
+                    maxCount = branches[code];
                     mostFrequent = code;
 
                 }

@@ -119,7 +119,22 @@ php artisan tenant:cache-clear
 - `tenant:suspend` y `--activate` actualizan tenant y dominio en una transacción, invalidan caché y auditan la acción.
 - `tenant:cache-clear` invalida una clave o todas las claves conocidas sin limpiar la caché completa de la aplicación.
 
-El scheduler `notifications:send-subscriptions` itera tenants activos, conecta y desconecta cada BD en `try/finally`, y audita el resultado. Los jobs futuros deben declarar `UseTenantConnection`; un job sin contexto tenant no debe consultar modelos operativos.
+El scheduler ejecuta comandos tenant-aware que iteran tenants activos, conectan y desconectan cada BD en `try/finally`, y auditan el resultado. Actualmente cubre notificaciones de membresías, vencimiento de membresías, cierre técnico de asistencias de clientes y retención de historial.
+
+En servidor debe configurarse un solo cron de Laravel:
+
+```bash
+* * * * * cd /ruta/al/gympe && php artisan schedule:run >> /dev/null 2>&1
+```
+
+Comandos programados:
+
+- `notifications:send-subscriptions --limit=100`: procesa correos pendientes cada cinco minutos.
+- `subscriptions:cancel-expired`: inactiva membresías vencidas cada hora.
+- `attendances:close-stale-customers --limit=500`: cierra asistencias antiguas sin salida cada hora.
+- `attendances:prune-customers --limit=1000`: depura historial elegible diariamente a las 03:20.
+
+Los jobs futuros deben declarar `UseTenantConnection`; un job sin contexto tenant no debe consultar modelos operativos.
 
 ## Demostración
 

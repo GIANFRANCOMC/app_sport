@@ -4,6 +4,7 @@
 
 - Marca y modelo son catalogos separados por empresa.
 - Cada dispositivo pertenece a empresa, sucursal y modelo.
+- Al crear un dispositivo sin estado explícito, el backend lo registra como `active` para que pueda usarse inmediatamente.
 - Al crearlo se generan `access_key` y secreto; el secreto se devuelve una sola vez y se almacena cifrado.
 - `rotateCredentials` invalida las credenciales anteriores y conserva fecha de rotacion.
 - `PATCH /biometric_devices/{id}/credentials` ejecuta la rotacion, audita el actor y devuelve el nuevo secreto una sola vez.
@@ -26,4 +27,4 @@ El contrato firmado se documenta en `docs/Guest/modules/04_biometric_devices.md`
 
 ## Criterio Operativo
 
-El dispositivo no se crea automaticamente como activo patrimonial porque puede ser alquilado o administrado por un tercero. La vinculacion automatica queda fuera del contrato vigente y no se considera una tarea backend pendiente.
+El dispositivo no se crea automaticamente como activo patrimonial porque puede ser alquilado, estar en comodato o ser administrado por un tercero. La duda queda documentada: si el negocio decide tratar todo dispositivo biometrico como activo fijo, se debe crear una regla configurable para generar el registro en `assets` al guardar el dispositivo. Por ahora, el estado operativo por defecto es `active`, pero no crea activo patrimonial.

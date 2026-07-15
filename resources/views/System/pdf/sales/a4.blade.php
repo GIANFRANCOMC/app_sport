@@ -726,5 +726,12 @@
                 <td>{{ empty($saleHeader->observation) ? "N/A" : $saleHeader->observation }}</td>
             </tr>
         </table>
+        <table class="full-width mt-4">
+            <tr>
+                <td class="text-center font-md" style="color:#64748b;border-top:1px solid #e5e7eb;padding-top:8px;">
+                    Emitido por {{ $company->commercial_name }} con {{ $ownerApp->commercial_name ?? "BLAPOS" }}.
+                </td>
+            </tr>
+        </table>
     </body>
 </html>

@@ -40,6 +40,8 @@ class ProductService {
         "commission_type",
         "commission_value",
         "currency_id",
+        "capacity_control_enabled",
+        "capacity_limit",
         "expires_at",
         "see_my_web",
         "see_my_web_price",
@@ -114,6 +116,21 @@ class ProductService {
 
                     $itemData[$field] = self::normalizeOptionalPrice($data[$field]);
 
+                }elseif($field === "capacity_control_enabled") {
+
+                    $enabled = (bool) $data[$field];
+                    $itemData["capacity_control_enabled"] = $enabled;
+                    $itemData["capacity_limit"] = $enabled ? max(1, (int) ($data["capacity_limit"] ?? 1)) : null;
+                    $itemData["capacity_used"] = $enabled ? (int) ($itemData["capacity_used"] ?? 0) : 0;
+
+                }elseif($field === "capacity_limit") {
+
+                    if(($itemData["capacity_control_enabled"] ?? false) === true) {
+
+                        $itemData[$field] = max(1, (int) $data[$field]);
+
+                    }
+
                 }elseif($field === "see_my_web_price") {
 
                     $itemData[$field] = ($data["see_my_web"] ?? false) ? ($data[$field] ?? false) : false;
@@ -154,6 +171,41 @@ class ProductService {
                     if($value !== ($item->$field === null ? null : (float) $item->$field)) {
 
                         $updateData[$field] = $value;
+
+                    }
+
+                }elseif($field === "capacity_control_enabled") {
+
+                    $enabled = (bool) $data[$field];
+                    if($enabled !== (bool) $item->capacity_control_enabled) {
+
+                        $updateData["capacity_control_enabled"] = $enabled;
+
+                    }
+
+                    $limit = $enabled ? max(1, (int) ($data["capacity_limit"] ?? 1)) : null;
+                    if($limit !== ($item->capacity_limit === null ? null : (int) $item->capacity_limit)) {
+
+                        $updateData["capacity_limit"] = $limit;
+
+                    }
+
+                    if(!$enabled && (int) $item->capacity_used !== 0) {
+
+                        $updateData["capacity_used"] = 0;
+
+                    }
+
+                }elseif($field === "capacity_limit") {
+
+                    if(($updateData["capacity_control_enabled"] ?? (bool) $item->capacity_control_enabled) === true) {
+
+                        $value = max(1, (int) $data[$field]);
+                        if($value !== (int) ($item->capacity_limit ?? 0)) {
+
+                            $updateData[$field] = $value;
+
+                        }
 
                     }
 

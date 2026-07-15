@@ -68,6 +68,8 @@ La toma física usa el origen `physical_count`, separado de entradas y salidas m
 - Editar precio, descripción, marca, categorías o stock mínimo no genera kardex.
 - Las salidas manuales no permiten saldo negativo.
 - Ventas y Venta POS/Caja consultan `company_settings.inventory.allow_negative_stock_on_sale`. Por defecto es `false`, por lo que no se confirma una venta si algún producto queda por debajo de cero en el almacén seleccionado.
+- Cada movimiento sincroniza `inventory_stock_alerts`: si el saldo queda menor o igual al stock mínimo se abre o actualiza una alerta; si vuelve a estar por encima del mínimo, la alerta se resuelve.
+- Si `company_settings.inventory.stock_alert_email_enabled` está activo, al abrir una nueva alerta se envía un correo al destinatario configurado en `stock_alert_email_to` o al correo de la empresa. Las actualizaciones de una alerta abierta no reenvían correo.
 
 ## Interfaz
 
@@ -186,6 +188,7 @@ La toma física usa el origen `physical_count`, separado de entradas y salidas m
 - Cada producto vendido genera una salida con referencia al detalle de venta.
 - Anular una venta solo genera la entrada inversa cuando la política empresarial está activa.
 - Con la política desactivada, la respuesta de Ventas recuerda registrar la devolución física cuando corresponda.
+- No se descuenta stock adicional al rechazar o anular una venta: la salida ya ocurrió al confirmar la venta. Si el cliente devuelve mercadería, se registra una entrada `customer_return`; si la empresa decide automatizar la devolución al anular, debe activar `company_settings.inventory.restore_stock_on_sale_cancellation`.
 - La reposición automática busca la salida original de cada detalle y devuelve el producto al mismo almacén. Las ventas históricas sin movimiento trazable usan el almacén principal como compatibilidad.
 - La ruta frontend `stocks_management.movements` está declarada como ruta especial. Sin este mapeo el movimiento existía en base de datos, pero el Kardex no podía consultarlo.
 

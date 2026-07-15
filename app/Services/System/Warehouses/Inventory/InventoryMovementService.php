@@ -8,10 +8,17 @@ use DomainException;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
+use Throwable;
 
+use App\Helpers\System\Utilities;
+use App\Mail\InventoryStockAlertMail;
 use App\Models\System\Catalogs\Item;
+use App\Models\System\Organizations\Company;
 use App\Models\System\Warehouses\{InventoryMovement, InventoryStockAlert, Warehouse, WarehouseItem};
+use App\Services\System\Organizations\Companies\CompanySettingService;
 
 final class InventoryMovementService {
 
@@ -351,13 +358,13 @@ final class InventoryMovementService {
 
         if(!empty($filters["date_from"])) {
 
-            $query->whereDate("created_at", ">=", $filters["date_from"]);
+            $query->where("created_at", ">=", Utilities::startOfDay($filters["date_from"]));
 
         }
 
         if(!empty($filters["date_to"])) {
 
-            $query->whereDate("created_at", "<=", $filters["date_to"]);
+            $query->where("created_at", "<=", Utilities::endOfDay($filters["date_to"]));
 
         }
 
@@ -517,7 +524,7 @@ final class InventoryMovementService {
 
             }
 
-            InventoryStockAlert::create([
+            $alert = InventoryStockAlert::create([
                 "company_id" => $companyId,
                 "warehouse_item_id" => $warehouseItem->id,
                 "quantity" => $quantity,
@@ -525,6 +532,8 @@ final class InventoryMovementService {
                 "status" => "open",
                 "detected_at" => now()
             ]);
+
+            self::notifyMinimumStockAlert($alert, $companyId);
 
             return;
 
@@ -538,6 +547,64 @@ final class InventoryMovementService {
                 "status" => "resolved",
                 "resolved_at" => now(),
                 "resolved_by" => $userId
+            ]);
+
+        }
+
+    }
+
+    private static function notifyMinimumStockAlert(
+        InventoryStockAlert $alert,
+        int $companyId
+    ): void {
+
+        $enabled = (bool) CompanySettingService::value(
+            $companyId,
+            CompanySettingService::INVENTORY_POLICIES,
+            "stock_alert_email_enabled",
+            false
+        );
+
+        if(!$enabled) {
+
+            return;
+
+        }
+
+        $recipient = (string) CompanySettingService::value(
+            $companyId,
+            CompanySettingService::INVENTORY_POLICIES,
+            "stock_alert_email_to",
+            ""
+        );
+
+        if($recipient === "") {
+
+            $recipient = (string) Company::whereKey($companyId)->value("email");
+
+        }
+
+        if(!filter_var($recipient, FILTER_VALIDATE_EMAIL)) {
+
+            return;
+
+        }
+
+        try {
+
+            $alert->loadMissing([
+                "warehouseItem.item",
+                "warehouseItem.warehouse.branch"
+            ]);
+
+            Mail::to($recipient)->send(new InventoryStockAlertMail($alert));
+
+        }catch(Throwable $exception) {
+
+            Log::warning("No se pudo enviar la alerta de stock mínimo.", [
+                "company_id" => $companyId,
+                "inventory_stock_alert_id" => $alert->id,
+                "error" => $exception->getMessage()
             ]);
 
         }

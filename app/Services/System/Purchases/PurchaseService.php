@@ -200,7 +200,7 @@ final class PurchaseService {
             }
 
             $subtotal = collect($data["items"])->sum(fn($item) =>
-                round((float) $item["quantity"] * (float) $item["unit_cost"], 2)
+                round((float) $item["quantity"] * (float) $item["unit_cost"], 4)
             );
             $selectedTaxIds = collect($data["taxes"] ?? [])
                 ->pluck("tax_id")
@@ -221,11 +221,11 @@ final class PurchaseService {
                 $selectedTaxIds,
                 $selectedTaxQuantities
             );
-            $tax = round((float) $taxLines->sum("amount"), 2);
+            $tax = round((float) $taxLines->sum("amount"), 4);
             $expenses = is_array($data["expenses"] ?? null) ? $data["expenses"] : [];
-            $expenseTotal = round((float) collect($expenses)->sum("amount"), 2);
+            $expenseTotal = round((float) collect($expenses)->sum("amount"), 4);
             $allocatedExpenses = self::allocateExpenses($data["items"], $expenses);
-            $total = round($subtotal + $tax + $expenseTotal, 2);
+            $total = round($subtotal + $tax + $expenseTotal, 4);
             $paymentLines = CommercialDocumentSettlementService::payments(
                 $companyId,
                 "purchase",
@@ -233,8 +233,8 @@ final class PurchaseService {
                 $data["payments"] ?? [],
                 $userId
             );
-            $paidAmount = round((float) $paymentLines->sum("amount"), 2);
-            $balanceDue = round($total - $paidAmount, 2);
+            $paidAmount = round((float) $paymentLines->sum("amount"), 4);
+            $balanceDue = round($total - $paidAmount, 4);
             $paymentStatus = match(true) {
                 $paidAmount <= 0 => "unpaid",
                 $balanceDue > 0 => "partial",
@@ -304,7 +304,7 @@ final class PurchaseService {
             foreach($data["items"] as $detail) {
 
                 $item = $items->get((int) $detail["item_id"]);
-                $quantity = round((float) $detail["quantity"], 2);
+                $quantity = round((float) $detail["quantity"], 4);
                 $unitCost = round((float) $detail["unit_cost"], 4);
                 $allocatedExpense = round((float) ($allocatedExpenses[$item->id] ?? 0), 4);
                 $inventoryUnitCost = $quantity > 0
@@ -321,7 +321,7 @@ final class PurchaseService {
                     "unit_cost" => $unitCost,
                     "allocated_expense_total" => $allocatedExpense,
                     "inventory_unit_cost" => $inventoryUnitCost,
-                    "subtotal" => round($quantity * $unitCost, 2),
+                    "subtotal" => round($quantity * $unitCost, 4),
                     "status" => "pending",
                     "created_at" => now(),
                     "created_by" => $userId
@@ -402,11 +402,8 @@ final class PurchaseService {
 
                 }
 
-                $quantity = round((float) $receivedItem["quantity"], 2);
-                $remaining = round(
-                    (float) $purchaseItem->quantity - (float) $purchaseItem->received_quantity,
-                    2
-                );
+                $quantity = round((float) $receivedItem["quantity"], 4);
+                $remaining = round((float) $purchaseItem->quantity - (float) $purchaseItem->received_quantity, 4);
 
                 if($quantity <= 0 || $quantity > $remaining) {
 
@@ -442,15 +439,12 @@ final class PurchaseService {
                     "inventory_movement_id" => $movement->id,
                     "quantity" => $quantity,
                     "unit_cost" => $purchaseItem->inventory_unit_cost,
-                    "total_cost" => round($quantity * (float) $purchaseItem->inventory_unit_cost, 2),
+                    "total_cost" => round($quantity * (float) $purchaseItem->inventory_unit_cost, 4),
                     "created_at" => now(),
                     "created_by" => $userId
                 ]);
 
-                $receivedQuantity = round(
-                    (float) $purchaseItem->received_quantity + $quantity,
-                    2
-                );
+                $receivedQuantity = round((float) $purchaseItem->received_quantity + $quantity, 4);
                 $purchaseItem->update([
                     "received_quantity" => $receivedQuantity,
                     "status" => $receivedQuantity >= (float) $purchaseItem->quantity

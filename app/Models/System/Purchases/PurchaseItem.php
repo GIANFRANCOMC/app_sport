@@ -31,12 +31,12 @@ final class PurchaseItem extends Model {
     ];
 
     protected $casts = [
-        "quantity" => "decimal:2",
-        "received_quantity" => "decimal:2",
+        "quantity" => "decimal:4",
+        "received_quantity" => "decimal:4",
         "unit_cost" => "decimal:4",
         "allocated_expense_total" => "decimal:4",
         "inventory_unit_cost" => "decimal:4",
-        "subtotal" => "decimal:2"
+        "subtotal" => "decimal:4"
     ];
 
     protected $appends = ["remaining_quantity"];

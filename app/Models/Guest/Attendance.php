@@ -69,7 +69,8 @@ class Attendance extends Model {
             ["code" => "active", "label" => "En curso"],
             ["code" => "canceled", "label" => "Anulada"],
             ["code" => "inactive", "label" => "Inactiva"],
-            ["code" => "finalized", "label" => "Concluida"]
+            ["code" => "finalized", "label" => "Concluida"],
+            ["code" => "absent", "label" => "Ausente"]
         ];
 
         return Utilities::getValues($statuses, $type, $code);

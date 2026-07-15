@@ -19,6 +19,8 @@ Lista ventas realizadas, permite filtrar y acceder a detalle, anulacion o impres
 - Listar solo ventas de series pertenecientes a sucursales de la empresa.
 - Filtrar por serie, correlativo, fecha, cliente y estado.
 - Permitir anulacion solo si la venta esta `active`.
+- La acción de anular se muestra de forma directa en la fila cuando la venta está activa y se mantiene también dentro del modal de acciones.
+- El modal de acciones permite reenviar el resumen por WhatsApp o correo electrónico validado.
 - Anular una venta no implica necesariamente recibir productos de vuelta.
 - `company_settings.inventory.restore_stock_on_sale_cancellation` controla la reposición automática y es `false` por defecto.
 - Con la política desactivada, la respuesta recuerda registrar una devolución desde Inventario si la mercancía fue recibida.

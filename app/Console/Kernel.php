@@ -15,6 +15,18 @@ class Kernel extends ConsoleKernel
         $schedule->command('notifications:send-subscriptions --limit=100')
                  ->everyFiveMinutes()
                  ->withoutOverlapping();
+
+        $schedule->command('subscriptions:cancel-expired')
+                 ->hourly()
+                 ->withoutOverlapping();
+
+        $schedule->command('attendances:close-stale-customers --limit=500')
+                 ->hourly()
+                 ->withoutOverlapping();
+
+        $schedule->command('attendances:prune-customers --limit=1000')
+                 ->dailyAt('03:20')
+                 ->withoutOverlapping();
     }
 
     /**

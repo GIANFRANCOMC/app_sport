@@ -19,9 +19,9 @@ class Utilities {
 
     public static $inputs = [
         "maxlength" => 999,
-        "round" => 2,
+        "round" => 4,
         "minValue" => 0,
-        "maxValue" => 99999999,
+        "maxValue" => 999999999999.9999,
         "maxSize" => 4096
     ];
 
@@ -94,9 +94,21 @@ class Utilities {
 
     }
 
-    public static function round($value, $decimals = 2) {
+    public static function round($value, $decimals = null) {
 
-        return round($value, $decimals);
+        return round((float) $value, $decimals ?? self::$inputs["round"]);
+
+    }
+
+    public static function startOfDay($date): string {
+
+        return Carbon::parse($date)->startOfDay()->toDateTimeString();
+
+    }
+
+    public static function endOfDay($date): string {
+
+        return Carbon::parse($date)->endOfDay()->toDateTimeString();
 
     }
 

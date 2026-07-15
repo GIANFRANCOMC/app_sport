@@ -102,17 +102,20 @@ class TrackingAttendanceService {
 
         if(Utilities::isDefined($filters["start_date"] ?? null)) {
 
-            $query->whereDate("start_date", ">=", $filters["start_date"]);
+            $query->where("start_date", ">=", Utilities::startOfDay($filters["start_date"]));
 
         }else {
 
-            $query->whereDate("start_date", date("Y-m-d"));
+            $query->whereBetween("start_date", [
+                Utilities::startOfDay(date("Y-m-d")),
+                Utilities::endOfDay(date("Y-m-d"))
+            ]);
 
         }
 
         if(Utilities::isDefined($filters["end_date"] ?? null)) {
 
-            $query->whereDate("start_date", "<=", $filters["end_date"]);
+            $query->where("start_date", "<=", Utilities::endOfDay($filters["end_date"]));
 
         }
 

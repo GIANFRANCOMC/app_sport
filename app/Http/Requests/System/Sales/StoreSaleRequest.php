@@ -21,6 +21,16 @@ class StoreSaleRequest extends FormRequest {
 
     }
 
+    protected function prepareForValidation(): void {
+
+        $this->merge([
+            "taxes" => $this->normalizeTaxes(),
+            "payments" => $this->normalizePayments(),
+            "details" => $this->normalizeDetails()
+        ]);
+
+    }
+
     /**
      * Get the validation rules that apply to the request.
      *
@@ -39,6 +49,7 @@ class StoreSaleRequest extends FormRequest {
             "currency_id" => ["required", "integer", new BelongsToCompany("currencies", ["status" => "active"], "La moneda seleccionada no pertenece a la empresa.")],
             "warehouse_id" => "nullable|integer",
             "cash_session_id" => "nullable|integer",
+            "quotation_header_id" => "nullable|integer",
             "service_session_id" => "nullable|integer",
             "source_channel" => "nullable|in:sale,pos",
             "issue_date"  => "required|date",
@@ -62,11 +73,13 @@ class StoreSaleRequest extends FormRequest {
             // Details
             "details" => "required|array",
             "details.*.item_id" => "required|integer",
+            "details.*.customer_id" => ["nullable", "integer", new BelongsToCompany("customers", ["status" => "active"], "El cliente beneficiario de la membresía no pertenece a la empresa.")],
             "details.*.type" => "required|string|max:255",
             "details.*.currency_id" => ["required", "integer", new BelongsToCompany("currencies", ["status" => "active"], "Una moneda del detalle no pertenece a la empresa.")],
             "details.*.name" => "required|string|max:255",
             "details.*.quantity" => "required|numeric|min:0.1|max:$maxValue|decimal:0,$round",
             "details.*.price" => "required|numeric|min:0.1|max:$maxValue|decimal:0,$round",
+            "details.*.total" => "nullable|numeric|min:0|max:$maxValue|decimal:0,$round",
             "details.*.price_includes_tax" => "nullable|boolean",
             "details.*.commission_type" => "nullable|in:none,percentage,fixed",
             "details.*.commission_value" => "nullable|numeric|min:0|max:$maxValue|decimal:0,$round",
@@ -86,6 +99,33 @@ class StoreSaleRequest extends FormRequest {
             "details.*.extras.recipe_toppings" => "nullable|array|max:50",
             "details.*.extras.recipe_toppings.*.recipe_dish_topping_id" => "required_with:details.*.extras.recipe_toppings|integer",
             "details.*.extras.recipe_toppings.*.quantity" => "required_with:details.*.extras.recipe_toppings|integer|min:0|max:100"
+        ];
+
+    }
+
+    public function messages(): array {
+
+        return [
+            "details.required" => "Agrega al menos un producto, servicio o membresía.",
+            "details.*.quantity.required" => "La cantidad es obligatoria.",
+            "details.*.quantity.numeric" => "La cantidad debe ser un número válido.",
+            "details.*.quantity.min" => "La cantidad debe ser mayor que cero.",
+            "details.*.quantity.max" => "La cantidad supera el máximo permitido.",
+            "details.*.price.required" => "El precio es obligatorio.",
+            "details.*.price.numeric" => "El precio debe ser un número válido.",
+            "details.*.price.min" => "El precio debe ser mayor que cero.",
+            "details.*.price.max" => "El precio supera el máximo permitido.",
+            "details.*.total.numeric" => "El total debe ser un número válido.",
+            "details.*.total.max" => "El total supera el máximo permitido.",
+            "payments.*.amount.required_with" => "El monto del método de pago es obligatorio.",
+            "payments.*.amount.numeric" => "El monto del método de pago debe ser un número válido.",
+            "payments.*.amount.min" => "El monto del método de pago debe ser mayor que cero.",
+            "payments.*.amount.max" => "El monto del método de pago supera el máximo permitido.",
+            "taxes.*.amount.numeric" => "El importe del tributo debe ser un número válido.",
+            "taxes.*.amount.max" => "El importe del tributo supera el máximo permitido.",
+            "taxes.*.quantity.integer" => "La cantidad del tributo debe ser un número entero.",
+            "taxes.*.quantity.min" => "La cantidad del tributo debe ser al menos 1.",
+            "taxes.*.quantity.max" => "La cantidad del tributo supera el máximo permitido."
         ];
 
     }
@@ -116,6 +156,104 @@ class StoreSaleRequest extends FormRequest {
         throw new HttpResponseException(
             ApiResponse::validationError($renamedErrors, Utilities::$messages["422"] ?? "Validation failed")
         );
+
+    }
+
+    private function normalizeDetails(): array {
+
+        return collect($this->input("details", []))
+            ->map(function($detail) {
+
+                if(!is_array($detail)) {
+
+                    return $detail;
+
+                }
+
+                $detail["item_id"] = $this->nullableIntegerFromArray($detail, "item_id");
+                $detail["customer_id"] = $this->nullableIntegerFromArray($detail, "customer_id");
+                $detail["currency_id"] = $this->nullableIntegerFromArray($detail, "currency_id");
+                $detail["quantity"] = $this->nullableDecimalFromArray($detail, "quantity");
+                $detail["price"] = $this->nullableDecimalFromArray($detail, "price");
+                $detail["total"] = $this->nullableDecimalFromArray($detail, "total");
+                $detail["commission_value"] = $this->nullableDecimalFromArray($detail, "commission_value");
+                $detail["commission_amount"] = $this->nullableDecimalFromArray($detail, "commission_amount");
+                $detail["price_includes_tax"] = filter_var($detail["price_includes_tax"] ?? false, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? false;
+
+                return $detail;
+
+            })
+            ->values()
+            ->all();
+
+    }
+
+    private function normalizeTaxes(): array {
+
+        return collect($this->input("taxes", []))
+            ->map(function($tax) {
+
+                if(!is_array($tax)) {
+
+                    return $tax;
+
+                }
+
+                $tax["tax_id"] = $this->nullableIntegerFromArray($tax, "tax_id");
+                $tax["rate"] = $this->nullableDecimalFromArray($tax, "rate");
+                $tax["quantity"] = $this->nullableIntegerFromArray($tax, "quantity");
+                $tax["amount"] = $this->nullableDecimalFromArray($tax, "amount");
+                $tax["is_required"] = filter_var($tax["is_required"] ?? false, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? false;
+
+                return $tax;
+
+            })
+            ->values()
+            ->all();
+
+    }
+
+    private function normalizePayments(): array {
+
+        return collect($this->input("payments", []))
+            ->map(function($payment) {
+
+                if(!is_array($payment)) {
+
+                    return $payment;
+
+                }
+
+                $payment["payment_method_id"] = $this->nullableIntegerFromArray($payment, "payment_method_id");
+                $payment["amount"] = $this->nullableDecimalFromArray($payment, "amount");
+
+                return $payment;
+
+            })
+            ->values()
+            ->all();
+
+    }
+
+    private function nullableIntegerFromArray(array $data, string $field): ?int {
+
+        return isset($data[$field]) && $data[$field] !== "" ? (int) $data[$field] : null;
+
+    }
+
+    private function nullableDecimalFromArray(array $data, string $field): ?float {
+
+        if(!isset($data[$field]) || $data[$field] === "") {
+
+            return null;
+
+        }
+
+        $value = is_string($data[$field])
+            ? str_replace(",", "", $data[$field])
+            : $data[$field];
+
+        return Utilities::round($value);
 
     }
 

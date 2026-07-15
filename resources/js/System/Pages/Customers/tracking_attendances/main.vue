@@ -1919,7 +1919,7 @@ export default {
 
                     }
 
-                }else if(["dni", "dnie"].includes(currentMode)) {
+                }else if(["document_number"].includes(currentMode)) {
 
                     let dataScan = decodedResult;
 
@@ -1928,7 +1928,7 @@ export default {
 
                     if(!this.isDefined({value: code})) {
 
-                        Alerts.generateAlert({type: "warning", msgContent: `<span class="d-block fw-semibold">No pudimos validar el DNI. Intenta escanearlo nuevamente o verifica que sea el correcto.</span>`});
+                        Alerts.generateAlert({type: "warning", msgContent: `<span class="d-block fw-semibold">No pudimos validar el documento. Intenta escanearlo nuevamente o verifica que sea el correcto.</span>`});
 
                     }else {
 
@@ -1992,7 +1992,7 @@ export default {
 
                         customer.customer_id = customer.code;
 
-                    }else if(["dni", "dnie"].includes(customer?.customer_attendance_type)) {
+                    }else if(["document_number", "dni", "dnie"].includes(customer?.customer_attendance_type)) {
 
                         customer.customer_document_number = customer.code;
 
@@ -2445,9 +2445,8 @@ export default {
         qrCameraModes: function() {
 
             return [
-                {code: "carnet", label: "Carnet", tooltip: "Carnet generado por el sistema con cÃ³digo QR.", icon: "fa fa-id-badge", color: "primary"},
-                {code: "dni", label: "DNI", tooltip: "Escanea el cÃ³digo de barras posterior del DNI fÃ­sico.", icon: "fa fa-id-card", color: "info"},
-                {code: "dnie", label: "DNIe", tooltip: "DNI electrÃ³nico: escanea el cÃ³digo de barras (no el chip).", icon: "fa fa-barcode", color: "dark"}
+                {code: "carnet", label: "Carnet", tooltip: "Carnet generado por el sistema con código QR.", icon: "fa fa-id-badge", color: "primary"},
+                {code: "document_number", label: "Documento", tooltip: "Escanea o escribe el número de documento del cliente.", icon: "fa fa-id-card", color: "info"}
             ];
 
         }

@@ -9,7 +9,7 @@ use stdClass;
 use App\Models\System\Catalogs\Item;
 use App\Models\System\Customers\Customer;
 use App\Models\System\Finance\CashSession;
-use App\Models\System\Sales\SaleHeader;
+use App\Models\System\Sales\{QuotationHeader, SaleHeader};
 use App\Services\System\Base\{
     BaseConfigService,
     CompanyReferenceDataService,
@@ -95,6 +95,15 @@ final class SaleConfigService extends BaseConfigService {
             ]),
             "cashSessions" => self::data([
                 "records" => $cashSessions->latest("opened_at")->get()
+            ]),
+            "quotations" => self::data([
+                "records" => QuotationHeader::query()
+                    ->where("company_id", $companyId)
+                    ->whereIn("status", ["draft", "sent", "accepted"])
+                    ->with("holder:id,name,document_number")
+                    ->latest("id")
+                    ->limit(100)
+                    ->get(["id", "reference", "holder_id", "issue_date", "valid_until", "total", "status"])
             ]),
             "salesHeader" => self::data([
                 "statuses" => SaleHeader::getStatuses()

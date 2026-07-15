@@ -183,6 +183,17 @@
                                         @click="modalActionsEntity({record})">
                                         <i class="fa-solid fa-gear" aria-hidden="true"></i>
                                     </button>
+                                    <button
+                                        v-if="record.status === 'active'"
+                                        type="button"
+                                        class="br-icon-action br-icon-action-danger"
+                                        data-bs-toggle="tooltip"
+                                        data-bs-placement="top"
+                                        title="Anular venta"
+                                        :aria-label="`Anular venta ${record.serie_sequential}`"
+                                        @click="cancelRecord({record})">
+                                        <i class="fa-solid fa-rectangle-xmark" aria-hidden="true"></i>
+                                    </button>
                                 </template>
                             </InputSlot>
                         </td>
@@ -224,7 +235,6 @@
                     </template>
                 </InputText>
                 <InputText
-                    v-if="false"
                     hasDiv
                     title="Correo electrónico"
                     v-model="forms.entity.createUpdate.extras.modals.actions.data.email">
@@ -410,6 +420,15 @@ export default {
             Alerts.modals({type: "show", id: this.forms.entity.createUpdate.extras.modals.actions.id});
 
         },
+        cancelRecord({record = null}) {
+
+            const whatsapp = record?.holder?.phone_number ?? "";
+            const email    = record?.holder?.email ?? "";
+
+            this.forms.entity.createUpdate.extras.modals.actions.data = {...record, extras: {}, whatsapp, email};
+            this.cancelEntity({});
+
+        },
         cancelEntity({}) {
 
             const functionName = "cancelEntity";
@@ -543,10 +562,11 @@ export default {
             return Utils.legibleFormatDate({dateString, type, separator});
 
         },
-        sendWhatsapp({data = null, action = "reportSale"}) {
+        async sendWhatsapp({data = null, action = "reportSale"}) {
 
             const phoneNumber = this.forms.entity.createUpdate.extras.modals.actions.data.whatsapp;
-            const message     = Utils.getMessageWhatsapp({data, action});
+            const url = await Requests.saleReportShareUrl({document: data?.id, type: "a4"});
+            const message = Utils.getMessageWhatsapp({data, action, url});
 
             Utils.sendWhatsapp({phoneNumber, message});
 
@@ -554,7 +574,8 @@ export default {
         async sendEmail({data = null, action = "reportSale"}) {
 
             let route = Requests.config({entity: "helpers", type: "sendEmail"});
-            const formJson = {serie_sequential: data?.serie_sequential, email: data?.email, message: Utils.getMessageWhatsapp({data, action})};
+            const url = await Requests.saleReportShareUrl({document: data?.id, type: "a4"});
+            const formJson = {id: data?.id, serie_sequential: data?.serie_sequential, email: data?.email, message: Utils.getMessageWhatsapp({data, action, url})};
 
             Alerts.swals({});
 

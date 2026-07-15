@@ -54,7 +54,7 @@ El menu real se obtiene de `sections`, `sub_sections` y `companies_sub_sections`
 16. `customers.index` - Clientes.
 17. `tracking_customers.index` - Historial de cliente.
 18. `tracking_subscriptions.index` - Membresias de clientes.
-19. `tracking_attendances.index` - Asistencias.
+19. `tracking_attendances.index` - Asistencias por documento.
 20. `tracking_notifications.index` - Notificaciones.
 21. `book_complaints.index` - Libro de reclamaciones y sugerencias.
 22. `products.index` - Productos.
@@ -85,6 +85,7 @@ El menu real se obtiene de `sections`, `sub_sections` y `companies_sub_sections`
 - La cabecera visible `Operacion` usa `menu-parent-operations`.
 - El grupo Operacion se ubica debajo de Dashboard mediante `companies_sub_sections.section_order = 3` para POS y Caja.
 - `recipes.index` se agrega a Catalogo comercial para restaurantes y negocios de comida. Permite configurar formulas, toppings, extras, sabores e insumos sin convertir `items.type` en un tipo nuevo.
+- `tracking_attendances.index` se etiqueta como `Asistencias por documento` para diferenciarlo de asistencia laboral.
 - `user_attendances.index` separa las jornadas laborales de las asistencias de clientes.
 - `restaurant_pos.index` administra mesas y pedidos abiertos antes de enviarlos a Venta POS.
 - `service_sessions.index` mide inicio, fin y duración de servicios, con responsable por atención y por detalle.

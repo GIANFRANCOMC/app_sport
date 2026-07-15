@@ -31,7 +31,7 @@ class RecipeTopping extends Model {
     ];
 
     protected $casts = [
-        "price" => "decimal:2"
+        "price" => "decimal:4"
     ];
 
     public function getFormattedStatusAttribute(): string {

@@ -520,7 +520,7 @@ export default {
                 ? rate * quantity
                 : base * (rate / 100);
 
-            return Number((operationType === "subtraction" ? amount * -1 : amount).toFixed(2));
+            return Number((operationType === "subtraction" ? amount * -1 : amount).toFixed(4));
 
         },
         taxIsRequired(tax = {}) {
@@ -661,6 +661,7 @@ export default {
             Alerts.swals({show: false});
             if(Requests.valid({result})) {
                 this.$refs.closePurchaseModal?.click();
+                this.activeMode = "list";
                 Alerts.generateAlert({type: "success", msgContent: result.data.msg});
                 await this.listPurchases({});
                 return;
@@ -884,7 +885,7 @@ export default {
             }, 0);
         },
         purchasePaymentDifference() {
-            return Number((this.purchaseTotal - this.purchasePaidTotal).toFixed(2));
+            return Number((this.purchaseTotal - this.purchasePaidTotal).toFixed(4));
         }
     },
     watch: {

@@ -595,6 +595,37 @@
                                     xl="12"
                                     lg="12"/>
 
+                                <div class="form-group col-xl-4 col-lg-4 col-md-12 col-sm-12">
+                                    <label class="form-label fw-bold colon-at-end fs-6" v-text="MODULE.texts.form.capacityControl"></label>
+                                    <div class="br-entity-publication-settings br-tax-inclusion-control">
+                                        <label class="br-entity-switch" for="product_capacity_control_enabled">
+                                            <input
+                                                id="product_capacity_control_enabled"
+                                                v-model="productForm.data.capacity_control_enabled"
+                                                class="form-check-input"
+                                                type="checkbox"
+                                                role="switch">
+                                            <span>
+                                                <strong>Controlar cupos</strong>
+                                                <small>Actívalo solo si este producto tiene una cantidad máxima comercial disponible, adicional al stock.</small>
+                                            </span>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <InputNumber
+                                    v-model="productForm.data.capacity_limit"
+                                    hasDiv
+                                    :title="MODULE.texts.form.capacityLimit"
+                                    :titleClass="[config.forms.classes.title]"
+                                    :disabled="!productForm.data.capacity_control_enabled"
+                                    :decimals="0"
+                                    :minValue="1"
+                                    hasTextBottom
+                                    :textBottomInfo="productForm.errors?.capacity_limit"
+                                    xl="4"
+                                    lg="4"/>
+
                                 <InputSlot
                                     hasDiv
                                     :title="MODULE.texts.form.categories"
@@ -760,7 +791,7 @@
                                             title="Stock inicial"
                                             :titleClass="['br-entity-inventory__mobile-label']"
                                             :minValue="0"
-                                            :decimals="2"
+                                            :decimals="4"
                                             hasTextBottom
                                             :textBottomInfo="inventoryFieldErrors(index, 'initial_stock')"/>
                                     </div>
@@ -771,7 +802,7 @@
                                             title="Stock mínimo"
                                             :titleClass="['br-entity-inventory__mobile-label']"
                                             :minValue="0"
-                                            :decimals="2"
+                                            :decimals="4"
                                             hasTextBottom
                                             :textBottomInfo="inventoryFieldErrors(index, 'minimum_stock')"/>
                                     </div>
@@ -849,7 +880,7 @@ const FORM_TABS = [
         id: "commercial",
         label: "Información adicional",
         description: "Descripción, categorías y visibilidad",
-        fields: ["description", "categories", "see_my_web", "see_my_web_price"]
+        fields: ["description", "capacity_control_enabled", "capacity_limit", "categories", "see_my_web", "see_my_web_price"]
     }
 ];
 
@@ -863,6 +894,8 @@ const FORM_FIELDS = {
     expires_at: "",
     commission_type: "none",
     commission_value: "",
+    capacity_control_enabled: false,
+    capacity_limit: "",
     min_price: "",
     max_price: "",
     currency: null,
@@ -883,6 +916,8 @@ const FORM_FIELD_CONFIG = {
     price_includes_tax: {toBoolean: true},
     expires_at: {normalize: true},
     commission_value: {toNumber: true, minValue: 0},
+    capacity_control_enabled: {toBoolean: true},
+    capacity_limit: {toNumber: true, minValue: 1},
     min_price: {toNumber: true, minValue: 0},
     max_price: {toNumber: true, minValue: 0},
     currency: {mapToField: "currency_id"},
@@ -903,6 +938,8 @@ const VALIDATION_RULES = {
     expires_at: {required: false},
     commission_type: {required: true},
     commission_value: {required: false, number: true, min: 0},
+    capacity_control_enabled: {required: false},
+    capacity_limit: {required: false, number: true, min: 1},
     min_price: {required: false, number: true, min: 0},
     max_price: {required: false, number: true, min: 0},
     currency: {required: true},
@@ -927,6 +964,8 @@ const ERROR_LABELS = {
     currency: "Moneda",
     commission_type: "Tipo de comision",
     commission_value: "Valor de comision",
+    capacity_control_enabled: "Control de cupos",
+    capacity_limit: "Cupos disponibles",
     categories: "Categorías",
     brand: "Marca",
     inventory: "Inventario por almacén",
@@ -966,6 +1005,8 @@ const TEXTS = {
         price: "Precio de venta",
         minPrice: "Precio mínimo",
         maxPrice: "Precio máximo",
+        capacityControl: "Control de cupos",
+        capacityLimit: "Cupos disponibles",
         expiresAt: "Fecha de vencimiento",
         categories: "Categorías",
         brand: "Marca",
@@ -1383,6 +1424,8 @@ export default {
                     expires_at: record.expires_at ? String(record.expires_at).slice(0, 10) : "",
                     commission_type: record.commission_type ?? (Number(record.commission_rate || 0) > 0 ? "percentage" : "none"),
                     commission_value: Number(record.commission_value ?? record.commission_rate ?? 0),
+                    capacity_control_enabled: Boolean(record.capacity_control_enabled ?? false),
+                    capacity_limit: record.capacity_limit ?? "",
                     min_price: record.min_price,
                     max_price: record.max_price,
                     currency: this.currencies.find(currency => currency.code === record.currency_id) ?? null,
@@ -1406,6 +1449,8 @@ export default {
                     expires_at: "",
                     commission_type: "none",
                     commission_value: "",
+                    capacity_control_enabled: false,
+                    capacity_limit: "",
                     see_my_web: true,
                     see_my_web_price: false,
                     inventory: this.buildInventory(),
@@ -1507,6 +1552,7 @@ export default {
                 const preparedData = Forms.prepareFormData(formData, this.MODULE.formFieldConfig);
                 if(!preparedData.see_my_web) preparedData.see_my_web_price = false;
                 if(preparedData.commission_type === "none") preparedData.commission_value = 0;
+                if(!preparedData.capacity_control_enabled) preparedData.capacity_limit = null;
 
                 const id = preparedData.id;
                 const isUpdate = this.isDefined(id);

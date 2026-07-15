@@ -66,22 +66,29 @@ abstract class CompanyFormRequest extends FormRequest {
 
         return [
             "required" => "Campo obligatorio.",
-            "string" => "Ingrese un texto válido.",
-            "numeric" => "Ingrese un número válido.",
-            "integer" => "Ingrese un número entero válido.",
-            "boolean" => "Seleccione una opción válida.",
-            "array" => "Seleccione una opción válida.",
-            "in" => "Seleccione una opción válida.",
-            "distinct" => "No repita la misma opción.",
-            "different" => "Seleccione una opción diferente.",
+            "string" => "Ingresa un texto válido.",
+            "numeric" => "Ingresa un número válido.",
+            "integer" => "Ingresa un número entero válido.",
+            "boolean" => "Selecciona una opción válida.",
+            "array" => "Selecciona una opción válida.",
+            "in" => "Selecciona una opción válida.",
+            "date" => "Ingresa una fecha válida.",
+            "ip" => "Ingresa una IP válida.",
+            "url" => "Ingresa una URL válida.",
+            "email" => "Ingresa un correo válido.",
+            "distinct" => "No repitas la misma opción.",
+            "different" => "Selecciona una opción diferente.",
             "required_with" => "Campo obligatorio.",
+            "required_without" => "Campo obligatorio.",
+            "required_without_all" => "Campo obligatorio.",
             "gt.numeric" => "Debe ser mayor que :value.",
+            "gte.numeric" => "Debe ser mayor o igual a :value.",
             "min.numeric" => "El valor mínimo permitido es :min.",
             "max.numeric" => "El valor máximo permitido es :max.",
-            "min.array" => "Seleccione al menos :min opción.",
-            "max.array" => "Seleccione como máximo :max opciones.",
+            "min.array" => "Selecciona al menos :min opción.",
+            "max.array" => "Selecciona como máximo :max opciones.",
             "max.string" => "Debe tener como máximo :max caracteres.",
-            "decimal" => "Use como máximo :decimal decimales."
+            "decimal" => "Usa hasta :decimal decimales."
         ];
 
     }

@@ -20,7 +20,7 @@ final class PurchaseConfigService extends BaseConfigService {
 
     protected static function getCachePrefix(): string {
 
-        return "purchases_v1";
+        return "purchases";
 
     }
 

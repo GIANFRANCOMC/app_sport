@@ -132,6 +132,24 @@
                                     placeholder="Seleccione"/>
                             </template>
                         </InputSlot>
+                        <InputSlot
+                            v-if="quotationOptions.length"
+                            hasDiv
+                            :title="MODULE.texts.form.quotation"
+                            :titleClass="[config.forms.classes.title]"
+                            xl="6"
+                            lg="12">
+                            <template v-slot:input>
+                                <v-select
+                                    v-model="forms[entity].createUpdate.data.quotation"
+                                    :options="quotationOptions"
+                                    :class="config.forms.classes.select2"
+                                    :clearable="true"
+                                    :searchable="true"
+                                    placeholder="Jalar una cotización"
+                                    @option:selected="applyQuotationDraft"/>
+                            </template>
+                        </InputSlot>
                     </div>
                     <div class="row g-3">
                         <div class="table-responsive">
@@ -934,6 +952,7 @@ const TEXTS = {
         issueDate: "Fecha de emisión",
         deliveryMode: "Entrega",
         holder: "Cliente",
+        quotation: "Cotización",
         observation: "Observaciones",
         commercialCatalog: "Catálogo comercial",
         quantity: "Cantidad",
@@ -1067,6 +1086,8 @@ export default {
                 issue_date: "",
                 delivery_mode: {code: "immediate", label: "Entrega inmediata"},
                 holder: null,
+                quotation: null,
+                quotation_header_id: null,
                 currency: null,
                 observation: "",
                 selected_taxes: [],
@@ -1208,6 +1229,74 @@ export default {
             return this.forms[this.entity].createUpdate.data.selected_taxes || [];
 
         },
+        async applyQuotationDraft(quotation) {
+
+            if(!quotation?.code) return;
+
+            Alerts.swals({type: "loading", message: "Cargando cotización"});
+
+            const result = await Requests.get({
+                route: `${Requests.config({entity: "quotations", type: "consult"})}/${quotation.code}/sale-draft`
+            });
+
+            Alerts.swals({show: false});
+
+            if(!Requests.valid({result})) {
+                Alerts.generateAlert({type: "error", msgContent: result.data?.msg || "No se pudo cargar la cotización."});
+                return;
+            }
+
+            const draft = result.data.data;
+            const form = this.forms[this.entity].createUpdate.data;
+
+            form.quotation_header_id = draft.quotation_header_id;
+            form.branch = this.branches.find(branch => Number(branch.code) === Number(draft.branch_id)) || form.branch;
+            form.holder = this.holders.find(holder => Number(holder.code) === Number(draft.holder_id)) || form.holder;
+            form.currency = this.currencies.find(currency => Number(currency.code) === Number(draft.currency_id)) || form.currency;
+            form.observation = draft.observation || form.observation;
+            form.details = (draft.details || []).map(detail => {
+                const option = this.items.find(item => Number(item.code) === Number(detail.item_id));
+                const itemData = option?.data || {};
+                const currency = itemData.currency || form.currency?.data || null;
+
+                return {
+                    id: Utils.uuid(),
+                    item: option || {code: detail.item_id, label: detail.name, data: itemData},
+                    type: detail.type,
+                    currency,
+                    name: detail.name,
+                    quantity: detail.quantity,
+                    price: detail.price,
+                    price_includes_tax: detail.price_includes_tax,
+                    commission_type: itemData.commission_type || "none",
+                    commission_value: Number(itemData.commission_value || itemData.commission_rate || 0),
+                    commission_amount: 0,
+                    observation: detail.recalculated_from_quote
+                        ? "Precio recalculado desde la cotización."
+                        : (detail.observation || ""),
+                    extras: {
+                        min_price: itemData.min_price ?? "",
+                        max_price: itemData.max_price ?? "",
+                        duration_type: itemData.duration_type ?? "",
+                        duration_value: itemData.duration_value ?? "",
+                        start_date: "",
+                        end_date: "",
+                        set_end_of_day: false,
+                        force: false,
+                        observation: "",
+                        formatted_duration: "",
+                        formatted_total_duration: "",
+                        formatted_type: "",
+                        showDetail: true
+                    },
+                    mode: "add"
+                };
+            });
+
+            form.payments = [this.newSalePayment({amount: this.total})];
+            Alerts.toastrs({type: "success", subtitle: "Cotización cargada con precios vigentes."});
+
+        },
         calculateSaleTaxLine(tax = {}) {
 
             const rate = Number(tax?.rate || 0);
@@ -1276,6 +1365,7 @@ export default {
             this.options.salesHeader = initParams.data?.config?.salesHeader;
             this.options.taxes = initParams.data?.config?.taxes;
             this.options.paymentMethods = initParams.data?.config?.paymentMethods;
+            this.options.quotations = initParams.data?.config?.quotations;
 
             return Requests.valid({result: initParams});
 
@@ -1574,6 +1664,7 @@ export default {
                 delete form.warehouse;
                 delete form.holder;
                 delete form.currency;
+                delete form.quotation;
                 delete form.delivery_status;
                 delete form.selected_taxes;
                 delete form.selected_tax_quantities;
@@ -1649,6 +1740,8 @@ export default {
                     // this.forms[this.entity].createUpdate.data.issue_date  = Utils.getCurrentDate();
                     // this.forms[this.entity].createUpdate.data.holder      = null;
                     this.forms[this.entity].createUpdate.data.observation = "";
+                    this.forms[this.entity].createUpdate.data.quotation = null;
+                    this.forms[this.entity].createUpdate.data.quotation_header_id = null;
                     this.forms[this.entity].createUpdate.data.warehouse   = (this.warehouses).length > 0 ? this.warehouses[0] : null;
                     this.forms[this.entity].createUpdate.extras.modals.observations.draft = "";
                     this.forms[this.entity].createUpdate.data.selected_taxes = [];
@@ -1997,10 +2090,11 @@ export default {
             Alerts.tooltips({show, time});
 
         },
-        sendWhatsapp({data = null, action = "reportSale"}) {
+        async sendWhatsapp({data = null, action = "reportSale"}) {
 
             const phoneNumber = this.forms[this.entity].createUpdate.extras.modals.finished.data.whatsapp;
-            const message     = Utils.getMessageWhatsapp({data, action});
+            const url = await Requests.saleReportShareUrl({document: data?.id, type: "a4"});
+            const message = Utils.getMessageWhatsapp({data, action, url});
 
             Utils.sendWhatsapp({phoneNumber, message});
 
@@ -2008,7 +2102,8 @@ export default {
         async sendEmail({data = null, action = "reportSale"}) {
 
             let route = Requests.config({entity: "helpers", type: "sendEmail"});
-            const formJson = {serie_sequential: data?.serie_sequential, email: data?.email, message: Utils.getMessageWhatsapp({data, action})};
+            const url = await Requests.saleReportShareUrl({document: data?.id, type: "a4"});
+            const formJson = {id: data?.id, serie_sequential: data?.serie_sequential, email: data?.email, message: Utils.getMessageWhatsapp({data, action, url})};
 
             Alerts.swals({});
 
@@ -2141,6 +2236,15 @@ export default {
                 code: e.id,
                 label: [e.name, e.internal_code, e.barcode].filter(Boolean).join(" · "),
                 data: e
+            }));
+
+        },
+        quotationOptions() {
+
+            return (this.options?.quotations?.records || []).map(record => ({
+                code: record.id,
+                label: `${record.reference} · ${record.holder?.name || "Cliente"} · ${this.separatorNumber(record.total)}`,
+                data: record
             }));
 
         },

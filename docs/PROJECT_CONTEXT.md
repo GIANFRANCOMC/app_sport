@@ -36,6 +36,7 @@ El sistema combina administracion interna y portal publico por empresa. Internam
 - Membresia real (`subscriptions`): derecho de asistencia de un cliente, creado manualmente o a partir de una venta.
 - Asistencia (`attendances`): check-in/check-out de un cliente en una sucursal.
 - Venta (`sales_header`, `sales_body`): transaccion comercial con detalle de productos, servicios o membresias.
+- Puntos (`customer_point_balances`, `customer_point_movements`): beneficio configurable por empresa que puede acumularse por monto vendido, cantidad de items, venta de membresias o items seleccionados.
 - Almacen (`warehouses`, `warehouse_items`): stock por sucursal para productos.
 - Activo (`assets`, `branch_assets`, `asset_assignments`): bienes administrados por sucursal y usuario.
 - Portal publico: rutas por `company_slug` para home, reclamos y asistencia QR/publica.
@@ -59,8 +60,16 @@ El sistema combina administracion interna y portal publico por empresa. Internam
 
 1. El usuario crea una venta en `sales`.
 2. Si un detalle de venta tiene `type = subscription`, `SaleService` crea un registro en `subscriptions`.
-3. La membresia queda asociada al cliente, sucursal, venta y detalle de venta.
+3. La membresia queda asociada al cliente beneficiario, sucursal, venta y detalle de venta. Si el detalle no trae beneficiario, se usa el titular de la venta.
 4. Si se anula la venta, `SaleService::cancel` cancela tambien las suscripciones activas creadas por esa venta.
+5. Si la empresa lo permite, se registra un correo de agradecimiento por suscripcion para el beneficiario.
+
+### Sistema de puntos
+
+1. La empresa activa `company_settings.loyalty.enabled`.
+2. Las reglas vigentes definen el criterio: monto total, cantidad de items, venta de membresias o items seleccionados.
+3. Al confirmar una venta, `CustomerLoyaltyPointService` registra movimientos positivos y actualiza el saldo materializado del cliente.
+4. Si se anula una venta, `company_settings.loyalty.reverse_points_on_sale_cancellation` define si se registra la reversa de puntos.
 
 ### Venta de producto
 

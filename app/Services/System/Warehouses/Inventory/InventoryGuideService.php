@@ -9,6 +9,8 @@ use DomainException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
+use App\Helpers\System\Utilities;
+
 final class InventoryGuideService {
 
     public static function create(int $companyId, int $userId, array $data): InventoryGuide {
@@ -72,8 +74,8 @@ final class InventoryGuideService {
             ->with(["warehouse.branch", "items.item", "confirmedBy"])
             ->when($filters["warehouse_id"] ?? null, fn($query, $id) => $query->where("warehouse_id", $id))
             ->when($filters["guide_type"] ?? null, fn($query, $type) => $query->where("guide_type", $type))
-            ->when($filters["date_from"] ?? null, fn($query, $date) => $query->whereDate("issue_date", ">=", $date))
-            ->when($filters["date_to"] ?? null, fn($query, $date) => $query->whereDate("issue_date", "<=", $date))
+            ->when($filters["date_from"] ?? null, fn($query, $date) => $query->where("issue_date", ">=", Utilities::startOfDay($date)))
+            ->when($filters["date_to"] ?? null, fn($query, $date) => $query->where("issue_date", "<=", Utilities::endOfDay($date)))
             ->orderByDesc("id");
 
     }

@@ -284,7 +284,7 @@ class TrackingSubscriptionService {
 
     }
 
-    private static function queueWelcomeEmail(
+    public static function queueWelcomeEmail(
         Subscription $subscription,
         Customer $customer,
         ?Item $catalogSubscription = null,

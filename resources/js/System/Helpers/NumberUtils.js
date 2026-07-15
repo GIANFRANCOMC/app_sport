@@ -10,9 +10,32 @@ import { isDefined } from "./ValidationUtils.js";
  * @param {Object} options - {value: *, minValue: number}
  * @returns {boolean} true si es válido
  */
-export function isNumber({value, minValue = 0}) {
-    const number = Number(value);
-    return !isNaN(number) && Number(number) >= minValue;
+export function isNumber({value, minValue = 0, maxValue = null, allowEmpty = false}) {
+
+    if(!isDefined({value})) {
+
+        return allowEmpty;
+
+    }
+
+    const normalizedValue = typeof value === "string" ? value.trim().replace(/,/g, "") : value;
+
+    if(normalizedValue === "") {
+
+        return allowEmpty;
+
+    }
+
+    const number = Number(normalizedValue);
+
+    if(!Number.isFinite(number) || number < Number(minValue)) {
+
+        return false;
+
+    }
+
+    return !isDefined({value: maxValue}) || number <= Number(maxValue);
+
 }
 
 /**
@@ -41,9 +64,9 @@ export function separatorNumber(value) {
  * @returns {number} Total calculado
  */
 export function calculateTotal({item}) {
-    const quantity = Number(item?.quantity);
-    const price = Number(item?.price);
-    const total = (isNaN(quantity) || isNaN(price)) ? 0 : fixedNumber(quantity * price);
+    const quantity = isNumber({value: item?.quantity}) ? Number(String(item.quantity).replace(/,/g, "")) : 0;
+    const price = isNumber({value: item?.price}) ? Number(String(item.price).replace(/,/g, "")) : 0;
+    const total = fixedNumber(quantity * price);
     return total;
 }
 

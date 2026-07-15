@@ -72,7 +72,7 @@ final class BookComplaintController extends Controller {
         $todaySubmissions = BookComplaint::query()
             ->where("company_id", $company->id)
             ->where("submitted_ip", $request->ip())
-            ->whereDate("created_at", Carbon::today())
+            ->whereBetween("created_at", [Carbon::today()->startOfDay(), Carbon::today()->endOfDay()])
             ->count();
 
         if($todaySubmissions >= (int) config('public_access.complaints.per_day')) {

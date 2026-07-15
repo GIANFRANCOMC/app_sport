@@ -38,6 +38,7 @@ Permite crear una venta con productos, servicios o membresias. Una venta puede g
 - `details[]`
 - Por detalle: `item_id`, `currency_id`, `name`, `quantity`, `price`, `type`, `extras`
 - Por detalle, opcional: `commission_type`, `commission_value`. Si no se envian, el backend toma la configuracion vigente del item.
+- Por detalle de tipo `subscription`, opcional: `customer_id` para indicar el cliente beneficiario de la membresía. Debe pertenecer a la empresa y estar activo.
 
 ## Estado de mejoras
 
@@ -48,6 +49,14 @@ Permite crear una venta con productos, servicios o membresias. Una venta puede g
 - Cada emisión y anulación queda registrada en `series_correlative_movements`; una anulación nunca libera el correlativo.
 - Venta y POS bloquean la acción cuando la sucursal no tiene serie o almacén activo y muestran la configuración que debe corregirse.
 - `details.*.extras` valida duración, fechas, observación, opciones de receta y toppings con una estructura explícita; los identificadores no se aceptan como datos libres.
+- `StoreSaleRequest` normaliza antes de validar cantidades, precios, totales, tributos y pagos. Los máximos usan el mismo criterio transversal de backend y frontend (`999999999999.9999`) para evitar diferencias entre Vue y PHP.
+- El envío de correo de venta usa `HelperController::sendEmail`, valida correo y mensaje, construye el asunto con correlativo, sucursal y empresa cuando existe `sale_header.id`, y reutiliza la plantilla `emails.saleMail`.
+- La plantilla de correo saluda al cliente cuando está disponible, muestra la sucursal de la venta y cierra con un footer de la empresa usando BLAPOS como referencia de plataforma.
+- Los enlaces para imprimir o compartir comprobantes de venta usan una URL firmada temporal generada por `reports/sale/share-link`. Si el enlace vence o se altera, Laravel lo rechaza por firma antes de renderizar el PDF.
+- `company_settings.reports.sale_share_ttl_minutes` define por empresa la vigencia de esos enlaces; el valor por defecto es 4320 minutos.
+- Las consultas externas de DNI/RUC se registran en `external_api_request_logs`; el backend devuelve el consumo mensual y una advertencia al superar `company_settings.external_api.document_lookup_monthly_warning_threshold`.
+- El sistema de puntos se ejecuta después de crear correctamente la venta. `company_settings.loyalty.enabled` activa la acumulación y las reglas vigentes definen si se otorgan puntos por monto total, cantidad de ítems, membresías o ítems seleccionados.
+- Si se anula una venta, `company_settings.loyalty.reverse_points_on_sale_cancellation` determina si los puntos ganados por esa venta se reversan con un movimiento negativo.
 
 ## Actualizacion: impuestos y pagos configurables
 
@@ -56,6 +65,7 @@ Permite crear una venta con productos, servicios o membresias. Una venta puede g
 - El backend recalcula subtotal, impuestos, total y pagos para mantener la consistencia del documento.
 - Los impuestos aplicados se guardan como foto del documento en `sale_taxes`.
 - Los pagos aplicados se guardan como foto del documento en `sale_payments`.
+- Cada pago conserva `payment_method_id`, nombre historico, monto, referencia y nota. Esto mantiene trazabilidad aunque despues se cambie o inactive el metodo de pago.
 - La vista `resources/js/System/Pages/Sales/sales/main.vue` muestra un bloque lateral de liquidacion con impuestos aplicados automaticamente, metodos de pago, subtotal, impuestos, total, pagado y diferencia.
 - Si solo hay un metodo de pago, el importe se sincroniza con el total para facilitar el registro.
 

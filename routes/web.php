@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\System\Auth\AuthenticatedSessionController;
+use App\Http\Controllers\System\Essentials\ReportController;
 use App\Http\Controllers\System\Notifications\NotificationController;
 use Illuminate\Support\Facades\Route;
 
@@ -23,6 +24,10 @@ Route::prefix('{company_slug}/book_complaints')->middleware('company.exists')->g
 Route::prefix('{company_slug}/home')->middleware('company.exists')->group($guestRoute.'/Home.php');
 Route::prefix('{company_slug}/tracking_attendances')->middleware('company.exists')->group($guestRoute.'/TrackingAttendance.php');
 Route::prefix('{company_slug}/biometric_devices')->middleware('company.exists')->group($guestRoute.'/BiometricDevice.php');
+
+Route::get('/shared/reports/sale/{company}/{sale}/{type}', [ReportController::class, 'sharedSale'])
+    ->middleware(['signed', 'throttle:guest-status'])
+    ->name('reports.sale.shared');
 
 Route::middleware('guest')->group(function() {
 
@@ -74,6 +79,7 @@ Route::middleware(['auth', 'verified', 'module.permission', 'resource.scope'])->
     Route::prefix('/branches')->group($systemRoute.'/Organizations/Branch.php');
     Route::prefix('/companies')->group($systemRoute.'/Organizations/Company.php');
     Route::prefix('/roles')->group($systemRoute.'/Organizations/Role.php');
+    Route::prefix('/business_profile')->group($systemRoute.'/Organizations/BusinessProfile.php');
     Route::prefix('/users')->group($systemRoute.'/Organizations/User.php');
     Route::prefix('/user_attendances')->group($systemRoute.'/Organizations/UserAttendance.php');
 
@@ -82,9 +88,11 @@ Route::middleware(['auth', 'verified', 'module.permission', 'resource.scope'])->
 
     // Sales
     Route::prefix('/sales')->group($systemRoute.'/Sales/Sale.php');
+    Route::prefix('/quotations')->group($systemRoute.'/Sales/Quotation.php');
 
     // Finance
     Route::prefix('/cash_registers')->group($systemRoute.'/Finance/CashRegister.php');
+    Route::prefix('/misc_expenses')->group($systemRoute.'/Finance/MiscExpense.php');
 
     // Purchases
     Route::prefix('/purchases')->group($systemRoute.'/Purchases/Purchase.php');

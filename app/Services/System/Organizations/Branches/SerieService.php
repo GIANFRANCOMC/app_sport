@@ -6,6 +6,7 @@ namespace App\Services\System\Organizations\Branches;
 
 use Exception;
 
+use App\Helpers\System\Utilities;
 use App\Models\System\General\{DocumentType};
 use App\Models\System\Organizations\{Branch, Serie};
 use Illuminate\Support\Facades\DB;
@@ -109,8 +110,8 @@ class SerieService {
             ->when($filters["user_id"] ?? null, fn($query, $id) => $query->where("movement.user_id", $id))
             ->when($filters["source"] ?? null, fn($query, $source) => $query->where("movement.source", $source))
             ->when($filters["action"] ?? null, fn($query, $action) => $query->where("movement.action", $action))
-            ->when($filters["date_from"] ?? null, fn($query, $date) => $query->whereDate("movement.occurred_at", ">=", $date))
-            ->when($filters["date_to"] ?? null, fn($query, $date) => $query->whereDate("movement.occurred_at", "<=", $date))
+            ->when($filters["date_from"] ?? null, fn($query, $date) => $query->where("movement.occurred_at", ">=", Utilities::startOfDay($date)))
+            ->when($filters["date_to"] ?? null, fn($query, $date) => $query->where("movement.occurred_at", "<=", Utilities::endOfDay($date)))
             ->select([
                 "movement.id",
                 "movement.sequential",

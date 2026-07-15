@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\System\Catalogs\Recipes;
 
+use App\Helpers\System\Utilities;
 use App\Models\System\Catalogs\{Item, RecipeDish, RecipeWasteRecord};
 use App\Models\System\Warehouses\{Warehouse, WarehouseItem};
 use App\Services\System\Warehouses\Inventory\InventoryMovementService;
@@ -28,8 +29,8 @@ final class RecipeWasteService {
             ->when($filters["recipe_dish_id"] ?? null, fn($query, $id) => $query->where("recipe_dish_id", $id))
             ->when($filters["warehouse_id"] ?? null, fn($query, $id) => $query->where("warehouse_id", $id))
             ->when($filters["item_id"] ?? null, fn($query, $id) => $query->where("item_id", $id))
-            ->when($filters["date_from"] ?? null, fn($query, $date) => $query->whereDate("occurred_at", ">=", $date))
-            ->when($filters["date_to"] ?? null, fn($query, $date) => $query->whereDate("occurred_at", "<=", $date))
+            ->when($filters["date_from"] ?? null, fn($query, $date) => $query->where("occurred_at", ">=", Utilities::startOfDay($date)))
+            ->when($filters["date_to"] ?? null, fn($query, $date) => $query->where("occurred_at", "<=", Utilities::endOfDay($date)))
             ->latest("occurred_at")
             ->paginate($perPage);
 

@@ -101,6 +101,27 @@ Errores de campo:
 - Los errores deben ser pequeños, legibles y no competir con el label.
 - El borde rojo debe envolver todo el control compuesto.
 
+### Convención de validaciones
+
+- Los `FormRequest` deben parsear y normalizar IDs, montos, fechas opcionales y arrays antes de llegar al controlador.
+- Las validaciones transversales viven en `CompanyFormRequest`; cuando una entidad requiera texto propio, debe mantener el mismo estilo corto y accionable.
+- Bajo el campo se muestra solo el error, por ejemplo `Campo obligatorio.`. En resumen o modal se incluye el campo, por ejemplo `Nombre: Campo obligatorio.`.
+- Pendiente controlado: revisar `resources/lang/es/validation.php` entidad por entidad para reemplazar textos residuales de Laravel/librerías y mantener errores visibles y consistentes en código.
+
+## Precisión Numérica
+
+Montos, cantidades operativas, costos, tributos, pagos, inventario y valorización se redondean a 4 decimales en backend y frontend. El criterio vive en `Utilities::$inputs["round"]` y `generalConfig.forms.inputs.round`.
+
+El límite operativo general para cantidades, precios, totales y pagos vive en `Utilities::$inputs["maxValue"]` y `generalConfig.forms.inputs.maxValue`. Ambos deben permanecer alineados para que el frontend guíe y el `FormRequest` proteja con el mismo techo.
+
+Reglas:
+
+- Usar `Utilities::round()` en servicios PHP para cálculos de negocio.
+- Usar `fixedNumber`/`InputNumber` sin forzar `2` decimales salvo que sea una métrica no monetaria ni operativa.
+- Los casts Eloquent de importes/cantidades deben ser `decimal:4`.
+- Las migraciones de montos y cantidades usan `decimal(16, 4)`.
+- Métricas de tiempo, latencia o porcentajes visuales pueden conservar 2 decimales si no afectan dinero, stock o saldo.
+
 ## Modales y SweetAlert
 
 Las modales de System deben usar el patrón global:
@@ -209,5 +230,8 @@ Las reglas visuales transversales se administran en este archivo. Las mejoras pu
 - Usar `php artisan company:enable {company_id}` para habilitar datos base de una empresa sin insertar manualmente tabla por tabla.
 - Mantener sincronizados los nuevos endpoints con `config/permissions.php` cuando compartan un prefijo entre varias páginas.
 - Los reportes deben reutilizar consultas filtradas, declarar límites por empresa y rechazar volúmenes excesivos antes de materializar colecciones.
+- Los reportes compartibles fuera de sesión deben usar rutas firmadas y con expiración. No compartir rutas basadas solo en ids o parámetros codificados.
+- En columnas `datetime` o `timestamp`, no usar `whereDate` para filtros de día; usar rangos `>= startOfDay` y `<= endOfDay` mediante `Utilities::startOfDay()` y `Utilities::endOfDay()` para conservar consultas indexables.
+- En columnas `date` puras, usar comparación directa (`>=`, `<=`) sin envolver la columna en funciones SQL.
 - Stock, caja, ventas, compras, perfiles, configuración, reclamos, asistencia y activos conservan trazabilidad específica o auditoría empresarial.
 - Todo accessor incluido en `$appends` debe tolerar modelos con selección parcial; leer atributos mediante `??` y devolver un valor neutral evita errores `Undefined array key` en listados optimizados.

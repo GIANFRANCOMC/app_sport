@@ -293,7 +293,7 @@ class CommercialCatalogSeeder extends Seeder {
             $quantity = (float) ($inventory["quantity"] ?? 0);
             $minimumStock = (float) ($inventory["minimum_stock"] ?? 0);
             $averageCost = (float) ($inventory["average_cost"] ?? 0);
-            $inventoryValue = round($quantity * $averageCost, 2);
+            $inventoryValue = round($quantity * $averageCost, 4);
 
             WarehouseItem::updateOrCreate(
                 [

@@ -337,7 +337,8 @@ const ENTITY_SPECIAL_ROUTES = {
         unassignToUser: "unassignToUser"
     },
     reports: {
-        sale: "sale"
+        sale: "sale",
+        saleShareLink: "sale/share-link"
     },
     stocks_management: {
         summary: "summary",
@@ -446,5 +447,28 @@ export function routeReport({resource, params = null, extras = null}) {
     }
 
     return url.toString();
+
+}
+
+export async function saleReportShareUrl({document = null, type = "a4"} = {}) {
+
+    const route = config({entity: "reports", type: "saleShareLink"});
+    const response = await get({
+        route,
+        data: {document, type},
+        showAlert: false
+    });
+
+    if(valid({result: response}) && response?.data?.data?.url) {
+
+        return response.data.data.url;
+
+    }
+
+    return routeReport({
+        resource: "sale",
+        params: {document, type},
+        extras: {action: "reportSale"}
+    });
 
 }

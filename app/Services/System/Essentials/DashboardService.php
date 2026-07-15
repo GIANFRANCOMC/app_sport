@@ -33,7 +33,7 @@ final class DashboardService {
             ->when($branchId, fn($query) => $query->where("series.branch_id", $branchId));
         $netSales = (clone $salesBase)
             ->where("sales_header.status", "active")
-            ->whereDate("sales_header.issue_date", $day->toDateString())
+            ->whereBetween("sales_header.issue_date", [$dayStart, $dayEnd])
             ->selectRaw("COUNT(sales_header.id) as count, COALESCE(SUM(sales_header.total), 0) as total")
             ->first();
         $canceledSales = (clone $salesBase)

@@ -70,6 +70,9 @@ En escritorio, la descarga se presenta como un botón verde compacto con el icon
 - `items.max_price`: límite superior opcional.
 - `items.commission_type`: regla interna de comisión para ventas del producto (`none`, `percentage`, `fixed`).
 - `items.commission_value`: valor de la comisión. Si es porcentaje aplica sobre el total de línea; si es monto fijo aplica por unidad vendida.
+- `items.capacity_control_enabled`: activa cupos comerciales opcionales para el producto, adicionales al stock físico.
+- `items.capacity_limit`: cantidad máxima comercial disponible cuando el control de cupos está activo.
+- `items.capacity_used`: cupos ya consumidos por ventas confirmadas.
 
 ### Publicación
 
@@ -144,6 +147,9 @@ Si un almacén activo no tiene valores explícitos, se crea con cantidad y míni
 - `price_includes_tax` se guarda como booleano y se usa en ventas para decidir si los impuestos configurados incrementan o no el total del detalle.
 - La comisión es opcional y no altera el precio ni el total cobrado al cliente; se guarda como dato interno para liquidaciones y reportes.
 - Si la comisión es porcentual, no puede superar el 100%. Si es monto fijo, se calcula por unidad vendida.
+- El control de cupos es opcional. Si está desactivado, `capacity_limit` queda nulo y `capacity_used` queda en cero.
+- Si se activa control de cupos, `capacity_limit` es obligatorio, entero y no puede ser menor que los cupos ya consumidos.
+- Los cupos no reemplazan el inventario físico del producto; sirven para campañas, packs, cupos comerciales o disponibilidad limitada adicional al stock por almacén.
 - El precio debe respetar los límites mínimo y máximo configurados.
 - Los almacenes enviados deben estar activos y pertenecer a sucursales activas de la empresa autenticada.
 - Las categorías deben estar activas y pertenecer a la empresa autenticada.
@@ -169,7 +175,7 @@ Si un almacén activo no tiene valores explícitos, se crea con cantidad y míni
 - El selector de estado ocupa cuatro columnas en escritorio para evitar opciones innecesariamente anchas.
 - En resoluciones `lg`, el selector de estado ocupa seis columnas para conservar una proporción cómoda.
 - La primera pestaña contiene también Marca inmediatamente antes de Estado, evitando separar datos básicos de clasificación durante el alta.
-- La segunda pestaña corresponde a Inventario y la tercera, `Información adicional`, presenta primero la descripción comercial, luego las categorías y finalmente la visibilidad para clientes.
+- La segunda pestaña corresponde a Inventario y la tercera, `Información adicional`, presenta primero la descripción comercial, luego el control opcional de cupos, las categorías y finalmente la visibilidad para clientes.
 - La sección `Visibilidad para clientes` explica expresamente que publicar el producto o mostrar su precio controla la información visible fuera de la plataforma y no modifica el estado interno Activo o Inactivo.
 - Marca y Categorías incluyen una acción contextual `Agregar` presentada como enlace azul primary, acompañada por un icono circular de suma alineado verticalmente con el texto. Cada acción abre un modal rápido sin cerrar ni limpiar el formulario de Producto.
 - Al crear una Marca o Categoría, el registro se incorpora a las opciones disponibles sin reemplazar ni ampliar automáticamente la selección actual del producto.

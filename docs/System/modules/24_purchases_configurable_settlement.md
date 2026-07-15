@@ -17,6 +17,8 @@ Extender compras para que cada empresa pueda aplicar impuestos y metodos de pago
 - Los tributos fijos opcionales de compra permiten indicar cantidad entera. Ejemplo: si la compra incluye 2 bolsas gravadas, el usuario marca `ICBP` y coloca cantidad 2. Al quitar el check, el campo se oculta y no se envia el tributo.
 - En compras, el bloque `Impuestos extras` muestra solo tributos opcionales. Los obligatorios, como `IGV`, se calculan automáticamente y aparecen en el resumen.
 - Los pagos aplicados se guardan como foto del documento en `purchase_payments`.
+- Cada metodo de pago conserva `payment_method_id`, nombre historico, monto, referencia y nota. El catalogo inicial usa codigos SUNAT cuando corresponde y un icono por metodo para mejorar identificacion visual.
+- Al registrar una compra, la vista cambia al modo `Listado` y refresca los registros para evitar que el usuario crea que la compra no fue guardada.
 
 ## Vista
 
@@ -33,6 +35,8 @@ La vista `resources/js/System/Pages/Purchases/purchases/main.vue` incluye una se
 ## Inventario
 
 El costo de inventario se mantiene desde el costo unitario del detalle. Los impuestos documentarios no alteran el stock ni el costo promedio por si solos.
+
+`delivery_mode = immediate` es el valor por defecto y registra la entrada completa al almacen. `delivery_mode = pending` deja la recepcion pendiente para entradas parciales hasta completar el 100%.
 
 ## Estado de mejoras
 

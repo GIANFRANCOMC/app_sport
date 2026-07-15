@@ -79,11 +79,11 @@ export default {
         //
     },
     methods: {
-        exportpp({type}) {
+        async exportpp({type}) {
 
             let data = this.data;
 
-            const url = Requests.routeReport({resource: "sale", params: {document: data?.id, type}, extras: {action: "reportSale"}});
+            const url = await Requests.saleReportShareUrl({document: data?.id, type});
 
             window.open(url, "_blank");
 

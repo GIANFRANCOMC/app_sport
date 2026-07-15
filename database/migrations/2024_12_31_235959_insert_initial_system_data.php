@@ -83,7 +83,7 @@ return new class extends Migration {
             ["id" => 40, "section_id" => 4, "slug" => "sc_customers", "name" => "customers", "description" => "Administra los datos y el estado de los clientes.", "order" => 1, "dom_id" => "menu-customers", "dom_label" => "Clientes", "dom_route" => "customers.index"],
             ["id" => 41, "section_id" => 4, "slug" => "sc_customers-history", "name" => "customers-history", "description" => "Consulta la actividad y los movimientos de cada cliente.", "order" => 2, "dom_id" => "menu-customers-history", "dom_label" => "Historial", "dom_route" => "tracking_customers.index"],
             ["id" => 42, "section_id" => 4, "slug" => "sc_customers-subscriptions", "name" => "customers-subscriptions", "description" => "Controla vigencias, renovaciones y estados de membresías.", "order" => 3, "dom_id" => "menu-customers-subscriptions", "dom_label" => "Membresías", "dom_route" => "tracking_subscriptions.index"],
-            ["id" => 43, "section_id" => 4, "slug" => "sc_customers-attendances", "name" => "customers-attendances", "description" => "Registra y consulta ingresos y salidas de clientes.", "order" => 4, "dom_id" => "menu-customers-attendances", "dom_label" => "Asistencias", "dom_route" => "tracking_attendances.index"],
+            ["id" => 43, "section_id" => 4, "slug" => "sc_customers-attendances", "name" => "customers-attendances", "description" => "Registra y consulta ingresos y salidas de clientes por documento.", "order" => 4, "dom_id" => "menu-customers-attendances", "dom_label" => "Asistencias por documento", "dom_route" => "tracking_attendances.index"],
             ["id" => 44, "section_id" => 4, "slug" => "sc_customers-notifications", "name" => "customers-notifications", "description" => "Gestiona comunicaciones y avisos dirigidos a clientes.", "order" => 5, "dom_id" => "menu-customers-notifications", "dom_label" => "Notificaciones", "dom_route" => "tracking_notifications.index"],
             ["id" => 45, "section_id" => 4, "slug" => "sc_customers-book_complaints", "name" => "customers-book_complaints", "description" => "Atiende reclamos, quejas y sugerencias recibidas.", "order" => 6, "dom_id" => "menu-customers-book_complaints", "dom_label" => "Libro de reclamaciones y sugerencias", "dom_route" => "book_complaints.index"],
 
@@ -330,6 +330,30 @@ return new class extends Migration {
             ],
             [
                 "company_id" => 1,
+                "group" => "inventory",
+                "key" => "stock_alert_email_enabled",
+                "value" => "false",
+                "description" => "Activa el envío de correo cuando un producto cae por debajo o iguala su stock mínimo en un almacén. Solo se notifica al abrir una nueva alerta para evitar correos repetidos.",
+                "value_type" => "boolean"
+            ],
+            [
+                "company_id" => 1,
+                "group" => "inventory",
+                "key" => "stock_alert_email_to",
+                "value" => null,
+                "description" => "Correo destino para alertas de stock mínimo. Si queda vacío, se usa el correo registrado de la empresa cuando exista.",
+                "value_type" => "string"
+            ],
+            [
+                "company_id" => 1,
+                "group" => "external_api",
+                "key" => "document_lookup_monthly_warning_threshold",
+                "value" => "80",
+                "description" => "Cantidad mensual de consultas externas de DNI/RUC desde la cual el sistema devuelve una advertencia para revisar consumo y costos del proveedor.",
+                "value_type" => "integer"
+            ],
+            [
+                "company_id" => 1,
                 "group" => "customer_attendance",
                 "key" => "daily_limit_scope",
                 "value" => "branch",
@@ -351,6 +375,14 @@ return new class extends Migration {
                 "value" => "false",
                 "description" => "Permite que una lectura QR o biométrica finalice automáticamente una asistencia activa de cliente. El valor inicial false evita salidas involuntarias.",
                 "value_type" => "boolean"
+            ],
+            [
+                "company_id" => 1,
+                "group" => "customer_attendance",
+                "key" => "max_active_hours",
+                "value" => "20",
+                "description" => "Horas maximas que una asistencia de cliente puede permanecer abierta. Si se supera, el backend finaliza la asistencia vencida y permite registrar una nueva.",
+                "value_type" => "integer"
             ],
             [
                 "company_id" => 1,

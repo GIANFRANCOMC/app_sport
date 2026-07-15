@@ -53,7 +53,7 @@
 
 <script>
 import { generalConfig } from "../Helpers/Constants.js";
-import { isDefined, separatorNumber } from "../Helpers/Utils.js";
+import { isDefined, isNumber, separatorNumber } from "../Helpers/Utils.js";
 
 export default {
     name: "InputNumber",
@@ -269,15 +269,15 @@ export default {
 
             if(hasFormattedNumber || hasDecimalInitNumber) {
 
-                let numericValue = Number(valueString);
-
-                if(isNaN(numericValue)) {
+                if(!isNumber({value: valueString, minValue: this.hasNegative ? -maxValue : 0})) {
 
                     // If not a valid number, keep current value or null
                     this.emitValue({reset: false, result: isDefined({value: this.modelValue}) ? this.modelValue : null});
                     return;
 
                 }
+
+                let numericValue = Number(valueString);
 
                 // Apply min/max limits
                 if(numericValue < minValue) {

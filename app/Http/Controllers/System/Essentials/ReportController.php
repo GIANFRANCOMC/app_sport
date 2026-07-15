@@ -7,8 +7,9 @@ namespace App\Http\Controllers\System\Essentials;
 use App\Exports\{BranchExport, CustomerExport, ItemExport, SaleExport, UserExport};
 use App\Helpers\System\Utilities;
 use App\Http\Controllers\System\Base\BaseController;
-use Illuminate\Http\Request;
+use Illuminate\Http\{JsonResponse, Request};
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Validation\ValidationException;
 use stdClass;
 use Exception;
@@ -91,6 +92,73 @@ class ReportController extends BaseController {
 
     }
 
+    public function saleShareLink(Request $request): JsonResponse {
+
+        $validated = $request->validate([
+            "document" => ["required", "integer", "min:1"],
+            "type" => ["required", "in:a4,mm80"]
+        ]);
+
+        $allowedBranchIds = $this->allowedBranchIds();
+
+        $saleHeader = SaleHeader::where("company_id", $this->getCompanyId())
+            ->whereKey((int) $validated["document"])
+            ->when($allowedBranchIds !== null, function($query) use($allowedBranchIds) {
+
+                $query->whereHas("serie", fn($serie) =>
+                    $serie->whereIn("branch_id", $allowedBranchIds)
+                );
+
+            })
+            ->first();
+
+        if(!Utilities::isDefined($saleHeader)) {
+
+            return response()->json([
+                "bool" => false,
+                "msg" => "Venta no encontrada o sin acceso para compartir."
+            ], 404);
+
+        }
+
+        $ttlMinutes = max(5, min(43200, (int) CompanySettingService::value(
+            $this->getCompanyId(),
+            CompanySettingService::REPORTS,
+            "sale_share_ttl_minutes",
+            4320
+        )));
+
+        return response()->json([
+            "bool" => true,
+            "data" => [
+                "url" => URL::temporarySignedRoute(
+                    "reports.sale.shared",
+                    now()->addMinutes($ttlMinutes),
+                    [
+                        "company" => $this->getCompanyId(),
+                        "sale" => (int) $saleHeader->id,
+                        "type" => $validated["type"]
+                    ]
+                ),
+                "expires_in_minutes" => $ttlMinutes
+            ],
+            "msg" => "Enlace seguro generado correctamente."
+        ]);
+
+    }
+
+    public function sharedSale(Request $request, int $company, int $sale, string $type) {
+
+        if(!in_array($type, ["a4", "mm80"], true)) {
+
+            return response()->view("errors.404", ["msg" => "Información no encontrada"], 404);
+
+        }
+
+        return $this->renderSalePdf($company, $sale, $type);
+
+    }
+
     public function sale(Request $request) {
 
         $message500 = "Por favor, no altere el enlace generado. Cualquier modificación podría invalidarlo. Si tiene algún problema, solicite uno nuevo";
@@ -128,70 +196,12 @@ class ReportController extends BaseController {
 
             if($expirationDate->greaterThanOrEqualTo($currentDate)) {
 
-                $saleHeader = SaleHeader::where("company_id", $this->getCompanyId())
-                                        ->where("id", $document)
-                                        ->when($this->allowedBranchIds() !== null, function($query) {
-
-                                            $query->whereHas("serie", fn($serie) =>
-                                                $serie->whereIn("branch_id", $this->allowedBranchIds())
-                                            );
-
-                                        })
-                                        ->with(["serie.documentType", "holder", "allPositions"])
-                                        ->first();
-
-                $company = Company::find($this->getCompanyId());
-
-                if(Utilities::isDefined($saleHeader) && Utilities::isDefined($company)) {
-
-                    try {
-
-                        $logotypeRoute = public_path("storage/".$company->logotype);
-                        $logotypeImg   = "data:image/".pathinfo($logotypeRoute, PATHINFO_EXTENSION).";base64,".base64_encode(file_get_contents($logotypeRoute));
-
-                    }catch(\Exception $e) {
-
-                        $logotypeImg = null;
-
-                    }
-
-                    try {
-
-                        $canceledPath = public_path("System/assets/img/utils/sales/canceled.png");
-                        $canceledImg  = "data:image/".pathinfo($canceledPath, PATHINFO_EXTENSION).";base64,".base64_encode(file_get_contents($canceledPath));
-
-                        $data = [
-                            "saleHeader"  => $saleHeader,
-                            "company"     => $company,
-                            "extras"      => $saleHeader,
-                            // Assets
-                            "logotypeImg" => $logotypeImg,
-                            "canceledImg" => $canceledImg
-                        ];
-
-                        if(in_array($printType, ["a4"])) {
-
-                            // return view("System.pdf.sales.a4", $data);
-                            $pdf = Pdf::loadView("System.pdf.sales.a4", $data);
-                            return $pdf->stream($this->exportFileName("venta-{$saleHeader->serie_sequential}-a4", "pdf"), ["Attachment" => false]);
-                            // return $pdf->download("Comprobante ".$saleHeader->serie_sequential.".pdf");
-
-                        }else if(in_array($printType, ["mm80"])) {
-
-                            // return view("System.pdf.sales.mm80", $data);
-                            $pdf = Pdf::loadView("System.pdf.sales.mm80", $data)->setPaper([0, 0, 80 * 2.83, 160 * 2.83]);
-                            return $pdf->stream($this->exportFileName("venta-{$saleHeader->serie_sequential}-80mm", "pdf"), ["Attachment" => false]);
-                            // return $pdf->download("Comprobante ".$saleHeader->serie_sequential.".pdf");
-
-                        }
-
-                    }catch(\Exception $e) {
-
-                        return response()->view("errors.500", ["msg" => $e->getMessage()], 500);
-
-                    }
-
-                }
+                return $this->renderSalePdf(
+                    $this->getCompanyId(),
+                    (int) $document,
+                    (string) $printType,
+                    $this->allowedBranchIds()
+                );
 
             }else {
 
@@ -202,6 +212,81 @@ class ReportController extends BaseController {
         }
 
         return response()->view("errors.404", ["msg" => $message404], 404);
+
+    }
+
+    private function renderSalePdf(int $companyId, int $saleId, string $printType, ?array $allowedBranchIds = null) {
+
+        $saleHeader = SaleHeader::where("company_id", $companyId)
+            ->whereKey($saleId)
+            ->when($allowedBranchIds !== null, function($query) use($allowedBranchIds) {
+
+                $query->whereHas("serie", fn($serie) =>
+                    $serie->whereIn("branch_id", $allowedBranchIds)
+                );
+
+            })
+            ->with(["serie.documentType", "holder", "allPositions"])
+            ->first();
+
+        $company = Company::find($companyId);
+
+        if(!Utilities::isDefined($saleHeader) || !Utilities::isDefined($company)) {
+
+            return response()->view("errors.404", ["msg" => "Información no encontrada"], 404);
+
+        }
+
+        try {
+
+            $logotypeRoute = public_path("storage/".$company->logotype);
+            $logotypeImg   = is_file($logotypeRoute)
+                ? "data:image/".pathinfo($logotypeRoute, PATHINFO_EXTENSION).";base64,".base64_encode(file_get_contents($logotypeRoute))
+                : null;
+
+        }catch(\Exception $e) {
+
+            $logotypeImg = null;
+
+        }
+
+        try {
+
+            $canceledPath = public_path("System/assets/img/utils/sales/canceled.png");
+            $canceledImg  = is_file($canceledPath)
+                ? "data:image/".pathinfo($canceledPath, PATHINFO_EXTENSION).";base64,".base64_encode(file_get_contents($canceledPath))
+                : null;
+
+            $data = [
+                "saleHeader"  => $saleHeader,
+                "company"     => $company,
+                "extras"      => $saleHeader,
+                "ownerApp"    => Utilities::getOwnerApp(),
+                "logotypeImg" => $logotypeImg,
+                "canceledImg" => $canceledImg
+            ];
+
+            if($printType === "a4") {
+
+                $pdf = Pdf::loadView("System.pdf.sales.a4", $data);
+                return $pdf->stream($this->exportFileName("venta-{$saleHeader->serie_sequential}-a4", "pdf"), ["Attachment" => false]);
+
+            }
+
+            if($printType === "mm80") {
+
+                $pdf = Pdf::loadView("System.pdf.sales.mm80", $data)->setPaper([0, 0, 80 * 2.83, 160 * 2.83]);
+                return $pdf->stream($this->exportFileName("venta-{$saleHeader->serie_sequential}-80mm", "pdf"), ["Attachment" => false]);
+
+            }
+
+        }catch(\Exception $e) {
+
+            return response()->view("errors.500", ["msg" => $e->getMessage()], 500);
+
+        }
+
+        return response()->view("errors.404", ["msg" => "Información no encontrada"], 404);
 
     }
 

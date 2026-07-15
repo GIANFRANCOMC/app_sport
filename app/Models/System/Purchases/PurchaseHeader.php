@@ -50,12 +50,12 @@ final class PurchaseHeader extends Model {
         "expected_date" => "date:Y-m-d",
         "due_date" => "date:Y-m-d",
         "approved_at" => "datetime",
-        "subtotal" => "decimal:2",
-        "tax" => "decimal:2",
-        "expense_total" => "decimal:2",
-        "total" => "decimal:2",
-        "paid_amount" => "decimal:2",
-        "balance_due" => "decimal:2",
+        "subtotal" => "decimal:4",
+        "tax" => "decimal:4",
+        "expense_total" => "decimal:4",
+        "total" => "decimal:4",
+        "paid_amount" => "decimal:4",
+        "balance_due" => "decimal:4",
         "canceled_at" => "datetime"
     ];
 

@@ -32,9 +32,9 @@ class CashSessionInventoryCount extends Model {
     ];
 
     protected $casts = [
-        "system_quantity" => "decimal:2",
-        "counted_quantity" => "decimal:2",
-        "difference_quantity" => "decimal:2"
+        "system_quantity" => "decimal:4",
+        "counted_quantity" => "decimal:4",
+        "difference_quantity" => "decimal:4"
     ];
 
     public function company() {

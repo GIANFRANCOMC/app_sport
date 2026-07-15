@@ -21,7 +21,7 @@ final class ProcessTrackingAttendanceBatchRequest extends CompanyFormRequest {
             "customers" => ["required", "array", "min:1", "max:200"],
             "customers.*.customer_id" => ["nullable", "required_without:customers.*.customer_document_number", "integer"],
             "customers.*.customer_document_number" => ["nullable", "required_without:customers.*.customer_id", "string", "max:30"],
-            "customers.*.customer_attendance_type" => ["nullable", "string", "in:carnet,dni,dnie"],
+            "customers.*.customer_attendance_type" => ["nullable", "string", "in:carnet,document_number,dni,dnie"],
             "start_date" => ["nullable", "date"],
             "end_date" => ["nullable", "date", "after:start_date"],
             "observation" => ["nullable", "string", "max:500"]

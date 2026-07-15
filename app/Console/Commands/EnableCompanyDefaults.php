@@ -137,6 +137,28 @@ final class EnableCompanyDefaults extends Command {
             );
         }
 
+        $attendanceSettings = [
+            ['group' => 'customer_attendance', 'key' => 'daily_limit_scope', 'value' => 'branch', 'description' => 'Define si el limite diario de asistencia de clientes se cuenta por sucursal o por empresa.', 'value_type' => 'string'],
+            ['group' => 'customer_attendance', 'key' => 'biometric_duplicate_tolerance_seconds', 'value' => '10', 'description' => 'Ventana minima entre lecturas biometricas equivalentes del mismo cliente y dispositivo.', 'value_type' => 'integer'],
+            ['group' => 'customer_attendance', 'key' => 'allow_automatic_checkout', 'value' => 'false', 'description' => 'Permite que una lectura QR o biometrica finalice automaticamente una asistencia activa de cliente.', 'value_type' => 'boolean'],
+            ['group' => 'customer_attendance', 'key' => 'max_active_hours', 'value' => '20', 'description' => 'Horas maximas que una asistencia de cliente puede permanecer abierta antes de finalizarse tecnicamente para permitir un nuevo ingreso.', 'value_type' => 'integer'],
+            ['group' => 'customer_attendance', 'key' => 'auto_close_stale_enabled', 'value' => 'true', 'description' => 'Activa el cierre tecnico de asistencias de clientes que quedaron abiertas sin salida.', 'value_type' => 'boolean'],
+            ['group' => 'customer_attendance', 'key' => 'auto_close_after_time', 'value' => '01:00', 'description' => 'Hora local desde la cual el scheduler puede cerrar asistencias del dia anterior que quedaron abiertas.', 'value_type' => 'string'],
+            ['group' => 'customer_attendance', 'key' => 'auto_close_end_time', 'value' => '23:50', 'description' => 'Hora local usada como salida tecnica cuando una asistencia quedo abierta sin checkout.', 'value_type' => 'string'],
+            ['group' => 'customer_attendance', 'key' => 'retention_months', 'value' => '5', 'description' => 'Cantidad de meses que se conservan asistencias de clientes finalizadas, anuladas, inactivas o ausentes antes de permitir su depuracion.', 'value_type' => 'integer'],
+            ['group' => 'subscriptions', 'key' => 'send_welcome_email_on_sale', 'value' => 'true', 'description' => 'Encola un correo de agradecimiento cuando una venta genera una membresia para un cliente.', 'value_type' => 'boolean'],
+            ['group' => 'loyalty', 'key' => 'enabled', 'value' => 'false', 'description' => 'Activa el calculo de puntos para clientes en ventas confirmadas. Requiere reglas activas en loyalty_point_rules.', 'value_type' => 'boolean'],
+            ['group' => 'loyalty', 'key' => 'reverse_points_on_sale_cancellation', 'value' => 'true', 'description' => 'Revierte puntos ganados cuando se anula la venta que los origino.', 'value_type' => 'boolean'],
+            ['group' => 'reports', 'key' => 'sale_share_ttl_minutes', 'value' => '4320', 'description' => 'Tiempo de vigencia, en minutos, de los enlaces firmados para compartir o imprimir comprobantes de venta fuera de la sesion autenticada.', 'value_type' => 'integer']
+        ];
+
+        foreach($attendanceSettings as $setting) {
+            DB::table('company_settings')->updateOrInsert(
+                ['company_id' => $companyId, 'group' => $setting['group'], 'key' => $setting['key']],
+                $setting + ['company_id' => $companyId]
+            );
+        }
+
     }
 
     private function seedTaxes(int $companyId): void {

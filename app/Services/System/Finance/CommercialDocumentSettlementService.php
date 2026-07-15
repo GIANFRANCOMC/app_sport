@@ -77,9 +77,9 @@ final class CommercialDocumentSettlementService {
             ->filter()
             ->values();
 
-        $paid = round((float) $payments->sum("amount"), 2);
+        $paid = round((float) $payments->sum("amount"), 4);
 
-        if(abs($paid - round($total, 2)) > 0.01) {
+        if(abs($paid - round($total, 4)) > 0.0001) {
 
             throw new DomainException("El total de los métodos de pago debe coincidir con el total del documento.");
 
@@ -150,7 +150,7 @@ final class CommercialDocumentSettlementService {
     private static function taxLine(Tax $tax, float $baseAmount, int $userId, int $quantity = 1): array {
 
         $rate = round((float) $tax->rate, 4);
-        $base = round($baseAmount, 2);
+        $base = round($baseAmount, 4);
         $calculationType = in_array($tax->calculation_type, ["percentage", "fixed"], true)
             ? $tax->calculation_type
             : "percentage";
@@ -200,7 +200,7 @@ final class CommercialDocumentSettlementService {
 
             foreach($details as $detail) {
 
-                $lineTotal = round((float) ($detail["quantity"] ?? 0) * (float) ($detail["price"] ?? 0), 2);
+                $lineTotal = round((float) ($detail["quantity"] ?? 0) * (float) ($detail["price"] ?? 0), 4);
                 if($lineTotal <= 0) continue;
 
                 $priceIncludesTax = filter_var($detail["price_includes_tax"] ?? true, FILTER_VALIDATE_BOOL);
@@ -208,8 +208,8 @@ final class CommercialDocumentSettlementService {
 
                 if($taxIsIncluded) {
 
-                    $lineBase = round($lineTotal / (1 + ($rate / 100)), 2);
-                    $lineAmount = round($lineTotal - $lineBase, 2);
+                    $lineBase = round($lineTotal / (1 + ($rate / 100)), 4);
+                    $lineAmount = round($lineTotal - $lineBase, 4);
                     $base += $lineBase;
                     $amount += $lineAmount;
                     continue;
@@ -235,9 +235,9 @@ final class CommercialDocumentSettlementService {
             "operation_type" => $operationType,
             "is_required" => (bool) $tax->is_required,
             "quantity" => $calculationType === "fixed" ? $quantity : 1,
-            "base_amount" => round($base, 2),
-            "amount" => round($amount, 2),
-            "_total_impact" => round($totalImpact, 2),
+            "base_amount" => round($base, 4),
+            "amount" => round($amount, 4),
+            "_total_impact" => round($totalImpact, 4),
             "status" => "active",
             "created_at" => now(),
             "created_by" => $userId
@@ -250,8 +250,8 @@ final class CommercialDocumentSettlementService {
         $quantity = max(1, $quantity);
 
         $amount = match($calculationType) {
-            "fixed" => round($rate * $quantity, 2),
-            default => round($base * ($rate / 100), 2)
+            "fixed" => round($rate * $quantity, 4),
+            default => round($base * ($rate / 100), 4)
         };
 
         if($operationType === "subtraction") {
@@ -260,7 +260,7 @@ final class CommercialDocumentSettlementService {
 
         }
 
-        return round($amount, 2);
+        return round($amount, 4);
 
     }
 
@@ -282,7 +282,7 @@ final class CommercialDocumentSettlementService {
         if($methodId <= 0) return null;
 
         $method = $methods->get($methodId);
-        $amount = round((float) ($paymentData["amount"] ?? 0), 2);
+        $amount = round((float) ($paymentData["amount"] ?? 0), 4);
 
         if($amount <= 0) {
 

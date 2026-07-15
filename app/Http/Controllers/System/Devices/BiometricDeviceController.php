@@ -229,7 +229,7 @@ class BiometricDeviceController extends BaseController {
             "port"          => $request->input("port"),
             "device_id"     => $request->input("device_id"),
             "description"   => $request->input("description"),
-            "status"        => $request->input("status")
+            "status"        => $request->input("status", "active")
         ];
 
     }

@@ -1289,7 +1289,7 @@ export default {
             const number = Number(value || 0);
             return `${number > 0 ? "+" : ""}${this.separatorNumber(number)}`;
         },
-        currencyNumber(value, decimals = 2) {
+        currencyNumber(value, decimals = 4) {
             return new Intl.NumberFormat("es-PE", {
                 style: "currency",
                 currency: "PEN",

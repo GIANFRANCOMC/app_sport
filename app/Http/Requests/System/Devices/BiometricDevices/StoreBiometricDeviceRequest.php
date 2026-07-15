@@ -1,11 +1,11 @@
-﻿<?php
+<?php
 
 declare(strict_types=1);
 
 namespace App\Http\Requests\System\Devices\BiometricDevices;
 
-use Illuminate\Foundation\Http\FormRequest;
 use App\Rules\System\Defaults\BelongsToCompany;
+use Illuminate\Foundation\Http\FormRequest;
 
 class StoreBiometricDeviceRequest extends FormRequest {
 
@@ -28,7 +28,7 @@ class StoreBiometricDeviceRequest extends FormRequest {
             "ip_address"                => "required|ip",
             "port"                      => "nullable|integer|min:1|max:65535",
             "device_id"                 => "nullable|string|max:50",
-            "status"                    => "required|in:active,inactive"
+            "status"                    => "nullable|in:active,inactive"
         ];
 
     }

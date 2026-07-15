@@ -13,11 +13,12 @@ use App\Models\System\Catalogs\Item;
 use App\Models\System\Customers\Subscription;
 use App\Models\System\Finance\{CashMovement, CashSession};
 use App\Models\System\Organizations\{Serie, User};
-use App\Models\System\Sales\{SaleBody, SaleHeader, SalePayment, SaleTax};
+use App\Models\System\Sales\{QuotationHeader, SaleBody, SaleHeader, SalePayment, SaleTax};
 use App\Models\System\Warehouses\{InventoryMovement, Warehouse};
 use App\Services\System\Finance\CommercialDocumentSettlementService;
 use App\Services\System\Organizations\Companies\CompanySettingService;
 use App\Services\System\Operations\ServiceOperationService;
+use App\Services\System\Customers\Loyalty\CustomerLoyaltyPointService;
 use App\Services\System\Customers\Tracking\TrackingSubscriptionService;
 use App\Services\System\Catalogs\Recipes\RecipeConsumptionService;
 use App\Services\System\Organizations\{AccessScopeService};
@@ -312,7 +313,9 @@ class SaleService {
         $saleBody->commission_type = $detail["commission_type"] ?? "none";
         $saleBody->commission_value = $detail["commission_value"] ?? 0;
         $saleBody->commission_amount = $detail["commission_amount"] ?? 0;
-        $saleBody->customer_id    = $saleHeader->holder_id;
+        $saleBody->customer_id    = $saleBody->type === "subscription"
+            ? (int) ($detail["customer_id"] ?? $saleHeader->holder_id)
+            : $saleHeader->holder_id;
         $saleBody->type           = $detail["type"];
         $saleBody->observation    = $detail["observation"] ?? "";
         $saleBody->extras         = json_encode($extras);
@@ -406,10 +409,14 @@ class SaleService {
 
         $extras = self::prepareSubscriptionExtras($detail);
 
+        $subscriptionCustomerId = (int) ($detail["customer_id"] ?? $saleHeader->holder_id);
+
+        self::validateSubscriptionCustomer($companyId, $subscriptionCustomerId);
+
         TrackingSubscriptionService::assertDatesAvailable(
             $companyId,
             $branchId,
-            (int) $saleHeader->holder_id,
+            $subscriptionCustomerId,
             (string) $extras->start_date,
             (string) $extras->end_date,
             (bool) $extras->force
@@ -420,7 +427,7 @@ class SaleService {
         $subscription->branch_id              = $branchId;
         $subscription->sale_header_id          = $saleHeader->id;
         $subscription->sale_body_id             = $saleBody->id;
-        $subscription->customer_id             = $saleHeader->holder_id;
+        $subscription->customer_id             = $subscriptionCustomerId;
         $subscription->duration_type           = $extras->duration_type;
         $subscription->duration_value          = $extras->duration_value;
         $subscription->start_date              = $extras->start_date;
@@ -436,7 +443,42 @@ class SaleService {
         $subscription->created_by              = $userId;
         $subscription->save();
 
+        if((bool) CompanySettingService::value(
+            $companyId,
+            CompanySettingService::SUBSCRIPTIONS,
+            "send_welcome_email_on_sale",
+            true
+        )) {
+
+            TrackingSubscriptionService::queueWelcomeEmail(
+                $subscription,
+                $subscription->customer,
+                Item::query()
+                    ->where("company_id", $companyId)
+                    ->whereKey((int) $saleBody->item_id)
+                    ->first(),
+                $userId
+            );
+
+        }
+
         return $subscription;
+
+    }
+
+    private static function validateSubscriptionCustomer(int $companyId, int $customerId): void {
+
+        $exists = \App\Models\System\Customers\Customer::query()
+            ->where("company_id", $companyId)
+            ->where("status", "active")
+            ->whereKey($customerId)
+            ->exists();
+
+        if(!$exists) {
+
+            throw new Exception("El cliente seleccionado para la membresía no está activo o no pertenece a la empresa.");
+
+        }
 
     }
 
@@ -703,6 +745,7 @@ class SaleService {
             $saleHeader->currency_id = $data["currency_id"];
             $saleHeader->warehouse_id = $warehouse->id;
             $saleHeader->cash_session_id = $cashSession?->id;
+            $saleHeader->quotation_header_id = $data["quotation_header_id"] ?? null;
             $saleHeader->issue_date  = $data["issue_date"];
             $deliveryMode = $data["delivery_mode"] ?? "immediate";
             $deliveryStatus = $data["delivery_status"] ?? ($deliveryMode === "immediate" ? "delivered" : "pending");
@@ -753,10 +796,13 @@ class SaleService {
 
             }
 
+            $saleBodies = collect();
+
             // Create sale bodies and process details
             foreach($data["details"] as $detail) {
 
                 $saleBody = self::createSaleBody($saleHeader, $detail, $userId);
+                $saleBodies->push($saleBody);
 
                 // Update warehouse inventory for products
                 self::updateWarehouseInventory($warehouse, $saleBody, $detail, $userId);
@@ -767,6 +813,13 @@ class SaleService {
 
             }
 
+            CustomerLoyaltyPointService::awardForSale(
+                $saleHeader,
+                $saleBodies,
+                (int) $companyId,
+                (int) $userId
+            );
+
             if(Utilities::isDefined($data["service_session_id"] ?? null)) {
 
                 ServiceOperationService::attachSale(
@@ -775,6 +828,25 @@ class SaleService {
                     (int) $data["service_session_id"],
                     (int) $saleHeader->id
                 );
+
+            }
+
+            if(Utilities::isDefined($data["quotation_header_id"] ?? null)) {
+
+                QuotationHeader::query()
+                    ->where("company_id", $companyId)
+                    ->whereKey((int) $data["quotation_header_id"])
+                    ->whereIn("status", ["draft", "sent", "accepted"])
+                    ->update([
+                        "sale_header_id" => $saleHeader->id,
+                        "status" => "converted",
+                        "converted_at" => now(),
+                        "converted_by" => $userId,
+                        "updated_at" => now(),
+                        "updated_by" => $userId
+                    ]);
+
+                SaleConfigService::clearCache($companyId, "main");
 
             }
 
@@ -827,6 +899,7 @@ class SaleService {
 
             $allPositions = $saleHeader->allPositions;
             self::restoreItemCapacityForCanceledSale($allPositions, (int) $companyId, (int) $userId);
+            CustomerLoyaltyPointService::reverseForCanceledSale($saleHeader, (int) $companyId, (int) $userId);
 
             $productPositions = $allPositions->where("type", "product");
             $fallbackWarehouse = $restoreStockPolicyEnabled && $productPositions->isNotEmpty()
@@ -1071,13 +1144,13 @@ class SaleService {
 
         if(Utilities::isDefined($filters["start_date"])) {
 
-            $query->whereDate("issue_date", ">=", $filters["start_date"]);
+            $query->where("issue_date", ">=", Utilities::startOfDay($filters["start_date"]));
 
         }
 
         if(Utilities::isDefined($filters["end_date"])) {
 
-            $query->whereDate("issue_date", "<=", $filters["end_date"]);
+            $query->where("issue_date", "<=", Utilities::endOfDay($filters["end_date"]));
 
         }
 

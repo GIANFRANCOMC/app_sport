@@ -33,7 +33,7 @@ class RecipeDish extends Model {
     ];
 
     protected $casts = [
-        "yield_quantity" => "decimal:2",
+        "yield_quantity" => "decimal:4",
         "waste_percentage" => "decimal:4"
     ];
 

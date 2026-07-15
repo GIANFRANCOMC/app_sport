@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\System\Finance;
 
+use App\Helpers\System\Utilities;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
@@ -38,8 +39,8 @@ final class FinancialSettlementReportService {
             ->join("{$headerTable} as header", "header.id", "=", "detail.{$foreignKey}")
             ->where("detail.company_id", $companyId)
             ->where("detail.status", "active")
-            ->when($from, fn($query) => $query->whereDate("header.{$dateColumn}", ">=", $from))
-            ->when($to, fn($query) => $query->whereDate("header.{$dateColumn}", "<=", $to))
+            ->when($from, fn($query) => $query->where("header.{$dateColumn}", ">=", Utilities::startOfDay($from)))
+            ->when($to, fn($query) => $query->where("header.{$dateColumn}", "<=", Utilities::endOfDay($to)))
             ->groupBy("detail.tax_id", "detail.name", "detail.calculation_type", "detail.operation_type")
             ->selectRaw("? as scope, detail.tax_id, detail.name, detail.calculation_type, detail.operation_type, COUNT(DISTINCT header.id) as documents, SUM(detail.quantity) as quantity, SUM(detail.base_amount) as base_amount, SUM(detail.amount) as amount", [$scope])
             ->get();
@@ -56,8 +57,8 @@ final class FinancialSettlementReportService {
             ->join("{$headerTable} as header", "header.id", "=", "detail.{$foreignKey}")
             ->where("detail.company_id", $companyId)
             ->where("detail.status", "active")
-            ->when($from, fn($query) => $query->whereDate("header.{$dateColumn}", ">=", $from))
-            ->when($to, fn($query) => $query->whereDate("header.{$dateColumn}", "<=", $to))
+            ->when($from, fn($query) => $query->where("header.{$dateColumn}", ">=", Utilities::startOfDay($from)))
+            ->when($to, fn($query) => $query->where("header.{$dateColumn}", "<=", Utilities::endOfDay($to)))
             ->groupBy("detail.payment_method_id", "detail.name")
             ->selectRaw("? as scope, detail.payment_method_id, detail.name, COUNT(DISTINCT header.id) as documents, SUM(detail.amount) as amount", [$scope])
             ->get();

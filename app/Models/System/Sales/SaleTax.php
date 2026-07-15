@@ -35,8 +35,8 @@ final class SaleTax extends Model {
         "rate" => "decimal:4",
         "is_required" => "boolean",
         "quantity" => "integer",
-        "base_amount" => "decimal:2",
-        "amount" => "decimal:2"
+        "base_amount" => "decimal:4",
+        "amount" => "decimal:4"
     ];
 
     public function tax() {

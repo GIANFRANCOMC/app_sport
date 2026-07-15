@@ -1,90 +1,109 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Console\Commands;
 
 use App\Events\SubscriptionExpired;
-use Carbon\Carbon;
+use App\Models\System\Customers\Subscription;
+use App\Models\System\Tenancy\TenantDatabase;
+use App\Services\System\Tenancy\{TenantAdministrationService, TenantConnectionManager};
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Log;
+use Throwable;
 
-use App\Models\System\Customers\{Subscription};
+final class CancelExpiredSubscriptions extends Command {
 
-class CancelExpiredSubscriptions extends Command {
+    protected $signature = "subscriptions:cancel-expired
+                            {--tenant= : Procesar únicamente el slug tenant indicado}
+                            {--company= : Procesar únicamente una empresa}
+                            {--limit=1000 : Máximo de membresías por empresa}";
 
-    /**
-     * The name and signature of the console command.
-     *
-     * @var string
-     */
-    protected $signature = "subscriptions:cancel-expired";
+    protected $description = "Inactiva membresías vencidas con contexto tenant";
 
-    /**
-     * The console command description.
-     *
-     * @var string
-     */
-    protected $description = "Cancela membresías que han expirado";
+    public function handle(
+        TenantConnectionManager $connectionManager,
+        TenantAdministrationService $administration
+    ): int {
 
-    /**
-     * Execute the console command.
-     */
-    public function handle() {
+        $tenantSlug = $this->option("tenant");
+        $companyId = $this->option("company");
+        $tenants = TenantDatabase::query()
+            ->where("status", "active")
+            ->when($tenantSlug, fn($query) => $query->where("slug", $tenantSlug))
+            ->orderBy("id")
+            ->get();
 
-        $now  = Carbon::now();
-        $date = $now->format("Y-m-d");
-        $year = $now->format("Y");
+        if($tenants->isEmpty()) {
 
-        $logPath = storage_path("logs/subscriptions/{$year}/{$date}.log");
-
-        if(!file_exists(dirname($logPath))) {
-
-            mkdir(dirname($logPath), 0777, true);
+            $this->error("No existen tenants activos para procesar.");
+            return self::FAILURE;
 
         }
 
-        $logPath = storage_path("logs/subscriptions/{$year}/{$date}.log");
+        $rows = [];
+        $hasFailure = false;
 
-        config(["logging.channels.subscriptions" => [
-            "driver" => "single",
-            "path" => $logPath,
-            "level" => "info",
-        ]]);
+        foreach($tenants as $tenant) {
 
-        Log::channel("subscriptions")->info("** Inicio del proceso: Evaluación de membresías");
+            try {
 
-        // Logic
-        $subscriptions = Subscription::where("status", "active")
-                                     ->where(function($query) use($now) {
+                $connectionManager->connect($tenant);
+                $summary = $this->expireSubscriptions(
+                    $companyId === null ? null : (int) $companyId,
+                    max(1, (int) $this->option("limit"))
+                );
+                $rows[] = [$tenant->slug, $summary["processed"], $summary["expired"], "OK"];
+                $administration->audit($tenant, "cancel_expired_subscriptions", "success", $summary, "scheduler");
 
-                                        $query->where("end_date", "<=", $now);
+            }catch(Throwable $exception) {
 
-                                        // $query->where("start_date", ">", $now)
-                                              // ->orWhere("end_date", "<", $now);
+                $hasFailure = true;
+                $rows[] = [$tenant->slug, 0, 0, $exception->getMessage()];
+                $administration->audit($tenant, "cancel_expired_subscriptions", "failure", [
+                    "error" => $exception->getMessage()
+                ], "scheduler");
 
-                                      })
-                                      ->get();
+            }finally {
 
-        $inactivatedCount = 0;
+                $connectionManager->disconnect();
+
+            }
+
+        }
+
+        $this->table(["Tenant", "Procesadas", "Vencidas", "Resultado"], $rows);
+
+        return $hasFailure ? self::FAILURE : self::SUCCESS;
+
+    }
+
+    private function expireSubscriptions(?int $companyId, int $limit): array {
+
+        $subscriptions = Subscription::query()
+            ->where("status", "active")
+            ->when($companyId, fn($query) => $query->where("company_id", $companyId))
+            ->where("end_date", "<=", now())
+            ->orderBy("end_date")
+            ->limit($limit)
+            ->get();
 
         foreach($subscriptions as $subscription) {
 
             $subscription->update([
-                "motive"     => "Membresía expirada.",
-                "status"     => "inactive",
-                "updated_at" => $now,
+                "motive" => "Membresía expirada.",
+                "status" => "inactive",
+                "updated_at" => now(),
                 "updated_by" => null
             ]);
 
             event(new SubscriptionExpired($subscription));
 
-            Log::channel("subscriptions")->info("Membresía ID {$subscription->id} expirada, inicio: {$subscription->start_date} - fin: {$subscription->end_date}");
-
-            $inactivatedCount++;
-
         }
 
-        Log::channel("subscriptions")->info("Total de membresías expiradas: {$inactivatedCount}");
-        Log::channel("subscriptions")->info("------------------- Proceso finalizado -------------------");
+        return [
+            "processed" => $subscriptions->count(),
+            "expired" => $subscriptions->count()
+        ];
 
     }
 
