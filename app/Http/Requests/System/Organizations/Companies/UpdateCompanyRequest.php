@@ -4,20 +4,10 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\System\Organizations\Companies;
 
-use App\Helpers\System\Utilities;
-use Illuminate\Foundation\Http\FormRequest;
+use App\Http\Requests\System\Base\CompanyFormRequest;
 use App\Rules\System\Defaults\{BelongsToCompany, DocumentNumberLength};
 
-class UpdateCompanyRequest extends FormRequest {
-
-    /**
-     * Determine if the user is authorized to make this request.
-     */
-    public function authorize(): bool {
-
-        return true;
-
-    }
+class UpdateCompanyRequest extends CompanyFormRequest {
 
     /**
      * Get the validation rules that apply to the request.
@@ -26,8 +16,7 @@ class UpdateCompanyRequest extends FormRequest {
      */
     public function rules(): array {
 
-        $companyId = (int) $this->route("id");
-        $maxSize   = Utilities::$inputs["maxSize"];
+        $maxSize   = $this->numericMaxFileSizeKb();
 
         $validations = [
             "identity_document_type_id" => ["required", "integer", new BelongsToCompany("identity_document_types", ["status" => "active"], "El tipo de documento no pertenece a la empresa.")],

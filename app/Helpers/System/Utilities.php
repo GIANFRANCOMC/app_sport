@@ -5,6 +5,7 @@ namespace App\Helpers\System;
 use Carbon\Carbon;
 use DateTime;
 use Exception;
+use App\Services\System\Organizations\Companies\CompanySettingService;
 use Illuminate\Support\Str;
 use stdClass;
 
@@ -94,7 +95,18 @@ class Utilities {
 
     }
 
-    public static function round($value, $decimals = null) {
+    public static function round($value, $decimals = null, ?int $companyId = null) {
+
+        if($decimals === null && $companyId !== null && $companyId > 0) {
+
+            $decimals = (int) CompanySettingService::value(
+                $companyId,
+                CompanySettingService::NUMERIC_VALIDATION,
+                "decimal_precision",
+                self::$inputs["round"]
+            );
+
+        }
 
         return round((float) $value, $decimals ?? self::$inputs["round"]);
 

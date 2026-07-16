@@ -11,13 +11,16 @@ final class StoreInventoryMovementRequest extends CompanyFormRequest {
 
     public function rules(): array {
 
+        $round = $this->decimalPrecision();
+        $maxValue = $this->numericMaxValue();
+
         return [
             "warehouse_id" => ["required", "integer"],
             "item_id" => ["required", "integer"],
             "movement_type" => ["required", "in:entry,exit,correction"],
             "origin_type" => ["required", "in:manual,replenishment,customer_return,supplier_return,physical_count"],
-            "quantity" => ["nullable", "numeric", "gt:0"],
-            "resulting_balance" => ["nullable", "numeric", "min:0"],
+            "quantity" => ["nullable", "numeric", "gt:0", "max:{$maxValue}", "decimal:0,{$round}"],
+            "resulting_balance" => ["nullable", "numeric", "min:0", "max:{$maxValue}", "decimal:0,{$round}"],
             "reason" => ["required", "string", "max:255"]
         ];
 

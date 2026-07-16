@@ -48,7 +48,7 @@ abstract class BaseConfigService {
         return Cache::remember(
             static::cacheKey($companyId, $page, $userId),
             static::CACHE_TTL,
-            fn() => static::createInitParams(static::buildConfig($companyId, $page, $userId))
+            fn() => static::createInitParams($companyId, static::buildConfig($companyId, $page, $userId))
         );
 
     }
@@ -154,11 +154,33 @@ abstract class BaseConfigService {
 
     }
 
-    private static function createInitParams(stdClass $config): stdClass {
+    private static function createInitParams(int $companyId, stdClass $config): stdClass {
+
+        $config->generalConfig = self::frontendGeneralConfig($companyId);
 
         return self::data([
             "config" => $config,
             "bool"   => true
+        ]);
+
+    }
+
+    private static function frontendGeneralConfig(int $companyId): stdClass {
+
+        $numeric = CompanySettingService::group(
+            $companyId,
+            CompanySettingService::NUMERIC_VALIDATION
+        );
+
+        return self::data([
+            "forms" => [
+                "inputs" => [
+                    "round" => max(0, min(8, (int) ($numeric["decimal_precision"] ?? 4))),
+                    "minValue" => (float) ($numeric["default_min_value"] ?? 0),
+                    "maxValue" => (float) ($numeric["default_max_value"] ?? 999999999999.9999),
+                    "maxSize" => max(1, (int) ($numeric["max_file_size_kb"] ?? 4096))
+                ]
+            ]
         ]);
 
     }

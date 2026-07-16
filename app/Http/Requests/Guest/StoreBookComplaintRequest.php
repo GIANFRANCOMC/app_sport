@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Guest;
 
+use App\Services\System\Organizations\Companies\CompanySettingService;
 use App\Services\Security\TurnstileVerificationService;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -20,6 +21,7 @@ final class StoreBookComplaintRequest extends FormRequest {
     public function rules(): array {
 
         $companyId = (int) $this->attributes->get("company")?->id;
+        $maxFileSizeKb = $this->numericMaxFileSizeKb($companyId);
 
         return [
             "branch_id" => [
@@ -41,7 +43,7 @@ final class StoreBookComplaintRequest extends FormRequest {
             "request" => ["nullable", "string", "max:5000"],
             "evidence" => ["nullable", "string", "max:500"],
             "attachments" => ["nullable", "array", "max:5"],
-            "attachments.*" => ["file", "mimes:pdf,jpg,jpeg,png", "max:5120"],
+            "attachments.*" => ["file", "mimes:pdf,jpg,jpeg,png", "max:{$maxFileSizeKb}"],
             "cf-turnstile-response" => [
                 Rule::requiredIf(TurnstileVerificationService::enabled()),
                 "nullable",
@@ -50,6 +52,17 @@ final class StoreBookComplaintRequest extends FormRequest {
             ],
             "website" => ["prohibited"]
         ];
+
+    }
+
+    private function numericMaxFileSizeKb(int $companyId): int {
+
+        $settings = CompanySettingService::group(
+            $companyId,
+            CompanySettingService::NUMERIC_VALIDATION
+        );
+
+        return max(1, (int) ($settings["max_file_size_kb"] ?? 4096));
 
     }
 

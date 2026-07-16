@@ -110,17 +110,23 @@ Errores de campo:
 
 ## Precisión Numérica
 
-Montos, cantidades operativas, costos, tributos, pagos, inventario y valorización se redondean a 4 decimales en backend y frontend. El criterio vive en `Utilities::$inputs["round"]` y `generalConfig.forms.inputs.round`.
+Montos, cantidades operativas, costos, tributos, pagos, inventario y valorización deben tomar su precisión desde configuración por cliente. El valor `4` es sólo el default inicial sembrado en `company_settings.numeric_validation.decimal_precision`; no debe quedar quemado como regla de negocio en requests, servicios ni componentes.
 
-El límite operativo general para cantidades, precios, totales y pagos vive en `Utilities::$inputs["maxValue"]` y `generalConfig.forms.inputs.maxValue`. Ambos deben permanecer alineados para que el frontend guíe y el `FormRequest` proteja con el mismo techo.
+Configuración vigente por empresa:
+
+- `numeric_validation.decimal_precision`: cantidad de decimales permitidos y usados para normalizar.
+- `numeric_validation.default_min_value`: mínimo operativo por defecto.
+- `numeric_validation.default_max_value`: máximo operativo por defecto para importes, cantidades, pagos y saldos.
+- `numeric_validation.max_file_size_kb`: tamaño máximo configurable para archivos de formularios.
 
 Reglas:
 
-- Usar `Utilities::round()` en servicios PHP para cálculos de negocio.
+- Los `FormRequest` company-scoped deben extender `CompanyFormRequest` cuando validen números, archivos o normalicen entradas. Usar `decimalPrecision()`, `numericMinValue()`, `numericMaxValue()`, `numericMaxFileSizeKb()`, `numericRules()` y `normalizeDecimalInput()` en vez de valores fijos.
+- `BaseConfigService` expone `config.generalConfig.forms.inputs` en `initParams`; el frontend aplica esos valores con `applyGeneralConfig()` para que `InputNumber`, `InputSlot` y validaciones visuales queden alineadas con el backend.
+- `Utilities::round($value, null, $companyId)` puede usar la precisión por empresa cuando el servicio conoce el `companyId`. Si no lo conoce, conserva el fallback global para compatibilidad.
 - Usar `fixedNumber`/`InputNumber` sin forzar `2` decimales salvo que sea una métrica no monetaria ni operativa.
-- Los casts Eloquent de importes/cantidades deben ser `decimal:4`.
-- Las migraciones de montos y cantidades usan `decimal(16, 4)`.
-- Métricas de tiempo, latencia o porcentajes visuales pueden conservar 2 decimales si no afectan dinero, stock o saldo.
+- Los casts Eloquent y migraciones pueden mantener escala técnica amplia (`decimal(16, 4)` o el estándar vigente), pero la validación y redondeo funcional se gobiernan por `company_settings`.
+- Métricas de tiempo, latencia o porcentajes visuales pueden conservar reglas propias si no afectan dinero, stock o saldo.
 
 ## Modales y SweetAlert
 

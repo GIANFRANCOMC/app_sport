@@ -11,8 +11,10 @@ final class ImportProductsRequest extends CompanyFormRequest {
 
     public function rules(): array {
 
+        $maxFileSizeKb = $this->numericMaxFileSizeKb();
+
         return [
-            "file" => ["required", "file", "mimes:xlsx,xls,csv", "max:5120"],
+            "file" => ["required", "file", "mimes:xlsx,xls,csv", "max:{$maxFileSizeKb}"],
             "warehouse_id" => [
                 "bail",
                 "required",
@@ -25,10 +27,12 @@ final class ImportProductsRequest extends CompanyFormRequest {
 
     public function messages(): array {
 
+        $maxFileSizeMb = round($this->numericMaxFileSizeKb() / 1024, 2);
+
         return array_merge(parent::messages(), [
             "file.file" => "Seleccione un archivo valido.",
             "file.mimes" => "Use un archivo Excel o CSV.",
-            "file.max" => "El archivo no debe superar 5 MB."
+            "file.max" => "El archivo no debe superar {$maxFileSizeMb} MB."
         ]);
 
     }

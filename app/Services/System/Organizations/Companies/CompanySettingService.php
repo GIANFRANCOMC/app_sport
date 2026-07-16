@@ -17,6 +17,7 @@ final class CompanySettingService {
     public const EXTERNAL_API = "external_api";
     public const LOYALTY = "loyalty";
     public const REPORTS = "reports";
+    public const NUMERIC_VALIDATION = "numeric_validation";
 
     private const DEFAULT_INTERNAL_CODE_PREFIXES = [
         "product" => "PRO",
@@ -70,7 +71,24 @@ final class CompanySettingService {
         "sale_share_ttl_minutes" => 4320
     ];
 
+    private const DEFAULT_NUMERIC_VALIDATION = [
+        "decimal_precision" => 4,
+        "default_min_value" => 0,
+        "default_max_value" => 999999999999.9999,
+        "max_file_size_kb" => 4096
+    ];
+
+    private static array $groupCache = [];
+
     public static function group(int $companyId, string $group): array {
+
+        $cacheKey = "{$companyId}:{$group}";
+
+        if(array_key_exists($cacheKey, self::$groupCache)) {
+
+            return self::$groupCache[$cacheKey];
+
+        }
 
         $values = match($group) {
             self::INTERNAL_CODE_PREFIXES => self::DEFAULT_INTERNAL_CODE_PREFIXES,
@@ -81,12 +99,13 @@ final class CompanySettingService {
             self::EXTERNAL_API => self::DEFAULT_EXTERNAL_API,
             self::LOYALTY => self::DEFAULT_LOYALTY,
             self::REPORTS => self::DEFAULT_REPORTS,
+            self::NUMERIC_VALIDATION => self::DEFAULT_NUMERIC_VALIDATION,
             default => []
         };
 
         if(!Schema::hasTable("company_settings")) {
 
-            return $values;
+            return self::$groupCache[$cacheKey] = $values;
 
         }
 
@@ -103,7 +122,7 @@ final class CompanySettingService {
 
         }
 
-        return $values;
+        return self::$groupCache[$cacheKey] = $values;
 
     }
 
@@ -112,6 +131,28 @@ final class CompanySettingService {
         $values = self::group($companyId, $group);
 
         return array_key_exists($key, $values) ? $values[$key] : $default;
+
+    }
+
+    public static function clearCache(?int $companyId = null): void {
+
+        if($companyId === null) {
+
+            self::$groupCache = [];
+
+            return;
+
+        }
+
+        foreach(array_keys(self::$groupCache) as $cacheKey) {
+
+            if(str_starts_with($cacheKey, "{$companyId}:")) {
+
+                unset(self::$groupCache[$cacheKey]);
+
+            }
+
+        }
 
     }
 

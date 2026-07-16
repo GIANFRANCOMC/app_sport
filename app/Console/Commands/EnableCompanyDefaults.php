@@ -149,7 +149,11 @@ final class EnableCompanyDefaults extends Command {
             ['group' => 'subscriptions', 'key' => 'send_welcome_email_on_sale', 'value' => 'true', 'description' => 'Encola un correo de agradecimiento cuando una venta genera una membresia para un cliente.', 'value_type' => 'boolean'],
             ['group' => 'loyalty', 'key' => 'enabled', 'value' => 'false', 'description' => 'Activa el calculo de puntos para clientes en ventas confirmadas. Requiere reglas activas en loyalty_point_rules.', 'value_type' => 'boolean'],
             ['group' => 'loyalty', 'key' => 'reverse_points_on_sale_cancellation', 'value' => 'true', 'description' => 'Revierte puntos ganados cuando se anula la venta que los origino.', 'value_type' => 'boolean'],
-            ['group' => 'reports', 'key' => 'sale_share_ttl_minutes', 'value' => '4320', 'description' => 'Tiempo de vigencia, en minutos, de los enlaces firmados para compartir o imprimir comprobantes de venta fuera de la sesion autenticada.', 'value_type' => 'integer']
+            ['group' => 'reports', 'key' => 'sale_share_ttl_minutes', 'value' => '4320', 'description' => 'Tiempo de vigencia, en minutos, de los enlaces firmados para compartir o imprimir comprobantes de venta fuera de la sesion autenticada.', 'value_type' => 'integer'],
+            ['group' => 'numeric_validation', 'key' => 'decimal_precision', 'value' => '4', 'description' => 'Cantidad de decimales permitidos y usados para redondear montos, cantidades, costos, tributos, pagos e inventario en validaciones y formularios.', 'value_type' => 'integer'],
+            ['group' => 'numeric_validation', 'key' => 'default_min_value', 'value' => '0', 'description' => 'Valor minimo operativo usado por defecto en validaciones numericas cuando el campo no define una regla mas especifica.', 'value_type' => 'decimal'],
+            ['group' => 'numeric_validation', 'key' => 'default_max_value', 'value' => '999999999999.9999', 'description' => 'Valor maximo operativo usado por defecto en validaciones numericas de cantidades, precios, totales, pagos, costos y saldos.', 'value_type' => 'decimal'],
+            ['group' => 'numeric_validation', 'key' => 'max_file_size_kb', 'value' => '4096', 'description' => 'Tamanio maximo por defecto, en KB, para archivos validados desde formularios de la empresa.', 'value_type' => 'integer']
         ];
 
         foreach($attendanceSettings as $setting) {

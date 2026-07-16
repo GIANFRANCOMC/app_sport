@@ -4,20 +4,22 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\System\Purchases;
 
-use Illuminate\Foundation\Http\FormRequest;
+use App\Http\Requests\System\Base\CompanyFormRequest;
 use Illuminate\Validation\Rule;
 
-final class StoreSupplierRequest extends FormRequest {
+final class StoreSupplierRequest extends CompanyFormRequest {
 
     public function authorize(): bool {
 
-        return true;
+        return parent::authorize();
 
     }
 
     public function rules(): array {
 
         $companyId = (int) $this->user()?->company_id;
+        $round = $this->decimalPrecision();
+        $maxValue = $this->numericMaxValue();
 
         return [
             "document_type" => ["nullable", "string", "max:20"],
@@ -35,7 +37,7 @@ final class StoreSupplierRequest extends FormRequest {
             "email" => ["nullable", "email", "max:255"],
             "address" => ["nullable", "string", "max:255"],
             "payment_term_days" => ["nullable", "integer", "min:0", "max:3650"],
-            "credit_limit" => ["nullable", "numeric", "min:0", "decimal:0,4"],
+            "credit_limit" => ["nullable", "numeric", "min:0", "max:{$maxValue}", "decimal:0,{$round}"],
             "contacts" => ["nullable", "array", "max:20"],
             "contacts.*.name" => ["required", "string", "max:255"],
             "contacts.*.position" => ["nullable", "string", "max:100"],
@@ -55,7 +57,7 @@ final class StoreSupplierRequest extends FormRequest {
 
     public function messages(): array {
 
-        return [
+        return parent::messages() + [
             "required" => "Campo obligatorio.",
             "unique" => "Ya existe un proveedor con este número de documento.",
             "email" => "Ingresa un correo válido.",

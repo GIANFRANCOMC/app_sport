@@ -25,7 +25,7 @@ export const generalConfig = {
             round: 4,
             minValue: 0,
             maxValue: 999999999999.9999,
-            maxSize: 2048
+            maxSize: 4096
         },
         errors: {
             functions: {
@@ -77,3 +77,16 @@ export const generalConfig = {
         }
     }
 };
+
+export function applyGeneralConfig(runtimeConfig = {}) {
+
+    if(runtimeConfig?.forms?.inputs) {
+
+        generalConfig.forms.inputs = {
+            ...generalConfig.forms.inputs,
+            ...runtimeConfig.forms.inputs
+        };
+
+    }
+
+}

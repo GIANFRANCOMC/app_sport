@@ -4,20 +4,20 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\System\Sales;
 
-use App\Helpers\System\{ApiResponse, Utilities};
-use Illuminate\Foundation\Http\FormRequest;
+use App\Helpers\System\ApiResponse;
+use App\Http\Requests\System\Base\CompanyFormRequest;
 use App\Rules\System\Defaults\BelongsToCompany;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Http\Exceptions\HttpResponseException;
 
-class StoreSaleRequest extends FormRequest {
+class StoreSaleRequest extends CompanyFormRequest {
 
     /**
      * Determine if the user is authorized to make this request.
      */
     public function authorize(): bool {
 
-        return true;
+        return parent::authorize();
 
     }
 
@@ -38,8 +38,8 @@ class StoreSaleRequest extends FormRequest {
      */
     public function rules(): array {
 
-        $round    = Utilities::$inputs["round"];
-        $maxValue = Utilities::$inputs["maxValue"];
+        $round    = $this->decimalPrecision();
+        $maxValue = $this->numericMaxValue();
 
         return [
             // Header
@@ -154,7 +154,7 @@ class StoreSaleRequest extends FormRequest {
 
         // Throw exception with renamed errors
         throw new HttpResponseException(
-            ApiResponse::validationError($renamedErrors, Utilities::$messages["422"] ?? "Validation failed")
+            ApiResponse::validationError($renamedErrors, "Validation failed")
         );
 
     }
@@ -173,11 +173,11 @@ class StoreSaleRequest extends FormRequest {
                 $detail["item_id"] = $this->nullableIntegerFromArray($detail, "item_id");
                 $detail["customer_id"] = $this->nullableIntegerFromArray($detail, "customer_id");
                 $detail["currency_id"] = $this->nullableIntegerFromArray($detail, "currency_id");
-                $detail["quantity"] = $this->nullableDecimalFromArray($detail, "quantity");
-                $detail["price"] = $this->nullableDecimalFromArray($detail, "price");
-                $detail["total"] = $this->nullableDecimalFromArray($detail, "total");
-                $detail["commission_value"] = $this->nullableDecimalFromArray($detail, "commission_value");
-                $detail["commission_amount"] = $this->nullableDecimalFromArray($detail, "commission_amount");
+                $detail["quantity"] = $this->normalizeDecimalFromArray($detail, "quantity");
+                $detail["price"] = $this->normalizeDecimalFromArray($detail, "price");
+                $detail["total"] = $this->normalizeDecimalFromArray($detail, "total");
+                $detail["commission_value"] = $this->normalizeDecimalFromArray($detail, "commission_value");
+                $detail["commission_amount"] = $this->normalizeDecimalFromArray($detail, "commission_amount");
                 $detail["price_includes_tax"] = filter_var($detail["price_includes_tax"] ?? false, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? false;
 
                 return $detail;
@@ -200,9 +200,9 @@ class StoreSaleRequest extends FormRequest {
                 }
 
                 $tax["tax_id"] = $this->nullableIntegerFromArray($tax, "tax_id");
-                $tax["rate"] = $this->nullableDecimalFromArray($tax, "rate");
+                $tax["rate"] = $this->normalizeDecimalFromArray($tax, "rate");
                 $tax["quantity"] = $this->nullableIntegerFromArray($tax, "quantity");
-                $tax["amount"] = $this->nullableDecimalFromArray($tax, "amount");
+                $tax["amount"] = $this->normalizeDecimalFromArray($tax, "amount");
                 $tax["is_required"] = filter_var($tax["is_required"] ?? false, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? false;
 
                 return $tax;
@@ -225,35 +225,13 @@ class StoreSaleRequest extends FormRequest {
                 }
 
                 $payment["payment_method_id"] = $this->nullableIntegerFromArray($payment, "payment_method_id");
-                $payment["amount"] = $this->nullableDecimalFromArray($payment, "amount");
+                $payment["amount"] = $this->normalizeDecimalFromArray($payment, "amount");
 
                 return $payment;
 
             })
             ->values()
             ->all();
-
-    }
-
-    private function nullableIntegerFromArray(array $data, string $field): ?int {
-
-        return isset($data[$field]) && $data[$field] !== "" ? (int) $data[$field] : null;
-
-    }
-
-    private function nullableDecimalFromArray(array $data, string $field): ?float {
-
-        if(!isset($data[$field]) || $data[$field] === "") {
-
-            return null;
-
-        }
-
-        $value = is_string($data[$field])
-            ? str_replace(",", "", $data[$field])
-            : $data[$field];
-
-        return Utilities::round($value);
 
     }
 

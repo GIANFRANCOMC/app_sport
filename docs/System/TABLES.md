@@ -56,6 +56,8 @@ Configuración extensible por empresa. Cada registro usa `company_id`, `group`, 
 
 El grupo `internal_code_prefixes` contiene las claves `product`, `service`, `subscription`, `brand`, `category`, `branch`, `asset` y `recipe`. Sus valores iniciales son `PRO`, `SER`, `MEM`, `MAR`, `CAT`, `SUC`, `ACT` y `REC`. Un valor nulo o vacío desactiva el prefijo.
 
+El grupo `numeric_validation` contiene `decimal_precision`, `default_min_value`, `default_max_value` y `max_file_size_kb`. Estas claves definen, por empresa, la cantidad de decimales aceptados, los límites operativos por defecto y el tamaño máximo de archivos en formularios. Los `FormRequest` deben leerlas mediante `CompanyFormRequest`; el frontend las recibe desde `config.generalConfig.forms.inputs` para mantener la misma experiencia visual.
+
 El grupo `inventory` contiene `allow_negative_stock_on_sale`, booleano con valor predeterminado `false`. Cuando está desactivado, crear una venta normal o POS/caja se bloquea si la salida supera el stock disponible del almacén seleccionado. Cuando está activo, la venta puede dejar saldo negativo.
 
 El grupo `inventory` también contiene `restore_stock_on_sale_cancellation`, booleano con valor predeterminado `false`. Cuando está desactivado, anular una venta no modifica existencias; una devolución física se registra posteriormente desde Inventario. Cuando está activo, la anulación repone automáticamente los productos en el almacén asociado a la venta.

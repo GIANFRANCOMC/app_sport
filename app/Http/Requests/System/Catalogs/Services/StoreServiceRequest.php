@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\System\Catalogs\Services;
 
-use App\Helpers\System\Utilities;
 use App\Http\Requests\System\Base\CompanyFormRequest;
 use App\Http\Requests\System\Concerns\AppliesInternalCodePrefix;
 use App\Rules\System\Defaults\{BelongsToCompany, UniqueInCompany};
@@ -33,9 +32,9 @@ class StoreServiceRequest extends CompanyFormRequest {
      */
     public function rules(): array {
 
-        $round    = Utilities::$inputs["round"];
-        $minValue = Utilities::isDefined($this->min_price) && floatval($this->min_price) > 0 ? floatval($this->min_price) : "0.1";
-        $maxValue = Utilities::isDefined($this->max_price) && floatval($this->max_price) > 0 ? floatval($this->max_price) : Utilities::$inputs["maxValue"];
+        $round    = $this->decimalPrecision();
+        $minValue = $this->filled("min_price") && (float) $this->input("min_price") > 0 ? (float) $this->input("min_price") : 0.1;
+        $maxValue = $this->filled("max_price") && (float) $this->input("max_price") > 0 ? (float) $this->input("max_price") : $this->numericMaxValue();
 
         $validations = [
             "internal_code" => ["required", "string", "max:50", new UniqueInCompany("items", "internal_code", null, ["type" => "service"], "código interno")],
@@ -48,13 +47,13 @@ class StoreServiceRequest extends CompanyFormRequest {
             "capacity_control_enabled" => "nullable|boolean",
             "capacity_limit" => "nullable|integer|min:1|max:1000000",
             "expires_at" => "nullable|date",
-            "commission_rate" => "nullable|numeric|min:0|max:100|decimal:0,4",
+            "commission_rate" => "nullable|numeric|min:0|max:100|decimal:0,$round",
             "commission_type" => "nullable|in:none,percentage,fixed",
             "commission_value" => "nullable|numeric|min:0|max:$maxValue|decimal:0,$round",
             "status"        => "required|in:active,inactive"
         ];
 
-        if(Utilities::isDefined($this->min_price) && floatval($this->min_price) > 0) {
+        if($this->filled("min_price") && (float) $this->input("min_price") > 0) {
 
             $validations["max_price"] = "nullable|numeric|min:$minValue|decimal:0,$round";
 
@@ -87,10 +86,14 @@ class StoreServiceRequest extends CompanyFormRequest {
             "capacity_control_enabled" => $capacityEnabled,
             "capacity_limit" => $capacityEnabled ? $this->input("capacity_limit") : null,
             "expires_at" => $this->filled("expires_at") ? $this->input("expires_at") : null,
+            "price" => $this->normalizeDecimalInput($this->input("price")),
+            "min_price" => $this->normalizeDecimalInput($this->input("min_price")),
+            "max_price" => $this->normalizeDecimalInput($this->input("max_price")),
+            "commission_rate" => $this->normalizeDecimalInput($this->input("commission_rate")),
             "commission_type" => $this->input("commission_type") ?: "none",
             "commission_value" => $this->input("commission_type") === "none"
                 ? 0
-                : ($this->input("commission_value") ?? 0)
+                : ($this->normalizeDecimalInput($this->input("commission_value")) ?? 0)
         ]);
 
     }

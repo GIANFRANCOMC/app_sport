@@ -4,31 +4,34 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\System\Purchases;
 
-use Illuminate\Foundation\Http\FormRequest;
+use App\Http\Requests\System\Base\CompanyFormRequest;
 
-final class ReceivePurchaseRequest extends FormRequest {
+final class ReceivePurchaseRequest extends CompanyFormRequest {
 
     public function authorize(): bool {
 
-        return true;
+        return parent::authorize();
 
     }
 
     public function rules(): array {
+
+        $round = $this->decimalPrecision();
+        $maxValue = $this->numericMaxValue();
 
         return [
             "received_at" => ["required", "date"],
             "observation" => ["nullable", "string", "max:1000"],
             "items" => ["required", "array", "min:1"],
             "items.*.purchase_item_id" => ["required", "integer", "distinct"],
-            "items.*.quantity" => ["required", "numeric", "gt:0"]
+            "items.*.quantity" => ["required", "numeric", "gt:0", "max:{$maxValue}", "decimal:0,{$round}"]
         ];
 
     }
 
     public function messages(): array {
 
-        return [
+        return parent::messages() + [
             "required" => "Campo obligatorio.",
             "items.min" => "Agrega al menos un producto.",
             "distinct" => "No repitas un producto.",

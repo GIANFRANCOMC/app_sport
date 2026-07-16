@@ -10,6 +10,10 @@ final class SaveMasterDataRequest extends CompanyFormRequest {
 
     public function rules(): array {
 
+        $round = $this->decimalPrecision();
+        $maxValue = $this->numericMaxValue();
+        $maxFileSizeKb = $this->numericMaxFileSizeKb();
+
         return match((string) $this->route("resource")) {
             "identity-documents" => [
                 "code" => ["required", "string", "max:50"],
@@ -30,7 +34,7 @@ final class SaveMasterDataRequest extends CompanyFormRequest {
                 "code" => ["required", "string", "max:30"],
                 "name" => ["required", "string", "max:255"],
                 "description" => ["nullable", "string", "max:500"],
-                "rate" => ["required", "numeric", "min:0", "max:999999999999.9999", "decimal:0,4"],
+                "rate" => ["required", "numeric", "min:0", "max:{$maxValue}", "decimal:0,{$round}"],
                 "calculation_type" => ["required", "in:percentage,fixed"],
                 "operation_type" => ["required", "in:addition,subtraction"],
                 "min_apply_quantity" => ["nullable", "integer", "min:0"],
@@ -44,7 +48,7 @@ final class SaveMasterDataRequest extends CompanyFormRequest {
                 "code" => ["required", "string", "max:30"],
                 "name" => ["required", "string", "max:255"],
                 "sunat_code" => ["nullable", "string", "max:10"],
-                "image" => ["nullable", "image", "mimes:jpg,jpeg,png,webp", "max:2048"],
+                "image" => ["nullable", "image", "mimes:jpg,jpeg,png,webp", "max:{$maxFileSizeKb}"],
                 "scope" => ["required", "in:sale,purchase,both"],
                 "requires_reference" => ["required", "boolean"],
                 "is_default" => ["required", "boolean"],

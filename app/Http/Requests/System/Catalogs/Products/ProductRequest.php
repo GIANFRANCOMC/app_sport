@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\System\Catalogs\Products;
 
-use App\Helpers\System\Utilities;
 use App\Http\Requests\System\Base\CompanyFormRequest;
 use App\Models\System\Catalogs\{Brand, Item};
 use App\Rules\System\Catalogs\ValidEan13;
@@ -17,8 +16,8 @@ abstract class ProductRequest extends CompanyFormRequest {
     public function rules(): array {
 
         $itemId = $this->route("id") ? (int) $this->route("id") : null;
-        $round = Utilities::$inputs["round"];
-        $maxValue = Utilities::$inputs["maxValue"];
+        $round = $this->decimalPrecision();
+        $maxValue = $this->numericMaxValue();
 
         return [
             "internal_code" => ["bail", "required", "string", "max:50", "regex:/^[A-Za-z0-9._-]+$/", new UniqueInCompany("items", "internal_code", $itemId, ["type" => "product"], "código interno")],
@@ -131,6 +130,7 @@ abstract class ProductRequest extends CompanyFormRequest {
                 $this->input("internal_code")
             ),
             "brand_id" => $this->filled("brand_id") ? (int) $this->input("brand_id") : null,
+            "price" => $this->normalizeDecimalInput($this->input("price")),
             "min_price" => $this->normalizeOptionalNumber($this->input("min_price")),
             "max_price" => $this->normalizeOptionalNumber($this->input("max_price")),
             "commission_type" => $this->input("commission_type") ?: "none",
@@ -139,7 +139,8 @@ abstract class ProductRequest extends CompanyFormRequest {
                 : ($this->normalizeOptionalNumber($this->input("commission_value")) ?? 0),
             "capacity_control_enabled" => $this->boolean("capacity_control_enabled"),
             "capacity_limit" => $this->boolean("capacity_control_enabled") ? $this->input("capacity_limit") : null,
-            "expires_at" => $this->filled("expires_at") ? $this->input("expires_at") : null
+            "expires_at" => $this->filled("expires_at") ? $this->input("expires_at") : null,
+            "inventory" => $this->normalizeInventory()
         ]);
 
     }
@@ -271,7 +272,30 @@ abstract class ProductRequest extends CompanyFormRequest {
 
         }
 
-        return $value;
+        return $this->normalizeDecimalInput($value);
+
+    }
+
+    private function normalizeInventory(): array {
+
+        return collect($this->input("inventory", []))
+            ->map(function($inventory) {
+
+                if(!is_array($inventory)) {
+
+                    return $inventory;
+
+                }
+
+                $inventory["warehouse_id"] = $this->nullableIntegerFromArray($inventory, "warehouse_id");
+                $inventory["initial_stock"] = $this->normalizeDecimalFromArray($inventory, "initial_stock");
+                $inventory["minimum_stock"] = $this->normalizeDecimalFromArray($inventory, "minimum_stock");
+
+                return $inventory;
+
+            })
+            ->values()
+            ->all();
 
     }
 

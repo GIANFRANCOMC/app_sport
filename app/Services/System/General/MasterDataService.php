@@ -8,6 +8,7 @@ use App\Models\System\General\{Currency, DocumentType, IdentityDocumentType};
 use App\Models\System\Finance\{PaymentMethod, Tax};
 use App\Models\System\Organizations\CompanySetting;
 use App\Services\System\Base\{InitParamsCacheInvalidationService, MasterReferenceDataService};
+use App\Services\System\Organizations\Companies\CompanySettingService;
 use App\Services\System\Tenancy\TenantStoragePath;
 use DomainException;
 use Illuminate\Database\Eloquent\Model;
@@ -137,6 +138,10 @@ final class MasterDataService {
                 $record->company_id = $companyId;
                 $record->{$id ? "updated_by" : "created_by"} = $userId;
                 $record->save();
+
+                if($resource === "company-settings") {
+                    CompanySettingService::clearCache($companyId);
+                }
 
                 MasterReferenceDataService::clearCache($companyId);
                 InitParamsCacheInvalidationService::invalidate(

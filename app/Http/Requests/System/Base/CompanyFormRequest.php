@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Requests\System\Base;
 
 use App\Helpers\System\ApiResponse;
+use App\Services\System\Organizations\Companies\CompanySettingService;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
@@ -59,6 +60,140 @@ abstract class CompanyFormRequest extends FormRequest {
     protected function normalizedStringFields(): array {
 
         return [];
+
+    }
+
+    protected function decimalPrecision(): int {
+
+        $precision = (int) ($this->numericValidationSettings()["decimal_precision"] ?? 4);
+
+        return max(0, min(8, $precision));
+
+    }
+
+    protected function numericMinValue(): float {
+
+        return (float) ($this->numericValidationSettings()["default_min_value"] ?? 0);
+
+    }
+
+    protected function numericMaxValue(): float {
+
+        return (float) ($this->numericValidationSettings()["default_max_value"] ?? 999999999999.9999);
+
+    }
+
+    protected function numericMaxFileSizeKb(): int {
+
+        return max(1, (int) ($this->numericValidationSettings()["max_file_size_kb"] ?? 4096));
+
+    }
+
+    protected function decimalRule(): string {
+
+        return "decimal:0,".$this->decimalPrecision();
+
+    }
+
+    protected function maxValueRule(?float $maxValue = null): string {
+
+        return "max:".($maxValue ?? $this->numericMaxValue());
+
+    }
+
+    protected function minValueRule(?float $minValue = null): string {
+
+        return "min:".($minValue ?? $this->numericMinValue());
+
+    }
+
+    protected function numericRules(
+        ?float $min = null,
+        ?float $max = null,
+        bool $required = false,
+        bool $decimal = true
+    ): array {
+
+        $rules = [$required ? "required" : "nullable", "numeric", $this->minValueRule($min), $this->maxValueRule($max)];
+
+        if($decimal) {
+
+            $rules[] = $this->decimalRule();
+
+        }
+
+        return $rules;
+
+    }
+
+    protected function positiveNumericRules(
+        float $min = 0.0001,
+        ?float $max = null,
+        bool $required = true
+    ): array {
+
+        return $this->numericRules($min, $max, $required);
+
+    }
+
+    protected function normalizeDecimalInput(mixed $value): ?float {
+
+        if($value === null || $value === "") {
+
+            return null;
+
+        }
+
+        $normalized = is_string($value)
+            ? str_replace(",", "", trim($value))
+            : $value;
+
+        return round((float) $normalized, $this->decimalPrecision());
+
+    }
+
+    protected function nullableIntegerInput(mixed $value): ?int {
+
+        return $value === null || $value === "" ? null : (int) $value;
+
+    }
+
+    protected function nullableStringInput(mixed $value): ?string {
+
+        return is_string($value) && trim($value) !== "" ? trim($value) : null;
+
+    }
+
+    protected function normalizeDecimalFromArray(array $data, string $field): ?float {
+
+        return array_key_exists($field, $data)
+            ? $this->normalizeDecimalInput($data[$field])
+            : null;
+
+    }
+
+    protected function nullableIntegerFromArray(array $data, string $field): ?int {
+
+        return array_key_exists($field, $data)
+            ? $this->nullableIntegerInput($data[$field])
+            : null;
+
+    }
+
+    protected function nullableStringFromArray(array $data, string $field): ?string {
+
+        return $this->nullableStringInput($data[$field] ?? null);
+
+    }
+
+    private function numericValidationSettings(): array {
+
+        $companyId = (int) ($this->user()?->company_id ?? config("app.company_id", 0));
+
+        return CompanySettingService::group(
+            $companyId,
+            CompanySettingService::NUMERIC_VALIDATION
+        );
 
     }
 

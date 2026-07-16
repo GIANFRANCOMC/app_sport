@@ -1,7 +1,7 @@
 import axios from "axios";
 import * as Alerts from "./Alerts.js";
 import * as Utils from "./Utils.js";
-import { requestRoute, generalConfig } from "./Constants.js";
+import { requestRoute, generalConfig, applyGeneralConfig } from "./Constants.js";
 
 export function config({entity = "", type = "", extras = null}) {
 
@@ -37,6 +37,8 @@ export function get({route = "", data = {}, showAlert = false}) {
 		axios
 		.get(requestUrl, requestConfig)
 		.then(response => {
+
+            applyGeneralConfig(response.data?.config?.generalConfig);
 
 			resolve({data: response.data, bool: true});
 

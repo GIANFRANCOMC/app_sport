@@ -55,6 +55,24 @@ return new class extends Migration {
                 "integer"
             );
 
+            foreach([
+                ["decimal_precision", "4", "Cantidad de decimales permitidos y usados para redondear montos, cantidades, costos, tributos, pagos e inventario en validaciones y formularios.", "integer"],
+                ["default_min_value", "0", "Valor minimo operativo usado por defecto en validaciones numericas cuando el campo no define una regla mas especifica.", "decimal"],
+                ["default_max_value", "999999999999.9999", "Valor maximo operativo usado por defecto en validaciones numericas de cantidades, precios, totales, pagos, costos y saldos.", "decimal"],
+                ["max_file_size_kb", "4096", "Tamanio maximo por defecto, en KB, para archivos validados desde formularios de la empresa.", "integer"]
+            ] as [$key, $value, $description, $valueType]) {
+
+                $this->syncSetting(
+                    (int) $companyId,
+                    "numeric_validation",
+                    $key,
+                    $value,
+                    $description,
+                    $valueType
+                );
+
+            }
+
         }
 
     }
@@ -81,6 +99,14 @@ return new class extends Migration {
                 })->orWhere(function($query) {
                     $query->where("group", "reports")
                         ->where("key", "sale_share_ttl_minutes");
+                })->orWhere(function($query) {
+                    $query->where("group", "numeric_validation")
+                        ->whereIn("key", [
+                            "decimal_precision",
+                            "default_min_value",
+                            "default_max_value",
+                            "max_file_size_kb"
+                        ]);
                 });
             })
             ->delete();

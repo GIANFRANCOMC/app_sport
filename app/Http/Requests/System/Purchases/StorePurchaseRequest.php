@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\System\Purchases;
 
-use App\Helpers\System\Utilities;
 use App\Http\Requests\System\Base\CompanyFormRequest;
 use App\Rules\System\Defaults\BelongsToCompany;
 
@@ -49,6 +48,9 @@ final class StorePurchaseRequest extends CompanyFormRequest {
 
     public function rules(): array {
 
+        $round = $this->decimalPrecision();
+        $maxValue = $this->numericMaxValue();
+
         return [
             "supplier_id" => [
                 "required",
@@ -79,7 +81,7 @@ final class StorePurchaseRequest extends CompanyFormRequest {
             "due_date" => ["nullable", "date", "after_or_equal:issue_date"],
             "approval_status" => ["nullable", "in:pending,approved"],
             "delivery_mode" => ["nullable", "in:immediate,pending"],
-            "tax" => ["nullable", "numeric"],
+            "tax" => ["nullable", "numeric", "min:0", "max:{$maxValue}", "decimal:0,{$round}"],
 
             "taxes" => ["nullable", "array", "max:20"],
             "taxes.*.tax_id" => [
@@ -87,12 +89,12 @@ final class StorePurchaseRequest extends CompanyFormRequest {
                 "integer",
                 new BelongsToCompany("taxes", ["status" => "active", "scope" => "purchase"], "Selecciona un tributo activo de compras.")
             ],
-            "taxes.*.rate" => ["nullable", "numeric", "min:0"],
+            "taxes.*.rate" => ["nullable", "numeric", "min:0", "max:{$maxValue}", "decimal:0,{$round}"],
             "taxes.*.calculation_type" => ["nullable", "in:percentage,fixed"],
             "taxes.*.operation_type" => ["nullable", "in:addition,subtraction"],
             "taxes.*.is_required" => ["nullable", "boolean"],
-            "taxes.*.quantity" => ["nullable", "integer", "min:1"],
-            "taxes.*.amount" => ["nullable", "numeric"],
+            "taxes.*.quantity" => ["nullable", "integer", "min:1", "max:{$maxValue}"],
+            "taxes.*.amount" => ["nullable", "numeric", "min:-{$maxValue}", "max:{$maxValue}", "decimal:0,{$round}"],
 
             "payments" => ["nullable", "array", "max:20"],
             "payments.*.payment_method_id" => [
@@ -100,14 +102,14 @@ final class StorePurchaseRequest extends CompanyFormRequest {
                 "integer",
                 new BelongsToCompany("payment_methods", ["status" => "active"], "Selecciona un método de pago activo.")
             ],
-            "payments.*.amount" => ["required_with:payments", "numeric", "gt:0"],
+            "payments.*.amount" => ["required_with:payments", "numeric", "gt:0", "max:{$maxValue}", "decimal:0,{$round}"],
             "payments.*.reference" => ["nullable", "string", "max:100"],
             "payments.*.note" => ["nullable", "string", "max:300"],
 
             "expenses" => ["nullable", "array", "max:20"],
             "expenses.*.expense_type" => ["required_with:expenses", "string", "max:40"],
             "expenses.*.name" => ["required_with:expenses", "string", "max:150"],
-            "expenses.*.amount" => ["required_with:expenses", "numeric", "min:0"],
+            "expenses.*.amount" => ["required_with:expenses", "numeric", "min:0", "max:{$maxValue}", "decimal:0,{$round}"],
             "expenses.*.allocation_method" => ["nullable", "in:value,quantity,equal"],
             "expenses.*.note" => ["nullable", "string", "max:500"],
 
@@ -119,8 +121,8 @@ final class StorePurchaseRequest extends CompanyFormRequest {
                 "distinct",
                 new BelongsToCompany("items", ["type" => "product", "status" => "active"], "Selecciona un producto activo de tu empresa.")
             ],
-            "items.*.quantity" => ["required", "numeric", "gt:0"],
-            "items.*.unit_cost" => ["required", "numeric", "min:0"]
+            "items.*.quantity" => ["required", "numeric", "gt:0", "max:{$maxValue}", "decimal:0,{$round}"],
+            "items.*.unit_cost" => ["required", "numeric", "min:0", "max:{$maxValue}", "decimal:0,{$round}"]
         ];
 
     }
@@ -144,8 +146,8 @@ final class StorePurchaseRequest extends CompanyFormRequest {
         return collect($this->input("items", []))
             ->map(fn($item) => [
                 "item_id"   => $this->nullableIntegerFromArray($item, "item_id"),
-                "quantity"  => $this->nullableDecimalFromArray($item, "quantity"),
-                "unit_cost" => $this->nullableDecimalFromArray($item, "unit_cost")
+                "quantity"  => $this->normalizeDecimalFromArray($item, "quantity"),
+                "unit_cost" => $this->normalizeDecimalFromArray($item, "unit_cost")
             ])
             ->values()
             ->all();
@@ -157,12 +159,12 @@ final class StorePurchaseRequest extends CompanyFormRequest {
         return collect($this->input("taxes", []))
             ->map(fn($tax) => [
                 "tax_id"           => $this->nullableIntegerFromArray($tax, "tax_id"),
-                "rate"             => $this->nullableDecimalFromArray($tax, "rate"),
+                "rate"             => $this->normalizeDecimalFromArray($tax, "rate"),
                 "calculation_type" => $tax["calculation_type"] ?? null,
                 "operation_type"   => $tax["operation_type"] ?? null,
                 "is_required"      => filter_var($tax["is_required"] ?? false, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? false,
                 "quantity"         => $this->nullableIntegerFromArray($tax, "quantity"),
-                "amount"           => $this->nullableDecimalFromArray($tax, "amount")
+                "amount"           => $this->normalizeDecimalFromArray($tax, "amount")
             ])
             ->values()
             ->all();
@@ -174,7 +176,7 @@ final class StorePurchaseRequest extends CompanyFormRequest {
         return collect($this->input("payments", []))
             ->map(fn($payment) => [
                 "payment_method_id" => $this->nullableIntegerFromArray($payment, "payment_method_id"),
-                "amount"            => $this->nullableDecimalFromArray($payment, "amount"),
+                "amount"            => $this->normalizeDecimalFromArray($payment, "amount"),
                 "reference"         => $this->nullableStringFromArray($payment, "reference"),
                 "note"              => $this->nullableStringFromArray($payment, "note")
             ])
@@ -189,7 +191,7 @@ final class StorePurchaseRequest extends CompanyFormRequest {
             ->map(fn($expense) => [
                 "expense_type"      => $this->nullableStringFromArray($expense, "expense_type"),
                 "name"              => $this->nullableStringFromArray($expense, "name"),
-                "amount"            => $this->nullableDecimalFromArray($expense, "amount"),
+                "amount"            => $this->normalizeDecimalFromArray($expense, "amount"),
                 "allocation_method" => $expense["allocation_method"] ?? null,
                 "note"              => $this->nullableStringFromArray($expense, "note")
             ])
@@ -206,33 +208,13 @@ final class StorePurchaseRequest extends CompanyFormRequest {
 
     private function nullableDecimal(string $field): ?float {
 
-        return $this->filled($field) ? Utilities::round($this->input($field)) : null;
+        return $this->filled($field) ? $this->normalizeDecimalInput($this->input($field)) : null;
 
     }
 
     private function nullableString(string $field): ?string {
 
         $value = $this->input($field);
-
-        return is_string($value) && trim($value) !== "" ? trim($value) : null;
-
-    }
-
-    private function nullableIntegerFromArray(array $data, string $field): ?int {
-
-        return isset($data[$field]) && $data[$field] !== "" ? (int) $data[$field] : null;
-
-    }
-
-    private function nullableDecimalFromArray(array $data, string $field): ?float {
-
-        return isset($data[$field]) && $data[$field] !== "" ? Utilities::round($data[$field]) : null;
-
-    }
-
-    private function nullableStringFromArray(array $data, string $field): ?string {
-
-        $value = $data[$field] ?? null;
 
         return is_string($value) && trim($value) !== "" ? trim($value) : null;
 
