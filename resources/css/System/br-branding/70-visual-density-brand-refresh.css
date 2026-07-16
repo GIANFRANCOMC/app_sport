@@ -1,0 +1,389 @@
+/* -------------------------------------------------------------------------
+ * [br] Densidad visual y refresh de marca
+ * Capa final transversal: compacta botones, labels, inputs, tablas y cards
+ * sin cambiar la estructura HTML de los módulos existentes.
+ * ------------------------------------------------------------------------- */
+:root {
+  --br-font-size-page: 0.875rem;
+  --br-font-size-ui: 0.835rem;
+  --br-font-size-label: 0.72rem;
+  --br-font-size-table: 0.8125rem;
+  --br-font-size-table-head: 0.72rem;
+  --br-font-size-title-sm: 0.95rem;
+
+  --br-control-height: 2.16rem;
+  --br-control-height-sm: 1.96rem;
+  --br-control-padding-x: 0.68rem;
+  --br-control-padding-y: 0.38rem;
+
+  --br-btn-height: 2.14rem;
+  --br-btn-height-sm: 1.92rem;
+  --br-btn-height-xs: 1.68rem;
+  --br-btn-padding-x: 0.82rem;
+  --br-btn-padding-y: 0.4rem;
+  --br-btn-font-size: 0.835rem;
+  --br-btn-font-size-sm: 0.76rem;
+
+  --br-table-cell-pad-y: 0.54rem;
+  --br-table-cell-pad-x: 0.68rem;
+  --br-card-pad: 0.9rem;
+}
+
+body.br-layout {
+  color: var(--br-text);
+  font-size: var(--br-font-size-page);
+  letter-spacing: 0;
+}
+
+.br-layout .br-layout-content {
+  background-color: var(--br-surface);
+  background-image:
+    radial-gradient(circle at top right, color-mix(in srgb, var(--br-primary) 6%, transparent), transparent 26rem),
+    linear-gradient(180deg, color-mix(in srgb, var(--br-primary) 3%, transparent) 0%, transparent 18rem);
+}
+
+/* Tipografía de formulario más silenciosa y consistente */
+body.br-layout .form-label,
+.br-filter-bar .form-label,
+.br-cash__selector .form-label,
+.br-cash .form-label,
+.br-document-settlement .form-label {
+  margin-bottom: 0.16rem;
+  color: color-mix(in srgb, var(--br-secondary) 64%, var(--br-text-muted));
+  font-size: var(--br-font-size-label);
+  font-weight: 650;
+  line-height: 1.15;
+}
+
+body.br-layout .text-danger.ms-1.fw-bold {
+  font-size: 0.72rem;
+  line-height: 1;
+}
+
+/* Inputs, selects y grupos compuestos */
+.br-layout .form-control,
+.br-layout .form-select,
+.br-layout .input-group-text,
+.br-layout .v-select .vs__dropdown-toggle,
+.br-layout .select2-container--default .select2-selection--single,
+.br-layout .select2-container--default .select2-selection--multiple {
+  min-height: var(--br-control-height);
+  border-radius: var(--br-radius-sm);
+  font-size: var(--br-font-size-ui);
+  line-height: 1.25;
+}
+
+.br-layout .form-control,
+.br-layout .form-select {
+  height: var(--br-control-height);
+  padding: var(--br-control-padding-y) var(--br-control-padding-x);
+}
+
+.br-layout textarea.form-control {
+  height: auto;
+  min-height: calc(var(--br-control-height) * 1.8);
+}
+
+.br-layout .input-group-text {
+  padding: var(--br-control-padding-y) 0.58rem;
+}
+
+.br-filter-bar .form-control,
+.br-filter-bar .vs__dropdown-toggle,
+.br-layout .v-select.vs--single .vs__dropdown-toggle,
+.br-layout .v-select.vs--multiple .vs__dropdown-toggle {
+  height: var(--br-control-height);
+  min-height: var(--br-control-height);
+}
+
+.br-layout .v-select.vs--multiple .vs__selected {
+  min-height: 1.42rem;
+  padding: 0.08rem 0.22rem 0.08rem 0.42rem;
+  font-size: 0.735rem;
+}
+
+.br-layout .vs__dropdown-menu .vs__dropdown-option,
+body > .vs__dropdown-menu .vs__dropdown-option {
+  padding: 0.42rem 0.65rem;
+  font-size: 0.78rem;
+}
+
+.br-input-currency-addon,
+.br-currency-prefix,
+.br-internal-code-prefix,
+.character-counter {
+  min-height: var(--br-control-height);
+  font-size: 0.68rem;
+}
+
+.br-input-action {
+  width: var(--br-control-height);
+  min-width: var(--br-control-height);
+  min-height: var(--br-control-height);
+  font-size: 0.72rem;
+}
+
+/* Botones: menos altos, menos invasivos, misma intención cromática */
+.br-btn,
+.br-layout .btn {
+  min-height: var(--br-btn-height);
+  padding: var(--br-btn-padding-y) var(--br-btn-padding-x);
+  font-size: var(--br-btn-font-size);
+  line-height: 1.25;
+  border-radius: var(--br-radius-sm);
+  gap: 0.38rem;
+}
+
+.br-btn i,
+.br-layout .btn i {
+  font-size: 0.88em;
+}
+
+.br-btn-sm,
+.br-layout .btn-sm,
+.br-filter-bar__actions .br-btn {
+  min-height: var(--br-btn-height-sm);
+  padding: 0.32rem 0.66rem;
+  font-size: var(--br-btn-font-size-sm);
+}
+
+.br-btn-xs {
+  min-height: var(--br-btn-height-xs);
+  padding: 0.22rem 0.42rem;
+  font-size: 0.7rem;
+}
+
+.br-btn-lg,
+.br-layout .btn-lg {
+  min-height: 2.42rem;
+  padding: 0.48rem 1rem;
+  font-size: 0.9rem;
+}
+
+.br-btn-primary,
+.br-btn-action-open-create,
+.br-btn-action-create,
+.br-layout .btn-primary {
+  box-shadow: 0 2px 7px color-mix(in srgb, var(--br-primary) 18%, transparent);
+}
+
+.br-btn-primary:hover,
+.br-btn-action-open-create:hover,
+.br-btn-action-create:hover,
+.br-layout .btn-primary:hover {
+  box-shadow: 0 4px 10px color-mix(in srgb, var(--br-primary) 22%, transparent);
+}
+
+.br-btn-action-search {
+  background: var(--br-secondary);
+  border-color: var(--br-secondary);
+}
+
+.br-btn-action-export {
+  background: var(--br-success);
+  border-color: var(--br-success);
+}
+
+.br-btn-action-import {
+  background: var(--br-warning);
+  border-color: var(--br-warning);
+  color: var(--br-on-warning);
+}
+
+.br-icon-action,
+.br-copy-button,
+.br-barcode-download {
+  width: 1.86rem;
+  min-width: 1.86rem;
+  height: 1.86rem;
+  min-height: 1.86rem;
+  border-radius: var(--br-radius-sm);
+  font-size: 0.74rem;
+}
+
+.br-icon-action-edit {
+  background: var(--br-secondary);
+  border-color: var(--br-secondary);
+  color: var(--br-on-secondary);
+}
+
+.br-icon-action-edit:hover,
+.br-icon-action-edit:focus-visible {
+  background: var(--br-secondary-hover);
+  border-color: var(--br-secondary-hover);
+}
+
+/* Tablas: más información visible sin perder lectura */
+body.br-layout .table {
+  color: var(--br-text);
+  font-size: var(--br-font-size-table);
+}
+
+body.br-layout .table > thead > tr > th,
+body.br-layout .table > thead > tr > th.bg-secondary,
+body.br-layout .br-entity-table > thead > tr > th {
+  padding: 0.58rem var(--br-table-cell-pad-x);
+  font-size: var(--br-font-size-table-head);
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: 0.018em;
+  text-transform: uppercase;
+}
+
+body.br-layout .table > tbody > tr > td,
+.br-entity-table tbody td,
+.br-cash__panel .br-entity-table td,
+.br-cash-inventory-count .br-entity-table td {
+  padding: var(--br-table-cell-pad-y) var(--br-table-cell-pad-x);
+  font-size: var(--br-font-size-table);
+  line-height: 1.32;
+  vertical-align: middle;
+}
+
+.br-entity-table__name,
+.br-entity-table__attribute strong {
+  color: var(--br-secondary);
+  font-size: 0.9rem;
+}
+
+.br-entity-table__description,
+.br-entity-table__meta,
+.br-entity-table__attribute {
+  font-size: 0.74rem;
+  line-height: 1.32;
+}
+
+/* Estados y badges compactos */
+.br-layout .br-status-label {
+  min-width: 3.1rem;
+  padding: 0.2em 0.44em;
+  font-size: 0.64rem;
+  font-weight: 700;
+  border-radius: 0.22rem;
+}
+
+.br-layout .badge,
+.br-layout .badge[class*="bg-label-"] {
+  padding: 0.25rem 0.46rem;
+  font-size: 0.68rem;
+  line-height: 1.1;
+  border-radius: 0.32rem;
+}
+
+/* Modales y pestañas: menos altura ocupada */
+.br-entity-modal .modal-content,
+.br-layout .modal-content {
+  border-radius: var(--br-radius-lg);
+  box-shadow: 0 14px 38px color-mix(in srgb, var(--br-secondary) 18%, transparent);
+}
+
+.br-entity-modal .br-entity-modal__header,
+body.br-layout .modal-header.br-modal-header {
+  min-height: 3rem;
+  padding-top: 0.68rem;
+  padding-bottom: 0.68rem;
+}
+
+.br-entity-modal__eyebrow {
+  font-size: 0.66rem;
+  letter-spacing: 0.045em;
+}
+
+.br-entity-modal__title {
+  font-size: 1rem;
+  line-height: 1.18;
+}
+
+.br-entity-modal .modal-body.br-entity-modal__body {
+  padding: 1rem 1.05rem;
+}
+
+.br-entity-modal .modal-footer.br-entity-modal__footer {
+  padding: 0.75rem 1.05rem;
+}
+
+.br-entity-tab {
+  min-height: 2.7rem;
+  padding: 0.52rem 0.7rem;
+}
+
+.br-entity-tab__step {
+  width: 1.28rem;
+  height: 1.28rem;
+  font-size: 0.68rem;
+}
+
+.br-entity-tab__content strong {
+  font-size: 0.74rem;
+  line-height: 1.08;
+}
+
+.br-entity-tab__content small {
+  font-size: 0.66rem;
+  line-height: 1.08;
+}
+
+/* Barras, cards y paneles */
+.br-filter-bar {
+  margin-bottom: 0.78rem;
+  padding-bottom: 0.15rem;
+}
+
+.br-filter-bar__actions {
+  gap: 0.42rem;
+}
+
+.br-layout .card,
+.br-layout .br-inventory__panel,
+.br-layout .br-cash__panel,
+.br-layout .br-pos-ticket,
+.br-layout .br-pos-product,
+.br-layout .br-pos-category,
+.br-layout .br-service-panel {
+  border-color: color-mix(in srgb, var(--br-border) 88%, var(--br-white));
+  box-shadow: 0 1px 3px color-mix(in srgb, var(--br-secondary) 5%, transparent);
+}
+
+.br-layout .card-body {
+  padding: var(--br-card-pad);
+}
+
+/* SweetAlert y tooltips más sobrios */
+.br-layout .swal2-popup {
+  border-radius: var(--br-radius-lg);
+  font-size: 0.875rem;
+}
+
+.br-layout .swal2-title {
+  font-size: 1.08rem;
+  line-height: 1.25;
+}
+
+.br-layout .swal2-html-container {
+  font-size: 0.86rem;
+  line-height: 1.45;
+}
+
+.br-layout .tooltip {
+  --bs-tooltip-font-size: 0.66rem;
+  --bs-tooltip-padding-x: 0.42rem;
+  --bs-tooltip-padding-y: 0.24rem;
+}
+
+@media (max-width: 767.98px) {
+  :root {
+    --br-font-size-page: 0.84rem;
+    --br-control-height: 2.12rem;
+    --br-btn-height: 2.1rem;
+    --br-table-cell-pad-x: 0.58rem;
+  }
+
+  .br-entity-modal .modal-body.br-entity-modal__body {
+    padding-inline: 0.82rem;
+  }
+
+  .br-btn,
+  .br-layout .btn {
+    width: auto;
+  }
+}

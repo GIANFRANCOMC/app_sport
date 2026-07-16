@@ -5,6 +5,7 @@
     $user     = Auth::user();
     $company  = $user->company;
     $role     = $user->role;
+    $systemAssetsPath = rtrim(asset('System/assets'), '/').'/';
     $sections = \App\Services\System\Organizations\Companies\CompanySectionService::getSections($company->id, $role?->id);
     $preferences = $user->formatted_preferences;
     $userInitials = collect(preg_split('/\s+/', trim($user->name)))
@@ -19,7 +20,7 @@
     class="light-style layout-navbar-fixed layout-menu-fixed layout-compact br-html-brand"
     dir="ltr"
     data-theme="theme-default"
-    data-assets-path="../System/assets/"
+    data-assets-path="{{ $systemAssetsPath }}"
     data-template="vertical-menu-template-starter">
     <head>
         @include("System.layouts.partials.up")
@@ -35,7 +36,7 @@
         <div class="layout-wrapper layout-content-navbar">
             <div class="layout-container">
                 <aside id="layout-menu" class="layout-menu menu-vertical menu bg-menu-theme br-menu-brand">
-                    <ul class="menu-inner mb-3 mt-2">
+                    <ul class="menu-inner">
                         <li class="menu-header br-sidebar-profile-wrap text-start">
                             <div class="br-sidebar-profile">
                                 <div class="br-sidebar-profile-avatar flex-shrink-0">
@@ -104,7 +105,7 @@
                         @endphp
                         <li class="menu-item {{ request()->routeIs('home.index') ? 'active' : '' }}" title="Configura tus favoritos (atajos en el panel).">
                             <a href="{{ route('home.index') }}" class="menu-link" @if(request()->routeIs('home.index')) aria-current="page" @endif>
-                                <i class="menu-icon fa-solid fa-star br-icon-favorites me-3" aria-hidden="true"></i>
+                                <i class="menu-icon fa-solid fa-star br-icon-favorites" aria-hidden="true"></i>
                                 <div>Favoritos</div>
                             </a>
                         </li>
@@ -129,14 +130,15 @@
                             @endphp
                             <li class="menu-item {{ $section->dom_id }}" id="{{ $section->dom_id }}">
                                 <a href="{{ $section->has_sub_menu ? 'javascript:void(0);' : $reference->dom_route_url }}" class="{{ $section->has_sub_menu ? 'menu-link menu-toggle fw-semibold' : 'menu-link fw-semibold' }}">
-                                    <i class="{{ $section->dom_icon }} br-icon-accent me-3"></i>
+                                    <i class="{{ $section->dom_icon }} br-icon-accent"></i>
                                     <div>{{ $section->dom_label }}</div>
                                 </a>
                                 @if($section->has_sub_menu)
                                     <ul class="menu-sub">
                                         @foreach($subSectionsFiltered as $subSection)
                                             <li class="menu-item {{ $subSection->dom_id }}" id="{{ $subSection->dom_id }}">
-                                                <a href="{{ $subSection->dom_route_url }}" class="fw-regular menu-link py-1">
+                                                <a href="{{ $subSection->dom_route_url }}" class="fw-regular menu-link">
+                                                    <span class="br-menu-child-bullet" aria-hidden="true"></span>
                                                     <div class="text-truncate">{{ $subSection->dom_label }}</div>
                                                 </a>
                                             </li>

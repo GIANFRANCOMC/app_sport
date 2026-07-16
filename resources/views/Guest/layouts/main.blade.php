@@ -2,6 +2,7 @@
 
 @php
     $ownerApp = config("app.owner_app");
+    $systemAssetsPath = rtrim(asset('System/assets'), '/').'/';
 @endphp
 
 <html
@@ -9,7 +10,7 @@
     class="light-style layout-navbar-fixed layout-wide"
     dir="ltr"
     data-theme="theme-default"
-    data-assets-path="../System/assets/"
+    data-assets-path="{{ $systemAssetsPath }}"
     data-template="front-pages-no-customizer">
     <head>
         @include('Guest.layouts.partials.up')

@@ -29,19 +29,15 @@ html.layout-navbar-fixed body.br-layout .layout-page:before {
       var(--br-sidebar-bg-b) 28%,
       var(--br-sidebar-bg-c) 52%,
       var(--br-secondary) 100%
-    ) !important;
+  ) !important;
   color: color-mix(in srgb, var(--br-white) 96%, transparent) !important;
-  border-right: 1px solid color-mix(in srgb, var(--br-sidebar-accent) 35%, transparent) !important;
-  box-shadow:
-    4px 0 28px color-mix(in srgb, var(--br-primary) 12%, transparent),
-    4px 0 40px color-mix(in srgb, var(--br-secondary) 22%, transparent) !important;
+  border-right: 1px solid color-mix(in srgb, var(--br-sidebar-accent) 24%, transparent) !important;
+  box-shadow: none !important;
 }
 
 @media (min-width: 1200px) {
   .br-layout .br-menu-brand.bg-menu-theme {
-    box-shadow:
-      4px 0 28px color-mix(in srgb, var(--br-primary) 10%, transparent),
-      4px 0 36px color-mix(in srgb, var(--br-secondary) 20%, transparent) !important;
+    box-shadow: none !important;
   }
 }
 
@@ -105,7 +101,7 @@ html:not(.layout-menu-collapsed) .br-layout .br-menu-brand .menu-inner .menu-ite
 }
 
 .br-layout .br-menu-brand .menu-header-text.divider-text {
-  font-size: 0.8125rem !important;
+  font-size: 0.58rem !important;
 }
 
 .br-layout .br-menu-brand .menu-inner .menu-sub .menu-item:not(.active) > .menu-link::before {
@@ -246,8 +242,10 @@ html:not(.layout-menu-collapsed) .br-layout .br-menu-brand .menu-inner .menu-ite
   align-self: center;
   line-height: 1;
   flex-shrink: 0;
-  width: 1.125rem;
-  font-size: 1rem !important;
+  width: 0.7rem;
+  min-width: 0.7rem;
+  margin-right: 0.44rem;
+  font-size: 0.6rem !important;
   color: var(--br-favorite-strong) !important;
   text-shadow: 0 0 8px color-mix(in srgb, var(--br-amber-500) 40%, transparent);
 }

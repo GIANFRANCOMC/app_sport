@@ -10,6 +10,7 @@
 @import "./br-branding/40-buttons-quick-create.css";
 @import "./br-branding/50-layout-navbar-sidebar.css";
 @import "./br-branding/60-dashboard-sales.css";
+@import "./br-branding/70-visual-density-brand-refresh.css";
 @import "./custom/00-base-guest.css";
 @import "./custom/10-roles-core-legacy.css";
 @import "./custom/20-inventory.css";
@@ -19,5 +20,6 @@
 @import "./custom/60-service-operations.css";
 @import "./custom/70-pos-extensions.css";
 @import "./custom/80-dashboard-actions-customers.css";
+@import "./custom/90-system-wide-visual-polish.css";
 @import "./br-login/00-login.css";
 @import "./demo/00-demo.css";

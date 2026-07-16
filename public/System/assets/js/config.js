@@ -7,48 +7,95 @@
 
 'use strict';
 
+const brRoot = document.documentElement;
+const brRootStyles = window.getComputedStyle(brRoot);
+
+const brCssToken = (name, fallback = '') => brRootStyles.getPropertyValue(name).trim() || fallback;
+
+const brColorWithAlpha = (color, alphaHex = '29') => {
+  const normalized = color.trim();
+  const shortHex = normalized.match(/^#([0-9a-f]{3})$/i);
+  const longHex = normalized.match(/^#([0-9a-f]{6})$/i);
+
+  if (longHex) return `${normalized}${alphaHex}`;
+
+  if (shortHex) {
+    const expanded = shortHex[1]
+      .split('')
+      .map(part => part + part)
+      .join('');
+
+    return `#${expanded}${alphaHex}`;
+  }
+
+  const alphaPercent = Math.round((parseInt(alphaHex, 16) / 255) * 100);
+
+  return `color-mix(in srgb, ${normalized} ${alphaPercent}%, transparent)`;
+};
+
+const brNormalizeAssetsPath = value => {
+  const fallback = '/System/assets/';
+  const source = (value || fallback).trim();
+  const isAbsoluteUrl = /^[a-z][a-z\d+\-.]*:\/\//i.test(source) || source.startsWith('//');
+
+  if (isAbsoluteUrl || source.startsWith('/')) {
+    return new URL(source, window.location.origin).href.replace(/\/?$/, '/');
+  }
+
+  const systemAssetsMatch = source.match(/(?:^|\/)(System\/assets\/?.*)$/i);
+
+  if (systemAssetsMatch) {
+    return new URL(`/${systemAssetsMatch[1].replace(/^\/+/, '')}`, window.location.origin).href.replace(/\/?$/, '/');
+  }
+
+  return new URL(source, window.location.href).href.replace(/\/?$/, '/');
+};
+
 // JS global variables
 let config = {
   colors: {
-    primary: '#7367f0',
-    secondary: '#a8aaae',
-    success: '#28c76f',
-    info: '#00cfe8',
-    warning: '#ff9f43',
-    danger: '#ea5455',
-    dark: '#4b4b4b',
-    black: '#000',
-    white: '#fff',
-    cardColor: '#fff',
-    bodyBg: '#f8f7fa',
-    bodyColor: '#6f6b7d',
-    headingColor: '#5d596c',
-    textMuted: '#a5a3ae',
-    borderColor: '#dbdade'
+    primary: brCssToken('--br-primary'),
+    secondary: brCssToken('--br-secondary'),
+    success: brCssToken('--br-success'),
+    info: brCssToken('--br-info'),
+    warning: brCssToken('--br-warning'),
+    danger: brCssToken('--br-danger'),
+    dark: brCssToken('--br-neutral-900'),
+    black: brCssToken('--br-black'),
+    white: brCssToken('--br-white'),
+    cardColor: brCssToken('--br-surface-elevated'),
+    bodyBg: brCssToken('--br-surface'),
+    bodyColor: brCssToken('--br-text'),
+    headingColor: brCssToken('--br-secondary'),
+    textMuted: brCssToken('--br-text-muted'),
+    borderColor: brCssToken('--br-border')
   },
   colors_label: {
-    primary: '#7367f029',
-    secondary: '#a8aaae29',
-    success: '#28c76f29',
-    info: '#00cfe829',
-    warning: '#ff9f4329',
-    danger: '#ea545529',
-    dark: '#4b4b4b29'
+    primary: brColorWithAlpha(brCssToken('--br-primary')),
+    secondary: brColorWithAlpha(brCssToken('--br-secondary')),
+    success: brColorWithAlpha(brCssToken('--br-success')),
+    info: brColorWithAlpha(brCssToken('--br-info')),
+    warning: brColorWithAlpha(brCssToken('--br-warning')),
+    danger: brColorWithAlpha(brCssToken('--br-danger')),
+    dark: brColorWithAlpha(brCssToken('--br-neutral-900'))
   },
   colors_dark: {
-    cardColor: '#2f3349',
-    bodyBg: '#25293c',
-    bodyColor: '#b6bee3',
-    headingColor: '#cfd3ec',
-    textMuted: '#7983bb',
-    borderColor: '#434968'
+    cardColor: brCssToken('--br-secondary-hover'),
+    bodyBg: brCssToken('--br-secondary-active'),
+    bodyColor: brCssToken('--br-secondary-soft'),
+    headingColor: brCssToken('--br-on-secondary'),
+    textMuted: brCssToken('--br-secondary-muted'),
+    borderColor: brCssToken('--br-template-dark-border')
   },
   enableMenuLocalStorage: true // Enable menu state with local storage support
 };
 
-let assetsPath = document.documentElement.getAttribute('data-assets-path'),
+let assetsPath = brNormalizeAssetsPath(brRoot.getAttribute('data-assets-path')),
   templateName = document.documentElement.getAttribute('data-template'),
   rtlSupport = true; // set true for rtl support (rtl + ltr), false for ltr only.
+
+brRoot.setAttribute('data-assets-path', assetsPath);
+window.assetsPath = assetsPath;
 
 /**
  * TemplateCustomizer

@@ -7,7 +7,7 @@ Los archivos en `public/System/assets/css` son salida generada para mantener com
 ## Estructura
 
 - `br-branding/`: tokens `--br-*`, componentes reutilizables, layout, formularios, botones, navbar, sidebar, dashboard y SweetAlert.
-- `custom/`: estilos heredados o específicos por dominio mientras se terminan de migrar a componentes reutilizables.
+- `custom/`: estilos heredados o específicos por dominio mientras se terminan de migrar a componentes reutilizables. La capa `90-system-wide-visual-polish.css` carga al final para armonizar pantallas antiguas que todavía pisan el branding.
 - `br-login/`: pantalla de login y accesos invitados.
 - `demo/`: ajustes mínimos de plantilla.
 - `platform.css`: entry preparado para Vite con el mismo orden de parciales.
@@ -20,6 +20,7 @@ Los archivos en `public/System/assets/css` son salida generada para mantener com
 - Si un CSS vendor pisa el branding, mapear únicamente sus colores conflictivos a tokens de compatibilidad `--br-vuexy-*`; no duplicar paletas ni agregar `!important` en capas de módulo.
 - Mantener prefijos `br-*` para clases reutilizables.
 - Si un bloque de `custom/` empieza a servir para varios módulos, moverlo a `br-branding/`.
+- La capa final de `custom/` debe consumir solo tokens `--br-*`; no declarar hexadecimales, `rgba()` ni paletas locales.
 
 ## Comandos
 

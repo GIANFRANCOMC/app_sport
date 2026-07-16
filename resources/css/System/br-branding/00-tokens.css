@@ -26,52 +26,52 @@
 :root {
   /* Primario — azul marca */
   --br-primary: #2899e5;
-  --br-primary-hover: #1e87d4;
-  --br-primary-active: #1a75bd;
-  --br-primary-soft: #e8f4fc;
-  --br-primary-muted: #b8ddf7;
+  --br-primary-hover: #218bd1;
+  --br-primary-active: #176fae;
+  --br-primary-soft: #eaf6fd;
+  --br-primary-muted: #b7def7;
   --br-on-primary: #ffffff;
 
   /* Secundario — navy (surfaces oscuras, texto) */
   --br-secondary: #1a1a35;
-  --br-secondary-hover: #14142a;
-  --br-secondary-active: #0f0f20;
-  --br-secondary-soft: #e8e8ef;
-  --br-secondary-muted: #9a9ab0;
+  --br-secondary-hover: #11112a;
+  --br-secondary-active: #0b0b1f;
+  --br-secondary-soft: #ececf4;
+  --br-secondary-muted: #85879f;
   --br-on-secondary: #ffffff;
 
   /* Semánticos (armonizados con la marca) */
-  --br-success: #10b981;
-  --br-success-soft: #d1fae5;
-  --br-success-hover: #059669;
+  --br-success: #12a974;
+  --br-success-soft: #dcf8ea;
+  --br-success-hover: #07875f;
   --br-on-success: #ffffff;
 
-  --br-warning: #f59e0b;
-  --br-warning-soft: #fef3c7;
-  --br-warning-hover: #d97706;
+  --br-warning: #e99a16;
+  --br-warning-soft: #fff3d4;
+  --br-warning-hover: #c77705;
   --br-on-warning: #1a1a35;
 
-  --br-danger: #ef4444;
-  --br-danger-soft: #fee2e2;
-  --br-danger-hover: #dc2626;
+  --br-danger: #e5484d;
+  --br-danger-soft: #fee6e7;
+  --br-danger-hover: #c92d35;
   --br-on-danger: #ffffff;
 
-  --br-info: #0ea5e9;
-  --br-info-soft: #e0f2fe;
-  --br-info-hover: #0284c7;
+  --br-info: #2496d8;
+  --br-info-soft: #e6f5fd;
+  --br-info-hover: #1b78b6;
   --br-on-info: #ffffff;
 
   /* Neutrales (UI) */
-  --br-surface: #f8fafc;
+  --br-surface: #f5f8fb;
   --br-surface-elevated: #ffffff;
-  --br-surface-soft: #fafbfc;
-  --br-surface-subtle: #fbfcfe;
-  --br-surface-cool: #f7fbff;
-  --br-border: #e2e8f0;
-  --br-border-strong: #cbd5e1;
-  --br-text: #1e293b;
-  --br-text-muted: #64748b;
-  --br-text-placeholder: #94a3b8;
+  --br-surface-soft: #f9fbfd;
+  --br-surface-subtle: #fbfdff;
+  --br-surface-cool: #f1f8fd;
+  --br-border: #dfe7ef;
+  --br-border-strong: #bdcad8;
+  --br-text: #263243;
+  --br-text-muted: #66758a;
+  --br-text-placeholder: #98a6b7;
   --br-white: #ffffff;
   --br-black: #000000;
 
@@ -176,22 +176,22 @@
   --br-radius-sm: 0.375rem;
   --br-radius: 0.5rem;
   --br-radius-lg: 0.75rem;
-  --br-shadow-sm: 0 1px 2px rgba(26, 26, 53, 0.06);
-  --br-shadow: 0 4px 14px rgba(26, 26, 53, 0.08);
-  --br-shadow-primary: 0 4px 14px rgba(40, 153, 229, 0.28);
-  --br-focus-ring: 0 0 0 3px rgba(40, 153, 229, 0.35);
-  --br-focus-ring-inset: inset 0 0 0 2px rgba(40, 153, 229, 0.45);
+  --br-shadow-sm: 0 1px 2px rgba(26, 26, 53, 0.045);
+  --br-shadow: 0 4px 12px rgba(26, 26, 53, 0.07);
+  --br-shadow-primary: 0 4px 12px rgba(40, 153, 229, 0.2);
+  --br-focus-ring: 0 0 0 2px rgba(40, 153, 229, 0.28);
+  --br-focus-ring-inset: inset 0 0 0 2px rgba(40, 153, 229, 0.38);
   --br-transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
 
   /**
    * Thead de tablas — misma familia cromática que el sidebar (.br-menu-brand):
    * pizarra azul-violeta más clara que el navy del menú, acento cian suave al borde inferior.
    */
-  --br-table-thead-highlight-top: rgba(255, 255, 255, 0.1);
-  --br-table-thead-mid-a: #5f6d8f;
-  --br-table-thead-mid-b: #556283;
-  --br-table-thead-mid-c: #4d5a76;
-  --br-table-thead-edge: rgba(91, 195, 255, 0.32);
+  --br-table-thead-highlight-top: color-mix(in srgb, var(--br-primary) 18%, var(--br-white));
+  --br-table-thead-mid-a: #2c8ccb;
+  --br-table-thead-mid-b: #2474ad;
+  --br-table-thead-mid-c: #1a4f83;
+  --br-table-thead-edge: color-mix(in srgb, var(--br-primary) 72%, var(--br-secondary));
   --br-table-thead-text: #ffffff;
 
   /**

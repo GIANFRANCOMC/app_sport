@@ -53,15 +53,15 @@ Los colores oficiales detectados del branding son:
 
 - Primario: `#2899E5` (`--br-primary`).
 - Secundario: `#1A1A35` (`--br-secondary`).
-- Success: `#10b981`.
-- Warning: `#f59e0b`.
-- Danger: `#ef4444`.
-- Info: `#0ea5e9`.
-- Superficie base: `#f8fafc`.
+- Success: `#12a974`.
+- Warning: `#e99a16`.
+- Danger: `#e5484d`.
+- Info: `#2496d8`.
+- Superficie base: `#f5f8fb`.
 - Superficie elevada: `#ffffff`.
-- Bordes: `#e2e8f0` y `#cbd5e1`.
-- Texto principal: `#1e293b`.
-- Texto secundario: `#64748b`.
+- Bordes: `#dfe7ef` y `#bdcad8`.
+- Texto principal: `#263243`.
+- Texto secundario: `#66758a`.
 
 `public/System/assets/css/br-branding.css` es la fuente única de tokens visuales de la plataforma. Los colores de marca, superficies, bordes, estados, sombras, foco, compatibilidad de plantilla y colores auxiliares deben declararse ahí como variables `--br-*`.
 
@@ -74,11 +74,17 @@ Orden de carga recomendado:
 - `custom.css`.
 - CSS especializado de pantalla, por ejemplo `br-login.css`, siempre después de `br-branding.css`.
 
+Los layouts deben declarar `data-assets-path` con una URL absoluta generada por Laravel, por ejemplo `{{ asset('System/assets') }}/`. Los scripts heredados de la plantilla (`helpers.js`, `template-customizer.js`, `config.js`, `main.js` y vistas demo que usen `assetsPath`) dependen de ese atributo para cargar CSS dinámico, imágenes y JSON. `config.js` normaliza cualquier valor relativo antiguo, pero no se deben volver a introducir rutas como `../System/assets/` porque fallan en páginas profundas.
+
 Los CSS públicos de System se generan desde parciales en `resources/css/System`. Editar los parciales y ejecutar `npm run build:css:system`; no editar directamente `public/System/assets/css/br-branding.css`, `custom.css`, `br-login.css` ni `demo.css`.
 
 `resources/css/System/platform.css` mantiene el mismo orden de parciales y queda preparado como entry de Vite. Mientras los layouts sigan usando `<link rel="stylesheet">`, el comando de build CSS conserva los archivos públicos compatibles.
 
 Los CSS de plantilla en `public/System/assets/vendor/css/core.css`, `public/System/assets/vendor/css/rtl/core.css`, `public/System/assets/vendor/css/theme-default.css` y `public/System/assets/vendor/css/rtl/theme-default.css` no deben introducir colores de marca fijos. La paleta primary heredada de Vuexy se mapea a tokens `--br-vuexy-*`, definidos en `br-branding/00-tokens.css`, para evitar conflictos con `!important` y permitir personalizar la marca desde un solo archivo.
+
+La plataforma usa una densidad visual compacta definida en `br-branding/70-visual-density-brand-refresh.css`: botones, inputs, labels, tablas, modales, badges y tooltips deben respetar esa escala. Si una pantalla se ve grande o pesada, ajustar primero variables como `--br-control-height`, `--br-btn-height`, `--br-font-size-ui` o `--br-table-cell-pad-y`, no crear tamaños locales por módulo.
+
+`custom/90-system-wide-visual-polish.css` es la capa final de armonización visual para pantallas heredadas porque `custom.css` carga después de `br-branding.css`. Ahí se compactan y alinean menú, navbar, formularios, placeholders, selects, tablas, modales, cards, POS, estados, loaders y scrollbars usando únicamente tokens `--br-*`. No debe declarar colores propios ni reemplazar componentes reutilizables; si una regla se vuelve base de plataforma, moverla luego a `br-branding/`.
 
 Las clases nuevas reutilizables deben iniciar con `br-`.
 
