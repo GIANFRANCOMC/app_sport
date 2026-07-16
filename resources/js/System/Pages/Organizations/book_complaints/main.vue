@@ -307,7 +307,7 @@ const MODULE_CONFIG = {
     entity: "book_complaints",
     menuId: "menu-customers-book_complaints",
     pageTitle: "Libro de reclamaciones y sugerencias",
-    breadcrumbParent: "AtenciÃ³n al cliente",
+    breadcrumbParent: "Atención al cliente",
     perPage: 6
 };
 
@@ -367,7 +367,7 @@ const VALIDATION_RULES = {
 const ERROR_LABELS = {
     status: "Estado",
     admin_response: "Respuesta del administrador",
-    public_response: "Respuesta pÃºblica",
+    public_response: "Respuesta pública",
     status_note: "Nota de cambio de estado",
     required: "Es obligatorio"
 };
@@ -376,7 +376,7 @@ const TEXTS = {
     loading: `Cargando ${MODULE_CONFIG.pageTitle}...`,
     filters: {
         filterBy: "Filtrar por",
-        search: "BÃºsqueda"
+        search: "Búsqueda"
     },
     actions: {
         search: "Buscar",
@@ -386,9 +386,9 @@ const TEXTS = {
     },
     card: {
         noEmail: "Sin correo registrado",
-        noPhone: "Sin telÃ©fono registrado",
-        noContact: "Sin informaciÃ³n de contacto",
-        noDescription: "Sin descripciÃ³n registrada",
+        noPhone: "Sin teléfono registrado",
+        noContact: "Sin información de contacto",
+        noDescription: "Sin descripción registrada",
         noRequest: "Sin pedido registrado",
         notSpecified: "No especifica",
         notRegistered: "No registrado"
@@ -396,18 +396,18 @@ const TEXTS = {
     sections: {
         clientData: "Datos del cliente",
         complaintDetail: "Detalle",
-        technicalInfo: "InformaciÃ³n tÃ©cnica",
+        technicalInfo: "Información técnica",
         adminManagement: "Gestión administrativa",
         evidence: "Adjuntos e historial"
     },
     form: {
         branch: "Sucursal",
-        documentNumber: "NÃºmero de documento",
+        documentNumber: "Número de documento",
         identityDocumentType: "Tipo de documento",
         name: "Nombre",
-        email: "Correo electrÃ³nico",
+        email: "Correo electrónico",
         phoneNumber: "Celular",
-        description: "DescripciÃ³n",
+        description: "Descripción",
         request: "Pedido del cliente",
         dateTime: "Fecha y hora",
         currentStatus: "Estado actual",
@@ -430,9 +430,9 @@ const TEXTS = {
 
 const FILTER_OPTIONS = [
     {code: "all", label: "Todos los filtros"},
-    {code: "document_number", label: "NÃºmero de documento"},
+    {code: "document_number", label: "Número de documento"},
     {code: "name", label: "Nombre"},
-    {code: "email", label: "Correo electrÃ³nico"},
+    {code: "email", label: "Correo electrónico"},
     {code: "phone_number", label: "Celular"}
 ];
 
@@ -627,7 +627,7 @@ export default {
                 const requestMethod  = isUpdate ? "patch" : "post";
                 const route          = this.routeActions[isUpdate ? "update" : "store"];
 
-                // Preparar datos para envÃ­o
+                // Preparar datos para envío
                 const dataToSend = {
                     status: preparedData.status,
                     admin_response: preparedData.admin_response,

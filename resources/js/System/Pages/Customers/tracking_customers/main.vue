@@ -13,7 +13,7 @@
                 <template v-if="isDefined({value: customerCurrent?.customer})">
                     <button type="button" class="btn btn-primary btn-sm waves-effect" @click="modalCreateUpdateEntity({})">
                         <i class="fa fa-search"></i>
-                        <span class="ms-2">Realizar otra bÃºsqueda</span>
+                        <span class="ms-2">Realizar otra búsqueda</span>
                     </button>
                     <button type="button" class="btn btn-info-1 btn-sm waves-effect" @click="getTrackingCustomers({refresh: true})">
                         <i class="fa fa-sync"></i>
@@ -149,7 +149,7 @@
                         </template>
                         <InputSlot
                             hasDiv
-                            title="Â¿QuÃ© deseas visualizar?"
+                            title="¿Qué deseas visualizar?"
                             isRequired
                             :isInputGroup="false"
                             :divInputClass="['d-flex flex-wrap justify-content-center align-items-end gap-2 gap-md-3 pt-2 pt-md-2']"
@@ -165,7 +165,7 @@
                                 <div class="form-check ms-2">
                                     <label class="cursor-pointer">
                                         <input class="form-check-input" type="checkbox" value="subscriptions" v-model="forms.entity.createUpdate.data.options.information"/>
-                                        <span class="fw-bold text-secondary">MembresÃ­as</span>
+                                        <span class="fw-bold text-secondary">Membresías</span>
                                     </label>
                                 </div>
                                 <div class="form-check ms-2">
@@ -227,7 +227,7 @@ export default {
                                 default: {
                                     id: Utils.uuid(),
                                     titles: {
-                                        default: "BÃºsqueda"
+                                        default: "Búsqueda"
                                     }
                                 }
                             }
@@ -507,7 +507,7 @@ export default {
             // Validate options information
             if((form?.options?.information ?? []).length === 0) {
 
-                result.options_information.push("Debe seleccionar al menos un tipo de informaciÃ³n.");
+                result.options_information.push("Debe seleccionar al menos un tipo de información.");
                 result.bool = false;
 
             }
@@ -554,15 +554,15 @@ export default {
         periodTypes: function() {
 
             return [
-                {code: "last_1_days", label: "Ãšltimo dÃ­a"},
-                {code: "last_7_days", label: "Ãšltimos 7 dÃ­as"},
-                {code: "last_14_days", label: "Ãšltimos 14 dÃ­as"},
-                {code: "last_21_days", label: "Ãšltimos 21 dÃ­as"},
-                {code: "last_1_months", label: "Ãšltimo mes"},
-                {code: "last_3_months", label: "Ãšltimos 3 meses"},
-                {code: "last_6_months", label: "Ãšltimos 6 meses"},
-                {code: "last_9_months", label: "Ãšltimos 9 meses"},
-                {code: "this_year", label: "Este aÃ±o"},
+                {code: "last_1_days", label: "Último día"},
+                {code: "last_7_days", label: "Últimos 7 días"},
+                {code: "last_14_days", label: "Últimos 14 días"},
+                {code: "last_21_days", label: "Últimos 21 días"},
+                {code: "last_1_months", label: "Último mes"},
+                {code: "last_3_months", label: "Últimos 3 meses"},
+                {code: "last_6_months", label: "Últimos 6 meses"},
+                {code: "last_9_months", label: "Últimos 9 meses"},
+                {code: "this_year", label: "Este año"},
                 {code: "custom", label: "Rango personalizado"}
             ];
 

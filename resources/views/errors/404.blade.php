@@ -35,6 +35,7 @@
 
         <!-- Page -->
         <link rel="stylesheet" href="{{ asset('System/assets/vendor/css/pages/page-auth.css') }}" />
+        <link rel="stylesheet" href="{{ asset('System/assets/css/br-branding.css') }}" />
         <link rel="stylesheet" href="{{ asset('System/assets/css/custom.css') }}" />
     </head>
     <body>

@@ -15,31 +15,31 @@
  * ------------------------------------------------------------------------- */
 body:has(.br-auth-login-page) {
   min-height: 100vh;
-  background-color: #1a2034;
+  background-color: var(--br-auth-bg-base);
   background-image:
     radial-gradient(
       ellipse 125% 90% at 10% 8%,
-      rgba(40, 153, 229, 0.38) 0%,
-      rgba(40, 153, 229, 0.12) 38%,
+      color-mix(in srgb, var(--br-primary) 38%, transparent) 0%,
+      color-mix(in srgb, var(--br-primary) 12%, transparent) 38%,
       transparent 64%
     ),
     radial-gradient(
       ellipse 100% 80% at 92% 88%,
-      rgba(26, 26, 53, 0.72) 0%,
-      rgba(26, 26, 53, 0.28) 44%,
+      color-mix(in srgb, var(--br-secondary) 72%, transparent) 0%,
+      color-mix(in srgb, var(--br-secondary) 28%, transparent) 44%,
       transparent 72%
     ),
     radial-gradient(
       ellipse 85% 55% at 50% 105%,
-      rgba(40, 153, 229, 0.18) 0%,
+      color-mix(in srgb, var(--br-primary) 18%, transparent) 0%,
       transparent 56%
     ),
     linear-gradient(
       168deg,
-      #1e2540 0%,
-      #222a45 30%,
-      #1c2238 56%,
-      #181e32 100%
+      var(--br-auth-bg-a) 0%,
+      var(--br-auth-bg-b) 30%,
+      var(--br-auth-bg-c) 56%,
+      var(--br-auth-bg-d) 100%
     );
   background-repeat: no-repeat;
   background-attachment: fixed;
@@ -126,13 +126,13 @@ body:has(.br-auth-login-page) {
 
 .br-auth-login-page .form-control,
 .br-auth-login-page .form-select {
-  border-color: #c5d0dc;
+  border-color: var(--br-border-control);
   transition: var(--br-transition);
 }
 
 .br-auth-login-page .form-control:hover,
 .br-auth-login-page .form-select:hover {
-  border-color: #a8b5c4;
+  border-color: var(--br-border-control-hover);
 }
 
 .br-auth-login-page .form-control:focus {
@@ -166,7 +166,7 @@ body:has(.br-auth-login-page) {
 
 .br-auth-password-toggle:hover {
   color: var(--br-secondary);
-  background: rgba(26, 26, 53, 0.06);
+  background: color-mix(in srgb, var(--br-secondary) 6%, transparent);
 }
 
 .br-auth-password-toggle:focus-visible {
@@ -213,14 +213,14 @@ body:has(.br-auth-login-page) .btn-primary:focus {
  * [br-auth] Tarjeta — .br-auth-login-card, variante sin acceso, .shadow-lg
  * ------------------------------------------------------------------------- */
 .br-auth-login-page .br-auth-login-card {
-  background-color: #fff;
+  background-color: var(--br-white);
   border-radius: 1.5rem;
-  border: 1px solid rgba(40, 153, 229, 0.12);
+  border: 1px solid color-mix(in srgb, var(--br-primary) 12%, transparent);
   box-shadow:
-    0 2px 4px rgba(15, 18, 31, 0.04),
-    0 8px 24px rgba(26, 26, 53, 0.1),
-    0 20px 48px -12px rgba(40, 153, 229, 0.14),
-    inset 0 1px 0 rgba(255, 255, 255, 0.9) !important;
+    0 2px 4px color-mix(in srgb, var(--br-secondary) 4%, transparent),
+    0 8px 24px var(--br-auth-secondary-glow),
+    0 20px 48px -12px var(--br-auth-primary-glow),
+    inset 0 1px 0 color-mix(in srgb, var(--br-white) 90%, transparent) !important;
 }
 
 /* --- [br-auth] Sin formulario: contenido sobre el fondo (sin caja blanca) --- */
@@ -238,12 +238,12 @@ body:has(.br-auth-login-page) .btn-primary:focus {
 }
 
 .br-auth-login-page .br-auth-login-card.br-auth-login-card--no-access .br-login-brand-name {
-  color: rgba(255, 255, 255, 0.96) !important;
+  color: color-mix(in srgb, var(--br-white) 96%, transparent) !important;
 }
 
 .br-auth-login-page .shadow-lg {
   box-shadow: var(--br-shadow) !important;
-  border: 1px solid rgba(40, 153, 229, 0.1);
+  border: 1px solid color-mix(in srgb, var(--br-primary) 10%, transparent);
 }
 
 /* --- [br-auth] Pie de ayuda bajo la tarjeta --- */
@@ -256,11 +256,11 @@ body:has(.br-auth-login-page) .btn-primary:focus {
 .br-auth-login-page .br-auth-help-footer .br-auth-help-question {
   font-weight: 600;
   letter-spacing: -0.015em;
-  color: #fff !important;
+  color: var(--br-white) !important;
 }
 
 .br-auth-login-page .br-auth-help-footer .text-muted {
-  color: rgba(255, 255, 255, 0.72) !important;
+  color: var(--br-auth-white) !important;
 }
 
 /* -------------------------------------------------------------------------
@@ -278,12 +278,12 @@ body:has(.br-auth-login-page) .btn-primary:focus {
   align-items: flex-start;
   padding: 1.125rem 1.125rem 1.25rem;
   border-radius: var(--br-radius-lg);
-  background: linear-gradient(145deg, var(--br-danger-soft) 0%, #fff 55%);
-  border: 2px solid rgba(239, 68, 68, 0.42);
+  background: linear-gradient(145deg, var(--br-danger-soft) 0%, var(--br-white) 55%);
+  border: 2px solid color-mix(in srgb, var(--br-danger) 42%, transparent);
   border-left: 5px solid var(--br-danger);
   box-shadow:
-    0 0 0 1px rgba(239, 68, 68, 0.12),
-    0 4px 18px rgba(239, 68, 68, 0.12);
+    0 0 0 1px color-mix(in srgb, var(--br-danger) 12%, transparent),
+    0 4px 18px color-mix(in srgb, var(--br-danger) 12%, transparent);
 }
 
 .br-auth-access-denied__notice-icon {
@@ -325,7 +325,7 @@ body:has(.br-auth-login-page) .btn-primary:focus {
   line-height: 1.5;
   color: var(--br-text-muted) !important;
   padding-top: 0.65rem;
-  border-top: 1px solid rgba(239, 68, 68, 0.12);
+  border-top: 1px solid color-mix(in srgb, var(--br-danger) 12%, transparent);
 }
 
 /* -------------------------------------------------------------------------
@@ -392,10 +392,10 @@ body:has(.br-auth-login-page) .btn-primary:focus {
 
 /* --- [br-auth] Variante aviso (membresía / acceso) — .br-auth-support-box--access --- */
 .br-auth-support-box--access {
-  background: linear-gradient(135deg, var(--br-warning-soft) 0%, #fffbeb 100%);
-  border-color: rgba(217, 119, 6, 0.22);
+  background: linear-gradient(135deg, var(--br-warning-soft) 0%, color-mix(in srgb, var(--br-warning-soft) 42%, var(--br-white)) 100%);
+  border-color: color-mix(in srgb, var(--br-orange) 22%, transparent);
   border-left-color: var(--br-warning);
-  box-shadow: 0 2px 12px rgba(245, 158, 11, 0.1);
+  box-shadow: 0 2px 12px color-mix(in srgb, var(--br-warning) 10%, transparent);
 }
 
 .br-auth-support-box--access .br-auth-support-icon {
@@ -405,8 +405,8 @@ body:has(.br-auth-login-page) .btn-primary:focus {
 /* --- [br-auth] Variante compacta bajo acceso denegado --- */
 .br-auth-support-box--access.br-auth-support-box--access-lite {
   padding: 0.8rem 1rem;
-  background: #fffdf8;
-  border: 1px solid rgba(245, 158, 11, 0.2);
+  background: color-mix(in srgb, var(--br-warning-soft) 18%, var(--br-white));
+  border: 1px solid color-mix(in srgb, var(--br-warning) 20%, transparent);
   border-left: 3px solid var(--br-warning);
   border-radius: var(--br-radius);
   box-shadow: none;
@@ -438,7 +438,7 @@ body:has(.br-auth-login-page) .btn-primary:focus {
   font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.92) !important;
+  color: var(--br-auth-white-strong) !important;
   text-align: center;
   width: 100%;
 }
@@ -470,7 +470,7 @@ body:has(.br-auth-login-page) .btn-primary:focus {
   display: block;
   font-size: 0.75rem;
   font-weight: 600;
-  color: rgba(255, 255, 255, 0.65) !important;
+  color: var(--br-auth-white-muted) !important;
 }
 
 .br-auth-support-bar__label::before {
@@ -517,4 +517,3 @@ body:has(.br-auth-login-page) .btn-primary:focus {
     text-align: left;
   }
 }
-

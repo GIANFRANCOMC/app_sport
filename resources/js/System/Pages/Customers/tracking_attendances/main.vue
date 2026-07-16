@@ -149,7 +149,7 @@
                 </button>
                 <button type="button" class="btn btn-success waves-effect" @click="modalAutomaticEntity({type: 'generate'})" :disabled="lists.entity.extras.loading">
                     <i class="fa fa-globe"></i>
-                    <span class="ms-2">Modo pÃºblico</span>
+                    <span class="ms-2">Modo público</span>
                 </button>
                 <button type="button" class="br-btn br-btn-action-export waves-effect" @click="exportEntity" :disabled="lists.entity.extras.loading" data-bs-toggle="tooltip" data-bs-placement="top" title="Exportar asistencias">
                     <i class="fa-solid fa-file-excel" aria-hidden="true"></i>
@@ -280,8 +280,8 @@
                             </template>
                         </div>
                         <!-- <a class="text-muted" @click="rememberModeEntity('manual')" href="javascript:void(0)">
-                            <span>Â¿Recordar modalidad?</span>
-                            <span :class="[forms.entity.createUpdate.config.rememberMode ? 'text-success' : 'text-primary', 'fw-bold ms-1']" v-text="forms.entity.createUpdate.config.rememberMode ? 'SÃ­' : 'No'"></span>
+                            <span>¿Recordar modalidad?</span>
+                            <span :class="[forms.entity.createUpdate.config.rememberMode ? 'text-success' : 'text-primary', 'fw-bold ms-1']" v-text="forms.entity.createUpdate.config.rememberMode ? 'Sí' : 'No'"></span>
                         </a> -->
                     </div>
                     <div class="row g-3">
@@ -352,7 +352,7 @@
                         </InputSlot>
                     </div>
                     <!-- <div v-if="['store'].includes(forms.entity.createUpdate.extras.modals.default.type)" class="alert alert-secondary small mt-3 mb-0" role="alert">
-                        El sistema detectarÃ¡ automÃ¡ticamente si estÃ¡s registrando un ingreso o una salida.
+                        El sistema detectará automáticamente si estás registrando un ingreso o una salida.
                     </div> -->
                 </div>
                 <div class="modal-footer">
@@ -385,8 +385,8 @@
                             </template>
                         </div>
                         <!-- <a class="text-muted" @click="rememberModeEntity('qrCamera')" href="javascript:void(0)">
-                            <span>Â¿Recordar modalidad?</span>
-                            <span :class="[forms.entity.createUpdate.config.rememberMode ? 'text-success' : 'text-primary', 'fw-bold ms-1']" v-text="forms.entity.createUpdate.config.rememberMode ? 'SÃ­' : 'No'"></span>
+                            <span>¿Recordar modalidad?</span>
+                            <span :class="[forms.entity.createUpdate.config.rememberMode ? 'text-success' : 'text-primary', 'fw-bold ms-1']" v-text="forms.entity.createUpdate.config.rememberMode ? 'Sí' : 'No'"></span>
                         </a> -->
                     </div>
                     <div class="row g-3">
@@ -409,7 +409,7 @@
                         </InputSlot>
                         <InputSlot
                             hasDiv
-                            title="CÃ¡mara interna"
+                            title="Cámara interna"
                             :isInputGroup="false"
                             xl="12"
                             lg="12">
@@ -510,7 +510,7 @@
                         </InputSlot>
                     </div>
                     <!-- <div v-if="['store'].includes(forms.entity.qrCamera.extras.modals.default.type)" class="alert alert-secondary small mt-3 mb-0" role="alert">
-                        El sistema detectarÃ¡ automÃ¡ticamente si estÃ¡s registrando un ingreso o una salida.
+                        El sistema detectará automáticamente si estás registrando un ingreso o una salida.
                     </div> -->
                 </div>
                 <div class="modal-footer">
@@ -543,8 +543,8 @@
                             </template>
                         </div>
                         <!-- <a class="text-muted" @click="rememberModeEntity('qrScanner')" href="javascript:void(0)">
-                            <span>Â¿Recordar modalidad?</span>
-                            <span :class="[forms.entity.createUpdate.config.rememberMode ? 'text-success' : 'text-primary', 'fw-bold ms-1']" v-text="forms.entity.createUpdate.config.rememberMode ? 'SÃ­' : 'No'"></span>
+                            <span>¿Recordar modalidad?</span>
+                            <span :class="[forms.entity.createUpdate.config.rememberMode ? 'text-success' : 'text-primary', 'fw-bold ms-1']" v-text="forms.entity.createUpdate.config.rememberMode ? 'Sí' : 'No'"></span>
                         </a> -->
                     </div>
                     <div class="row g-3">
@@ -602,7 +602,7 @@
                                     v-model="forms.entity.qrScanner.data.code"
                                     type="text"
                                     class="form-control text-center fw-bold"
-                                    placeholder="Escanea el cÃ³digo QR aquÃ­"
+                                    placeholder="Escanea el código QR aquí"
                                     @input="onResultQrScanner"
                                     @change="onResultQrScanner"
                                     @keyup.enter="onResultQrScanner"
@@ -644,7 +644,7 @@
                         </InputSlot>
                     </div>
                     <!-- <div v-if="['store'].includes(forms.entity.qrScanner.extras.modals.default.type)" class="alert alert-secondary small mt-3 mb-0" role="alert">
-                        El sistema detectarÃ¡ automÃ¡ticamente si estÃ¡s registrando un ingreso o una salida.
+                        El sistema detectará automáticamente si estás registrando un ingreso o una salida.
                     </div> -->
                 </div>
                 <div class="modal-footer">
@@ -672,7 +672,7 @@
                                     <tr class="text-center align-middle">
                                         <th class="bg-secondary text-white fw-semibold" style="width: 10%;">#</th>
                                         <th class="bg-secondary text-white fw-semibold min-w-150px" style="width: 20%;">SUCURSAL</th>
-                                        <th class="bg-secondary text-white fw-semibold min-w-150pxs" style="width: 30%;">DIRECCIÃ“N</th>
+                                        <th class="bg-secondary text-white fw-semibold min-w-150pxs" style="width: 30%;">DIRECCIÓN</th>
                                         <th class="bg-secondary text-white fw-semibold min-w-150px" style="width: 40%;">ACCIONES</th>
                                     </tr>
                                 </thead>
@@ -1780,11 +1780,11 @@ export default {
                 let el = this;
 
                 Swal.fire({
-                    html: `<span>Â¿Desea eliminar a <b>${form?.label}</b> de los clientes escaneados?</span>`,
+                    html: `<span>¿Desea eliminar a <b>${form?.label}</b> de los clientes escaneados?</span>`,
                     icon: "warning",
                     allowOutsideClick: false,
                     showCancelButton: true,
-                    confirmButtonText: "SÃ­, eliminar",
+                    confirmButtonText: "Sí, eliminar",
                     cancelButtonText: "Cancelar",
                     customClass: {
                         confirmButton: "btn btn-danger waves-effect",
@@ -2077,7 +2077,7 @@ export default {
                 let el = this;
 
                 Swal.fire({
-                    html: `<span class="d-block my-1">Â¿Desea anular la asistencia de <b>${form?.customer?.label}</b>?</span>
+                    html: `<span class="d-block my-1">¿Desea anular la asistencia de <b>${form?.customer?.label}</b>?</span>
                            <div class="form-group text-start mt-2">
                                 <label class="form-label colon-at-end">Motivo</label>
                                 <div class="input-group">
@@ -2087,7 +2087,7 @@ export default {
                     icon: "warning",
                     allowOutsideClick: false,
                     showCancelButton: true,
-                    confirmButtonText: "SÃ­, anular",
+                    confirmButtonText: "Sí, anular",
                     cancelButtonText: "Cancelar",
                     customClass: {
                         confirmButton: "btn btn-danger waves-effect",
@@ -2437,8 +2437,8 @@ export default {
 
             return [
                 {code: "manual", label: "Manual", label_sm: "Manual", icon: "fa-hand"},
-                {code: "qrCamera", label: "CÃ¡mara interna", label_sm: "CÃ¡mara", icon: "fa-camera"},
-                {code: "qrScanner", label: "EscÃ¡ner externo", label_sm: "EscÃ¡ner", icon: "fa-qrcode"}
+                {code: "qrCamera", label: "Cámara interna", label_sm: "Cámara", icon: "fa-camera"},
+                {code: "qrScanner", label: "Escáner externo", label_sm: "Escáner", icon: "fa-qrcode"}
             ];
 
         },

@@ -1,32 +1,32 @@
 @charset "UTF-8";
 
 /**
- * br-branding.css Ã¢â‚¬â€ Marca y UI reutilizable (prefijo `br-`)
+ * br-branding.css — Marca y UI reutilizable (prefijo `br-`)
  *
  * Tokens:     `--br-*` (color, radios, sombras, foco, transiciones)
- * Componentes: `.br-*` (`.br-btn`, `.br-link`, tablas, layout, dashboard, Ã¢â‚¬Â¦)
+ * Componentes: `.br-*` (`.br-btn`, `.br-link`, tablas, layout, dashboard, …)
  * App logueada: `body.br-layout`, `.br-menu-brand`, `.br-layout-content`, sidebar, navbar
  *
- * Login invitado (pantalla aparte): `br-login.css` Ã¢â‚¬â€ clases `.br-auth-*`
+ * Login invitado (pantalla aparte): `br-login.css` — clases `.br-auth-*`
  *
- * Carga: despuÃƒÂ©s de `core.css` / tema; en login, `br-branding.css` antes que `br-login.css`.
+ * Carga: después de `core.css` / tema; en login, `br-branding.css` antes que `br-login.css`.
  *
  * Colores logo: #2899E5 (primario), #1A1A35 (secundario). Estilo: escalas tipo Tailwind, UX.
  *
- * Mapa de secciones (mantener al aÃƒÂ±adir bloques):
- *   :root tokens Ã¢â€ â€™ tablas thead Ã¢â€ â€™ layout stack/sidebar venta
- *   Ã¢â€ â€™ detalle tabla (--br-amount-*, --br-table-footer-*, .br-amount-inline, .br-table-footer-stripe, Ã¢â‚¬Â¦)
- *   Ã¢â€ â€™ .br-memberships-table (modal membresÃƒÂ­as activas)
- *   Ã¢â€ â€™ cabecera y controles modal (.br-modal-header, .br-modal-close) Ã¢â€ â€™ campos (.br-field-help, .br-input-action)
- *   Ã¢â€ â€™ tap field / observaciÃƒÂ³n Ã¢â€ â€™ prefijo moneda input Ã¢â€ â€™ botones (.br-btn*) Ã¢â€ â€™ enlaces (.br-link*) Ã¢â€ â€™ layout app Ã¢â€ â€™ dashboard Ã¢â€ â€™ FAB
- *   Ã¢â€ â€™ .br-status-label / .br-status-surface (indicadores de estado estÃƒÂ¡ndar en toda la plataforma)
+ * Mapa de secciones (mantener al añadir bloques):
+ *   :root tokens → tablas thead → layout stack/sidebar venta
+ *   → detalle tabla (--br-amount-*, --br-table-footer-*, .br-amount-inline, .br-table-footer-stripe, …)
+ *   → .br-memberships-table (modal membresías activas)
+ *   → cabecera y controles modal (.br-modal-header, .br-modal-close) → campos (.br-field-help, .br-input-action)
+ *   → tap field / observación → prefijo moneda input → botones (.br-btn*) → enlaces (.br-link*) → layout app → dashboard → FAB
+ *   → .br-status-label / .br-status-surface (indicadores de estado estándar en toda la plataforma)
  */
 
 /* -------------------------------------------------------------------------
- * [br] Tokens CSS Ã¢â‚¬â€ variables globales (--br-*)
+ * [br] Tokens CSS — variables globales (--br-*)
  * ------------------------------------------------------------------------- */
 :root {
-  /* Primario Ã¢â‚¬â€ azul marca */
+  /* Primario — azul marca */
   --br-primary: #2899e5;
   --br-primary-hover: #1e87d4;
   --br-primary-active: #1a75bd;
@@ -34,7 +34,7 @@
   --br-primary-muted: #b8ddf7;
   --br-on-primary: #ffffff;
 
-  /* Secundario Ã¢â‚¬â€ navy (surfaces oscuras, texto) */
+  /* Secundario — navy (surfaces oscuras, texto) */
   --br-secondary: #1a1a35;
   --br-secondary-hover: #14142a;
   --br-secondary-active: #0f0f20;
@@ -42,7 +42,7 @@
   --br-secondary-muted: #9a9ab0;
   --br-on-secondary: #ffffff;
 
-  /* SemÃƒÂ¡nticos (armonizados con la marca) */
+  /* Semánticos (armonizados con la marca) */
   --br-success: #10b981;
   --br-success-soft: #d1fae5;
   --br-success-hover: #059669;
@@ -66,15 +66,62 @@
   /* Neutrales (UI) */
   --br-surface: #f8fafc;
   --br-surface-elevated: #ffffff;
+  --br-surface-soft: #fafbfc;
+  --br-surface-subtle: #fbfcfe;
+  --br-surface-cool: #f7fbff;
   --br-border: #e2e8f0;
   --br-border-strong: #cbd5e1;
   --br-text: #1e293b;
   --br-text-muted: #64748b;
   --br-text-placeholder: #94a3b8;
+  --br-white: #ffffff;
+  --br-black: #000000;
 
   /* Ayuda / estados auxiliares */
   --br-neutral: #64748b;
   --br-neutral-soft: #f1f5f9;
+  --br-neutral-panel: #f7f8fa;
+  --br-neutral-page: #f3f7fb;
+  --br-neutral-700: #4b5563;
+  --br-neutral-800: #374151;
+  --br-neutral-900: #1f2937;
+  --br-border-legacy: #dbe3ec;
+  --br-border-subtle: #edf1f5;
+  --br-border-muted: #d9dee4;
+  --br-border-soft: #e7e9ee;
+  --br-border-cool: #dfe5ea;
+  --br-border-control: #c5d0dc;
+  --br-border-control-hover: #a8b5c4;
+
+  /* Compatibilidad con plantilla / Bootstrap heredado */
+  --br-template-muted: #a5a3ae;
+  --br-template-text: #4b465c;
+  --br-template-border: #dbdade;
+  --br-bootstrap-focus: #0d6efd;
+  --br-danger-bootstrap: #dc3545;
+  --br-danger-bootstrap-hover: #c82333;
+  --br-danger-bootstrap-active: #bd2130;
+  --br-danger-strong: #b91c1c;
+  --br-orange: #d97706;
+  --br-orange-hover: #b45309;
+  --br-orange-strong: #a15c00;
+  --br-twitter: #1da1f2;
+  --br-twitter-hover: #1a91da;
+  --br-blue-soft: #eff6ff;
+  --br-blue-border: #dbeafe;
+  --br-warning-border: #fde68a;
+
+  /* Superficies auth / públicas */
+  --br-auth-bg-base: #1a2034;
+  --br-auth-bg-a: #1e2540;
+  --br-auth-bg-b: #222a45;
+  --br-auth-bg-c: #1c2238;
+  --br-auth-bg-d: #181e32;
+  --br-auth-white-strong: rgba(255, 255, 255, 0.92);
+  --br-auth-white: rgba(255, 255, 255, 0.72);
+  --br-auth-white-muted: rgba(255, 255, 255, 0.65);
+  --br-auth-primary-glow: rgba(40, 153, 229, 0.14);
+  --br-auth-secondary-glow: rgba(26, 26, 53, 0.1);
 
   /* Efectos */
   --br-radius-sm: 0.375rem;
@@ -88,8 +135,8 @@
   --br-transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
 
   /**
-   * Thead de tablas Ã¢â‚¬â€ misma familia cromÃƒÂ¡tica que el sidebar (.br-menu-brand):
-   * pizarra azul-violeta mÃƒÂ¡s clara que el navy del menÃƒÂº, acento cian suave al borde inferior.
+   * Thead de tablas — misma familia cromática que el sidebar (.br-menu-brand):
+   * pizarra azul-violeta más clara que el navy del menú, acento cian suave al borde inferior.
    */
   --br-table-thead-highlight-top: rgba(255, 255, 255, 0.1);
   --br-table-thead-mid-a: #5f6d8f;
@@ -99,7 +146,7 @@
   --br-table-thead-text: #ffffff;
 
   /**
-   * Detalle tabular Ã¢â‚¬â€ importe en lÃƒÂ­nea (signo + valor) y pie de totales.
+   * Detalle tabular — importe en línea (signo + valor) y pie de totales.
    * Reutilizable en ventas, compras, cotizaciones, etc.
    */
   --br-amount-inline-lh: 1.35;
@@ -123,7 +170,7 @@
   --br-table-footer-stripe: color-mix(in srgb, var(--br-primary-soft) 56%, var(--br-primary-muted));
 
   /**
-   * Celda rÃƒÂ³tulo de fila expandida (p. ej. membresÃƒÂ­a) Ã¢â‚¬â€ acento secundario, sin borde.
+   * Celda rótulo de fila expandida (p. ej. membresía) — acento secundario, sin borde.
    */
   --br-table-expand-label-size: 0.6875rem;
   --br-table-expand-label-weight: 700;
@@ -132,7 +179,7 @@
   --br-table-expand-label-bg: color-mix(in srgb, var(--br-secondary-soft) 38%, white);
 
   /**
-   * Tabla Ã¢â‚¬Å“MembresÃƒÂ­as activasÃ¢â‚¬Â (modal ventas, reutilizable en otros mÃƒÂ³dulos).
+   * Tabla “Membresías activas” (modal ventas, reutilizable en otros módulos).
    */
   --br-memberships-stack-gap: 0.5rem;
   --br-memberships-stack-max-w: 18rem;
@@ -148,8 +195,8 @@
 }
 
 /* -------------------------------------------------------------------------
- * [br] Tablas Ã¢â‚¬â€ encabezado global (.table thead)
- * Sobrio, menos oscuro que --br-secondary; eco del degradado del menÃƒÂº lateral.
+ * [br] Tablas — encabezado global (.table thead)
+ * Sobrio, menos oscuro que --br-secondary; eco del degradado del menú lateral.
  * Solo en app logueada (body.br-layout) para no afectar vistas invitado.
  * ------------------------------------------------------------------------- */
 body.br-layout .table > thead,
@@ -450,7 +497,7 @@ body.br-layout .form-label {
   text-overflow: ellipsis;
 }
 
-/* Selecciones mÃƒÂºltiples: chips compactos con identidad secondary. */
+/* Selecciones múltiples: chips compactos con identidad secondary. */
 .br-layout .v-select.vs--multiple .vs__dropdown-toggle {
   min-height: 2.35rem;
 }
@@ -595,7 +642,7 @@ body > .vs__dropdown-menu .vs__no-options:not(:has(.br-select-empty))::after {
   line-height: 1.3;
 }
 
-/* MenÃƒÂº flotante de vue-select: fuera de modales y contenedores con scroll. */
+/* Menú flotante de vue-select: fuera de modales y contenedores con scroll. */
 .br-layout .vs__dropdown-menu,
 body > .vs__dropdown-menu {
   z-index: 1095;
@@ -706,7 +753,7 @@ body > .vs__dropdown-menu .vs__dropdown-option--highlight {
 }
 
 /* -------------------------------------------------------------------------
- * [br] Layout Ã¢â‚¬â€ CTAs en columna lateral (venta): rejilla 2+1 + CTA de cierre
+ * [br] Layout — CTAs en columna lateral (venta): rejilla 2+1 + CTA de cierre
  * ------------------------------------------------------------------------- */
 .br-sale-sidebar-actions {
   display: flex;
@@ -754,12 +801,12 @@ body > .vs__dropdown-menu .vs__dropdown-option--highlight {
 }
 
 /* -------------------------------------------------------------------------
- * [br] Detalle tabular Ã¢â‚¬â€ importe en lÃƒÂ­nea, pie resaltado, fila expandida, vacÃƒÂ­o
+ * [br] Detalle tabular — importe en línea, pie resaltado, fila expandida, vacío
  * Tokens: --br-amount-*, --br-table-footer-*, --br-table-expand-* (:root).
- * Reutilizable en cualquier mÃƒÂ³dulo con tabla de lÃƒÂ­neas (ventas, compras, etc.).
+ * Reutilizable en cualquier módulo con tabla de líneas (ventas, compras, etc.).
  * ------------------------------------------------------------------------- */
 
-/* RÃƒÂ³tulo de celda en fila expandida (p. ej. Ã¢â‚¬Å“MembresÃƒÂ­aÃ¢â‚¬Â + fechas) */
+/* Rótulo de celda en fila expandida (p. ej. “Membresía” + fechas) */
 .br-table-expand-label {
   font-size: var(--br-table-expand-label-size);
   font-weight: var(--br-table-expand-label-weight);
@@ -771,7 +818,7 @@ body > .vs__dropdown-menu .vs__dropdown-option--highlight {
   white-space: nowrap;
 }
 
-/* Texto negro sobre el fondo gris por defecto del rÃƒÂ³tulo (p. ej. celda MembresÃƒÂ­a) */
+/* Texto negro sobre el fondo gris por defecto del rótulo (p. ej. celda Membresía) */
 .br-table-expand-label.br-table-expand-label--black-text {
   color: #0a0a0a !important;
   font-size: 0.8125rem;
@@ -781,7 +828,7 @@ body > .vs__dropdown-menu .vs__dropdown-option--highlight {
 }
 
 /* -------------------------------------------------------------------------
- * [br] Tabla membresÃƒÂ­as activas Ã¢â‚¬â€ `.br-memberships-table` en <table>
+ * [br] Tabla membresías activas — `.br-memberships-table` en <table>
  * ------------------------------------------------------------------------- */
 
 .br-layout .br-memberships-table thead th.br-memberships-table__th--primary {
@@ -866,8 +913,8 @@ body > .vs__dropdown-menu .vs__dropdown-option--highlight {
 }
 
 /**
- * Listado ventas Ã¢â‚¬â€ texto relativo a fecha de emisiÃƒÂ³n (misma lÃƒÂ­nea visual que __time + __time--pill).
- * Variante --today: acento ÃƒÂ©xito solo cuando la emisiÃƒÂ³n es el dÃƒÂ­a actual.
+ * Listado ventas — texto relativo a fecha de emisión (misma línea visual que __time + __time--pill).
+ * Variante --today: acento éxito solo cuando la emisión es el día actual.
  */
 .br-layout .br-sales-relative-pill {
   font-size: 0.875rem;
@@ -891,7 +938,7 @@ body > .vs__dropdown-menu .vs__dropdown-option--highlight {
 }
 
 /* -------------------------------------------------------------------------
- * [br] Indicadores de estado Ã¢â‚¬â€ etiqueta (.br-status-label) y superficie (.br-status-surface)
+ * [br] Indicadores de estado — etiqueta (.br-status-label) y superficie (.br-status-surface)
  * Uso etiqueta: <span class="br-status-label br-status-label--success">Activo</span>
  * Modificadores: --success | --info | --warning | --danger | --primary | --secondary | --neutral | --dark
  * Superficie (celdas/filas): td.br-status-surface--success (mismo sufijo que la etiqueta)
@@ -1035,7 +1082,7 @@ body > .vs__dropdown-menu .vs__dropdown-option--highlight {
   color: var(--bs-secondary-color);
 }
 
-/* Signo + monto en una celda (total por lÃƒÂ­nea, totales auxiliares) */
+/* Signo + monto en una celda (total por línea, totales auxiliares) */
 .br-amount-inline {
   display: inline-block;
   font-variant-numeric: tabular-nums;
@@ -1057,7 +1104,7 @@ body > .vs__dropdown-menu .vs__dropdown-option--highlight {
   color: var(--br-secondary);
 }
 
-/* Ãƒâ€°nfasis: pie de tabla / total general (misma estructura, mayor escala) */
+/* Énfasis: pie de tabla / total general (misma estructura, mayor escala) */
 .br-amount-inline--emphasis .br-amount-inline__sign {
   font-size: var(--br-amount-em-sign-size);
 }
@@ -1102,7 +1149,7 @@ body.br-layout .br-table-footer-stripe__label {
   }
 }
 
-/* Tabla de detalle sin filas: ilustraciÃƒÂ³n + texto + .br-link */
+/* Tabla de detalle sin filas: ilustración + texto + .br-link */
 .br-table-detail-empty {
   display: flex;
   flex-direction: column;
@@ -1185,8 +1232,8 @@ svg.br-table-detail-empty__img {
 }
 
 /* -------------------------------------------------------------------------
- * [br] Cabecera de modal Ã¢â‚¬â€ tÃƒÂ­tulo centrado y franja (marca / contraste con el cuerpo)
- * Uso: <div class="modal-header br-modal-header">Ã¢â‚¬Â¦</div> en cualquier mÃƒÂ³dulo logueado.
+ * [br] Cabecera de modal — título centrado y franja (marca / contraste con el cuerpo)
+ * Uso: <div class="modal-header br-modal-header">…</div> en cualquier módulo logueado.
  * ------------------------------------------------------------------------- */
 body.br-layout .modal-header.br-modal-header {
   position: relative;
@@ -1213,7 +1260,7 @@ body.br-layout .modal-header.br-modal-header .modal-title {
 }
 
 /*
- * Cerrar modal: rojo de marca (fondo como antes); borde mÃƒÂ¡s suave. PosiciÃƒÂ³n en custom.css.
+ * Cerrar modal: rojo de marca (fondo como antes); borde más suave. Posición en custom.css.
  */
 body.br-layout .modal-header.br-modal-header .btn-header-modal {
   background-color: var(--br-danger);
@@ -1258,8 +1305,8 @@ body.br-layout .modal-header.br-modal-header .btn-header-modal:focus-visible {
 }
 
 /* -------------------------------------------------------------------------
- * [br] Campo tocable Ã¢â‚¬â€ una sola acciÃƒÂ³n (notas, descripciones cortas en sidebar)
- * Borde ligero; vacÃƒÂ­o = discontinuo; hover suave sin Ã¢â‚¬Å“cajaÃ¢â‚¬Â pesada.
+ * [br] Campo tocable — una sola acción (notas, descripciones cortas en sidebar)
+ * Borde ligero; vacío = discontinuo; hover suave sin “caja” pesada.
  * ------------------------------------------------------------------------- */
 .br-tap-field {
   display: flex;
@@ -1434,7 +1481,7 @@ body.br-layout .modal-header.br-modal-header .btn-header-modal:focus-visible {
 }
 
 /* -------------------------------------------------------------------------
- * [br] Prefijo moneda Ã¢â‚¬â€ .input-group-text con InputNumber / precio (ventas, modales)
+ * [br] Prefijo moneda — .input-group-text con InputNumber / precio (ventas, modales)
  * ------------------------------------------------------------------------- */
 .br-input-currency-addon {
   justify-content: center;
@@ -1468,7 +1515,7 @@ body.br-layout .modal-header.br-modal-header .btn-header-modal:focus-visible {
 }
 
 /* -------------------------------------------------------------------------
- * [br] TipografÃƒÂ­a y enlaces Ã¢â‚¬â€ .br-link, .br-link-muted, .br-link-inverse
+ * [br] Tipografía y enlaces — .br-link, .br-link-muted, .br-link-inverse
  * ------------------------------------------------------------------------- */
 .br-link {
   color: var(--br-primary);
@@ -1828,7 +1875,7 @@ body.br-layout .modal-header.br-modal-header .btn-header-modal:focus-visible {
 }
 
 /* -------------------------------------------------------------------------
- * [br] Botones Ã¢â‚¬â€ .br-btn* (.br-btn-sm, .br-btn-xs, .br-btn-lg), variantes de color / outline / ghost
+ * [br] Botones — .br-btn* (.br-btn-sm, .br-btn-xs, .br-btn-lg), variantes de color / outline / ghost
  * ------------------------------------------------------------------------- */
 .br-btn {
   display: inline-flex;
@@ -1866,7 +1913,7 @@ body.br-layout .modal-header.br-modal-header .btn-header-modal:focus-visible {
   border-radius: var(--br-radius-sm);
 }
 
-/** Extra pequeÃƒÂ±o (iconos compactos, acciones en lÃƒÂ­nea) */
+/** Extra pequeño (iconos compactos, acciones en línea) */
 .br-btn-xs {
   padding: 0.25rem 0.4375rem;
   font-size: 0.75rem;
@@ -1964,7 +2011,7 @@ body.br-layout .modal-header.br-modal-header .btn-header-modal:focus-visible {
   border-color: var(--br-info-hover);
 }
 
-/* --- [br] BotÃƒÂ³n outline --- */
+/* --- [br] Botón outline --- */
 .br-btn-outline-primary {
   background-color: transparent;
   border-color: var(--br-primary);
@@ -2775,7 +2822,7 @@ body.br-layout .modal-header.br-modal-header .btn-header-modal:focus-visible {
   }
 }
 
-/* --- [br] BotÃƒÂ³n ghost / soft --- */
+/* --- [br] Botón ghost / soft --- */
 .br-btn-ghost-primary {
   background-color: transparent;
   border-color: transparent;
@@ -2797,7 +2844,7 @@ body.br-layout .modal-header.br-modal-header .btn-header-modal:focus-visible {
 }
 
 /* -------------------------------------------------------------------------
- * [br] Layout aplicaciÃƒÂ³n Ã¢â‚¬â€ body.br-layout, menÃƒÂº, navbar, contenido
+ * [br] Layout aplicación — body.br-layout, menú, navbar, contenido
  * Vistas: System/layouts (main.blade.php). Sidebar navy + acentos #2899E5.
  * ------------------------------------------------------------------------- */
 body.br-layout {
@@ -2862,7 +2909,7 @@ html.layout-navbar-fixed body.br-layout .layout-page:before {
   color: #fff !important;
 }
 
-/* --- [br-layout] ÃƒÂtem de menÃƒÂº activo (ruta actual) --- */
+/* --- [br-layout] Ítem de menú activo (ruta actual) --- */
 .br-layout .br-menu-brand.menu-vertical .menu-item.active > .menu-link:not(.menu-toggle),
 .br-layout .br-menu-brand .menu-sub .menu-item.active > .menu-link {
   background: linear-gradient(
@@ -2910,7 +2957,7 @@ html:not(.layout-menu-collapsed) .br-layout .br-menu-brand .menu-inner .menu-ite
   color: rgba(255, 255, 255, 0.38) !important;
 }
 
-/* --- [br-layout] Indicador derecho del ÃƒÂ­tem activo --- */
+/* --- [br-layout] Indicador derecho del ítem activo --- */
 .layout-wrapper:not(.layout-horizontal) .br-layout .br-menu-brand .menu-inner > .menu-item.active:before {
   background: linear-gradient(180deg, #fff 0%, var(--br-primary) 100%);
   box-shadow: 0 0 12px rgba(40, 153, 229, 0.5);
@@ -2926,7 +2973,7 @@ html:not(.layout-menu-collapsed) .br-layout .br-menu-brand .menu-inner .menu-ite
     0 10px 24px rgba(0, 0, 0, 0.2);
 }
 
-/* --- [br] Perfil en sidebar Ã¢â‚¬â€ empresa, usuario, rol (.br-sidebar-profile*) --- */
+/* --- [br] Perfil en sidebar — empresa, usuario, rol (.br-sidebar-profile*) --- */
 .br-layout .br-menu-brand .br-sidebar-profile-wrap {
   list-style: none;
 }
@@ -3022,7 +3069,7 @@ html:not(.layout-menu-collapsed) .br-layout .br-menu-brand .menu-inner .menu-ite
   letter-spacing: inherit;
 }
 
-/* --- [br-layout] Iconos de menÃƒÂº (.br-icon-accent) --- */
+/* --- [br-layout] Iconos de menú (.br-icon-accent) --- */
 .br-layout .br-menu-brand .br-icon-accent {
   color: rgba(255, 255, 255, 0.72) !important;
 }
@@ -3036,7 +3083,7 @@ html:not(.layout-menu-collapsed) .br-layout .br-menu-brand .menu-inner .menu-ite
   color: #fff !important;
 }
 
-/* Icono Favoritos (estrella) Ã¢â‚¬â€ ÃƒÂ¡mbar, algo mÃƒÂ¡s pequeÃƒÂ±o que .menu-icon por defecto (1.375rem) */
+/* Icono Favoritos (estrella) — ámbar, algo más pequeño que .menu-icon por defecto (1.375rem) */
 .br-layout .br-menu-brand .menu-link .br-icon-favorites.menu-icon {
   display: inline-flex;
   align-items: center;
@@ -3082,7 +3129,7 @@ html:not(.layout-menu-collapsed) .br-layout .br-menu-brand .menu-inner .menu-ite
   color: var(--br-primary) !important;
 }
 
-/* --- [br] Cerrar sesiÃƒÂ³n Ã¢â‚¬â€ layout en fila (sin absolute/clip-path): icono colapsa Ã¢â€ â€ texto expande --- */
+/* --- [br] Cerrar sesión — layout en fila (sin absolute/clip-path): icono colapsa ↔ texto expande --- */
 .br-layout .br-menu-brand.menu-vertical .menu-inner > .menu-item.br-menu-logout-item {
   display: flex !important;
   justify-content: center !important;
@@ -3188,7 +3235,7 @@ html:not(.layout-menu-collapsed) .br-layout .br-menu-brand .menu-inner .menu-ite
   padding: 0.55rem 1.1rem;
 }
 
-/* Celular (Ã¢â€°Â¤ sm): solo texto Ã‚Â«Cerrar sesiÃƒÂ³nÃ‚Â», sin icono */
+/* Celular (≤ sm): solo texto «Cerrar sesión», sin icono */
 @media (max-width: 575.98px) {
   .br-layout .br-menu-brand.menu-vertical .menu-inner > .menu-item.br-menu-logout-item > .menu-link.br-menu-logout .br-menu-logout__icon-wrap {
     display: none;
@@ -3244,7 +3291,7 @@ html:not(.layout-menu-collapsed)
 
 /* -------------------------------------------------------------------------
  * [br] Contenido principal + Bootstrap bajo .br-layout
- * .br-layout-content, .btn-primary, paginaciÃƒÂ³n, checks, pills, badges tema, Ã¢â‚¬Â¦
+ * .br-layout-content, .btn-primary, paginación, checks, pills, badges tema, …
  * ------------------------------------------------------------------------- */
 .br-layout .br-layout-content {
   background-color: var(--br-surface);
@@ -3304,7 +3351,7 @@ html:not(.layout-menu-collapsed)
   color: var(--br-on-primary) !important;
 }
 
-/* PaginaciÃƒÂ³n activa Ã¢â‚¬â€ misma familia cromÃƒÂ¡tica que .table > thead (sin acento celeste primario) */
+/* Paginación activa — misma familia cromática que .table > thead (sin acento celeste primario) */
 .br-layout .pagination .page-item.active .page-link,
 .br-layout .pagination li.active > a.page-link {
   background:
@@ -3316,13 +3363,13 @@ html:not(.layout-menu-collapsed)
       var(--br-table-thead-mid-c) 100%
     ) !important;
   background-color: var(--br-table-thead-mid-c) !important;
-  /* Borde al tono del fondo (evita Ã¢â‚¬Å“doble marcoÃ¢â‚¬Â / contraste raro) */
+  /* Borde al tono del fondo (evita “doble marco” / contraste raro) */
   border-color: var(--br-table-thead-mid-c) !important;
   color: var(--br-table-thead-text) !important;
   box-shadow: inset 0 -1px 0 var(--br-table-thead-edge), var(--br-shadow-sm);
 }
 
-/* PaginaciÃƒÂ³n (Laravel / componente Paginator) Ã¢â‚¬â€ legible y sin ambigÃƒÂ¼edad */
+/* Paginación (Laravel / componente Paginator) — legible y sin ambigüedad */
 .br-layout .br-pagination {
   width: 100%;
 }
@@ -3453,7 +3500,7 @@ body.br-layout .form-check-input:disabled {
   outline-offset: 2px;
 }
 
-/* Chrome/Chromium: segmentos dÃƒÂ­a/mes/aÃƒÂ±o al abrir o tabular el date */
+/* Chrome/Chromium: segmentos día/mes/año al abrir o tabular el date */
 .br-layout input[type="date"]::-webkit-datetime-edit-year-field:focus,
 .br-layout input[type="date"]::-webkit-datetime-edit-month-field:focus,
 .br-layout input[type="date"]::-webkit-datetime-edit-day-field:focus {
@@ -3468,7 +3515,7 @@ body.br-layout .form-check-input:disabled {
   filter: none;
 }
 
-/* Tema Vuexy: .input-group:focus-within usa #7367f0 Ã¢â‚¬â€ alinear con branding */
+/* Tema Vuexy: .input-group:focus-within usa #7367f0 — alinear con branding */
 .br-layout .input-group:focus-within .form-control,
 .br-layout .input-group:focus-within .input-group-text,
 .br-layout .input-group:focus-within .br-input-action {
@@ -3683,7 +3730,7 @@ body.br-layout .form-check-input:disabled {
   font-weight: 600;
   color: var(--br-secondary) !important;
   line-height: 1.3;
-  /* Solo animar el desplazamiento: el degradado y el color no se interpolan (evita pestaÃƒÂ±eo) */
+  /* Solo animar el desplazamiento: el degradado y el color no se interpolan (evita pestañeo) */
   transition: padding-left 0.2s ease;
   text-align: left;
 }
@@ -3842,7 +3889,7 @@ body.br-layout .form-check-input:disabled {
   transform: scale(0.96);
 }
 
-/* Panel abierto: halos mÃƒÂ¡s suaves */
+/* Panel abierto: halos más suaves */
 .br-layout .br-fab-favorites__btn[aria-expanded="true"] {
   box-shadow:
     0 0 0 1px rgba(255, 255, 255, 0.26),
@@ -3897,7 +3944,7 @@ body.br-layout .form-check-input:disabled {
     0 5px 18px rgba(74, 50, 104, 0.18);
 }
 
-/* Como .modal-header .btn-header-modal (custom.css): rojo #dc3545 e icono blanco, sin animaciÃƒÂ³n de desplazamiento */
+/* Como .modal-header .btn-header-modal (custom.css): rojo #dc3545 e icono blanco, sin animación de desplazamiento */
 .br-layout .br-fab-favorites__close {
   flex-shrink: 0;
   display: inline-flex;
@@ -4229,7 +4276,7 @@ body.br-layout .form-check-input:disabled {
 }
 
 /* -------------------------------------------------------------------------
- * [br] Dashboard (Vue Essentials/dashboard/main.vue) Ã¢â‚¬â€ tokens --br-dash-*
+ * [br] Dashboard (Vue Essentials/dashboard/main.vue) — tokens --br-dash-*
  * ------------------------------------------------------------------------- */
 .br-layout .br-dashboard {
   --br-dash-radius: var(--br-radius-lg);
@@ -4721,7 +4768,7 @@ body.br-layout .form-check-input:disabled {
 }
 
 /* -------------------------------------------------------------------------
- * [br] Anular venta (SweetAlert, sales/list.vue) Ã¢â‚¬â€ aviso amarillo
+ * [br] Anular venta (SweetAlert, sales/list.vue) — aviso amarillo
  * ------------------------------------------------------------------------- */
 .br-sale-cancel-hint {
   --br-sale-cancel-hint-pad-y: clamp(0.65rem, 2vw, 1rem);

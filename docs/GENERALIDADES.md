@@ -63,7 +63,18 @@ Los colores oficiales detectados del branding son:
 - Texto principal: `#1e293b`.
 - Texto secundario: `#64748b`.
 
-Los estilos compartidos deben vivir preferentemente en `public/System/assets/css/br-branding.css` o `public/System/assets/css/custom.css`, usando variables `--br-*`. Las clases nuevas reutilizables deben iniciar con `br-`.
+`public/System/assets/css/br-branding.css` es la fuente única de tokens visuales de la plataforma. Los colores de marca, superficies, bordes, estados, sombras, foco, compatibilidad de plantilla y colores auxiliares deben declararse ahí como variables `--br-*`.
+
+`public/System/assets/css/custom.css`, `public/System/assets/css/br-login.css`, `public/System/assets/css/demo.css` y cualquier CSS de módulo deben consumir esos tokens con `var(--br-*)`. No agregar colores hexadecimales, `rgba()` o paletas locales fuera de `br-branding.css` salvo que sea una excepción documentada y reutilizable.
+
+Orden de carga recomendado:
+
+- CSS de plantilla y vendors.
+- `br-branding.css`.
+- `custom.css`.
+- CSS especializado de pantalla, por ejemplo `br-login.css`, siempre después de `br-branding.css`.
+
+Las clases nuevas reutilizables deben iniciar con `br-`.
 
 ## UI y UX
 
