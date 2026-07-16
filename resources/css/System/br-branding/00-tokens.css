@@ -1,0 +1,244 @@
+/**
+ * br-branding.css — Marca y UI reutilizable (prefijo `br-`)
+ *
+ * Tokens:     `--br-*` (color, radios, sombras, foco, transiciones)
+ * Componentes: `.br-*` (`.br-btn`, `.br-link`, tablas, layout, dashboard, …)
+ * App logueada: `body.br-layout`, `.br-menu-brand`, `.br-layout-content`, sidebar, navbar
+ *
+ * Login invitado (pantalla aparte): `br-login.css` — clases `.br-auth-*`
+ *
+ * Carga: después de `core.css` / tema; en login, `br-branding.css` antes que `br-login.css`.
+ *
+ * Colores logo: #2899E5 (primario), #1A1A35 (secundario). Estilo: escalas tipo Tailwind, UX.
+ *
+ * Mapa de secciones (mantener al añadir bloques):
+ *   :root tokens → tablas thead → layout stack/sidebar venta
+ *   → detalle tabla (--br-amount-*, --br-table-footer-*, .br-amount-inline, .br-table-footer-stripe, …)
+ *   → .br-memberships-table (modal membresías activas)
+ *   → cabecera y controles modal (.br-modal-header, .br-modal-close) → campos (.br-field-help, .br-input-action)
+ *   → tap field / observación → prefijo moneda input → botones (.br-btn*) → enlaces (.br-link*) → layout app → dashboard → FAB
+ *   → .br-status-label / .br-status-surface (indicadores de estado estándar en toda la plataforma)
+ */
+
+/* -------------------------------------------------------------------------
+ * [br] Tokens CSS — variables globales (--br-*)
+ * ------------------------------------------------------------------------- */
+:root {
+  /* Primario — azul marca */
+  --br-primary: #2899e5;
+  --br-primary-hover: #1e87d4;
+  --br-primary-active: #1a75bd;
+  --br-primary-soft: #e8f4fc;
+  --br-primary-muted: #b8ddf7;
+  --br-on-primary: #ffffff;
+
+  /* Secundario — navy (surfaces oscuras, texto) */
+  --br-secondary: #1a1a35;
+  --br-secondary-hover: #14142a;
+  --br-secondary-active: #0f0f20;
+  --br-secondary-soft: #e8e8ef;
+  --br-secondary-muted: #9a9ab0;
+  --br-on-secondary: #ffffff;
+
+  /* Semánticos (armonizados con la marca) */
+  --br-success: #10b981;
+  --br-success-soft: #d1fae5;
+  --br-success-hover: #059669;
+  --br-on-success: #ffffff;
+
+  --br-warning: #f59e0b;
+  --br-warning-soft: #fef3c7;
+  --br-warning-hover: #d97706;
+  --br-on-warning: #1a1a35;
+
+  --br-danger: #ef4444;
+  --br-danger-soft: #fee2e2;
+  --br-danger-hover: #dc2626;
+  --br-on-danger: #ffffff;
+
+  --br-info: #0ea5e9;
+  --br-info-soft: #e0f2fe;
+  --br-info-hover: #0284c7;
+  --br-on-info: #ffffff;
+
+  /* Neutrales (UI) */
+  --br-surface: #f8fafc;
+  --br-surface-elevated: #ffffff;
+  --br-surface-soft: #fafbfc;
+  --br-surface-subtle: #fbfcfe;
+  --br-surface-cool: #f7fbff;
+  --br-border: #e2e8f0;
+  --br-border-strong: #cbd5e1;
+  --br-text: #1e293b;
+  --br-text-muted: #64748b;
+  --br-text-placeholder: #94a3b8;
+  --br-white: #ffffff;
+  --br-black: #000000;
+
+  /* Ayuda / estados auxiliares */
+  --br-neutral: #64748b;
+  --br-neutral-soft: #f1f5f9;
+  --br-neutral-panel: #f7f8fa;
+  --br-neutral-page: #f3f7fb;
+  --br-neutral-700: #4b5563;
+  --br-neutral-800: #374151;
+  --br-neutral-900: #1f2937;
+  --br-border-legacy: #dbe3ec;
+  --br-border-subtle: #edf1f5;
+  --br-border-muted: #d9dee4;
+  --br-border-soft: #e7e9ee;
+  --br-border-cool: #dfe5ea;
+  --br-border-control: #c5d0dc;
+  --br-border-control-hover: #a8b5c4;
+
+  /* Compatibilidad con plantilla / Bootstrap heredado */
+  --br-vuexy-primary: var(--br-primary);
+  --br-vuexy-primary-hover: var(--br-primary-hover);
+  --br-vuexy-primary-active: var(--br-primary-active);
+  --br-vuexy-primary-muted: var(--br-primary-muted);
+  --br-vuexy-primary-soft: var(--br-primary-soft);
+  --br-vuexy-primary-soft-hover: color-mix(in srgb, var(--br-primary-soft) 78%, var(--br-white));
+  --br-vuexy-primary-soft-table: color-mix(in srgb, var(--br-primary-soft) 54%, var(--br-white));
+  --br-vuexy-primary-soft-active: color-mix(in srgb, var(--br-primary-soft) 84%, var(--br-white));
+  --br-vuexy-primary-table-striped: color-mix(in srgb, var(--br-primary-soft) 64%, var(--br-white));
+  --br-vuexy-primary-table-active: color-mix(in srgb, var(--br-primary-soft) 74%, var(--br-border));
+  --br-vuexy-primary-alpha-05: color-mix(in srgb, var(--br-primary) 5%, transparent);
+  --br-vuexy-primary-alpha-08: color-mix(in srgb, var(--br-primary) 8%, transparent);
+  --br-vuexy-primary-alpha-10: color-mix(in srgb, var(--br-primary) 10%, transparent);
+  --br-vuexy-primary-alpha-11: color-mix(in srgb, var(--br-primary) 11%, transparent);
+  --br-vuexy-primary-alpha-16: color-mix(in srgb, var(--br-primary) 16%, transparent);
+  --br-vuexy-primary-alpha-20: color-mix(in srgb, var(--br-primary) 20%, transparent);
+  --br-vuexy-primary-alpha-24: color-mix(in srgb, var(--br-primary) 24%, transparent);
+  --br-vuexy-primary-alpha-30: color-mix(in srgb, var(--br-primary) 30%, transparent);
+  --br-vuexy-primary-alpha-40: color-mix(in srgb, var(--br-primary) 40%, transparent);
+  --br-vuexy-primary-alpha-48: color-mix(in srgb, var(--br-primary) 48%, transparent);
+  --br-vuexy-primary-alpha-50: color-mix(in srgb, var(--br-primary) 50%, transparent);
+  --br-vuexy-primary-alpha-70: color-mix(in srgb, var(--br-primary) 70%, transparent);
+  --br-vuexy-primary-alpha-95: color-mix(in srgb, var(--br-primary) 95%, transparent);
+  --br-vuexy-body-bg: var(--br-surface);
+  --br-template-muted: #a5a3ae;
+  --br-template-text: #4b465c;
+  --br-template-border: #dbdade;
+  --br-bootstrap-focus: #0d6efd;
+  --br-danger-bootstrap: #dc3545;
+  --br-danger-bootstrap-hover: #c82333;
+  --br-danger-bootstrap-active: #bd2130;
+  --br-danger-strong: #b91c1c;
+  --br-orange: #d97706;
+  --br-orange-hover: #b45309;
+  --br-orange-strong: #a15c00;
+  --br-twitter: #1da1f2;
+  --br-twitter-hover: #1a91da;
+  --br-blue-soft: #eff6ff;
+  --br-blue-border: #dbeafe;
+  --br-warning-border: #fde68a;
+  --br-amber-200: #fde68a;
+  --br-amber-300: #fef08a;
+  --br-amber-400: #fde047;
+  --br-amber-500: #facc15;
+  --br-amber-600: #eab308;
+  --br-sidebar-bg-a: #2f2f58;
+  --br-sidebar-bg-b: #25254a;
+  --br-sidebar-bg-c: #1e2a55;
+  --br-sidebar-accent: #5bc3ff;
+  --br-sidebar-text-soft: #e6ecf5;
+  --br-favorite-strong: #fbbf24;
+  --br-favorite-purple: #6d4b8a;
+  --br-favorite-purple-strong: #4a3268;
+  --br-favorite-purple-muted: #8b6a9a;
+  --br-favorite-purple-soft: #5d4a6e;
+  --br-favorite-purple-shadow: #3d2a52;
+  --br-favorite-text-shadow: #2d201c;
+  --br-favorite-focus-shadow: #2d1f3a;
+  --br-favorite-surface-a: #fff9e8;
+  --br-favorite-surface-b: #fff6e0;
+  --br-favorite-surface-c: #fff3d6;
+  --br-navbar-surface-soft: #f8fcff;
+  --br-danger-dark: #0a0a0a;
+  --br-template-dark-border: #434968;
+  --br-control-disabled-bg: #e8ecf0;
+  --br-control-disabled-hover: #e2e6eb;
+  --br-control-focus-bg: #dff1fb;
+
+  /* Superficies auth / públicas */
+  --br-auth-bg-base: #1a2034;
+  --br-auth-bg-a: #1e2540;
+  --br-auth-bg-b: #222a45;
+  --br-auth-bg-c: #1c2238;
+  --br-auth-bg-d: #181e32;
+  --br-auth-white-strong: rgba(255, 255, 255, 0.92);
+  --br-auth-white: rgba(255, 255, 255, 0.72);
+  --br-auth-white-muted: rgba(255, 255, 255, 0.65);
+  --br-auth-primary-glow: rgba(40, 153, 229, 0.14);
+  --br-auth-secondary-glow: rgba(26, 26, 53, 0.1);
+
+  /* Efectos */
+  --br-radius-sm: 0.375rem;
+  --br-radius: 0.5rem;
+  --br-radius-lg: 0.75rem;
+  --br-shadow-sm: 0 1px 2px rgba(26, 26, 53, 0.06);
+  --br-shadow: 0 4px 14px rgba(26, 26, 53, 0.08);
+  --br-shadow-primary: 0 4px 14px rgba(40, 153, 229, 0.28);
+  --br-focus-ring: 0 0 0 3px rgba(40, 153, 229, 0.35);
+  --br-focus-ring-inset: inset 0 0 0 2px rgba(40, 153, 229, 0.45);
+  --br-transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+
+  /**
+   * Thead de tablas — misma familia cromática que el sidebar (.br-menu-brand):
+   * pizarra azul-violeta más clara que el navy del menú, acento cian suave al borde inferior.
+   */
+  --br-table-thead-highlight-top: rgba(255, 255, 255, 0.1);
+  --br-table-thead-mid-a: #5f6d8f;
+  --br-table-thead-mid-b: #556283;
+  --br-table-thead-mid-c: #4d5a76;
+  --br-table-thead-edge: rgba(91, 195, 255, 0.32);
+  --br-table-thead-text: #ffffff;
+
+  /**
+   * Detalle tabular — importe en línea (signo + valor) y pie de totales.
+   * Reutilizable en ventas, compras, cotizaciones, etc.
+   */
+  --br-amount-inline-lh: 1.35;
+  --br-amount-sign-size: 0.8125rem;
+  --br-amount-sign-weight: 600;
+  --br-amount-sign-gap: 0.28rem;
+  --br-amount-value-size: 0.9375rem;
+  --br-amount-value-weight: 700;
+  --br-amount-em-sign-size: 0.875rem;
+  --br-amount-em-value-size: 1.125rem;
+  --br-amount-sign-size-sm: 0.75rem;
+  --br-amount-value-size-sm: 0.875rem;
+  --br-amount-em-value-size-sm: 1rem;
+  --br-amount-sign-gap-sm: 0.2rem;
+  --br-table-footer-label-size: 1rem;
+  --br-table-footer-label-weight: 700;
+  --br-table-footer-label-tracking: 0.02em;
+  --br-table-footer-label-size-sm: 0.9375rem;
+  --br-table-footer-cell-pad-y: 0.7rem;
+  --br-table-footer-stripe-fallback: var(--br-primary-soft);
+  --br-table-footer-stripe: color-mix(in srgb, var(--br-primary-soft) 56%, var(--br-primary-muted));
+
+  /**
+   * Celda rótulo de fila expandida (p. ej. membresía) — acento secundario, sin borde.
+   */
+  --br-table-expand-label-size: 0.6875rem;
+  --br-table-expand-label-weight: 700;
+  --br-table-expand-label-tracking: 0.08em;
+  --br-table-expand-label-bg-fallback: #f2f2f6;
+  --br-table-expand-label-bg: color-mix(in srgb, var(--br-secondary-soft) 38%, white);
+
+  /**
+   * Tabla “Membresías activas” (modal ventas, reutilizable en otros módulos).
+   */
+  --br-memberships-stack-gap: 0.5rem;
+  --br-memberships-stack-max-w: 18rem;
+  --br-memberships-date-size: 1rem;
+  --br-memberships-date-weight: 700;
+  /* Pills gris claro (antes estilo label secundario en tabla) */
+  --br-memberships-time-pill-bg: var(--br-secondary-soft);
+  --br-memberships-time-pill-fg: var(--br-text-muted);
+  --br-memberships-time-pill-border: var(--br-border);
+  --br-memberships-meta-bg: color-mix(in srgb, var(--br-secondary-soft) 55%, transparent);
+  --br-memberships-origin-fg: var(--br-secondary);
+  --br-memberships-origin-icon: var(--br-primary);
+}

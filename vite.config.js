@@ -15,6 +15,7 @@ export default defineConfig({
         laravel({
             input: [
                 'resources/css/System/app.css',
+                'resources/css/System/platform.css',
                 'resources/js/System/app.js',
 
                 // Guest Pages

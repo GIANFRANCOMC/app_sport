@@ -1,0 +1,642 @@
+/* -------------------------------------------------------------------------
+ * [br] Cabecera de modal — título centrado y franja (marca / contraste con el cuerpo)
+ * Uso: <div class="modal-header br-modal-header">…</div> en cualquier módulo logueado.
+ * ------------------------------------------------------------------------- */
+body.br-layout .modal-header.br-modal-header {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  min-height: 3.35rem;
+  padding: 0.85rem 3.35rem 0.85rem 1rem;
+  background-color: var(--br-control-disabled-bg);
+  background-color: color-mix(in srgb, var(--br-border) 44%, white);
+  background-image: none;
+  border-bottom: 1px solid var(--br-border);
+}
+
+body.br-layout .modal-header.br-modal-header .modal-title {
+  flex: 1 1 auto;
+  margin: 0 auto !important;
+  padding: 0 0.35rem;
+  text-align: center;
+  color: var(--br-secondary);
+  letter-spacing: 0.045em;
+}
+
+/*
+ * Cerrar modal: rojo de marca (fondo como antes); borde más suave. Posición en custom.css.
+ */
+body.br-layout .modal-header.br-modal-header .btn-header-modal {
+  background-color: var(--br-danger);
+  background-image: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--br-danger) 88%, white) 0%,
+    color-mix(in srgb, var(--br-danger-hover) 82%, white) 100%
+  );
+  border: 1px solid color-mix(in srgb, var(--br-white) 38%, transparent);
+  border-radius: var(--br-radius-sm);
+  box-shadow:
+    var(--br-shadow-sm),
+    0 2px 10px color-mix(in srgb, var(--br-danger) 32%, transparent);
+  transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+body.br-layout .modal-header.br-modal-header .btn-header-modal:hover {
+  background-color: var(--br-danger-hover);
+  background-image: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--br-danger-hover) 85%, white) 0%,
+    color-mix(in srgb, var(--br-danger) 78%, white) 100%
+  );
+  border-color: color-mix(in srgb, var(--br-white) 52%, transparent);
+  box-shadow:
+    0 2px 6px color-mix(in srgb, var(--br-secondary) 8%, transparent),
+    0 4px 14px color-mix(in srgb, var(--br-danger) 38%, transparent);
+}
+
+body.br-layout .modal-header.br-modal-header .btn-header-modal:active {
+  background-color: var(--br-danger-hover);
+  background-image: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--br-danger-hover) 78%, white) 0%,
+    var(--br-danger-hover) 100%
+  );
+}
+
+body.br-layout .modal-header.br-modal-header .btn-header-modal:focus-visible {
+  outline: none;
+  box-shadow: var(--br-focus-ring), 0 2px 10px color-mix(in srgb, var(--br-danger) 30%, transparent);
+}
+
+/* -------------------------------------------------------------------------
+ * [br] Campo tocable — una sola acción (notas, descripciones cortas en sidebar)
+ * Borde ligero; vacío = discontinuo; hover suave sin “caja” pesada.
+ * ------------------------------------------------------------------------- */
+.br-tap-field {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.35rem;
+  width: 100%;
+  margin: 0;
+  padding: 0.625rem 0.75rem;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  border: 1px solid var(--br-border);
+  border-radius: var(--br-radius);
+  background: var(--br-surface-elevated);
+  cursor: pointer;
+  box-shadow: none;
+  transform: translateY(0);
+  transition:
+    border-color 0.2s ease,
+    background-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
+}
+
+.br-tap-field--empty {
+  border-style: dashed;
+  border-color: var(--br-border-strong);
+  background-color: var(--br-neutral-soft);
+}
+
+.br-tap-field--has-value {
+  border-style: solid;
+  border-color: color-mix(in srgb, var(--br-primary) 22%, transparent);
+  background-color: var(--br-primary-soft);
+}
+
+.br-tap-field:hover {
+  border-color: var(--br-primary-muted);
+  background: var(--br-primary-soft);
+  box-shadow: var(--br-shadow-sm);
+  transform: translateY(-1px);
+}
+
+.br-tap-field--empty:hover {
+  border-color: var(--br-text-placeholder);
+  background-color: var(--br-control-disabled-hover);
+  box-shadow: 0 3px 12px color-mix(in srgb, var(--br-text) 7%, transparent);
+  transform: translateY(-1px);
+}
+
+.br-tap-field--has-value:hover {
+  border-color: color-mix(in srgb, var(--br-primary) 45%, transparent);
+  background-color: var(--br-control-focus-bg);
+  box-shadow: 0 4px 16px color-mix(in srgb, var(--br-primary) 14%, transparent);
+  transform: translateY(-1px);
+}
+
+.br-tap-field:hover .br-tap-field__eyebrow {
+  color: var(--br-primary);
+}
+
+.br-tap-field--empty:hover .br-tap-field__placeholder {
+  color: var(--br-text-muted);
+}
+
+.br-tap-field:active {
+  transform: translateY(0);
+  box-shadow: none;
+  transition-duration: 0.08s;
+}
+
+.br-tap-field:focus-visible {
+  outline: none;
+  box-shadow: var(--br-focus-ring);
+}
+
+.br-tap-field:focus-visible:hover {
+  box-shadow: var(--br-focus-ring), 0 3px 12px color-mix(in srgb, var(--br-text) 6%, transparent);
+}
+
+.br-tap-field__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.br-tap-field__eyebrow {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--br-text-muted);
+}
+
+.br-tap-field__icon {
+  flex-shrink: 0;
+  font-size: 0.875rem;
+  color: var(--br-text-placeholder);
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.br-tap-field:hover .br-tap-field__icon {
+  color: var(--br-primary);
+  transform: scale(1.06);
+}
+
+.br-tap-field:active .br-tap-field__icon {
+  transform: scale(1);
+}
+
+.br-tap-field__value {
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  color: var(--br-text);
+  display: -webkit-box;
+  -webkit-line-clamp: 5;
+  line-clamp: 5;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  word-break: break-word;
+}
+
+.br-tap-field__value--expanded {
+  display: block;
+  -webkit-line-clamp: unset;
+  line-clamp: unset;
+  overflow: visible;
+  max-height: none;
+}
+
+.br-observation-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.25rem;
+  width: 100%;
+}
+
+.br-observation-tile__toggle {
+  align-self: flex-start;
+  margin: 0;
+  padding: 0.2rem 0.35rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--br-primary);
+  background: transparent;
+  border: none;
+  border-radius: var(--br-radius-sm);
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 0.18em;
+  transition: var(--br-transition);
+}
+
+.br-observation-tile__toggle:hover {
+  color: var(--br-primary-hover);
+  background: var(--br-primary-soft);
+}
+
+.br-observation-tile__toggle:focus-visible {
+  outline: none;
+  box-shadow: var(--br-focus-ring);
+}
+
+.br-tap-field__placeholder {
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  color: var(--br-text-placeholder);
+}
+
+/* -------------------------------------------------------------------------
+ * [br] Prefijo moneda — .input-group-text con InputNumber / precio (ventas, modales)
+ * ------------------------------------------------------------------------- */
+.br-input-currency-addon {
+  justify-content: center;
+  min-width: 0;
+  width: auto;
+  padding-left: 0.48rem !important;
+  padding-right: 0.48rem !important;
+  font-weight: 500 !important;
+  font-size: 0.75rem !important;
+  line-height: 1.25 !important;
+  color: var(--br-on-secondary) !important;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--br-secondary) 86%, white) 0%,
+    color-mix(in srgb, var(--br-secondary-hover) 82%, white) 100%
+  ) !important;
+  border-color: var(--br-secondary) !important;
+  border-color: color-mix(in srgb, var(--br-secondary) 78%, white) !important;
+  font-variant-numeric: tabular-nums;
+  box-shadow: var(--br-shadow-sm);
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.br-input-currency-addon__sign {
+  font-weight: 500;
+  letter-spacing: 0.02em !important;
+  white-space: nowrap;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* -------------------------------------------------------------------------
+ * [br] Tipografía y enlaces — .br-link, .br-link-muted, .br-link-inverse
+ * ------------------------------------------------------------------------- */
+.br-link {
+  color: var(--br-primary);
+  text-decoration: none;
+  font-weight: 500;
+  transition: var(--br-transition);
+  border-radius: 0.25rem;
+}
+
+.br-link:hover {
+  color: var(--br-primary-hover);
+  text-decoration: none;
+}
+
+.br-link:focus-visible {
+  outline: none;
+  box-shadow: var(--br-focus-ring);
+}
+
+.br-link-muted {
+  color: var(--br-text-muted);
+  font-weight: 400;
+}
+
+.br-link-muted:hover {
+  color: var(--br-primary);
+}
+
+.br-link-inverse {
+  color: color-mix(in srgb, var(--br-white) 92%, transparent);
+}
+
+.br-link-inverse:hover {
+  color: var(--br-white);
+}
+
+/* -------------------------------------------------------------------------
+ * [br] Controles reutilizables de formularios y modales
+ * ------------------------------------------------------------------------- */
+.br-modal-close {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.85rem;
+  z-index: 2;
+  display: inline-grid;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  border: 0;
+  border-radius: var(--br-radius-sm);
+  background: transparent;
+  color: var(--br-text-muted);
+  place-items: center;
+  transition: var(--br-transition);
+}
+
+.br-modal-close:hover,
+.br-modal-close:focus-visible {
+  background: var(--br-neutral-soft);
+  color: var(--br-secondary);
+}
+
+.br-modal-close:focus-visible {
+  outline: none;
+  box-shadow: var(--br-focus-ring);
+}
+
+.br-modal-close:active {
+  background: var(--br-secondary-soft);
+}
+
+.br-field-help {
+  display: inline-grid;
+  width: 1.15rem;
+  height: 1.15rem;
+  margin-left: 0.3rem;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--br-text-placeholder);
+  font-size: 0.75rem;
+  vertical-align: middle;
+  place-items: center;
+}
+
+.br-field-help:hover,
+.br-field-help:focus-visible {
+  color: var(--br-primary-active);
+}
+
+.br-field-help:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--br-primary-muted);
+}
+
+.br-label-with-help {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.12rem;
+  min-width: 0;
+  line-height: 1;
+}
+
+.br-label-with-help > span {
+  display: inline-flex;
+  align-items: center;
+  line-height: 1;
+}
+
+.br-label-with-help .br-field-help {
+  flex: 0 0 auto;
+  width: 1rem;
+  height: 1rem;
+  margin-left: 0;
+  font-size: 0.66rem;
+  line-height: 1;
+}
+
+.br-label-with-help .br-field-help i {
+  display: block;
+  line-height: 1;
+}
+
+.br-input-action {
+  display: inline-flex;
+  align-self: stretch;
+  align-items: center;
+  justify-content: center;
+  width: 2.2rem;
+  min-width: 2.2rem;
+  height: auto;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  border: 1px solid var(--bs-border-color, var(--br-border));
+  border-left: 0;
+  border-radius: 0 var(--br-radius-sm) var(--br-radius-sm) 0;
+  background: var(--br-surface-elevated);
+  color: var(--br-secondary);
+  font-size: 0.78rem;
+  transition: var(--br-transition);
+}
+
+.br-layout .input-group:has(.br-input-action) .form-control {
+  border-right: 0 !important;
+  padding-right: 0.45rem;
+}
+
+.br-layout .input-group:has(.br-input-action) .br-input-action {
+  border-color: var(--bs-border-color, var(--br-border));
+}
+
+.br-layout .input-group:has(.br-currency-prefix) .br-currency-prefix {
+  border-right: 0 !important;
+}
+
+.br-layout .input-group:has(.br-currency-prefix) .form-control {
+  border-left: 0 !important;
+  padding-left: 0.24rem;
+}
+
+.br-layout .input-group:has(.character-counter-right) .form-control {
+  border-right: 0 !important;
+  padding-right: 0.3rem;
+}
+
+.br-layout .input-group:has(.character-counter-right) .character-counter-right {
+  border-left: 0 !important;
+}
+
+.br-layout .input-group:has(.character-counter-left) .form-control {
+  border-left: 0 !important;
+  padding-left: 0.3rem;
+}
+
+.br-layout .input-group:has(.character-counter-left) .character-counter-left {
+  border-right: 0 !important;
+}
+
+.br-layout .input-group:has(.character-counter) .character-counter {
+  border-color: var(--bs-border-color, var(--br-border)) !important;
+  background: var(--br-surface-elevated) !important;
+}
+
+.br-layout .input-group:has(.character-counter-normal) .character-counter-normal {
+  color: var(--br-text-muted) !important;
+}
+
+.br-layout .br-form-control-group {
+  border-radius: var(--br-radius-sm);
+  transition: box-shadow 0.16s ease;
+}
+
+.br-layout .br-form-control-group:hover:not(.is-invalid):not(:focus-within) {
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--br-primary) 24%, transparent);
+}
+
+.br-layout .br-form-control-group:hover:not(.is-invalid):not(:focus-within) .form-control,
+.br-layout .br-form-control-group:hover:not(.is-invalid):not(:focus-within) .form-select,
+.br-layout .br-form-control-group:hover:not(.is-invalid):not(:focus-within) .input-group-text,
+.br-layout .br-form-control-group:hover:not(.is-invalid):not(:focus-within) .br-input-action,
+.br-layout .br-form-control-group:hover:not(.is-invalid):not(:focus-within) .vs__dropdown-toggle,
+.br-layout .br-form-control-group:hover:not(.is-invalid):not(:focus-within) .select2-selection {
+  border-color: color-mix(in srgb, var(--br-primary) 32%, var(--br-border)) !important;
+}
+
+.br-layout .br-form-control-group.is-invalid {
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--br-danger) 16%, transparent);
+}
+
+.br-layout .br-form-control-group.is-invalid .form-control,
+.br-layout .br-form-control-group.is-invalid .form-select,
+.br-layout .br-form-control-group.is-invalid .input-group-text,
+.br-layout .br-form-control-group.is-invalid .br-input-action,
+.br-layout .br-form-control-group.is-invalid .vs__dropdown-toggle,
+.br-layout .br-form-control-group.is-invalid .select2-selection {
+  border-color: var(--br-danger) !important;
+  box-shadow: none !important;
+}
+
+.br-layout .br-form-control-group.is-invalid:focus-within {
+  box-shadow: 0 0 0 0.16rem color-mix(in srgb, var(--br-danger) 17%, transparent);
+}
+
+.br-layout .br-form-error {
+  display: block;
+  margin-top: 0.16rem;
+  color: var(--br-danger) !important;
+  font-size: 0.66rem;
+  font-weight: 500;
+  line-height: 1.25;
+}
+
+.br-input-action:hover,
+.br-input-action:focus-visible {
+  color: var(--br-primary-active);
+  outline: 0;
+}
+
+.br-input-action:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+
+.br-layout .input-group:has(.br-input-action):focus-within,
+.br-layout .input-group:has(.br-currency-prefix):focus-within,
+.br-layout .input-group:has(.character-counter):focus-within {
+  border-radius: var(--br-radius-sm);
+  box-shadow: var(--br-focus-ring);
+}
+
+.br-layout .input-group:has(.br-input-action):focus-within .form-control,
+.br-layout .input-group:has(.br-input-action):focus-within .br-input-action,
+.br-layout .input-group:has(.br-currency-prefix):focus-within .form-control,
+.br-layout .input-group:has(.br-currency-prefix):focus-within .br-currency-prefix,
+.br-layout .input-group:has(.character-counter):focus-within .form-control,
+.br-layout .input-group:has(.character-counter):focus-within .character-counter {
+  box-shadow: none !important;
+}
+
+.br-currency-prefix {
+  min-width: 1.25rem;
+  padding-inline: 0.14rem;
+  justify-content: center;
+  border-color: var(--bs-border-color, var(--br-border)) !important;
+  background: var(--br-surface-elevated) !important;
+  color: var(--br-secondary) !important;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0;
+}
+
+.br-currency-prefix__symbol {
+  display: inline-block;
+  color: var(--br-secondary);
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1;
+  transform: translateY(-0.01rem);
+}
+
+.br-choice-group {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr));
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.25rem;
+  border: 1px solid var(--br-border);
+  border-radius: var(--br-radius);
+  background: color-mix(in srgb, var(--br-neutral-soft) 62%, var(--br-white));
+}
+
+.br-choice-option {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 2.35rem;
+  margin: 0;
+  padding: 0.45rem 0.75rem;
+  border: 1px solid transparent;
+  border-radius: var(--br-radius-sm);
+  background: transparent;
+  color: var(--br-text-muted);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--br-transition);
+}
+
+.br-choice-option:hover {
+  background: var(--br-surface-elevated);
+  color: var(--br-secondary);
+}
+
+.br-choice-option.is-selected {
+  border-color: color-mix(in srgb, var(--br-primary) 28%, var(--br-border));
+  background: color-mix(in srgb, var(--br-primary-soft) 72%, var(--br-surface-elevated));
+  color: var(--br-secondary);
+  box-shadow: var(--br-shadow-sm);
+}
+
+.br-choice-option__input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.br-choice-option__indicator {
+  width: 0.65rem;
+  height: 0.65rem;
+  border: 2px solid var(--br-border-strong);
+  border-radius: 50%;
+  background: var(--br-surface-elevated);
+  transition: var(--br-transition);
+}
+
+.br-choice-option.is-selected .br-choice-option__indicator {
+  border-color: var(--br-primary);
+  background: var(--br-primary);
+  box-shadow: inset 0 0 0 2px var(--br-surface-elevated);
+}
+
+.br-choice-option.is-selected span:last-child {
+  color: var(--br-secondary);
+  font-weight: 750;
+}
+
+.br-choice-option:focus-within {
+  box-shadow: var(--br-focus-ring);
+}

@@ -8,7 +8,7 @@
 [data-bs-theme=light] {
   --bs-blue: #007bff;
   --bs-indigo: #6610f2;
-  --bs-purple: #7367f0;
+  --bs-purple: var(--br-vuexy-primary);
   --bs-pink: #e83e8c;
   --bs-red: #ea5455;
   --bs-orange: #fd7e14;
@@ -22,7 +22,7 @@
   --bs-gray-dark: rgba(75, 70, 92, 0.8);
   --bs-gray-25: rgba(75, 70, 92, 0.015);
   --bs-gray-50: rgba(75, 70, 92, 0.03);
-  --bs-primary: #7367f0;
+  --bs-primary: var(--br-vuexy-primary);
   --bs-secondary: #a8aaae;
   --bs-success: #28c76f;
   --bs-info: #00cfe8;
@@ -68,7 +68,7 @@
   --bs-black-rgb: 75, 70, 92;
   --bs-font-sans-serif: "Public Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
   --bs-font-monospace: "SFMono-Regular", Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-  --bs-gradient: linear-gradient(180deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0));
+  --bs-gradient: linear-gradient(180deg, rgba(255, 255, 255, 0.15), transparent);
   --bs-root-font-size: 16px;
   --bs-body-font-family: var(--bs-font-sans-serif);
   --bs-body-font-size: 0.9375rem;
@@ -76,7 +76,7 @@
   --bs-body-line-height: 1.47;
   --bs-body-color: #6f6b7d;
   --bs-body-color-rgb: 111, 107, 125;
-  --bs-body-bg: #f8f7fa;
+  --bs-body-bg: var(--br-vuexy-body-bg);
   --bs-body-bg-rgb: 248, 247, 250;
   --bs-emphasis-color: #4b465c;
   --bs-emphasis-color-rgb: 75, 70, 92;
@@ -89,10 +89,10 @@
   --bs-tertiary-bg: rgba(75, 70, 92, 0.05);
   --bs-tertiary-bg-rgb: 75, 70, 92;
   --bs-heading-color: #5d596c;
-  --bs-link-color: #7367f0;
+  --bs-link-color: var(--br-vuexy-primary);
   --bs-link-color-rgb: 115, 103, 240;
   --bs-link-decoration: none;
-  --bs-link-hover-color: #685dd8;
+  --bs-link-hover-color: var(--br-vuexy-primary-hover);
   --bs-link-hover-color-rgb: 104, 93, 216;
   --bs-code-color: #e83e8c;
   --bs-highlight-color: #6f6b7d;
@@ -1804,7 +1804,7 @@ progress {
   --bs-table-striped-color: var(--bs-body-color);
   --bs-table-striped-bg: #fbfbfc;
   --bs-table-active-color: var(--bs-body-color);
-  --bs-table-active-bg: rgba(115, 103, 240, 0.08);
+  --bs-table-active-bg: var(--br-vuexy-primary-alpha-08);
   --bs-table-hover-color: var(--bs-body-color);
   --bs-table-hover-bg: rgba(75, 70, 92, 0.04);
   width: 100%;
@@ -1874,13 +1874,13 @@ progress {
 
 .table-primary {
   --bs-table-color: #4b465c;
-  --bs-table-bg: #f4f3fe;
+  --bs-table-bg: var(--br-vuexy-primary-soft-table);
   --bs-table-border-color: #d2d0de;
-  --bs-table-striped-bg: #f1f0fb;
+  --bs-table-striped-bg: var(--br-vuexy-primary-table-striped);
   --bs-table-striped-color: #4b465c;
-  --bs-table-active-bg: #e6e5f1;
+  --bs-table-active-bg: var(--br-vuexy-primary-table-active);
   --bs-table-active-color: #4b465c;
-  --bs-table-hover-bg: #edecf8;
+  --bs-table-hover-bg: var(--br-vuexy-primary-soft-hover);
   --bs-table-hover-color: #4b465c;
   color: var(--bs-table-color);
   border-color: var(--bs-table-border-color);
@@ -2081,7 +2081,7 @@ progress {
 .form-control:focus {
   color: #6f6b7d;
   background-color: #fff;
-  border-color: #7367f0;
+  border-color: var(--br-vuexy-primary);
   outline: 0;
   box-shadow: 0 0.125rem 0.25rem rgba(165, 163, 174, 0.3);
 }
@@ -2226,7 +2226,7 @@ textarea.form-control-lg {
   }
 }
 .form-select:focus {
-  border-color: #7367f0;
+  border-color: var(--br-vuexy-primary);
   outline: 0;
   box-shadow: 0 0.125rem 0.25rem rgba(165, 163, 174, 0.3);
 }
@@ -2307,13 +2307,13 @@ textarea.form-control-lg {
   filter: brightness(90%);
 }
 .form-check-input:focus {
-  border-color: #7367f0;
+  border-color: var(--br-vuexy-primary);
   outline: 0;
   box-shadow: 0 0.125rem 0.25rem rgba(165, 163, 174, 0.3);
 }
 .form-check-input:checked {
-  background-color: #7367f0;
-  border-color: #7367f0;
+  background-color: var(--br-vuexy-primary);
+  border-color: var(--br-vuexy-primary);
 }
 .form-check-input:checked[type=checkbox] {
   --bs-form-check-bg-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='13' viewBox='0 0 15 14' fill='none'%3E%3Cpath d='M3.41667 7L6.33333 9.91667L12.1667 4.08333' stroke='%23fff' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
@@ -2322,8 +2322,8 @@ textarea.form-control-lg {
   --bs-form-check-bg-image: url("data:image/svg+xml,%3Csvg width='18' height='18' viewBox='0 0 18 18' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Crect x='5' y='5' width='8' height='8' rx='4' fill='%23fff'/%3E%3C/svg%3E%0A");
 }
 .form-check-input[type=checkbox]:indeterminate {
-  background-color: #7367f0;
-  border-color: #7367f0;
+  background-color: var(--br-vuexy-primary);
+  border-color: var(--br-vuexy-primary);
   --bs-form-check-bg-image: url("data:image/svg+xml,%3Csvg width='18' height='18' viewBox='0 0 18 18' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M5.5 9H12.5' stroke='%23fff' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E%0A");
 }
 .form-check-input:disabled {
@@ -2845,10 +2845,10 @@ textarea.form-control-lg {
   --bs-dropdown-divider-margin-y: 0.5rem;
   --bs-dropdown-box-shadow: 0 0.25rem 1rem rgba(165, 163, 174, 0.45);
   --bs-dropdown-link-color: #5d596c;
-  --bs-dropdown-link-hover-color: #7367f0;
-  --bs-dropdown-link-hover-bg: rgba(115, 103, 240, 0.08);
+  --bs-dropdown-link-hover-color: var(--br-vuexy-primary);
+  --bs-dropdown-link-hover-bg: var(--br-vuexy-primary-alpha-08);
   --bs-dropdown-link-active-color: #fff;
-  --bs-dropdown-link-active-bg: #7367f0;
+  --bs-dropdown-link-active-bg: var(--br-vuexy-primary);
   --bs-dropdown-link-disabled-color: #c9c8ce;
   --bs-dropdown-item-padding-x: 1rem;
   --bs-dropdown-item-padding-y: 0.42rem;
@@ -3116,7 +3116,7 @@ textarea.form-control-lg {
   --bs-dropdown-divider-bg: #dbdade;
   --bs-dropdown-link-hover-bg: rgba(255, 255, 255, 0.15);
   --bs-dropdown-link-active-color: #fff;
-  --bs-dropdown-link-active-bg: #7367f0;
+  --bs-dropdown-link-active-bg: var(--br-vuexy-primary);
   --bs-dropdown-link-disabled-color: rgba(75, 70, 92, 0.5);
   --bs-dropdown-header-color: rgba(75, 70, 92, 0.5);
 }
@@ -3268,7 +3268,7 @@ textarea.form-control-lg {
   --bs-nav-tabs-border-color: transparent;
   --bs-nav-tabs-border-radius: var(--bs-border-radius);
   --bs-nav-tabs-link-hover-border-color: var(--bs-secondary-bg) var(--bs-secondary-bg) transparent;
-  --bs-nav-tabs-link-active-color: #7367f0;
+  --bs-nav-tabs-link-active-color: var(--br-vuexy-primary);
   --bs-nav-tabs-link-active-bg: #fff;
   --bs-nav-tabs-link-active-border-color: var(--bs-border-color) var(--bs-border-color) #fff;
   border-bottom: var(--bs-nav-tabs-border-width) solid var(--bs-nav-tabs-border-color);
@@ -3298,7 +3298,7 @@ textarea.form-control-lg {
 .nav-pills {
   --bs-nav-pills-border-radius: var(--bs-border-radius);
   --bs-nav-pills-link-active-color: #fff;
-  --bs-nav-pills-link-active-bg: #7367f0;
+  --bs-nav-pills-link-active-bg: var(--br-vuexy-primary);
 }
 .nav-pills .nav-link {
   border-radius: var(--bs-nav-pills-border-radius);
@@ -3981,7 +3981,7 @@ textarea.form-control-lg {
   --bs-accordion-btn-icon-transform: rotate(90deg);
   --bs-accordion-btn-icon-transition: transform 0.2s ease-in-out;
   --bs-accordion-btn-active-icon: url("data:image/svg+xml,%3Csvg width='20' height='21' viewBox='0 0 20 21' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M7.5 5.5L12.5 10.5L7.5 15.5' stroke='%235d596c' stroke-width='1.75' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M7.5 5.5L12.5 10.5L7.5 15.5' stroke='white' stroke-opacity='0.1' stroke-width='1.75' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E%0A");
-  --bs-accordion-btn-focus-border-color: #7367f0;
+  --bs-accordion-btn-focus-border-color: var(--br-vuexy-primary);
   --bs-accordion-btn-focus-box-shadow: none;
   --bs-accordion-body-padding-x: 1.125rem;
   --bs-accordion-body-padding-y: 0.82rem;
@@ -4147,8 +4147,8 @@ textarea.form-control-lg {
   --bs-pagination-focus-bg: rgba(75, 70, 92, 0.16);
   --bs-pagination-focus-box-shadow: none;
   --bs-pagination-active-color: #fff;
-  --bs-pagination-active-bg: #7367f0;
-  --bs-pagination-active-border-color: #7367f0;
+  --bs-pagination-active-bg: var(--br-vuexy-primary);
+  --bs-pagination-active-border-color: var(--br-vuexy-primary);
   --bs-pagination-disabled-color: #a5a3ae;
   --bs-pagination-disabled-bg: rgba(75, 70, 92, 0.08);
   --bs-pagination-disabled-border-color: rgba(75, 70, 92, 0.08);
@@ -4361,7 +4361,7 @@ textarea.form-control-lg {
   --bs-progress-border-radius: 3.125rem;
   --bs-progress-box-shadow: var(--bs-box-shadow-inset);
   --bs-progress-bar-color: #fff;
-  --bs-progress-bar-bg: #7367f0;
+  --bs-progress-bar-bg: var(--br-vuexy-primary);
   --bs-progress-bar-transition: width 0.6s ease;
   display: flex;
   height: var(--bs-progress-height);
@@ -4419,15 +4419,15 @@ textarea.form-control-lg {
   --bs-list-group-item-padding-x: 1.25rem;
   --bs-list-group-item-padding-y: 0.57rem;
   --bs-list-group-action-color: var(--bs-secondary-color);
-  --bs-list-group-action-hover-color: #7367f0;
-  --bs-list-group-action-hover-bg: #f4f3fe;
-  --bs-list-group-action-active-color: #7367f0;
-  --bs-list-group-action-active-bg: #f4f3fe;
+  --bs-list-group-action-hover-color: var(--br-vuexy-primary);
+  --bs-list-group-action-hover-bg: var(--br-vuexy-primary-soft-table);
+  --bs-list-group-action-active-color: var(--br-vuexy-primary);
+  --bs-list-group-action-active-bg: var(--br-vuexy-primary-soft-table);
   --bs-list-group-disabled-color: #a5a3ae;
   --bs-list-group-disabled-bg: transparent;
   --bs-list-group-active-color: #fff;
-  --bs-list-group-active-bg: #7367f0;
-  --bs-list-group-active-border-color: #7367f0;
+  --bs-list-group-active-bg: var(--br-vuexy-primary);
+  --bs-list-group-active-border-color: var(--br-vuexy-primary);
   display: flex;
   flex-direction: column;
   padding-left: 0;
@@ -7243,7 +7243,7 @@ label.btn {
   background: #f1f1f2;
 }
 .btn-label-secondary.waves-effect .waves-ripple {
-  background: radial-gradient(rgba(168, 170, 174, 0.2) 0, rgba(168, 170, 174, 0.3) 40%, rgba(168, 170, 174, 0.4) 50%, rgba(168, 170, 174, 0.5) 60%, rgba(255, 255, 255, 0) 70%);
+  background: radial-gradient(rgba(168, 170, 174, 0.2) 0, rgba(168, 170, 174, 0.3) 40%, rgba(168, 170, 174, 0.4) 50%, rgba(168, 170, 174, 0.5) 60%, transparent 70%);
 }
 .btn-label-secondary:hover {
   border-color: transparent !important;
@@ -7287,7 +7287,7 @@ label.btn {
   background: transparent;
 }
 .btn-outline-secondary.waves-effect .waves-ripple {
-  background: radial-gradient(rgba(168, 170, 174, 0.2) 0, rgba(168, 170, 174, 0.3) 40%, rgba(168, 170, 174, 0.4) 50%, rgba(168, 170, 174, 0.5) 60%, rgba(255, 255, 255, 0) 70%);
+  background: radial-gradient(rgba(168, 170, 174, 0.2) 0, rgba(168, 170, 174, 0.3) 40%, rgba(168, 170, 174, 0.4) 50%, rgba(168, 170, 174, 0.5) 60%, transparent 70%);
 }
 .btn-outline-secondary:hover {
   color: #a8aaae !important;
@@ -7373,7 +7373,7 @@ label.btn {
   background: #ddf6e8;
 }
 .btn-label-success.waves-effect .waves-ripple {
-  background: radial-gradient(rgba(40, 199, 111, 0.2) 0, rgba(40, 199, 111, 0.3) 40%, rgba(40, 199, 111, 0.4) 50%, rgba(40, 199, 111, 0.5) 60%, rgba(255, 255, 255, 0) 70%);
+  background: radial-gradient(rgba(40, 199, 111, 0.2) 0, rgba(40, 199, 111, 0.3) 40%, rgba(40, 199, 111, 0.4) 50%, rgba(40, 199, 111, 0.5) 60%, transparent 70%);
 }
 .btn-label-success:hover {
   border-color: transparent !important;
@@ -7417,7 +7417,7 @@ label.btn {
   background: transparent;
 }
 .btn-outline-success.waves-effect .waves-ripple {
-  background: radial-gradient(rgba(40, 199, 111, 0.2) 0, rgba(40, 199, 111, 0.3) 40%, rgba(40, 199, 111, 0.4) 50%, rgba(40, 199, 111, 0.5) 60%, rgba(255, 255, 255, 0) 70%);
+  background: radial-gradient(rgba(40, 199, 111, 0.2) 0, rgba(40, 199, 111, 0.3) 40%, rgba(40, 199, 111, 0.4) 50%, rgba(40, 199, 111, 0.5) 60%, transparent 70%);
 }
 .btn-outline-success:hover {
   color: #28c76f !important;
@@ -7503,7 +7503,7 @@ label.btn {
   background: #d6f7fb;
 }
 .btn-label-info.waves-effect .waves-ripple {
-  background: radial-gradient(rgba(0, 207, 232, 0.2) 0, rgba(0, 207, 232, 0.3) 40%, rgba(0, 207, 232, 0.4) 50%, rgba(0, 207, 232, 0.5) 60%, rgba(255, 255, 255, 0) 70%);
+  background: radial-gradient(rgba(0, 207, 232, 0.2) 0, rgba(0, 207, 232, 0.3) 40%, rgba(0, 207, 232, 0.4) 50%, rgba(0, 207, 232, 0.5) 60%, transparent 70%);
 }
 .btn-label-info:hover {
   border-color: transparent !important;
@@ -7547,7 +7547,7 @@ label.btn {
   background: transparent;
 }
 .btn-outline-info.waves-effect .waves-ripple {
-  background: radial-gradient(rgba(0, 207, 232, 0.2) 0, rgba(0, 207, 232, 0.3) 40%, rgba(0, 207, 232, 0.4) 50%, rgba(0, 207, 232, 0.5) 60%, rgba(255, 255, 255, 0) 70%);
+  background: radial-gradient(rgba(0, 207, 232, 0.2) 0, rgba(0, 207, 232, 0.3) 40%, rgba(0, 207, 232, 0.4) 50%, rgba(0, 207, 232, 0.5) 60%, transparent 70%);
 }
 .btn-outline-info:hover {
   color: #00cfe8 !important;
@@ -7633,7 +7633,7 @@ label.btn {
   background: #fff0e1;
 }
 .btn-label-warning.waves-effect .waves-ripple {
-  background: radial-gradient(rgba(255, 159, 67, 0.2) 0, rgba(255, 159, 67, 0.3) 40%, rgba(255, 159, 67, 0.4) 50%, rgba(255, 159, 67, 0.5) 60%, rgba(255, 255, 255, 0) 70%);
+  background: radial-gradient(rgba(255, 159, 67, 0.2) 0, rgba(255, 159, 67, 0.3) 40%, rgba(255, 159, 67, 0.4) 50%, rgba(255, 159, 67, 0.5) 60%, transparent 70%);
 }
 .btn-label-warning:hover {
   border-color: transparent !important;
@@ -7677,7 +7677,7 @@ label.btn {
   background: transparent;
 }
 .btn-outline-warning.waves-effect .waves-ripple {
-  background: radial-gradient(rgba(255, 159, 67, 0.2) 0, rgba(255, 159, 67, 0.3) 40%, rgba(255, 159, 67, 0.4) 50%, rgba(255, 159, 67, 0.5) 60%, rgba(255, 255, 255, 0) 70%);
+  background: radial-gradient(rgba(255, 159, 67, 0.2) 0, rgba(255, 159, 67, 0.3) 40%, rgba(255, 159, 67, 0.4) 50%, rgba(255, 159, 67, 0.5) 60%, transparent 70%);
 }
 .btn-outline-warning:hover {
   color: #ff9f43 !important;
@@ -7763,7 +7763,7 @@ label.btn {
   background: #fce4e4;
 }
 .btn-label-danger.waves-effect .waves-ripple {
-  background: radial-gradient(rgba(234, 84, 85, 0.2) 0, rgba(234, 84, 85, 0.3) 40%, rgba(234, 84, 85, 0.4) 50%, rgba(234, 84, 85, 0.5) 60%, rgba(255, 255, 255, 0) 70%);
+  background: radial-gradient(rgba(234, 84, 85, 0.2) 0, rgba(234, 84, 85, 0.3) 40%, rgba(234, 84, 85, 0.4) 50%, rgba(234, 84, 85, 0.5) 60%, transparent 70%);
 }
 .btn-label-danger:hover {
   border-color: transparent !important;
@@ -7807,7 +7807,7 @@ label.btn {
   background: transparent;
 }
 .btn-outline-danger.waves-effect .waves-ripple {
-  background: radial-gradient(rgba(234, 84, 85, 0.2) 0, rgba(234, 84, 85, 0.3) 40%, rgba(234, 84, 85, 0.4) 50%, rgba(234, 84, 85, 0.5) 60%, rgba(255, 255, 255, 0) 70%);
+  background: radial-gradient(rgba(234, 84, 85, 0.2) 0, rgba(234, 84, 85, 0.3) 40%, rgba(234, 84, 85, 0.4) 50%, rgba(234, 84, 85, 0.5) 60%, transparent 70%);
 }
 .btn-outline-danger:hover {
   color: #ea5455 !important;
@@ -7893,7 +7893,7 @@ label.btn {
   background: #fafafb;
 }
 .btn-label-light.waves-effect .waves-ripple {
-  background: radial-gradient(rgba(223, 223, 227, 0.2) 0, rgba(223, 223, 227, 0.3) 40%, rgba(223, 223, 227, 0.4) 50%, rgba(223, 223, 227, 0.5) 60%, rgba(255, 255, 255, 0) 70%);
+  background: radial-gradient(rgba(223, 223, 227, 0.2) 0, rgba(223, 223, 227, 0.3) 40%, rgba(223, 223, 227, 0.4) 50%, rgba(223, 223, 227, 0.5) 60%, transparent 70%);
 }
 .btn-label-light:hover {
   border-color: transparent !important;
@@ -7937,7 +7937,7 @@ label.btn {
   background: transparent;
 }
 .btn-outline-light.waves-effect .waves-ripple {
-  background: radial-gradient(rgba(223, 223, 227, 0.2) 0, rgba(223, 223, 227, 0.3) 40%, rgba(223, 223, 227, 0.4) 50%, rgba(223, 223, 227, 0.5) 60%, rgba(255, 255, 255, 0) 70%);
+  background: radial-gradient(rgba(223, 223, 227, 0.2) 0, rgba(223, 223, 227, 0.3) 40%, rgba(223, 223, 227, 0.4) 50%, rgba(223, 223, 227, 0.5) 60%, transparent 70%);
 }
 .btn-outline-light:hover {
   color: #dfdfe3 !important;
@@ -8023,7 +8023,7 @@ label.btn {
   background: #e2e2e2;
 }
 .btn-label-dark.waves-effect .waves-ripple {
-  background: radial-gradient(rgba(75, 75, 75, 0.2) 0, rgba(75, 75, 75, 0.3) 40%, rgba(75, 75, 75, 0.4) 50%, rgba(75, 75, 75, 0.5) 60%, rgba(255, 255, 255, 0) 70%);
+  background: radial-gradient(rgba(75, 75, 75, 0.2) 0, rgba(75, 75, 75, 0.3) 40%, rgba(75, 75, 75, 0.4) 50%, rgba(75, 75, 75, 0.5) 60%, transparent 70%);
 }
 .btn-label-dark:hover {
   border-color: transparent !important;
@@ -8067,7 +8067,7 @@ label.btn {
   background: transparent;
 }
 .btn-outline-dark.waves-effect .waves-ripple {
-  background: radial-gradient(rgba(75, 75, 75, 0.2) 0, rgba(75, 75, 75, 0.3) 40%, rgba(75, 75, 75, 0.4) 50%, rgba(75, 75, 75, 0.5) 60%, rgba(255, 255, 255, 0) 70%);
+  background: radial-gradient(rgba(75, 75, 75, 0.2) 0, rgba(75, 75, 75, 0.3) 40%, rgba(75, 75, 75, 0.4) 50%, rgba(75, 75, 75, 0.5) 60%, transparent 70%);
 }
 .btn-outline-dark:hover {
   color: #4b4b4b !important;
@@ -8153,7 +8153,7 @@ label.btn {
   background: rgba(254, 254, 254, 0.848);
 }
 .btn-label-gray.waves-effect .waves-ripple {
-  background: radial-gradient(rgba(75, 70, 92, 0.2) 0, rgba(75, 70, 92, 0.3) 40%, rgba(75, 70, 92, 0.4) 50%, rgba(75, 70, 92, 0.5) 60%, rgba(255, 255, 255, 0) 70%);
+  background: radial-gradient(rgba(75, 70, 92, 0.2) 0, rgba(75, 70, 92, 0.3) 40%, rgba(75, 70, 92, 0.4) 50%, rgba(75, 70, 92, 0.5) 60%, transparent 70%);
 }
 .btn-label-gray:hover {
   border-color: transparent !important;
@@ -8197,7 +8197,7 @@ label.btn {
   background: transparent;
 }
 .btn-outline-gray.waves-effect .waves-ripple {
-  background: radial-gradient(rgba(75, 70, 92, 0.2) 0, rgba(75, 70, 92, 0.3) 40%, rgba(75, 70, 92, 0.4) 50%, rgba(75, 70, 92, 0.5) 60%, rgba(255, 255, 255, 0) 70%);
+  background: radial-gradient(rgba(75, 70, 92, 0.2) 0, rgba(75, 70, 92, 0.3) 40%, rgba(75, 70, 92, 0.4) 50%, rgba(75, 70, 92, 0.5) 60%, transparent 70%);
 }
 .btn-outline-gray:hover {
   color: rgba(75, 70, 92, 0.05) !important;
@@ -8701,7 +8701,7 @@ html:not([dir=rtl]) .input-group > .btn-group:last-child > .btn:not([class*=btn-
 .nav-tabs .nav-link:not(.active):hover, .nav-tabs .nav-link:not(.active):focus,
 .nav-pills .nav-link:not(.active):hover,
 .nav-pills .nav-link:not(.active):focus {
-  color: #7367f0;
+  color: var(--br-vuexy-primary);
 }
 .nav-tabs:not(.nav-fill):not(.nav-justified) .nav-link,
 .nav-pills:not(.nav-fill):not(.nav-justified) .nav-link {
@@ -8748,12 +8748,12 @@ html:not([dir=rtl]) .input-group > .btn-group:last-child > .btn:not([class*=btn-
   }
 }
 .nav-tabs.widget-nav-tabs .nav-link.active {
-  border-color: #7367f0;
+  border-color: var(--br-vuexy-primary);
   box-shadow: none !important;
 }
 .nav-tabs.widget-nav-tabs .nav-link.active .badge {
-  background-color: rgba(115, 103, 240, 0.08) !important;
-  color: #7367f0 !important;
+  background-color: var(--br-vuexy-primary-alpha-08) !important;
+  color: var(--br-vuexy-primary) !important;
 }
 @media (max-width: 767.98px) {
   .nav-tabs.widget-nav-tabs .nav-link .tab-widget-title {
@@ -10821,11 +10821,11 @@ html:not([dir=rtl]) .progress .progress-bar:first-child {
 
 .breadcrumb-item,
 .breadcrumb-item a {
-  color: #7367f0;
+  color: var(--br-vuexy-primary);
 }
 
 .breadcrumb-item.active a:hover, .breadcrumb-item.active a:focus {
-  color: #7367f0;
+  color: var(--br-vuexy-primary);
 }
 .breadcrumb-item.active a:not(:hover, :focus) {
   color: #4b465c;
@@ -12175,7 +12175,7 @@ html:not([dir=rtl]) .card .card-separator {
 }
 
 .border-primary {
-  border-color: #7367f0 !important;
+  border-color: var(--br-vuexy-primary) !important;
 }
 
 .border-secondary {
@@ -13640,7 +13640,7 @@ html:not([dir=rtl]) .card .card-separator {
 
 .bg-body {
   --bs-bg-opacity: 1;
-  background-color: #f8f7fa !important;
+  background-color: var(--br-vuexy-body-bg) !important;
 }
 
 .bg-transparent {
@@ -20714,7 +20714,7 @@ html:not(.layout-menu-fixed) .menu-inner-shadow {
   color: #6f6b7d;
 }
 .layout-navbar .navbar-search-wrapper .navbar-search-suggestion .suggestion:hover, .layout-navbar .navbar-search-wrapper .navbar-search-suggestion .suggestion.active {
-  background: #f8f7fa;
+  background: var(--br-vuexy-body-bg);
   color: #6f6b7d;
 }
 .layout-navbar .navbar-search-wrapper .navbar-search-suggestion .suggestions-header {
@@ -21598,7 +21598,7 @@ html:not([dir=rtl]) .app-brand-text {
 
 .custom-option-icon.checked i,
 .custom-option-icon.checked svg {
-  color: #7367f0;
+  color: var(--br-vuexy-primary);
 }
 .custom-option-icon .custom-option-content {
   text-align: center;
@@ -21816,7 +21816,7 @@ html:not([dir=rtl]) .app-brand-text {
 }
 
 .switch-input:checked ~ .switch-toggle-slider {
-  border-color: #7367f0;
+  border-color: var(--br-vuexy-primary);
 }
 .switch-input:checked ~ .switch-toggle-slider:after {
   background: #fff;
@@ -22038,7 +22038,7 @@ html:not([dir=rtl]) .switches-stacked .switch {
 
 .switch-secondary.switch .switch-input:focus ~ .switch-toggle-slider {
   border: 1px solid #a8aaae;
-  box-shadow: 0 0 0.25rem 0.05rem rgba(115, 103, 240, 0.1);
+  box-shadow: 0 0 0.25rem 0.05rem var(--br-vuexy-primary-alpha-10);
 }
 
 .switch-success.switch .switch-input:checked ~ .switch-toggle-slider {
@@ -22053,7 +22053,7 @@ html:not([dir=rtl]) .switches-stacked .switch {
 
 .switch-success.switch .switch-input:focus ~ .switch-toggle-slider {
   border: 1px solid #28c76f;
-  box-shadow: 0 0 0.25rem 0.05rem rgba(115, 103, 240, 0.1);
+  box-shadow: 0 0 0.25rem 0.05rem var(--br-vuexy-primary-alpha-10);
 }
 
 .switch-info.switch .switch-input:checked ~ .switch-toggle-slider {
@@ -22068,7 +22068,7 @@ html:not([dir=rtl]) .switches-stacked .switch {
 
 .switch-info.switch .switch-input:focus ~ .switch-toggle-slider {
   border: 1px solid #00cfe8;
-  box-shadow: 0 0 0.25rem 0.05rem rgba(115, 103, 240, 0.1);
+  box-shadow: 0 0 0.25rem 0.05rem var(--br-vuexy-primary-alpha-10);
 }
 
 .switch-warning.switch .switch-input:checked ~ .switch-toggle-slider {
@@ -22083,7 +22083,7 @@ html:not([dir=rtl]) .switches-stacked .switch {
 
 .switch-warning.switch .switch-input:focus ~ .switch-toggle-slider {
   border: 1px solid #ff9f43;
-  box-shadow: 0 0 0.25rem 0.05rem rgba(115, 103, 240, 0.1);
+  box-shadow: 0 0 0.25rem 0.05rem var(--br-vuexy-primary-alpha-10);
 }
 
 .switch-danger.switch .switch-input:checked ~ .switch-toggle-slider {
@@ -22098,7 +22098,7 @@ html:not([dir=rtl]) .switches-stacked .switch {
 
 .switch-danger.switch .switch-input:focus ~ .switch-toggle-slider {
   border: 1px solid #ea5455;
-  box-shadow: 0 0 0.25rem 0.05rem rgba(115, 103, 240, 0.1);
+  box-shadow: 0 0 0.25rem 0.05rem var(--br-vuexy-primary-alpha-10);
 }
 
 .switch-dark.switch .switch-input:checked ~ .switch-toggle-slider {
@@ -22113,7 +22113,7 @@ html:not([dir=rtl]) .switches-stacked .switch {
 
 .switch-dark.switch .switch-input:focus ~ .switch-toggle-slider {
   border: 1px solid #4b4b4b;
-  box-shadow: 0 0 0.25rem 0.05rem rgba(115, 103, 240, 0.1);
+  box-shadow: 0 0 0.25rem 0.05rem var(--br-vuexy-primary-alpha-10);
 }
 
 .switch-gray.switch .switch-input:checked ~ .switch-toggle-slider {
@@ -22128,7 +22128,7 @@ html:not([dir=rtl]) .switches-stacked .switch {
 
 .switch-gray.switch .switch-input:focus ~ .switch-toggle-slider {
   border: 1px solid rgba(75, 70, 92, 0.05);
-  box-shadow: 0 0 0.25rem 0.05rem rgba(115, 103, 240, 0.1);
+  box-shadow: 0 0 0.25rem 0.05rem var(--br-vuexy-primary-alpha-10);
 }
 
 .switch .valid-feedback,
@@ -22443,7 +22443,7 @@ html:not([dir=rtl]) .switches-stacked .switch {
 }
 .timeline .timeline-item .timeline-indicator i,
 .timeline .timeline-item .timeline-indicator-advanced i {
-  background-color: #f8f7fa;
+  background-color: var(--br-vuexy-body-bg);
 }
 .card .timeline .timeline-item .timeline-indicator i,
 .card .timeline .timeline-item .timeline-indicator-advanced i {
@@ -22451,7 +22451,7 @@ html:not([dir=rtl]) .switches-stacked .switch {
 }
 .timeline .timeline-item .timeline-indicator i,
 .timeline .timeline-item .timeline-indicator-advanced i {
-  color: #7367f0;
+  color: var(--br-vuexy-primary);
 }
 .timeline .timeline-item .timeline-indicator-advanced {
   background-color: #fff;
@@ -22466,7 +22466,7 @@ html:not([dir=rtl]) .switches-stacked .switch {
   height: 0.75rem;
   width: 0.75rem;
   border-radius: 50%;
-  background-color: #7367f0;
+  background-color: var(--br-vuexy-primary);
 }
 .timeline .timeline-item.timeline-item-transparent .timeline-event {
   top: -1.4rem;
@@ -23146,7 +23146,7 @@ a.bg-facebook:hover, a.bg-facebook:focus {
   background: #e0e4ef;
 }
 .btn-label-facebook.waves-effect .waves-ripple {
-  background: radial-gradient(rgba(59, 89, 152, 0.2) 0, rgba(59, 89, 152, 0.3) 40%, rgba(59, 89, 152, 0.4) 50%, rgba(59, 89, 152, 0.5) 60%, rgba(255, 255, 255, 0) 70%);
+  background: radial-gradient(rgba(59, 89, 152, 0.2) 0, rgba(59, 89, 152, 0.3) 40%, rgba(59, 89, 152, 0.4) 50%, rgba(59, 89, 152, 0.5) 60%, transparent 70%);
 }
 .btn-label-facebook:hover {
   border-color: transparent !important;
@@ -23190,7 +23190,7 @@ a.bg-facebook:hover, a.bg-facebook:focus {
   background: transparent;
 }
 .btn-outline-facebook.waves-effect .waves-ripple {
-  background: radial-gradient(rgba(59, 89, 152, 0.2) 0, rgba(59, 89, 152, 0.3) 40%, rgba(59, 89, 152, 0.4) 50%, rgba(59, 89, 152, 0.5) 60%, rgba(255, 255, 255, 0) 70%);
+  background: radial-gradient(rgba(59, 89, 152, 0.2) 0, rgba(59, 89, 152, 0.3) 40%, rgba(59, 89, 152, 0.4) 50%, rgba(59, 89, 152, 0.5) 60%, transparent 70%);
 }
 .btn-outline-facebook:hover {
   color: #3b5998 !important;
@@ -23302,7 +23302,7 @@ a.bg-twitter:hover, a.bg-twitter:focus {
   background: #dbf0fd;
 }
 .btn-label-twitter.waves-effect .waves-ripple {
-  background: radial-gradient(rgba(29, 161, 242, 0.2) 0, rgba(29, 161, 242, 0.3) 40%, rgba(29, 161, 242, 0.4) 50%, rgba(29, 161, 242, 0.5) 60%, rgba(255, 255, 255, 0) 70%);
+  background: radial-gradient(rgba(29, 161, 242, 0.2) 0, rgba(29, 161, 242, 0.3) 40%, rgba(29, 161, 242, 0.4) 50%, rgba(29, 161, 242, 0.5) 60%, transparent 70%);
 }
 .btn-label-twitter:hover {
   border-color: transparent !important;
@@ -23346,7 +23346,7 @@ a.bg-twitter:hover, a.bg-twitter:focus {
   background: transparent;
 }
 .btn-outline-twitter.waves-effect .waves-ripple {
-  background: radial-gradient(rgba(29, 161, 242, 0.2) 0, rgba(29, 161, 242, 0.3) 40%, rgba(29, 161, 242, 0.4) 50%, rgba(29, 161, 242, 0.5) 60%, rgba(255, 255, 255, 0) 70%);
+  background: radial-gradient(rgba(29, 161, 242, 0.2) 0, rgba(29, 161, 242, 0.3) 40%, rgba(29, 161, 242, 0.4) 50%, rgba(29, 161, 242, 0.5) 60%, transparent 70%);
 }
 .btn-outline-twitter:hover {
   color: #1da1f2 !important;
@@ -23458,7 +23458,7 @@ a.bg-google-plus:hover, a.bg-google-plus:focus {
   background: #fae2df;
 }
 .btn-label-google-plus.waves-effect .waves-ripple {
-  background: radial-gradient(rgba(221, 75, 57, 0.2) 0, rgba(221, 75, 57, 0.3) 40%, rgba(221, 75, 57, 0.4) 50%, rgba(221, 75, 57, 0.5) 60%, rgba(255, 255, 255, 0) 70%);
+  background: radial-gradient(rgba(221, 75, 57, 0.2) 0, rgba(221, 75, 57, 0.3) 40%, rgba(221, 75, 57, 0.4) 50%, rgba(221, 75, 57, 0.5) 60%, transparent 70%);
 }
 .btn-label-google-plus:hover {
   border-color: transparent !important;
@@ -23502,7 +23502,7 @@ a.bg-google-plus:hover, a.bg-google-plus:focus {
   background: transparent;
 }
 .btn-outline-google-plus.waves-effect .waves-ripple {
-  background: radial-gradient(rgba(221, 75, 57, 0.2) 0, rgba(221, 75, 57, 0.3) 40%, rgba(221, 75, 57, 0.4) 50%, rgba(221, 75, 57, 0.5) 60%, rgba(255, 255, 255, 0) 70%);
+  background: radial-gradient(rgba(221, 75, 57, 0.2) 0, rgba(221, 75, 57, 0.3) 40%, rgba(221, 75, 57, 0.4) 50%, rgba(221, 75, 57, 0.5) 60%, transparent 70%);
 }
 .btn-outline-google-plus:hover {
   color: #dd4b39 !important;
@@ -23614,7 +23614,7 @@ a.bg-instagram:hover, a.bg-instagram:focus {
   background: #fadee7;
 }
 .btn-label-instagram.waves-effect .waves-ripple {
-  background: radial-gradient(rgba(225, 48, 108, 0.2) 0, rgba(225, 48, 108, 0.3) 40%, rgba(225, 48, 108, 0.4) 50%, rgba(225, 48, 108, 0.5) 60%, rgba(255, 255, 255, 0) 70%);
+  background: radial-gradient(rgba(225, 48, 108, 0.2) 0, rgba(225, 48, 108, 0.3) 40%, rgba(225, 48, 108, 0.4) 50%, rgba(225, 48, 108, 0.5) 60%, transparent 70%);
 }
 .btn-label-instagram:hover {
   border-color: transparent !important;
@@ -23658,7 +23658,7 @@ a.bg-instagram:hover, a.bg-instagram:focus {
   background: transparent;
 }
 .btn-outline-instagram.waves-effect .waves-ripple {
-  background: radial-gradient(rgba(225, 48, 108, 0.2) 0, rgba(225, 48, 108, 0.3) 40%, rgba(225, 48, 108, 0.4) 50%, rgba(225, 48, 108, 0.5) 60%, rgba(255, 255, 255, 0) 70%);
+  background: radial-gradient(rgba(225, 48, 108, 0.2) 0, rgba(225, 48, 108, 0.3) 40%, rgba(225, 48, 108, 0.4) 50%, rgba(225, 48, 108, 0.5) 60%, transparent 70%);
 }
 .btn-outline-instagram:hover {
   color: #e1306c !important;
@@ -23770,7 +23770,7 @@ a.bg-linkedin:hover, a.bg-linkedin:focus {
   background: #d6e9f3;
 }
 .btn-label-linkedin.waves-effect .waves-ripple {
-  background: radial-gradient(rgba(0, 119, 181, 0.2) 0, rgba(0, 119, 181, 0.3) 40%, rgba(0, 119, 181, 0.4) 50%, rgba(0, 119, 181, 0.5) 60%, rgba(255, 255, 255, 0) 70%);
+  background: radial-gradient(rgba(0, 119, 181, 0.2) 0, rgba(0, 119, 181, 0.3) 40%, rgba(0, 119, 181, 0.4) 50%, rgba(0, 119, 181, 0.5) 60%, transparent 70%);
 }
 .btn-label-linkedin:hover {
   border-color: transparent !important;
@@ -23814,7 +23814,7 @@ a.bg-linkedin:hover, a.bg-linkedin:focus {
   background: transparent;
 }
 .btn-outline-linkedin.waves-effect .waves-ripple {
-  background: radial-gradient(rgba(0, 119, 181, 0.2) 0, rgba(0, 119, 181, 0.3) 40%, rgba(0, 119, 181, 0.4) 50%, rgba(0, 119, 181, 0.5) 60%, rgba(255, 255, 255, 0) 70%);
+  background: radial-gradient(rgba(0, 119, 181, 0.2) 0, rgba(0, 119, 181, 0.3) 40%, rgba(0, 119, 181, 0.4) 50%, rgba(0, 119, 181, 0.5) 60%, transparent 70%);
 }
 .btn-outline-linkedin:hover {
   color: #0077b5 !important;
@@ -23926,7 +23926,7 @@ a.bg-github:hover, a.bg-github:focus {
   background: #dedede;
 }
 .btn-label-github.waves-effect .waves-ripple {
-  background: radial-gradient(rgba(51, 51, 51, 0.2) 0, rgba(51, 51, 51, 0.3) 40%, rgba(51, 51, 51, 0.4) 50%, rgba(51, 51, 51, 0.5) 60%, rgba(255, 255, 255, 0) 70%);
+  background: radial-gradient(rgba(51, 51, 51, 0.2) 0, rgba(51, 51, 51, 0.3) 40%, rgba(51, 51, 51, 0.4) 50%, rgba(51, 51, 51, 0.5) 60%, transparent 70%);
 }
 .btn-label-github:hover {
   border-color: transparent !important;
@@ -23970,7 +23970,7 @@ a.bg-github:hover, a.bg-github:focus {
   background: transparent;
 }
 .btn-outline-github.waves-effect .waves-ripple {
-  background: radial-gradient(rgba(51, 51, 51, 0.2) 0, rgba(51, 51, 51, 0.3) 40%, rgba(51, 51, 51, 0.4) 50%, rgba(51, 51, 51, 0.5) 60%, rgba(255, 255, 255, 0) 70%);
+  background: radial-gradient(rgba(51, 51, 51, 0.2) 0, rgba(51, 51, 51, 0.3) 40%, rgba(51, 51, 51, 0.4) 50%, rgba(51, 51, 51, 0.5) 60%, transparent 70%);
 }
 .btn-outline-github:hover {
   color: #333 !important;
@@ -24082,7 +24082,7 @@ a.bg-dribbble:hover, a.bg-dribbble:focus {
   background: #fce2ec;
 }
 .btn-label-dribbble.waves-effect .waves-ripple {
-  background: radial-gradient(rgba(234, 76, 137, 0.2) 0, rgba(234, 76, 137, 0.3) 40%, rgba(234, 76, 137, 0.4) 50%, rgba(234, 76, 137, 0.5) 60%, rgba(255, 255, 255, 0) 70%);
+  background: radial-gradient(rgba(234, 76, 137, 0.2) 0, rgba(234, 76, 137, 0.3) 40%, rgba(234, 76, 137, 0.4) 50%, rgba(234, 76, 137, 0.5) 60%, transparent 70%);
 }
 .btn-label-dribbble:hover {
   border-color: transparent !important;
@@ -24126,7 +24126,7 @@ a.bg-dribbble:hover, a.bg-dribbble:focus {
   background: transparent;
 }
 .btn-outline-dribbble.waves-effect .waves-ripple {
-  background: radial-gradient(rgba(234, 76, 137, 0.2) 0, rgba(234, 76, 137, 0.3) 40%, rgba(234, 76, 137, 0.4) 50%, rgba(234, 76, 137, 0.5) 60%, rgba(255, 255, 255, 0) 70%);
+  background: radial-gradient(rgba(234, 76, 137, 0.2) 0, rgba(234, 76, 137, 0.3) 40%, rgba(234, 76, 137, 0.4) 50%, rgba(234, 76, 137, 0.5) 60%, transparent 70%);
 }
 .btn-outline-dribbble:hover {
   color: #ea4c89 !important;
@@ -24238,7 +24238,7 @@ a.bg-pinterest:hover, a.bg-pinterest:focus {
   background: #f7dbdc;
 }
 .btn-label-pinterest.waves-effect .waves-ripple {
-  background: radial-gradient(rgba(203, 32, 39, 0.2) 0, rgba(203, 32, 39, 0.3) 40%, rgba(203, 32, 39, 0.4) 50%, rgba(203, 32, 39, 0.5) 60%, rgba(255, 255, 255, 0) 70%);
+  background: radial-gradient(rgba(203, 32, 39, 0.2) 0, rgba(203, 32, 39, 0.3) 40%, rgba(203, 32, 39, 0.4) 50%, rgba(203, 32, 39, 0.5) 60%, transparent 70%);
 }
 .btn-label-pinterest:hover {
   border-color: transparent !important;
@@ -24282,7 +24282,7 @@ a.bg-pinterest:hover, a.bg-pinterest:focus {
   background: transparent;
 }
 .btn-outline-pinterest.waves-effect .waves-ripple {
-  background: radial-gradient(rgba(203, 32, 39, 0.2) 0, rgba(203, 32, 39, 0.3) 40%, rgba(203, 32, 39, 0.4) 50%, rgba(203, 32, 39, 0.5) 60%, rgba(255, 255, 255, 0) 70%);
+  background: radial-gradient(rgba(203, 32, 39, 0.2) 0, rgba(203, 32, 39, 0.3) 40%, rgba(203, 32, 39, 0.4) 50%, rgba(203, 32, 39, 0.5) 60%, transparent 70%);
 }
 .btn-outline-pinterest:hover {
   color: #cb2027 !important;
@@ -24394,7 +24394,7 @@ a.bg-slack:hover, a.bg-slack:focus {
   background: #e2dae2;
 }
 .btn-label-slack.waves-effect .waves-ripple {
-  background: radial-gradient(rgba(74, 21, 75, 0.2) 0, rgba(74, 21, 75, 0.3) 40%, rgba(74, 21, 75, 0.4) 50%, rgba(74, 21, 75, 0.5) 60%, rgba(255, 255, 255, 0) 70%);
+  background: radial-gradient(rgba(74, 21, 75, 0.2) 0, rgba(74, 21, 75, 0.3) 40%, rgba(74, 21, 75, 0.4) 50%, rgba(74, 21, 75, 0.5) 60%, transparent 70%);
 }
 .btn-label-slack:hover {
   border-color: transparent !important;
@@ -24438,7 +24438,7 @@ a.bg-slack:hover, a.bg-slack:focus {
   background: transparent;
 }
 .btn-outline-slack.waves-effect .waves-ripple {
-  background: radial-gradient(rgba(74, 21, 75, 0.2) 0, rgba(74, 21, 75, 0.3) 40%, rgba(74, 21, 75, 0.4) 50%, rgba(74, 21, 75, 0.5) 60%, rgba(255, 255, 255, 0) 70%);
+  background: radial-gradient(rgba(74, 21, 75, 0.2) 0, rgba(74, 21, 75, 0.3) 40%, rgba(74, 21, 75, 0.4) 50%, rgba(74, 21, 75, 0.5) 60%, transparent 70%);
 }
 .btn-outline-slack:hover {
   color: #4a154b !important;
@@ -24550,7 +24550,7 @@ a.bg-reddit:hover, a.bg-reddit:focus {
   background: #ffe1d6;
 }
 .btn-label-reddit.waves-effect .waves-ripple {
-  background: radial-gradient(rgba(255, 69, 0, 0.2) 0, rgba(255, 69, 0, 0.3) 40%, rgba(255, 69, 0, 0.4) 50%, rgba(255, 69, 0, 0.5) 60%, rgba(255, 255, 255, 0) 70%);
+  background: radial-gradient(rgba(255, 69, 0, 0.2) 0, rgba(255, 69, 0, 0.3) 40%, rgba(255, 69, 0, 0.4) 50%, rgba(255, 69, 0, 0.5) 60%, transparent 70%);
 }
 .btn-label-reddit:hover {
   border-color: transparent !important;
@@ -24594,7 +24594,7 @@ a.bg-reddit:hover, a.bg-reddit:focus {
   background: transparent;
 }
 .btn-outline-reddit.waves-effect .waves-ripple {
-  background: radial-gradient(rgba(255, 69, 0, 0.2) 0, rgba(255, 69, 0, 0.3) 40%, rgba(255, 69, 0, 0.4) 50%, rgba(255, 69, 0, 0.5) 60%, rgba(255, 255, 255, 0) 70%);
+  background: radial-gradient(rgba(255, 69, 0, 0.2) 0, rgba(255, 69, 0, 0.3) 40%, rgba(255, 69, 0, 0.4) 50%, rgba(255, 69, 0, 0.5) 60%, transparent 70%);
 }
 .btn-outline-reddit:hover {
   color: #ff4500 !important;
@@ -24706,7 +24706,7 @@ a.bg-youtube:hover, a.bg-youtube:focus {
   background: #ffd6d6;
 }
 .btn-label-youtube.waves-effect .waves-ripple {
-  background: radial-gradient(rgba(255, 0, 0, 0.2) 0, rgba(255, 0, 0, 0.3) 40%, rgba(255, 0, 0, 0.4) 50%, rgba(255, 0, 0, 0.5) 60%, rgba(255, 255, 255, 0) 70%);
+  background: radial-gradient(rgba(255, 0, 0, 0.2) 0, rgba(255, 0, 0, 0.3) 40%, rgba(255, 0, 0, 0.4) 50%, rgba(255, 0, 0, 0.5) 60%, transparent 70%);
 }
 .btn-label-youtube:hover {
   border-color: transparent !important;
@@ -24750,7 +24750,7 @@ a.bg-youtube:hover, a.bg-youtube:focus {
   background: transparent;
 }
 .btn-outline-youtube.waves-effect .waves-ripple {
-  background: radial-gradient(rgba(255, 0, 0, 0.2) 0, rgba(255, 0, 0, 0.3) 40%, rgba(255, 0, 0, 0.4) 50%, rgba(255, 0, 0, 0.5) 60%, rgba(255, 255, 255, 0) 70%);
+  background: radial-gradient(rgba(255, 0, 0, 0.2) 0, rgba(255, 0, 0, 0.3) 40%, rgba(255, 0, 0, 0.4) 50%, rgba(255, 0, 0, 0.5) 60%, transparent 70%);
 }
 .btn-outline-youtube:hover {
   color: #ff0000 !important;
@@ -24862,7 +24862,7 @@ a.bg-vimeo:hover, a.bg-vimeo:focus {
   background: #daf3fc;
 }
 .btn-label-vimeo.waves-effect .waves-ripple {
-  background: radial-gradient(rgba(26, 183, 234, 0.2) 0, rgba(26, 183, 234, 0.3) 40%, rgba(26, 183, 234, 0.4) 50%, rgba(26, 183, 234, 0.5) 60%, rgba(255, 255, 255, 0) 70%);
+  background: radial-gradient(rgba(26, 183, 234, 0.2) 0, rgba(26, 183, 234, 0.3) 40%, rgba(26, 183, 234, 0.4) 50%, rgba(26, 183, 234, 0.5) 60%, transparent 70%);
 }
 .btn-label-vimeo:hover {
   border-color: transparent !important;
@@ -24906,7 +24906,7 @@ a.bg-vimeo:hover, a.bg-vimeo:focus {
   background: transparent;
 }
 .btn-outline-vimeo.waves-effect .waves-ripple {
-  background: radial-gradient(rgba(26, 183, 234, 0.2) 0, rgba(26, 183, 234, 0.3) 40%, rgba(26, 183, 234, 0.4) 50%, rgba(26, 183, 234, 0.5) 60%, rgba(255, 255, 255, 0) 70%);
+  background: radial-gradient(rgba(26, 183, 234, 0.2) 0, rgba(26, 183, 234, 0.3) 40%, rgba(26, 183, 234, 0.4) 50%, rgba(26, 183, 234, 0.5) 60%, transparent 70%);
 }
 .btn-outline-vimeo:hover {
   color: #1ab7ea !important;
@@ -24992,7 +24992,7 @@ a.bg-vimeo:hover, a.bg-vimeo:focus {
   background: white;
 }
 .btn-label-white.waves-effect .waves-ripple {
-  background: radial-gradient(rgba(255, 255, 255, 0.2) 0, rgba(255, 255, 255, 0.3) 40%, rgba(255, 255, 255, 0.4) 50%, rgba(255, 255, 255, 0.5) 60%, rgba(255, 255, 255, 0) 70%);
+  background: radial-gradient(rgba(255, 255, 255, 0.2) 0, rgba(255, 255, 255, 0.3) 40%, rgba(255, 255, 255, 0.4) 50%, rgba(255, 255, 255, 0.5) 60%, transparent 70%);
 }
 .btn-label-white:hover {
   border-color: transparent !important;
@@ -25036,7 +25036,7 @@ a.bg-vimeo:hover, a.bg-vimeo:focus {
   background: transparent;
 }
 .btn-outline-white.waves-effect .waves-ripple {
-  background: radial-gradient(rgba(255, 255, 255, 0.2) 0, rgba(255, 255, 255, 0.3) 40%, rgba(255, 255, 255, 0.4) 50%, rgba(255, 255, 255, 0.5) 60%, rgba(255, 255, 255, 0) 70%);
+  background: radial-gradient(rgba(255, 255, 255, 0.2) 0, rgba(255, 255, 255, 0.3) 40%, rgba(255, 255, 255, 0.4) 50%, rgba(255, 255, 255, 0.5) 60%, transparent 70%);
 }
 .btn-outline-white:hover {
   color: #fff !important;

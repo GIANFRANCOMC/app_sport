@@ -1,3 +1,11 @@
+@charset "UTF-8";
+/*
+ * Archivo generado: public/System/assets/css/custom.css
+ * Fuente: resources/css/System/custom (pantallas y ajustes System/Guest heredados).
+ * No editar este archivo directamente; modifica los parciales y ejecuta npm run build:css:system.
+ */
+
+/* Source: resources/css/System/custom/00-base-guest.css */
 /* Chrome, Safari, Edge, Opera */
 input.input-number-no-range::-webkit-outer-spin-button,
 input.input-number-no-range::-webkit-inner-spin-button {
@@ -704,6 +712,7 @@ input.input-number-no-range::-webkit-inner-spin-button {
   }
 }
 
+/* Source: resources/css/System/custom/10-roles-core-legacy.css */
 /* --- [br-roles] Roles y perfiles --- */
 .br-roles__meta,
 .br-roles__modal-help,
@@ -3054,6 +3063,7 @@ body.br-layout .br-entity-table > thead > tr > th {
     background-color: var(--br-neutral-panel);
 }
 
+/* Source: resources/css/System/custom/20-inventory.css */
 /* --- [br-inventory] Existencias, movimientos manuales y kardex --- */
 .br-inventory {
     display: grid;
@@ -3623,6 +3633,7 @@ body.br-layout .br-entity-table > thead > tr > th {
     font-size: 0.68rem;
 }
 
+/* Source: resources/css/System/custom/30-purchases-suppliers.css */
 /* Compras y proveedores */
 .br-purchases__meta,
 .br-purchases__progress-label,
@@ -4284,6 +4295,8 @@ body.br-layout .br-entity-table > thead > tr > th {
         background: var(--br-surface-soft);
     }
 }
+
+/* Source: resources/css/System/custom/40-cash.css */
 /* --- [br-cash] Caja y arqueos --- */
 .br-cash {
   display: flex;
@@ -4541,6 +4554,8 @@ body.br-layout .br-entity-table > thead > tr > th {
     grid-template-columns: 1fr;
   }
 }
+
+/* Source: resources/css/System/custom/50-pos-base.css */
 /* --- [br-pos] Venta POS --- */
 .br-pos {
   display: grid;
@@ -4958,6 +4973,7 @@ body.br-layout .br-entity-table > thead > tr > th {
   }
 }
 
+/* Source: resources/css/System/custom/60-service-operations.css */
 /* --- [br-service] Operaciones por estación y servicios temporizados --- */
 .br-service-page {
   position: relative;
@@ -5721,6 +5737,7 @@ body.br-layout .br-entity-table > thead > tr > th {
   }
 }
 
+/* Source: resources/css/System/custom/70-pos-extensions.css */
 /* --- [br-pos] Ajustes de caja, ticket y venta rápida --- */
 .br-pos-product {
   min-height: 9.35rem;
@@ -6988,6 +7005,7 @@ body.br-layout .br-entity-table > thead > tr > th {
   }
 }
 
+/* Source: resources/css/System/custom/80-dashboard-actions-customers.css */
 /* --- [br-dashboard] Variantes KPI agregadas --- */
 .br-layout .br-dashboard-kpi--info {
   border-color: color-mix(in srgb, var(--br-info) 26%, var(--br-border));

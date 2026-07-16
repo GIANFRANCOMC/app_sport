@@ -1,0 +1,478 @@
+/* -------------------------------------------------------------------------
+ * [br] Layout — CTAs en columna lateral (venta): rejilla 2+1 + CTA de cierre
+ * ------------------------------------------------------------------------- */
+.br-sale-sidebar-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  width: 100%;
+  padding: 0;
+  border: none;
+  background: transparent;
+  box-shadow: none;
+}
+
+.br-sale-sidebar-actions__pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.br-sale-sidebar-actions__pair .br-btn {
+  width: 100%;
+  min-width: 0;
+  justify-content: center;
+  white-space: normal;
+  text-align: center;
+  line-height: 1.3;
+  min-height: 2.65rem;
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+}
+
+.br-sale-sidebar-actions__cta {
+  width: 100%;
+  justify-content: center;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  padding: 0.5rem 1rem;
+  box-shadow: var(--br-shadow-sm);
+}
+
+@media (max-width: 575.98px) {
+  .br-sale-sidebar-actions__pair {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* -------------------------------------------------------------------------
+ * [br] Detalle tabular — importe en línea, pie resaltado, fila expandida, vacío
+ * Tokens: --br-amount-*, --br-table-footer-*, --br-table-expand-* (:root).
+ * Reutilizable en cualquier módulo con tabla de líneas (ventas, compras, etc.).
+ * ------------------------------------------------------------------------- */
+
+/* Rótulo de celda en fila expandida (p. ej. “Membresía” + fechas) */
+.br-table-expand-label {
+  font-size: var(--br-table-expand-label-size);
+  font-weight: var(--br-table-expand-label-weight);
+  letter-spacing: var(--br-table-expand-label-tracking);
+  text-transform: uppercase;
+  color: var(--br-secondary) !important;
+  background-color: var(--br-table-expand-label-bg-fallback) !important;
+  background-color: var(--br-table-expand-label-bg) !important;
+  white-space: nowrap;
+}
+
+/* Texto negro sobre el fondo gris por defecto del rótulo (p. ej. celda Membresía) */
+.br-table-expand-label.br-table-expand-label--black-text {
+  color: var(--br-danger-dark) !important;
+  font-size: 0.8125rem;
+  /* Laterales como celda de .table-bordered */
+  border-inline: var(--bs-border-width) solid
+    var(--bs-table-border-color, var(--bs-border-color));
+}
+
+/* -------------------------------------------------------------------------
+ * [br] Tabla membresías activas — `.br-memberships-table` en <table>
+ * ------------------------------------------------------------------------- */
+
+.br-layout .br-memberships-table thead th.br-memberships-table__th--primary {
+  background-color: var(--bs-secondary);
+  color: var(--br-white);
+  font-weight: 600;
+  text-wrap: nowrap;
+  text-transform: uppercase;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.br-layout .br-memberships-table thead th.br-memberships-table__th--meta {
+  background-color: var(--bs-secondary);
+  color: var(--br-white);
+  font-weight: 400;
+  font-size: 0.875rem;
+  text-wrap: nowrap;
+  text-transform: uppercase;
+  text-align: center;
+  vertical-align: middle;
+  border-left: 1px solid color-mix(in srgb, var(--br-white) 25%, transparent);
+}
+
+.br-layout .br-memberships-table tbody td.br-memberships-table__td {
+  padding: 1rem 0.75rem;
+  vertical-align: middle;
+}
+
+.br-layout .br-memberships-table tbody td.br-memberships-table__td--meta {
+  border-left: var(--bs-border-width) solid var(--bs-border-color, var(--br-template-dark-border));
+  background-color: var(--br-memberships-meta-bg);
+}
+
+.br-layout .br-memberships-table tbody td.br-memberships-table__td--center {
+  text-align: center;
+}
+
+.br-layout .br-memberships-table .br-memberships-table__stack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--br-memberships-stack-gap);
+  text-align: center;
+  margin-inline: auto;
+  max-width: var(--br-memberships-stack-max-w);
+}
+
+.br-layout .br-memberships-table .br-memberships-table__date {
+  font-size: var(--br-memberships-date-size);
+  font-weight: var(--br-memberships-date-weight);
+  line-height: 1.25;
+  color: var(--bs-body-color);
+  padding-inline: 0.25rem;
+  text-wrap: wrap;
+}
+
+.br-layout .br-memberships-table .br-memberships-table__time {
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.br-layout .br-memberships-table .br-memberships-table__time--plain {
+  color: var(--bs-secondary-color) !important;
+}
+
+/* Pill hora: la tabla fuerza color/fondo en celdas; reforzar contraste del span */
+.br-layout .br-memberships-table tbody .br-memberships-table__time--pill {
+  position: relative;
+  z-index: 1;
+  display: inline-block !important;
+  padding: 0.35rem 0.65rem !important;
+  border: 1px solid var(--br-memberships-time-pill-border) !important;
+  border-radius: 50rem !important;
+  background-color: var(--br-memberships-time-pill-bg) !important;
+  color: var(--br-memberships-time-pill-fg) !important;
+  box-shadow: none !important;
+  vertical-align: middle;
+}
+
+/**
+ * Listado ventas — texto relativo a fecha de emisión (misma línea visual que __time + __time--pill).
+ * Variante --today: acento éxito solo cuando la emisión es el día actual.
+ */
+.br-layout .br-sales-relative-pill {
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  display: inline-block;
+  margin-top: 0.35rem;
+  padding: 0.35rem 0.65rem;
+  border: 1px solid var(--br-memberships-time-pill-border);
+  border-radius: 50rem;
+  background-color: var(--br-memberships-time-pill-bg);
+  color: var(--br-memberships-time-pill-fg);
+  vertical-align: middle;
+}
+
+.br-layout .br-sales-relative-pill--today {
+  border-color: color-mix(in srgb, var(--br-success) 42%, var(--br-border));
+  background-color: var(--br-success-soft);
+  color: var(--br-success-hover);
+}
+
+/* -------------------------------------------------------------------------
+ * [br] Indicadores de estado — etiqueta (.br-status-label) y superficie (.br-status-surface)
+ * Uso etiqueta: <span class="br-status-label br-status-label--success">Activo</span>
+ * Modificadores: --success | --info | --warning | --danger | --primary | --secondary | --neutral | --dark
+ * Superficie (celdas/filas): td.br-status-surface--success (mismo sufijo que la etiqueta)
+ * ------------------------------------------------------------------------- */
+.br-layout .br-status-label {
+  display: inline-block;
+  min-width: 3.75rem;
+  padding: 0.28em 0.52em;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  line-height: 1.2;
+  border-radius: 0.25rem;
+  border: 1px solid transparent;
+  text-align: center;
+  vertical-align: baseline;
+  letter-spacing: 0;
+}
+
+.br-layout .br-status-active {
+  background-color: var(--br-success-soft);
+  color: var(--br-success-hover);
+  border-color: color-mix(in srgb, var(--br-success) 30%, var(--br-border));
+}
+
+.br-layout .br-status-inactive {
+  background-color: var(--br-danger-soft);
+  color: var(--br-danger-hover);
+  border-color: color-mix(in srgb, var(--br-danger) 28%, var(--br-border));
+}
+
+.br-layout .br-status-label--success {
+  background-color: var(--br-success-soft);
+  color: var(--br-success-hover);
+  border-color: color-mix(in srgb, var(--br-success) 24%, transparent);
+}
+
+.br-layout .br-status-label--info {
+  background-color: var(--br-info-soft);
+  color: var(--br-info-hover);
+  border-color: color-mix(in srgb, var(--br-info) 24%, transparent);
+}
+
+.br-layout .br-status-label--warning {
+  background-color: var(--br-warning-soft);
+  color: var(--br-warning-hover);
+  border-color: color-mix(in srgb, var(--br-warning) 28%, transparent);
+}
+
+.br-layout .br-status-label--danger {
+  background-color: var(--br-danger-soft);
+  color: var(--br-danger-hover);
+  border-color: color-mix(in srgb, var(--br-danger) 24%, transparent);
+}
+
+.br-layout .br-status-label--primary {
+  background-color: var(--br-primary-soft);
+  color: var(--br-primary-active);
+  border-color: color-mix(in srgb, var(--br-primary) 26%, transparent);
+}
+
+.br-layout .br-status-label--secondary {
+  background-color: var(--br-secondary-soft);
+  color: var(--br-secondary-muted);
+  border-color: color-mix(in srgb, var(--br-border) 45%, transparent);
+}
+
+.br-layout .br-status-label--neutral {
+  background-color: var(--br-neutral-soft);
+  color: var(--br-neutral);
+  border-color: color-mix(in srgb, var(--br-neutral) 18%, transparent);
+}
+
+.br-layout .br-status-label--dark {
+  background-color: color-mix(in srgb, var(--br-secondary) 8%, var(--br-secondary-soft));
+  color: var(--br-secondary);
+  border-color: color-mix(in srgb, var(--br-secondary) 18%, transparent);
+}
+
+.br-layout td.br-status-surface--success {
+  background-color: var(--br-success-soft) !important;
+}
+
+.br-layout td.br-status-surface--info {
+  background-color: var(--br-info-soft) !important;
+}
+
+.br-layout td.br-status-surface--warning {
+  background-color: var(--br-warning-soft) !important;
+}
+
+.br-layout td.br-status-surface--danger {
+  background-color: var(--br-danger-soft) !important;
+}
+
+.br-layout td.br-status-surface--primary {
+  background-color: var(--br-primary-soft) !important;
+}
+
+.br-layout td.br-status-surface--secondary {
+  background-color: var(--br-secondary-soft) !important;
+}
+
+.br-layout td.br-status-surface--neutral {
+  background-color: var(--br-neutral-soft) !important;
+}
+
+.br-layout td.br-status-surface--dark {
+  background-color: color-mix(in srgb, var(--br-secondary) 8%, var(--br-secondary-soft)) !important;
+}
+
+/* Origen (tipo): solo icono + texto, sin caja tipo badge */
+.br-layout .br-memberships-table .br-memberships-table__origin {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  max-width: 100%;
+  font-weight: 600;
+  font-size: 0.875rem;
+  line-height: 1.25;
+  text-transform: capitalize;
+  color: var(--br-memberships-origin-fg) !important;
+}
+
+.br-layout .br-memberships-table .br-memberships-table__origin-icon {
+  flex-shrink: 0;
+  font-size: 1rem;
+  line-height: 1;
+  color: var(--br-memberships-origin-icon) !important;
+}
+
+.br-layout .br-memberships-table .br-memberships-table__origin-label {
+  text-wrap: balance;
+}
+
+.br-layout .br-memberships-table .br-memberships-table__empty {
+  display: block;
+  text-align: center;
+  font-size: 0.875rem;
+  color: var(--bs-secondary-color);
+}
+
+/* Signo + monto en una celda (total por línea, totales auxiliares) */
+.br-amount-inline {
+  display: inline-block;
+  font-variant-numeric: tabular-nums;
+  line-height: var(--br-amount-inline-lh);
+  white-space: nowrap;
+  max-width: 100%;
+}
+
+.br-amount-inline__sign {
+  font-size: var(--br-amount-sign-size);
+  font-weight: var(--br-amount-sign-weight);
+  color: var(--br-text-muted);
+  margin-right: var(--br-amount-sign-gap);
+}
+
+.br-amount-inline__amount {
+  font-size: var(--br-amount-value-size);
+  font-weight: var(--br-amount-value-weight);
+  color: var(--br-secondary);
+}
+
+/* Énfasis: pie de tabla / total general (misma estructura, mayor escala) */
+.br-amount-inline--emphasis .br-amount-inline__sign {
+  font-size: var(--br-amount-em-sign-size);
+}
+
+.br-amount-inline--emphasis .br-amount-inline__amount {
+  font-size: var(--br-amount-em-value-size);
+}
+
+/* Franja inferior del detalle (!important ante .table / .bg-white del tbody) */
+body.br-layout .br-table-footer-stripe > td {
+  padding-top: var(--br-table-footer-cell-pad-y);
+  padding-bottom: var(--br-table-footer-cell-pad-y);
+  vertical-align: middle;
+  background-color: var(--br-table-footer-stripe-fallback) !important;
+  background-color: var(--br-table-footer-stripe) !important;
+}
+
+body.br-layout .br-table-footer-stripe__label {
+  font-size: var(--br-table-footer-label-size);
+  font-weight: var(--br-table-footer-label-weight);
+  letter-spacing: var(--br-table-footer-label-tracking);
+  color: var(--br-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 575.98px) {
+  .br-amount-inline__sign {
+    font-size: var(--br-amount-sign-size-sm);
+    margin-right: var(--br-amount-sign-gap-sm);
+  }
+
+  .br-amount-inline__amount {
+    font-size: var(--br-amount-value-size-sm);
+  }
+
+  .br-amount-inline--emphasis .br-amount-inline__amount {
+    font-size: var(--br-amount-em-value-size-sm);
+  }
+
+  body.br-layout .br-table-footer-stripe__label {
+    font-size: var(--br-table-footer-label-size-sm);
+  }
+}
+
+/* Tabla de detalle sin filas: ilustración + texto + .br-link */
+.br-table-detail-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0;
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 0.75rem 0 0.35rem;
+  border: none;
+  background: transparent;
+  box-shadow: none;
+}
+
+.br-table-detail-empty__top {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  padding: 0.5rem 0.5rem 0.65rem;
+  background: transparent;
+}
+
+.br-table-detail-empty__body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  max-width: min(36rem, 100%);
+}
+
+.br-table-detail-empty__img {
+  display: block;
+  flex-shrink: 0;
+  width: min(88px, 22vw);
+  height: auto;
+  max-height: 74px;
+  object-fit: contain;
+  user-select: none;
+  pointer-events: none;
+}
+
+svg.br-table-detail-empty__img {
+  overflow: visible;
+}
+
+.br-table-detail-empty__text {
+  margin: 0.45rem 0 0;
+  max-width: 32rem;
+  padding: 0 0.75rem;
+  color: var(--br-text-muted);
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1.55;
+  text-align: center;
+  text-wrap: balance;
+}
+
+.br-table-detail-empty__text .br-table-detail-empty__link {
+  display: inline;
+  font-weight: 600;
+}
+
+@media (min-width: 768px) {
+  .br-table-detail-empty {
+    padding: 0.85rem 0 0.4rem;
+  }
+
+  .br-table-detail-empty__top {
+    padding: 1rem 1.25rem 1.1rem;
+  }
+
+  .br-table-detail-empty__img {
+    width: 100px;
+    max-height: 84px;
+  }
+
+  .br-table-detail-empty__text {
+    font-size: 0.9375rem;
+  }
+}

@@ -1,11 +1,3 @@
-@charset "UTF-8";
-/*
- * Archivo generado: public/System/assets/css/br-login.css
- * Fuente: resources/css/System/br-login (login y accesos invitados).
- * No editar este archivo directamente; modifica los parciales y ejecuta npm run build:css:system.
- */
-
-/* Source: resources/css/System/br-login/00-login.css */
 /**
  * br-login.css — Pantalla de login invitado (guests/auth + System/auth/login.blade.php)
  *

@@ -74,6 +74,12 @@ Orden de carga recomendado:
 - `custom.css`.
 - CSS especializado de pantalla, por ejemplo `br-login.css`, siempre después de `br-branding.css`.
 
+Los CSS públicos de System se generan desde parciales en `resources/css/System`. Editar los parciales y ejecutar `npm run build:css:system`; no editar directamente `public/System/assets/css/br-branding.css`, `custom.css`, `br-login.css` ni `demo.css`.
+
+`resources/css/System/platform.css` mantiene el mismo orden de parciales y queda preparado como entry de Vite. Mientras los layouts sigan usando `<link rel="stylesheet">`, el comando de build CSS conserva los archivos públicos compatibles.
+
+Los CSS de plantilla en `public/System/assets/vendor/css/core.css`, `public/System/assets/vendor/css/rtl/core.css`, `public/System/assets/vendor/css/theme-default.css` y `public/System/assets/vendor/css/rtl/theme-default.css` no deben introducir colores de marca fijos. La paleta primary heredada de Vuexy se mapea a tokens `--br-vuexy-*`, definidos en `br-branding/00-tokens.css`, para evitar conflictos con `!important` y permitir personalizar la marca desde un solo archivo.
+
 Las clases nuevas reutilizables deben iniciar con `br-`.
 
 ## UI y UX
