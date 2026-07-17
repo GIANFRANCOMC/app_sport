@@ -71,6 +71,7 @@ class HomeController extends BaseController {
             $data = [
                 "show_actions"        => $validated["show_actions"],
                 "show_only_favorites" => $validated["show_only_favorites"],
+                "show_descriptions"   => $validated["show_descriptions"],
                 "records"             => []
             ];
 

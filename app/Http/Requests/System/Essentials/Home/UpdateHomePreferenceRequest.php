@@ -9,6 +9,8 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class UpdateHomePreferenceRequest extends FormRequest {
 
+    private const HIDDEN_HOME_DIRECTORY_SLUGS = ["sc_home", "sc_dashboard"];
+
     public function authorize(): bool {
 
         $user = $this->user();
@@ -31,7 +33,8 @@ class UpdateHomePreferenceRequest extends FormRequest {
                                 ->where("status", "active")
                                 ->whereHas("subSection", function($query) {
 
-                                    $query->where("status", "active");
+                                    $query->where("status", "active")
+                                          ->whereNotIn("slug", self::HIDDEN_HOME_DIRECTORY_SLUGS);
 
                                 })
                                 ->exists();
@@ -43,6 +46,7 @@ class UpdateHomePreferenceRequest extends FormRequest {
         return [
             "show_actions"        => ["required", "boolean"],
             "show_only_favorites" => ["required", "boolean"],
+            "show_descriptions"   => ["required", "boolean"],
             "is_favorite"         => ["sometimes", "boolean"]
         ];
 

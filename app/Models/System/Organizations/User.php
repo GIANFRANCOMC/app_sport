@@ -97,13 +97,22 @@ class User extends Authenticatable {
 
     public function getFormattedPreferencesAttribute() {
 
-        if(!$this->relationLoaded("preferences")) {
+        if($this->relationLoaded("preferences")) {
 
-            return [];
+            $preferences = $this->getRelation("preferences");
+
+        }else {
+
+            $preferences = $this->preferences()
+                                ->where("company_id", $this->company_id)
+                                ->get();
+
+            $this->setRelation("preferences", $preferences);
 
         }
 
-        return $this->getRelation("preferences")
+        return $preferences
+                    ->where("company_id", (int) $this->company_id)
                     ->mapWithKeys(function ($e) {
 
                         return [$e->slug => json_decode($e->value)];

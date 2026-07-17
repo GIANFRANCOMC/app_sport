@@ -24,7 +24,7 @@ return new class extends Migration {
             $table->enum("delivery_mode", ["immediate", "pending"])->default("immediate");
             $table->enum("delivery_status", ["pending", "partial", "delivered", "canceled"])->default("delivered");
             $table->timestamp("delivered_at")->nullable();
-            $table->integer("delivered_by")->nullable();
+            $table->unsignedBigInteger("delivered_by")->nullable();
             $table->string("delivery_observation", 500)->nullable();
             $table->decimal("subtotal", 16, 4)->default(0);
             $table->decimal("tax", 16, 4)->default(0);

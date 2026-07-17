@@ -8,6 +8,8 @@ Home no decide qué módulos tiene contratados o habilitados una empresa. Esa di
 
 Los favoritos también se muestran en la barra superior de todas las pantallas de System. De esta manera, Home funciona como configurador y la navbar como acceso rápido global.
 
+Inicio y Dashboard se excluyen del directorio de Home porque son accesos estructurales de la plataforma, no módulos configurables por el usuario. No se listan en esta pantalla ni se permite marcarlos como favoritos desde el endpoint de Home.
+
 ## Archivos
 
 - Ruta: `routes/System/Essentials/Home.php`
@@ -35,6 +37,8 @@ Los favoritos también se muestran en la barra superior de todas las pantallas d
 10. Después de guardar, Home emite el evento `br:preferences-updated`.
 11. El layout escucha el evento y actualiza la lista y el contador sin recargar la página.
 
+La lectura de preferencias debe cargar siempre la relación `preferences` por `company_id` antes de exponer `window.preferences`. Si la relación no llega precargada, el accesor `formatted_preferences` consulta las preferencias activas del usuario y evita que Home vuelva a valores por defecto después de recargar la pantalla.
+
 La caché del menú se invalida automáticamente mediante `CompanySubSectionObserver` cuando cambia la habilitación de módulos para una empresa. Ya no depende de un listener ejecutado al autenticar al usuario.
 
 ## Configuración de interfaz
@@ -46,6 +50,7 @@ La configuración incluye:
 - `eyebrow`, `title`, `subtitle` y `modulesAriaLabel`.
 - `filters.search`: placeholder, etiqueta accesible y tooltip para limpiar.
 - `filters.favorites`: texto y tooltip del filtro.
+- `filters.descriptions`: texto y tooltip para mostrar u ocultar la descripción breve de cada acceso.
 - `empty`: mensajes para favoritos vacíos, búsquedas sin resultados y ausencia de módulos.
 - `favorites`: tooltips para agregar o quitar.
 - `confirmations`: título, mensaje y botones de cada confirmación.
@@ -82,6 +87,7 @@ Estructura:
 {
   "show_actions": false,
   "show_only_favorites": false,
+  "show_descriptions": true,
   "sub_sections": [
     {
       "sub_section_id": 30,
@@ -94,6 +100,7 @@ Estructura:
 
 - `show_actions`: campo de compatibilidad. La interfaz actual lo envía siempre como `false`.
 - `show_only_favorites`: filtra Home para mostrar únicamente favoritos.
+- `show_descriptions`: muestra u oculta la descripción breve de cada acceso sin afectar la búsqueda ni la disponibilidad del módulo.
 - `visible_in_menu`: dato heredado que puede ser consumido por el menú lateral, pero ya no se modifica desde Home.
 - `is_favorite`: única preferencia de subsección editable desde Home.
 
@@ -102,11 +109,15 @@ Estructura:
 - Requiere usuario autenticado.
 - Solo se puede marcar como favorita una subsección activa de la empresa del usuario.
 - El id `0` se reserva para guardar el filtro global de favoritos sin modificar subsecciones.
+- El frontend llama explícitamente a `/home/0` para guardar preferencias globales; el helper genérico de `PATCH` considera `0` como vacío y por eso Home construye esa URL directamente.
+- Las subsecciones con slug `sc_home` y `sc_dashboard` no se pueden marcar como favoritas desde Home.
 - Las actualizaciones parciales conservan el valor no enviado.
 - El endpoint de Home no acepta cambios de `visible_in_menu`.
 - Las subsecciones duplicadas dentro del JSON se normalizan por `sub_section_id`.
 - Si existen varias preferencias activas con el mismo usuario/slug, se conserva la más reciente y las anteriores pasan a `inactive`.
 - El backend devuelve las preferencias actualizadas y Vue refleja el cambio sin recargar Home.
+- La respuesta del backend usa `formatted_preferences` con carga real de la relación; no debe devolver `[]` solo porque `preferences` no estaba precargada.
+- Si la respuesta llega con una estructura incompleta o la memoria del navegador conserva preferencias antiguas, Vue reconstruye localmente la preferencia modificada y emite `br:preferences-updated` para mantener sincronizada la navbar.
 - El filtro de favoritos también filtra las subsecciones dentro de cada sección.
 - Home comunica las preferencias actualizadas al layout mediante un evento del navegador.
 - El layout crea los elementos dinámicos con APIs del DOM y `textContent`, evitando insertar etiquetas provenientes de datos.
@@ -118,17 +129,19 @@ Estructura:
 
 ## Interfaz
 
+- Breadcrumb compacto al inicio de la pantalla con la ubicación `Inicio > Favoritos`, reutilizando el componente global `Breadcrumb`.
 - Encabezado configurable, sin fondo decorativo, separado del contenido por un borde gris suave.
 - En escritorio, título y controles comparten una franja compacta; en pantallas menores los controles pasan a una segunda fila.
 - Búsqueda local por módulo o acceso, tolerante a mayúsculas y tildes.
 - El buscador oculta el control de limpieza nativo del navegador y conserva un único botón configurable.
 - Filtro para mostrar únicamente favoritos.
+- Filtro para mostrar u ocultar descripciones, útil cuando la empresa tiene muchos módulos activos.
+- Al ocultar descripciones se activa un modo compacto: filas, encabezados, iconos y botón de favorito reducen su altura para mostrar más módulos por pantalla.
 - Directorio responsive en dos columnas de escritorio y una columna móvil.
 - Filas compactas con título y descripción breve del acceso.
-- Accesos directos por subsección.
+- Accesos directos por subsección mediante toda la fila clicable; no se muestra una flecha adicional para evitar ruido visual.
 - Un único control de estrella amarilla para agregar o quitar favoritos.
-- La flecha de navegación y el botón de favorito mantienen separación independiente para evitar acciones visualmente amontonadas.
-- La flecha de navegación permanece visible, usa mayor grosor y aumenta su énfasis durante hover o foco.
+- El botón de favorito queda separado de la zona de navegación para evitar acciones visualmente amontonadas.
 - Tooltips descriptivos en controles con iconos.
 - Navegación por teclado y etiquetas `aria-label` en acciones.
 - Responsive en dos o una columna.
@@ -194,6 +207,14 @@ El acceso global se encuentra dentro de la navbar de `resources/views/System/lay
 - Índices computados con `Set` para validar módulos disponibles y favoritos.
 - Persistencia protegida con restauración y limpieza garantizada mediante `try/catch/finally`.
 - Limpieza de tooltips durante el desmontaje del componente.
+- Breadcrumb integrado como patrón base para módulos de entrada similares.
+- Eliminación de la flecha visual en cada acceso de Home.
+- Actualización local robusta de preferencias cuando se agrega o quita un favorito, con sincronización inmediata del panel global de favoritos.
+- Preferencia `show_descriptions` incorporada a frontend, backend y JSON de usuario.
+- Corrección del guardado de filtros globales usando `/home/0`, evitando que `Solo favoritos` o `Mostrar descripción` se reviertan después de guardar.
+- Corrección de permanencia al recargar: `formatted_preferences` ya no depende de que la relación venga precargada y el layout fuerza la carga por empresa antes de construir `window.preferences`.
+- Modo compacto cuando se ocultan descripciones.
+- Exclusión de Inicio y Dashboard del directorio configurable de Home.
 
 ## Decisiones de evolución
 

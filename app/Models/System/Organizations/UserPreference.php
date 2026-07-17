@@ -147,6 +147,7 @@ class UserPreference extends Model {
                 $userPreference->value = json_encode([
                     "show_actions"        => (bool) ($data["show_actions"] ?? false),
                     "show_only_favorites" => (bool) ($data["show_only_favorites"] ?? false),
+                    "show_descriptions"   => (bool) ($data["show_descriptions"] ?? true),
                     "sub_sections"        => $subSectionsValue->values()
                 ]);
 

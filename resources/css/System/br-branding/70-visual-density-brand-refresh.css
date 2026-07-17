@@ -37,9 +37,7 @@ body.br-layout {
 
 .br-layout .br-layout-content {
   background-color: var(--br-surface);
-  background-image:
-    radial-gradient(circle at top right, color-mix(in srgb, var(--br-primary) 6%, transparent), transparent 26rem),
-    linear-gradient(180deg, color-mix(in srgb, var(--br-primary) 3%, transparent) 0%, transparent 18rem);
+  background-image: none;
 }
 
 /* Tipografía de formulario más silenciosa y consistente */

@@ -1,5 +1,7 @@
 <template>
-    <main class="br-home">
+    <main :class="['br-home', {'br-home--compact': !showDescriptions}]">
+        <Breadcrumb :list="breadcrumbItems"/>
+
         <header class="br-home__header">
             <div class="br-home__heading">
                 <p class="br-home__eyebrow mb-1">{{ page.eyebrow }}</p>
@@ -45,6 +47,22 @@
                         {{ page.filters.favorites.label }}
                     </label>
                 </div>
+
+                <div class="form-check form-switch br-home__filter">
+                    <input
+                        id="toggleDescriptions"
+                        class="form-check-input"
+                        type="checkbox"
+                        v-model="forms.entity.createUpdate.config.show_descriptions"
+                        :disabled="isSaving"
+                        data-bs-toggle="tooltip"
+                        data-bs-placement="bottom"
+                        :title="page.filters.descriptions.tooltip"
+                        @change="saveGlobalPreferences">
+                    <label for="toggleDescriptions" class="form-check-label">
+                        {{ page.filters.descriptions.label }}
+                    </label>
+                </div>
             </div>
         </header>
 
@@ -69,11 +87,10 @@
                         <a class="br-home-access__link" :href="subSection.dom_route_url">
                             <span class="br-home-access__content">
                                 <span class="br-home-access__label">{{ subSection.dom_label }}</span>
-                                <span v-if="subSection.description" class="br-home-access__description">
+                                <span v-if="showDescriptions && subSection.description" class="br-home-access__description">
                                     {{ subSection.description }}
                                 </span>
                             </span>
-                            <i class="fa-solid fa-arrow-right br-home-access__arrow" aria-hidden="true"></i>
                         </a>
 
                         <button
@@ -105,10 +122,15 @@ import * as Requests from "@System/Helpers/Requests.js";
 import * as Utils from "@System/Helpers/Utils.js";
 
 const PREFERENCES_UPDATED_EVENT = "br:preferences-updated";
+const HIDDEN_HOME_DIRECTORY_SLUGS = new Set(["sc_home", "sc_dashboard"]);
 
 const PAGE_CONFIG = {
     eyebrow: "Plataforma de trabajo",
     title: "Favoritos",
+    breadcrumb: [
+        {title: "Inicio"},
+        {title: "Favoritos", active: true}
+    ],
     subtitle: "Accede a los módulos habilitados para tu empresa.",
     modulesAriaLabel: "Módulos disponibles",
     active: true,
@@ -124,6 +146,10 @@ const PAGE_CONFIG = {
         favorites: {
             label: "Solo favoritos",
             tooltip: "Mostrar únicamente los accesos marcados como favoritos"
+        },
+        descriptions: {
+            label: "Mostrar descripción",
+            tooltip: "Mostrar u ocultar la descripción breve de cada acceso"
         }
     },
     empty: {
@@ -156,7 +182,8 @@ function createForms() {
         entity: {
             createUpdate: {
                 config: {
-                    show_only_favorites: false
+                    show_only_favorites: false,
+                    show_descriptions: true
                 },
                 errors: {}
             }
@@ -255,6 +282,8 @@ export default {
 
             this.forms.entity.createUpdate.config.show_only_favorites =
                 this.preferenceCompaniesSubSection?.show_only_favorites ?? false;
+            this.forms.entity.createUpdate.config.show_descriptions =
+                this.preferenceCompaniesSubSection?.show_descriptions ?? true;
 
         },
         refreshTooltips() {
@@ -265,6 +294,16 @@ export default {
         isFavorite(subSection) {
 
             return this.favoriteSubSectionIdSet.has(Number(subSection?.id));
+
+        },
+        isVisibleHomeDirectorySection(section) {
+
+            return !HIDDEN_HOME_DIRECTORY_SLUGS.has(String(section?.slug ?? ""));
+
+        },
+        isVisibleHomeDirectorySubSection(subSection) {
+
+            return !HIDDEN_HOME_DIRECTORY_SLUGS.has(String(subSection?.slug ?? ""));
 
         },
         favoriteTooltip(subSection) {
@@ -286,26 +325,32 @@ export default {
 
             try {
 
+                const payload = Utils.cloneJson({
+                    show_actions: false,
+                    show_only_favorites: this.forms.entity.createUpdate.config.show_only_favorites,
+                    show_descriptions: this.forms.entity.createUpdate.config.show_descriptions,
+                    ...data
+                });
+                const isGlobalPreference = Number(subSectionId) === 0;
                 const result = await Requests.patch({
-                    route: this.config.entity.routes.store,
-                    data: Utils.cloneJson({
-                        show_actions: false,
-                        show_only_favorites: this.forms.entity.createUpdate.config.show_only_favorites,
-                        ...data
-                    }),
-                    id: subSectionId
+                    route: isGlobalPreference
+                        ? `${this.config.entity.routes.update}/0`
+                        : this.config.entity.routes.update,
+                    data: payload,
+                    id: isGlobalPreference ? "" : subSectionId
                 });
                 const isValid = Requests.valid({result});
 
                 if(isValid) {
 
-                    this.config.essential.preferences =
-                        window.preferences =
-                        result?.data?.data?.preferences || [];
+                    const responsePreferences = this.resolvePreferencesFromResult(result);
+                    const preferences = this.buildUpdatedPreferences(
+                        responsePreferences ?? this.config.essential.preferences,
+                        payload,
+                        subSectionId
+                    );
 
-                    window.dispatchEvent(new CustomEvent(PREFERENCES_UPDATED_EVENT, {
-                        detail: {preferences: window.preferences}
-                    }));
+                    this.applyPreferences(preferences);
 
                 }else {
 
@@ -328,6 +373,73 @@ export default {
                 this.refreshTooltips();
 
             }
+
+        },
+        resolvePreferencesFromResult(result) {
+
+            return result?.data?.data?.preferences
+                ?? result?.data?.preferences
+                ?? result?.data?.data?.data?.preferences
+                ?? null;
+
+        },
+        buildUpdatedPreferences(preferences, payload, subSectionId = 0) {
+
+            const nextPreferences = Utils.cloneJson(preferences || {});
+            const slug = "config_companies_sub_sections";
+            const current = nextPreferences[slug] || {};
+            const subSections = Array.isArray(current.sub_sections)
+                ? current.sub_sections
+                : [];
+
+            nextPreferences[slug] = {
+                ...current,
+                show_actions: Boolean(payload.show_actions ?? current.show_actions ?? false),
+                show_only_favorites: Boolean(payload.show_only_favorites ?? current.show_only_favorites ?? false),
+                show_descriptions: Boolean(payload.show_descriptions ?? current.show_descriptions ?? true),
+                sub_sections: subSections
+            };
+
+            if(subSectionId > 0 && Object.prototype.hasOwnProperty.call(payload, "is_favorite")) {
+
+                const normalizedId = Number(subSectionId);
+                const index = subSections.findIndex(preference =>
+                    Number(preference?.sub_section_id) === normalizedId
+                );
+                const previous = index >= 0 ? subSections[index] : {};
+                const nextRecord = {
+                    ...previous,
+                    sub_section_id: normalizedId,
+                    visible_in_menu: previous?.visible_in_menu ?? true,
+                    is_favorite: Boolean(payload.is_favorite)
+                };
+
+                if(index >= 0) {
+
+                    subSections.splice(index, 1, nextRecord);
+
+                }else {
+
+                    subSections.push(nextRecord);
+
+                }
+
+            }
+
+            return nextPreferences;
+
+        },
+        applyPreferences(preferences) {
+
+            this.config.essential = {
+                ...this.config.essential,
+                preferences
+            };
+            window.preferences = preferences;
+
+            window.dispatchEvent(new CustomEvent(PREFERENCES_UPDATED_EVENT, {
+                detail: {preferences}
+            }));
 
         },
         async saveGlobalPreferences() {
@@ -393,8 +505,11 @@ export default {
 
             return new Set(
                 (this.config?.essential?.sections ?? [])
+                    .filter(section => this.isVisibleHomeDirectorySection(section))
                     .flatMap(section =>
-                        (section.sub_sections ?? []).map(subSection => Number(subSection.id))
+                        (section.sub_sections ?? [])
+                            .filter(subSection => this.isVisibleHomeDirectorySubSection(subSection))
+                            .map(subSection => Number(subSection.id))
                     )
             );
 
@@ -411,7 +526,8 @@ export default {
         },
         sections() {
 
-            const sections = this.config?.essential?.sections ?? [];
+            const sections = (this.config?.essential?.sections ?? [])
+                .filter(section => this.isVisibleHomeDirectorySection(section));
             const query = normalizeSearchValue(this.searchTerm);
             const onlyFavorites = this.forms.entity.createUpdate.config.show_only_favorites;
 
@@ -419,7 +535,9 @@ export default {
                 .map(section => {
 
                     const sectionMatches = normalizeSearchValue(section?.dom_label).includes(query);
-                    const subSections = (section.sub_sections ?? []).filter(subSection => {
+                    const subSections = (section.sub_sections ?? [])
+                        .filter(subSection => this.isVisibleHomeDirectorySubSection(subSection))
+                        .filter(subSection => {
 
                         const matchesFavorite = !onlyFavorites || this.isFavorite(subSection);
                         const matchesSearch = !query
@@ -429,7 +547,7 @@ export default {
 
                         return matchesFavorite && matchesSearch;
 
-                    });
+                        });
 
                     return {...section, sub_sections: subSections};
 
@@ -452,6 +570,16 @@ export default {
             }
 
             return this.page.empty.modules;
+
+        },
+        showDescriptions() {
+
+            return this.forms.entity.createUpdate.config.show_descriptions;
+
+        },
+        breadcrumbItems() {
+
+            return this.page.breadcrumb;
 
         }
     },
