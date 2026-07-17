@@ -6,17 +6,15 @@ body.br-layout {
   background-color: var(--br-surface);
 }
 
-/* --- [br-layout] Velo bajo navbar fijo --- */
+/* --- [br-layout] Navbar fijo limpio, sin velo superior --- */
 html.layout-navbar-fixed body.br-layout .layout-page:before {
-  backdrop-filter: saturate(200%) blur(10px);
-  background: linear-gradient(
-    180deg,
-    color-mix(in srgb, var(--br-surface) 92%, transparent) 44%,
-    color-mix(in srgb, var(--br-surface) 55%, transparent) 73%,
-    transparent
-  );
-  -webkit-mask: linear-gradient(var(--br-surface), var(--br-surface) 18%, transparent 100%);
-  mask: linear-gradient(var(--br-surface), var(--br-surface) 18%, transparent 100%);
+  display: none !important;
+  height: 0 !important;
+  background: transparent !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  -webkit-mask: none !important;
+  mask: none !important;
 }
 
 /* --- [br-layout] Fondo del sidebar (.br-menu-brand) --- */
@@ -116,12 +114,12 @@ html:not(.layout-menu-collapsed) .br-layout .br-menu-brand .menu-inner .menu-ite
 }
 
 .br-brand-avatar {
-  width: 60px;
-  height: 60px;
+  width: 42px;
+  height: 42px;
   box-shadow:
-    0 0 0 2px color-mix(in srgb, var(--br-white) 35%, transparent),
-    0 0 14px color-mix(in srgb, var(--br-primary) 22%, transparent),
-    0 10px 24px color-mix(in srgb, var(--br-black) 20%, transparent);
+    0 0 0 1px color-mix(in srgb, var(--br-white) 32%, transparent),
+    0 0 7px color-mix(in srgb, var(--br-primary) 14%, transparent),
+    0 4px 10px color-mix(in srgb, var(--br-black) 14%, transparent);
 }
 
 /* --- [br] Perfil en sidebar — empresa, usuario, rol (.br-sidebar-profile*) --- */
@@ -132,9 +130,9 @@ html:not(.layout-menu-collapsed) .br-layout .br-menu-brand .menu-inner .menu-ite
 .br-sidebar-profile {
   display: flex;
   align-items: center;
-  gap: 1.1rem;
-  padding-bottom: 0.65rem;
-  margin-bottom: 0.15rem;
+  gap: 0.72rem;
+  padding-bottom: 0.58rem;
+  margin-bottom: 0.12rem;
   text-align: left;
 }
 
@@ -168,10 +166,10 @@ html:not(.layout-menu-collapsed) .br-layout .br-menu-brand .menu-inner .menu-ite
 .br-sidebar-profile-user {
   margin: 0;
   width: 100%;
-  font-size: 1.0625rem;
+  font-size: 0.86rem;
   font-weight: 700;
-  line-height: 1.25;
-  letter-spacing: -0.03em;
+  line-height: 1.15;
+  letter-spacing: 0;
   color: var(--br-white) !important;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -183,11 +181,11 @@ html:not(.layout-menu-collapsed) .br-layout .br-menu-brand .menu-inner .menu-ite
   margin: 0;
   padding: 0;
   max-width: 100%;
-  font-size: 0.5625rem;
+  font-size: 0.52rem;
   font-weight: 500;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  line-height: 1.35;
+  line-height: 1.2;
   color: color-mix(in srgb, var(--br-primary-muted) 92%, transparent) !important;
   background: none !important;
   border: none !important;
@@ -267,11 +265,11 @@ html:not(.layout-menu-collapsed) .br-layout .br-menu-brand .menu-inner .menu-ite
 
 /* --- [br-layout] Barra superior (navbar) --- */
 .br-layout-navbar.bg-navbar-theme {
-  background: linear-gradient(180deg, color-mix(in srgb, var(--br-white) 98%, transparent) 0%, color-mix(in srgb, var(--br-navbar-surface-soft) 96%, transparent) 100%) !important;
-  backdrop-filter: blur(12px) saturate(160%);
-  -webkit-backdrop-filter: blur(12px) saturate(160%);
-  border-bottom: 1px solid color-mix(in srgb, var(--br-primary) 12%, transparent) !important;
-  box-shadow: 0 2px 12px color-mix(in srgb, var(--br-primary) 6%, transparent) !important;
+  background: var(--br-white) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border-bottom: 1px solid color-mix(in srgb, var(--br-border) 82%, var(--br-white)) !important;
+  box-shadow: none !important;
 }
 
 .br-layout .layout-menu-toggle .nav-link {
@@ -287,9 +285,9 @@ html:not(.layout-menu-collapsed) .br-layout .br-menu-brand .menu-inner .menu-ite
   display: flex !important;
   justify-content: center !important;
   align-items: center !important;
-  margin-top: 0.2rem !important;
-  margin-bottom: 0.125rem;
-  padding-top: 0.5rem !important;
+  margin-top: 0.12rem !important;
+  margin-bottom: 0.08rem;
+  padding-top: 0.28rem !important;
 }
 
 .br-layout .br-menu-brand.menu-vertical .menu-inner > .menu-item.br-menu-logout-item > .menu-link.br-menu-logout {
@@ -307,7 +305,7 @@ html:not(.layout-menu-collapsed) .br-layout .br-menu-brand .menu-inner .menu-ite
   color: inherit !important;
   flex: 0 0 auto !important;
   font-weight: 600;
-  font-size: 0.875rem;
+  font-size: var(--br-btn-font-size-sm);
   letter-spacing: 0.01em;
   text-decoration: none !important;
   overflow: visible;
@@ -322,7 +320,7 @@ html:not(.layout-menu-collapsed) .br-layout .br-menu-brand .menu-inner .menu-ite
   overflow: hidden;
   border-radius: var(--br-radius-sm);
   background: var(--br-danger) !important;
-  min-height: 2.35rem;
+  min-height: var(--br-btn-height-sm);
   box-sizing: border-box;
 }
 
@@ -331,12 +329,12 @@ html:not(.layout-menu-collapsed) .br-layout .br-menu-brand .menu-inner .menu-ite
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  width: 2.35rem;
-  min-width: 2.35rem;
-  height: 2.35rem;
+  width: var(--br-btn-height-sm);
+  min-width: var(--br-btn-height-sm);
+  height: var(--br-btn-height-sm);
   box-sizing: border-box;
   background: transparent;
-  font-size: 1.05rem;
+  font-size: 0.78rem;
   color: var(--br-white) !important;
   transition:
     width 0.4s cubic-bezier(0.4, 0, 0.2, 1),
@@ -362,7 +360,7 @@ html:not(.layout-menu-collapsed) .br-layout .br-menu-brand .menu-inner .menu-ite
   overflow: hidden;
   white-space: nowrap;
   font-weight: 600;
-  font-size: 0.875rem;
+  font-size: var(--br-btn-font-size-sm);
   letter-spacing: 0.01em;
   line-height: 1.2;
   color: var(--br-white) !important;
@@ -385,7 +383,7 @@ html:not(.layout-menu-collapsed) .br-layout .br-menu-brand .menu-inner .menu-ite
 .br-layout .br-menu-brand.menu-vertical .menu-inner > .menu-item.br-menu-logout-item > .menu-link.br-menu-logout:focus-within .br-menu-logout__label {
   max-width: 12rem;
   opacity: 1;
-  padding: 0.55rem 1.1rem;
+  padding: 0 var(--br-btn-padding-x);
 }
 
 /* Celular (≤ sm): solo texto «Cerrar sesión», sin icono */

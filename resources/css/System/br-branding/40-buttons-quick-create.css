@@ -6,8 +6,9 @@
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  padding: 0.5625rem 1.125rem;
-  font-size: 0.9375rem;
+  min-height: var(--br-btn-height);
+  padding: var(--br-btn-padding-y) var(--br-btn-padding-x);
+  font-size: var(--br-btn-font-size);
   font-weight: 600;
   line-height: 1.4;
   border-radius: var(--br-radius);
@@ -32,23 +33,26 @@
 }
 
 .br-btn-sm {
-  padding: 0.375rem 0.75rem;
-  font-size: 0.8125rem;
+  min-height: var(--br-btn-height-sm);
+  padding: calc(var(--br-btn-padding-y) * 0.82) calc(var(--br-btn-padding-x) * 0.86);
+  font-size: var(--br-btn-font-size-sm);
   border-radius: var(--br-radius-sm);
 }
 
 /** Extra pequeño (iconos compactos, acciones en línea) */
 .br-btn-xs {
-  padding: 0.25rem 0.4375rem;
-  font-size: 0.75rem;
+  min-height: var(--br-btn-height-xs);
+  padding: calc(var(--br-btn-padding-y) * 0.68) calc(var(--br-btn-padding-x) * 0.68);
+  font-size: calc(var(--br-btn-font-size-sm) - 0.03rem);
   line-height: 1.25;
   gap: 0.25rem;
   border-radius: var(--br-radius-sm);
 }
 
 .br-btn-lg {
-  padding: 0.6875rem 1.375rem;
-  font-size: 1rem;
+  min-height: calc(var(--br-btn-height) + 0.22rem);
+  padding: calc(var(--br-btn-padding-y) + 0.12rem) calc(var(--br-btn-padding-x) + 0.32rem);
+  font-size: calc(var(--br-btn-font-size) + 0.08rem);
   border-radius: var(--br-radius-lg);
 }
 

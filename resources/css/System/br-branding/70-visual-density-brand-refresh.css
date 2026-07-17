@@ -16,13 +16,13 @@
   --br-control-padding-x: 0.68rem;
   --br-control-padding-y: 0.38rem;
 
-  --br-btn-height: 2.14rem;
-  --br-btn-height-sm: 1.92rem;
-  --br-btn-height-xs: 1.68rem;
-  --br-btn-padding-x: 0.82rem;
-  --br-btn-padding-y: 0.4rem;
-  --br-btn-font-size: 0.835rem;
-  --br-btn-font-size-sm: 0.76rem;
+  --br-btn-height: 2rem;
+  --br-btn-height-sm: 1.78rem;
+  --br-btn-height-xs: 1.52rem;
+  --br-btn-padding-x: 0.72rem;
+  --br-btn-padding-y: 0.34rem;
+  --br-btn-font-size: 0.79rem;
+  --br-btn-font-size-sm: 0.71rem;
 
   --br-table-cell-pad-y: 0.54rem;
   --br-table-cell-pad-x: 0.68rem;
@@ -374,7 +374,7 @@ body.br-layout .modal-header.br-modal-header {
   :root {
     --br-font-size-page: 0.84rem;
     --br-control-height: 2.12rem;
-    --br-btn-height: 2.1rem;
+    --br-btn-height: 1.96rem;
     --br-table-cell-pad-x: 0.58rem;
   }
 

@@ -553,35 +553,46 @@ html.layout-navbar-fixed body.br-layout .layout-wrapper:not(.layout-horizontal):
 }
 
 html.layout-navbar-fixed body.br-layout .layout-page:before {
-  height: 3.35rem;
-  background: transparent;
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
+  display: none !important;
+  height: 0 !important;
+  background: transparent !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  -webkit-mask: none !important;
+  mask: none !important;
 }
 
 .br-layout .br-layout-navbar.navbar-detached {
-  left: var(--br-sidebar-width, 14.25rem);
-  right: 0;
-  width: calc(100% - var(--br-sidebar-width, 14.25rem));
-  max-width: none;
+  left: 0 !important;
+  right: 0 !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box;
   min-height: 2.95rem !important;
   height: 2.95rem;
   margin-top: 0;
   margin-bottom: 0;
-  margin-inline: 0;
+  margin-inline: 0 !important;
   padding: 0.26rem 1rem !important;
   border-radius: 0;
   border-left: 1px solid color-mix(in srgb, var(--br-primary) 14%, var(--br-border)) !important;
   border-right: 0 !important;
   border-bottom: 1px solid color-mix(in srgb, var(--br-primary) 16%, var(--br-border)) !important;
-  background:
-    linear-gradient(90deg, color-mix(in srgb, var(--br-primary-soft) 42%, var(--br-white)) 0%, var(--br-white) 34%, color-mix(in srgb, var(--br-secondary-soft) 34%, var(--br-white)) 100%) !important;
-  box-shadow: 0 1px 0 color-mix(in srgb, var(--br-secondary) 5%, transparent) !important;
+  background: var(--br-white) !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+.br-layout .br-layout-navbar.navbar-detached.container-xxl,
+.br-layout .br-layout-navbar.navbar-detached.container-fluid {
+  max-width: none !important;
 }
 
 html.layout-menu-collapsed body.br-layout .br-layout-navbar.navbar-detached {
-  left: var(--br-sidebar-collapsed-width, 5.25rem);
-  width: calc(100% - var(--br-sidebar-collapsed-width, 5.25rem));
+  left: 0 !important;
+  right: 0 !important;
+  width: 100% !important;
 }
 
 .br-navbar-shell {
@@ -602,35 +613,39 @@ html.layout-menu-collapsed body.br-layout .br-layout-navbar.navbar-detached {
 }
 
 .br-navbar-left {
-  flex: 1 1 auto;
+  flex: 0 1 auto;
+  max-width: calc(100% - 13rem);
+  justify-content: flex-start;
 }
 
 .br-navbar-actions {
   flex: 0 0 auto;
   margin-left: auto;
+  position: relative;
+  z-index: 2;
 }
 
 .br-navbar-icon-btn {
   display: inline-flex !important;
   align-items: center;
   justify-content: center;
-  width: 2.05rem;
-  height: 2.05rem;
+  width: 2rem;
+  height: 2rem;
   padding: 0 !important;
-  border: 1px solid color-mix(in srgb, var(--br-secondary) 18%, var(--br-border));
+  border: 1px solid color-mix(in srgb, var(--br-primary) 24%, var(--br-border));
   border-radius: var(--br-radius-sm);
-  color: var(--br-on-secondary) !important;
-  background: var(--br-secondary);
+  color: var(--br-secondary) !important;
+  background: color-mix(in srgb, var(--br-white) 86%, var(--br-primary-soft));
   transition: var(--br-transition);
 }
 
 .br-navbar-icon-btn:hover,
 .br-navbar-icon-btn:focus-visible {
-  border-color: var(--br-primary);
-  color: var(--br-on-secondary) !important;
-  background: var(--br-primary);
+  border-color: color-mix(in srgb, var(--br-primary) 54%, var(--br-border));
+  color: var(--br-primary-active) !important;
+  background: color-mix(in srgb, var(--br-primary-soft) 82%, var(--br-white));
   outline: none;
-  box-shadow: var(--br-shadow-sm);
+  box-shadow: var(--br-focus-ring);
 }
 
 .br-navbar-icon-btn i {
@@ -786,8 +801,9 @@ html.layout-menu-collapsed body.br-layout .br-layout-navbar.navbar-detached {
   }
 
   .br-layout .br-layout-navbar.navbar-detached {
-    left: 0;
-    width: 100%;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100% !important;
     height: 2.75rem;
     min-height: 2.75rem !important;
     padding-inline: 0.55rem !important;
@@ -805,6 +821,10 @@ html.layout-menu-collapsed body.br-layout .br-layout-navbar.navbar-detached {
 }
 
 @media (max-width: 575.98px) {
+  .br-navbar-left {
+    max-width: calc(100% - 2.8rem);
+  }
+
   .br-layout .br-navbar-favorites .br-fab-favorites__btn.br-navbar-favorites__btn {
     height: 2.1rem;
     padding-inline: 0.45rem;
