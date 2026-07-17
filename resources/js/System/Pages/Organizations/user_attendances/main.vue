@@ -199,7 +199,7 @@ export default {
     },
     computed: {
         breadcrumbTitles() {
-            return [{title: "Operación"}, {title: "Asistencia del personal", active: true}];
+            return [{title: "Gestión de colaboradores"}, {title: "Asistencia del personal", active: true}];
         },
         branchOptions() {
             return this.options.branches.map(record => ({...record, label: record.name}));
@@ -215,7 +215,7 @@ export default {
         }
     },
     mounted() {
-        Utils.navbarItem("menu-parent-operations", {addClass: "open"});
+        Utils.navbarItem("menu-parent-staff", {addClass: "open"});
         Utils.navbarItem("menu-user-attendances", {addClass: "active"});
         this.initParams();
     },

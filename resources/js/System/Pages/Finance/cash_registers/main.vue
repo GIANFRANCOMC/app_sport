@@ -559,7 +559,7 @@ import * as Utils from "@System/Helpers/Utils.js";
 const MODULE = {
     entity: "cash_registers",
     pageTitle: "Caja",
-    breadcrumbParent: "Operación"
+    breadcrumbParent: "Cajas"
 };
 
 const ROUTE_VIEW_MAP = {
@@ -672,7 +672,7 @@ export default {
     },
     mounted() {
         this.activeView = this.initialViewFromPath();
-        Utils.navbarItem("menu-parent-operations", {addClass: "open"});
+        Utils.navbarItem("menu-parent-cash", {addClass: "open"});
         Utils.navbarItem(this.activeMenuId(), {addClass: "active"});
         this.initParams();
     },

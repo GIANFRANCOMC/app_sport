@@ -440,7 +440,7 @@
             <div class="modal-content">
                 <div class="modal-header br-entity-modal__header">
                     <div>
-                        <p class="br-entity-modal__eyebrow mb-1">Operación</p>
+                        <p class="br-entity-modal__eyebrow mb-1">Restaurante y servicios</p>
                         <h2 class="modal-title br-entity-modal__title">{{ editingStationId ? 'Editar mesa' : 'Agregar mesa' }}</h2>
                     </div>
                     <button type="button" class="br-modal-close" data-bs-dismiss="modal" aria-label="Cerrar">
@@ -615,7 +615,7 @@ export default {
     computed: {
         breadcrumbTitles() {
             return [
-                {title: "Operación"},
+                {title: "Restaurante y servicios"},
                 {title: this.isRestaurant ? "Restaurante POS" : "Servicios en curso", active: true}
             ];
         },
@@ -663,7 +663,7 @@ export default {
         }
     },
     mounted() {
-        Utils.navbarItem("menu-parent-operations", {addClass: "open"});
+        Utils.navbarItem("menu-parent-restaurant-services", {addClass: "open"});
         Utils.navbarItem(this.isRestaurant ? "menu-restaurant-pos" : "menu-service-sessions", {addClass: "active"});
         this.timer = window.setInterval(() => { this.now = Date.now(); }, 30000);
         this.initParams();

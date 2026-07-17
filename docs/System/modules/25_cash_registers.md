@@ -40,30 +40,30 @@ La vista se monta desde:
 
 ## Menu
 
-- Cajas pertenece a la cabecera `Operacion`, junto con `Venta POS`.
-- La cabecera usa `menu-parent-operations` y se ordena por empresa con `companies_sub_sections.section_order`.
-- La cabecera `Operación` expone accesos independientes para perfiles: `Cajas`, `Aperturas y cierres`, `Movimientos` y `Resumen`.
+- Cajas pertenece a la cabecera `Cajas`, separada de Ventas y de Restaurante para que el usuario encuentre rápido apertura, arqueo y movimientos de dinero.
+- La cabecera usa `menu-parent-cash` y se ordena por empresa con `companies_sub_sections.section_order`.
+- La cabecera `Cajas` expone accesos independientes para perfiles: `Cajas`, `Aperturas y cierres`, `Movimientos`, `Resumen` y `Gastos varios`.
 
 ## UI implementada
 
-- Menu `Operacion > Cajas` con acceso `cash_registers.registers.index`.
-- Menu `Operacion > Aperturas y cierres` con acceso `cash_registers.sessions.index`.
-- Menu `Operacion > Movimientos` con acceso `cash_registers.movements.index`.
-- Menu `Operacion > Resumen` con acceso `cash_registers.summary.index`.
-- Accion `Agregar caja`: permite crear varias cajas por sucursal desde el modulo Caja. El codigo interno puede dejarse vacio y se genera automaticamente con prefijo `CAJ-`.
+- Menú `Cajas > Cajas` con acceso `cash_registers.registers.index`.
+- Menú `Cajas > Aperturas y cierres` con acceso `cash_registers.sessions.index`.
+- Menú `Cajas > Movimientos` con acceso `cash_registers.movements.index`.
+- Menú `Cajas > Resumen` con acceso `cash_registers.summary.index`.
+- Acción `Agregar caja`: permite crear varias cajas por sucursal desde el módulo Caja. El código interno puede dejarse vacío y se genera automáticamente con prefijo `CAJ-`.
 - Las acciones `Abrir caja` y `Cerrar caja` se muestran por cada caja del listado. No existen botones globales para evitar abrir o cerrar una caja equivocada.
-- Entrada `Venta POS` dentro de ventas usando el flujo de nueva venta, pero con titulo y menu propios.
+- Entrada `Venta POS` dentro de ventas usando el flujo de nueva venta, pero con título y menú propios.
 - Pestañas de Caja:
   - `Cajas`: estado de cada caja, sesion activa y monto esperado.
   - `Aperturas y cierres`: historial de sesiones, esperado, contado y diferencia.
   - `Resumen`: totales y desglose por metodo de pago.
   - `Movimientos`: trazabilidad de apertura, ventas, ajustes y cierre.
-- Accion `Registrar movimiento`: permite ingresos, salidas y ajustes manuales sobre una caja abierta, y solo se muestra dentro de la sección **Movimientos**.
-- Accion `Descargar`: exporta movimientos filtrados en CSV compatible con Excel.
+- Acción `Registrar movimiento`: permite ingresos, salidas y ajustes manuales sobre una caja abierta, y solo se muestra dentro de la sección **Movimientos**.
+- Acción `Descargar`: exporta movimientos filtrados en CSV compatible con Excel.
 - Modales con `data-bs-backdrop="static"` y `data-bs-keyboard="false"` para evitar cierre accidental.
 - Al cerrar una caja principal, la modal muestra un bloque de conteo físico con producto, almacén, saldo del sistema, conteo real, diferencia y observación por línea. El botón **Usar saldo sistema** precarga el conteo cuando no hay diferencias.
-- Cada acceso de menu abre la vista correspondiente mediante `/cash_registers/page/{registers|sessions|movements|summary}`; al cambiar de seccion dentro de la pantalla se actualiza la URL con `history.pushState` sin recargar.
-- La cabecera de Caja es compacta: muestra la seccion activa y prioriza el selector de caja de trabajo, manteniendo el contexto operativo visible.
+- Cada acceso de menú abre la vista correspondiente mediante `/cash_registers/page/{registers|sessions|movements|summary}`; al cambiar de sección dentro de la pantalla se actualiza la URL con `history.pushState` sin recargar.
+- La cabecera de Caja es compacta: muestra la sección activa y prioriza el selector de caja de trabajo, manteniendo el contexto operativo visible.
 
 ## Backend implementado
 

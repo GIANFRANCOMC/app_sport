@@ -933,8 +933,8 @@ const MODULE_CONFIG = {
     entity: "sales",
     menuId: IS_POS_MODE ? "menu-sales-pos" : "menu-sales-create",
     pageTitle: IS_POS_MODE ? "Venta POS" : "Nueva venta",
-    breadcrumbParent: IS_POS_MODE ? "Operación" : "Ventas",
-    parentMenuId: IS_POS_MODE ? "menu-parent-operations" : "menu-parent-sales"
+    breadcrumbParent: "Ventas",
+    parentMenuId: "menu-parent-sales"
 };
 
 const TEXTS = {

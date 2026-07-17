@@ -6,7 +6,7 @@
 
             <Loader v-if="loading"/>
             <template v-else>
-                <nav class="br-pos-categories" aria-label="CategorÌas">
+                <nav class="br-pos-categories" aria-label="Categor√≠as">
                     <button
                         type="button"
                         class="br-pos-category"
@@ -36,7 +36,7 @@
                         v-model.trim="search"
                         type="search"
                         class="form-control"
-                        placeholder="Buscar producto, cÛdigo o marca"
+                        placeholder="Buscar producto, c√≥digo o marca"
                         aria-label="Buscar producto">
                 </div>
 
@@ -80,7 +80,7 @@
                                     data-bs-toggle="tooltip"
                                     title="Ver detalle"
                                     @click="openItemDetail(item)"
-                                    aria-label="Ver detalle del cat·logo">
+                                    aria-label="Ver detalle del cat√°logo">
                                     <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
                                 </button>
                                 <button
@@ -126,14 +126,14 @@
                         @option:selected="syncFromCashSession"/>
                 </label>
                 <label v-if="hasOpenCashSessions && showWarehouseInput">
-                    <span>AlmacÈn</span>
+                    <span>Almac√©n</span>
                     <v-select
                         v-model="selectedWarehouse"
                         :options="warehouseOptions"
                         class="bg-white"
                         :clearable="false"
                         :searchable="false"
-                        placeholder="Seleccione almacÈn"/>
+                        placeholder="Seleccione almac√©n"/>
                 </label>
                 <div v-if="posConfigurationIssue" class="br-pos-alert br-pos-alert--danger mb-0">
                     <i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i>
@@ -183,7 +183,7 @@
                         <div>
                             <p>Total</p>
                             <h2>S/ {{ separatorNumber(total) }}</h2>
-                            <span>{{ totalQuantity }} Ìtems agregados</span>
+                            <span>{{ totalQuantity }} √≠tems agregados</span>
                         </div>
                         <button
                             type="button"
@@ -222,7 +222,7 @@
             <div class="modal-content">
                 <div class="modal-header br-entity-modal__header">
                     <div>
-                        <p class="br-entity-modal__eyebrow mb-1">Cat·logo comercial</p>
+                        <p class="br-entity-modal__eyebrow mb-1">Cat√°logo comercial</p>
                         <h2 id="brPosItemDetailModalTitle" class="modal-title br-entity-modal__title">
                             {{ selectedItemDetail?.name || 'Detalle' }}
                         </h2>
@@ -249,19 +249,19 @@
                             <dd>{{ selectedItemDetail?.brand?.name || 'Sin marca' }}</dd>
                         </div>
                         <div>
-                            <dt>DescripciÛn</dt>
-                            <dd>{{ selectedItemDetail?.description || 'Sin descripciÛn registrada' }}</dd>
+                            <dt>Descripci√≥n</dt>
+                            <dd>{{ selectedItemDetail?.description || 'Sin descripci√≥n registrada' }}</dd>
                         </div>
                         <div>
-                            <dt>CategorÌas</dt>
+                            <dt>Categor√≠as</dt>
                             <dd>{{ formattedItemCategories(selectedItemDetail) }}</dd>
                         </div>
                         <div>
-                            <dt>CÛdigo interno</dt>
+                            <dt>C√≥digo interno</dt>
                             <dd>{{ selectedItemDetail?.internal_code || 'No registrado' }}</dd>
                         </div>
                         <div>
-                            <dt>CÛdigo de barras</dt>
+                            <dt>C√≥digo de barras</dt>
                             <dd>{{ selectedItemDetail?.barcode || 'No registrado' }}</dd>
                         </div>
                         <div>
@@ -398,12 +398,12 @@
                     <section class="br-pos-sale-payments" aria-label="Pagos de la venta">
                         <header>
                             <div>
-                                <strong>MÈtodos de pago</strong>
-                                <small>{{ showPaymentEditor ? 'Ajusta los importes antes de confirmar si el pago es mixto.' : 'Revisa cÛmo se registrar· el pago de esta venta.' }}</small>
+                                <strong>M√©todos de pago</strong>
+                                <small>{{ showPaymentEditor ? 'Ajusta los importes antes de confirmar si el pago es mixto.' : 'Revisa c√≥mo se registrar√° el pago de esta venta.' }}</small>
                             </div>
                             <button type="button" class="br-pos-payments__add" @click="showPaymentEditor = !showPaymentEditor">
                                 <i class="fa-solid" :class="showPaymentEditor ? 'fa-eye-slash' : 'fa-pen-to-square'" aria-hidden="true"></i>
-                                <span>{{ showPaymentEditor ? 'Ocultar ediciÛn' : 'Cambiar mÈtodo de pago' }}</span>
+                                <span>{{ showPaymentEditor ? 'Ocultar edici√≥n' : 'Cambiar m√©todo de pago' }}</span>
                             </button>
                         </header>
 
@@ -422,7 +422,7 @@
                                     class="bg-white"
                                     :clearable="false"
                                     :searchable="true"
-                                    placeholder="MÈtodo"/>
+                                    placeholder="M√©todo"/>
                                 <InputNumber
                                     v-model="payment.amount"
                                     title=""
@@ -438,14 +438,14 @@
                                     class="br-pos-payment__remove br-btn-danger"
                                     :disabled="payments.length === 1"
                                     @click="removePayment(index)"
-                                    aria-label="Quitar mÈtodo de pago">
+                                    aria-label="Quitar m√©todo de pago">
                                     <i class="fa-solid fa-xmark" aria-hidden="true"></i>
                                 </button>
                             </article>
 
                             <button type="button" class="br-pos-payments__add br-pos-payments__add-row" @click="addPayment(false)">
                                 <i class="fa-solid fa-circle-plus" aria-hidden="true"></i>
-                                <span>Agregar mÈtodo</span>
+                                <span>Agregar m√©todo</span>
                             </button>
                         </div>
 
@@ -585,7 +585,7 @@ export default {
             }
 
             if(!this.warehouseOptions.length) {
-                return "Esta sucursal no tiene un almacÈn activo. Crea o activa un almacÈn antes de vender.";
+                return "Esta sucursal no tiene un almac√©n activo. Crea o activa un almac√©n antes de vender.";
             }
 
             return null;
@@ -593,9 +593,9 @@ export default {
         activePosScopeLabel() {
             const cash = this.selectedCashSession?.register?.name || "Caja no seleccionada";
             const branch = this.selectedBranch?.name || this.selectedCashSession?.branch?.name || "Sucursal no seleccionada";
-            const warehouse = this.selectedWarehouse?.name || "AlmacÈn no seleccionado";
+            const warehouse = this.selectedWarehouse?.name || "Almac√©n no seleccionado";
 
-            return `${cash} ∑ ${branch} ∑ ${warehouse}`;
+            return `${cash} ¬∑ ${branch} ¬∑ ${warehouse}`;
         },
         visibleCategories() {
             return this.categories.filter(category => this.countByCategory(category.id) > 0);
@@ -677,7 +677,7 @@ export default {
                 .filter(payment => payment.method)
                 .map(payment => ({
                     uid: payment.uid,
-                    label: payment.method?.label || payment.method?.name || "MÈtodo de pago",
+                    label: payment.method?.label || payment.method?.name || "M√©todo de pago",
                     amount: Number(payment.amount || 0)
                 }));
         },
@@ -703,7 +703,7 @@ export default {
         }
     },
     mounted() {
-        Utils.navbarItem("menu-parent-operations", {addClass: "open"});
+        Utils.navbarItem("menu-parent-sales", {addClass: "open"});
         Utils.navbarItem("menu-sales-pos", {addClass: "active"});
         this.initParams();
     },
@@ -844,13 +844,13 @@ export default {
             const result = await Requests.get({route: `${serviceRoutes.sessions}/${sessionId}`});
 
             if(!Requests.valid({result})) {
-                Alerts.toastrs({type: "warning", subtitle: result.data?.msg || "La atenciÛn ya no est· disponible."});
+                Alerts.toastrs({type: "warning", subtitle: result.data?.msg || "La atenci√≥n ya no est√° disponible."});
                 return;
             }
 
             const session = result.data.data;
             if(!["pending", "in_progress"].includes(session.status)) {
-                Alerts.toastrs({type: "warning", subtitle: "La atenciÛn ya fue finalizada y no puede volver a cobrarse."});
+                Alerts.toastrs({type: "warning", subtitle: "La atenci√≥n ya fue finalizada y no puede volver a cobrarse."});
                 return;
             }
 
@@ -877,7 +877,7 @@ export default {
             this.resetPayments();
 
             if(!this.cart.length) {
-                Alerts.toastrs({type: "warning", subtitle: "La atenciÛn no contiene detalles disponibles para cobrar."});
+                Alerts.toastrs({type: "warning", subtitle: "La atenci√≥n no contiene detalles disponibles para cobrar."});
             }
         },
         syncBranchDependents() {
@@ -1048,7 +1048,7 @@ export default {
         },
         itemTypeLabel(item) {
             if(item?.type === "service") return "Servicio";
-            if(item?.type === "subscription") return "MembresÌa";
+            if(item?.type === "subscription") return "Membres√≠a";
 
             return "Producto";
         },
@@ -1057,14 +1057,14 @@ export default {
                 .map(row => row.category?.name)
                 .filter(Boolean);
 
-            return categories.length ? categories.join(", ") : "Sin categorÌas";
+            return categories.length ? categories.join(", ") : "Sin categor√≠as";
         },
         boolLabel(value) {
-            return value ? "SÌ" : "No";
+            return value ? "S√≠" : "No";
         },
         openSaleConfirmation() {
             if(!this.cart.length) {
-                Alerts.toastrs({type: "warning", subtitle: "Agrega al menos un producto, servicio o membresÌa al detalle."});
+                Alerts.toastrs({type: "warning", subtitle: "Agrega al menos un producto, servicio o membres√≠a al detalle."});
                 return;
             }
 
@@ -1078,7 +1078,7 @@ export default {
         },
         confirmSale() {
             if(!this.canSubmit) {
-                Alerts.toastrs({type: "warning", subtitle: "Revisa los mÈtodos de pago. El total pagado debe cuadrar con la venta."});
+                Alerts.toastrs({type: "warning", subtitle: "Revisa los m√©todos de pago. El total pagado debe cuadrar con la venta."});
                 return;
             }
 

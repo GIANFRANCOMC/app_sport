@@ -50,15 +50,17 @@ return new class extends Migration {
         DB::table("sections")->insert([
             ["id" => 1, "slug" => "sc_home", "name" => "home", "order" => 1, "dom_id" => "menu-parent-home", "dom_label" => "Inicio", "dom_icon" => "fa fa-home", "has_sub_menu" => false],
             ["id" => 2, "slug" => "sc_dashboard", "name" => "dashboard", "order" => 2, "dom_id" => "menu-parent-dashboard", "dom_label" => "Dashboard", "dom_icon" => "fa-solid fa-gauge", "has_sub_menu" => false],
-            ["id" => 3, "slug" => "sc_sales", "name" => "sales", "order" => 4, "dom_id" => "menu-parent-sales", "dom_label" => "Ventas", "dom_icon" => "fa-solid fa-cash-register", "has_sub_menu" => true],
+            ["id" => 3, "slug" => "sc_sales", "name" => "sales", "order" => 3, "dom_id" => "menu-parent-sales", "dom_label" => "Ventas", "dom_icon" => "fa-solid fa-cash-register", "has_sub_menu" => true],
+            ["id" => 10, "slug" => "sc_cash", "name" => "cash", "order" => 4, "dom_id" => "menu-parent-cash", "dom_label" => "Cajas", "dom_icon" => "fa-solid fa-vault", "has_sub_menu" => true],
             ["id" => 9, "slug" => "sc_purchases", "name" => "purchases", "order" => 5, "dom_id" => "menu-parent-purchases", "dom_label" => "Compras", "dom_icon" => "fa-solid fa-cart-flatbed", "has_sub_menu" => true],
             ["id" => 4, "slug" => "sc_customers", "name" => "customers", "order" => 6, "dom_id" => "menu-parent-customers", "dom_label" => "Gestión de clientes", "dom_icon" => "fa fa-user", "has_sub_menu" => true],
-            ["id" => 5, "slug" => "sc_items", "name" => "items", "order" => 7, "dom_id" => "menu-parent-items", "dom_label" => "Catálogo comercial", "dom_icon" => "fa fa-book", "has_sub_menu" => true],
-            ["id" => 10, "slug" => "sc_operations", "name" => "operations", "order" => 3, "dom_id" => "menu-parent-operations", "dom_label" => "Operación", "dom_icon" => "fa-solid fa-bolt", "has_sub_menu" => true],
-            ["id" => 11, "slug" => "sc_inventory", "name" => "inventory", "order" => 8, "dom_id" => "menu-parent-inventory", "dom_label" => "Inventario", "dom_icon" => "fa-solid fa-boxes-stacked", "has_sub_menu" => true],
-            ["id" => 6, "slug" => "sc_infrastructure", "name" => "infrastructure", "order" => 9, "dom_id" => "menu-parent-infrastructure", "dom_label" => "Infraestructura", "dom_icon" => "fa-solid fa-industry", "has_sub_menu" => true],
-            ["id" => 7, "slug" => "sc_configuration", "name" => "configuration", "order" => 10, "dom_id" => "menu-parent-configuration", "dom_label" => "Configuración", "dom_icon" => "fa fa-gear", "has_sub_menu" => true],
-            ["id" => 8, "slug" => "sc_reports", "name" => "reports", "order" => 11, "dom_id" => "menu-parent-reports", "dom_label" => "Reportes", "dom_icon" => "fa fa-print", "has_sub_menu" => false]
+            ["id" => 12, "slug" => "sc_staff", "name" => "staff", "order" => 7, "dom_id" => "menu-parent-staff", "dom_label" => "Gestión de colaboradores", "dom_icon" => "fa-solid fa-users-gear", "has_sub_menu" => true],
+            ["id" => 5, "slug" => "sc_items", "name" => "items", "order" => 8, "dom_id" => "menu-parent-items", "dom_label" => "Catálogo comercial", "dom_icon" => "fa fa-book", "has_sub_menu" => true],
+            ["id" => 11, "slug" => "sc_inventory", "name" => "inventory", "order" => 9, "dom_id" => "menu-parent-inventory", "dom_label" => "Inventario", "dom_icon" => "fa-solid fa-boxes-stacked", "has_sub_menu" => true],
+            ["id" => 13, "slug" => "sc_restaurant_services", "name" => "restaurant-services", "order" => 10, "dom_id" => "menu-parent-restaurant-services", "dom_label" => "Restaurante y servicios", "dom_icon" => "fa-solid fa-bell-concierge", "has_sub_menu" => true],
+            ["id" => 6, "slug" => "sc_infrastructure", "name" => "infrastructure", "order" => 11, "dom_id" => "menu-parent-infrastructure", "dom_label" => "Infraestructura", "dom_icon" => "fa-solid fa-industry", "has_sub_menu" => true],
+            ["id" => 7, "slug" => "sc_configuration", "name" => "configuration", "order" => 12, "dom_id" => "menu-parent-configuration", "dom_label" => "Configuración", "dom_icon" => "fa fa-gear", "has_sub_menu" => true],
+            ["id" => 8, "slug" => "sc_reports", "name" => "reports", "order" => 13, "dom_id" => "menu-parent-reports", "dom_label" => "Reportes", "dom_icon" => "fa fa-print", "has_sub_menu" => false]
         ]);
 
         DB::table("sub_sections")->insert([
@@ -69,10 +71,10 @@ return new class extends Migration {
             ["id" => 20, "section_id" => 2, "slug" => "sc_dashboard", "name" => "dashboard", "description" => "Consulta indicadores y el estado general de la operación.", "order" => 1, "dom_id" => "menu-dashboard", "dom_label" => "Dashboard", "dom_route" => "dashboard.index"],
 
             // Sales
-            ["id" => 30, "section_id" => 3, "slug" => "sc_sales-list", "name" => "sales-list", "description" => "Revisa las ventas registradas y consulta sus detalles.", "order" => 1, "dom_id" => "menu-sales-list", "dom_label" => "Listado", "dom_route" => "sales.index"],
+            ["id" => 30, "section_id" => 3, "slug" => "sc_sales-list", "name" => "sales-list", "description" => "Revisa las ventas registradas y consulta sus detalles.", "order" => 3, "dom_id" => "menu-sales-list", "dom_label" => "Listado", "dom_route" => "sales.index"],
             ["id" => 31, "section_id" => 3, "slug" => "sc_sales-create", "name" => "sales-create", "description" => "Registra una nueva venta de productos, servicios o membresías.", "order" => 2, "dom_id" => "menu-sales-create", "dom_label" => "Nuevo", "dom_route" => "sales.create"],
 
-            ["id" => 32, "section_id" => 10, "slug" => "sc_sales-pos", "name" => "sales-pos", "description" => "Venta rápida para mostrador, vinculada a almacén y caja activa.", "order" => 1, "dom_id" => "menu-sales-pos", "dom_label" => "Venta POS", "dom_route" => "sales.pos"],
+            ["id" => 32, "section_id" => 3, "slug" => "sc_sales-pos", "name" => "sales-pos", "description" => "Venta rápida para mostrador, vinculada a almacén y caja activa.", "order" => 1, "dom_id" => "menu-sales-pos", "dom_label" => "Venta POS", "dom_route" => "sales.pos"],
 
             // Purchases
             ["id" => 90, "section_id" => 9, "slug" => "sc_purchases-list", "name" => "purchases-list", "description" => "Consulta compras registradas, recepción, estado de pago y trazabilidad.", "order" => 1, "dom_id" => "menu-purchases-list", "dom_label" => "Listado", "dom_route" => "purchases.list.index"],
@@ -106,9 +108,9 @@ return new class extends Migration {
             ["id" => 101, "section_id" => 10, "slug" => "sc_cash-sessions", "name" => "cash-sessions", "description" => "Consulta aperturas, cierres, arqueos y diferencias por caja.", "order" => 3, "dom_id" => "menu-cash-sessions", "dom_label" => "Aperturas y cierres", "dom_route" => "cash_registers.sessions.index"],
             ["id" => 102, "section_id" => 10, "slug" => "sc_cash-movements", "name" => "cash-movements", "description" => "Registra y consulta entradas, salidas y ajustes manuales de dinero.", "order" => 4, "dom_id" => "menu-cash-movements", "dom_label" => "Movimientos", "dom_route" => "cash_registers.movements.index"],
             ["id" => 103, "section_id" => 10, "slug" => "sc_cash-summary", "name" => "cash-summary", "description" => "Revisa resumen de caja por métodos de pago, esperado, contado y diferencia.", "order" => 5, "dom_id" => "menu-cash-summary", "dom_label" => "Resumen", "dom_route" => "cash_registers.summary.index"],
-            ["id" => 104, "section_id" => 10, "slug" => "sc_user-attendances", "name" => "user-attendances", "description" => "Controla ingresos, salidas y horas trabajadas por colaborador.", "order" => 6, "dom_id" => "menu-user-attendances", "dom_label" => "Asistencia del personal", "dom_route" => "user_attendances.index"],
-            ["id" => 105, "section_id" => 10, "slug" => "sc_restaurant-pos", "name" => "restaurant-pos", "description" => "Gestiona mesas, pedidos en curso y su posterior cobro en POS.", "order" => 7, "dom_id" => "menu-restaurant-pos", "dom_label" => "Restaurante POS", "dom_route" => "restaurant_pos.index"],
-            ["id" => 106, "section_id" => 10, "slug" => "sc_service-sessions", "name" => "service-sessions", "description" => "Inicia, asigna y finaliza servicios midiendo su tiempo real.", "order" => 8, "dom_id" => "menu-service-sessions", "dom_label" => "Servicios en curso", "dom_route" => "service_sessions.index"],
+            ["id" => 104, "section_id" => 12, "slug" => "sc_user-attendances", "name" => "user-attendances", "description" => "Controla ingresos, salidas y horas trabajadas por colaborador.", "order" => 2, "dom_id" => "menu-user-attendances", "dom_label" => "Asistencia del personal", "dom_route" => "user_attendances.index"],
+            ["id" => 105, "section_id" => 13, "slug" => "sc_restaurant-pos", "name" => "restaurant-pos", "description" => "Gestiona mesas, pedidos en curso y su posterior cobro en POS.", "order" => 1, "dom_id" => "menu-restaurant-pos", "dom_label" => "Restaurante POS", "dom_route" => "restaurant_pos.index"],
+            ["id" => 106, "section_id" => 13, "slug" => "sc_service-sessions", "name" => "service-sessions", "description" => "Inicia, asigna y finaliza servicios midiendo su tiempo real.", "order" => 2, "dom_id" => "menu-service-sessions", "dom_label" => "Servicios en curso", "dom_route" => "service_sessions.index"],
 
             // Infrastructure
             ["id" => 60, "section_id" => 6, "slug" => "sc_infrastructure-branches", "name" => "infrastructure-branches", "description" => "Administra sedes, datos de contacto y capacidad.", "order" => 1, "dom_id" => "menu-infrastructure-branches", "dom_label" => "Sucursales", "dom_route" => "branches.index"],
@@ -118,7 +120,7 @@ return new class extends Migration {
 
             // Configuration
             ["id" => 70, "section_id" => 7, "slug" => "sc_configuration-my_company", "name" => "configuration-my_company", "description" => "Actualiza la identidad y los datos generales de la empresa.", "order" => 1, "dom_id" => "menu-configuration-my_company", "dom_label" => "Mi empresa", "dom_route" => "companies.index"],
-            ["id" => 71, "section_id" => 7, "slug" => "sc_configuration-users", "name" => "configuration-users", "description" => "Administra usuarios internos, roles y accesos.", "order" => 2, "dom_id" => "menu-configuration-users", "dom_label" => "Colaboradores", "dom_route" => "users.index"],
+            ["id" => 71, "section_id" => 12, "slug" => "sc_configuration-users", "name" => "configuration-users", "description" => "Administra colaboradores internos, roles y accesos.", "order" => 1, "dom_id" => "menu-configuration-users", "dom_label" => "Colaboradores", "dom_route" => "users.index"],
             ["id" => 72, "section_id" => 7, "slug" => "sc_configuration-roles", "name" => "configuration-roles", "description" => "Define perfiles de acceso y módulos disponibles para cada colaborador.", "order" => 3, "dom_id" => "menu-configuration-roles", "dom_label" => "Perfiles de acceso", "dom_route" => "roles.index"],
 
             ["id" => 73, "section_id" => 7, "slug" => "sc_configuration-master_data", "name" => "configuration-master_data", "description" => "Administra configuraciones, tributos, métodos de pago y maestros internos por empresa.", "order" => 4, "dom_id" => "menu-configuration-master_data", "dom_label" => "Maestros internos", "dom_route" => "master_data.index"],
@@ -174,29 +176,28 @@ return new class extends Migration {
 
         DB::table("companies_sub_sections")->where("company_id", 1)->whereIn("sub_section_id", [10])->update(["section_order" => 1]);
         DB::table("companies_sub_sections")->where("company_id", 1)->whereIn("sub_section_id", [20])->update(["section_order" => 2]);
-        DB::table("companies_sub_sections")->where("company_id", 1)->whereIn("sub_section_id", [32, 100, 101, 102, 103, 104, 105, 106])->update(["section_order" => 3]);
-        DB::table("companies_sub_sections")->where("company_id", 1)->whereIn("sub_section_id", [30, 31])->update(["section_order" => 4]);
+        DB::table("companies_sub_sections")->where("company_id", 1)->whereIn("sub_section_id", [32, 31, 30])->update(["section_order" => 3]);
+        DB::table("companies_sub_sections")->where("company_id", 1)->whereIn("sub_section_id", [100, 101, 102, 103])->update(["section_order" => 4]);
         DB::table("companies_sub_sections")->where("company_id", 1)->whereIn("sub_section_id", [90, 92, 91])->update(["section_order" => 5]);
         DB::table("companies_sub_sections")->where("company_id", 1)->whereIn("sub_section_id", [40, 41, 42, 43, 44, 45])->update(["section_order" => 6]);
-        DB::table("companies_sub_sections")->where("company_id", 1)->whereIn("sub_section_id", [50, 51, 52, 53, 55, 59])->update(["section_order" => 7]);
-        DB::table("companies_sub_sections")->where("company_id", 1)->whereIn("sub_section_id", [54, 56, 57, 107, 58])->update(["section_order" => 8]);
-        DB::table("companies_sub_sections")->where("company_id", 1)->whereIn("sub_section_id", [60, 61, 62, 63])->update(["section_order" => 9]);
-        DB::table("companies_sub_sections")->where("company_id", 1)->whereIn("sub_section_id", [70, 71, 72, 73])->update(["section_order" => 10]);
-        DB::table("companies_sub_sections")->where("company_id", 1)->whereIn("sub_section_id", [80])->update(["section_order" => 11]);
+        DB::table("companies_sub_sections")->where("company_id", 1)->whereIn("sub_section_id", [71, 104])->update(["section_order" => 7]);
+        DB::table("companies_sub_sections")->where("company_id", 1)->whereIn("sub_section_id", [50, 51, 52, 53, 55, 59])->update(["section_order" => 8]);
+        DB::table("companies_sub_sections")->where("company_id", 1)->whereIn("sub_section_id", [54, 56, 57, 107, 58])->update(["section_order" => 9]);
+        DB::table("companies_sub_sections")->where("company_id", 1)->whereIn("sub_section_id", [105, 106])->update(["section_order" => 10]);
+        DB::table("companies_sub_sections")->where("company_id", 1)->whereIn("sub_section_id", [60, 61, 62, 63])->update(["section_order" => 11]);
+        DB::table("companies_sub_sections")->where("company_id", 1)->whereIn("sub_section_id", [70, 72, 73])->update(["section_order" => 12]);
+        DB::table("companies_sub_sections")->where("company_id", 1)->whereIn("sub_section_id", [80])->update(["section_order" => 13]);
 
         $companySubSectionOrders = [
             10 => 1,
             20 => 1,
             32 => 1,
-            100 => 2,
-            101 => 3,
-            102 => 4,
-            103 => 5,
-            104 => 6,
-            105 => 7,
-            106 => 8,
-            30 => 1,
             31 => 2,
+            30 => 3,
+            100 => 1,
+            101 => 2,
+            102 => 3,
+            103 => 4,
             90 => 1,
             92 => 2,
             91 => 3,
@@ -217,14 +218,17 @@ return new class extends Migration {
             57 => 3,
             107 => 4,
             58 => 5,
+            71 => 1,
+            104 => 2,
             60 => 1,
             61 => 2,
             62 => 3,
             63 => 4,
             70 => 1,
-            71 => 2,
-            72 => 3,
-            73 => 4,
+            72 => 2,
+            73 => 3,
+            105 => 1,
+            106 => 2,
             80 => 1
         ];
 
@@ -537,8 +541,8 @@ return new class extends Migration {
         DB::table("role_sub_sections")->where("company_id", 1)->delete();
         DB::table("roles")->where("company_id", 1)->delete();
         DB::table("companies_sub_sections")->where("company_id", 1)->delete();
-        DB::table("sub_sections")->whereBetween("id", [10, 103])->delete();
-        DB::table("sections")->whereBetween("id", [1, 9])->delete();
+        DB::table("sub_sections")->whereIn("id", [10, 20, 30, 31, 32, 40, 41, 42, 43, 44, 45, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 70, 71, 72, 73, 80, 90, 91, 92, 100, 101, 102, 103, 104, 105, 106, 107])->delete();
+        DB::table("sections")->whereIn("id", [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13])->delete();
         DB::table("companies")->where("id", 1)->delete();
         DB::table("currencies")->where("company_id", 1)->delete();
         DB::table("document_types")->where("company_id", 1)->delete();

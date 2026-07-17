@@ -8479,7 +8479,10 @@ body.br-layout .br-entity-table > thead > tr > th {
  * ------------------------------------------------------------------------- */
 body.br-layout {
   --br-sidebar-width: 13.55rem;
-  --br-sidebar-collapsed-width: 5.25rem;
+  --br-sidebar-collapsed-width: 4.25rem;
+  --br-sidebar-collapsed-profile-height: 4.34rem;
+  --br-sidebar-collapsed-label-height: 1.12rem;
+  --br-sidebar-item-height: 1.72rem;
   --br-app-section-gap: 0.85rem;
   --br-app-control-radius: var(--br-radius-sm);
   --br-app-row-hover: color-mix(in srgb, var(--br-primary-soft) 52%, var(--br-white));
@@ -8506,10 +8509,11 @@ body.br-layout ::placeholder {
   box-shadow: none;
 }
 
-.br-layout .layout-menu.menu-vertical,
 .br-layout .menu-vertical .menu-inner > .menu-item,
 .br-layout .menu-vertical .menu-inner > .menu-header {
-  width: var(--br-sidebar-width);
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box;
 }
 
 .br-layout .menu-inner-shadow {
@@ -8518,7 +8522,7 @@ body.br-layout ::placeholder {
 
 .br-layout .br-menu-brand .menu-inner {
   margin: 0;
-  padding: 0.34rem 0 0.5rem;
+  padding: 0.34rem 0.38rem 0.5rem;
 }
 
 .br-layout .br-menu-brand .menu-item {
@@ -8528,9 +8532,12 @@ body.br-layout ::placeholder {
 .br-layout .br-menu-brand .menu-link {
   display: flex;
   align-items: center;
+  width: 100% !important;
+  max-width: 100% !important;
   min-height: 1.9rem;
-  margin-right: 0.3rem !important;
-  margin-left: 0.28rem !important;
+  margin-right: 0 !important;
+  margin-left: 0 !important;
+  box-sizing: border-box;
   padding: 0.31rem 0.44rem;
   border-radius: var(--br-radius-sm);
   font-size: 0.72rem;
@@ -8587,7 +8594,7 @@ body.br-layout ::placeholder {
 .br-layout .br-menu-brand .menu-toggle::after {
   content: "\f105";
   top: 50%;
-  right: 0.42rem;
+  right: 0.18rem;
   width: auto;
   height: auto;
   border: 0;
@@ -8683,7 +8690,7 @@ body.br-layout ::placeholder {
 
 .br-sidebar-profile {
   gap: 0.52rem;
-  padding: 0.24rem 0.46rem 0.54rem;
+  padding: 0.24rem 0.46rem 0.54rem 0.18rem;
 }
 
 .br-layout .br-sidebar-profile-avatar .avatar.avatar-lg.br-brand-avatar,
@@ -8736,6 +8743,136 @@ body.br-layout ::placeholder {
   html.layout-menu-fixed.layout-menu-collapsed body.br-layout .layout-wrapper:not(.layout-without-menu) .layout-page {
     padding-left: var(--br-sidebar-collapsed-width);
   }
+}
+
+html.layout-menu-collapsed:not(.layout-menu-hover) body.br-layout .br-menu-brand .menu-inner {
+  padding: 0.34rem 0.34rem 0.5rem !important;
+}
+
+html.layout-menu-collapsed:not(.layout-menu-hover) body.br-layout .layout-menu.menu-vertical {
+  width: var(--br-sidebar-collapsed-width) !important;
+}
+
+html.layout-menu-collapsed:not(.layout-menu-hover) body.br-layout .br-menu-brand .br-sidebar-profile-wrap {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  position: relative !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  min-height: var(--br-sidebar-collapsed-profile-height) !important;
+  height: var(--br-sidebar-collapsed-profile-height) !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+html.layout-menu-collapsed:not(.layout-menu-hover) body.br-layout .br-menu-brand .br-sidebar-profile-wrap::before {
+  display: none !important;
+  content: none !important;
+}
+
+html.layout-menu-collapsed:not(.layout-menu-hover) body.br-layout .br-menu-brand .br-sidebar-profile {
+  justify-content: center !important;
+  gap: 0 !important;
+  width: 100% !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+html.layout-menu-collapsed:not(.layout-menu-hover) body.br-layout .br-menu-brand .br-sidebar-profile-avatar {
+  display: flex !important;
+  width: 100% !important;
+  justify-content: center !important;
+}
+
+html.layout-menu-collapsed:not(.layout-menu-hover) body.br-layout .br-menu-brand .br-sidebar-profile-avatar .br-brand-avatar {
+  width: 1.82rem !important;
+  min-width: 1.82rem !important;
+  height: 1.82rem !important;
+  min-height: 1.82rem !important;
+  max-width: 1.82rem !important;
+  max-height: 1.82rem !important;
+}
+
+html.layout-menu-collapsed:not(.layout-menu-hover) body.br-layout .br-menu-brand .br-sidebar-profile-avatar .br-sidebar-initials-avatar span {
+  display: grid !important;
+  place-items: center !important;
+  width: 100% !important;
+  height: 100% !important;
+  font-size: 0.72rem !important;
+  line-height: 1 !important;
+}
+
+html.layout-menu-collapsed:not(.layout-menu-hover) body.br-layout .br-menu-brand .br-sidebar-profile-meta {
+  display: none !important;
+}
+
+html.layout-menu-collapsed:not(.layout-menu-hover) body.br-layout .br-menu-brand .menu-header.divider {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  min-height: var(--br-sidebar-collapsed-label-height) !important;
+  height: var(--br-sidebar-collapsed-label-height) !important;
+  margin: 0 0 0.16rem !important;
+  padding: 0 !important;
+  opacity: 1 !important;
+  pointer-events: none !important;
+}
+
+html.layout-menu-collapsed:not(.layout-menu-hover) body.br-layout .br-menu-brand .menu-header.divider::before {
+  display: none !important;
+  content: none !important;
+}
+
+html.layout-menu-collapsed:not(.layout-menu-hover) body.br-layout .br-menu-brand .menu-header.divider .menu-header-text {
+  display: block !important;
+  overflow: visible !important;
+  opacity: 1 !important;
+  width: auto !important;
+  color: color-mix(in srgb, var(--br-white) 62%, transparent) !important;
+  font-size: 0.56rem !important;
+  letter-spacing: 0.075em !important;
+  line-height: 1 !important;
+}
+
+html.layout-menu-collapsed:not(.layout-menu-hover) body.br-layout .br-menu-brand .menu-link {
+  justify-content: center !important;
+  min-height: var(--br-sidebar-item-height) !important;
+  height: var(--br-sidebar-item-height) !important;
+  padding: 0 !important;
+  text-align: center !important;
+}
+
+html.layout-menu-collapsed:not(.layout-menu-hover) body.br-layout .br-menu-brand .menu-link > i,
+html.layout-menu-collapsed:not(.layout-menu-hover) body.br-layout .br-menu-brand .menu-icon,
+html.layout-menu-collapsed:not(.layout-menu-hover) body.br-layout .br-menu-brand .br-icon-accent {
+  margin-right: 0 !important;
+}
+
+html.layout-menu-collapsed:not(.layout-menu-hover) body.br-layout .br-menu-brand .menu-link > div,
+html.layout-menu-collapsed:not(.layout-menu-hover) body.br-layout .br-menu-brand .menu-link > span:not(.br-menu-child-bullet):not(.br-menu-logout__inner),
+html.layout-menu-collapsed:not(.layout-menu-hover) body.br-layout .br-menu-brand .menu-toggle::after,
+html.layout-menu-collapsed:not(.layout-menu-hover) body.br-layout .br-menu-brand .menu-sub {
+  display: none !important;
+}
+
+html.layout-menu-collapsed:not(.layout-menu-hover) body.br-layout .br-menu-brand .br-menu-logout-item {
+  margin-top: 0.5rem !important;
+}
+
+html.layout-menu-collapsed:not(.layout-menu-hover) body.br-layout .br-menu-brand .menu-link.br-menu-logout {
+  justify-content: center !important;
+}
+
+html.layout-menu-collapsed:not(.layout-menu-hover) body.br-layout .br-menu-brand .menu-link.br-menu-logout .br-menu-logout__inner,
+html.layout-menu-collapsed:not(.layout-menu-hover) body.br-layout .br-menu-brand .menu-link.br-menu-logout .br-menu-logout__icon-wrap {
+  display: inline-flex !important;
+}
+
+html.layout-menu-collapsed:not(.layout-menu-hover) body.br-layout .br-menu-brand .menu-link.br-menu-logout .br-menu-logout__label {
+  display: none !important;
 }
 
 /* -------------------------------------------------------------------------
@@ -9149,12 +9286,12 @@ body > .vs__dropdown-menu,
 .br-layout *::-webkit-scrollbar-thumb {
   border: 0.14rem solid transparent;
   border-radius: 999px;
-  background: color-mix(in srgb, var(--br-primary) 45%, var(--br-border));
+  background: color-mix(in srgb, var(--br-text-muted) 38%, var(--br-border));
   background-clip: padding-box;
 }
 
 .br-layout *::-webkit-scrollbar-thumb:hover {
-  background: color-mix(in srgb, var(--br-primary) 62%, var(--br-border));
+  background: color-mix(in srgb, var(--br-text-muted) 52%, var(--br-border));
   background-clip: padding-box;
 }
 

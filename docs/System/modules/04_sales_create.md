@@ -110,7 +110,7 @@ Permite crear una venta con productos, servicios o membresias. Una venta puede g
 - Esta trazabilidad no cambia todavía el momento del movimiento de inventario: el stock se descuenta al confirmar la venta, como venia funcionando. Si luego se implementa despacho diferido, este campo será la base para mover el descuento al evento de entrega.
 # Venta POS
 
-- `sales.pos` se muestra bajo la cabecera `Operacion`, junto con `Cajas`, para agrupar el trabajo de mostrador debajo de Dashboard y reducir pasos operativos.
+- `sales.pos` se muestra bajo la cabecera `Ventas`, antes de `Nuevo` y `Listado`, porque genera una venta real y comparte validaciones, caja, pagos, tributos e inventario con el flujo principal.
 - `sales.pos` usa una vista propia tipo mostrador: categorias superiores, buscador de productos, cards de productos y ticket lateral.
 - Las categorias son botones compactos sin iconos, alternando tres colores solidos: naranja operativo, gris secundario y verde de accion positiva. El contador flota sobre la esquina superior derecha y la categoria seleccionada muestra un check con fondo visible para reforzar la seleccion.
 - Las cards de productos, servicios y membresias no agregan al tocar el contenido; solo agregan mediante el boton `+`.
