@@ -7,13 +7,6 @@ return new class extends Migration {
 
     public function up(): void {
 
-        DB::table("sub_sections")
-            ->where("dom_route", "tracking_attendances.index")
-            ->update([
-                "description" => "Registra y consulta ingresos y salidas de clientes por documento.",
-                "dom_label" => "Asistencias por documento"
-            ]);
-
         $companyIds = DB::table("companies")->pluck("id");
 
         foreach($companyIds as $companyId) {
@@ -27,13 +20,6 @@ return new class extends Migration {
     }
 
     public function down(): void {
-
-        DB::table("sub_sections")
-            ->where("dom_route", "tracking_attendances.index")
-            ->update([
-                "description" => "Registra y consulta ingresos y salidas de clientes.",
-                "dom_label" => "Asistencias"
-            ]);
 
         $companyIds = DB::table("companies")->pluck("id");
 

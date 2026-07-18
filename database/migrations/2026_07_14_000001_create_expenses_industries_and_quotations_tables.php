@@ -191,7 +191,6 @@ return new class extends Migration {
             $table->foreign("quotation_header_id")->references("id")->on("quotation_headers")->nullOnDelete();
         });
 
-        $this->registerModules();
         $this->registerMiscExpenseCategories();
         $this->registerBusinessProfiles();
 
@@ -218,67 +217,6 @@ return new class extends Migration {
 
         Schema::dropIfExists("business_industries");
     }
-
-    private function registerModules(): void {
-
-        $modules = [
-            33 => [
-                "section_id" => 3,
-                "slug" => "sc_sales-quotations",
-                "name" => "sales-quotations",
-                "description" => "Registra propuestas comerciales y conviértelas en ventas recalculando precios vigentes.",
-                "order" => 3,
-                "dom_id" => "menu-sales-quotations",
-                "dom_label" => "Cotizaciones",
-                "dom_route" => "quotations.index",
-                "section_order" => 4
-            ],
-            109 => [
-                "section_id" => 10,
-                "slug" => "sc_misc-expenses",
-                "name" => "misc-expenses",
-                "description" => "Registra gastos no ligados a compras de inventario, con responsable y contexto financiero.",
-                "order" => 9,
-                "dom_id" => "menu-misc-expenses",
-                "dom_label" => "Gastos varios",
-                "dom_route" => "misc_expenses.index",
-                "section_order" => 3
-            ],
-            74 => [
-                "section_id" => 7,
-                "slug" => "sc_configuration-business-profile",
-                "name" => "configuration-business-profile",
-                "description" => "Configura el rubro de la empresa y el set base de módulos sugeridos.",
-                "order" => 5,
-                "dom_id" => "menu-configuration-business-profile",
-                "dom_label" => "Rubro y módulos",
-                "dom_route" => "business_profile.index",
-                "section_order" => 10
-            ]
-        ];
-
-        foreach($modules as $id => $module) {
-            DB::table("sub_sections")->updateOrInsert(
-                ["id" => $id],
-                collect($module)->except(["section_order"])->all()
-            );
-        }
-
-        DB::table("companies")->pluck("id")->each(function($companyId) use($modules) {
-            foreach($modules as $id => $module) {
-                DB::table("companies_sub_sections")->updateOrInsert(
-                    ["company_id" => $companyId, "sub_section_id" => $id],
-                    [
-                        "section_order" => $module["section_order"],
-                        "sub_section_order" => $module["order"],
-                        "status" => "active"
-                    ]
-                );
-            }
-        });
-
-    }
-
     private function registerBusinessProfiles(): void {
 
         $profiles = [

@@ -12,33 +12,39 @@ Este archivo es el índice funcional y contrato de navegación de System. Reflej
 
 El menú real se obtiene de `sections`, `sub_sections` y `companies_sub_sections` mediante `CompanySectionService`. El layout solo renderiza lo que entrega el servicio.
 
+La fuente canónica del menú actual es `database/migrations/2026_07_18_000001_sync_system_menu_catalog.php`. Las migraciones de dominio no deben registrar, mover ni renombrar opciones del menú; si un módulo nuevo necesita navegación, se agrega en esa migración o en su sucesora directa de catálogo de menú.
+
 ## Criterio de agrupación
 
 El menú no debe agrupar por tecnología ni por controlador, sino por intención operativa del usuario. Por eso la cabecera anterior `Operación` se elimina como grupo visible: mezclaba POS, cajas, asistencia laboral y restaurante.
 
 La estructura recomendada separa responsabilidades:
 
-- `Ventas`: acciones comerciales de venta, incluyendo POS.
+- `POS`: puntos de venta rápidos, tanto mostrador como restaurante.
+- `Ventas`: ventas documentadas, listados y cotizaciones.
 - `Cajas`: operación financiera diaria de caja.
+- `Atención al cliente`: flujos de contacto, servicios en curso, notificaciones, reclamaciones y asistencia pública por documento.
 - `Gestión de colaboradores`: usuarios internos y asistencia laboral.
-- `Restaurante y servicios`: flujos operativos por mesa, pedido o servicio en curso.
+- `Restaurante y servicios`: configuración operativa de restaurante y servicios que no pertenezca al punto de venta ni a atención.
 - `Inventario`: existencias, kardex, guías, traslados y valorización.
 
 ## Orden de cabeceras
 
 1. `sc_home` - Inicio.
 2. `sc_dashboard` - Dashboard.
-3. `sc_sales` - Ventas.
-4. `sc_cash` - Cajas.
-5. `sc_purchases` - Compras.
-6. `sc_customers` - Gestión de clientes.
-7. `sc_staff` - Gestión de colaboradores.
-8. `sc_items` - Catálogo comercial.
-9. `sc_inventory` - Inventario.
-10. `sc_restaurant_services` - Restaurante y servicios.
-11. `sc_infrastructure` - Infraestructura.
-12. `sc_configuration` - Configuración.
-13. `sc_reports` - Reportes.
+3. `sc_pos` - POS.
+4. `sc_sales` - Ventas.
+5. `sc_cash` - Cajas.
+6. `sc_purchases` - Compras.
+7. `sc_customer_attention` - Atención al cliente.
+8. `sc_customers` - Gestión de clientes.
+9. `sc_staff` - Gestión de colaboradores.
+10. `sc_items` - Catálogo comercial.
+11. `sc_inventory` - Inventario.
+12. `sc_restaurant_services` - Restaurante y servicios.
+13. `sc_infrastructure` - Infraestructura.
+14. `sc_configuration` - Configuración.
+15. `sc_reports` - Reportes.
 
 ## Orden por empresa
 
@@ -52,39 +58,39 @@ La estructura recomendada separa responsabilidades:
 
 1. `home.index` - Inicio / Inicio.
 2. `dashboard.index` - Dashboard / Dashboard.
-3. `sales.pos` - Ventas / Venta POS.
-4. `sales.create` - Ventas / Nuevo.
-5. `sales.index` - Ventas / Listado.
-6. `quotations.index` - Ventas / Cotizaciones.
-7. `cash_registers.registers.index` - Cajas / Cajas.
-8. `cash_registers.sessions.index` - Cajas / Aperturas y cierres.
-9. `cash_registers.movements.index` - Cajas / Movimientos.
-10. `cash_registers.summary.index` - Cajas / Resumen.
-11. `misc_expenses.index` - Cajas / Gastos varios.
-12. `purchases.list.index` - Compras / Listado.
+3. `sales.pos` - POS / Venta POS.
+4. `restaurant_pos.index` - POS / Restaurante POS.
+5. `sales.create` - Ventas / Nuevo.
+6. `sales.index` - Ventas / Listado.
+7. `quotations.index` - Ventas / Cotizaciones.
+8. `cash_registers.registers.index` - Cajas / Cajas.
+9. `cash_registers.sessions.index` - Cajas / Aperturas y cierres.
+10. `cash_registers.movements.index` - Cajas / Movimientos.
+11. `cash_registers.summary.index` - Cajas / Resumen.
+12. `misc_expenses.index` - Cajas / Gastos varios.
 13. `purchases.new.index` - Compras / Nuevo.
-14. `suppliers.index` - Compras / Proveedores.
-15. `customers.index` - Gestión de clientes / Clientes.
-16. `tracking_customers.index` - Gestión de clientes / Historial.
-17. `tracking_subscriptions.index` - Gestión de clientes / Membresías.
-18. `tracking_attendances.index` - Gestión de clientes / Asistencias por documento.
-19. `tracking_notifications.index` - Gestión de clientes / Notificaciones.
-20. `book_complaints.index` - Gestión de clientes / Libro de reclamaciones y sugerencias.
-21. `users.index` - Gestión de colaboradores / Colaboradores.
-22. `user_attendances.index` - Gestión de colaboradores / Asistencia del personal.
-23. `products.index` - Catálogo comercial / Productos.
-24. `services.index` - Catálogo comercial / Servicios.
-25. `subscriptions.index` - Catálogo comercial / Membresías.
-26. `categories.index` - Catálogo comercial / Categorías.
-27. `brands.index` - Catálogo comercial / Marcas.
-28. `recipes.index` - Catálogo comercial / Recetas y platillos.
-29. `stocks_management.stock.index` - Inventario / Control de stock.
-30. `stocks_management.kardex.index` - Inventario / Kardex.
-31. `stocks_management.transfers.index` - Inventario / Traslados.
-32. `stocks_management.guides.index` - Inventario / Guías.
-33. `stocks_management.valued.index` - Inventario / Kardex valorizado.
-34. `restaurant_pos.index` - Restaurante y servicios / Restaurante POS.
-35. `service_sessions.index` - Restaurante y servicios / Servicios en curso.
+14. `purchases.list.index` - Compras / Listado.
+15. `suppliers.index` - Compras / Proveedores.
+16. `service_sessions.index` - Atención al cliente / Servicios en curso.
+17. `book_complaints.index` - Atención al cliente / Libro de reclamaciones.
+18. `tracking_notifications.index` - Atención al cliente / Notificaciones.
+19. `tracking_attendances.index` - Atención al cliente / Asistencias por documento.
+20. `customers.index` - Gestión de clientes / Clientes.
+21. `tracking_customers.index` - Gestión de clientes / Historial.
+22. `tracking_subscriptions.index` - Gestión de clientes / Membresías.
+23. `users.index` - Gestión de colaboradores / Colaboradores.
+24. `user_attendances.index` - Gestión de colaboradores / Asistencia del personal.
+25. `products.index` - Catálogo comercial / Productos.
+26. `services.index` - Catálogo comercial / Servicios.
+27. `subscriptions.index` - Catálogo comercial / Membresías.
+28. `categories.index` - Catálogo comercial / Categorías.
+29. `brands.index` - Catálogo comercial / Marcas.
+30. `recipes.index` - Catálogo comercial / Recetas y platillos.
+31. `stocks_management.stock.index` - Inventario / Control de stock.
+32. `stocks_management.kardex.index` - Inventario / Kardex.
+33. `stocks_management.transfers.index` - Inventario / Traslados.
+34. `stocks_management.guides.index` - Inventario / Guías.
+35. `stocks_management.valued.index` - Inventario / Kardex valorizado.
 36. `branches.index` - Infraestructura / Sucursales.
 37. `assets.index` - Infraestructura / Activos.
 38. `assets_management.index` - Infraestructura / Gestión de activos.
@@ -98,12 +104,15 @@ La estructura recomendada separa responsabilidades:
 ## Actualizaciones recientes
 
 - Se elimina la cabecera visible `Operación`.
-- `sales.pos` vuelve a `Ventas`, junto con `Nuevo`, `Listado` y `Cotizaciones`.
+- `POS` agrupa `Venta POS` y `Restaurante POS` para separar venta rápida de ventas documentadas.
+- `Ventas` conserva `Nuevo`, `Listado` y `Cotizaciones`.
 - Caja se agrupa en `Cajas`: `Cajas`, `Aperturas y cierres`, `Movimientos`, `Resumen` y `Gastos varios`.
+- `Atención al cliente` agrupa `Servicios en curso`, `Libro de reclamaciones`, `Notificaciones` y `Asistencias por documento`.
 - `users.index` y `user_attendances.index` se agrupan en `Gestión de colaboradores`.
-- `restaurant_pos.index` y `service_sessions.index` se agrupan en `Restaurante y servicios`.
 - Inventario conserva cabecera propia para que perfiles pueda habilitar `Control de stock`, `Kardex`, `Traslados`, `Guías` y `Kardex valorizado` por separado.
 - La cabecera visible `Cajas` usa `menu-parent-cash`.
+- La cabecera visible `POS` usa `menu-parent-pos`.
+- La cabecera visible `Atención al cliente` usa `menu-parent-customer-attention`.
 - La cabecera visible `Gestión de colaboradores` usa `menu-parent-staff`.
 - La cabecera visible `Restaurante y servicios` usa `menu-parent-restaurant-services`.
 - `recipes.index` se mantiene en Catálogo comercial para restaurantes y negocios de comida. Permite configurar fórmulas, toppings, extras, sabores e insumos sin convertir `items.type` en un tipo nuevo.
