@@ -189,6 +189,7 @@ final class CompanyReferenceDataService {
     public function paymentMethodsFor(string $scope): Collection {
 
         return PaymentMethod::query()
+                            ->with(["variants" => fn($query) => $query->orderBy("name")])
                             ->where("company_id", $this->companyId)
                             ->whereIn("scope", [$scope, "both"])
                             ->where("status", "active")

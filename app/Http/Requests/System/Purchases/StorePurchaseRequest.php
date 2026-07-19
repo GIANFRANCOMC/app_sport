@@ -34,6 +34,7 @@ final class StorePurchaseRequest extends CompanyFormRequest {
             "currency_id"     => $this->nullableInteger("currency_id"),
             "document_type"   => $this->input("document_type") ?: "order",
             "delivery_mode"   => $this->input("delivery_mode") ?: "immediate",
+            "payment_modality" => $this->input("payment_modality") ?: "paid_now",
             "approval_status" => $this->input("approval_status") ?: "approved",
             "expected_date"   => $this->nullableString("expected_date"),
             "due_date"        => $this->nullableString("due_date"),
@@ -81,6 +82,9 @@ final class StorePurchaseRequest extends CompanyFormRequest {
             "due_date" => ["nullable", "date", "after_or_equal:issue_date"],
             "approval_status" => ["nullable", "in:pending,approved"],
             "delivery_mode" => ["nullable", "in:immediate,pending"],
+            "payment_modality" => ["nullable", "in:paid_now,cash_on_delivery,installments"],
+            "installment_count" => ["nullable", "integer", "min:1", "max:120"],
+            "first_due_date" => ["nullable", "date", "after_or_equal:issue_date"],
             "tax" => ["nullable", "numeric", "min:0", "max:{$maxValue}", "decimal:0,{$round}"],
 
             "taxes" => ["nullable", "array", "max:20"],
@@ -102,6 +106,7 @@ final class StorePurchaseRequest extends CompanyFormRequest {
                 "integer",
                 new BelongsToCompany("payment_methods", ["status" => "active"], "Selecciona un método de pago activo.")
             ],
+            "payments.*.payment_method_variant_id" => ["nullable", "integer"],
             "payments.*.amount" => ["required_with:payments", "numeric", "gt:0", "max:{$maxValue}", "decimal:0,{$round}"],
             "payments.*.reference" => ["nullable", "string", "max:100"],
             "payments.*.note" => ["nullable", "string", "max:300"],
@@ -176,6 +181,7 @@ final class StorePurchaseRequest extends CompanyFormRequest {
         return collect($this->input("payments", []))
             ->map(fn($payment) => [
                 "payment_method_id" => $this->nullableIntegerFromArray($payment, "payment_method_id"),
+                "payment_method_variant_id" => $this->nullableIntegerFromArray($payment, "payment_method_variant_id"),
                 "amount"            => $this->normalizeDecimalFromArray($payment, "amount"),
                 "reference"         => $this->nullableStringFromArray($payment, "reference"),
                 "note"              => $this->nullableStringFromArray($payment, "note")

@@ -6,20 +6,21 @@ namespace App\Models\System\Sales;
 
 use App\Models\System\Finance\{PaymentMethod, PaymentMethodVariant};
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-final class SalePayment extends Model {
+final class SaleReceivablePayment extends Model {
 
-    protected $table = "sale_payments";
+    protected $table = "sale_receivable_payments";
 
     protected $fillable = [
         "company_id",
-        "sale_header_id",
+        "sale_account_receivable_id",
         "payment_method_id",
         "payment_method_variant_id",
-        "name",
+        "paid_at",
         "amount",
         "reference",
-        "note",
+        "observation",
         "status",
         "created_at",
         "created_by",
@@ -28,16 +29,23 @@ final class SalePayment extends Model {
     ];
 
     protected $casts = [
+        "paid_at" => "datetime",
         "amount" => "decimal:4"
     ];
 
-    public function paymentMethod() {
+    public function accountReceivable(): BelongsTo {
+
+        return $this->belongsTo(SaleAccountReceivable::class, "sale_account_receivable_id");
+
+    }
+
+    public function paymentMethod(): BelongsTo {
 
         return $this->belongsTo(PaymentMethod::class, "payment_method_id");
 
     }
 
-    public function paymentMethodVariant() {
+    public function paymentMethodVariant(): BelongsTo {
 
         return $this->belongsTo(PaymentMethodVariant::class, "payment_method_variant_id");
 

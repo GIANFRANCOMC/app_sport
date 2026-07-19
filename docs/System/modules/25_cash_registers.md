@@ -35,7 +35,7 @@ La vista se monta desde:
 - Si la caja es principal y la sucursal tiene productos inventariables, el cierre exige conteo físico de inventario antes de confirmar.
 - El conteo físico compara saldo del sistema contra conteo real. Cada diferencia genera un movimiento de inventario de tipo corrección con origen `physical_count` y deja una foto en `cash_session_inventory_counts`.
 - Las ventas pueden asociarse a `cash_session_id` para que sus pagos alimenten `cash_movements`.
-- Los metodos de pago conservan nombre y referencia en la venta; caja usa esos datos para cuadrar efectivo, tarjeta, transferencia, billeteras digitales, Yape, Plin u otros medios configurados.
+- Los métodos de pago conservan nombre, referencia y variante en la venta; caja usa esos datos para cuadrar efectivo, tarjetas, transferencias y billeteras digitales como Yape, Plin, Agora PAY u otros medios configurados.
 - Caja registra dinero; Kardex e inventario registran unidades fisicas.
 
 ## Menu

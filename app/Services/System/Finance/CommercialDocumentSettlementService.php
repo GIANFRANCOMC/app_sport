@@ -7,7 +7,7 @@ namespace App\Services\System\Finance;
 use DomainException;
 use Illuminate\Support\Collection;
 
-use App\Models\System\Finance\{PaymentMethod, Tax};
+use App\Models\System\Finance\{PaymentMethod, PaymentMethodVariant, Tax};
 
 final class CommercialDocumentSettlementService {
 
@@ -45,10 +45,13 @@ final class CommercialDocumentSettlementService {
         string $scope,
         float $total,
         array $selectedPayments,
-        int $userId
+        int $userId,
+        bool $requireExactTotal = true
     ): Collection {
 
         if(empty($selectedPayments)) {
+
+            if(!$requireExactTotal) return collect();
 
             $defaultMethod = PaymentMethod::query()
                 ->where("company_id", $companyId)
@@ -62,6 +65,7 @@ final class CommercialDocumentSettlementService {
 
             $selectedPayments = [[
                 "payment_method_id" => $defaultMethod->id,
+                "payment_method_variant_id" => null,
                 "amount" => $total,
                 "reference" => null,
                 "note" => null
@@ -71,17 +75,24 @@ final class CommercialDocumentSettlementService {
 
         $methods = self::paymentCatalog($companyId, $scope, $selectedPayments)
             ->keyBy("id");
+        $variants = self::paymentVariantCatalog($companyId, $selectedPayments)
+            ->keyBy("id");
 
         $payments = collect($selectedPayments)
-            ->map(fn($paymentData) => self::paymentLine($methods, $paymentData, $userId))
+            ->map(fn($paymentData) => self::paymentLine($methods, $variants, $paymentData, $userId))
             ->filter()
             ->values();
 
         $paid = round((float) $payments->sum("amount"), 4);
-
-        if(abs($paid - round($total, 4)) > 0.0001) {
+        if($requireExactTotal && abs($paid - round($total, 4)) > 0.0001) {
 
             throw new DomainException("El total de los métodos de pago debe coincidir con el total del documento.");
+
+        }
+
+        if(!$requireExactTotal && $paid - round($total, 4) > 0.0001) {
+
+            throw new DomainException("El total pagado no puede superar el total del documento.");
 
         }
 
@@ -144,6 +155,34 @@ final class CommercialDocumentSettlementService {
         }
 
         return $methods;
+
+    }
+
+    private static function paymentVariantCatalog(int $companyId, array $selectedPayments): Collection {
+
+        $ids = collect($selectedPayments)
+            ->pluck("payment_method_variant_id")
+            ->filter()
+            ->map(fn($id) => (int) $id)
+            ->unique()
+            ->values();
+
+        if($ids->isEmpty()) return collect();
+
+        $variants = PaymentMethodVariant::query()
+            ->with("paymentMethod")
+            ->where("company_id", $companyId)
+            ->where("status", "active")
+            ->whereIn("id", $ids)
+            ->get();
+
+        if($variants->count() !== $ids->count()) {
+
+            throw new DomainException("Una variante del método de pago no está disponible para este documento.");
+
+        }
+
+        return $variants;
 
     }
 
@@ -276,12 +315,14 @@ final class CommercialDocumentSettlementService {
 
     }
 
-    private static function paymentLine(Collection $methods, array $paymentData, int $userId): ?array {
+    private static function paymentLine(Collection $methods, Collection $variants, array $paymentData, int $userId): ?array {
 
         $methodId = (int) ($paymentData["payment_method_id"] ?? 0);
         if($methodId <= 0) return null;
 
         $method = $methods->get($methodId);
+        $variantId = (int) ($paymentData["payment_method_variant_id"] ?? 0);
+        $variant = $variantId > 0 ? $variants->get($variantId) : null;
         $amount = round((float) ($paymentData["amount"] ?? 0), 4);
 
         if($amount <= 0) {
@@ -290,7 +331,15 @@ final class CommercialDocumentSettlementService {
 
         }
 
-        if($method?->requires_reference && trim((string) ($paymentData["reference"] ?? "")) === "") {
+        if($variant && (int) $variant->payment_method_id !== (int) $method?->id) {
+
+            throw new DomainException("La variante seleccionada no pertenece al método de pago indicado.");
+
+        }
+
+        $requiresReference = (bool) ($variant?->requires_reference ?? $method?->requires_reference);
+
+        if($requiresReference && trim((string) ($paymentData["reference"] ?? "")) === "") {
 
             throw new DomainException("El método de pago {$method->name} requiere referencia.");
 
@@ -299,7 +348,8 @@ final class CommercialDocumentSettlementService {
         return [
             "company_id" => $method?->company_id,
             "payment_method_id" => $method?->id,
-            "name" => (string) ($paymentData["name"] ?? $method?->name),
+            "payment_method_variant_id" => $variant?->id,
+            "name" => (string) ($paymentData["name"] ?? $variant?->name ?? $method?->name),
             "amount" => $amount,
             "reference" => $paymentData["reference"] ?? null,
             "note" => $paymentData["note"] ?? null,

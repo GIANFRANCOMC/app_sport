@@ -409,17 +409,35 @@ Foto histórica del tributo aplicado al documento. Guardan `name`, `description`
 
 ### payment_methods
 
-Métodos de pago configurables por empresa y alcance. Campos: `company_id`, `code`, `sunat_code`, `name`, `image_path`, `scope`, `requires_reference`, `is_default` y `status`.
+Métodos de pago generales configurables por empresa y alcance. Campos: `company_id`, `code`, `name`, `category`, `sunat_code`, `description`, `image_path`, `scope`, `requires_reference`, `supports_variants`, `allows_partial_payment`, `is_default` y `status`.
 
-Relaciones: pertenece a `companies`. `sunat_code` conserva la referencia SUNAT cuando exista y `image_path` almacena la ruta pública generada por backend dentro del tenant. `scope` define si el método aplica a ventas, compras o ambos.
-Nota vigente: `sunat_code` conserva la referencia SUNAT cuando exista y `image_path` apunta al icono visible para el usuario. El catalogo base incluye efectivo, deposito, transferencia, tarjetas, cheque, billetera digital, Yape y Plin, pero cada empresa puede activar, inactivar o ajustar sus metodos desde BD.
+Relaciones: pertenece a `companies` y tiene variantes activas en `payment_method_variants`. `sunat_code` conserva la referencia SUNAT cuando exista y `image_path` almacena la ruta pública generada por backend dentro del tenant. `scope` define si el método aplica a ventas, compras o ambos.
+
+Nota vigente: Yape, Plin, Agora PAY, Bim e IzipayYA no son métodos generales; son variantes de `Billetera digital`.
+
+### payment_method_variants
+
+Opciones específicas de un método de pago. Campos: `company_id`, `payment_method_id`, `code`, `name`, `sunat_code`, `image_path`, `description`, `requires_reference`, `is_default` y `status`.
+
+Uso: permite mostrar al usuario el método general y la opción concreta sin duplicar lógica. Ejemplos: `Billetera digital -> Yape`, `Tarjeta de crédito -> Visa crédito`.
 
 ### sale_payments / purchase_payments
 
-Foto histórica de los pagos del documento. Guardan método, nombre, monto, referencia y nota.
+Foto histórica de los pagos del documento. Guardan método general, variante opcional, nombre, monto, referencia y nota.
 
-Nota vigente: estas tablas son la foto historica de los pagos aplicados. Conservan metodo, nombre, monto, referencia y nota para que ventas y compras mantengan trazabilidad aunque luego cambie la configuracion de `payment_methods`.
+Nota vigente: estas tablas conservan `payment_method_id`, `payment_method_variant_id`, nombre histórico, monto, referencia y nota para que ventas y compras mantengan trazabilidad aunque luego cambie la configuración de `payment_methods` o `payment_method_variants`.
 
+### sale_accounts_receivable / purchase_accounts_payable
+
+Cuentas por cobrar y cuentas por pagar generadas cuando un documento queda con saldo pendiente por `cash_on_delivery` o `installments`. Campos principales: `company_id`, documento origen, tercero, moneda, fechas, `payment_modality`, `original_amount`, `extra_percentage`, `extra_amount`, `total_amount`, `paid_amount`, `pending_amount` y `status`.
+
+### sale_receivable_installments / purchase_payable_installments
+
+Cuotas derivadas de una cuenta. Guardan número de cuota, fecha de vencimiento, monto, pagado, pendiente y estado.
+
+### sale_receivable_payments / purchase_payable_payments
+
+Abonos posteriores o iniciales aplicados a cuentas por cobrar/pagar. Guardan método general, variante, importe, referencia, observación y responsable.
 ### misc_expense_categories
 
 Categorías de gastos varios por empresa. Campos: `company_id`, `name`, `description` y `status`.

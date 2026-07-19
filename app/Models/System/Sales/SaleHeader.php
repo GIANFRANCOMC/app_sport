@@ -30,7 +30,9 @@ class SaleHeader extends Model {
         "legible_total",
         "formatted_status",
         "formatted_delivery_mode",
-        "formatted_delivery_status"
+        "formatted_delivery_status",
+        "formatted_payment_modality",
+        "formatted_payment_status"
     ];
 
     protected $fillable = [
@@ -49,10 +51,16 @@ class SaleHeader extends Model {
             "delivered_at",
             "delivered_by",
             "delivery_observation",
+            "payment_modality",
+            "installment_extra_percentage",
+            "installment_extra_amount",
             "subtotal",
             "tax",
             "commission_total",
         "total",
+        "paid_amount",
+        "balance_due",
+        "payment_status",
         "observation",
         "status",
         "created_at",
@@ -134,6 +142,18 @@ class SaleHeader extends Model {
 
     }
 
+    public function getFormattedPaymentModalityAttribute() {
+
+        return self::getPaymentModalities("first", $this->attributes["payment_modality"] ?? "")["label"] ?? "";
+
+    }
+
+    public function getFormattedPaymentStatusAttribute() {
+
+        return self::getPaymentStatuses("first", $this->attributes["payment_status"] ?? "")["label"] ?? "";
+
+    }
+
     // Functions
     public static function getStatuses($type = "all", $code = "") {
 
@@ -165,6 +185,31 @@ class SaleHeader extends Model {
             ["code" => "partial", "label" => "Parcial"],
             ["code" => "delivered", "label" => "Entregado"],
             ["code" => "canceled", "label" => "Anulado"]
+        ];
+
+        return Utilities::getValues($statuses, $type, $code);
+
+    }
+
+    public static function getPaymentModalities($type = "all", $code = "") {
+
+        $modalities = [
+            ["code" => "paid_now", "label" => "Pago al momento"],
+            ["code" => "cash_on_delivery", "label" => "Contraentrega"],
+            ["code" => "installments", "label" => "Pago por cuotas"]
+        ];
+
+        return Utilities::getValues($modalities, $type, $code);
+
+    }
+
+    public static function getPaymentStatuses($type = "all", $code = "") {
+
+        $statuses = [
+            ["code" => "unpaid", "label" => "Pendiente"],
+            ["code" => "partial", "label" => "Parcial"],
+            ["code" => "paid", "label" => "Pagado"],
+            ["code" => "overpaid", "label" => "Sobrepagado"]
         ];
 
         return Utilities::getValues($statuses, $type, $code);
@@ -284,6 +329,12 @@ class SaleHeader extends Model {
 
         return $this->hasMany(SalePayment::class, "sale_header_id", "id")
                     ->whereIn("status", ["active"]);
+
+    }
+
+    public function accountReceivable() {
+
+        return $this->hasOne(SaleAccountReceivable::class, "sale_header_id", "id");
 
     }
 

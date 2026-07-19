@@ -2,7 +2,7 @@
 
 namespace App\Providers;
 
-use App\Models\System\Finance\{CashRegister, PaymentMethod, Tax};
+use App\Models\System\Finance\{CashRegister, PaymentMethod, PaymentMethodVariant, Tax};
 use App\Models\System\Organizations\{Branch, CompanySetting, CompanySubSection, Role, RoleSubSection, User};
 use App\Observers\System\Organizations\{
     BusinessAuditObserver,
@@ -40,6 +40,7 @@ class AppServiceProvider extends ServiceProvider
             CashRegister::class,
             CompanySetting::class,
             PaymentMethod::class,
+            PaymentMethodVariant::class,
             Role::class,
             RoleSubSection::class,
             Tax::class,

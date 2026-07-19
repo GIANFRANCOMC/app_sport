@@ -99,7 +99,10 @@ Permite crear una venta con productos, servicios o membresias. Una venta puede g
 - `SaleService::resolveWarehouse()` valida que el almacen pertenezca a la sucursal y a la empresa autenticada. Si hay varios almacenes y no se envia uno, el backend rechaza la venta con un mensaje accionable.
 - `sales_header.cash_session_id` permite vincular la venta con una caja abierta cuando el modulo de caja este activo.
 - Si la venta incluye `cash_session_id`, cada pago genera un registro en `cash_movements`, manteniendo trazabilidad por metodo de pago para apertura, cierre, arqueo y resumen de caja.
-- Los metodos de pago iniciales incluyen `Efectivo`, `Tarjeta`, `Transferencia`, `Billetera digital`, `Yape` y `Plin`; todos siguen siendo configurables por empresa y por alcance (`sale`, `purchase`, `both`).
+- Los métodos de pago iniciales incluyen `Efectivo`, depósitos, giros, transferencias, tarjetas, cheque, remesa, carta de crédito y `Billetera digital`; todos son configurables por empresa y por alcance (`sale`, `purchase`, `both`).
+- Las billeteras específicas, como `Yape`, `Plin`, `Agora PAY`, `Bim` o `IzipayYA`, se registran como variantes de `Billetera digital` en `payment_method_variants`.
+- La venta soporta `payment_modality`: `paid_now` exige pago completo, `cash_on_delivery` permite saldo pendiente y `installments` aplica el recargo configurado en `company_settings.sales.installment_extra_percentage`.
+- Cuando una venta queda con saldo por modalidad `cash_on_delivery` o `installments`, el backend crea `sale_accounts_receivable`, sus cuotas en `sale_receivable_installments` y la trazabilidad de pagos iniciales en `sale_receivable_payments`.
 
 ## Actualizacion: seguimiento de entrega
 

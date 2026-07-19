@@ -19,7 +19,7 @@ use App\Models\System\Purchases\{
     PurchaseTax,
     Supplier
 };
-use App\Services\System\Finance\CommercialDocumentSettlementService;
+use App\Services\System\Finance\{CommercialCreditAccountService, CommercialDocumentSettlementService};
 use App\Services\System\Warehouses\Inventory\InventoryMovementService;
 use App\Services\System\Organizations\Companies\CompanySettingService;
 use App\Services\System\Warehouses\StockManagement\StockManagementService;
@@ -226,21 +226,37 @@ final class PurchaseService {
             $expenseTotal = round((float) collect($expenses)->sum("amount"), 4);
             $allocatedExpenses = self::allocateExpenses($data["items"], $expenses);
             $total = round($subtotal + $tax + $expenseTotal, 4);
+            $defaultPaymentModality = (string) CompanySettingService::value(
+                $companyId,
+                CompanySettingService::PURCHASES,
+                "default_payment_modality",
+                CommercialCreditAccountService::PAID_NOW
+            );
+            $paymentModality = CommercialCreditAccountService::normalizePaymentModality(
+                $data["payment_modality"] ?? null,
+                $defaultPaymentModality
+            );
+            $installmentExtraPercentage = $paymentModality === CommercialCreditAccountService::INSTALLMENTS
+                ? (float) CompanySettingService::value(
+                    $companyId,
+                    CompanySettingService::PURCHASES,
+                    "installment_extra_percentage",
+                    0
+                )
+                : 0.0;
+            $installmentExtraAmount = round($total * ($installmentExtraPercentage / 100), 4);
+            $total = round($total + $installmentExtraAmount, 4);
             $paymentLines = CommercialDocumentSettlementService::payments(
                 $companyId,
                 "purchase",
                 (float) $total,
                 $data["payments"] ?? [],
-                $userId
+                $userId,
+                $paymentModality === CommercialCreditAccountService::PAID_NOW
             );
             $paidAmount = round((float) $paymentLines->sum("amount"), 4);
             $balanceDue = round($total - $paidAmount, 4);
-            $paymentStatus = match(true) {
-                $paidAmount <= 0 => "unpaid",
-                $balanceDue > 0 => "partial",
-                $balanceDue < 0 => "overpaid",
-                default => "paid"
-            };
+            $paymentStatus = CommercialCreditAccountService::paymentStatus((float) $total, (float) $paidAmount);
 
             $purchase = PurchaseHeader::create([
                 "company_id" => $companyId,
@@ -257,6 +273,9 @@ final class PurchaseService {
                 "approved_by" => ($data["approval_status"] ?? "approved") === "approved" ? $userId : null,
                 "approved_at" => ($data["approval_status"] ?? "approved") === "approved" ? now() : null,
                 "delivery_mode" => $data["delivery_mode"] ?? "immediate",
+                "payment_modality" => $paymentModality,
+                "installment_extra_percentage" => $installmentExtraPercentage,
+                "installment_extra_amount" => $installmentExtraAmount,
                 "subtotal" => $subtotal,
                 "tax" => $tax,
                 "expense_total" => $expenseTotal,
@@ -285,6 +304,14 @@ final class PurchaseService {
                     ->all());
 
             }
+
+            CommercialCreditAccountService::createPayable(
+                $purchase,
+                $paymentLines,
+                (int) ($data["installment_count"] ?? 1),
+                $data["first_due_date"] ?? null,
+                $userId
+            );
 
             if(!empty($expenses)) {
                 \App\Models\System\Purchases\PurchaseExpense::insert(collect($expenses)

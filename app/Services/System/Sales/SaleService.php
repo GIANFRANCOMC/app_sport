@@ -15,7 +15,7 @@ use App\Models\System\Finance\{CashMovement, CashSession};
 use App\Models\System\Organizations\{Serie, User};
 use App\Models\System\Sales\{QuotationHeader, SaleBody, SaleHeader, SalePayment, SaleTax};
 use App\Models\System\Warehouses\{InventoryMovement, Warehouse};
-use App\Services\System\Finance\CommercialDocumentSettlementService;
+use App\Services\System\Finance\{CommercialCreditAccountService, CommercialDocumentSettlementService};
 use App\Services\System\Organizations\Companies\CompanySettingService;
 use App\Services\System\Operations\ServiceOperationService;
 use App\Services\System\Customers\Loyalty\CustomerLoyaltyPointService;
@@ -727,13 +727,37 @@ class SaleService {
             $includedTaxTotal = Utilities::round($taxTotal - $taxImpactTotal);
             $subtotal = Utilities::round($grossSubtotal - $includedTaxTotal);
             $total = Utilities::round($grossSubtotal + $taxImpactTotal);
+            $defaultPaymentModality = (string) CompanySettingService::value(
+                (int) $companyId,
+                CompanySettingService::SALES,
+                "default_payment_modality",
+                CommercialCreditAccountService::PAID_NOW
+            );
+            $paymentModality = CommercialCreditAccountService::normalizePaymentModality(
+                $data["payment_modality"] ?? null,
+                $defaultPaymentModality
+            );
+            $installmentExtraPercentage = $paymentModality === CommercialCreditAccountService::INSTALLMENTS
+                ? (float) CompanySettingService::value(
+                    (int) $companyId,
+                    CompanySettingService::SALES,
+                    "installment_extra_percentage",
+                    0
+                )
+                : 0.0;
+            $installmentExtraAmount = Utilities::round($total * ($installmentExtraPercentage / 100));
+            $total = Utilities::round($total + $installmentExtraAmount);
             $paymentLines = CommercialDocumentSettlementService::payments(
                 (int) $companyId,
                 "sale",
                 (float) $total,
                 $data["payments"] ?? [],
-                (int) $userId
+                (int) $userId,
+                $paymentModality === CommercialCreditAccountService::PAID_NOW
             );
+            $paidAmount = Utilities::round((float) $paymentLines->sum("amount"));
+            $balanceDue = Utilities::round($total - $paidAmount);
+            $paymentStatus = CommercialCreditAccountService::paymentStatus((float) $total, (float) $paidAmount);
 
             // Create sale header
             $saleHeader = new SaleHeader();
@@ -754,10 +778,16 @@ class SaleService {
             $saleHeader->delivered_at = $deliveryStatus === "delivered" ? now() : null;
             $saleHeader->delivered_by = $deliveryStatus === "delivered" ? $userId : null;
             $saleHeader->delivery_observation = $data["delivery_observation"] ?? null;
+            $saleHeader->payment_modality = $paymentModality;
+            $saleHeader->installment_extra_percentage = $installmentExtraPercentage;
+            $saleHeader->installment_extra_amount = $installmentExtraAmount;
             $saleHeader->subtotal    = $subtotal;
             $saleHeader->tax         = $taxTotal;
             $saleHeader->commission_total = $commissionTotal;
             $saleHeader->total       = $total;
+            $saleHeader->paid_amount = $paidAmount;
+            $saleHeader->balance_due = $balanceDue;
+            $saleHeader->payment_status = $paymentStatus;
             $saleHeader->observation = $data["observation"] ?? "";
             $saleHeader->status      = "active";
             $saleHeader->created_at  = now();
@@ -795,6 +825,14 @@ class SaleService {
                 self::createCashMovements($saleHeader, $paymentLines, (int) $companyId, (int) $data["branch_id"], (int) $userId);
 
             }
+
+            CommercialCreditAccountService::createReceivable(
+                $saleHeader,
+                $paymentLines,
+                (int) ($data["installment_count"] ?? 1),
+                $data["first_due_date"] ?? null,
+                (int) $userId
+            );
 
             $saleBodies = collect();
 

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models\System\Purchases;
 
-use App\Models\System\Finance\PaymentMethod;
+use App\Models\System\Finance\{PaymentMethod, PaymentMethodVariant};
 use Illuminate\Database\Eloquent\Model;
 
 final class PurchasePayment extends Model {
@@ -15,6 +15,7 @@ final class PurchasePayment extends Model {
         "company_id",
         "purchase_header_id",
         "payment_method_id",
+        "payment_method_variant_id",
         "name",
         "amount",
         "reference",
@@ -33,6 +34,12 @@ final class PurchasePayment extends Model {
     public function paymentMethod() {
 
         return $this->belongsTo(PaymentMethod::class, "payment_method_id");
+
+    }
+
+    public function paymentMethodVariant() {
+
+        return $this->belongsTo(PaymentMethodVariant::class, "payment_method_variant_id");
 
     }
 

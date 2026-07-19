@@ -5,24 +5,21 @@ declare(strict_types=1);
 namespace App\Models\System\Finance;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-final class PaymentMethod extends Model {
+final class PaymentMethodVariant extends Model {
 
-    protected $table = "payment_methods";
+    protected $table = "payment_method_variants";
 
     protected $fillable = [
         "company_id",
+        "payment_method_id",
         "code",
         "name",
-        "category",
         "sunat_code",
-        "description",
         "image_path",
-        "scope",
+        "description",
         "requires_reference",
-        "supports_variants",
-        "allows_partial_payment",
         "is_default",
         "status",
         "created_at",
@@ -33,15 +30,12 @@ final class PaymentMethod extends Model {
 
     protected $casts = [
         "requires_reference" => "boolean",
-        "supports_variants" => "boolean",
-        "allows_partial_payment" => "boolean",
         "is_default" => "boolean"
     ];
 
-    public function variants(): HasMany {
+    public function paymentMethod(): BelongsTo {
 
-        return $this->hasMany(PaymentMethodVariant::class, "payment_method_id")
-                    ->where("status", "active");
+        return $this->belongsTo(PaymentMethod::class, "payment_method_id");
 
     }
 

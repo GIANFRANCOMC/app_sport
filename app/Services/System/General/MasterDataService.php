@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Services\System\General;
 
 use App\Models\System\General\{Currency, DocumentType, IdentityDocumentType};
-use App\Models\System\Finance\{PaymentMethod, Tax};
+use App\Models\System\Finance\{PaymentMethod, PaymentMethodVariant, Tax};
 use App\Models\System\Organizations\CompanySetting;
 use App\Services\System\Base\{InitParamsCacheInvalidationService, MasterReferenceDataService};
 use App\Services\System\Organizations\Companies\CompanySettingService;
@@ -24,6 +24,7 @@ final class MasterDataService {
         "currencies" => ["model" => Currency::class],
         "taxes" => ["model" => Tax::class],
         "payment-methods" => ["model" => PaymentMethod::class],
+        "payment-method-variants" => ["model" => PaymentMethodVariant::class],
         "company-settings" => ["model" => CompanySetting::class]
     ];
 
@@ -97,7 +98,12 @@ final class MasterDataService {
                         "min_apply_quantity", "max_apply_quantity", "scope", "is_required", "is_default", "status"
                     ],
                     "payment-methods" => [
-                        "code", "name", "sunat_code", "image_path", "scope", "requires_reference", "is_default", "status"
+                        "code", "name", "category", "sunat_code", "description", "image_path", "scope",
+                        "requires_reference", "supports_variants", "allows_partial_payment", "is_default", "status"
+                    ],
+                    "payment-method-variants" => [
+                        "payment_method_id", "code", "name", "sunat_code", "image_path", "description",
+                        "requires_reference", "is_default", "status"
                     ],
                     "company-settings" => ["group", "key", "value", "description", "value_type", "status"],
                     default => ["code", "name", "status"]
@@ -122,10 +128,10 @@ final class MasterDataService {
                     );
                 }
 
-                if($resource === "payment-methods" && ($data["image"] ?? null) instanceof UploadedFile) {
+                if(in_array($resource, ["payment-methods", "payment-method-variants"], true) && ($data["image"] ?? null) instanceof UploadedFile) {
                     $obsoleteImagePath = $record->image_path;
                     $newImagePath = $data["image"]->storeAs(
-                        TenantStoragePath::for("finance/payment-methods"),
+                        TenantStoragePath::for("finance/{$resource}"),
                         Str::uuid()->toString().".".$data["image"]->guessExtension(),
                         "public"
                     );
@@ -183,6 +189,17 @@ final class MasterDataService {
                 ["sales_header", "currency_id"],
                 ["purchase_headers", "currency_id"]
             ],
+            "payment-methods" => [
+                ["sale_payments", "payment_method_id"],
+                ["purchase_payments", "payment_method_id"],
+                ["cash_movements", "payment_method_id"]
+            ],
+            "payment-method-variants" => [
+                ["sale_payments", "payment_method_variant_id"],
+                ["purchase_payments", "payment_method_variant_id"],
+                ["sale_receivable_payments", "payment_method_variant_id"],
+                ["purchase_payable_payments", "payment_method_variant_id"]
+            ],
             default => []
         };
 
@@ -237,6 +254,10 @@ final class MasterDataService {
                 "code" => $data["code"],
                 "scope" => $data["scope"]
             ],
+            "payment-method-variants" => [
+                "payment_method_id" => $data["payment_method_id"],
+                "code" => $data["code"]
+            ],
             "company-settings" => [
                 "group" => $data["group"],
                 "key" => $data["key"]
@@ -254,6 +275,7 @@ final class MasterDataService {
             "currencies" => InitParamsCacheInvalidationService::CURRENCIES,
             "taxes" => InitParamsCacheInvalidationService::TAXES,
             "payment-methods" => InitParamsCacheInvalidationService::PAYMENT_METHODS,
+            "payment-method-variants" => InitParamsCacheInvalidationService::PAYMENT_METHODS,
             "company-settings" => InitParamsCacheInvalidationService::COMPANY_SETTINGS,
             default => throw new DomainException("El maestro solicitado no tiene política de caché.")
         };

@@ -28,6 +28,9 @@ final class PurchaseHeader extends Model {
         "approved_by",
         "approved_at",
         "delivery_mode",
+        "payment_modality",
+        "installment_extra_percentage",
+        "installment_extra_amount",
         "subtotal",
         "tax",
         "expense_total",
@@ -52,6 +55,8 @@ final class PurchaseHeader extends Model {
         "approved_at" => "datetime",
         "subtotal" => "decimal:4",
         "tax" => "decimal:4",
+        "installment_extra_percentage" => "decimal:4",
+        "installment_extra_amount" => "decimal:4",
         "expense_total" => "decimal:4",
         "total" => "decimal:4",
         "paid_amount" => "decimal:4",
@@ -59,7 +64,7 @@ final class PurchaseHeader extends Model {
         "canceled_at" => "datetime"
     ];
 
-    protected $appends = ["formatted_status", "formatted_document_type", "formatted_delivery_mode", "receipt_progress"];
+    protected $appends = ["formatted_status", "formatted_document_type", "formatted_delivery_mode", "formatted_payment_modality", "formatted_payment_status", "receipt_progress"];
 
     public function getFormattedStatusAttribute(): string {
 
@@ -87,6 +92,27 @@ final class PurchaseHeader extends Model {
             "immediate" => "Entrega inmediata",
             "pending" => "Entrega pendiente"
         ][$this->attributes["delivery_mode"] ?? ""] ?? "";
+
+    }
+
+    public function getFormattedPaymentModalityAttribute(): string {
+
+        return [
+            "paid_now" => "Pago al momento",
+            "cash_on_delivery" => "Contraentrega",
+            "installments" => "Pago por cuotas"
+        ][$this->attributes["payment_modality"] ?? ""] ?? "";
+
+    }
+
+    public function getFormattedPaymentStatusAttribute(): string {
+
+        return [
+            "unpaid" => "Pendiente",
+            "partial" => "Parcial",
+            "paid" => "Pagado",
+            "overpaid" => "Sobrepagado"
+        ][$this->attributes["payment_status"] ?? ""] ?? "";
 
     }
     public function getReceiptProgressAttribute(): float {
@@ -141,6 +167,12 @@ final class PurchaseHeader extends Model {
 
         return $this->hasMany(PurchasePayment::class, "purchase_header_id")
                     ->whereIn("status", ["active"]);
+
+    }
+
+    public function accountPayable() {
+
+        return $this->hasOne(PurchaseAccountPayable::class, "purchase_header_id");
 
     }
 

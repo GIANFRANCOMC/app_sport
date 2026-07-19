@@ -24,6 +24,7 @@ class StoreSaleRequest extends CompanyFormRequest {
     protected function prepareForValidation(): void {
 
         $this->merge([
+            "payment_modality" => $this->input("payment_modality") ?: "paid_now",
             "taxes" => $this->normalizeTaxes(),
             "payments" => $this->normalizePayments(),
             "details" => $this->normalizeDetails()
@@ -56,6 +57,9 @@ class StoreSaleRequest extends CompanyFormRequest {
             "delivery_mode" => "nullable|in:immediate,pending",
             "delivery_status" => "nullable|in:pending,partial,delivered",
             "delivery_observation" => "nullable|string|max:500",
+            "payment_modality" => "nullable|in:paid_now,cash_on_delivery,installments",
+            "installment_count" => "nullable|integer|min:1|max:120",
+            "first_due_date" => "nullable|date|after_or_equal:issue_date",
             "observation" => "nullable|string|max:300",
             "taxes" => "nullable|array|max:20",
             "taxes.*.tax_id" => "required_with:taxes|integer",
@@ -67,6 +71,7 @@ class StoreSaleRequest extends CompanyFormRequest {
             "taxes.*.amount" => "nullable|numeric|min:-$maxValue|max:$maxValue|decimal:0,$round",
             "payments" => "nullable|array|max:20",
             "payments.*.payment_method_id" => "required_with:payments|integer",
+            "payments.*.payment_method_variant_id" => "nullable|integer",
             "payments.*.amount" => "required_with:payments|numeric|min:0.01|max:$maxValue|decimal:0,$round",
             "payments.*.reference" => "nullable|string|max:100",
             "payments.*.note" => "nullable|string|max:300",
@@ -225,6 +230,7 @@ class StoreSaleRequest extends CompanyFormRequest {
                 }
 
                 $payment["payment_method_id"] = $this->nullableIntegerFromArray($payment, "payment_method_id");
+                $payment["payment_method_variant_id"] = $this->nullableIntegerFromArray($payment, "payment_method_variant_id");
                 $payment["amount"] = $this->normalizeDecimalFromArray($payment, "amount");
 
                 return $payment;

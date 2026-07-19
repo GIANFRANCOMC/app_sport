@@ -14,6 +14,8 @@ final class CompanySettingService {
     public const CUSTOMER_ATTENDANCE = "customer_attendance";
     public const SUBSCRIPTIONS = "subscriptions";
     public const CASH = "cash";
+    public const SALES = "sales";
+    public const PURCHASES = "purchases";
     public const EXTERNAL_API = "external_api";
     public const LOYALTY = "loyalty";
     public const REPORTS = "reports";
@@ -58,6 +60,16 @@ final class CompanySettingService {
         "require_open_session_on_sale" => false
     ];
 
+    private const DEFAULT_SALES = [
+        "default_payment_modality" => "paid_now",
+        "installment_extra_percentage" => 0
+    ];
+
+    private const DEFAULT_PURCHASES = [
+        "default_payment_modality" => "paid_now",
+        "installment_extra_percentage" => 0
+    ];
+
     private const DEFAULT_EXTERNAL_API = [
         "document_lookup_monthly_warning_threshold" => 80
     ];
@@ -96,6 +108,8 @@ final class CompanySettingService {
             self::CUSTOMER_ATTENDANCE => self::DEFAULT_CUSTOMER_ATTENDANCE,
             self::SUBSCRIPTIONS => self::DEFAULT_SUBSCRIPTIONS,
             self::CASH => self::DEFAULT_CASH,
+            self::SALES => self::DEFAULT_SALES,
+            self::PURCHASES => self::DEFAULT_PURCHASES,
             self::EXTERNAL_API => self::DEFAULT_EXTERNAL_API,
             self::LOYALTY => self::DEFAULT_LOYALTY,
             self::REPORTS => self::DEFAULT_REPORTS,

@@ -17,7 +17,10 @@ Extender compras para que cada empresa pueda aplicar impuestos y metodos de pago
 - Los tributos fijos opcionales de compra permiten indicar cantidad entera. Ejemplo: si la compra incluye 2 bolsas gravadas, el usuario marca `ICBP` y coloca cantidad 2. Al quitar el check, el campo se oculta y no se envia el tributo.
 - En compras, el bloque `Impuestos extras` muestra solo tributos opcionales. Los obligatorios, como `IGV`, se calculan automáticamente y aparecen en el resumen.
 - Los pagos aplicados se guardan como foto del documento en `purchase_payments`.
-- Cada metodo de pago conserva `payment_method_id`, nombre historico, monto, referencia y nota. El catalogo inicial usa codigos SUNAT cuando corresponde y un icono por metodo para mejorar identificacion visual.
+- Cada método de pago conserva `payment_method_id`, `payment_method_variant_id`, nombre histórico, monto, referencia y nota. El catálogo inicial usa códigos SUNAT cuando corresponde y un icono por método para mejorar identificación visual.
+- Las billeteras específicas, como `Yape`, `Plin`, `Agora PAY`, `Bim` o `IzipayYA`, se registran como variantes de `Billetera digital` en `payment_method_variants`.
+- La compra soporta `payment_modality`: `paid_now` exige pago completo, `cash_on_delivery` permite saldo pendiente y `installments` aplica el recargo configurado en `company_settings.purchases.installment_extra_percentage`.
+- Cuando una compra queda con saldo por modalidad `cash_on_delivery` o `installments`, el backend crea `purchase_accounts_payable`, sus cuotas en `purchase_payable_installments` y la trazabilidad de pagos iniciales en `purchase_payable_payments`.
 - Al registrar una compra, la vista cambia al modo `Listado` y refresca los registros para evitar que el usuario crea que la compra no fue guardada.
 
 ## Vista
