@@ -7,6 +7,7 @@ namespace App\Services\System\Purchases;
 use DomainException;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 
 use App\Models\System\Catalogs\Item;
@@ -116,10 +117,11 @@ final class PurchaseService {
         }
 
         $word = trim((string) ($filters["word"] ?? ""));
+        $hasDocumentSeriesColumn = Schema::hasColumn("purchase_headers", "document_series");
 
         if($word !== "") {
 
-            $query->where(function($query) use($word) {
+            $query->where(function($query) use($word, $hasDocumentSeriesColumn) {
 
                 $query->where("document_number", "like", "%{$word}%")
                     ->orWhereHas("supplier", fn($query) =>
@@ -131,6 +133,12 @@ final class PurchaseService {
                             ->orWhere("internal_code", "like", "%{$word}%")
                             ->orWhere("barcode", "like", "%{$word}%")
                     );
+
+                if($hasDocumentSeriesColumn) {
+
+                    $query->orWhere("document_series", "like", "%{$word}%");
+
+                }
 
             });
 
@@ -170,18 +178,31 @@ final class PurchaseService {
             }
 
             $documentNumber = trim((string) ($data["document_number"] ?? ""));
+            $documentSeries = trim((string) ($data["document_series"] ?? ""));
+            $hasDocumentSeriesColumn = Schema::hasColumn("purchase_headers", "document_series");
 
-            if($documentNumber !== "" && PurchaseHeader::query()
-                ->where("company_id", $companyId)
-                ->where("supplier_id", $supplier->id)
-                ->where("document_type", $data["document_type"])
-                ->where("document_number", $documentNumber)
-                ->where("status", "!=", "canceled")
-                ->exists()) {
+            if($documentNumber !== "") {
 
-                throw new DomainException(
-                    "Ya existe un documento de compra activo con ese número para el proveedor."
-                );
+                $documentQuery = PurchaseHeader::query()
+                    ->where("company_id", $companyId)
+                    ->where("supplier_id", $supplier->id)
+                    ->where("document_type", $data["document_type"])
+                    ->where("document_number", $documentNumber)
+                    ->where("status", "!=", "canceled");
+
+                if($hasDocumentSeriesColumn) {
+
+                    $documentQuery->where("document_series", $documentSeries ?: null);
+
+                }
+
+                if($documentQuery->exists()) {
+
+                    throw new DomainException(
+                        "Ya existe un documento de compra activo con esa serie y número para el proveedor."
+                    );
+
+                }
 
             }
 
@@ -258,7 +279,7 @@ final class PurchaseService {
             $balanceDue = round($total - $paidAmount, 4);
             $paymentStatus = CommercialCreditAccountService::paymentStatus((float) $total, (float) $paidAmount);
 
-            $purchase = PurchaseHeader::create([
+            $purchaseData = [
                 "company_id" => $companyId,
                 "supplier_id" => $supplier->id,
                 "warehouse_id" => $warehouse->id,
@@ -287,7 +308,15 @@ final class PurchaseService {
                 "status" => "confirmed",
                 "created_at" => now(),
                 "created_by" => $userId
-            ]);
+            ];
+
+            if($hasDocumentSeriesColumn) {
+
+                $purchaseData["document_series"] = $documentSeries ?: null;
+
+            }
+
+            $purchase = PurchaseHeader::create($purchaseData);
 
             if($taxLines->isNotEmpty()) {
 

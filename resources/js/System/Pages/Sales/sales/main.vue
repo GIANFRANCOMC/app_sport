@@ -73,12 +73,6 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="col-12">
-                            <p class="br-operational-scope mb-0">
-                                <i class="fa-solid fa-location-dot" aria-hidden="true"></i>
-                                <span>{{ activeSaleScopeLabel }}</span>
-                            </p>
-                        </div>
                         <InputDate
                             v-model="forms[entity].createUpdate.data.issue_date"
                             hasDiv
@@ -2171,7 +2165,7 @@ export default {
                 .filter(e => e?.status === "active" && (!branchId || e?.branch_id == branchId))
                 .map(e => ({
                     code: e.id,
-                    label: `${e?.branch?.name ?? "Sucursal"} - ${e.name}`,
+                    label: e.name,
                     data: e
                 }));
 
@@ -2209,15 +2203,6 @@ export default {
             }
 
             return null;
-
-        },
-        activeSaleScopeLabel() {
-
-            const branch = this.forms[this.entity].createUpdate.data.branch?.label || "Sucursal no seleccionada";
-            const warehouse = this.forms[this.entity].createUpdate.data.warehouse?.label || "Almacén no seleccionado";
-            const serie = this.forms[this.entity].createUpdate.data.serie?.label || "Serie no seleccionada";
-
-            return `Alcance activo: ${branch} · ${warehouse} · ${serie}`;
 
         },
         holders: function() {

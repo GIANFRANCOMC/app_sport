@@ -532,7 +532,7 @@ export default {
             const branchId = this.selectedBranch?.id;
             return this.warehouses
                 .filter(warehouse => warehouse?.status === "active" && (!branchId || warehouse.branch_id === branchId))
-                .map(warehouse => ({...warehouse, label: `${warehouse.branch?.name || 'Sucursal'} - ${warehouse.name}`}));
+                .map(warehouse => ({...warehouse, label: warehouse.name}));
         },
         serieOptions() {
             return (this.selectedBranch?.series || [])

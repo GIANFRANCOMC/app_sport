@@ -25,7 +25,7 @@ class WarehouseService {
         $warehouse = Warehouse::create([
             "company_id" => $branch->company_id,
             "branch_id"  => $branch->id,
-            "name"       => self::generateWarehouseName($branch->name, 1),
+            "name"       => self::generateWarehouseName(1),
             "status"     => "active",
             "created_at" => now(),
             "created_by" => $userId
@@ -65,7 +65,9 @@ class WarehouseService {
         // Update warehouses efficiently
         foreach($warehouses as $warehouse) {
 
-            $warehouse->name       = self::generateWarehouseName($branch->name, $seq);
+            $cleanName = Warehouse::plainName((string) $warehouse->name);
+
+            $warehouse->name       = $cleanName !== "" ? $cleanName : self::generateWarehouseName($seq);
             $warehouse->updated_at = $now;
             $warehouse->updated_by = $userId;
             $warehouse->save();
@@ -85,9 +87,9 @@ class WarehouseService {
      * @param int $sequence Sequence number
      * @return string Generated warehouse name
      */
-    public static function generateWarehouseName(string $branchName, int $sequence): string {
+    public static function generateWarehouseName(int $sequence): string {
 
-        return "{$branchName} - Almacén {$sequence}";
+        return "Almacén {$sequence}";
 
     }
 

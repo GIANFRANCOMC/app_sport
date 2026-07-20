@@ -19,8 +19,9 @@ Extender compras para que cada empresa pueda aplicar impuestos y métodos de pag
 - Los pagos aplicados se guardan como foto del documento en `purchase_payments`.
 - Cada método de pago conserva `payment_method_id`, `payment_method_variant_id`, nombre histórico, monto, referencia y nota. El catálogo inicial usa códigos SUNAT cuando corresponde y un icono por método para mejorar identificación visual.
 - Las billeteras específicas, como `Yape`, `Plin`, `Agora PAY`, `Bim` o `IzipayYA`, se registran como variantes de `Billetera digital` en `payment_method_variants`.
-- La compra soporta `payment_modality`: `paid_now` exige pago completo, `cash_on_delivery` permite saldo pendiente y `installments` aplica el recargo configurado en `company_settings.purchases.installment_extra_percentage`.
-- Cuando una compra queda con saldo por modalidad `cash_on_delivery` o `installments`, el backend crea `purchase_accounts_payable`, sus cuotas en `purchase_payable_installments` y la trazabilidad de pagos iniciales en `purchase_payable_payments`.
+- La pantalla de nueva compra no expone una modalidad de pago adicional; sigue el mismo patrón de ventas y permite registrar uno o varios métodos de pago con su importe.
+- `payment_modality` queda soportado en backend para compatibilidad y para flujos futuros de cuentas por pagar, pero no debe mostrarse como selector en la creación estándar.
+- Cuando una compra se gestione desde cuentas por pagar, el backend puede crear `purchase_accounts_payable`, sus cuotas en `purchase_payable_installments` y la trazabilidad de pagos iniciales en `purchase_payable_payments`.
 - La logica es espejo de ventas, pero con tablas propias: ventas usa cuentas por cobrar (`sale_accounts_receivable`) y compras usa cuentas por pagar (`purchase_accounts_payable`).
 - Al registrar una compra, la vista cambia al modo `Listado` y refresca los registros para evitar que el usuario crea que la compra no fue guardada.
 

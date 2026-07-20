@@ -8,6 +8,14 @@
                     <div class="card">
                         <div class="card-body">
                             <div class="row g-3 mb-4">
+                                <InputSlot hasDiv title="Tipo de comprobante" :titleClass="[config.forms.classes.title]" isRequired xl="3" lg="6">
+                                    <template #input>
+                                        <v-select v-model="purchaseForm.documentType" :options="documentTypes" :clearable="false" :searchable="false" placeholder="Seleccione"/>
+                                    </template>
+                                </InputSlot>
+                                <InputText v-model="purchaseForm.documentSeries" hasDiv title="Serie" :titleClass="[config.forms.classes.title]" maxlength="20" showCharCounter xl="3" lg="6"/>
+                                <InputText v-model="purchaseForm.documentNumber" hasDiv title="Nro. de comprobante" :titleClass="[config.forms.classes.title]" maxlength="50" showCharCounter xl="3" lg="6"/>
+                                <InputDate v-model="purchaseForm.issueDate" hasDiv title="Fecha de emisión" :titleClass="[config.forms.classes.title]" isRequired xl="3" lg="6"/>
                                 <InputSlot hasDiv title="Sucursal" :titleClass="[config.forms.classes.title]" isRequired xl="4" lg="4">
                                     <template #input>
                                         <v-select v-model="purchaseForm.branch" :options="branches" :clearable="false" :searchable="false" placeholder="Seleccione"/>
@@ -18,8 +26,7 @@
                                         <v-select v-model="purchaseForm.warehouse" :options="warehousesForBranch(purchaseForm.branch?.code)" :clearable="false" searchable append-to-body placeholder="Seleccione"/>
                                     </template>
                                 </InputSlot>
-                                <InputDate v-model="purchaseForm.issueDate" hasDiv title="Fecha de emisión" :titleClass="[config.forms.classes.title]" isRequired xl="4" lg="4"/>
-                                <InputSlot hasDiv title="Proveedor" :titleClass="[config.forms.classes.title]" isRequired xl="6" lg="12">
+                                <InputSlot hasDiv title="Proveedor" :titleClass="[config.forms.classes.title]" isRequired xl="8" lg="8">
                                     <template #default>
                                         <AddSupplier triggerLabel="Agregar" @postAction="addSupplierPostAction"/>
                                     </template>
@@ -27,37 +34,12 @@
                                         <v-select v-model="purchaseForm.supplier" :options="suppliers" :clearable="false" searchable append-to-body placeholder="Seleccione"/>
                                     </template>
                                 </InputSlot>
-                                <InputSlot hasDiv title="Recepción" :titleClass="[config.forms.classes.title]" isRequired xl="3" lg="6">
+                                <InputSlot hasDiv title="Recepción" :titleClass="[config.forms.classes.title]" isRequired xl="4" lg="4">
                                     <template #input>
                                         <v-select v-model="purchaseForm.deliveryMode" :options="deliveryModes" :clearable="false" :searchable="false" placeholder="Seleccione"/>
                                     </template>
                                 </InputSlot>
-                                <InputSlot hasDiv title="Modalidad de pago" :titleClass="[config.forms.classes.title]" isRequired xl="3" lg="6">
-                                    <template #input>
-                                        <v-select v-model="purchaseForm.paymentModality" :options="paymentModalities" :clearable="false" :searchable="false" placeholder="Seleccione"/>
-                                    </template>
-                                </InputSlot>
-                                <InputSlot hasDiv title="Tipo de comprobante" :titleClass="[config.forms.classes.title]" isRequired xl="3" lg="6">
-                                    <template #input>
-                                        <v-select v-model="purchaseForm.documentType" :options="documentTypes" :clearable="false" :searchable="false" placeholder="Seleccione"/>
-                                    </template>
-                                </InputSlot>
-                                <InputText v-model="purchaseForm.documentNumber" hasDiv title="Nro. de comprobante" :titleClass="[config.forms.classes.title]" maxlength="50" showCharCounter xl="3" lg="6"/>
-                                <InputSlot hasDiv title="Moneda" :titleClass="[config.forms.classes.title]" isRequired xl="3" lg="6">
-                                    <template #input>
-                                        <v-select v-model="purchaseForm.currency" :options="currencies" :clearable="false" :searchable="false" placeholder="Seleccione"/>
-                                    </template>
-                                </InputSlot>
                                 <InputDate v-if="purchaseForm.deliveryMode?.code === 'pending'" v-model="purchaseForm.expectedDate" hasDiv title="Fecha esperada" :titleClass="[config.forms.classes.title]" xl="3" lg="6"/>
-                                <InputDate v-if="purchaseForm.paymentModality?.code === 'cash_on_delivery'" v-model="purchaseForm.dueDate" hasDiv title="Fecha de pago" :titleClass="[config.forms.classes.title]" xl="3" lg="6"/>
-                                <InputNumber v-if="purchaseForm.paymentModality?.code === 'installments'" v-model="purchaseForm.installmentCount" hasDiv title="Nro. de cuotas" :titleClass="[config.forms.classes.title]" :decimals="0" :minValue="1" :hasNegative="false" xl="3" lg="6"/>
-                                <InputDate v-if="purchaseForm.paymentModality?.code === 'installments'" v-model="purchaseForm.firstDueDate" hasDiv title="Primera cuota" :titleClass="[config.forms.classes.title]" xl="3" lg="6"/>
-                                <div class="col-12">
-                                    <p class="br-operational-scope mb-0">
-                                        <i class="fa-solid fa-location-dot" aria-hidden="true"></i>
-                                        <span>{{ activePurchaseScopeLabel }}</span>
-                                    </p>
-                                </div>
                             </div>
 
                             <div class="row g-3">
@@ -122,7 +104,7 @@
                                                     <div class="br-table-detail-empty">
                                                         <div class="br-table-detail-empty__top">
                                                             <div class="br-table-detail-empty__body">
-                                                                <img class="br-table-detail-empty__img" src="/System/assets/img/utils/without_data/empty_sale_detail.svg" alt="" width="100" height="84" loading="lazy" decoding="async"/>
+                                                                <img class="br-table-detail-empty__img" :src="purchaseDetailEmptyImageUrl" alt="" width="100" height="84" loading="lazy" decoding="async"/>
                                                                 <p class="br-table-detail-empty__text">
                                                                     <span>No hay productos en el detalle. Agréguelos con la acción </span>
                                                                     <a href="javascript:void(0)" class="br-link br-table-detail-empty__link" @click.prevent="addPurchaseItem">Agregar producto</a>
@@ -227,10 +209,6 @@
                                         <span>{{ tax.name }}</span>
                                         <strong>{{ purchaseForm.currency?.sign }} {{ separatorNumber(tax.amount) }}</strong>
                                     </template>
-                                </template>
-                                <template v-if="purchaseInstallmentExtraAmount > 0">
-                                    <span>Recargo por cuotas</span>
-                                    <strong>{{ purchaseForm.currency?.sign }} {{ separatorNumber(purchaseInstallmentExtraAmount) }}</strong>
                                 </template>
                                 <span>Total</span>
                                 <strong>{{ purchaseForm.currency?.sign }} {{ separatorNumber(purchaseTotal) }}</strong>
@@ -359,7 +337,7 @@
                                 <td>
                                     <strong>{{ purchase.formatted_document_type }}</strong>
                                     <span class="br-purchases__meta">
-                                        {{ purchase.document_number || `Registro #${purchase.id}` }}
+                                        {{ purchaseDocumentReference(purchase) }}
                                         · {{ formatDate(purchase.issue_date) }}
                                     </span>
                                 </td>
@@ -510,9 +488,7 @@ export default {
                 taxes: [],
                 paymentMethods: [],
                 purchaseDocumentTypes: [],
-                purchaseDeliveryModes: [],
-                purchasePaymentModalities: [],
-                settings: {}
+                purchaseDeliveryModes: []
             },
             deliveryModes: [
                 {
@@ -521,7 +497,7 @@ export default {
                 },
                 {
                     code: "pending",
-                    label: "Recepción parcial o pendiente"
+                    label: "Recepción pendiente"
                 }
             ],
             purchaseForm: {},
@@ -622,11 +598,9 @@ export default {
             this.options.paymentMethods = config.paymentMethods || {records: []};
             this.options.purchaseDocumentTypes = config.purchaseDocumentTypes?.records || [];
             this.options.purchaseDeliveryModes = config.purchaseDeliveryModes?.records || [];
-            this.options.purchasePaymentModalities = config.purchasePaymentModalities?.records || [];
             if(this.options.purchaseDeliveryModes.length) {
                 this.deliveryModes = this.options.purchaseDeliveryModes;
             }
-            this.options.settings = config.settings || {};
         },
         async listPurchases({url = null} = {}) {
             this.loading = true;
@@ -669,9 +643,6 @@ export default {
             Alerts.modals({type: "hide", id: "purchaseObservationsModal"});
         },
         preparePurchase() {
-            const defaultPaymentModality = this.paymentModalities.find(
-                modality => modality.code === (this.purchasePaymentSettings?.default_payment_modality || "paid_now")
-            ) || this.paymentModalities[0];
             const defaultBranch = this.branches[0] || null;
             const defaultWarehouse = this.warehousesForBranch(defaultBranch?.code)[0] || this.warehouses[0] || null;
 
@@ -681,14 +652,11 @@ export default {
                 warehouse: defaultWarehouse,
                 currency: this.currencies[0] || null,
                 documentType: this.documentTypes[0],
+                documentSeries: "",
                 documentNumber: "",
                 issueDate: new Date().toISOString().slice(0, 10),
                 expectedDate: "",
                 deliveryMode: this.deliveryModes[0],
-                paymentModality: defaultPaymentModality,
-                dueDate: "",
-                installmentCount: 1,
-                firstDueDate: "",
                 selectedTaxes: [],
                 selectedTaxQuantities: {},
                 payments: [this.newPurchasePayment({amount: 0})],
@@ -749,14 +717,11 @@ export default {
                     warehouse_id: this.purchaseForm.warehouse?.code,
                     currency_id: this.purchaseForm.currency?.code,
                     document_type: this.purchaseForm.documentType?.code,
+                    document_series: this.purchaseForm.documentSeries || null,
                     document_number: this.purchaseForm.documentNumber,
                     issue_date: this.purchaseForm.issueDate,
                     expected_date: this.purchaseForm.expectedDate || null,
                     delivery_mode: this.purchaseForm.deliveryMode?.code || "immediate",
-                    payment_modality: this.purchaseForm.paymentModality?.code || "paid_now",
-                    due_date: this.purchaseForm.dueDate || null,
-                    installment_count: this.purchaseForm.paymentModality?.code === "installments" ? this.purchaseForm.installmentCount : null,
-                    first_due_date: this.purchaseForm.paymentModality?.code === "installments" ? this.purchaseForm.firstDueDate : null,
                     tax: this.purchaseTaxTotal,
                     taxes: this.purchaseTaxBreakdown.map(tax => ({
                         tax_id: tax.id,
@@ -886,6 +851,15 @@ export default {
             if(!value) return "";
             return new Intl.DateTimeFormat("es-PE").format(new Date(`${value}T00:00:00`));
         },
+        purchaseDocumentReference(purchase) {
+            const number = purchase?.document_number || "";
+            const series = purchase?.document_series || "";
+
+            if(series && number) return `${series}-${number}`;
+            if(number) return number;
+
+            return `Registro #${purchase?.id}`;
+        },
         separatorNumber(value) {
             return Utils.separatorNumber(value || 0);
         },
@@ -915,24 +889,14 @@ export default {
         },
         documentTypes() {
             return this.options.purchaseDocumentTypes.length ? this.options.purchaseDocumentTypes : [
-                {code: "order", label: "Orden de compra"},
-                {code: "invoice", label: "Factura de compra"}
+                {code: "order", label: "Boleta"},
+                {code: "invoice", label: "Factura"}
             ];
-        },
-        paymentModalities() {
-            return this.options.purchasePaymentModalities.length ? this.options.purchasePaymentModalities : [
-                {code: "paid_now", label: "Pago al momento"},
-                {code: "cash_on_delivery", label: "Pago contra entrega"},
-                {code: "installments", label: "Pago en cuotas"}
-            ];
-        },
-        purchasePaymentSettings() {
-            return this.options.settings?.payment || {};
         },
         deliveryModeDescription() {
             return this.purchaseForm.deliveryMode?.code === "immediate"
                 ? "La mercadería ingresa al inventario al registrar la compra."
-                : "La compra queda pendiente hasta registrar una recepción parcial o total.";
+                : "La compra queda pendiente hasta registrar la recepción.";
         },
         branches() {
             return this.options.branches.map(record => ({
@@ -948,15 +912,9 @@ export default {
             return this.options.warehouses.map(record => ({
                 code: record.id,
                 branchId: record.branch?.id || record.branch_id || null,
-                label: `${record.branch?.name ? `${record.branch.name} - ` : ""}${record.name}`,
+                label: record.name,
                 data: record
             }));
-        },
-        activePurchaseScopeLabel() {
-            const branch = this.purchaseForm.branch?.label || "Sucursal no seleccionada";
-            const warehouse = this.purchaseForm.warehouse?.label || "Almacén no seleccionado";
-
-            return `Alcance activo: ${branch} · ${warehouse}`;
         },
         currencies() {
             return this.options.currencies.map(record => ({
@@ -971,6 +929,9 @@ export default {
                 label: [record.name, record.internal_code, record.barcode].filter(Boolean).join(" · "),
                 data: record
             }));
+        },
+        purchaseDetailEmptyImageUrl() {
+            return "/System/assets/img/utils/without_data/empty_sale_detail.svg";
         },
         observationFullText() {
             const raw = this.purchaseForm.observation;
@@ -1028,14 +989,7 @@ export default {
             });
         },
         purchaseTotal() {
-            return this.purchaseSubtotal + this.purchaseTaxTotal + this.purchaseInstallmentExtraAmount;
-        },
-        purchaseInstallmentExtraAmount() {
-            if(this.purchaseForm.paymentModality?.code !== "installments") return 0;
-
-            const percentage = Number(this.purchasePaymentSettings?.installment_extra_percentage || 0);
-
-            return Number(((this.purchaseSubtotal + this.purchaseTaxTotal) * (percentage / 100)).toFixed(4));
+            return this.purchaseSubtotal + this.purchaseTaxTotal;
         },
         purchaseTaxes() {
             return (this.options.taxes?.records || []).map(tax => ({

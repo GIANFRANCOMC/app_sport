@@ -1323,7 +1323,7 @@ export default {
                 {code: "all", label: "Todos los almacenes"}
             ].concat((this.options.warehouses || []).map(record => ({
                 code: record.id,
-                label: `${record.branch?.name ? `${record.branch.name} - ` : ""}${record.name}`
+                label: record.name
             })));
         },
         destinationWarehouses() {

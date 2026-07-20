@@ -20,6 +20,7 @@ final class PurchaseHeader extends Model {
         "warehouse_id",
         "currency_id",
         "document_type",
+        "document_series",
         "reference",
         "document_number",
         "issue_date",
@@ -114,8 +115,8 @@ final class PurchaseHeader extends Model {
     public static function getDocumentTypes($type = "all", $code = "") {
 
         $types = [
-            ["code" => "order", "label" => "Orden de compra"],
-            ["code" => "invoice", "label" => "Factura de compra"]
+            ["code" => "order", "label" => "Boleta"],
+            ["code" => "invoice", "label" => "Factura"]
         ];
 
         return Utilities::getValues($types, $type, $code);
@@ -126,7 +127,7 @@ final class PurchaseHeader extends Model {
 
         $modes = [
             ["code" => "immediate", "label" => "Recepción inmediata"],
-            ["code" => "pending", "label" => "Recepción parcial o pendiente"]
+            ["code" => "pending", "label" => "Recepción pendiente"]
         ];
 
         return Utilities::getValues($modes, $type, $code);

@@ -67,6 +67,7 @@ return new class extends Migration {
             $table->unsignedBigInteger("warehouse_id");
             $table->unsignedBigInteger("currency_id");
             $table->enum("document_type", ["order", "invoice"])->default("order");
+            $table->string("document_series", 20)->nullable();
             $table->string("reference", 40);
             $table->string("document_number", 50)->nullable();
             $table->date("issue_date");

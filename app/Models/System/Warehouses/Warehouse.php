@@ -30,6 +30,34 @@ class Warehouse extends Model {
         "updated_by"
     ];
 
+    public static function plainName(?string $name): string {
+
+        $name = trim((string) $name);
+
+        if($name === "") {
+
+            return "";
+
+        }
+
+        $normalized = preg_replace('/^.+\s-\s(Almac(?:én|Ã©n)\s+\d+)$/u', '$1', $name);
+
+        return trim($normalized ?: $name);
+
+    }
+
+    public function getNameAttribute($value): string {
+
+        return self::plainName($value);
+
+    }
+
+    public function setNameAttribute($value): void {
+
+        $this->attributes["name"] = self::plainName($value);
+
+    }
+
     // Appends
     public function getFormattedStatusAttribute() {
 

@@ -47,10 +47,10 @@ El método inicial es promedio ponderado por producto y almacén. Los impuestos 
 - Compras tiene accesos dedicados para **Listado** y **Nuevo**. Ambos reutilizan la misma página Vue, pero el modo inicial se resuelve por la ruta para reducir clics y separar mentalmente consulta vs registro.
 - `/purchases` funciona como equivalente directo a `/sales`; `/purchases/create` funciona como equivalente directo a `/sales/create`. Las rutas `/purchases/page/list` y `/purchases/page/new` se conservan solo como compatibilidad.
 - El listado permite buscar por proveedor, documento o producto y filtrar por estado.
-- El modo **Nuevo** abre un formulario de página completa, alineado con `sales/create`, con sucursal, almacén, proveedor, comprobante, modalidad de pago, productos, tributos, pagos, observaciones y recepción.
+- El modo **Nuevo** abre un formulario de página completa, alineado con `sales/create`, con sucursal, almacén, proveedor, comprobante, productos, tributos, pagos mixtos, observaciones y recepción.
 - El proveedor puede crearse desde el mismo flujo mediante el componente rápido `AddSupplier`, de la misma forma que ventas permite crear cliente.
 - La pantalla de nueva compra expone `Recepción`: **Recepción inmediata** envía `delivery_mode = immediate` y **Recepción parcial o pendiente** envía `delivery_mode = pending`.
-- Las opciones de tipo de comprobante, recepción y modalidad de pago salen del backend (`PurchaseHeader`) para evitar constantes sueltas en el frontend.
+- Las opciones de tipo de comprobante y recepción salen del backend (`PurchaseHeader`) para evitar constantes sueltas en el frontend.
 - El detalle de productos usa la misma estructura visual de ventas: tabla central, importes alineados, estado vacío con acción clara, observaciones como tile lateral y resumen de tributos/pagos en el panel derecho.
 - Diferencias legítimas frente a ventas: compras usa proveedor en lugar de cliente, recepción en lugar de despacho, costo unitario en lugar de precio de venta, cuentas por pagar en lugar de cuentas por cobrar y comprobantes de compra propios.
 - La recepción muestra únicamente cantidades pendientes.

@@ -507,7 +507,7 @@ return new class extends Migration {
         ]);
 
         DB::table("warehouses")->insert([
-            ["company_id" => 1, "branch_id" => 1, "name" => "Almacén - Sede principal"]
+            ["company_id" => 1, "branch_id" => 1, "name" => "Almacén 1"]
         ]);
 
         DB::table("biometric_device_brands")->insert([

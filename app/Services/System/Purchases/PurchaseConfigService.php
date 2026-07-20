@@ -13,7 +13,6 @@ use App\Services\System\Base\{
     CompanyReferenceDataService,
     MasterReferenceDataService
 };
-use App\Services\System\Organizations\Companies\CompanySettingService;
 
 final class PurchaseConfigService extends BaseConfigService {
 
@@ -61,17 +60,11 @@ final class PurchaseConfigService extends BaseConfigService {
             "purchaseDeliveryModes" => self::data([
                 "records" => PurchaseHeader::getDeliveryModes()
             ]),
-            "purchasePaymentModalities" => self::data([
-                "records" => PurchaseHeader::getPaymentModalities()
-            ]),
             "taxes" => self::data([
                 "records" => $references->taxesFor("purchase")
             ]),
             "paymentMethods" => self::data([
                 "records" => $references->paymentMethodsFor("purchase")
-            ]),
-            "settings" => self::data([
-                "payment" => CompanySettingService::group($companyId, CompanySettingService::PURCHASES)
             ])
         ]);
 

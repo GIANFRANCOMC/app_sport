@@ -18,6 +18,7 @@ final class StorePurchaseRequest extends CompanyFormRequest {
     protected function normalizedStringFields(): array {
 
         return [
+            "document_series",
             "document_number",
             "observation"
         ];
@@ -33,6 +34,7 @@ final class StorePurchaseRequest extends CompanyFormRequest {
             "warehouse_id"    => $this->nullableInteger("warehouse_id"),
             "currency_id"     => $this->nullableInteger("currency_id"),
             "document_type"   => $this->input("document_type") ?: "order",
+            "document_series" => $this->nullableString("document_series"),
             "delivery_mode"   => $this->input("delivery_mode") ?: "immediate",
             "payment_modality" => $this->input("payment_modality") ?: "paid_now",
             "approval_status" => $this->input("approval_status") ?: "approved",
@@ -76,6 +78,7 @@ final class StorePurchaseRequest extends CompanyFormRequest {
                 new BelongsToCompany("currencies", ["status" => "active"], "La moneda seleccionada no pertenece a la empresa.")
             ],
             "document_type" => ["required", "in:order,invoice"],
+            "document_series" => ["nullable", "string", "max:20"],
             "document_number" => ["nullable", "string", "max:50"],
             "issue_date" => ["required", "date"],
             "expected_date" => ["nullable", "date", "after_or_equal:issue_date"],
