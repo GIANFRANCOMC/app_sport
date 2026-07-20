@@ -75,63 +75,17 @@
     font-size: 0.72rem;
 }
 
-.br-purchases__items,
 .br-purchases__receipt-items {
     display: grid;
     gap: 0.6rem;
     margin-top: 1rem;
 }
 
-.br-purchases__items-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 1rem;
-}
-
-.br-purchases__items-header > div {
-    display: grid;
-    gap: 0.08rem;
-}
-
-.br-purchases__items-header strong {
-    color: var(--br-secondary);
-    font-size: 0.82rem;
-}
-
-.br-purchases__items-header small {
-    color: var(--br-text-muted);
-    font-size: 0.68rem;
-}
-
-.br-purchases__item-row {
-    display: grid;
-    grid-template-columns: minmax(15rem, 1fr) minmax(7.5rem, 0.28fr) minmax(9rem, 0.34fr) minmax(8rem, 0.28fr) 2.25rem;
-    align-items: end;
-    gap: 0.65rem;
-    padding: 0.7rem;
-    border: 1px solid var(--br-border);
-    border-radius: var(--br-radius-sm);
-    background: var(--br-neutral-panel);
-}
-
-.br-purchases__line-total {
-    display: grid;
-    gap: 0.18rem;
-    min-height: 2.35rem;
-    align-content: center;
-    text-align: right;
-}
-
-.br-purchases__line-total span,
-.br-purchases__total span,
 .br-document-settlement__summary span {
     color: var(--br-text-muted);
     font-size: 0.66rem;
 }
 
-.br-purchases__line-total strong,
-.br-purchases__total strong,
 .br-document-settlement__summary strong {
     color: var(--br-secondary);
     font-size: 0.82rem;
@@ -157,8 +111,7 @@
     background: var(--br-surface-elevated);
 }
 
-.br-document-settlement__summary,
-.br-purchases__total {
+.br-document-settlement__summary {
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto;
     align-items: center;
@@ -169,8 +122,7 @@
     background: var(--br-secondary-soft);
 }
 
-.br-document-settlement__summary strong,
-.br-purchases__total strong {
+.br-document-settlement__summary strong {
     text-align: right;
 }
 
@@ -341,10 +293,6 @@
     color: var(--br-danger);
 }
 
-.br-purchases__total {
-    margin-top: 0.55rem;
-}
-
 .br-purchases__receipt-summary {
     display: flex;
     align-items: center;
@@ -494,19 +442,13 @@
         display: inline;
     }
 
-    .br-purchases__items-header,
     .br-purchases__receipt-summary {
         align-items: flex-start;
         flex-direction: column;
     }
 
-    .br-purchases__item-row,
     .br-purchases__receipt-row {
         grid-template-columns: 1fr;
-    }
-
-    .br-purchases__line-total {
-        text-align: left;
     }
 
 }

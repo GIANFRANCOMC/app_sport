@@ -2,37 +2,294 @@
     <Breadcrumb :list="breadcrumbTitles"/>
 
     <main class="br-entity br-purchases">
-        <section class="br-entity-modebar">
-            <button
-                type="button"
-                :class="['br-entity-modebar__item', {'is-active': activeMode === 'list'}]"
-                @click="changeMode('list')">
-                <i class="fa-solid fa-list" aria-hidden="true"></i>
-                <span>Listado</span>
-            </button>
-            <button
-                type="button"
-                :class="['br-entity-modebar__item', {'is-active': activeMode === 'new'}]"
-                @click="changeMode('new')">
-                <i class="fa-solid fa-plus" aria-hidden="true"></i>
-                <span>Nuevo</span>
-            </button>
-        </section>
-        <section v-if="activeMode === 'new'" class="br-purchases__new-panel">
-            <div>
-                <strong>Nueva compra</strong>
-                <span>Registra proveedor, productos, impuestos, pagos y recepción en el mismo flujo.</span>
+        <section v-if="activeMode === 'new'" class="br-purchases__workspace">
+            <div class="row g-4">
+                <div class="col-lg-9 col-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="row g-3 mb-4">
+                                <InputSlot hasDiv title="Sucursal" :titleClass="[config.forms.classes.title]" isRequired xl="4" lg="4">
+                                    <template #input>
+                                        <v-select v-model="purchaseForm.branch" :options="branches" :clearable="false" :searchable="false" placeholder="Seleccione"/>
+                                    </template>
+                                </InputSlot>
+                                <InputSlot hasDiv title="Almacén" :titleClass="[config.forms.classes.title]" isRequired xl="4" lg="4">
+                                    <template #input>
+                                        <v-select v-model="purchaseForm.warehouse" :options="warehousesForBranch(purchaseForm.branch?.code)" :clearable="false" searchable append-to-body placeholder="Seleccione"/>
+                                    </template>
+                                </InputSlot>
+                                <InputDate v-model="purchaseForm.issueDate" hasDiv title="Fecha de emisión" :titleClass="[config.forms.classes.title]" isRequired xl="4" lg="4"/>
+                                <InputSlot hasDiv title="Proveedor" :titleClass="[config.forms.classes.title]" isRequired xl="6" lg="12">
+                                    <template #default>
+                                        <AddSupplier triggerLabel="Agregar" @postAction="addSupplierPostAction"/>
+                                    </template>
+                                    <template #input>
+                                        <v-select v-model="purchaseForm.supplier" :options="suppliers" :clearable="false" searchable append-to-body placeholder="Seleccione"/>
+                                    </template>
+                                </InputSlot>
+                                <InputSlot hasDiv title="Recepción" :titleClass="[config.forms.classes.title]" isRequired xl="3" lg="6">
+                                    <template #input>
+                                        <v-select v-model="purchaseForm.deliveryMode" :options="deliveryModes" :clearable="false" :searchable="false" placeholder="Seleccione"/>
+                                    </template>
+                                </InputSlot>
+                                <InputSlot hasDiv title="Modalidad de pago" :titleClass="[config.forms.classes.title]" isRequired xl="3" lg="6">
+                                    <template #input>
+                                        <v-select v-model="purchaseForm.paymentModality" :options="paymentModalities" :clearable="false" :searchable="false" placeholder="Seleccione"/>
+                                    </template>
+                                </InputSlot>
+                                <InputSlot hasDiv title="Tipo de comprobante" :titleClass="[config.forms.classes.title]" isRequired xl="3" lg="6">
+                                    <template #input>
+                                        <v-select v-model="purchaseForm.documentType" :options="documentTypes" :clearable="false" :searchable="false" placeholder="Seleccione"/>
+                                    </template>
+                                </InputSlot>
+                                <InputText v-model="purchaseForm.documentNumber" hasDiv title="Nro. de comprobante" :titleClass="[config.forms.classes.title]" maxlength="50" showCharCounter xl="3" lg="6"/>
+                                <InputSlot hasDiv title="Moneda" :titleClass="[config.forms.classes.title]" isRequired xl="3" lg="6">
+                                    <template #input>
+                                        <v-select v-model="purchaseForm.currency" :options="currencies" :clearable="false" :searchable="false" placeholder="Seleccione"/>
+                                    </template>
+                                </InputSlot>
+                                <InputDate v-if="purchaseForm.deliveryMode?.code === 'pending'" v-model="purchaseForm.expectedDate" hasDiv title="Fecha esperada" :titleClass="[config.forms.classes.title]" xl="3" lg="6"/>
+                                <InputDate v-if="purchaseForm.paymentModality?.code === 'cash_on_delivery'" v-model="purchaseForm.dueDate" hasDiv title="Fecha de pago" :titleClass="[config.forms.classes.title]" xl="3" lg="6"/>
+                                <InputNumber v-if="purchaseForm.paymentModality?.code === 'installments'" v-model="purchaseForm.installmentCount" hasDiv title="Nro. de cuotas" :titleClass="[config.forms.classes.title]" :decimals="0" :minValue="1" :hasNegative="false" xl="3" lg="6"/>
+                                <InputDate v-if="purchaseForm.paymentModality?.code === 'installments'" v-model="purchaseForm.firstDueDate" hasDiv title="Primera cuota" :titleClass="[config.forms.classes.title]" xl="3" lg="6"/>
+                                <div class="col-12">
+                                    <p class="br-operational-scope mb-0">
+                                        <i class="fa-solid fa-location-dot" aria-hidden="true"></i>
+                                        <span>{{ activePurchaseScopeLabel }}</span>
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div class="row g-3">
+                                <div class="table-responsive">
+                                    <table class="table">
+                                        <thead class="text-center">
+                                            <tr>
+                                                <th style="width: 8%;">#</th>
+                                                <th class="min-w-150px" style="width: 32%;">PRODUCTO</th>
+                                                <th class="min-w-150px" style="width: 20%;">CANTIDAD</th>
+                                                <th class="min-w-150px" style="width: 20%;">COSTO UNITARIO</th>
+                                                <th class="min-w-150px text-end pe-3" style="width: 15%;">TOTAL</th>
+                                                <th style="width: 5%;">ACCIONES</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="table-border-bottom-0 bg-white">
+                                            <template v-if="purchaseForm.items?.length">
+                                                <tr v-for="(detail, index) in purchaseForm.items" :key="detail.key">
+                                                    <td class="text-center fw-bold">
+                                                        <span>{{ index + 1 }}</span>
+                                                    </td>
+                                                    <td class="text-start">
+                                                        <v-select v-model="detail.product" :options="purchaseProductOptions(index)" :clearable="false" searchable append-to-body placeholder="Seleccione"/>
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <InputNumber v-model="detail.quantity" :hasNegative="false"/>
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <InputNumber v-model="detail.unitCost" :hasNegative="false">
+                                                            <template #inputGroupPrepend>
+                                                                <span class="input-group-text br-currency-prefix">{{ purchaseForm.currency?.sign || "S/" }}</span>
+                                                            </template>
+                                                        </InputNumber>
+                                                    </td>
+                                                    <td class="text-end align-middle pe-3">
+                                                        <span class="br-amount-inline">
+                                                            <span class="br-amount-inline__sign">{{ purchaseForm.currency?.sign || "" }}</span>
+                                                            <span class="br-amount-inline__amount">{{ separatorNumber(lineTotal(detail)) }}</span>
+                                                        </span>
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <button type="button" class="btn btn-danger btn-xs waves-effect" :disabled="purchaseForm.items.length === 1" title="Quitar producto" @click="removePurchaseItem(index)">
+                                                            <i class="fa fa-times" aria-hidden="true"></i>
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                                <tr class="br-table-footer-stripe">
+                                                    <td colspan="4" class="text-end align-middle br-table-footer-stripe__label">
+                                                        <span class="text-uppercase">Importe total:</span>
+                                                    </td>
+                                                    <td class="text-end align-middle pe-3">
+                                                        <span class="br-amount-inline br-amount-inline--emphasis">
+                                                            <span class="br-amount-inline__sign">{{ purchaseForm.currency?.sign || "" }}</span>
+                                                            <span class="br-amount-inline__amount">{{ separatorNumber(purchaseSubtotal) }}</span>
+                                                        </span>
+                                                    </td>
+                                                    <td class="align-middle"></td>
+                                                </tr>
+                                            </template>
+                                            <tr v-else>
+                                                <td class="pt-1 pb-0 border-0" colspan="99">
+                                                    <div class="br-table-detail-empty">
+                                                        <div class="br-table-detail-empty__top">
+                                                            <div class="br-table-detail-empty__body">
+                                                                <img class="br-table-detail-empty__img" src="/System/assets/img/utils/without_data/empty_sale_detail.svg" alt="" width="100" height="84" loading="lazy" decoding="async"/>
+                                                                <p class="br-table-detail-empty__text">
+                                                                    <span>No hay productos en el detalle. Agréguelos con la acción </span>
+                                                                    <a href="javascript:void(0)" class="br-link br-table-detail-empty__link" @click.prevent="addPurchaseItem">Agregar producto</a>
+                                                                    <span>.</span>
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-3 col-12">
+                    <aside class="br-purchases__settlement">
+                        <div class="w-100 mb-2 mb-md-3">
+                            <div class="br-observation-tile">
+                                <div
+                                    role="button"
+                                    tabindex="0"
+                                    class="br-tap-field"
+                                    :class="observationHasContent ? 'br-tap-field--has-value' : 'br-tap-field--empty'"
+                                    :aria-label="observationsFieldAriaLabel"
+                                    @click="openObservationsModal"
+                                    @keydown.enter.prevent="openObservationsModal"
+                                    @keydown.space.prevent="openObservationsModal">
+                                    <div class="br-tap-field__head">
+                                        <span class="br-tap-field__eyebrow">Observaciones</span>
+                                        <i class="br-tap-field__icon" :class="observationHasContent ? 'fa-solid fa-square-pen' : 'fa-solid fa-note-sticky'" aria-hidden="true"></i>
+                                    </div>
+                                    <span
+                                        v-if="observationHasContent"
+                                        class="br-tap-field__value"
+                                        :class="{ 'br-tap-field__value--expanded': observationPreviewExpanded }"
+                                        :title="observationPreviewTooltip"
+                                        v-text="observationDisplayPreview">
+                                    </span>
+                                    <span v-else class="br-tap-field__placeholder">Sin observaciones</span>
+                                </div>
+                                <button
+                                    v-if="observationHasContent && observationIsTruncatable"
+                                    type="button"
+                                    class="br-observation-tile__toggle"
+                                    :aria-expanded="observationPreviewExpanded"
+                                    @click.stop="toggleObservationPreviewExpand">
+                                    <span>{{ observationPreviewExpanded ? "Ver menos" : "Ver más" }}</span>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="br-document-settlement br-sale-settlement mb-2 mb-md-3">
+                            <div>
+                                <label class="form-label">Impuestos extras</label>
+                                <div class="br-document-settlement__taxes" v-if="optionalPurchaseTaxes.length">
+                                    <template v-for="tax in optionalPurchaseTaxes" :key="`optional-purchase-tax-page-${tax.code}`">
+                                        <label class="br-entity-switch br-document-settlement__tax-option">
+                                            <input v-model="purchaseForm.selectedTaxes" class="form-check-input" type="checkbox" :value="tax.code" @change="syncSelectedTaxQuantity(tax.data)">
+                                            <span>
+                                                <strong>{{ tax.data.name }}</strong>
+                                                <small>{{ taxLabel(tax.data) }}</small>
+                                            </span>
+                                        </label>
+                                        <InputNumber v-if="isFixedTax(tax.data) && (purchaseForm.selectedTaxes || []).includes(tax.code)" v-model="purchaseForm.selectedTaxQuantities[tax.code]" title="" :inputClass="['form-control', 'br-tax-quantity']" :decimals="0" :minValue="taxQuantityMinimum(tax.data)" :maxValue="taxQuantityMaximum(tax.data)" :hasNegative="false" @change="normalizeSelectedTaxQuantity(tax.code)">
+                                            <template #inputGroupPrepend>
+                                                <span class="input-group-text br-tax-quantity__label">Veces</span>
+                                            </template>
+                                        </InputNumber>
+                                    </template>
+                                </div>
+                                <p v-else class="br-document-settlement__empty mb-0">Sin impuestos extras disponibles.</p>
+                            </div>
+                            <div>
+                                <label class="form-label">Métodos de pago</label>
+                                <div class="br-document-payments">
+                                    <div v-for="(payment, index) in purchaseForm.payments" :key="payment.key" class="br-document-payment-row">
+                                        <v-select v-model="payment.method" :options="purchasePaymentMethods" :clearable="false" :searchable="true" append-to-body/>
+                                        <InputNumber v-model="payment.amount" title="" :titleClass="[]" :inputClass="['form-control', 'br-document-payment-amount']" :minValue="0" :placeholder="separatorNumber(purchaseTotal)">
+                                            <template #inputGroupPrepend>
+                                                <span class="input-group-text br-currency-prefix">{{ purchaseForm.currency?.sign }}</span>
+                                            </template>
+                                        </InputNumber>
+                                        <input v-if="payment.method?.data?.requires_reference" v-model.trim="payment.reference" type="text" class="form-control" maxlength="100" placeholder="Referencia">
+                                        <button type="button" class="br-icon-action" :disabled="purchaseForm.payments.length <= 1" title="Quitar método" @click="removePurchasePayment(index)">
+                                            <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+                                        </button>
+                                    </div>
+                                    <button type="button" class="br-document-payment-add" @click="addPurchasePayment">
+                                        <i class="fa-solid fa-circle-plus" aria-hidden="true"></i>
+                                        <span>Agregar método</span>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="br-document-settlement__summary">
+                                <span>Subtotal</span>
+                                <strong>{{ purchaseForm.currency?.sign }} {{ separatorNumber(purchaseSubtotal) }}</strong>
+                                <template v-if="purchaseTaxBreakdown.length">
+                                    <template v-for="tax in purchaseTaxBreakdown" :key="`purchase-summary-tax-page-${tax.id}`">
+                                        <span>{{ tax.name }}</span>
+                                        <strong>{{ purchaseForm.currency?.sign }} {{ separatorNumber(tax.amount) }}</strong>
+                                    </template>
+                                </template>
+                                <template v-if="purchaseInstallmentExtraAmount > 0">
+                                    <span>Recargo por cuotas</span>
+                                    <strong>{{ purchaseForm.currency?.sign }} {{ separatorNumber(purchaseInstallmentExtraAmount) }}</strong>
+                                </template>
+                                <span>Total</span>
+                                <strong>{{ purchaseForm.currency?.sign }} {{ separatorNumber(purchaseTotal) }}</strong>
+                                <span>Pagado</span>
+                                <strong>{{ purchaseForm.currency?.sign }} {{ separatorNumber(purchasePaidTotal) }}</strong>
+                                <span>Diferencia</span>
+                                <strong :class="Number(purchasePaymentDifference) === 0 ? 'text-success' : 'text-danger'">
+                                    {{ purchaseForm.currency?.sign }} {{ separatorNumber(purchasePaymentDifference) }}
+                                </strong>
+                            </div>
+                        </div>
+                        <div class="br-sale-sidebar-actions">
+                            <div class="br-sale-sidebar-actions__pair">
+                                <button type="button" class="br-btn br-btn-sm br-btn-primary waves-effect" @click="addPurchaseItem">
+                                    <span>Agregar producto</span>
+                                </button>
+                                <button type="button" class="br-btn br-btn-sm br-btn-secondary waves-effect" @click="preparePurchase">
+                                    <span>Limpiar</span>
+                                </button>
+                            </div>
+                            <div class="br-sale-sidebar-actions__pair">
+                                <button type="button" class="br-btn br-btn-action-create br-sale-sidebar-actions__cta" :disabled="saving" @click="savePurchase">
+                                    <span v-text="saving ? 'Registrando' : 'Registrar compra'"></span>
+                                </button>
+                            </div>
+                        </div>
+                    </aside>
+                </div>
             </div>
-            <button
-                type="button"
-                class="br-btn br-btn-action-create"
-                data-bs-toggle="modal"
-                data-bs-target="#purchaseModal"
-                @click="preparePurchase">
-                <i class="fa-solid fa-plus" aria-hidden="true"></i>
-                <span>Registrar compra</span>
-            </button>
         </section>
+
+        <div id="purchaseObservationsModal" class="modal fade br-modal-standard" data-bs-backdrop="static" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-header br-modal-header">
+                        <h5 class="modal-title text-uppercase fw-bold">Observaciones</h5>
+                        <button type="button" class="btn-header-modal" data-bs-dismiss="modal">
+                            <i class="fa fa-times icon-close-modal" aria-hidden="true"></i>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <InputTextArea
+                            v-model="observationDraft"
+                            hasDiv
+                            title="Observaciones"
+                            :titleClass="[config.forms.classes.title]"
+                            rows="5"
+                            maxlength="1000"
+                            showCharCounter
+                            placeholder="Escribe aquí la observación de la compra..."/>
+                    </div>
+                    <div class="modal-footer br-entity-modal__footer">
+                        <button type="button" class="br-btn br-btn-cancel" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="button" class="br-btn br-btn-action-create" @click="saveObservationsModal">Guardar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <section v-if="activeMode === 'list'" class="br-filter-bar">
             <div class="row align-items-end g-2">
                 <InputText
@@ -61,9 +318,7 @@
                         <button
                             type="button"
                             class="br-btn br-btn-sm br-btn-action-open-create"
-                            data-bs-toggle="modal"
-                            data-bs-target="#purchaseModal"
-                            @click="preparePurchase">
+                            @click="changeMode('new')">
                             <i class="fa-solid fa-plus" aria-hidden="true"></i>
                             <span>Nuevo</span>
                         </button>
@@ -159,224 +414,10 @@
             </div>
         </section>
 
-        <div v-if="records.links" class="d-flex justify-content-center mt-3">
+        <div v-if="activeMode === 'list' && records.links" class="d-flex justify-content-center mt-3">
             <Paginator :links="records.links" @clickPage="listPurchases"/>
         </div>
     </main>
-
-    <div id="purchaseModal" class="modal fade br-entity-modal br-modal-standard" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered modal-xl">
-            <div class="modal-content">
-                <div class="modal-header br-entity-modal__header">
-                    <div>
-                        <p class="br-entity-modal__eyebrow mb-1">Compras</p>
-                        <h2 class="modal-title br-entity-modal__title">Registrar compra</h2>
-                        <p class="br-purchases__modal-help">El stock cambiará únicamente cuando registres la recepción.</p>
-                    </div>
-                    <button type="button" class="br-modal-close" data-bs-dismiss="modal" aria-label="Cerrar">
-                        <i class="fa-solid fa-xmark" aria-hidden="true"></i>
-                    </button>
-                </div>
-                <div class="modal-body br-entity-modal__body br-modal-standard__body">
-                    <div class="row g-3">
-                        <div class="col-lg-3">
-                            <label class="form-label">Proveedor</label>
-                            <v-select v-model="purchaseForm.supplier" :options="suppliers" :clearable="false" searchable/>
-                        </div>
-                        <div class="col-lg-3">
-                            <label class="form-label">Almacén de recepción</label>
-                            <v-select v-model="purchaseForm.warehouse" :options="warehouses" :clearable="false" searchable/>
-                        </div>
-                        <div class="col-lg-3">
-                            <label class="form-label">Entrega</label>
-                            <v-select
-                                v-model="purchaseForm.deliveryMode"
-                                :options="deliveryModes"
-                                :clearable="false"
-                                :searchable="false"/>
-                        </div>
-                        <div class="col-lg-3">
-                            <label class="form-label">Moneda</label>
-                            <v-select v-model="purchaseForm.currency" :options="currencies" :clearable="false" :searchable="false"/>
-                        </div>
-                        <div class="col-lg-3">
-                            <label class="form-label">Tipo de documento</label>
-                            <v-select v-model="purchaseForm.documentType" :options="documentTypes" :clearable="false" :searchable="false"/>
-                        </div>
-                        <div class="col-lg-3">
-                            <InputText v-model="purchaseForm.documentNumber" title="Número de documento" :titleClass="[config.forms.classes.title]"/>
-                        </div>
-                        <div class="col-lg-3">
-                            <label class="form-label">Fecha de emisión</label>
-                            <input v-model="purchaseForm.issueDate" type="date" class="form-control">
-                        </div>
-                        <div class="col-lg-3">
-                            <label class="form-label">Fecha esperada</label>
-                            <input v-model="purchaseForm.expectedDate" type="date" class="form-control">
-                        </div>
-                    </div>
-
-                    <div class="br-purchases__items">
-                        <div class="br-purchases__items-header">
-                            <div>
-                                <strong>Productos y costos</strong>
-                                <small>El costo unitario alimentará la valorización cuando recibas la mercadería.</small>
-                            </div>
-                            <button type="button" class="br-btn br-btn-sm br-btn-outline-secondary" @click="addPurchaseItem">
-                                <i class="fa-solid fa-plus" aria-hidden="true"></i>
-                                <span>Agregar producto</span>
-                            </button>
-                        </div>
-                        <div v-for="(detail, index) in purchaseForm.items" :key="detail.key" class="br-purchases__item-row">
-                            <div>
-                                <label class="form-label">Producto {{ index + 1 }}</label>
-                                <v-select
-                                    v-model="detail.product"
-                                    :options="purchaseProductOptions(index)"
-                                    :clearable="false"
-                                    searchable
-                                    append-to-body/>
-                            </div>
-                            <InputNumber v-model="detail.quantity" title="Cantidad" :titleClass="[config.forms.classes.title]" :hasNegative="false"/>
-                            <InputNumber v-model="detail.unitCost" title="Costo unitario" :titleClass="[config.forms.classes.title]" :hasNegative="false">
-                                <template #inputGroupPrepend>
-                                    <span class="input-group-text br-currency-prefix">{{ purchaseForm.currency?.sign || "S/" }}</span>
-                                </template>
-                            </InputNumber>
-                            <div class="br-purchases__line-total">
-                                <span>Subtotal</span>
-                                <strong>{{ purchaseForm.currency?.sign }} {{ separatorNumber(lineTotal(detail)) }}</strong>
-                            </div>
-                            <button
-                                type="button"
-                                class="br-icon-action br-purchases__remove"
-                                :disabled="purchaseForm.items.length === 1"
-                                title="Quitar producto"
-                                @click="removePurchaseItem(index)">
-                                <i class="fa-solid fa-trash-can" aria-hidden="true"></i>
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="row g-3 mt-1">
-                        <div class="col-lg-8">
-                            <label class="form-label">Observación</label>
-                            <textarea v-model.trim="purchaseForm.observation" class="form-control" rows="2" maxlength="1000"></textarea>
-                        </div>
-                        <div class="col-lg-4">
-                            <div class="br-document-settlement">
-                                <div>
-                                    <label class="form-label">Impuestos extras</label>
-                                    <div class="br-document-settlement__taxes" v-if="optionalPurchaseTaxes.length">
-                                        <template v-for="tax in optionalPurchaseTaxes" :key="`optional-purchase-tax-${tax.code}`">
-                                            <label class="br-entity-switch br-document-settlement__tax-option">
-                                                <input
-                                                    v-model="purchaseForm.selectedTaxes"
-                                                    class="form-check-input"
-                                                    type="checkbox"
-                                                    :value="tax.code"
-                                                    @change="syncSelectedTaxQuantity(tax.data)">
-                                                <span>
-                                                    <strong>{{ tax.data.name }}</strong>
-                                                    <small>{{ taxLabel(tax.data) }}</small>
-                                                </span>
-                                            </label>
-                                            <InputNumber
-                                                v-if="isFixedTax(tax.data) && (purchaseForm.selectedTaxes || []).includes(tax.code)"
-                                                v-model="purchaseForm.selectedTaxQuantities[tax.code]"
-                                                title=""
-                                                :inputClass="['form-control', 'br-tax-quantity']"
-                                                :decimals="0"
-                                                :minValue="1"
-                                                :hasNegative="false"
-                                                @change="normalizeSelectedTaxQuantity(tax.code)">
-                                                <template v-slot:inputGroupPrepend>
-                                                    <span class="input-group-text br-tax-quantity__label">Veces</span>
-                                                </template>
-                                            </InputNumber>
-                                        </template>
-                                    </div>
-                                    <p v-else class="br-document-settlement__empty mb-0">Sin impuestos extras disponibles.</p>
-                                </div>
-                                <div>
-                                    <label class="form-label">Métodos de pago</label>
-                                    <div class="br-document-payments">
-                                        <div
-                                            v-for="(payment, index) in purchaseForm.payments"
-                                            :key="payment.key"
-                                            class="br-document-payment-row">
-                                            <v-select
-                                                v-model="payment.method"
-                                                :options="purchasePaymentMethods"
-                                                :clearable="false"
-                                                :searchable="true"
-                                                append-to-body/>
-                                            <InputNumber
-                                                v-model="payment.amount"
-                                                title=""
-                                                :titleClass="[]"
-                                                :inputClass="['form-control', 'br-document-payment-amount']"
-                                                :minValue="0"
-                                                :placeholder="separatorNumber(purchaseTotal)">
-                                                <template v-slot:inputGroupPrepend>
-                                                    <span class="input-group-text br-currency-prefix">{{ purchaseForm.currency?.sign }}</span>
-                                                </template>
-                                            </InputNumber>
-                                            <input
-                                                v-if="payment.method?.data?.requires_reference"
-                                                v-model.trim="payment.reference"
-                                                type="text"
-                                                class="form-control"
-                                                maxlength="100"
-                                                placeholder="Referencia">
-                                            <button
-                                                type="button"
-                                                class="br-icon-action"
-                                                :disabled="purchaseForm.payments.length <= 1"
-                                                title="Quitar método"
-                                                @click="removePurchasePayment(index)">
-                                                <i class="fa-solid fa-xmark" aria-hidden="true"></i>
-                                            </button>
-                                        </div>
-                                        <button type="button" class="br-document-payment-add" @click="addPurchasePayment">
-                                            <i class="fa-solid fa-circle-plus" aria-hidden="true"></i>
-                                            <span>Agregar método</span>
-                                        </button>
-                                    </div>
-                                </div>
-                                <div class="br-purchases__total">
-                                    <span>Subtotal</span>
-                                    <strong>{{ purchaseForm.currency?.sign }} {{ separatorNumber(purchaseSubtotal) }}</strong>
-                                    <template v-if="purchaseTaxBreakdown.length">
-                                        <template v-for="tax in purchaseTaxBreakdown" :key="`purchase-summary-tax-${tax.id}`">
-                                            <span>{{ tax.name }}</span>
-                                            <strong>{{ purchaseForm.currency?.sign }} {{ separatorNumber(tax.amount) }}</strong>
-                                        </template>
-                                    </template>
-                                    <template v-else>
-                                        <span>IGV</span>
-                                        <strong>{{ purchaseForm.currency?.sign }} 0.00</strong>
-                                    </template>
-                                    <span>Total</span>
-                                    <strong>{{ purchaseForm.currency?.sign }} {{ separatorNumber(purchaseTotal) }}</strong>
-                                    <span>Pagado</span>
-                                    <strong>{{ purchaseForm.currency?.sign }} {{ separatorNumber(purchasePaidTotal) }}</strong>
-                                    <span>Diferencia</span>
-                                    <strong :class="Number(purchasePaymentDifference) === 0 ? 'text-success' : 'text-danger'">
-                                        {{ purchaseForm.currency?.sign }} {{ separatorNumber(purchasePaymentDifference) }}
-                                    </strong>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer br-entity-modal__footer">
-                    <button ref="closePurchaseModal" type="button" class="br-btn br-btn-cancel" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="button" class="br-btn br-btn-action-create" :disabled="saving" @click="savePurchase">Registrar compra</button>
-                </div>
-            </div>
-        </div>
-    </div>
 
     <div id="purchaseReceiptModal" class="modal fade br-entity-modal br-modal-standard" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered modal-lg">
@@ -460,18 +501,32 @@ export default {
                 word: "",
                 status: {code: "", label: "Todos los estados"}
             },
-            options: {suppliers: [], warehouses: [], currencies: [], products: [], taxes: [], paymentMethods: []},
+            options: {
+                branches: [],
+                suppliers: [],
+                warehouses: [],
+                currencies: [],
+                products: [],
+                taxes: [],
+                paymentMethods: [],
+                purchaseDocumentTypes: [],
+                purchaseDeliveryModes: [],
+                purchasePaymentModalities: [],
+                settings: {}
+            },
             deliveryModes: [
                 {
                     code: "immediate",
-                    label: "Entrega inmediata"
+                    label: "Recepción inmediata"
                 },
                 {
                     code: "pending",
-                    label: "Recepción pendiente"
+                    label: "Recepción parcial o pendiente"
                 }
             ],
             purchaseForm: {},
+            observationDraft: "",
+            observationPreviewExpanded: false,
             receiptForm: {purchase: null, items: [], receivedAt: "", observation: ""},
             config: {
                 ...Constants.generalConfig,
@@ -486,10 +541,11 @@ export default {
         initialModeFromPath() {
             const segment = window.location.pathname.split("?")[0].split("/").filter(Boolean).pop();
 
-            return segment === "new" ? "new" : "list";
+            return ["new", "create"].includes(segment) ? "new" : "list";
         },
         changeMode(mode) {
             this.activeMode = mode;
+            this.updateUrlMode(mode);
             if(mode === "new") this.preparePurchase();
         },
         taxLabel(tax = {}) {
@@ -557,12 +613,20 @@ export default {
                 showAlert: true
             });
             const config = result.data?.config || {};
+            this.options.branches = config.branches?.records || [];
             this.options.suppliers = config.suppliers?.records || [];
             this.options.warehouses = config.warehouses?.records || [];
             this.options.currencies = config.currencies?.records || [];
             this.options.products = config.products?.records || [];
             this.options.taxes = config.taxes || {records: []};
             this.options.paymentMethods = config.paymentMethods || {records: []};
+            this.options.purchaseDocumentTypes = config.purchaseDocumentTypes?.records || [];
+            this.options.purchaseDeliveryModes = config.purchaseDeliveryModes?.records || [];
+            this.options.purchasePaymentModalities = config.purchasePaymentModalities?.records || [];
+            if(this.options.purchaseDeliveryModes.length) {
+                this.deliveryModes = this.options.purchaseDeliveryModes;
+            }
+            this.options.settings = config.settings || {};
         },
         async listPurchases({url = null} = {}) {
             this.loading = true;
@@ -593,19 +657,41 @@ export default {
             if(this.purchaseForm.payments.length <= 1) return;
             this.purchaseForm.payments.splice(index, 1);
         },
+        openObservationsModal() {
+            this.observationDraft = this.purchaseForm.observation == null ? "" : String(this.purchaseForm.observation);
+            Alerts.modals({type: "show", id: "purchaseObservationsModal"});
+        },
+        toggleObservationPreviewExpand() {
+            this.observationPreviewExpanded = !this.observationPreviewExpanded;
+        },
+        saveObservationsModal() {
+            this.purchaseForm.observation = this.observationDraft == null ? "" : String(this.observationDraft);
+            Alerts.modals({type: "hide", id: "purchaseObservationsModal"});
+        },
         preparePurchase() {
+            const defaultPaymentModality = this.paymentModalities.find(
+                modality => modality.code === (this.purchasePaymentSettings?.default_payment_modality || "paid_now")
+            ) || this.paymentModalities[0];
+            const defaultBranch = this.branches[0] || null;
+            const defaultWarehouse = this.warehousesForBranch(defaultBranch?.code)[0] || this.warehouses[0] || null;
+
             this.purchaseForm = {
                 supplier: this.suppliers[0] || null,
-                warehouse: this.warehouses[0] || null,
+                branch: defaultBranch,
+                warehouse: defaultWarehouse,
                 currency: this.currencies[0] || null,
                 documentType: this.documentTypes[0],
                 documentNumber: "",
                 issueDate: new Date().toISOString().slice(0, 10),
                 expectedDate: "",
                 deliveryMode: this.deliveryModes[0],
+                paymentModality: defaultPaymentModality,
+                dueDate: "",
+                installmentCount: 1,
+                firstDueDate: "",
                 selectedTaxes: [],
                 selectedTaxQuantities: {},
-                payments: [this.newPurchasePayment({amount: this.purchaseTotal})],
+                payments: [this.newPurchasePayment({amount: 0})],
                 observation: "",
                 items: [this.newPurchaseItem()]
             };
@@ -623,8 +709,35 @@ export default {
                 .filter(Boolean);
             return this.products.filter(product => !selected.includes(Number(product.code)));
         },
+        warehousesForBranch(branchId) {
+            if(!branchId) return this.warehouses;
+
+            return this.warehouses.filter(warehouse => Number(warehouse.branchId) === Number(branchId));
+        },
         lineTotal(detail) {
             return Number(detail.quantity || 0) * Number(detail.unitCost || 0);
+        },
+        taxQuantityMinimum(tax = {}) {
+            return Math.max(1, Number(tax?.min_apply_quantity ?? 1));
+        },
+        taxQuantityMaximum(tax = {}) {
+            return tax?.max_apply_quantity == null
+                ? undefined
+                : Math.max(this.taxQuantityMinimum(tax), Number(tax.max_apply_quantity));
+        },
+        addSupplierPostAction({response}) {
+            if(!Requests.valid({result: response})) return;
+
+            const supplier = response?.data?.data;
+            if(!supplier?.id) return;
+
+            const exists = this.options.suppliers.some(record => Number(record.id) === Number(supplier.id));
+            if(!exists) {
+                this.options.suppliers.push(supplier);
+                this.options.suppliers.sort((a, b) => `${a.name}`.localeCompare(`${b.name}`));
+            }
+
+            this.purchaseForm.supplier = this.suppliers.find(record => Number(record.code) === Number(supplier.id)) || this.purchaseForm.supplier;
         },
         async savePurchase() {
             this.saving = true;
@@ -640,6 +753,10 @@ export default {
                     issue_date: this.purchaseForm.issueDate,
                     expected_date: this.purchaseForm.expectedDate || null,
                     delivery_mode: this.purchaseForm.deliveryMode?.code || "immediate",
+                    payment_modality: this.purchaseForm.paymentModality?.code || "paid_now",
+                    due_date: this.purchaseForm.dueDate || null,
+                    installment_count: this.purchaseForm.paymentModality?.code === "installments" ? this.purchaseForm.installmentCount : null,
+                    first_due_date: this.purchaseForm.paymentModality?.code === "installments" ? this.purchaseForm.firstDueDate : null,
                     tax: this.purchaseTaxTotal,
                     taxes: this.purchaseTaxBreakdown.map(tax => ({
                         tax_id: tax.id,
@@ -660,8 +777,8 @@ export default {
             this.saving = false;
             Alerts.swals({show: false});
             if(Requests.valid({result})) {
-                this.$refs.closePurchaseModal?.click();
                 this.activeMode = "list";
+                this.updateUrlMode("list");
                 Alerts.generateAlert({type: "success", msgContent: result.data.msg});
                 await this.listPurchases({});
                 return;
@@ -771,11 +888,21 @@ export default {
         },
         separatorNumber(value) {
             return Utils.separatorNumber(value || 0);
+        },
+        updateUrlMode(mode) {
+            const path = mode === "new" ? "/purchases/create" : "/purchases";
+            window.history.replaceState({}, "", path);
         }
     },
     computed: {
         breadcrumbTitles() {
-            return [{title: "Compras"}, this.config.entity.page];
+            return [
+                {title: "Compras"},
+                {
+                    title: this.activeMode === "new" ? "Nueva compra" : "Listado",
+                    active: true
+                }
+            ];
         },
         statuses() {
             return [
@@ -787,10 +914,32 @@ export default {
             ];
         },
         documentTypes() {
-            return [
+            return this.options.purchaseDocumentTypes.length ? this.options.purchaseDocumentTypes : [
                 {code: "order", label: "Orden de compra"},
                 {code: "invoice", label: "Factura de compra"}
             ];
+        },
+        paymentModalities() {
+            return this.options.purchasePaymentModalities.length ? this.options.purchasePaymentModalities : [
+                {code: "paid_now", label: "Pago al momento"},
+                {code: "cash_on_delivery", label: "Pago contra entrega"},
+                {code: "installments", label: "Pago en cuotas"}
+            ];
+        },
+        purchasePaymentSettings() {
+            return this.options.settings?.payment || {};
+        },
+        deliveryModeDescription() {
+            return this.purchaseForm.deliveryMode?.code === "immediate"
+                ? "La mercadería ingresa al inventario al registrar la compra."
+                : "La compra queda pendiente hasta registrar una recepción parcial o total.";
+        },
+        branches() {
+            return this.options.branches.map(record => ({
+                code: record.id,
+                label: record.name,
+                data: record
+            }));
         },
         suppliers() {
             return this.options.suppliers.map(record => ({code: record.id, label: record.name}));
@@ -798,8 +947,16 @@ export default {
         warehouses() {
             return this.options.warehouses.map(record => ({
                 code: record.id,
-                label: `${record.branch?.name ? `${record.branch.name} - ` : ""}${record.name}`
+                branchId: record.branch?.id || record.branch_id || null,
+                label: `${record.branch?.name ? `${record.branch.name} - ` : ""}${record.name}`,
+                data: record
             }));
+        },
+        activePurchaseScopeLabel() {
+            const branch = this.purchaseForm.branch?.label || "Sucursal no seleccionada";
+            const warehouse = this.purchaseForm.warehouse?.label || "Almacén no seleccionado";
+
+            return `Alcance activo: ${branch} · ${warehouse}`;
         },
         currencies() {
             return this.options.currencies.map(record => ({
@@ -811,8 +968,41 @@ export default {
         products() {
             return this.options.products.map(record => ({
                 code: record.id,
-                label: `${record.name} · ${record.internal_code}`
+                label: [record.name, record.internal_code, record.barcode].filter(Boolean).join(" · "),
+                data: record
             }));
+        },
+        observationFullText() {
+            const raw = this.purchaseForm.observation;
+
+            if(raw == null) return "";
+
+            return String(raw).trim();
+        },
+        observationHasContent() {
+            return this.observationFullText.length > 0;
+        },
+        observationPreviewCharLimit() {
+            return 400;
+        },
+        observationIsTruncatable() {
+            return this.observationFullText.length > this.observationPreviewCharLimit;
+        },
+        observationDisplayPreview() {
+            const full = this.observationFullText;
+
+            if(!full) return "";
+            if(this.observationPreviewExpanded || !this.observationIsTruncatable) return full;
+
+            return `${full.slice(0, this.observationPreviewCharLimit)}...`;
+        },
+        observationPreviewTooltip() {
+            if(!this.observationHasContent || this.observationPreviewExpanded || !this.observationIsTruncatable) return "";
+
+            return this.observationFullText;
+        },
+        observationsFieldAriaLabel() {
+            return `Observaciones. ${this.observationHasContent ? "Modificar observación" : "Agregar observación"}`;
         },
         purchaseSubtotal() {
             return (this.purchaseForm.items || []).reduce((total, detail) => total + this.lineTotal(detail), 0);
@@ -838,7 +1028,14 @@ export default {
             });
         },
         purchaseTotal() {
-            return this.purchaseSubtotal + this.purchaseTaxTotal;
+            return this.purchaseSubtotal + this.purchaseTaxTotal + this.purchaseInstallmentExtraAmount;
+        },
+        purchaseInstallmentExtraAmount() {
+            if(this.purchaseForm.paymentModality?.code !== "installments") return 0;
+
+            const percentage = Number(this.purchasePaymentSettings?.installment_extra_percentage || 0);
+
+            return Number(((this.purchaseSubtotal + this.purchaseTaxTotal) * (percentage / 100)).toFixed(4));
         },
         purchaseTaxes() {
             return (this.options.taxes?.records || []).map(tax => ({
@@ -889,6 +1086,17 @@ export default {
         }
     },
     watch: {
+        "purchaseForm.branch": function(branch) {
+            const warehouses = this.warehousesForBranch(branch?.code);
+            const currentWarehouseIsValid = warehouses.some(warehouse => Number(warehouse.code) === Number(this.purchaseForm.warehouse?.code));
+
+            if(!currentWarehouseIsValid) {
+                this.purchaseForm.warehouse = warehouses[0] || null;
+            }
+        },
+        "purchaseForm.observation": function() {
+            this.observationPreviewExpanded = false;
+        },
         purchaseTotal(value) {
             const payments = this.purchaseForm.payments || [];
 

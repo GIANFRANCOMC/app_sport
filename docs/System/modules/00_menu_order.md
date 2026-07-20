@@ -68,8 +68,8 @@ La estructura recomendada separa responsabilidades:
 10. `cash_registers.movements.index` - Cajas / Movimientos.
 11. `cash_registers.summary.index` - Cajas / Resumen.
 12. `misc_expenses.index` - Cajas / Gastos varios.
-13. `purchases.new.index` - Compras / Nuevo.
-14. `purchases.list.index` - Compras / Listado.
+13. `purchases.create` - Compras / Nuevo.
+14. `purchases.index` - Compras / Listado.
 15. `suppliers.index` - Compras / Proveedores.
 16. `service_sessions.index` - Atención al cliente / Servicios en curso.
 17. `book_complaints.index` - Atención al cliente / Libro de reclamaciones.

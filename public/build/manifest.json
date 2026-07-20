@@ -221,7 +221,7 @@
     "isEntry": true
   },
   "resources/css/System/platform.css": {
-    "file": "assets/platform-C-0LxJxo.css",
+    "file": "assets/platform-W-tGcHCe.css",
     "src": "resources/css/System/platform.css",
     "isEntry": true
   },
@@ -698,7 +698,7 @@
     ]
   },
   "resources/js/System/Pages/Operations/service_operations/main.js": {
-    "file": "assets/main-DKC84YUg.js",
+    "file": "assets/main-BJgrfQH2.js",
     "name": "main",
     "src": "resources/js/System/Pages/Operations/service_operations/main.js",
     "isEntry": true,
@@ -819,7 +819,7 @@
     ]
   },
   "resources/js/System/Pages/Organizations/user_attendances/main.js": {
-    "file": "assets/main-ByRYgod-.js",
+    "file": "assets/main-BYV0FN-p.js",
     "name": "main",
     "src": "resources/js/System/Pages/Organizations/user_attendances/main.js",
     "isEntry": true,
@@ -858,7 +858,7 @@
     ]
   },
   "resources/js/System/Pages/Sales/pos/main.js": {
-    "file": "assets/main-DMEk3Ns4.js",
+    "file": "assets/main-DzzDh4c9.js",
     "name": "main",
     "src": "resources/js/System/Pages/Sales/pos/main.js",
     "isEntry": true,
@@ -904,7 +904,7 @@
     ]
   },
   "resources/js/System/Pages/Sales/sales/main.js": {
-    "file": "assets/main-LF9NRU34.js",
+    "file": "assets/main-B319MAoG.js",
     "name": "main",
     "src": "resources/js/System/Pages/Sales/sales/main.js",
     "isEntry": true,

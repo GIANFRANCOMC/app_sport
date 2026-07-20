@@ -23,6 +23,12 @@ final class PurchaseController extends BaseController {
 
     }
 
+    public function create() {
+
+        return view("System/general/Purchases/purchases/main");
+
+    }
+
     public function initParams(Request $request) {
 
         return PurchaseConfigService::getInitParams(

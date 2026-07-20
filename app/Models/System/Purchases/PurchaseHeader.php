@@ -6,6 +6,7 @@ namespace App\Models\System\Purchases;
 
 use Illuminate\Database\Eloquent\Model;
 
+use App\Helpers\System\Utilities;
 use App\Models\System\General\Currency;
 use App\Models\System\Warehouses\Warehouse;
 
@@ -68,51 +69,92 @@ final class PurchaseHeader extends Model {
 
     public function getFormattedStatusAttribute(): string {
 
-        return [
-            "confirmed" => "Pendiente de recepción",
-            "partial" => "Recepción parcial",
-            "received" => "Recibida",
-            "canceled" => "Anulada"
-        ][$this->attributes["status"] ?? ""] ?? "";
+        return self::getStatuses("first", $this->attributes["status"] ?? "")["label"] ?? "";
 
     }
 
     public function getFormattedDocumentTypeAttribute(): string {
 
-        return ($this->attributes["document_type"] ?? "") === "invoice"
-            ? "Factura de compra"
-            : "Orden de compra";
+        return self::getDocumentTypes("first", $this->attributes["document_type"] ?? "")["label"] ?? "";
 
     }
 
 
     public function getFormattedDeliveryModeAttribute(): string {
 
-        return [
-            "immediate" => "Entrega inmediata",
-            "pending" => "Entrega pendiente"
-        ][$this->attributes["delivery_mode"] ?? ""] ?? "";
+        return self::getDeliveryModes("first", $this->attributes["delivery_mode"] ?? "")["label"] ?? "";
 
     }
 
     public function getFormattedPaymentModalityAttribute(): string {
 
-        return [
-            "paid_now" => "Pago al momento",
-            "cash_on_delivery" => "Contraentrega",
-            "installments" => "Pago por cuotas"
-        ][$this->attributes["payment_modality"] ?? ""] ?? "";
+        return self::getPaymentModalities("first", $this->attributes["payment_modality"] ?? "")["label"] ?? "";
 
     }
 
     public function getFormattedPaymentStatusAttribute(): string {
 
-        return [
-            "unpaid" => "Pendiente",
-            "partial" => "Parcial",
-            "paid" => "Pagado",
-            "overpaid" => "Sobrepagado"
-        ][$this->attributes["payment_status"] ?? ""] ?? "";
+        return self::getPaymentStatuses("first", $this->attributes["payment_status"] ?? "")["label"] ?? "";
+
+    }
+
+    public static function getStatuses($type = "all", $code = "") {
+
+        $statuses = [
+            ["code" => "confirmed", "label" => "Pendiente de recepción"],
+            ["code" => "partial", "label" => "Recepción parcial"],
+            ["code" => "received", "label" => "Recibida"],
+            ["code" => "canceled", "label" => "Anulada"]
+        ];
+
+        return Utilities::getValues($statuses, $type, $code);
+
+    }
+
+    public static function getDocumentTypes($type = "all", $code = "") {
+
+        $types = [
+            ["code" => "order", "label" => "Orden de compra"],
+            ["code" => "invoice", "label" => "Factura de compra"]
+        ];
+
+        return Utilities::getValues($types, $type, $code);
+
+    }
+
+    public static function getDeliveryModes($type = "all", $code = "") {
+
+        $modes = [
+            ["code" => "immediate", "label" => "Recepción inmediata"],
+            ["code" => "pending", "label" => "Recepción parcial o pendiente"]
+        ];
+
+        return Utilities::getValues($modes, $type, $code);
+
+    }
+
+    public static function getPaymentModalities($type = "all", $code = "") {
+
+        $modalities = [
+            ["code" => "paid_now", "label" => "Pago al momento"],
+            ["code" => "cash_on_delivery", "label" => "Pago contra entrega"],
+            ["code" => "installments", "label" => "Pago en cuotas"]
+        ];
+
+        return Utilities::getValues($modalities, $type, $code);
+
+    }
+
+    public static function getPaymentStatuses($type = "all", $code = "") {
+
+        $statuses = [
+            ["code" => "unpaid", "label" => "Pendiente"],
+            ["code" => "partial", "label" => "Parcial"],
+            ["code" => "paid", "label" => "Pagado"],
+            ["code" => "overpaid", "label" => "Sobrepagado"]
+        ];
+
+        return Utilities::getValues($statuses, $type, $code);
 
     }
     public function getReceiptProgressAttribute(): float {

@@ -6,7 +6,7 @@ Registra órdenes y facturas de compra, controla lo pendiente por recibir y alim
 
 ## Archivos principales
 
-- Rutas: `routes/System/Purchases/Purchase.php`
+- Rutas: `routes/System/Purchases/Purchase.php` (`/purchases` lista compras y `/purchases/create` abre el flujo de nueva compra)
 - Controlador: `PurchaseController`
 - Validaciones: `StorePurchaseRequest`, `ReceivePurchaseRequest`
 - Servicio: `PurchaseService`
@@ -45,9 +45,14 @@ El método inicial es promedio ponderado por producto y almacén. Los impuestos 
 ## Interfaz
 
 - Compras tiene accesos dedicados para **Listado** y **Nuevo**. Ambos reutilizan la misma página Vue, pero el modo inicial se resuelve por la ruta para reducir clics y separar mentalmente consulta vs registro.
+- `/purchases` funciona como equivalente directo a `/sales`; `/purchases/create` funciona como equivalente directo a `/sales/create`. Las rutas `/purchases/page/list` y `/purchases/page/new` se conservan solo como compatibilidad.
 - El listado permite buscar por proveedor, documento o producto y filtrar por estado.
-- El modo **Nuevo** abre el flujo de registro con proveedor, almacén, productos, tributos, pagos y recepción. La modal existente se conserva como contenedor de captura para no duplicar reglas ni validaciones.
-- La modal de nueva compra expone `Entrega`: **Entrega inmediata** envía `delivery_mode = immediate` y **Recepción pendiente** envía `delivery_mode = pending`.
+- El modo **Nuevo** abre un formulario de página completa, alineado con `sales/create`, con sucursal, almacén, proveedor, comprobante, modalidad de pago, productos, tributos, pagos, observaciones y recepción.
+- El proveedor puede crearse desde el mismo flujo mediante el componente rápido `AddSupplier`, de la misma forma que ventas permite crear cliente.
+- La pantalla de nueva compra expone `Recepción`: **Recepción inmediata** envía `delivery_mode = immediate` y **Recepción parcial o pendiente** envía `delivery_mode = pending`.
+- Las opciones de tipo de comprobante, recepción y modalidad de pago salen del backend (`PurchaseHeader`) para evitar constantes sueltas en el frontend.
+- El detalle de productos usa la misma estructura visual de ventas: tabla central, importes alineados, estado vacío con acción clara, observaciones como tile lateral y resumen de tributos/pagos en el panel derecho.
+- Diferencias legítimas frente a ventas: compras usa proveedor en lugar de cliente, recepción en lugar de despacho, costo unitario en lugar de precio de venta, cuentas por pagar en lugar de cuentas por cobrar y comprobantes de compra propios.
 - La recepción muestra únicamente cantidades pendientes.
 - El progreso diferencia pendiente, parcial, recibido y anulado.
 - La exportación usa los mismos filtros del listado y no aplica paginación.

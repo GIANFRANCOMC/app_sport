@@ -352,31 +352,6 @@ body.br-layout .table.table-sm > thead > tr > th {
   }
 }
 
-html.layout-menu-collapsed:not(.layout-menu-hover) body.br-layout .br-menu-brand .menu-link.br-menu-logout:hover .br-menu-logout__inner,
-html.layout-menu-collapsed:not(.layout-menu-hover) body.br-layout .br-menu-brand .menu-link.br-menu-logout:focus-within .br-menu-logout__inner {
-  flex: 0 0 1.56rem !important;
-  width: 1.56rem !important;
-  min-width: 1.56rem !important;
-  max-width: 1.56rem !important;
-}
-
-html.layout-menu-collapsed:not(.layout-menu-hover) body.br-layout .br-menu-brand.menu-vertical .menu-inner > .menu-item.br-menu-logout-item > .menu-link.br-menu-logout:hover .br-menu-logout__icon-wrap,
-html.layout-menu-collapsed:not(.layout-menu-hover) body.br-layout .br-menu-brand.menu-vertical .menu-inner > .menu-item.br-menu-logout-item > .menu-link.br-menu-logout:focus-within .br-menu-logout__icon-wrap {
-  display: flex !important;
-  width: 1.56rem !important;
-  min-width: 1.56rem !important;
-  opacity: 1 !important;
-}
-
-html.layout-menu-collapsed:not(.layout-menu-hover) body.br-layout .br-menu-brand.menu-vertical .menu-inner > .menu-item.br-menu-logout-item > .menu-link.br-menu-logout:hover .br-menu-logout__label,
-html.layout-menu-collapsed:not(.layout-menu-hover) body.br-layout .br-menu-brand.menu-vertical .menu-inner > .menu-item.br-menu-logout-item > .menu-link.br-menu-logout:focus-within .br-menu-logout__label {
-  display: none !important;
-  width: 0 !important;
-  max-width: 0 !important;
-  opacity: 0 !important;
-  padding: 0 !important;
-}
-
 /* -------------------------------------------------------------------------
  * [br] Barra compacta de filtros y acciones
  * ------------------------------------------------------------------------- */
@@ -3028,6 +3003,31 @@ html.layout-navbar-fixed body.br-layout .layout-page:before {
   .br-layout .br-menu-brand.bg-menu-theme {
     box-shadow: none !important;
   }
+}
+
+html.layout-menu-collapsed:not(.layout-menu-hover) body.br-layout .br-menu-brand .menu-link.br-menu-logout:hover .br-menu-logout__inner,
+html.layout-menu-collapsed:not(.layout-menu-hover) body.br-layout .br-menu-brand .menu-link.br-menu-logout:focus-within .br-menu-logout__inner {
+  flex: 0 0 1.56rem !important;
+  width: 1.56rem !important;
+  min-width: 1.56rem !important;
+  max-width: 1.56rem !important;
+}
+
+html.layout-menu-collapsed:not(.layout-menu-hover) body.br-layout .br-menu-brand.menu-vertical .menu-inner > .menu-item.br-menu-logout-item > .menu-link.br-menu-logout:hover .br-menu-logout__icon-wrap,
+html.layout-menu-collapsed:not(.layout-menu-hover) body.br-layout .br-menu-brand.menu-vertical .menu-inner > .menu-item.br-menu-logout-item > .menu-link.br-menu-logout:focus-within .br-menu-logout__icon-wrap {
+  display: flex !important;
+  width: 1.56rem !important;
+  min-width: 1.56rem !important;
+  opacity: 1 !important;
+}
+
+html.layout-menu-collapsed:not(.layout-menu-hover) body.br-layout .br-menu-brand.menu-vertical .menu-inner > .menu-item.br-menu-logout-item > .menu-link.br-menu-logout:hover .br-menu-logout__label,
+html.layout-menu-collapsed:not(.layout-menu-hover) body.br-layout .br-menu-brand.menu-vertical .menu-inner > .menu-item.br-menu-logout-item > .menu-link.br-menu-logout:focus-within .br-menu-logout__label {
+  display: none !important;
+  width: 0 !important;
+  max-width: 0 !important;
+  opacity: 0 !important;
+  padding: 0 !important;
 }
 
 .br-layout .br-menu-brand .menu-link,

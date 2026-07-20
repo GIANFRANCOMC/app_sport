@@ -77,8 +77,8 @@ return new class extends Migration {
             ["id" => 32, "section_id" => 3, "slug" => "sc_sales-pos", "name" => "sales-pos", "description" => "Venta rápida para mostrador, vinculada a almacén y caja activa.", "order" => 1, "dom_id" => "menu-sales-pos", "dom_label" => "Venta POS", "dom_route" => "sales.pos"],
 
             // Purchases
-            ["id" => 90, "section_id" => 9, "slug" => "sc_purchases-list", "name" => "purchases-list", "description" => "Consulta compras registradas, recepción, estado de pago y trazabilidad.", "order" => 1, "dom_id" => "menu-purchases-list", "dom_label" => "Listado", "dom_route" => "purchases.list.index"],
-            ["id" => 92, "section_id" => 9, "slug" => "sc_purchases-new", "name" => "purchases-new", "description" => "Registra una compra nueva con productos, costos, tributos, pagos y recepción.", "order" => 2, "dom_id" => "menu-purchases-new", "dom_label" => "Nuevo", "dom_route" => "purchases.new.index"],
+            ["id" => 90, "section_id" => 9, "slug" => "sc_purchases-list", "name" => "purchases-list", "description" => "Consulta compras registradas, recepción, estado de pago y trazabilidad.", "order" => 1, "dom_id" => "menu-purchases-list", "dom_label" => "Listado", "dom_route" => "purchases.index"],
+            ["id" => 92, "section_id" => 9, "slug" => "sc_purchases-new", "name" => "purchases-new", "description" => "Registra una compra nueva con productos, costos, tributos, pagos y recepción.", "order" => 2, "dom_id" => "menu-purchases-new", "dom_label" => "Nuevo", "dom_route" => "purchases.create"],
             ["id" => 91, "section_id" => 9, "slug" => "sc_purchases-suppliers", "name" => "purchases-suppliers", "description" => "Administra proveedores y sus datos comerciales.", "order" => 3, "dom_id" => "menu-purchases-suppliers", "dom_label" => "Proveedores", "dom_route" => "suppliers.index"],
 
             // Customers

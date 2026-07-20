@@ -7,12 +7,13 @@ namespace App\Services\System\Purchases;
 use stdClass;
 
 use App\Models\System\Catalogs\Item;
-use App\Models\System\Purchases\Supplier;
+use App\Models\System\Purchases\{PurchaseHeader, Supplier};
 use App\Services\System\Base\{
     BaseConfigService,
     CompanyReferenceDataService,
     MasterReferenceDataService
 };
+use App\Services\System\Organizations\Companies\CompanySettingService;
 
 final class PurchaseConfigService extends BaseConfigService {
 
@@ -36,6 +37,9 @@ final class PurchaseConfigService extends BaseConfigService {
                     ->orderBy("name")
                     ->get()
             ]),
+            "branches" => self::data([
+                "records" => $references->activeBranches()
+            ]),
             "warehouses" => self::data([
                 "records" => $references->stockWarehouses()
             ]),
@@ -51,11 +55,23 @@ final class PurchaseConfigService extends BaseConfigService {
                     ->orderBy("name")
                     ->get()
             ]),
+            "purchaseDocumentTypes" => self::data([
+                "records" => PurchaseHeader::getDocumentTypes()
+            ]),
+            "purchaseDeliveryModes" => self::data([
+                "records" => PurchaseHeader::getDeliveryModes()
+            ]),
+            "purchasePaymentModalities" => self::data([
+                "records" => PurchaseHeader::getPaymentModalities()
+            ]),
             "taxes" => self::data([
                 "records" => $references->taxesFor("purchase")
             ]),
             "paymentMethods" => self::data([
                 "records" => $references->paymentMethodsFor("purchase")
+            ]),
+            "settings" => self::data([
+                "payment" => CompanySettingService::group($companyId, CompanySettingService::PURCHASES)
             ])
         ]);
 
