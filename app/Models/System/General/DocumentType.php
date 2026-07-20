@@ -30,6 +30,39 @@ class DocumentType extends Model {
         "updated_by"
     ];
 
+    public static function displayName(?string $name, ?string $code = null): string {
+
+        $value = trim((string) ($name ?: $code));
+        $normalized = strtoupper($value);
+
+        if($normalized === "BOLETA DE VENTA" || $normalized === "BV") {
+
+            return "BOLETA";
+
+        }
+
+        if($normalized === "FA") {
+
+            return "FACTURA";
+
+        }
+
+        return $normalized;
+
+    }
+
+    public function getNameAttribute($value): string {
+
+        return self::displayName($value, $this->attributes["code"] ?? null);
+
+    }
+
+    public function setNameAttribute($value): void {
+
+        $this->attributes["name"] = self::displayName($value, $this->attributes["code"] ?? null);
+
+    }
+
     // Appends
     public function getFormattedStatusAttribute() {
 

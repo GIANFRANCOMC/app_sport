@@ -894,10 +894,18 @@ export default {
         },
         serieLabel(serie) {
             const documentType = serie?.document_type || serie?.documentType || {};
-            const documentName = documentType.name || documentType.code || "Comprobante";
+            const documentName = this.documentTypeLabel(documentType);
             const serieName = serie?.legible_serie || serie?.serie || serie?.code || serie?.name || "";
 
             return [serieName, documentName].filter(Boolean).join(" - ");
+        },
+        documentTypeLabel(documentType) {
+            const value = String(documentType?.name || documentType?.code || "Comprobante").trim().toUpperCase();
+
+            if(value === "BOLETA DE VENTA" || value === "BV") return "BOLETA";
+            if(value === "FA") return "FACTURA";
+
+            return value;
         },
         defaultPaymentMethod() {
             return this.paymentMethodOptions.find(method => {

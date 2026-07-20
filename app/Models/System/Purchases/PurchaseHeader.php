@@ -115,8 +115,8 @@ final class PurchaseHeader extends Model {
     public static function getDocumentTypes($type = "all", $code = "") {
 
         $types = [
-            ["code" => "order", "label" => "Boleta"],
-            ["code" => "invoice", "label" => "Factura"]
+            ["code" => "order", "label" => "BOLETA"],
+            ["code" => "invoice", "label" => "FACTURA"]
         ];
 
         return Utilities::getValues($types, $type, $code);

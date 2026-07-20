@@ -195,11 +195,8 @@
    * Thead de tablas — misma familia cromática que el sidebar (.br-menu-brand):
    * pizarra azul-violeta más clara que el navy del menú, acento cian suave al borde inferior.
    */
-  --br-table-thead-highlight-top: color-mix(in srgb, var(--br-primary) 18%, var(--br-white));
-  --br-table-thead-mid-a: #2c8ccb;
-  --br-table-thead-mid-b: #2474ad;
-  --br-table-thead-mid-c: #1a4f83;
-  --br-table-thead-edge: color-mix(in srgb, var(--br-primary) 72%, var(--br-secondary));
+  --br-table-thead-bg: #238bd2;
+  --br-table-thead-edge: color-mix(in srgb, var(--br-primary) 42%, var(--br-secondary));
   --br-table-thead-text: #ffffff;
 
   /**
@@ -260,15 +257,8 @@
 body.br-layout .table > thead,
 body.br-layout .br-table-header-surface {
   vertical-align: middle;
-  background:
-    linear-gradient(180deg, var(--br-table-thead-highlight-top) 0%, transparent 52%),
-    linear-gradient(
-      168deg,
-      var(--br-table-thead-mid-a) 0%,
-      var(--br-table-thead-mid-b) 40%,
-      var(--br-table-thead-mid-c) 100%
-    ) !important;
-  background-color: transparent !important;
+  background: var(--br-table-thead-bg) !important;
+  background-color: var(--br-table-thead-bg) !important;
   box-shadow: inset 0 -1px 0 var(--br-table-thead-edge);
 }
 
@@ -823,6 +813,27 @@ body > .vs__dropdown-menu .vs__dropdown-option--highlight {
   border: none;
   background: transparent;
   box-shadow: none;
+}
+
+.br-sale-sidebar-context {
+  display: grid;
+  gap: 0.62rem;
+  width: 100%;
+  padding: 0.72rem;
+  border: 1px solid var(--br-border);
+  border-radius: var(--br-radius-sm);
+  background: color-mix(in srgb, var(--br-primary-soft) 28%, var(--br-white));
+}
+
+.br-sale-sidebar-context .form-group {
+  width: 100%;
+  margin-bottom: 0;
+}
+
+.br-sale-sidebar-context .form-label {
+  color: var(--br-text-muted);
+  font-size: 0.72rem;
+  font-weight: 700;
 }
 
 .br-sale-sidebar-actions__pair {
@@ -3668,17 +3679,9 @@ html.layout-menu-collapsed:not(.layout-menu-hover) body.br-layout .br-menu-brand
 /* Paginación activa — misma familia cromática que .table > thead (sin acento celeste primario) */
 .br-layout .pagination .page-item.active .page-link,
 .br-layout .pagination li.active > a.page-link {
-  background:
-    linear-gradient(180deg, var(--br-table-thead-highlight-top) 0%, transparent 52%),
-    linear-gradient(
-      168deg,
-      var(--br-table-thead-mid-a) 0%,
-      var(--br-table-thead-mid-b) 40%,
-      var(--br-table-thead-mid-c) 100%
-    ) !important;
-  background-color: var(--br-table-thead-mid-c) !important;
-  /* Borde al tono del fondo (evita “doble marco” / contraste raro) */
-  border-color: var(--br-table-thead-mid-c) !important;
+  background: var(--br-table-thead-bg) !important;
+  background-color: var(--br-table-thead-bg) !important;
+  border-color: var(--br-table-thead-bg) !important;
   color: var(--br-table-thead-text) !important;
   box-shadow: inset 0 -1px 0 var(--br-table-thead-edge), var(--br-shadow-sm);
 }
@@ -5920,3 +5923,4 @@ body.br-layout .modal-header.br-modal-header {
     width: auto;
   }
 }
+

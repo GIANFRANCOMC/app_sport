@@ -482,6 +482,16 @@ class SaleService {
 
     }
 
+    private static function saleRequiresWarehouse(array $details): bool {
+
+        return collect($details)->contains(function($detail) {
+
+            return in_array(strtolower((string) ($detail["type"] ?? "")), ["product"], true);
+
+        });
+
+    }
+
     private static function resolveWarehouse(array $data, int $companyId): Warehouse {
 
         $warehouseQuery = Warehouse::query()
@@ -681,12 +691,13 @@ class SaleService {
 
         DB::transaction(function() use($data, $companyId, $userId, &$saleHeader) {
 
-            $warehouse = self::resolveWarehouse($data, (int) $companyId);
             $cashSession = self::resolveCashSession($data, (int) $companyId, (int) $userId);
             self::validateSerieBelongsToBranch((int) $data["serie_id"], (int) $data["branch_id"]);
             $data["details"] = self::normalizeCommissionDetails($data["details"], (int) $companyId);
             $catalogItems = self::lockCatalogItemsForSale($data["details"], (int) $companyId);
             self::validateSaleCatalogItems($data["details"], $catalogItems);
+            $requiresWarehouse = self::saleRequiresWarehouse($data["details"]);
+            $warehouse = $requiresWarehouse ? self::resolveWarehouse($data, (int) $companyId) : null;
 
             // Get new sequential number
             $newSequential = SaleHeader::getNewSequential($data["serie_id"]);
@@ -767,7 +778,7 @@ class SaleService {
             $saleHeader->holder_id   = $data["holder_id"];
             $saleHeader->seller_id   = $userId;
             $saleHeader->currency_id = $data["currency_id"];
-            $saleHeader->warehouse_id = $warehouse->id;
+            $saleHeader->warehouse_id = $warehouse?->id;
             $saleHeader->cash_session_id = $cashSession?->id;
             $saleHeader->quotation_header_id = $data["quotation_header_id"] ?? null;
             $saleHeader->issue_date  = $data["issue_date"];
@@ -843,7 +854,11 @@ class SaleService {
                 $saleBodies->push($saleBody);
 
                 // Update warehouse inventory for products
-                self::updateWarehouseInventory($warehouse, $saleBody, $detail, $userId);
+                if($warehouse) {
+
+                    self::updateWarehouseInventory($warehouse, $saleBody, $detail, $userId);
+
+                }
 
                 // Create subscription for subscription items
                 self::createSubscription($saleHeader, $saleBody, $detail, $companyId, $data["branch_id"], $userId);

@@ -31,7 +31,7 @@
                         append-to-body
                         placeholder="Todas las series">
                         <template #option="{ data }">
-                            <span v-text="`${data?.legible_serie} - ${data?.document_type?.name}`" class="d-block fw-bold"></span>
+                            <span v-text="`${data?.legible_serie} - ${documentTypeLabel(data?.document_type)}`" class="d-block fw-bold"></span>
                             <small v-text="data?.branch?.name" class="d-block"></small>
                         </template>
                         <template #selected-option="{ label }">
@@ -595,6 +595,16 @@ export default {
 
             Alerts.tooltips({show: false});
 
+        },
+        documentTypeLabel(documentType) {
+
+            const value = String(documentType?.name || documentType?.code || "Comprobante").trim().toUpperCase();
+
+            if(value === "BOLETA DE VENTA" || value === "BV") return "BOLETA";
+            if(value === "FA") return "FACTURA";
+
+            return value;
+
         }
     },
     computed: {
@@ -629,7 +639,11 @@ export default {
 
                 for(let branchSerie of branch.series) {
 
-                    series.push({code: branchSerie.id, label: `(${branch?.name}) ${branchSerie.legible_serie} - ${branchSerie?.document_type?.name}`, data: {...branchSerie, branch}});
+                    series.push({
+                        code: branchSerie.id,
+                        label: `(${branch?.name}) ${branchSerie.legible_serie} - ${this.documentTypeLabel(branchSerie?.document_type)}`,
+                        data: {...branchSerie, branch}
+                    });
 
                 }
 

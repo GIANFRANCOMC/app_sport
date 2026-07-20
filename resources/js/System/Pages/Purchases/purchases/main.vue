@@ -889,8 +889,8 @@ export default {
         },
         documentTypes() {
             return this.options.purchaseDocumentTypes.length ? this.options.purchaseDocumentTypes : [
-                {code: "order", label: "Boleta"},
-                {code: "invoice", label: "Factura"}
+                {code: "order", label: "BOLETA"},
+                {code: "invoice", label: "FACTURA"}
             ];
         },
         deliveryModeDescription() {

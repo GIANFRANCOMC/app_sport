@@ -66,7 +66,7 @@ final class EnableCompanyDefaults extends Command {
     private function seedDocumentTypes(int $companyId): void {
 
         foreach([
-            ['code' => 'BV', 'name' => 'BOLETA DE VENTA'],
+            ['code' => 'BV', 'name' => 'BOLETA'],
             ['code' => 'FA', 'name' => 'FACTURA']
         ] as $record) {
             DB::table('document_types')->updateOrInsert(

@@ -45,25 +45,6 @@
                                     placeholder="Seleccione"/>
                             </template>
                         </InputSlot>
-                        <InputSlot
-                            hasDiv
-                            :title="MODULE.texts.form.warehouse"
-                            :titleClass="[config.forms.classes.title]"
-                            isRequired
-                            hasTextBottom
-                            :textBottomInfo="forms[entity].createUpdate.errors?.warehouse"
-                            xl="4"
-                            lg="4">
-                            <template v-slot:input>
-                                <v-select
-                                    v-model="forms[entity].createUpdate.data.warehouse"
-                                    :options="warehouses"
-                                    :class="config.forms.classes.select2"
-                                    :clearable="false"
-                                    :searchable="false"
-                                    placeholder="Seleccione"/>
-                            </template>
-                        </InputSlot>
                         <div v-if="saleConfigurationIssue" class="col-12">
                             <div class="alert alert-warning d-flex align-items-start gap-2 px-3 py-2 mb-0" role="alert">
                                 <i class="fa-solid fa-triangle-exclamation mt-1" aria-hidden="true"></i>
@@ -82,26 +63,8 @@
                             disabled
                             hasTextBottom
                             :textBottomInfo="forms[entity].createUpdate.errors?.issue_date"
-                            xl="3"
+                            xl="4"
                             lg="6"/>
-                        <InputSlot
-                            hasDiv
-                            :title="MODULE.texts.form.deliveryMode"
-                            :titleClass="[config.forms.classes.title]"
-                            hasTextBottom
-                            :textBottomInfo="forms[entity].createUpdate.errors?.delivery_mode"
-                            xl="3"
-                            lg="6">
-                            <template v-slot:input>
-                                <v-select
-                                    v-model="forms[entity].createUpdate.data.delivery_mode"
-                                    :options="deliveryModes"
-                                    :class="config.forms.classes.select2"
-                                    :clearable="false"
-                                    :searchable="false"
-                                    placeholder="Seleccione"/>
-                            </template>
-                        </InputSlot>
                         <InputSlot
                             hasDiv
                             :title="MODULE.texts.form.holder"
@@ -109,7 +72,7 @@
                             isRequired
                             hasTextBottom
                             :textBottomInfo="forms[entity].createUpdate.errors?.holder_id"
-                            xl="6"
+                            xl="12"
                             lg="12">
                             <template v-slot:default>
                                 <AddCustomer
@@ -296,6 +259,45 @@
             </div>
         </div>
         <div class="col-lg-3 col-12">
+            <div v-if="saleRequiresStockContext" class="br-sale-sidebar-context mb-2 mb-md-3">
+                <InputSlot
+                    hasDiv
+                    :title="MODULE.texts.form.warehouse"
+                    :titleClass="[config.forms.classes.title]"
+                    isRequired
+                    hasTextBottom
+                    :textBottomInfo="forms[entity].createUpdate.errors?.warehouse"
+                    xl="12"
+                    lg="12">
+                    <template v-slot:input>
+                        <v-select
+                            v-model="forms[entity].createUpdate.data.warehouse"
+                            :options="warehouses"
+                            :class="config.forms.classes.select2"
+                            :clearable="false"
+                            :searchable="false"
+                            placeholder="Seleccione"/>
+                    </template>
+                </InputSlot>
+                <InputSlot
+                    hasDiv
+                    :title="MODULE.texts.form.deliveryMode"
+                    :titleClass="[config.forms.classes.title]"
+                    hasTextBottom
+                    :textBottomInfo="forms[entity].createUpdate.errors?.delivery_mode"
+                    xl="12"
+                    lg="12">
+                    <template v-slot:input>
+                        <v-select
+                            v-model="forms[entity].createUpdate.data.delivery_mode"
+                            :options="deliveryModes"
+                            :class="config.forms.classes.select2"
+                            :clearable="false"
+                            :searchable="false"
+                            placeholder="Seleccione"/>
+                    </template>
+                </InputSlot>
+            </div>
             <div class="w-100 mb-2 mb-md-3">
                 <div class="br-observation-tile">
                     <div
@@ -338,81 +340,55 @@
             <div class="br-document-settlement br-sale-settlement mb-2 mb-md-3">
                 <div>
                     <label class="form-label">Impuestos extras</label>
-                    <div class="br-document-settlement__taxes" v-if="optionalSaleTaxes.length">
-                        <template v-for="tax in optionalSaleTaxes" :key="`optional-sale-tax-${tax.code}`">
-                            <label class="br-entity-switch br-document-settlement__tax-option">
-                                <input
-                                    v-model="forms[entity].createUpdate.data.selected_taxes"
-                                    class="form-check-input"
-                                    type="checkbox"
-                                    :value="tax.code"
-                                    @change="syncSelectedTaxQuantity(tax.data)">
+                    <div class="br-document-tax-summary">
+                        <template v-if="saleOptionalTaxSummary.length">
+                            <div
+                                v-for="tax in saleOptionalTaxSummary"
+                                :key="tax.key"
+                                class="br-document-tax-summary__row">
                                 <span>
-                                    <strong>{{ tax.data.name }}</strong>
-                                    <small>{{ taxLabel(tax.data) }}</small>
+                                    <strong v-text="tax.name"></strong>
+                                    <small v-text="tax.description"></small>
                                 </span>
-                            </label>
-                            <InputNumber
-                                v-if="isFixedTax(tax.data) && selectedTaxIds().includes(tax.code)"
-                                v-model="forms[entity].createUpdate.data.selected_tax_quantities[tax.code]"
-                                title=""
-                                :inputClass="['form-control', 'br-tax-quantity']"
-                                :decimals="0"
-                                :minValue="taxQuantityMinimum(tax.data)"
-                                :maxValue="taxQuantityMaximum(tax.data)"
-                                :hasNegative="false"
-                                @change="normalizeSelectedTaxQuantity(tax.code)">
-                                <template v-slot:inputGroupPrepend>
-                                    <span class="input-group-text br-tax-quantity__label">Veces</span>
-                                </template>
-                            </InputNumber>
+                                <b>
+                                    {{ forms[entity].createUpdate.data.currency?.data?.sign ?? '' }}
+                                    {{ separatorNumber(tax.amount) }}
+                                </b>
+                            </div>
                         </template>
+                        <p v-else class="br-document-settlement__empty mb-0">
+                            Sin impuestos extras configurados para esta venta.
+                        </p>
+                        <button type="button" class="br-document-payment-config" @click="openTaxesModal">
+                            <i class="fa-solid fa-sliders" aria-hidden="true"></i>
+                            <span>Configurar impuestos</span>
+                        </button>
                     </div>
-                    <p v-else class="br-document-settlement__empty mb-0">Sin impuestos extras disponibles.</p>
                 </div>
                 <div>
                     <label class="form-label">Métodos de pago</label>
-                    <div class="br-document-payments">
-                        <div
-                            v-for="(payment, index) in forms[entity].createUpdate.data.payments"
-                            :key="payment.key"
-                            class="br-document-payment-row">
-                            <v-select
-                                v-model="payment.method"
-                                :options="salePaymentMethods"
-                                :clearable="false"
-                                :searchable="true"
-                                append-to-body/>
-                            <InputNumber
-                                v-model="payment.amount"
-                                title=""
-                                :titleClass="[]"
-                                :inputClass="['form-control', 'br-document-payment-amount']"
-                                :minValue="0"
-                                :placeholder="separatorNumber(total)">
-                                <template v-slot:inputGroupPrepend>
-                                    <span class="input-group-text br-currency-prefix">{{ forms[entity].createUpdate.data.currency?.data?.sign ?? '' }}</span>
-                                </template>
-                            </InputNumber>
-                            <input
-                                v-if="payment.method?.data?.requires_reference"
-                                v-model.trim="payment.reference"
-                                type="text"
-                                class="form-control"
-                                maxlength="100"
-                                placeholder="Referencia">
-                            <button
-                                type="button"
-                                class="br-icon-action"
-                                :disabled="forms[entity].createUpdate.data.payments.length <= 1"
-                                title="Quitar método"
-                                @click="removeSalePayment(index)">
-                                <i class="fa-solid fa-xmark" aria-hidden="true"></i>
-                            </button>
-                        </div>
-                        <button type="button" class="br-document-payment-add" @click="addSalePayment">
-                            <i class="fa-solid fa-circle-plus" aria-hidden="true"></i>
-                            <span>Agregar método</span>
+                    <div class="br-document-payment-summary">
+                        <template v-if="salePaymentSummary.length">
+                            <div
+                                v-for="payment in salePaymentSummary"
+                                :key="payment.key"
+                                class="br-document-payment-summary__row">
+                                <span>
+                                    <strong v-text="payment.label"></strong>
+                                    <small v-if="payment.reference" v-text="payment.reference"></small>
+                                </span>
+                                <b>
+                                    {{ forms[entity].createUpdate.data.currency?.data?.sign ?? '' }}
+                                    {{ separatorNumber(payment.amount) }}
+                                </b>
+                            </div>
+                        </template>
+                        <p v-else class="br-document-settlement__empty mb-0">
+                            Sin métodos configurados para esta venta.
+                        </p>
+                        <button type="button" class="br-document-payment-config" @click="openPaymentMethodsModal">
+                            <i class="fa-solid fa-sliders" aria-hidden="true"></i>
+                            <span>Configurar métodos</span>
                         </button>
                     </div>
                 </div>
@@ -478,6 +454,136 @@
     </div>
 
     <!-- Modals -->
+    <div class="modal fade" :id="forms[entity].createUpdate.extras.modals.taxes.id" data-bs-backdrop="static" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+            <div class="modal-content br-entity-modal">
+                <div class="modal-header br-modal-header">
+                    <h5 class="modal-title text-uppercase fw-bold">Configurar impuestos extras</h5>
+                    <button type="button" class="btn-header-modal" data-bs-dismiss="modal" aria-label="Cerrar">
+                        <i class="fa fa-times icon-close-modal" aria-hidden="true"></i>
+                    </button>
+                </div>
+                <div class="modal-body br-entity-modal__body">
+                    <p class="br-document-payment-intro">
+                        Activa solo los cargos adicionales que aplican para esta venta.
+                    </p>
+                    <div class="br-document-taxes-modal" v-if="optionalSaleTaxes.length">
+                        <div
+                            v-for="tax in optionalSaleTaxes"
+                            :key="`optional-sale-tax-modal-${tax.code}`"
+                            class="br-document-tax-option">
+                            <label class="br-entity-switch br-document-tax-option__switch">
+                                <input
+                                    v-model="forms[entity].createUpdate.data.selected_taxes"
+                                    class="form-check-input"
+                                    type="checkbox"
+                                    :value="tax.code"
+                                    @change="syncSelectedTaxQuantity(tax.data)">
+                                <span>
+                                    <strong>{{ tax.data.name }}</strong>
+                                    <small>{{ taxLabel(tax.data) }}</small>
+                                </span>
+                            </label>
+                            <InputNumber
+                                v-if="isFixedTax(tax.data) && selectedTaxIds().includes(tax.code)"
+                                v-model="forms[entity].createUpdate.data.selected_tax_quantities[tax.code]"
+                                title=""
+                                :inputClass="['form-control', 'br-tax-quantity']"
+                                :decimals="0"
+                                :minValue="taxQuantityMinimum(tax.data)"
+                                :maxValue="taxQuantityMaximum(tax.data)"
+                                :hasNegative="false"
+                                @change="normalizeSelectedTaxQuantity(tax.code)">
+                                <template v-slot:inputGroupPrepend>
+                                    <span class="input-group-text br-tax-quantity__label">Veces</span>
+                                </template>
+                            </InputNumber>
+                        </div>
+                    </div>
+                    <p v-else class="br-document-settlement__empty mb-0">
+                        No hay impuestos extras configurados para ventas.
+                    </p>
+                </div>
+                <div class="modal-footer br-entity-modal__footer">
+                    <button type="button" class="br-btn br-btn-cancel" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="br-btn br-btn-primary" data-bs-dismiss="modal">Listo</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" :id="forms[entity].createUpdate.extras.modals.payments.id" data-bs-backdrop="static" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+            <div class="modal-content br-entity-modal">
+                <div class="modal-header br-modal-header">
+                    <h5 class="modal-title text-uppercase fw-bold">Configurar métodos de pago</h5>
+                    <button type="button" class="btn-header-modal" data-bs-dismiss="modal" aria-label="Cerrar">
+                        <i class="fa fa-times icon-close-modal" aria-hidden="true"></i>
+                    </button>
+                </div>
+                <div class="modal-body br-entity-modal__body">
+                    <p class="br-document-payment-intro">
+                        Distribuye el importe total entre uno o más métodos configurados para ventas.
+                    </p>
+                    <div class="br-document-payments br-document-payments--modal">
+                        <div
+                            v-for="(payment, index) in forms[entity].createUpdate.data.payments"
+                            :key="payment.key"
+                            class="br-document-payment-row">
+                            <v-select
+                                v-model="payment.method"
+                                :options="salePaymentMethods"
+                                :clearable="false"
+                                :searchable="true"
+                                append-to-body/>
+                            <InputNumber
+                                v-model="payment.amount"
+                                title=""
+                                :titleClass="[]"
+                                :inputClass="['form-control', 'br-document-payment-amount']"
+                                :minValue="0"
+                                :placeholder="separatorNumber(total)">
+                                <template v-slot:inputGroupPrepend>
+                                    <span class="input-group-text br-currency-prefix">{{ forms[entity].createUpdate.data.currency?.data?.sign ?? '' }}</span>
+                                </template>
+                            </InputNumber>
+                            <input
+                                v-if="payment.method?.data?.requires_reference"
+                                v-model.trim="payment.reference"
+                                type="text"
+                                class="form-control"
+                                maxlength="100"
+                                placeholder="Referencia">
+                            <button
+                                type="button"
+                                class="br-icon-action"
+                                :disabled="forms[entity].createUpdate.data.payments.length <= 1"
+                                title="Quitar método"
+                                @click="removeSalePayment(index)">
+                                <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+                            </button>
+                        </div>
+                        <button type="button" class="br-document-payment-add" @click="addSalePayment">
+                            <i class="fa-solid fa-circle-plus" aria-hidden="true"></i>
+                            <span>Agregar método</span>
+                        </button>
+                        <div class="br-document-payment-modal-total">
+                            <span>Diferencia</span>
+                            <strong :class="Number(salePaymentDifference) === 0 ? 'text-success' : 'text-danger'">
+                                {{ forms[entity].createUpdate.data.currency?.data?.sign ?? '' }}
+                                {{ separatorNumber(salePaymentDifference) }}
+                            </strong>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer br-entity-modal__footer">
+                    <button type="button" class="br-btn br-btn-cancel" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="br-btn br-btn-primary" data-bs-dismiss="modal">Listo</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="modal fade" :id="forms[entity].createUpdate.extras.modals.details.id" data-bs-backdrop="static" tabindex="-1" role="dialog">
         <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
             <div class="modal-content">
@@ -944,7 +1050,7 @@ const TEXTS = {
         serie: "Tipo de comprobante",
         warehouse: "Almacén",
         issueDate: "Fecha de emisión",
-        deliveryMode: "Entrega",
+        deliveryMode: "Tipo de entrega",
         holder: "Cliente",
         quotation: "Cotización",
         observation: "Observaciones",
@@ -1052,6 +1158,12 @@ export default {
                         id: Utils.uuid(),
                         draft: ""
                     },
+                    taxes: {
+                        id: Utils.uuid()
+                    },
+                    payments: {
+                        id: Utils.uuid()
+                    },
                     subscriptions: {
                         id: Utils.uuid(),
                         titles: {
@@ -1119,6 +1231,16 @@ export default {
 
     },
     methods: {
+        documentTypeLabel(documentType) {
+
+            const value = String(documentType?.name || documentType?.code || "Comprobante").trim().toUpperCase();
+
+            if(value === "BOLETA DE VENTA" || value === "BV") return "BOLETA";
+            if(value === "FA") return "FACTURA";
+
+            return value;
+
+        },
         taxLabel(tax = {}) {
 
             const name = tax?.name || "IGV";
@@ -1216,6 +1338,11 @@ export default {
             }
 
             this.forms[this.entity].createUpdate.data.selected_tax_quantities = quantities;
+
+        },
+        openTaxesModal() {
+
+            Alerts.modals({type: "show", id: this.forms[this.entity].createUpdate.extras.modals.taxes.id});
 
         },
         selectedTaxIds() {
@@ -1426,6 +1553,17 @@ export default {
             if(this.forms[this.entity].createUpdate.data.payments.length <= 1) return;
 
             this.forms[this.entity].createUpdate.data.payments.splice(index, 1);
+
+        },
+        openPaymentMethodsModal() {
+
+            if((this.forms[this.entity].createUpdate.data.payments || []).length === 0) {
+
+                this.forms[this.entity].createUpdate.data.payments = [this.newSalePayment({amount: this.total})];
+
+            }
+
+            Alerts.modals({type: "show", id: this.forms[this.entity].createUpdate.extras.modals.payments.id});
 
         },
         // Actions modal detail
@@ -1640,10 +1778,10 @@ export default {
 
                 form.branch_id   = form?.branch?.code;
                 form.serie_id    = form?.serie?.code;
-                form.warehouse_id = form?.warehouse?.code;
+                form.warehouse_id = this.saleRequiresStockContext ? form?.warehouse?.code : null;
                 form.holder_id   = form?.holder?.code;
                 form.currency_id = form?.currency?.code;
-                form.delivery_mode = form?.delivery_mode?.code || "immediate";
+                form.delivery_mode = this.saleRequiresStockContext ? (form?.delivery_mode?.code || "immediate") : null;
                 form.payments = this.salePaymentPayload;
                 form.taxes = this.saleTaxBreakdown.map(tax => ({
                     tax_id: tax.id,
@@ -1913,7 +2051,7 @@ export default {
 
                 }
 
-                if(!this.isDefined({value: form?.warehouse})) {
+                if(this.saleRequiresStockContext && !this.isDefined({value: form?.warehouse})) {
 
                     result.warehouse.push(`${isDescriptive ? "Almacén:" : ""} ${this.config.forms.errors.labels.required}`);
                     result.bool = false;
@@ -2004,6 +2142,11 @@ export default {
         isSubscription(type) {
 
             return ["subscription"].includes(type);
+
+        },
+        saleDetailUsesStock(detail) {
+
+            return ["product"].includes(String(detail?.type || "").toLowerCase());
 
         },
         isDurationTypeCalendar(durationType) {
@@ -2150,7 +2293,11 @@ export default {
 
                 const series = (branch[0].series ?? []).filter(e => e?.status === "active");
 
-                return series.map(e => ({code: e.id, label: `${e.legible_serie} - ${e?.document_type?.name}`, data: e}));
+                return series.map(e => ({
+                    code: e.id,
+                    label: `${e.legible_serie} - ${this.documentTypeLabel(e?.document_type)}`,
+                    data: e
+                }));
 
             }
 
@@ -2193,7 +2340,7 @@ export default {
 
             }
 
-            if(!this.warehouses.length) {
+            if(this.saleRequiresStockContext && !this.warehouses.length) {
 
                 return {
                     title: "Falta un almacén activo",
@@ -2268,6 +2415,26 @@ export default {
             return this.saleTaxes.filter(tax => this.taxIsRequired(tax.data) || selected.includes(tax.code));
 
         },
+        saleOptionalTaxSummary() {
+
+            const selected = this.selectedTaxIds();
+
+            return (this.optionalSaleTaxes || [])
+                .filter(tax => selected.includes(tax.code))
+                .map(tax => {
+
+                    const line = this.calculateSaleTaxLine(tax.data || {});
+
+                    return {
+                        key: tax.code,
+                        name: line.name,
+                        description: this.isFixedTax(tax.data) ? `${line.quantity} vez${Number(line.quantity) === 1 ? "" : "es"} · ${this.taxLabel(tax.data)}` : this.taxLabel(tax.data),
+                        amount: line.amount
+                    };
+
+                });
+
+        },
         salePaymentMethods() {
 
             return (this.options?.paymentMethods?.records || []).map(method => ({
@@ -2275,6 +2442,24 @@ export default {
                 label: method.name,
                 data: method
             }));
+
+        },
+        salePaymentSummary() {
+
+            return (this.forms[this.entity].createUpdate.data.payments || [])
+                .filter(payment => payment.method?.code)
+                .map(payment => ({
+                    key: payment.key,
+                    label: payment.method?.label || "Método de pago",
+                    reference: payment.reference || "",
+                    amount: Number(payment.amount || 0)
+                }));
+
+        },
+        saleRequiresStockContext() {
+
+            return (this.forms[this.entity].createUpdate.data.details || [])
+                .some(detail => this.saleDetailUsesStock(detail));
 
         },
         saleGrossSubtotal: function() {
