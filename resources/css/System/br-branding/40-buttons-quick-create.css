@@ -557,7 +557,7 @@
   padding-left: 0.5rem !important;
   background: var(--br-surface-elevated) !important;
   color: color-mix(in srgb, var(--br-secondary) 82%, var(--br-text-muted)) !important;
-  font-size: 0.68rem !important;
+  font-size: var(--br-ui-font-size) !important;
   font-weight: 600 !important;
   line-height: 1 !important;
   letter-spacing: 0.04em !important;

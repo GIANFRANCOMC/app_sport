@@ -49,7 +49,7 @@ Permite crear una venta con productos, servicios o membresias. Una venta puede g
 - Cada emisión y anulación queda registrada en `series_correlative_movements`; una anulación nunca libera el correlativo.
 - Venta y POS bloquean la acción cuando la sucursal no tiene serie o almacén activo y muestran la configuración que debe corregirse.
 - `details.*.extras` valida duración, fechas, observación, opciones de receta y toppings con una estructura explícita; los identificadores no se aceptan como datos libres.
-- `StoreSaleRequest` normaliza antes de validar cantidades, precios, totales, tributos y pagos. Los máximos usan el mismo criterio transversal de backend y frontend (`999999999999.9999`) para evitar diferencias entre Vue y PHP.
+- `StoreSaleRequest` normaliza antes de validar cantidades, precios, totales, tributos y pagos. Los máximos usan el mismo criterio transversal de backend y frontend (`999999999999.999`) para evitar diferencias entre Vue y PHP.
 - El envío de correo de venta usa `HelperController::sendEmail`, valida correo y mensaje, construye el asunto con correlativo, sucursal y empresa cuando existe `sale_header.id`, y reutiliza la plantilla `emails.saleMail`.
 - La plantilla de correo saluda al cliente cuando está disponible, muestra la sucursal de la venta y cierra con un footer de la empresa usando BLAPOS como referencia de plataforma.
 - Los enlaces para imprimir o compartir comprobantes de venta usan una URL firmada temporal generada por `reports/sale/share-link`. Si el enlace vence o se altera, Laravel lo rechaza por firma antes de renderizar el PDF.

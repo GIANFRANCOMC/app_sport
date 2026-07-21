@@ -38,7 +38,7 @@ final class MiscExpense extends Model {
 
     protected $casts = [
         "expense_date" => "date:Y-m-d",
-        "amount" => "decimal:4",
+        "amount" => "App\\Casts\\System\\ConfigurableDecimal",
         "canceled_at" => "datetime"
     ];
 

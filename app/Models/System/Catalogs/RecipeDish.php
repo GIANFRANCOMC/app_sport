@@ -33,8 +33,8 @@ class RecipeDish extends Model {
     ];
 
     protected $casts = [
-        "yield_quantity" => "decimal:4",
-        "waste_percentage" => "decimal:4"
+        "yield_quantity" => "App\\Casts\\System\\ConfigurableDecimal",
+        "waste_percentage" => "App\\Casts\\System\\ConfigurableDecimal"
     ];
 
     public function getFormattedStatusAttribute(): string {

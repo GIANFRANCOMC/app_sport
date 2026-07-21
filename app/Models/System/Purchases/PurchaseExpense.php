@@ -9,5 +9,5 @@ use Illuminate\Database\Eloquent\Model;
 final class PurchaseExpense extends Model {
     protected $table = "purchase_expenses";
     protected $fillable = ["company_id", "purchase_header_id", "expense_type", "name", "amount", "allocation_method", "note"];
-    protected $casts = ["amount" => "decimal:4"];
+    protected $casts = ["amount" => "App\\Casts\\System\\ConfigurableDecimal"];
 }

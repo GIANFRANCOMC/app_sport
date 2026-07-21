@@ -1289,13 +1289,8 @@ export default {
             const number = Number(value || 0);
             return `${number > 0 ? "+" : ""}${this.separatorNumber(number)}`;
         },
-        currencyNumber(value, decimals = 4) {
-            return new Intl.NumberFormat("es-PE", {
-                style: "currency",
-                currency: "PEN",
-                minimumFractionDigits: decimals,
-                maximumFractionDigits: decimals
-            }).format(Number(value || 0));
+        currencyNumber(value, decimals = null) {
+            return `S/ ${Utils.separatorNumber(value || 0, decimals)}`;
         },
         signedCurrency(value) {
             const number = Number(value || 0);

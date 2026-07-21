@@ -33,8 +33,8 @@ final class ServiceStation extends Model {
 
     protected $casts = [
         "capacity" => "integer",
-        "position_x" => "decimal:4",
-        "position_y" => "decimal:4"
+        "position_x" => "App\\Casts\\System\\ConfigurableDecimal",
+        "position_y" => "App\\Casts\\System\\ConfigurableDecimal"
     ];
 
     public function company() {

@@ -57,11 +57,11 @@ class SaleService {
      * @param array $details Sale details
      * @return float
      */
-    private static function calculateTotal(array $details): float {
+    private static function calculateTotal(array $details, int $companyId): float {
 
         return array_reduce($details, function($carry, $detail) {
 
-            return $carry + Utilities::round(floatval($detail["quantity"]) * floatval($detail["price"]));
+            return $carry + Utilities::round(floatval($detail["quantity"]) * floatval($detail["price"]), null, $companyId);
 
         }, 0);
 
@@ -87,17 +87,17 @@ class SaleService {
 
     }
 
-    private static function calculateCommissionAmount(float $quantity, float $price, string $type, float $value): float {
+    private static function calculateCommissionAmount(float $quantity, float $price, string $type, float $value, int $companyId): float {
 
         if($type === "percentage") {
 
-            return Utilities::round(($quantity * $price) * ($value / 100));
+            return Utilities::round(($quantity * $price) * ($value / 100), null, $companyId);
 
         }
 
         if($type === "fixed") {
 
-            return Utilities::round($quantity * $value);
+            return Utilities::round($quantity * $value, null, $companyId);
 
         }
 
@@ -136,7 +136,8 @@ class SaleService {
                 (float) ($detail["quantity"] ?? 0),
                 (float) ($detail["price"] ?? 0),
                 $type,
-                $value
+                $value,
+                $companyId
             );
 
             return $detail;
@@ -309,7 +310,7 @@ class SaleService {
         $saleBody->quantity       = $detail["quantity"];
         $saleBody->price          = $detail["price"];
         $saleBody->price_includes_tax = filter_var($detail["price_includes_tax"] ?? true, FILTER_VALIDATE_BOOL);
-        $saleBody->total          = Utilities::round((floatval($saleBody->quantity) * floatval($saleBody->price)));
+        $saleBody->total          = Utilities::round((floatval($saleBody->quantity) * floatval($saleBody->price)), null, (int) $saleHeader->company_id);
         $saleBody->commission_type = $detail["commission_type"] ?? "none";
         $saleBody->commission_value = $detail["commission_value"] ?? 0;
         $saleBody->commission_amount = $detail["commission_amount"] ?? 0;
@@ -709,12 +710,12 @@ class SaleService {
             }
 
             // Calculate totals
-            $grossSubtotal = self::calculateTotal($data["details"]);
+            $grossSubtotal = self::calculateTotal($data["details"], (int) $companyId);
             $commissionTotal = Utilities::round(array_reduce($data["details"], function($carry, $detail) {
 
                 return $carry + (float) ($detail["commission_amount"] ?? 0);
 
-            }, 0));
+            }, 0), null, (int) $companyId);
             $selectedTaxIds = collect($data["taxes"] ?? [])
                 ->pluck("tax_id")
                 ->filter()
@@ -733,11 +734,11 @@ class SaleService {
                 $selectedTaxIds,
                 $selectedTaxQuantities
             );
-            $taxTotal = Utilities::round((float) $taxLines->sum("amount"));
-            $taxImpactTotal = Utilities::round((float) $taxLines->sum("_total_impact"));
-            $includedTaxTotal = Utilities::round($taxTotal - $taxImpactTotal);
-            $subtotal = Utilities::round($grossSubtotal - $includedTaxTotal);
-            $total = Utilities::round($grossSubtotal + $taxImpactTotal);
+            $taxTotal = Utilities::round((float) $taxLines->sum("amount"), null, (int) $companyId);
+            $taxImpactTotal = Utilities::round((float) $taxLines->sum("_total_impact"), null, (int) $companyId);
+            $includedTaxTotal = Utilities::round($taxTotal - $taxImpactTotal, null, (int) $companyId);
+            $subtotal = Utilities::round($grossSubtotal - $includedTaxTotal, null, (int) $companyId);
+            $total = Utilities::round($grossSubtotal + $taxImpactTotal, null, (int) $companyId);
             $defaultPaymentModality = (string) CompanySettingService::value(
                 (int) $companyId,
                 CompanySettingService::SALES,
@@ -756,8 +757,8 @@ class SaleService {
                     0
                 )
                 : 0.0;
-            $installmentExtraAmount = Utilities::round($total * ($installmentExtraPercentage / 100));
-            $total = Utilities::round($total + $installmentExtraAmount);
+            $installmentExtraAmount = Utilities::round($total * ($installmentExtraPercentage / 100), null, (int) $companyId);
+            $total = Utilities::round($total + $installmentExtraAmount, null, (int) $companyId);
             $paymentLines = CommercialDocumentSettlementService::payments(
                 (int) $companyId,
                 "sale",
@@ -766,9 +767,9 @@ class SaleService {
                 (int) $userId,
                 $paymentModality === CommercialCreditAccountService::PAID_NOW
             );
-            $paidAmount = Utilities::round((float) $paymentLines->sum("amount"));
-            $balanceDue = Utilities::round($total - $paidAmount);
-            $paymentStatus = CommercialCreditAccountService::paymentStatus((float) $total, (float) $paidAmount);
+            $paidAmount = Utilities::round((float) $paymentLines->sum("amount"), null, (int) $companyId);
+            $balanceDue = Utilities::round($total - $paidAmount, null, (int) $companyId);
+            $paymentStatus = CommercialCreditAccountService::paymentStatus((float) $total, (float) $paidAmount, (int) $companyId);
 
             // Create sale header
             $saleHeader = new SaleHeader();

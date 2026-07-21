@@ -31,7 +31,7 @@ final class Tax extends Model {
     ];
 
     protected $casts = [
-        "rate" => "decimal:4",
+        "rate" => "App\\Casts\\System\\ConfigurableDecimal",
         "min_apply_quantity" => "integer",
         "max_apply_quantity" => "integer",
         "is_required" => "boolean",

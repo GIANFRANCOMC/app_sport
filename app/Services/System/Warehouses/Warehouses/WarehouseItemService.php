@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\System\Warehouses\Warehouses;
 
+use App\Helpers\System\Utilities;
 use App\Models\System\Catalogs\{Item};
 use App\Models\System\Warehouses\{Warehouse, WarehouseItem};
 use App\Services\System\Warehouses\Inventory\InventoryMovementService;
@@ -63,7 +64,7 @@ class WarehouseItemService {
 
             $warehouseItem->save();
 
-            $initialStock = round((float) ($inventoryRecord["initial_stock"] ?? 0), 4);
+            $initialStock = Utilities::round((float) ($inventoryRecord["initial_stock"] ?? 0), null, $companyId);
 
             if($isNew && $setInitialStock && $initialStock > 0) {
 

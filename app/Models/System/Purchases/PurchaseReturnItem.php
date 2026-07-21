@@ -16,7 +16,7 @@ final class PurchaseReturnItem extends Model {
         "company_id", "purchase_return_id", "purchase_item_id", "item_id",
         "inventory_movement_id", "quantity", "unit_cost", "total_cost", "created_at"
     ];
-    protected $casts = ["quantity" => "decimal:4", "unit_cost" => "decimal:4", "total_cost" => "decimal:4"];
+    protected $casts = ["quantity" => "App\\Casts\\System\\ConfigurableDecimal", "unit_cost" => "App\\Casts\\System\\ConfigurableDecimal", "total_cost" => "App\\Casts\\System\\ConfigurableDecimal"];
 
     public function item() {
         return $this->belongsTo(Item::class, "item_id");

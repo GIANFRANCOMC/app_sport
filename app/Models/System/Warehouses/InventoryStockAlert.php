@@ -23,8 +23,8 @@ final class InventoryStockAlert extends Model {
     ];
 
     protected $casts = [
-        "quantity" => "decimal:4",
-        "minimum_stock" => "decimal:4",
+        "quantity" => "App\\Casts\\System\\ConfigurableDecimal",
+        "minimum_stock" => "App\\Casts\\System\\ConfigurableDecimal",
         "detected_at" => "datetime",
         "resolved_at" => "datetime"
     ];

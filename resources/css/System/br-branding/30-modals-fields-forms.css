@@ -257,7 +257,7 @@ body.br-layout .modal-header.br-modal-header .btn-header-modal:focus-visible {
   padding-left: 0.48rem !important;
   padding-right: 0.48rem !important;
   font-weight: 500 !important;
-  font-size: 0.75rem !important;
+  font-size: var(--br-ui-font-size) !important;
   line-height: 1.25 !important;
   color: var(--br-on-secondary) !important;
   background: linear-gradient(

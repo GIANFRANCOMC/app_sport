@@ -4,12 +4,12 @@
  * sin cambiar la estructura HTML de los módulos existentes.
  * ------------------------------------------------------------------------- */
 :root {
-  --br-font-size-page: 0.875rem;
-  --br-font-size-ui: 0.835rem;
-  --br-font-size-label: 0.72rem;
-  --br-font-size-table: 0.8125rem;
-  --br-font-size-table-head: 0.72rem;
-  --br-font-size-title-sm: 0.95rem;
+  --br-font-size-page: var(--br-ui-font-size);
+  --br-font-size-ui: var(--br-ui-font-size);
+  --br-font-size-label: var(--br-ui-font-size);
+  --br-font-size-table: var(--br-ui-font-size);
+  --br-font-size-table-head: var(--br-ui-font-size);
+  --br-font-size-title-sm: var(--br-ui-font-size);
 
   --br-control-height: 2.16rem;
   --br-control-height-sm: 1.96rem;
@@ -21,23 +21,73 @@
   --br-btn-height-xs: 1.52rem;
   --br-btn-padding-x: 0.72rem;
   --br-btn-padding-y: 0.34rem;
-  --br-btn-font-size: 0.79rem;
-  --br-btn-font-size-sm: 0.71rem;
+  --br-btn-font-size: var(--br-ui-font-size);
+  --br-btn-font-size-sm: var(--br-ui-font-size);
 
   --br-table-cell-pad-y: 0.54rem;
   --br-table-cell-pad-x: 0.68rem;
   --br-card-pad: 0.9rem;
+  --br-grid-gap-2: 0.42rem;
+  --br-grid-gap-3: 0.62rem;
+  --br-grid-gap-4: 0.86rem;
+  --br-grid-gap-5: 1.25rem;
 }
 
 body.br-layout {
   color: var(--br-text);
   font-size: var(--br-font-size-page);
+  line-height: var(--br-ui-line-height);
   letter-spacing: 0;
 }
 
 .br-layout .br-layout-content {
   background-color: var(--br-surface);
   background-image: none;
+}
+
+/* Espaciado base: reemplaza la escala amplia de Vuexy/Bootstrap dentro de la app. */
+body.br-layout :where(.g-2, .gx-2, .g-sm-2, .gx-sm-2, .g-md-2, .gx-md-2, .g-lg-2, .gx-lg-2, .g-xl-2, .gx-xl-2, .g-xxl-2, .gx-xxl-2) {
+  --bs-gutter-x: var(--br-grid-gap-2) !important;
+}
+
+body.br-layout :where(.g-2, .gy-2, .g-sm-2, .gy-sm-2, .g-md-2, .gy-md-2, .g-lg-2, .gy-lg-2, .g-xl-2, .gy-xl-2, .g-xxl-2, .gy-xxl-2) {
+  --bs-gutter-y: var(--br-grid-gap-2) !important;
+}
+
+body.br-layout :where(.g-3, .gx-3, .g-sm-3, .gx-sm-3, .g-md-3, .gx-md-3, .g-lg-3, .gx-lg-3, .g-xl-3, .gx-xl-3, .g-xxl-3, .gx-xxl-3) {
+  --bs-gutter-x: var(--br-grid-gap-3) !important;
+}
+
+body.br-layout :where(.g-3, .gy-3, .g-sm-3, .gy-sm-3, .g-md-3, .gy-md-3, .g-lg-3, .gy-lg-3, .g-xl-3, .gy-xl-3, .g-xxl-3, .gy-xxl-3) {
+  --bs-gutter-y: var(--br-grid-gap-3) !important;
+}
+
+body.br-layout :where(.g-4, .gx-4, .g-sm-4, .gx-sm-4, .g-md-4, .gx-md-4, .g-lg-4, .gx-lg-4, .g-xl-4, .gx-xl-4, .g-xxl-4, .gx-xxl-4) {
+  --bs-gutter-x: var(--br-grid-gap-4) !important;
+}
+
+body.br-layout :where(.g-4, .gy-4, .g-sm-4, .gy-sm-4, .g-md-4, .gy-md-4, .g-lg-4, .gy-lg-4, .g-xl-4, .gy-xl-4, .g-xxl-4, .gy-xxl-4) {
+  --bs-gutter-y: var(--br-grid-gap-4) !important;
+}
+
+body.br-layout :where(.g-5, .gx-5, .g-sm-5, .gx-sm-5, .g-md-5, .gx-md-5, .g-lg-5, .gx-lg-5, .g-xl-5, .gx-xl-5, .g-xxl-5, .gx-xxl-5) {
+  --bs-gutter-x: var(--br-grid-gap-5) !important;
+}
+
+body.br-layout :where(.g-5, .gy-5, .g-sm-5, .gy-sm-5, .g-md-5, .gy-md-5, .g-lg-5, .gy-lg-5, .g-xl-5, .gy-xl-5, .g-xxl-5, .gy-xxl-5) {
+  --bs-gutter-y: var(--br-grid-gap-5) !important;
+}
+
+body.br-layout :where(.gap-3, .gap-sm-3, .gap-md-3, .gap-lg-3, .gap-xl-3, .gap-xxl-3) {
+  gap: var(--br-grid-gap-3) !important;
+}
+
+body.br-layout :where(.row-gap-3, .row-gap-sm-3, .row-gap-md-3, .row-gap-lg-3, .row-gap-xl-3, .row-gap-xxl-3) {
+  row-gap: var(--br-grid-gap-3) !important;
+}
+
+body.br-layout :where(.column-gap-3, .column-gap-sm-3, .column-gap-md-3, .column-gap-lg-3, .column-gap-xl-3, .column-gap-xxl-3) {
+  column-gap: var(--br-grid-gap-3) !important;
 }
 
 /* Tipografía de formulario más silenciosa y consistente */
@@ -54,8 +104,12 @@ body.br-layout .form-label,
 }
 
 body.br-layout .text-danger.ms-1.fw-bold {
-  font-size: 0.72rem;
+  font-size: var(--br-ui-font-size);
   line-height: 1;
+}
+
+body.br-layout .form-group {
+  margin-bottom: 0.52rem !important;
 }
 
 /* Inputs, selects y grupos compuestos */
@@ -97,13 +151,13 @@ body.br-layout .text-danger.ms-1.fw-bold {
 .br-layout .v-select.vs--multiple .vs__selected {
   min-height: 1.42rem;
   padding: 0.08rem 0.22rem 0.08rem 0.42rem;
-  font-size: 0.735rem;
+  font-size: var(--br-ui-font-size);
 }
 
 .br-layout .vs__dropdown-menu .vs__dropdown-option,
 body > .vs__dropdown-menu .vs__dropdown-option {
   padding: 0.42rem 0.65rem;
-  font-size: 0.78rem;
+  font-size: var(--br-ui-font-size);
 }
 
 .br-input-currency-addon,
@@ -111,14 +165,14 @@ body > .vs__dropdown-menu .vs__dropdown-option {
 .br-internal-code-prefix,
 .character-counter {
   min-height: var(--br-control-height);
-  font-size: 0.68rem;
+  font-size: var(--br-ui-font-size);
 }
 
 .br-input-action {
   width: var(--br-control-height);
   min-width: var(--br-control-height);
   min-height: var(--br-control-height);
-  font-size: 0.72rem;
+  font-size: var(--br-ui-font-size);
 }
 
 /* Botones: menos altos, menos invasivos, misma intención cromática */
@@ -148,14 +202,14 @@ body > .vs__dropdown-menu .vs__dropdown-option {
 .br-btn-xs {
   min-height: var(--br-btn-height-xs);
   padding: 0.22rem 0.42rem;
-  font-size: 0.7rem;
+  font-size: var(--br-ui-font-size);
 }
 
 .br-btn-lg,
 .br-layout .btn-lg {
   min-height: 2.42rem;
   padding: 0.48rem 1rem;
-  font-size: 0.9rem;
+  font-size: var(--br-ui-font-size);
 }
 
 .br-btn-primary,
@@ -196,7 +250,7 @@ body > .vs__dropdown-menu .vs__dropdown-option {
   height: 1.86rem;
   min-height: 1.86rem;
   border-radius: var(--br-radius-sm);
-  font-size: 0.74rem;
+  font-size: var(--br-ui-font-size);
 }
 
 .br-icon-action-edit {
@@ -241,13 +295,13 @@ body.br-layout .table > tbody > tr > td,
 .br-entity-table__name,
 .br-entity-table__attribute strong {
   color: var(--br-secondary);
-  font-size: 0.9rem;
+  font-size: var(--br-ui-font-size);
 }
 
 .br-entity-table__description,
 .br-entity-table__meta,
 .br-entity-table__attribute {
-  font-size: 0.74rem;
+  font-size: var(--br-ui-font-size);
   line-height: 1.32;
 }
 
@@ -255,7 +309,7 @@ body.br-layout .table > tbody > tr > td,
 .br-layout .br-status-label {
   min-width: 3.1rem;
   padding: 0.2em 0.44em;
-  font-size: 0.64rem;
+  font-size: var(--br-ui-font-size);
   font-weight: 700;
   border-radius: 0.22rem;
 }
@@ -263,7 +317,7 @@ body.br-layout .table > tbody > tr > td,
 .br-layout .badge,
 .br-layout .badge[class*="bg-label-"] {
   padding: 0.25rem 0.46rem;
-  font-size: 0.68rem;
+  font-size: var(--br-ui-font-size);
   line-height: 1.1;
   border-radius: 0.32rem;
 }
@@ -283,12 +337,12 @@ body.br-layout .modal-header.br-modal-header {
 }
 
 .br-entity-modal__eyebrow {
-  font-size: 0.66rem;
+  font-size: var(--br-ui-font-size);
   letter-spacing: 0.045em;
 }
 
 .br-entity-modal__title {
-  font-size: 1rem;
+  font-size: var(--br-ui-font-size);
   line-height: 1.18;
 }
 
@@ -308,16 +362,16 @@ body.br-layout .modal-header.br-modal-header {
 .br-entity-tab__step {
   width: 1.28rem;
   height: 1.28rem;
-  font-size: 0.68rem;
+  font-size: var(--br-ui-font-size);
 }
 
 .br-entity-tab__content strong {
-  font-size: 0.74rem;
+  font-size: var(--br-ui-font-size);
   line-height: 1.08;
 }
 
 .br-entity-tab__content small {
-  font-size: 0.66rem;
+  font-size: var(--br-ui-font-size);
   line-height: 1.08;
 }
 
@@ -349,28 +403,272 @@ body.br-layout .modal-header.br-modal-header {
 /* SweetAlert y tooltips más sobrios */
 .br-layout .swal2-popup {
   border-radius: var(--br-radius-lg);
-  font-size: 0.875rem;
+  font-size: var(--br-ui-font-size);
 }
 
 .br-layout .swal2-title {
-  font-size: 1.08rem;
+  font-size: var(--br-ui-font-size);
   line-height: 1.25;
 }
 
 .br-layout .swal2-html-container {
-  font-size: 0.86rem;
+  font-size: var(--br-ui-font-size);
   line-height: 1.45;
 }
 
 .br-layout .tooltip {
-  --bs-tooltip-font-size: 0.66rem;
+  --bs-tooltip-font-size: var(--br-ui-font-size);
   --bs-tooltip-padding-x: 0.42rem;
   --bs-tooltip-padding-y: 0.24rem;
 }
 
+/* Capa tipográfica final: misma escala que el menú lateral en toda la app. */
+body.br-layout,
+body.br-layout :where(
+  h1, h2, h3, h4, h5, h6,
+  p, span, small, strong, b, em, label, a, li,
+  button, input, select, textarea,
+  table, thead, tbody, tfoot, tr, th, td,
+  .form-control, .form-select, .input-group-text,
+  .form-label, .form-check-label,
+  .btn, .br-btn, .dropdown-item,
+  .card-title, .card-subtitle, .modal-title,
+  .badge, .alert, .pagination, .page-link,
+  .v-select, .vs__selected, .vs__search, .vs__dropdown-option, .vs__no-options,
+  .select2-selection__rendered, .select2-results__option,
+  .swal2-title, .swal2-html-container,
+  .br-status-label, .br-status-surface,
+  .br-entity-table__name, .br-entity-table__description, .br-entity-table__meta,
+  .br-entity-tab__content, .br-entity-tab__content strong, .br-entity-tab__content small
+) {
+  font-size: var(--br-ui-font-size) !important;
+  line-height: var(--br-ui-line-height);
+}
+
+body.br-layout :where(.fa, .fas, .far, .fab, .fa-solid, .fa-regular, .fa-brands, [class^="ti-"], [class*=" ti-"]) {
+  line-height: 1;
+}
+
+/* Excepciones de microcopy: mantienen jerarquia sin romper la escala global. */
+body.br-layout .br-sidebar-profile-user,
+body.br-layout .br-sidebar-profile-user :where(span, strong) {
+  font-size: 0.8rem !important;
+  line-height: 1.16 !important;
+}
+
+body.br-layout .br-sidebar-profile-role,
+body.br-layout .br-sidebar-profile-role :where(span, small, strong) {
+  font-size: 0.52rem !important;
+  line-height: 1.18 !important;
+  letter-spacing: 0.08em;
+}
+
+body.br-layout .br-document-payment-config,
+body.br-layout .br-document-payment-config :where(span, i) {
+  font-size: 0.58rem !important;
+  line-height: 1.1 !important;
+}
+
+.br-document-settlement__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.55rem;
+  width: 100%;
+  margin-bottom: 0;
+}
+
+.br-document-settlement__header .form-label {
+  margin-bottom: 0;
+}
+
+.br-document-settlement {
+  display: grid;
+  gap: 1.05rem;
+  padding: 0.78rem;
+  border: 1px solid var(--br-border);
+  border-radius: var(--br-radius-sm);
+  background: var(--br-neutral-panel);
+}
+
+.br-document-settlement > div {
+  display: flex;
+  flex-direction: column;
+  gap: 0.36rem;
+}
+
+body.br-layout .br-document-payment-config {
+  min-height: 1.08rem;
+  margin-top: 0;
+  padding: 0.075rem 0.34rem;
+  border-color: var(--br-orange);
+  background: var(--br-orange);
+  color: var(--br-white);
+  border-radius: var(--br-radius-sm);
+  box-shadow: 0 0.16rem 0.38rem color-mix(in srgb, var(--br-orange) 18%, transparent);
+}
+
+body.br-layout .br-document-payment-config i {
+  display: none;
+}
+
+body.br-layout .br-document-payment-config:hover,
+body.br-layout .br-document-payment-config:focus-visible {
+  border-color: var(--br-orange-hover);
+  background: var(--br-orange-hover);
+  color: var(--br-white);
+  box-shadow: none;
+  outline: none;
+}
+
+body.br-layout .br-document-payment-config:active {
+  transform: translateY(1px);
+}
+
+.br-document-observation-summary {
+  display: block;
+  width: 100%;
+}
+
+.br-document-observation-summary__value {
+  display: -webkit-box;
+  overflow: hidden;
+  color: var(--br-text);
+  font-size: 0.72rem;
+  line-height: 1.42;
+  word-break: break-word;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+}
+
+.br-document-tax-summary,
+.br-document-payment-summary {
+  display: grid;
+  gap: 0.34rem;
+  width: 100%;
+}
+
+.br-document-tax-summary__row,
+.br-document-payment-summary__row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 0.45rem;
+  width: 100%;
+  min-width: 0;
+}
+
+.br-document-tax-summary__row > span,
+.br-document-payment-summary__row > span {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0.08rem;
+  color: var(--br-text-muted);
+  line-height: 1.22;
+}
+
+.br-document-tax-summary__row strong,
+.br-document-payment-summary__row strong {
+  color: var(--br-secondary);
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1.18;
+}
+
+.br-document-tax-summary__row small,
+.br-document-payment-summary__row small {
+  display: block;
+  color: var(--br-text-muted);
+  font-size: 0.64rem;
+  font-weight: 500;
+  line-height: 1.2;
+}
+
+.br-document-tax-summary__row b,
+.br-document-payment-summary__row b {
+  justify-self: end;
+  color: var(--br-secondary);
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1.18;
+  white-space: nowrap;
+}
+
+.br-document-summary-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.44rem;
+  width: 100%;
+  padding: 0.68rem 0.78rem;
+  border: 1px solid var(--br-border);
+  border-radius: var(--br-radius);
+  background: var(--br-surface-elevated);
+}
+
+.br-document-summary-card__title {
+  margin: 0;
+  color: var(--br-secondary);
+  font-size: 0.68rem;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.br-payment-select-option {
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+  gap: 0.38rem;
+  line-height: 1.1;
+}
+
+.br-payment-select-option__image {
+  width: 1.25rem;
+  height: 1.25rem;
+  flex: 0 0 1.25rem;
+  border-radius: 0.35rem;
+  object-fit: contain;
+  background: var(--br-white);
+}
+
+/* Refuerzo final: tablas solidas de marca y sin morado heredado de Vuexy. */
+body.br-layout .table > thead,
+body.br-layout .br-table-header-surface {
+  background: var(--br-table-thead-bg) !important;
+  background-color: var(--br-table-thead-bg) !important;
+  background-image: none !important;
+}
+
+body.br-layout .table > thead > tr > th,
+body.br-layout .table > thead > tr > th.bg-primary,
+body.br-layout .table > thead > tr > th.bg-secondary {
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
+  color: var(--br-table-thead-text) !important;
+}
+
+body.br-layout :where(
+  .text-primary,
+  .nav-link.active,
+  .dropdown-item.active,
+  .dropdown-item:active,
+  .list-group-item.active
+) {
+  --bs-primary: var(--br-primary);
+}
+
+body.br-layout :where(.bg-primary, .btn-primary, .progress-bar.bg-primary, .badge.bg-primary) {
+  background-color: var(--br-primary) !important;
+  border-color: var(--br-primary) !important;
+}
+
 @media (max-width: 767.98px) {
   :root {
-    --br-font-size-page: 0.84rem;
+    --br-font-size-page: var(--br-ui-font-size);
     --br-control-height: 2.12rem;
     --br-btn-height: 1.96rem;
     --br-table-cell-pad-x: 0.58rem;

@@ -35,10 +35,10 @@ class WarehouseItem extends Model {
     ];
 
     protected $casts = [
-        "quantity" => "decimal:4",
-        "minimum_stock" => "decimal:4",
-        "average_cost" => "decimal:4",
-        "inventory_value" => "decimal:4"
+        "quantity" => "App\\Casts\\System\\ConfigurableDecimal",
+        "minimum_stock" => "App\\Casts\\System\\ConfigurableDecimal",
+        "average_cost" => "App\\Casts\\System\\ConfigurableDecimal",
+        "inventory_value" => "App\\Casts\\System\\ConfigurableDecimal"
     ];
 
     // Appends

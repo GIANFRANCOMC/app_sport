@@ -1,4 +1,4 @@
-<template>
+﻿<template>
     <Breadcrumb :list="breadcrumbTitles"/>
 
     <section class="br-pos">
@@ -183,7 +183,7 @@
                         <div>
                             <p>Total</p>
                             <h2>S/ {{ separatorNumber(total) }}</h2>
-                            <span>{{ totalQuantity }} ítems agregados</span>
+                            <span>{{ totalQuantity }} ?tems agregados</span>
                         </div>
                         <button
                             type="button"
@@ -422,7 +422,43 @@
                                     class="bg-white"
                                     :clearable="false"
                                     :searchable="true"
-                                    placeholder="Método"/>
+                                    placeholder="Método"
+                                    @update:modelValue="syncPaymentVariant(payment)">
+                                    <template #selected-option="{ label, data }">
+                                        <span class="br-payment-select-option">
+                                            <img v-if="paymentAssetUrl(data)" :src="paymentAssetUrl(data)" alt="" class="br-payment-select-option__image">
+                                            <span>{{ label }}</span>
+                                        </span>
+                                    </template>
+                                    <template #option="{ label, data }">
+                                        <span class="br-payment-select-option">
+                                            <img v-if="paymentAssetUrl(data)" :src="paymentAssetUrl(data)" alt="" class="br-payment-select-option__image">
+                                            <span>{{ label }}</span>
+                                        </span>
+                                    </template>
+                                </v-select>
+                                <v-select
+                                    v-if="paymentVariantOptions(payment).length"
+                                    v-model="payment.variant"
+                                    :options="paymentVariantOptions(payment)"
+                                    class="bg-white"
+                                    :clearable="false"
+                                    :searchable="true"
+                                    append-to-body
+                                    placeholder="Variante">
+                                    <template #selected-option="{ label, data }">
+                                        <span class="br-payment-select-option">
+                                            <img v-if="paymentAssetUrl(data)" :src="paymentAssetUrl(data)" alt="" class="br-payment-select-option__image">
+                                            <span>{{ label }}</span>
+                                        </span>
+                                    </template>
+                                    <template #option="{ label, data }">
+                                        <span class="br-payment-select-option">
+                                            <img v-if="paymentAssetUrl(data)" :src="paymentAssetUrl(data)" alt="" class="br-payment-select-option__image">
+                                            <span>{{ label }}</span>
+                                        </span>
+                                    </template>
+                                </v-select>
                                 <InputNumber
                                     v-model="payment.amount"
                                     title=""
@@ -559,7 +595,7 @@ export default {
             };
         },
         paymentMethodOptions() {
-            return this.paymentMethods.map(method => ({...method, label: method.name}));
+            return this.paymentMethods.map(method => ({...method, code: method.id, label: method.name, data: method}));
         },
         cashSessionOptions() {
             return this.cashSessions
@@ -595,7 +631,7 @@ export default {
             const branch = this.selectedBranch?.name || this.selectedCashSession?.branch?.name || "Sucursal no seleccionada";
             const warehouse = this.selectedWarehouse?.name || "Almacén no seleccionado";
 
-            return `${cash} · ${branch} · ${warehouse}`;
+            return `${cash} ? ${branch} ? ${warehouse}`;
         },
         visibleCategories() {
             return this.categories.filter(category => this.countByCategory(category.id) > 0);
@@ -677,7 +713,7 @@ export default {
                 .filter(payment => payment.method)
                 .map(payment => ({
                     uid: payment.uid,
-                    label: payment.method?.label || payment.method?.name || "Método de pago",
+                    label: payment.variant?.label || payment.method?.label || payment.method?.name || "Método de pago",
                     amount: Number(payment.amount || 0)
                 }));
         },
@@ -915,29 +951,77 @@ export default {
                 return method.is_default || code.includes("cash") || name.includes("efectivo");
             }) || this.paymentMethodOptions[0] || null;
         },
+        paymentAssetUrl(record) {
+
+            const path = record?.image_path || record?.data?.image_path;
+
+            if(!path) return "";
+
+            if(/^https?:\/\//i.test(path) || path.startsWith("/")) return path;
+
+            return `/${path}`;
+
+        },
+        paymentVariantOptions(payment) {
+
+            const method = payment?.method?.data || payment?.method || {};
+            const variants = method.supports_variants ? (method.variants || []) : [];
+
+            return variants
+                .filter(variant => variant.status !== "inactive")
+                .map(variant => ({
+                    code: variant.id,
+                    label: variant.name,
+                    data: variant
+                }));
+
+        },
+        syncPaymentVariant(payment) {
+
+            if(!payment) return;
+
+            const options = this.paymentVariantOptions(payment);
+
+            if(options.length === 0) {
+                payment.variant = null;
+                return;
+            }
+
+            const current = options.find(option => Number(option.code) === Number(payment.variant?.code));
+            payment.variant = current || options.find(option => option.data?.is_default) || options[0];
+
+        },
         resetPayments() {
-            this.payments = [{
+            const payment = {
                 uid: Date.now(),
                 method: this.defaultPaymentMethod(),
-                amount: Number(this.total.toFixed(4))
-            }];
+                variant: null,
+                amount: this.fixedNumber(this.total)
+            };
+
+            this.syncPaymentVariant(payment);
+            this.payments = [payment];
             this.showPaymentEditor = false;
         },
         syncDefaultPaymentAmount() {
             if(this.payments.length !== 1) return;
 
-            this.payments[0].amount = Number(this.total.toFixed(4));
+            this.payments[0].amount = this.fixedNumber(this.total);
         },
         addPayment(openEditor = true) {
             if(openEditor) {
                 this.showPaymentEditor = true;
             }
 
-            this.payments.push({
+            const payment = {
                 uid: Date.now() + this.payments.length,
                 method: this.paymentMethodOptions.find(method => !this.payments.some(payment => payment.method?.id === method.id)) || this.paymentMethodOptions[0] || null,
-                amount: Math.max(Number(this.paymentDifference.toFixed(4)), 0)
-            });
+                variant: null,
+                amount: Math.max(this.fixedNumber(this.paymentDifference), 0)
+            };
+
+            this.syncPaymentVariant(payment);
+            this.payments.push(payment);
         },
         removePayment(index) {
             if(this.payments.length === 1) return;
@@ -987,14 +1071,14 @@ export default {
         lineTotal(line) {
             return this.fixedNumber(Number(line.quantity || 0) * Number(line.price || 0));
         },
-        fixedNumber(value, decimals = 4) {
-            return Number(Number(value || 0).toFixed(decimals));
+        fixedNumber(value, decimals = null) {
+            return Number(Utils.fixedNumber(value || 0, decimals));
         },
         currencySign(item = null) {
             return item?.currency?.sign || this.currencies[0]?.sign || "S/";
         },
         separatorNumber(value) {
-            return Number(value || 0).toLocaleString("es-PE", {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            return Utils.separatorNumber(value || 0);
         },
         today() {
             return new Date().toISOString().slice(0, 10);
@@ -1068,7 +1152,7 @@ export default {
             return categories.length ? categories.join(", ") : "Sin categorías";
         },
         boolLabel(value) {
-            return value ? "Sí" : "No";
+            return value ? "S?" : "No";
         },
         openSaleConfirmation() {
             if(!this.cart.length) {
@@ -1136,12 +1220,14 @@ export default {
                     operation_type: tax.operation_type,
                     is_required: tax.is_required,
                     quantity: tax.quantity,
-                    base_amount: Number(tax.base_amount.toFixed(4)),
-                    amount: Number(tax.amount.toFixed(4))
+                    base_amount: this.fixedNumber(tax.base_amount),
+                    amount: this.fixedNumber(tax.amount)
                 })),
                 payments: this.payments.map(payment => ({
                     payment_method_id: payment.method?.id,
-                    amount: Number(Number(payment.amount || 0).toFixed(4)),
+                    payment_method_variant_id: payment.variant?.code || null,
+                    name: payment.variant?.label || payment.method?.label || payment.method?.name || null,
+                    amount: this.fixedNumber(payment.amount || 0),
                     reference: "POS",
                     note: null
                 }))

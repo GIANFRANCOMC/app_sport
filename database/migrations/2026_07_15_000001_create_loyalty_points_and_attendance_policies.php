@@ -25,10 +25,10 @@ return new class extends Migration {
             $table->text("description")->nullable();
             $table->enum("trigger_type", ["sale_total", "item_quantity", "subscription_sale"])->default("sale_total");
             $table->enum("apply_scope", ["all", "product", "service", "subscription", "selected_items"])->default("all");
-            $table->decimal("amount_step", 16, 4)->default(1);
-            $table->decimal("points_per_amount", 16, 4)->default(0);
-            $table->decimal("points_per_unit", 16, 4)->default(0);
-            $table->decimal("minimum_sale_total", 16, 4)->default(0);
+            $table->decimal("amount_step", 15, 3)->default(1);
+            $table->decimal("points_per_amount", 15, 3)->default(0);
+            $table->decimal("points_per_unit", 15, 3)->default(0);
+            $table->decimal("minimum_sale_total", 15, 3)->default(0);
             $table->timestamp("starts_at")->nullable();
             $table->timestamp("ends_at")->nullable();
             $table->enum("status", ["active", "inactive"])->default("active");
@@ -57,7 +57,7 @@ return new class extends Migration {
             $table->id();
             $table->unsignedBigInteger("company_id");
             $table->unsignedBigInteger("customer_id");
-            $table->decimal("points_balance", 16, 4)->default(0);
+            $table->decimal("points_balance", 15, 3)->default(0);
             $table->timestamp("created_at")->useCurrent()->nullable();
             $table->integer("created_by")->nullable();
             $table->timestamp("updated_at")->nullable();
@@ -77,8 +77,8 @@ return new class extends Migration {
             $table->unsignedBigInteger("sale_body_id")->nullable();
             $table->enum("movement_type", ["earned", "redeemed", "adjustment", "reversal"])->default("earned");
             $table->enum("basis_type", ["sale_total", "item_quantity", "manual"])->default("sale_total");
-            $table->decimal("basis_amount", 16, 4)->default(0);
-            $table->decimal("points", 16, 4);
+            $table->decimal("basis_amount", 15, 3)->default(0);
+            $table->decimal("points", 15, 3);
             $table->string("description", 500)->nullable();
             $table->timestamp("occurred_at")->useCurrent();
             $table->enum("status", ["active", "canceled"])->default("active");

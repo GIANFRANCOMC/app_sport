@@ -68,8 +68,8 @@ class Item extends Model {
         "capacity_limit" => "integer",
         "capacity_used" => "integer",
         "expires_at" => "datetime",
-        "commission_rate" => "decimal:4",
-        "commission_value" => "decimal:4",
+        "commission_rate" => "App\\Casts\\System\\ConfigurableDecimal",
+        "commission_value" => "App\\Casts\\System\\ConfigurableDecimal",
         "attendance_limit_per_day" => "integer",
         "benefits" => "array",
         "restrictions" => "array"

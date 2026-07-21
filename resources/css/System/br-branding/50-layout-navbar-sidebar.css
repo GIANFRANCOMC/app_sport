@@ -227,11 +227,11 @@ html:not(.layout-menu-collapsed) .br-layout .br-menu-brand .menu-inner .menu-ite
   color: color-mix(in srgb, var(--br-white) 62%, transparent) !important;
   letter-spacing: 0.1em;
   font-weight: 600;
-  font-size: 0.65rem !important;
+  font-size: var(--br-ui-font-size) !important;
 }
 
 .br-layout .br-menu-brand .menu-header-text.divider-text {
-  font-size: 0.58rem !important;
+  font-size: var(--br-ui-font-size) !important;
 }
 
 .br-layout .br-menu-brand .menu-inner .menu-sub .menu-item:not(.active) > .menu-link::before {
@@ -399,7 +399,7 @@ html:not(.layout-menu-collapsed) .br-layout .br-menu-brand .menu-inner .menu-ite
   width: 0.7rem;
   min-width: 0.7rem;
   margin-right: 0.44rem;
-  font-size: 0.6rem !important;
+  font-size: var(--br-ui-font-size) !important;
   color: var(--br-favorite-strong) !important;
   text-shadow: 0 0 8px color-mix(in srgb, var(--br-amber-500) 40%, transparent);
 }
@@ -757,17 +757,11 @@ html.layout-menu-collapsed:not(.layout-menu-hover) body.br-layout .br-menu-brand
 /* Paginación activa — misma familia cromática que .table > thead (sin acento celeste primario) */
 .br-layout .pagination .page-item.active .page-link,
 .br-layout .pagination li.active > a.page-link {
-  background:
-    linear-gradient(180deg, var(--br-table-thead-highlight-top) 0%, transparent 52%),
-    linear-gradient(
-      168deg,
-      var(--br-table-thead-mid-a) 0%,
-      var(--br-table-thead-mid-b) 40%,
-      var(--br-table-thead-mid-c) 100%
-    ) !important;
-  background-color: var(--br-table-thead-mid-c) !important;
+  background: var(--br-table-thead-bg) !important;
+  background-color: var(--br-table-thead-bg) !important;
+  background-image: none !important;
   /* Borde al tono del fondo (evita “doble marco” / contraste raro) */
-  border-color: var(--br-table-thead-mid-c) !important;
+  border-color: var(--br-table-thead-bg) !important;
   color: var(--br-table-thead-text) !important;
   box-shadow: inset 0 -1px 0 var(--br-table-thead-edge), var(--br-shadow-sm);
 }
@@ -1000,10 +994,10 @@ body.br-layout .form-check-input:disabled {
   overflow: auto;
   border-radius: 0.65rem;
   background: transparent;
-  border: 1px solid color-mix(in srgb, var(--br-favorite-purple) 38%, transparent);
+  border: 1px solid color-mix(in srgb, var(--br-favorite-gold) 38%, transparent);
   box-shadow:
     0 0 0 1px color-mix(in srgb, var(--br-white) 8%, transparent) inset,
-    0 2px 8px color-mix(in srgb, var(--br-favorite-purple-strong) 16%, transparent),
+    0 2px 8px color-mix(in srgb, var(--br-favorite-gold-strong) 16%, transparent),
     0 8px 22px color-mix(in srgb, var(--br-text) 10%, transparent);
   color: var(--br-secondary);
   opacity: 0;
@@ -1197,8 +1191,8 @@ body.br-layout .form-check-input:disabled {
       var(--br-favorite-strong) 28%,
       var(--br-amber-600) 44%,
       var(--br-orange) 60%,
-      var(--br-favorite-purple) 82%,
-      var(--br-favorite-purple-strong) 100%
+      var(--br-favorite-gold) 82%,
+      var(--br-favorite-gold-strong) 100%
     )
       padding-box,
     linear-gradient(
@@ -1208,22 +1202,22 @@ body.br-layout .form-check-input:disabled {
       var(--br-amber-500) 34%,
       var(--br-amber-600) 50%,
       var(--br-orange-strong) 62%,
-      var(--br-favorite-purple-muted) 78%,
-      var(--br-favorite-purple-soft) 92%,
-      var(--br-favorite-purple-strong) 100%
+      var(--br-favorite-gold-muted) 78%,
+      var(--br-favorite-gold-soft) 92%,
+      var(--br-favorite-gold-strong) 100%
     )
       border-box !important;
   background-clip: padding-box, border-box;
   background-origin: padding-box, border-box;
   box-shadow:
     0 0 0 1px color-mix(in srgb, var(--br-white) 22%, transparent),
-    0 0 0 2px color-mix(in srgb, var(--br-favorite-purple-strong) 8%, transparent),
+    0 0 0 2px color-mix(in srgb, var(--br-favorite-gold-strong) 8%, transparent),
     inset 0 0 0 1px color-mix(in srgb, var(--br-white) 8%, transparent),
     inset 0 1px 0 color-mix(in srgb, var(--br-white) 32%, transparent),
-    inset 0 -2px 8px color-mix(in srgb, var(--br-favorite-purple-shadow) 18%, transparent),
+    inset 0 -2px 8px color-mix(in srgb, var(--br-favorite-gold-shadow) 18%, transparent),
     0 1px 2px color-mix(in srgb, var(--br-black) 8%, transparent),
     0 4px 14px color-mix(in srgb, var(--br-favorite-strong) 20%, transparent),
-    0 4px 14px color-mix(in srgb, var(--br-favorite-purple-strong) 16%, transparent);
+    0 4px 14px color-mix(in srgb, var(--br-favorite-gold-strong) 16%, transparent);
   transition:
     transform 0.25s cubic-bezier(0.34, 1.15, 0.64, 1),
     box-shadow 0.25s ease;
@@ -1258,13 +1252,13 @@ body.br-layout .form-check-input:disabled {
   transform: scale(1.06);
   box-shadow:
     0 0 0 1px color-mix(in srgb, var(--br-amber-400) 35%, transparent),
-    0 0 0 2px color-mix(in srgb, var(--br-favorite-purple) 12%, transparent),
+    0 0 0 2px color-mix(in srgb, var(--br-favorite-gold) 12%, transparent),
     inset 0 0 0 1px color-mix(in srgb, var(--br-white) 12%, transparent),
     inset 0 1px 0 color-mix(in srgb, var(--br-white) 38%, transparent),
-    inset 0 -2px 8px color-mix(in srgb, var(--br-favorite-purple-shadow) 16%, transparent),
+    inset 0 -2px 8px color-mix(in srgb, var(--br-favorite-gold-shadow) 16%, transparent),
     0 3px 12px color-mix(in srgb, var(--br-black) 8%, transparent),
     0 8px 22px color-mix(in srgb, var(--br-favorite-strong) 28%, transparent),
-    0 8px 22px color-mix(in srgb, var(--br-favorite-purple-strong) 22%, transparent);
+    0 8px 22px color-mix(in srgb, var(--br-favorite-gold-strong) 22%, transparent);
 }
 
 .br-layout .br-fab-favorites__btn:hover::before {
@@ -1281,10 +1275,10 @@ body.br-layout .form-check-input:disabled {
     0 0 0 1px color-mix(in srgb, var(--br-white) 18%, transparent),
     0 0 0 2px color-mix(in srgb, var(--br-favorite-focus-shadow) 10%, transparent),
     inset 0 0 0 1px color-mix(in srgb, var(--br-black) 5%, transparent),
-    inset 0 2px 5px color-mix(in srgb, var(--br-favorite-purple-shadow) 28%, transparent),
+    inset 0 2px 5px color-mix(in srgb, var(--br-favorite-gold-shadow) 28%, transparent),
     inset 0 1px 0 color-mix(in srgb, var(--br-white) 20%, transparent),
     0 2px 8px color-mix(in srgb, var(--br-favorite-strong) 18%, transparent),
-    0 2px 8px color-mix(in srgb, var(--br-favorite-purple-strong) 14%, transparent);
+    0 2px 8px color-mix(in srgb, var(--br-favorite-gold-strong) 14%, transparent);
   transition-duration: 0.08s;
 }
 
@@ -1296,28 +1290,28 @@ body.br-layout .form-check-input:disabled {
 .br-layout .br-fab-favorites__btn[aria-expanded="true"] {
   box-shadow:
     0 0 0 1px color-mix(in srgb, var(--br-white) 26%, transparent),
-    0 0 0 2px color-mix(in srgb, var(--br-favorite-purple-strong) 8%, transparent),
+    0 0 0 2px color-mix(in srgb, var(--br-favorite-gold-strong) 8%, transparent),
     inset 0 0 0 1px color-mix(in srgb, var(--br-white) 10%, transparent),
     inset 0 1px 0 color-mix(in srgb, var(--br-white) 32%, transparent),
-    inset 0 -2px 8px color-mix(in srgb, var(--br-favorite-purple-shadow) 18%, transparent),
+    inset 0 -2px 8px color-mix(in srgb, var(--br-favorite-gold-shadow) 18%, transparent),
     0 0 0 2px color-mix(in srgb, var(--br-amber-400) 22%, transparent),
-    0 0 0 5px color-mix(in srgb, var(--br-favorite-purple) 12%, transparent),
+    0 0 0 5px color-mix(in srgb, var(--br-favorite-gold) 12%, transparent),
     0 5px 18px color-mix(in srgb, var(--br-favorite-strong) 24%, transparent),
-    0 5px 18px color-mix(in srgb, var(--br-favorite-purple-strong) 20%, transparent);
+    0 5px 18px color-mix(in srgb, var(--br-favorite-gold-strong) 20%, transparent);
 }
 
 .br-layout .br-fab-favorites__btn[aria-expanded="true"]:hover {
   transform: scale(1.06);
   box-shadow:
     0 0 0 1px color-mix(in srgb, var(--br-amber-400) 32%, transparent),
-    0 0 0 2px color-mix(in srgb, var(--br-favorite-purple) 10%, transparent),
+    0 0 0 2px color-mix(in srgb, var(--br-favorite-gold) 10%, transparent),
     inset 0 0 0 1px color-mix(in srgb, var(--br-white) 12%, transparent),
     inset 0 1px 0 color-mix(in srgb, var(--br-white) 38%, transparent),
-    inset 0 -2px 8px color-mix(in srgb, var(--br-favorite-purple-shadow) 14%, transparent),
+    inset 0 -2px 8px color-mix(in srgb, var(--br-favorite-gold-shadow) 14%, transparent),
     0 0 0 2px color-mix(in srgb, var(--br-amber-400) 28%, transparent),
-    0 0 0 5px color-mix(in srgb, var(--br-favorite-purple) 14%, transparent),
+    0 0 0 5px color-mix(in srgb, var(--br-favorite-gold) 14%, transparent),
     0 8px 22px color-mix(in srgb, var(--br-favorite-strong) 30%, transparent),
-    0 8px 22px color-mix(in srgb, var(--br-favorite-purple-strong) 24%, transparent);
+    0 8px 22px color-mix(in srgb, var(--br-favorite-gold-strong) 24%, transparent);
 }
 
 .br-layout .br-fab-favorites__btn:focus-visible {
@@ -1325,11 +1319,11 @@ body.br-layout .form-check-input:disabled {
   box-shadow:
     var(--br-focus-ring),
     0 0 0 1px color-mix(in srgb, var(--br-white) 22%, transparent),
-    0 0 0 2px color-mix(in srgb, var(--br-favorite-purple-strong) 8%, transparent),
+    0 0 0 2px color-mix(in srgb, var(--br-favorite-gold-strong) 8%, transparent),
     inset 0 0 0 1px color-mix(in srgb, var(--br-white) 8%, transparent),
     inset 0 1px 0 color-mix(in srgb, var(--br-white) 32%, transparent),
     0 4px 16px color-mix(in srgb, var(--br-favorite-strong) 24%, transparent),
-    0 4px 16px color-mix(in srgb, var(--br-favorite-purple-strong) 18%, transparent);
+    0 4px 16px color-mix(in srgb, var(--br-favorite-gold-strong) 18%, transparent);
 }
 
 .br-layout .br-fab-favorites__btn[aria-expanded="true"]:focus-visible {
@@ -1337,14 +1331,14 @@ body.br-layout .form-check-input:disabled {
   box-shadow:
     var(--br-focus-ring),
     0 0 0 1px color-mix(in srgb, var(--br-white) 26%, transparent),
-    0 0 0 2px color-mix(in srgb, var(--br-favorite-purple-strong) 8%, transparent),
+    0 0 0 2px color-mix(in srgb, var(--br-favorite-gold-strong) 8%, transparent),
     inset 0 0 0 1px color-mix(in srgb, var(--br-white) 10%, transparent),
     inset 0 1px 0 color-mix(in srgb, var(--br-white) 32%, transparent),
-    inset 0 -2px 8px color-mix(in srgb, var(--br-favorite-purple-shadow) 18%, transparent),
+    inset 0 -2px 8px color-mix(in srgb, var(--br-favorite-gold-shadow) 18%, transparent),
     0 0 0 2px color-mix(in srgb, var(--br-amber-400) 22%, transparent),
-    0 0 0 5px color-mix(in srgb, var(--br-favorite-purple) 12%, transparent),
+    0 0 0 5px color-mix(in srgb, var(--br-favorite-gold) 12%, transparent),
     0 5px 18px color-mix(in srgb, var(--br-favorite-strong) 22%, transparent),
-    0 5px 18px color-mix(in srgb, var(--br-favorite-purple-strong) 18%, transparent);
+    0 5px 18px color-mix(in srgb, var(--br-favorite-gold-strong) 18%, transparent);
 }
 
 /* Como .modal-header .btn-header-modal (custom.css): rojo var(--br-danger-bootstrap) e icono blanco, sin animación de desplazamiento */

@@ -480,9 +480,7 @@ return new class extends Migration {
             ["company_id" => 1, "code" => "DEBIT_CARD", "sunat_code" => "005", "name" => "Tarjeta de débito", "image_path" => "System/assets/img/payment-methods/debit-card.svg", "scope" => "sale", "requires_reference" => true, "is_default" => false],
             ["company_id" => 1, "code" => "CREDIT_CARD", "sunat_code" => "006", "name" => "Tarjeta de crédito", "image_path" => "System/assets/img/payment-methods/credit-card.svg", "scope" => "sale", "requires_reference" => true, "is_default" => false],
             ["company_id" => 1, "code" => "CHECK", "sunat_code" => "007", "name" => "Cheque no negociable", "image_path" => "System/assets/img/payment-methods/check.svg", "scope" => "both", "requires_reference" => true, "is_default" => false],
-            ["company_id" => 1, "code" => "DIGITAL_WALLET", "sunat_code" => null, "name" => "Billetera digital", "image_path" => "System/assets/img/payment-methods/digital-wallet.svg", "scope" => "both", "requires_reference" => true, "is_default" => false],
-            ["company_id" => 1, "code" => "YAPE", "sunat_code" => null, "name" => "Yape", "image_path" => "System/assets/img/payment-methods/yape.svg", "scope" => "both", "requires_reference" => true, "is_default" => false],
-            ["company_id" => 1, "code" => "PLIN", "sunat_code" => null, "name" => "Plin", "image_path" => "System/assets/img/payment-methods/plin.svg", "scope" => "both", "requires_reference" => true, "is_default" => false]
+            ["company_id" => 1, "code" => "DIGITAL_WALLET", "sunat_code" => null, "name" => "Billetera digital", "image_path" => "System/assets/img/payment-methods/digital-wallet.svg", "scope" => "both", "requires_reference" => true, "is_default" => false]
         ]);
 
         DB::table("company_socials_media")->insert([

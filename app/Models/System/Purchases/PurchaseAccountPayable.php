@@ -40,12 +40,12 @@ final class PurchaseAccountPayable extends Model {
     protected $casts = [
         "issue_date" => "date:Y-m-d",
         "due_date" => "date:Y-m-d",
-        "original_amount" => "decimal:4",
-        "extra_percentage" => "decimal:4",
-        "extra_amount" => "decimal:4",
-        "total_amount" => "decimal:4",
-        "paid_amount" => "decimal:4",
-        "pending_amount" => "decimal:4",
+        "original_amount" => "App\\Casts\\System\\ConfigurableDecimal",
+        "extra_percentage" => "App\\Casts\\System\\ConfigurableDecimal",
+        "extra_amount" => "App\\Casts\\System\\ConfigurableDecimal",
+        "total_amount" => "App\\Casts\\System\\ConfigurableDecimal",
+        "paid_amount" => "App\\Casts\\System\\ConfigurableDecimal",
+        "pending_amount" => "App\\Casts\\System\\ConfigurableDecimal",
         "canceled_at" => "datetime"
     ];
 

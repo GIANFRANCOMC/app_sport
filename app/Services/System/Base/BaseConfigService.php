@@ -175,9 +175,9 @@ abstract class BaseConfigService {
         return self::data([
             "forms" => [
                 "inputs" => [
-                    "round" => max(0, min(8, (int) ($numeric["decimal_precision"] ?? 4))),
+                    "round" => max(0, min(8, (int) ($numeric["decimal_precision"] ?? 3))),
                     "minValue" => (float) ($numeric["default_min_value"] ?? 0),
-                    "maxValue" => (float) ($numeric["default_max_value"] ?? 999999999999.9999),
+                    "maxValue" => (float) ($numeric["default_max_value"] ?? 999999999999.999),
                     "maxSize" => max(1, (int) ($numeric["max_file_size_kb"] ?? 4096))
                 ]
             ]

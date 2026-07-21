@@ -29,9 +29,9 @@ final class RecipeWasteRecord extends Model {
     ];
 
     protected $casts = [
-        "quantity" => "decimal:4",
-        "unit_cost" => "decimal:4",
-        "total_cost" => "decimal:4",
+        "quantity" => "App\\Casts\\System\\ConfigurableDecimal",
+        "unit_cost" => "App\\Casts\\System\\ConfigurableDecimal",
+        "total_cost" => "App\\Casts\\System\\ConfigurableDecimal",
         "occurred_at" => "datetime",
         "created_at" => "datetime"
     ];

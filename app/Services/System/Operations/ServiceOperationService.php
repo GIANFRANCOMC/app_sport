@@ -892,12 +892,12 @@ final class ServiceOperationService {
                 "open_sessions" => $sessions->whereIn("status", [self::STATUS_PENDING, self::STATUS_IN_PROGRESS])->count(),
                 "completed_sessions" => $completed->count(),
                 "canceled_sessions" => $sessions->where("status", self::STATUS_CANCELED)->count(),
-                "average_duration_minutes" => round((float) $completed->avg("duration_minutes"), 2),
+                "average_duration_minutes" => Utilities::round((float) $completed->avg("duration_minutes"), null, $companyId),
                 "sla_late_sessions" => $late->count(),
                 "sla_compliance_rate" => $withSla->count()
-                    ? round((($withSla->count() - $late->count()) / $withSla->count()) * 100, 2)
+                    ? Utilities::round((($withSla->count() - $late->count()) / $withSla->count()) * 100, null, $companyId)
                     : null,
-                "commission_total" => round($commissionTotal, 4)
+                "commission_total" => Utilities::round($commissionTotal, null, $companyId)
             ],
             "by_branch" => self::reportGroup($sessions, "branch", "Sucursal"),
             "by_station" => self::reportGroup($sessions, "station", "Estación"),
@@ -1083,7 +1083,7 @@ final class ServiceOperationService {
 
     private static function percentage(mixed $value): float {
 
-        return min(95, max(5, round((float) $value, 4)));
+        return min(95, max(5, Utilities::round((float) $value)));
 
     }
 
@@ -1107,7 +1107,7 @@ final class ServiceOperationService {
                     "name" => $related?->name ?? "Sin {$fallback}",
                     "total_sessions" => $records->count(),
                     "completed_sessions" => $completed->count(),
-                    "average_duration_minutes" => round((float) $completed->avg("duration_minutes"), 2)
+                    "average_duration_minutes" => Utilities::round((float) $completed->avg("duration_minutes"))
                 ];
             })
             ->values()
@@ -1130,10 +1130,10 @@ final class ServiceOperationService {
                 return [
                     "id" => $first?->item_id,
                     "name" => $first?->name ?? "Detalle sin nombre",
-                    "quantity" => round((float) $records->sum("quantity"), 4),
-                    "total" => round((float) $records->sum(fn(ServiceSessionItem $detail) => (float) $detail->quantity * (float) $detail->unit_price), 4),
-                    "commission_total" => round($commission, 4),
-                    "average_duration_minutes" => round((float) $records->avg("duration_minutes"), 2)
+                    "quantity" => Utilities::round((float) $records->sum("quantity")),
+                    "total" => Utilities::round((float) $records->sum(fn(ServiceSessionItem $detail) => (float) $detail->quantity * (float) $detail->unit_price)),
+                    "commission_total" => Utilities::round($commission),
+                    "average_duration_minutes" => Utilities::round((float) $records->avg("duration_minutes"))
                 ];
             })
             ->sortByDesc("quantity")

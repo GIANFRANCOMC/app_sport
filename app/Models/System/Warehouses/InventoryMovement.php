@@ -36,13 +36,13 @@ class InventoryMovement extends Model {
     ];
 
     protected $casts = [
-        "quantity_before" => "decimal:4",
-        "quantity_change" => "decimal:4",
-        "quantity_after"  => "decimal:4",
-        "unit_cost"       => "decimal:4",
-        "value_before"    => "decimal:4",
-        "value_change"    => "decimal:4",
-        "value_after"     => "decimal:4",
+        "quantity_before" => "App\\Casts\\System\\ConfigurableDecimal",
+        "quantity_change" => "App\\Casts\\System\\ConfigurableDecimal",
+        "quantity_after"  => "App\\Casts\\System\\ConfigurableDecimal",
+        "unit_cost"       => "App\\Casts\\System\\ConfigurableDecimal",
+        "value_before"    => "App\\Casts\\System\\ConfigurableDecimal",
+        "value_change"    => "App\\Casts\\System\\ConfigurableDecimal",
+        "value_after"     => "App\\Casts\\System\\ConfigurableDecimal",
         "metadata"        => "array",
         "created_at"      => "datetime"
     ];

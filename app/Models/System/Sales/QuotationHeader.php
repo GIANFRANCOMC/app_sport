@@ -42,9 +42,9 @@ final class QuotationHeader extends Model {
     protected $casts = [
         "issue_date" => "date:Y-m-d",
         "valid_until" => "date:Y-m-d",
-        "subtotal" => "decimal:4",
-        "tax" => "decimal:4",
-        "total" => "decimal:4",
+        "subtotal" => "App\\Casts\\System\\ConfigurableDecimal",
+        "tax" => "App\\Casts\\System\\ConfigurableDecimal",
+        "total" => "App\\Casts\\System\\ConfigurableDecimal",
         "converted_at" => "datetime",
         "canceled_at" => "datetime"
     ];

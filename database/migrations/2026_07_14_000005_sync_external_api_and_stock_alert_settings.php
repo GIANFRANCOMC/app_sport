@@ -56,9 +56,9 @@ return new class extends Migration {
             );
 
             foreach([
-                ["decimal_precision", "4", "Cantidad de decimales permitidos y usados para redondear montos, cantidades, costos, tributos, pagos e inventario en validaciones y formularios.", "integer"],
+                ["decimal_precision", "3", "Cantidad de decimales permitidos y usados para redondear montos, cantidades, costos, tributos, pagos e inventario en validaciones y formularios.", "integer"],
                 ["default_min_value", "0", "Valor minimo operativo usado por defecto en validaciones numericas cuando el campo no define una regla mas especifica.", "decimal"],
-                ["default_max_value", "999999999999.9999", "Valor maximo operativo usado por defecto en validaciones numericas de cantidades, precios, totales, pagos, costos y saldos.", "decimal"],
+                ["default_max_value", "999999999999.999", "Valor maximo operativo usado por defecto en validaciones numericas de cantidades, precios, totales, pagos, costos y saldos.", "decimal"],
                 ["max_file_size_kb", "4096", "Tamanio maximo por defecto, en KB, para archivos validados desde formularios de la empresa.", "integer"]
             ] as [$key, $value, $description, $valueType]) {
 

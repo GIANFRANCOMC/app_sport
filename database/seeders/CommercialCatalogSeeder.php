@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
+use App\Helpers\System\Utilities;
 use App\Models\System\Catalogs\{Brand, Category, CategoryItem, Item};
 use App\Models\System\Warehouses\{InventoryMovement, Warehouse, WarehouseItem};
 
@@ -293,7 +294,7 @@ class CommercialCatalogSeeder extends Seeder {
             $quantity = (float) ($inventory["quantity"] ?? 0);
             $minimumStock = (float) ($inventory["minimum_stock"] ?? 0);
             $averageCost = (float) ($inventory["average_cost"] ?? 0);
-            $inventoryValue = round($quantity * $averageCost, 4);
+            $inventoryValue = Utilities::round($quantity * $averageCost, null, self::COMPANY_ID);
 
             WarehouseItem::updateOrCreate(
                 [

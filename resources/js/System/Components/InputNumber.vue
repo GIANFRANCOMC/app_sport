@@ -53,7 +53,7 @@
 
 <script>
 import { generalConfig } from "../Helpers/Constants.js";
-import { isDefined, isNumber, separatorNumber } from "../Helpers/Utils.js";
+import { isDefined, isNumber, resolveDecimals, separatorNumber } from "../Helpers/Utils.js";
 
 export default {
     name: "InputNumber",
@@ -125,7 +125,7 @@ export default {
         decimals: {
             type: [String, Number],
             required: false,
-            default: generalConfig.forms.inputs.round
+            default: null
         },
         placeholder: {
             type: String,
@@ -199,7 +199,12 @@ export default {
 
             }
 
-            return separatorNumber(this.modelValue);
+            return separatorNumber(this.modelValue, this.decimalPlaces);
+
+        },
+        decimalPlaces() {
+
+            return resolveDecimals(this.decimals);
 
         },
         textBottom() {
@@ -265,7 +270,7 @@ export default {
 
             // Validate numeric format
             const hasFormattedNumber = this.hasNegative ? /^-?\d+(\.\d+)?$/.test(valueString) : /^\d+(\.\d+)?$/.test(valueString);
-            const hasDecimalInitNumber = this.decimals > 0 && (this.hasNegative ? /^-?\d+\.$/.test(valueString) : /^\d+\.$/.test(valueString));
+            const hasDecimalInitNumber = this.decimalPlaces > 0 && (this.hasNegative ? /^-?\d+\.$/.test(valueString) : /^\d+\.$/.test(valueString));
 
             if(hasFormattedNumber || hasDecimalInitNumber) {
 
@@ -292,14 +297,14 @@ export default {
 
                 // Validate and format decimals
                 const regexDecimals = this.hasNegative ?
-                    (this.decimals > 0 ? new RegExp(`^-?\\d+(\\.\\d{1,${this.decimals}})?$`) : /^-?\d+$/) :
-                    (this.decimals > 0 ? new RegExp(`^\\d+(\\.\\d{1,${this.decimals}})?$`) : /^\d+$/);
+                    (this.decimalPlaces > 0 ? new RegExp(`^-?\\d+(\\.\\d{1,${this.decimalPlaces}})?$`) : /^-?\d+$/) :
+                    (this.decimalPlaces > 0 ? new RegExp(`^\\d+(\\.\\d{1,${this.decimalPlaces}})?$`) : /^\d+$/);
 
                 const hasFormattedDecimal = regexDecimals.test(valueString);
 
                 // If has allowed decimals or is typing decimals, keep the value
                 // Otherwise, apply decimal formatting
-                if(this.decimals > 0) {
+                if(this.decimalPlaces > 0) {
 
                     if(hasFormattedDecimal || hasDecimalInitNumber) {
 
@@ -307,7 +312,7 @@ export default {
 
                     }else {
 
-                        this.emitValue({reset: false, result: Number(numericValue.toFixed(this.decimals))});
+                        this.emitValue({reset: false, result: Number(numericValue.toFixed(this.decimalPlaces))});
 
                     }
 
@@ -374,7 +379,7 @@ export default {
 
             }
 
-            if(this.decimals > 0) {
+            if(this.decimalPlaces > 0) {
 
                 allowedKeys.push(".");
 

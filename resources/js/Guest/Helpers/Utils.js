@@ -142,15 +142,38 @@ export function calculateTotal({item}) {
 
 export function fixedNumber(value, decimals = null) {
 
-    return Number(value).toFixed(decimals ?? generalConfig.forms.inputs.round);
+    return normalizeNumber(value).toFixed(resolveDecimals(decimals));
 
 }
 
-export function separatorNumber(value) {
+export function separatorNumber(value, decimals = null) {
 
-    let number = value == "" ? 0 : value;
+    const decimalPlaces = resolveDecimals(decimals);
 
-    return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    return new Intl.NumberFormat("en-US", {
+        minimumFractionDigits: decimalPlaces,
+        maximumFractionDigits: decimalPlaces
+    }).format(normalizeNumber(value));
+
+}
+
+export function resolveDecimals(decimals = null) {
+
+    const value = decimals ?? generalConfig.forms.inputs.round;
+    const parsed = Number(value);
+
+    return Number.isFinite(parsed) ? Math.max(0, Math.min(8, Math.trunc(parsed))) : 3;
+
+}
+
+export function normalizeNumber(value) {
+
+    if(value === null || value === undefined || value === "") return 0;
+
+    const normalized = typeof value === "string" ? value.trim().replace(/,/g, "") : value;
+    const parsed = Number(normalized);
+
+    return Number.isFinite(parsed) ? parsed : 0;
 
 }
 

@@ -5,6 +5,8 @@
  * Colores: sólo tokens `--br-*`.
  * ------------------------------------------------------------------------- */
 body.br-layout {
+  --br-ui-font-size: 0.705rem;
+  --br-ui-line-height: 1.25;
   --br-sidebar-width: 13.55rem;
   --br-sidebar-collapsed-width: 4.25rem;
   --br-sidebar-profile-top-padding: 0.82rem;
@@ -91,7 +93,7 @@ body.br-layout ::placeholder {
   box-sizing: border-box;
   padding: 0.31rem 0.44rem;
   border-radius: var(--br-radius-sm);
-  font-size: 0.72rem;
+  font-size: var(--br-ui-font-size);
   font-weight: 600;
   line-height: 1.18;
   letter-spacing: 0;
@@ -101,7 +103,7 @@ body.br-layout ::placeholder {
 .br-layout .br-menu-brand.menu-vertical .menu-inner > .menu-item > .menu-link.fw-semibold {
   min-height: 1.72rem;
   padding: 0.28rem 0.48rem;
-  font-size: 0.705rem;
+  font-size: var(--br-ui-font-size);
   font-weight: 650;
 }
 
@@ -183,7 +185,7 @@ body.br-layout ::placeholder {
   padding-right: 0.42rem !important;
   padding-bottom: 0 !important;
   padding-left: 0.84rem !important;
-  font-size: 0.685rem !important;
+  font-size: var(--br-ui-font-size) !important;
   font-weight: 540 !important;
   line-height: 1 !important;
 }
@@ -239,7 +241,7 @@ body.br-layout ::placeholder {
 
 .br-layout .br-menu-brand .menu-header-text,
 .br-layout .br-menu-brand .menu-header-text.divider-text {
-  font-size: 0.56rem;
+  font-size: var(--br-ui-font-size);
   letter-spacing: 0.075em;
 }
 
@@ -377,7 +379,7 @@ html.layout-menu-collapsed:not(.layout-menu-hover) body.br-layout .br-menu-brand
   place-items: center !important;
   width: 100% !important;
   height: 100% !important;
-  font-size: 0.72rem !important;
+  font-size: var(--br-ui-font-size) !important;
   line-height: 1 !important;
 }
 
@@ -410,7 +412,7 @@ html.layout-menu-collapsed:not(.layout-menu-hover) body.br-layout .br-menu-brand
   opacity: 1 !important;
   width: auto !important;
   color: color-mix(in srgb, var(--br-white) 62%, transparent) !important;
-  font-size: 0.56rem !important;
+  font-size: var(--br-ui-font-size) !important;
   letter-spacing: 0.075em !important;
   line-height: 1 !important;
 }
@@ -614,7 +616,7 @@ html.layout-menu-collapsed:not(.layout-menu-hover) body.br-layout .br-menu-brand
 }
 
 .br-breadcrumb__list {
-  font-size: 0.7rem;
+  font-size: var(--br-ui-font-size);
 }
 
 /* -------------------------------------------------------------------------
@@ -686,7 +688,7 @@ html.layout-menu-collapsed:not(.layout-menu-hover) body.br-layout .br-menu-brand
 .br-layout .character-counter,
 .br-layout .counter-number {
   color: color-mix(in srgb, var(--br-secondary) 70%, var(--br-text-muted));
-  font-size: 0.68rem;
+  font-size: var(--br-ui-font-size);
   font-weight: 700;
 }
 
@@ -710,7 +712,7 @@ html.layout-menu-collapsed:not(.layout-menu-hover) body.br-layout .br-menu-brand
 
 .br-layout .form-check-label {
   color: var(--br-text);
-  font-size: 0.78rem;
+  font-size: var(--br-ui-font-size);
   line-height: 1.25;
 }
 
@@ -723,7 +725,7 @@ html.layout-menu-collapsed:not(.layout-menu-hover) body.br-layout .br-menu-brand
 .br-layout .v-select .vs__selected,
 .br-layout .select2-container--default .select2-selection__rendered {
   color: var(--br-text);
-  font-size: 0.82rem;
+  font-size: var(--br-ui-font-size);
   line-height: 1.25;
 }
 
@@ -734,7 +736,7 @@ html.layout-menu-collapsed:not(.layout-menu-hover) body.br-layout .br-menu-brand
   border-radius: 999px;
   background: color-mix(in srgb, var(--br-primary-soft) 78%, var(--br-white));
   color: var(--br-secondary);
-  font-size: 0.72rem;
+  font-size: var(--br-ui-font-size);
   font-weight: 700;
 }
 
@@ -901,7 +903,7 @@ body > .vs__dropdown-menu,
 .br-layout .alert {
   padding: 0.62rem 0.78rem;
   border-radius: var(--br-radius);
-  font-size: 0.82rem;
+  font-size: var(--br-ui-font-size);
   line-height: 1.35;
 }
 
@@ -943,19 +945,19 @@ body > .vs__dropdown-menu,
 .br-pos .br-pos-category {
   min-height: 2.55rem;
   border-radius: var(--br-radius);
-  font-size: 0.76rem;
+  font-size: var(--br-ui-font-size);
   box-shadow: 0 2px 6px color-mix(in srgb, var(--br-secondary) 6%, transparent);
 }
 
 .br-pos .br-pos-category strong {
-  font-size: 0.78rem;
+  font-size: var(--br-ui-font-size);
   letter-spacing: 0.01em;
 }
 
 .br-pos .br-pos-category__count {
   min-width: 1.25rem;
   height: 1.25rem;
-  font-size: 0.66rem;
+  font-size: var(--br-ui-font-size);
 }
 
 .br-pos-product {

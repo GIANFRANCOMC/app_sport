@@ -225,23 +225,23 @@ final class RecipeService {
 
         $yield = max(0.0001, (float) $recipe->yield_quantity);
         $recipeWasteFactor = 1 + (max(0, (float) $recipe->waste_percentage) / 100);
-        $base = self::costComponents($recipe->components, $costs, $recipeWasteFactor / $yield);
+        $base = self::costComponents($recipe->components, $costs, $recipeWasteFactor / $yield, $companyId);
         $options = $recipe->options->map(fn($option) => [
             "id" => $option->id,
             "name" => $option->name,
-            "cost" => self::costComponents($option->components, $costs, $recipeWasteFactor)["total"]
+            "cost" => self::costComponents($option->components, $costs, $recipeWasteFactor, $companyId)["total"]
         ])->values();
         $toppings = $recipe->dishToppings->map(fn($link) => [
             "id" => $link->id,
             "name" => $link->topping?->name,
-            "cost" => self::costComponents($link->topping?->components ?? collect(), $costs, $recipeWasteFactor)["total"]
+            "cost" => self::costComponents($link->topping?->components ?? collect(), $costs, $recipeWasteFactor, $companyId)["total"]
         ])->values();
 
         return [
             "recipe_id" => $recipe->id,
             "item" => $recipe->item,
             "warehouse" => $warehouse,
-            "yield_quantity" => round($yield, 4),
+            "yield_quantity" => Utilities::round($yield, null, $companyId),
             "base_components" => $base["components"],
             "base_cost" => $base["total"],
             "option_costs" => $options,
@@ -439,27 +439,27 @@ final class RecipeService {
 
     }
 
-    private static function costComponents($components, $costs, float $multiplier): array {
+    private static function costComponents($components, $costs, float $multiplier, int $companyId): array {
 
-        $rows = collect($components)->map(function($component) use($costs, $multiplier) {
+        $rows = collect($components)->map(function($component) use($costs, $multiplier, $companyId) {
 
             $wasteFactor = 1 + (max(0, (float) $component->waste_percentage) / 100);
-            $quantity = round((float) $component->quantity * $multiplier * $wasteFactor, 4);
-            $unitCost = round((float) ($costs->get($component->item_id) ?? 0), 4);
+            $quantity = Utilities::round((float) $component->quantity * $multiplier * $wasteFactor, null, $companyId);
+            $unitCost = Utilities::round((float) ($costs->get($component->item_id) ?? 0), null, $companyId);
 
             return [
                 "item_id" => (int) $component->item_id,
                 "item" => $component->item,
                 "quantity_with_waste" => $quantity,
                 "average_unit_cost" => $unitCost,
-                "cost" => round($quantity * $unitCost, 4)
+                "cost" => Utilities::round($quantity * $unitCost, null, $companyId)
             ];
 
         })->values();
 
         return [
             "components" => $rows,
-            "total" => round((float) $rows->sum("cost"), 4)
+            "total" => Utilities::round((float) $rows->sum("cost"), null, $companyId)
         ];
 
     }

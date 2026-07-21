@@ -55,14 +55,14 @@ final class PurchaseHeader extends Model {
         "expected_date" => "date:Y-m-d",
         "due_date" => "date:Y-m-d",
         "approved_at" => "datetime",
-        "subtotal" => "decimal:4",
-        "tax" => "decimal:4",
-        "installment_extra_percentage" => "decimal:4",
-        "installment_extra_amount" => "decimal:4",
-        "expense_total" => "decimal:4",
-        "total" => "decimal:4",
-        "paid_amount" => "decimal:4",
-        "balance_due" => "decimal:4",
+        "subtotal" => "App\\Casts\\System\\ConfigurableDecimal",
+        "tax" => "App\\Casts\\System\\ConfigurableDecimal",
+        "installment_extra_percentage" => "App\\Casts\\System\\ConfigurableDecimal",
+        "installment_extra_amount" => "App\\Casts\\System\\ConfigurableDecimal",
+        "expense_total" => "App\\Casts\\System\\ConfigurableDecimal",
+        "total" => "App\\Casts\\System\\ConfigurableDecimal",
+        "paid_amount" => "App\\Casts\\System\\ConfigurableDecimal",
+        "balance_due" => "App\\Casts\\System\\ConfigurableDecimal",
         "canceled_at" => "datetime"
     ];
 
@@ -165,7 +165,9 @@ final class PurchaseHeader extends Model {
         $ordered = (float) $this->items->sum("quantity");
         $received = (float) $this->items->sum("received_quantity");
 
-        return $ordered > 0 ? round(($received / $ordered) * 100, 2) : 0;
+        return $ordered > 0
+            ? Utilities::round(($received / $ordered) * 100, null, (int) ($this->attributes["company_id"] ?? 0))
+            : 0;
 
     }
 

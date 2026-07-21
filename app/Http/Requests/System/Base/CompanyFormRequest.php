@@ -65,7 +65,7 @@ abstract class CompanyFormRequest extends FormRequest {
 
     protected function decimalPrecision(): int {
 
-        $precision = (int) ($this->numericValidationSettings()["decimal_precision"] ?? 4);
+        $precision = (int) ($this->numericValidationSettings()["decimal_precision"] ?? 3);
 
         return max(0, min(8, $precision));
 
@@ -79,7 +79,7 @@ abstract class CompanyFormRequest extends FormRequest {
 
     protected function numericMaxValue(): float {
 
-        return (float) ($this->numericValidationSettings()["default_max_value"] ?? 999999999999.9999);
+        return (float) ($this->numericValidationSettings()["default_max_value"] ?? 999999999999.999);
 
     }
 

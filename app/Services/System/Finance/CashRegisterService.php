@@ -172,12 +172,12 @@ final class CashRegisterService {
                                ->when($filters["payment_method_id"] ?? null, fn($query, $paymentMethodId) => $query->where("payment_method_id", $paymentMethodId))
                                ->groupBy("payment_method_id")
                                ->get()
-                               ->map(function($row) {
+                               ->map(function($row) use($companyId) {
 
                                    return [
                                        "payment_method_id" => $row->payment_method_id,
                                        "payment_method" => $row->paymentMethod,
-                                       "amount" => round((float) $row->amount, 4)
+                                       "amount" => Utilities::round((float) $row->amount, null, $companyId)
                                    ];
 
                                })
@@ -185,29 +185,29 @@ final class CashRegisterService {
 
         $paymentMethodId = $filters["payment_method_id"] ?? null;
         $expected = $paymentMethodId
-            ? round((float) CashMovement::query()
+            ? Utilities::round((float) CashMovement::query()
                 ->where("company_id", $companyId)
                 ->whereIn("cash_session_id", $sessionIds)
                 ->where("payment_method_id", $paymentMethodId)
                 ->where("status", "active")
-                ->sum("amount"), 4)
-            : round((float) $sessions->sum("expected_amount"), 4);
+                ->sum("amount"), null, $companyId)
+            : Utilities::round((float) $sessions->sum("expected_amount"), null, $companyId);
         $counted = $paymentMethodId
-            ? round((float) CashSessionPayment::query()
+            ? Utilities::round((float) CashSessionPayment::query()
                 ->where("company_id", $companyId)
                 ->whereIn("cash_session_id", $sessionIds)
                 ->where("payment_method_id", $paymentMethodId)
-                ->sum("counted_amount"), 4)
-            : round((float) $sessions->sum("counted_amount"), 4);
+                ->sum("counted_amount"), null, $companyId)
+            : Utilities::round((float) $sessions->sum("counted_amount"), null, $companyId);
 
         return [
             "sessions" => $sessions,
             "payments" => $payments,
             "totals" => [
-                "opening" => $paymentMethodId ? 0 : round((float) $sessions->sum("opening_amount"), 4),
+                "opening" => $paymentMethodId ? 0 : Utilities::round((float) $sessions->sum("opening_amount"), null, $companyId),
                 "expected" => $expected,
                 "counted" => $counted,
-                "difference" => round($counted - $expected, 4)
+                "difference" => Utilities::round($counted - $expected, null, $companyId)
             ]
         ];
 
@@ -237,7 +237,7 @@ final class CashRegisterService {
 
             }
 
-            $openingAmount = round((float) ($data["opening_amount"] ?? 0), 4);
+            $openingAmount = Utilities::round((float) ($data["opening_amount"] ?? 0), null, $companyId);
 
             $session = CashSession::create([
                 "company_id" => $companyId,
@@ -316,32 +316,32 @@ final class CashRegisterService {
 
             }
 
-            $expectedAmount = round((float) CashMovement::query()
+            $expectedAmount = Utilities::round((float) CashMovement::query()
                                                         ->where("company_id", $companyId)
                                                         ->where("cash_session_id", $session->id)
                                                         ->where("status", "active")
-                                                        ->sum("amount"), 4);
+                                                        ->sum("amount"), null, $companyId);
 
             $countedPayments = collect($data["payments"] ?? [])
-                               ->map(function($payment) {
+                               ->map(function($payment) use($companyId) {
 
                                    return [
                                        "payment_method_id" => $payment["payment_method_id"] ?? null,
-                                       "counted_amount" => round((float) ($payment["counted_amount"] ?? 0), 4)
+                                        "counted_amount" => Utilities::round((float) ($payment["counted_amount"] ?? 0), null, $companyId)
                                    ];
 
                                });
 
             $countedAmount = $countedPayments->isNotEmpty()
-                ? round((float) $countedPayments->sum("counted_amount"), 4)
-                : round((float) ($data["counted_amount"] ?? 0), 4);
+                ? Utilities::round((float) $countedPayments->sum("counted_amount"), null, $companyId)
+                : Utilities::round((float) ($data["counted_amount"] ?? 0), null, $companyId);
 
             $session->update([
                 "closed_by" => $userId,
                 "closed_at" => Carbon::now(),
                 "expected_amount" => $expectedAmount,
                 "counted_amount" => $countedAmount,
-                "difference_amount" => round($countedAmount - $expectedAmount, 4),
+                "difference_amount" => Utilities::round($countedAmount - $expectedAmount, null, $companyId),
                 "observation" => $data["observation"] ?? $session->observation,
                 "status" => "closed",
                 "updated_by" => $userId
@@ -363,7 +363,7 @@ final class CashRegisterService {
                     "payment_method_name" => $paymentMethod?->name ?? "Efectivo / apertura",
                     "expected_amount" => $expectedByMethod,
                     "counted_amount" => $payment["counted_amount"],
-                    "difference_amount" => round($payment["counted_amount"] - $expectedByMethod, 4),
+                    "difference_amount" => Utilities::round($payment["counted_amount"] - $expectedByMethod, null, $companyId),
                     "created_by" => $userId
                 ]);
 
@@ -413,7 +413,7 @@ final class CashRegisterService {
             $this->assertRegisterAccess($companyId, $userId, (int) $session->cash_register_id);
 
             $movementType = (string) $data["movement_type"];
-            $amount = round((float) $data["amount"], 4);
+            $amount = Utilities::round((float) $data["amount"], null, $companyId);
 
             if(in_array($movementType, ["expense"], true)) {
 
@@ -550,20 +550,20 @@ final class CashRegisterService {
             "branch" => $register->branch,
             "open_session" => $openSession,
             "is_open" => $openSession !== null,
-            "current_amount" => $openSession ? round((float) $openSession->expected_amount, 4) : 0
+            "current_amount" => $openSession ? Utilities::round((float) $openSession->expected_amount, null, (int) $register->company_id) : 0
         ];
 
     }
 
     private function expectedByPaymentMethod(int $companyId, int $sessionId, ?int $paymentMethodId): float {
 
-        return round((float) CashMovement::query()
+        return Utilities::round((float) CashMovement::query()
                                          ->where("company_id", $companyId)
                                          ->where("cash_session_id", $sessionId)
                                          ->where("status", "active")
                                          ->when($paymentMethodId === null, fn($query) => $query->whereNull("payment_method_id"))
                                          ->when($paymentMethodId !== null, fn($query) => $query->where("payment_method_id", $paymentMethodId))
-                                         ->sum("amount"), 2);
+                                         ->sum("amount"), null, $companyId);
 
     }
 
@@ -602,9 +602,9 @@ final class CashRegisterService {
                 ->where("item_id", $itemId)
                 ->first();
 
-            $systemQuantity = round((float) ($warehouseItem?->quantity ?? 0), 4);
-            $countedQuantity = round((float) ($count["counted_quantity"] ?? $systemQuantity), 4);
-            $difference = round($countedQuantity - $systemQuantity, 4);
+            $systemQuantity = Utilities::round((float) ($warehouseItem?->quantity ?? 0), null, $companyId);
+            $countedQuantity = Utilities::round((float) ($count["counted_quantity"] ?? $systemQuantity), null, $companyId);
+            $difference = Utilities::round($countedQuantity - $systemQuantity, null, $companyId);
             $movement = null;
 
             if(abs($difference) >= 0.00001) {

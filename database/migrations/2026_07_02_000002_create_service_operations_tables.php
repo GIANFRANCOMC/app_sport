@@ -39,8 +39,8 @@ return new class extends Migration {
             $table->string("name", 150);
             $table->string("station_type", 30)->default("table");
             $table->unsignedSmallInteger("capacity")->default(1);
-            $table->decimal("position_x", 7, 4)->default(10);
-            $table->decimal("position_y", 7, 4)->default(15);
+            $table->decimal("position_x", 6, 3)->default(10);
+            $table->decimal("position_y", 6, 3)->default(15);
             $table->string("color", 20)->default("#2899e5");
             $table->string("shape", 20)->default("round");
             $table->string("description", 500)->nullable();
@@ -106,8 +106,8 @@ return new class extends Migration {
             $table->unsignedBigInteger("assigned_user_id")->nullable();
             $table->string("name", 255);
             $table->string("item_type", 30);
-            $table->decimal("quantity", 16, 4)->default(1);
-            $table->decimal("unit_price", 16, 4)->default(0);
+            $table->decimal("quantity", 15, 3)->default(1);
+            $table->decimal("unit_price", 15, 3)->default(0);
             $table->string("status", 20)->default("pending");
             $table->dateTime("started_at")->nullable();
             $table->dateTime("ended_at")->nullable();

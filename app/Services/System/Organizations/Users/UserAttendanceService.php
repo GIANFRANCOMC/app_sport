@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\System\Organizations\Users;
 
+use App\Helpers\System\Utilities;
 use App\Models\System\Organizations\{
     Branch,
     User,
@@ -429,13 +430,13 @@ final class UserAttendanceService {
             "week_start" => $start->toDateString(),
             "week_end" => $end->toDateString(),
             "total_minutes" => $totalMinutes,
-            "total_hours" => round($totalMinutes / 60, 2),
+            "total_hours" => Utilities::round($totalMinutes / 60, null, $companyId),
             "days" => $records
                 ->groupBy(fn(UserAttendance $attendance) => $attendance->work_date->toDateString())
                 ->map(fn($dayRecords, $date) => [
                     "date" => $date,
                     "worked_minutes" => (int) $dayRecords->sum("worked_minutes"),
-                    "worked_hours" => round(((int) $dayRecords->sum("worked_minutes")) / 60, 2)
+                    "worked_hours" => Utilities::round(((int) $dayRecords->sum("worked_minutes")) / 60, null, $companyId)
                 ])
                 ->values()
                 ->all()

@@ -28,7 +28,7 @@ final class PurchasePayment extends Model {
     ];
 
     protected $casts = [
-        "amount" => "decimal:4"
+        "amount" => "App\\Casts\\System\\ConfigurableDecimal"
     ];
 
     public function paymentMethod() {

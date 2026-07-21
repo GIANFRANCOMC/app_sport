@@ -30,7 +30,7 @@ final class PurchasePayablePayment extends Model {
 
     protected $casts = [
         "paid_at" => "datetime",
-        "amount" => "decimal:4"
+        "amount" => "App\\Casts\\System\\ConfigurableDecimal"
     ];
 
     public function accountPayable(): BelongsTo {

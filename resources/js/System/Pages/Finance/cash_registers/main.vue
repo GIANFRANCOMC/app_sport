@@ -990,8 +990,7 @@ export default {
             window.bootstrap.Modal.getOrCreateInstance(element).hide();
         },
         separatorNumber(value) {
-            const number = Number(value || 0);
-            return number.toLocaleString("es-PE", {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            return Utils.separatorNumber(value || 0);
         },
         formatDateTime(value) {
             if(!value) return "-";

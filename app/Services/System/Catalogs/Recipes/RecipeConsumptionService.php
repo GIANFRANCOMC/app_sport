@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\System\Catalogs\Recipes;
 
+use App\Helpers\System\Utilities;
 use App\Models\System\Catalogs\{RecipeDish, RecipeDishOption, RecipeDishTopping};
 use App\Models\System\Sales\SaleBody;
 use App\Models\System\Warehouses\Warehouse;
@@ -87,7 +88,7 @@ final class RecipeConsumptionService {
                 "movement_type" => InventoryMovementService::TYPE_EXIT,
                 "origin_type" => InventoryMovementService::ORIGIN_RECIPE_SALE,
                 "origin_id" => $saleBody->id,
-                "quantity" => round($quantity, 4),
+                "quantity" => Utilities::round($quantity, null, $companyId),
                 "reason" => "Consumo de insumos por venta de receta.",
                 "allow_negative" => $allowNegative,
                 "metadata" => [

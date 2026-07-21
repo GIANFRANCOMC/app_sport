@@ -413,7 +413,7 @@ Métodos de pago generales configurables por empresa y alcance. Campos: `company
 
 Relaciones: pertenece a `companies` y tiene variantes activas en `payment_method_variants`. `sunat_code` conserva la referencia SUNAT cuando exista y `image_path` almacena la ruta pública generada por backend dentro del tenant. `scope` define si el método aplica a ventas, compras o ambos.
 
-Nota vigente: Yape, Plin, Agora PAY, Bim e IzipayYA no son métodos generales; son variantes de `Billetera digital`.
+Nota vigente: `YAPE`, `PLIN`, `AGORA_PAY`, `BIM` e `IZIPAYYA` no son métodos generales; son variantes de `DIGITAL_WALLET`. Por eso no deben existir como códigos raíz activos en `payment_methods`.
 
 ### payment_method_variants
 
@@ -679,7 +679,7 @@ Evidencias múltiples e historial inmutable de estados del libro de reclamacione
 - La caché de maestros configurables se invalida por `company_id`; no debe usarse `Cache::flush()` para estos datos porque puede afectar menús, perfiles y otros initParams de empresas no relacionadas.
 - Las reglas `unique(...)` deben incluir `company_id` cuando la unicidad sea por empresa. Excepciones: tablas globales del framework o catálogos maestros realmente compartidos.
 - No crear índices explícitos salvo decisión justificada por consulta crítica. Las claves primarias, claves foráneas y `unique(...)` sí se mantienen porque expresan integridad.
-- Los montos y cantidades usan `decimal(16, 4)` como estándar operativo. Las cadenas deben tener longitud explícita; usar `text`/`longText` cuando el contenido supere una cadena razonable.
+- Los montos y cantidades usan `decimal(15, 3)` como estándar operativo cuando se requieran hasta 12 enteros. Las cadenas deben tener longitud explícita; usar `text`/`longText` cuando el contenido supere una cadena razonable.
 - Evitar comentarios decorativos o símbolos en migraciones. Los comentarios sólo deben explicar una decisión técnica que no sea evidente.
 
 ## Estado de revisión

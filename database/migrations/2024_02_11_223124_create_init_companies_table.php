@@ -36,7 +36,7 @@ return new class extends Migration {
             $table->string("code", 30);
             $table->string("name", 255);
             $table->text("description")->nullable();
-            $table->decimal("rate", 16, 4)->default(0);
+            $table->decimal("rate", 15, 3)->default(0);
             $table->enum("calculation_type", ["percentage", "fixed"])->default("percentage");
             $table->enum("operation_type", ["addition", "subtraction"])->default("addition");
             $table->unsignedInteger("min_apply_quantity")->nullable();
@@ -194,10 +194,10 @@ return new class extends Migration {
             $table->string("barcode", 13)->nullable();
             $table->string("name", 255);
             $table->text("description")->nullable();
-            $table->decimal("price", 16, 4);
+            $table->decimal("price", 15, 3);
             $table->boolean("price_includes_tax")->default(true);
-            $table->decimal("min_price", 16, 4)->nullable();
-            $table->decimal("max_price", 16, 4)->nullable();
+            $table->decimal("min_price", 15, 3)->nullable();
+            $table->decimal("max_price", 15, 3)->nullable();
             $table->unsignedBigInteger("currency_id");
             $table->enum("type", ["product", "service", "subscription"])->default("product");
             $table->enum("duration_type", ["hour", "day", "today", "month", "year"])->nullable();
@@ -207,9 +207,9 @@ return new class extends Migration {
             $table->unsignedInteger("capacity_limit")->nullable();
             $table->unsignedInteger("capacity_used")->default(0);
             $table->dateTime("expires_at")->nullable();
-            $table->decimal("commission_rate", 7, 4)->nullable();
+            $table->decimal("commission_rate", 6, 3)->nullable();
             $table->enum("commission_type", ["none", "percentage", "fixed"])->default("none");
-            $table->decimal("commission_value", 16, 4)->default(0);
+            $table->decimal("commission_value", 15, 3)->default(0);
             $table->unsignedSmallInteger("attendance_limit_per_day")->nullable();
             $table->json("benefits")->nullable();
             $table->json("restrictions")->nullable();
@@ -362,10 +362,10 @@ return new class extends Migration {
             $table->unsignedBigInteger("closed_by")->nullable();
             $table->timestamp("opened_at")->useCurrent();
             $table->timestamp("closed_at")->nullable();
-            $table->decimal("opening_amount", 16, 4)->default(0);
-            $table->decimal("expected_amount", 16, 4)->default(0);
-            $table->decimal("counted_amount", 16, 4)->default(0);
-            $table->decimal("difference_amount", 16, 4)->default(0);
+            $table->decimal("opening_amount", 15, 3)->default(0);
+            $table->decimal("expected_amount", 15, 3)->default(0);
+            $table->decimal("counted_amount", 15, 3)->default(0);
+            $table->decimal("difference_amount", 15, 3)->default(0);
             $table->text("observation")->nullable();
             $table->enum("status", ["open", "closed", "canceled"])->default("open");
 
@@ -387,9 +387,9 @@ return new class extends Migration {
             $table->unsignedBigInteger("cash_session_id");
             $table->unsignedBigInteger("payment_method_id")->nullable();
             $table->string("payment_method_name", 255);
-            $table->decimal("expected_amount", 16, 4)->default(0);
-            $table->decimal("counted_amount", 16, 4)->default(0);
-            $table->decimal("difference_amount", 16, 4)->default(0);
+            $table->decimal("expected_amount", 15, 3)->default(0);
+            $table->decimal("counted_amount", 15, 3)->default(0);
+            $table->decimal("difference_amount", 15, 3)->default(0);
             $table->text("note")->nullable();
             $table->enum("status", ["active", "canceled", "inactive"])->default("active");
 
@@ -413,7 +413,7 @@ return new class extends Migration {
             $table->enum("movement_type", ["opening", "sale", "purchase", "expense", "income", "withdrawal", "adjustment", "closing"])->default("sale");
             $table->string("origin_type", 60)->nullable();
             $table->unsignedBigInteger("origin_id")->nullable();
-            $table->decimal("amount", 16, 4)->default(0);
+            $table->decimal("amount", 15, 3)->default(0);
             $table->string("reference", 100)->nullable();
             $table->text("note")->nullable();
             $table->timestamp("occurred_at")->useCurrent();
@@ -437,10 +437,10 @@ return new class extends Migration {
             $table->unsignedBigInteger("company_id");
             $table->unsignedBigInteger("warehouse_id");
             $table->unsignedBigInteger("item_id");
-            $table->decimal("quantity", 16, 4)->default(0);
-            $table->decimal("minimum_stock", 16, 4)->default(0);
-            $table->decimal("average_cost", 16, 4)->default(0);
-            $table->decimal("inventory_value", 16, 4)->default(0);
+            $table->decimal("quantity", 15, 3)->default(0);
+            $table->decimal("minimum_stock", 15, 3)->default(0);
+            $table->decimal("average_cost", 15, 3)->default(0);
+            $table->decimal("inventory_value", 15, 3)->default(0);
             $table->enum("status", ["active", "inactive"])->default("active");
 
             $table->timestamp("created_at")->useCurrent()->nullable();
@@ -464,13 +464,13 @@ return new class extends Migration {
             $table->string("movement_type", 30);
             $table->string("origin_type", 50);
             $table->unsignedBigInteger("origin_id")->nullable();
-            $table->decimal("quantity_before", 16, 4);
-            $table->decimal("quantity_change", 16, 4);
-            $table->decimal("quantity_after", 16, 4);
-            $table->decimal("unit_cost", 16, 4)->default(0);
-            $table->decimal("value_before", 16, 4)->default(0);
-            $table->decimal("value_change", 16, 4)->default(0);
-            $table->decimal("value_after", 16, 4)->default(0);
+            $table->decimal("quantity_before", 15, 3);
+            $table->decimal("quantity_change", 15, 3);
+            $table->decimal("quantity_after", 15, 3);
+            $table->decimal("unit_cost", 15, 3)->default(0);
+            $table->decimal("value_before", 15, 3)->default(0);
+            $table->decimal("value_change", 15, 3)->default(0);
+            $table->decimal("value_after", 15, 3)->default(0);
             $table->string("reason", 255);
             $table->json("metadata")->nullable();
             $table->timestamp("created_at")->useCurrent();
@@ -486,8 +486,8 @@ return new class extends Migration {
             $table->id();
             $table->unsignedBigInteger("company_id");
             $table->unsignedBigInteger("warehouse_item_id");
-            $table->decimal("quantity", 16, 4);
-            $table->decimal("minimum_stock", 16, 4);
+            $table->decimal("quantity", 15, 3);
+            $table->decimal("minimum_stock", 15, 3);
             $table->enum("status", ["open", "resolved"])->default("open");
             $table->timestamp("detected_at")->useCurrent();
             $table->timestamp("resolved_at")->nullable();
@@ -526,8 +526,8 @@ return new class extends Migration {
             $table->unsignedBigInteger("inventory_guide_id");
             $table->unsignedBigInteger("item_id");
             $table->unsignedBigInteger("inventory_movement_id");
-            $table->decimal("quantity", 16, 4);
-            $table->decimal("unit_cost", 16, 4)->default(0);
+            $table->decimal("quantity", 15, 3);
+            $table->decimal("unit_cost", 15, 3)->default(0);
             $table->timestamps();
 
             $table->foreign("company_id")->references("id")->on("companies")->onDelete("cascade");
@@ -539,8 +539,8 @@ return new class extends Migration {
             $table->id();
             $table->unsignedBigInteger("company_id");
             $table->unsignedBigInteger("item_id");
-            $table->decimal("yield_quantity", 16, 4)->default(1);
-            $table->decimal("waste_percentage", 16, 4)->default(0);
+            $table->decimal("yield_quantity", 15, 3)->default(1);
+            $table->decimal("waste_percentage", 15, 3)->default(0);
             $table->text("preparation_notes")->nullable();
             $table->enum("status", ["active", "inactive"])->default("active");
 
@@ -558,8 +558,8 @@ return new class extends Migration {
             $table->unsignedBigInteger("company_id");
             $table->unsignedBigInteger("recipe_dish_id");
             $table->unsignedBigInteger("item_id");
-            $table->decimal("quantity", 16, 4);
-            $table->decimal("waste_percentage", 16, 4)->default(0);
+            $table->decimal("quantity", 15, 3);
+            $table->decimal("waste_percentage", 15, 3)->default(0);
             $table->string("note", 255)->nullable();
             $table->enum("status", ["active", "inactive"])->default("active");
 
@@ -580,7 +580,7 @@ return new class extends Migration {
             $table->unsignedBigInteger("item_id")->nullable();
             $table->string("name", 255);
             $table->text("description")->nullable();
-            $table->decimal("price", 16, 4)->default(0);
+            $table->decimal("price", 15, 3)->default(0);
             $table->unsignedInteger("max_quantity")->nullable();
             $table->enum("status", ["active", "inactive"])->default("active");
 
@@ -619,8 +619,8 @@ return new class extends Migration {
             $table->unsignedBigInteger("company_id");
             $table->unsignedBigInteger("recipe_topping_id");
             $table->unsignedBigInteger("item_id");
-            $table->decimal("quantity", 16, 4);
-            $table->decimal("waste_percentage", 16, 4)->default(0);
+            $table->decimal("quantity", 15, 3);
+            $table->decimal("waste_percentage", 15, 3)->default(0);
             $table->string("note", 255)->nullable();
             $table->enum("status", ["active", "inactive"])->default("active");
 
@@ -657,8 +657,8 @@ return new class extends Migration {
             $table->unsignedBigInteger("company_id");
             $table->unsignedBigInteger("recipe_dish_option_id");
             $table->unsignedBigInteger("item_id");
-            $table->decimal("quantity", 16, 4);
-            $table->decimal("waste_percentage", 16, 4)->default(0);
+            $table->decimal("quantity", 15, 3);
+            $table->decimal("waste_percentage", 15, 3)->default(0);
             $table->string("note", 255)->nullable();
             $table->enum("status", ["active", "inactive"])->default("active");
 
@@ -679,9 +679,9 @@ return new class extends Migration {
             $table->unsignedBigInteger("warehouse_id");
             $table->unsignedBigInteger("item_id");
             $table->unsignedBigInteger("inventory_movement_id");
-            $table->decimal("quantity", 16, 4);
-            $table->decimal("unit_cost", 16, 4)->default(0);
-            $table->decimal("total_cost", 16, 4)->default(0);
+            $table->decimal("quantity", 15, 3);
+            $table->decimal("unit_cost", 15, 3)->default(0);
+            $table->decimal("total_cost", 15, 3)->default(0);
             $table->string("reason", 500);
             $table->timestamp("occurred_at")->useCurrent();
             $table->timestamp("created_at")->useCurrent()->nullable();
@@ -703,9 +703,9 @@ return new class extends Migration {
             $table->unsignedBigInteger("warehouse_id");
             $table->unsignedBigInteger("item_id");
             $table->unsignedBigInteger("inventory_movement_id")->nullable();
-            $table->decimal("system_quantity", 16, 4)->default(0);
-            $table->decimal("counted_quantity", 16, 4)->default(0);
-            $table->decimal("difference_quantity", 16, 4)->default(0);
+            $table->decimal("system_quantity", 15, 3)->default(0);
+            $table->decimal("counted_quantity", 15, 3)->default(0);
+            $table->decimal("difference_quantity", 15, 3)->default(0);
             $table->text("observation")->nullable();
             $table->enum("status", ["pending", "adjusted", "ignored", "canceled"])->default("pending");
 
@@ -727,8 +727,8 @@ return new class extends Migration {
             $table->unsignedBigInteger("branch_id");
             $table->unsignedBigInteger("asset_id");
             $table->unsignedBigInteger("currency_id");
-            $table->decimal("quantity", 16, 4)->nullable()->default(0);
-            $table->decimal("acquisition_value", 16, 4)->nullable()->default(0);
+            $table->decimal("quantity", 15, 3)->nullable()->default(0);
+            $table->decimal("acquisition_value", 15, 3)->nullable()->default(0);
             $table->date("acquisition_date")->nullable();
             $table->text("note")->nullable();
             $table->enum("status", ["active", "maintenance", "retired"])->default("active");
@@ -751,8 +751,8 @@ return new class extends Migration {
             $table->unsignedBigInteger("branch_id");
             $table->unsignedBigInteger("asset_id");
             $table->unsignedBigInteger("currency_id");
-            $table->decimal("quantity", 16, 4)->nullable()->default(0);
-            $table->decimal("acquisition_value", 16, 4)->nullable()->default(0);
+            $table->decimal("quantity", 15, 3)->nullable()->default(0);
+            $table->decimal("acquisition_value", 15, 3)->nullable()->default(0);
             $table->date("acquisition_date")->nullable();
             $table->text("note")->nullable();
             $table->enum("status", ["active", "maintenance", "retired"])->default("active");
@@ -780,7 +780,7 @@ return new class extends Migration {
             $table->unsignedBigInteger("from_branch_id")->nullable();
             $table->unsignedBigInteger("to_branch_id")->nullable();
             $table->enum("action_type", ["assigned", "transferred", "returned", "retired"]);
-            $table->decimal("quantity", 16, 4);
+            $table->decimal("quantity", 15, 3);
             $table->text("note")->nullable();
             $table->timestamp("action_at")->useCurrent();
 

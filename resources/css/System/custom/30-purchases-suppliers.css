@@ -91,22 +91,6 @@
     font-size: 0.82rem;
 }
 
-.br-document-settlement {
-    display: grid;
-    gap: 0.68rem;
-    padding: 0.78rem;
-    border: 1px solid var(--br-border);
-    border-radius: var(--br-radius-sm);
-    background: var(--br-neutral-panel);
-}
-
-.br-document-settlement .form-label {
-    margin-bottom: 0.16rem;
-    color: var(--br-text-muted);
-    font-size: 0.72rem;
-    font-weight: 700;
-}
-
 .br-document-settlement .v-select {
     background: var(--br-surface-elevated);
 }

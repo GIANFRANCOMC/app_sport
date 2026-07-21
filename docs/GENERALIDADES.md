@@ -133,7 +133,7 @@ Errores de campo:
 
 ## Precisión Numérica
 
-Montos, cantidades operativas, costos, tributos, pagos, inventario y valorización deben tomar su precisión desde configuración por cliente. El valor `4` es sólo el default inicial sembrado en `company_settings.numeric_validation.decimal_precision`; no debe quedar quemado como regla de negocio en requests, servicios ni componentes.
+Montos, cantidades operativas, costos, tributos, pagos, inventario y valorización deben tomar su precisión desde configuración por cliente. El valor `3` es el default inicial sembrado en `company_settings.numeric_validation.decimal_precision`; no debe quedar quemado como regla de negocio en requests, servicios ni componentes.
 
 Configuración vigente por empresa:
 
@@ -148,7 +148,7 @@ Reglas:
 - `BaseConfigService` expone `config.generalConfig.forms.inputs` en `initParams`; el frontend aplica esos valores con `applyGeneralConfig()` para que `InputNumber`, `InputSlot` y validaciones visuales queden alineadas con el backend.
 - `Utilities::round($value, null, $companyId)` puede usar la precisión por empresa cuando el servicio conoce el `companyId`. Si no lo conoce, conserva el fallback global para compatibilidad.
 - Usar `fixedNumber`/`InputNumber` sin forzar `2` decimales salvo que sea una métrica no monetaria ni operativa.
-- Los casts Eloquent y migraciones pueden mantener escala técnica amplia (`decimal(16, 4)` o el estándar vigente), pero la validación y redondeo funcional se gobiernan por `company_settings`.
+- Los casts Eloquent usan `ConfigurableDecimal` y las migraciones nuevas nacen con escala técnica de 3 decimales; la validación y redondeo funcional se gobiernan por `company_settings`.
 - Métricas de tiempo, latencia o porcentajes visuales pueden conservar reglas propias si no afectan dinero, stock o saldo.
 
 ## Modales y SweetAlert
@@ -220,7 +220,7 @@ Durante la etapa reiniciable del proyecto, se puede refactorizar migraciones bas
 - Separar estructura y datos iniciales.
 - Crear una migración dedicada para inserts iniciales.
 - Separar por dominio: maestros, empresas, catálogo, inventario, ventas, compras, caja, biometría y reportes.
-- Usar `decimal(16, 4)` como estándar para cantidades y montos.
+- Usar `decimal(15, 3)` como estándar para cantidades y montos cuando se requieran hasta 12 enteros.
 - Limitar `string` con tamaño explícito, máximo recomendado `500`; usar `text` o `longText` si corresponde.
 - Agregar `company_id` donde el dato sea por empresa y declarar FK explícita a `companies`. En maestros que la empresa también referencia, permitir arranque nullable y actualizar la referencia después de sembrar maestros.
 - Evitar comentarios decorativos, símbolos extraños o encoding roto.

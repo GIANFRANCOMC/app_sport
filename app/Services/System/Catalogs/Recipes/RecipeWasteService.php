@@ -61,7 +61,7 @@ final class RecipeWasteService {
                 throw new DomainException("La receta, el almacén o el insumo no pertenece a la empresa.");
             }
 
-            $quantity = round((float) $data["quantity"], 4);
+            $quantity = Utilities::round((float) $data["quantity"], null, $companyId);
             $unitCost = round((float) (WarehouseItem::query()
                 ->where("company_id", $companyId)
                 ->where("warehouse_id", $warehouseId)
@@ -91,7 +91,7 @@ final class RecipeWasteService {
                 "inventory_movement_id" => $movement->id,
                 "quantity" => $quantity,
                 "unit_cost" => $unitCost,
-                "total_cost" => round($quantity * $unitCost, 4),
+                "total_cost" => Utilities::round($quantity * $unitCost, null, $companyId),
                 "reason" => trim((string) $data["reason"]),
                 "occurred_at" => Carbon::parse($data["occurred_at"] ?? now()),
                 "created_at" => now(),

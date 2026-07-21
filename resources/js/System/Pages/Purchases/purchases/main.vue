@@ -1,4 +1,4 @@
-<template>
+﻿<template>
     <Breadcrumb :list="breadcrumbTitles"/>
 
     <main class="br-entity br-purchases">
@@ -125,41 +125,29 @@
 
                 <div class="col-lg-3 col-12">
                     <aside class="br-purchases__settlement">
-                        <div class="w-100 mb-2 mb-md-3">
-                            <div class="br-observation-tile">
-                                <div
-                                    role="button"
-                                    tabindex="0"
-                                    class="br-tap-field"
-                                    :class="observationHasContent ? 'br-tap-field--has-value' : 'br-tap-field--empty'"
-                                    :aria-label="observationsFieldAriaLabel"
-                                    @click="openObservationsModal"
-                                    @keydown.enter.prevent="openObservationsModal"
-                                    @keydown.space.prevent="openObservationsModal">
-                                    <div class="br-tap-field__head">
-                                        <span class="br-tap-field__eyebrow">Observaciones</span>
-                                        <i class="br-tap-field__icon" :class="observationHasContent ? 'fa-solid fa-square-pen' : 'fa-solid fa-note-sticky'" aria-hidden="true"></i>
-                                    </div>
+                        <div class="br-document-settlement br-sale-settlement mb-2 mb-md-3">
+                            <div>
+                                <div class="br-document-settlement__header">
+                                    <label class="form-label">Observaciones</label>
+                                    <button
+                                        type="button"
+                                        class="br-btn br-btn-xs br-btn-action-import br-document-payment-config waves-effect"
+                                        @click="openObservationsModal">
+                                        <span>Cambiar</span>
+                                    </button>
+                                </div>
+                                <div class="br-document-observation-summary">
                                     <span
                                         v-if="observationHasContent"
-                                        class="br-tap-field__value"
-                                        :class="{ 'br-tap-field__value--expanded': observationPreviewExpanded }"
+                                        class="br-document-observation-summary__value"
                                         :title="observationPreviewTooltip"
                                         v-text="observationDisplayPreview">
                                     </span>
-                                    <span v-else class="br-tap-field__placeholder">Sin observaciones</span>
+                                    <p v-else class="br-document-settlement__empty mb-0">
+                                        Sin observaciones para esta compra.
+                                    </p>
                                 </div>
-                                <button
-                                    v-if="observationHasContent && observationIsTruncatable"
-                                    type="button"
-                                    class="br-observation-tile__toggle"
-                                    :aria-expanded="observationPreviewExpanded"
-                                    @click.stop="toggleObservationPreviewExpand">
-                                    <span>{{ observationPreviewExpanded ? "Ver menos" : "Ver más" }}</span>
-                                </button>
                             </div>
-                        </div>
-                        <div class="br-document-settlement br-sale-settlement mb-2 mb-md-3">
                             <div>
                                 <label class="form-label">Impuestos extras</label>
                                 <div class="br-document-settlement__taxes" v-if="optionalPurchaseTaxes.length">
@@ -178,19 +166,59 @@
                                         </InputNumber>
                                     </template>
                                 </div>
-                                <p v-else class="br-document-settlement__empty mb-0">Sin impuestos extras disponibles.</p>
+                                <p v-else class="br-document-settlement__empty mb-0">Sin impuestos extras para esta compra.</p>
                             </div>
                             <div>
                                 <label class="form-label">Métodos de pago</label>
                                 <div class="br-document-payments">
                                     <div v-for="(payment, index) in purchaseForm.payments" :key="payment.key" class="br-document-payment-row">
-                                        <v-select v-model="payment.method" :options="purchasePaymentMethods" :clearable="false" :searchable="true" append-to-body/>
+                                        <v-select
+                                            v-model="payment.method"
+                                            :options="purchasePaymentMethods"
+                                            :clearable="false"
+                                            :searchable="true"
+                                            append-to-body
+                                            @update:modelValue="syncPurchasePaymentVariant(payment)">
+                                            <template #selected-option="{ label, data }">
+                                                <span class="br-payment-select-option">
+                                                    <img v-if="paymentAssetUrl(data)" :src="paymentAssetUrl(data)" alt="" class="br-payment-select-option__image">
+                                                    <span>{{ label }}</span>
+                                                </span>
+                                            </template>
+                                            <template #option="{ label, data }">
+                                                <span class="br-payment-select-option">
+                                                    <img v-if="paymentAssetUrl(data)" :src="paymentAssetUrl(data)" alt="" class="br-payment-select-option__image">
+                                                    <span>{{ label }}</span>
+                                                </span>
+                                            </template>
+                                        </v-select>
+                                        <v-select
+                                            v-if="purchasePaymentVariantOptions(payment).length"
+                                            v-model="payment.variant"
+                                            :options="purchasePaymentVariantOptions(payment)"
+                                            :clearable="false"
+                                            :searchable="true"
+                                            append-to-body
+                                            placeholder="Variante">
+                                            <template #selected-option="{ label, data }">
+                                                <span class="br-payment-select-option">
+                                                    <img v-if="paymentAssetUrl(data)" :src="paymentAssetUrl(data)" alt="" class="br-payment-select-option__image">
+                                                    <span>{{ label }}</span>
+                                                </span>
+                                            </template>
+                                            <template #option="{ label, data }">
+                                                <span class="br-payment-select-option">
+                                                    <img v-if="paymentAssetUrl(data)" :src="paymentAssetUrl(data)" alt="" class="br-payment-select-option__image">
+                                                    <span>{{ label }}</span>
+                                                </span>
+                                            </template>
+                                        </v-select>
                                         <InputNumber v-model="payment.amount" title="" :titleClass="[]" :inputClass="['form-control', 'br-document-payment-amount']" :minValue="0" :placeholder="separatorNumber(purchaseTotal)">
                                             <template #inputGroupPrepend>
                                                 <span class="input-group-text br-currency-prefix">{{ purchaseForm.currency?.sign }}</span>
                                             </template>
                                         </InputNumber>
-                                        <input v-if="payment.method?.data?.requires_reference" v-model.trim="payment.reference" type="text" class="form-control" maxlength="100" placeholder="Referencia">
+                                        <input v-if="paymentRequiresReference(payment)" v-model.trim="payment.reference" type="text" class="form-control" maxlength="100" placeholder="Referencia">
                                         <button type="button" class="br-icon-action" :disabled="purchaseForm.payments.length <= 1" title="Quitar método" @click="removePurchasePayment(index)">
                                             <i class="fa-solid fa-xmark" aria-hidden="true"></i>
                                         </button>
@@ -201,6 +229,9 @@
                                     </button>
                                 </div>
                             </div>
+                        </div>
+                        <div class="br-document-summary-card mb-2 mb-md-3">
+                            <h3 class="br-document-summary-card__title">Resumen</h3>
                             <div class="br-document-settlement__summary">
                                 <span>Subtotal</span>
                                 <strong>{{ purchaseForm.currency?.sign }} {{ separatorNumber(purchaseSubtotal) }}</strong>
@@ -244,7 +275,7 @@
             <div class="modal-dialog modal-dialog-centered" role="document">
                 <div class="modal-content">
                     <div class="modal-header br-modal-header">
-                        <h5 class="modal-title text-uppercase fw-bold">Observaciones</h5>
+                        <h5 class="modal-title text-uppercase fw-bold">Cambiar observación</h5>
                         <button type="button" class="btn-header-modal" data-bs-dismiss="modal">
                             <i class="fa fa-times icon-close-modal" aria-hidden="true"></i>
                         </button>
@@ -262,7 +293,7 @@
                     </div>
                     <div class="modal-footer br-entity-modal__footer">
                         <button type="button" class="br-btn br-btn-cancel" data-bs-dismiss="modal">Cancelar</button>
-                        <button type="button" class="br-btn br-btn-action-create" @click="saveObservationsModal">Guardar</button>
+                        <button type="button" class="br-btn br-btn-primary" @click="saveObservationsModal">Cambiar observación</button>
                     </div>
                 </div>
             </div>
@@ -338,7 +369,7 @@
                                     <strong>{{ purchase.formatted_document_type }}</strong>
                                     <span class="br-purchases__meta">
                                         {{ purchaseDocumentReference(purchase) }}
-                                        · {{ formatDate(purchase.issue_date) }}
+                                        ? {{ formatDate(purchase.issue_date) }}
                                     </span>
                                 </td>
                                 <td>
@@ -552,7 +583,7 @@ export default {
                 ? rate * quantity
                 : base * (rate / 100);
 
-            return Number((operationType === "subtraction" ? amount * -1 : amount).toFixed(4));
+            return Number(Utils.fixedNumber(operationType === "subtraction" ? amount * -1 : amount));
 
         },
         taxIsRequired(tax = {}) {
@@ -615,13 +646,65 @@ export default {
             return {key: `${Date.now()}-${Math.random()}`, product: null, quantity: "", unitCost: ""};
         },
         newPurchasePayment({amount = ""} = {}) {
-            return {
+
+            const payment = {
                 key: `${Date.now()}-${Math.random()}`,
                 method: this.purchasePaymentMethods.find(method => method.data?.is_default) || this.purchasePaymentMethods[0] || null,
+                variant: null,
                 amount,
                 reference: "",
                 note: ""
             };
+
+            this.syncPurchasePaymentVariant(payment);
+
+            return payment;
+
+        },
+        paymentAssetUrl(record) {
+
+            const path = record?.image_path || record?.data?.image_path;
+
+            if(!path) return "";
+
+            if(/^https?:\/\//i.test(path) || path.startsWith("/")) return path;
+
+            return `/${path}`;
+
+        },
+        purchasePaymentVariantOptions(payment) {
+
+            const method = payment?.method?.data || {};
+            const variants = method.supports_variants ? (method.variants || []) : [];
+
+            return variants
+                .filter(variant => variant.status !== "inactive")
+                .map(variant => ({
+                    code: variant.id,
+                    label: variant.name,
+                    data: variant
+                }));
+
+        },
+        syncPurchasePaymentVariant(payment) {
+
+            if(!payment) return;
+
+            const options = this.purchasePaymentVariantOptions(payment);
+
+            if(options.length === 0) {
+                payment.variant = null;
+                return;
+            }
+
+            const current = options.find(option => Number(option.code) === Number(payment.variant?.code));
+            payment.variant = current || options.find(option => option.data?.is_default) || options[0];
+
+        },
+        paymentRequiresReference(payment) {
+
+            return Boolean(payment?.variant?.data?.requires_reference ?? payment?.method?.data?.requires_reference);
+
         },
         addPurchasePayment() {
             const pending = this.purchasePaymentDifference > 0 ? this.purchasePaymentDifference : "";
@@ -807,7 +890,7 @@ export default {
         async cancelPurchase(purchase) {
             const accepted = await Alerts.generateAlert({
                 type: "question",
-                msgContent: `¿Deseas anular ${purchase.formatted_document_type.toLowerCase()}?`
+                msgContent: `?Deseas anular ${purchase.formatted_document_type.toLowerCase()}?`
             });
             if(!accepted?.isConfirmed) return;
             Alerts.swals({type: "loading", message: "Anulando compra"});
@@ -926,7 +1009,7 @@ export default {
         products() {
             return this.options.products.map(record => ({
                 code: record.id,
-                label: [record.name, record.internal_code, record.barcode].filter(Boolean).join(" · "),
+                label: [record.name, record.internal_code, record.barcode].filter(Boolean).join(" ? "),
                 data: record
             }));
         },
@@ -963,7 +1046,7 @@ export default {
             return this.observationFullText;
         },
         observationsFieldAriaLabel() {
-            return `Observaciones. ${this.observationHasContent ? "Modificar observación" : "Agregar observación"}`;
+            return `Observaciones. ${this.observationHasContent ? "Cambiar observación" : "Agregar observación"}`;
         },
         purchaseSubtotal() {
             return (this.purchaseForm.items || []).reduce((total, detail) => total + this.lineTotal(detail), 0);
@@ -1025,6 +1108,8 @@ export default {
                 .filter(payment => payment.method?.code)
                 .map(payment => ({
                     payment_method_id: payment.method.code,
+                    payment_method_variant_id: payment.variant?.code || null,
+                    name: payment.variant?.label || payment.method?.label || null,
                     amount: Number(payment.amount || 0),
                     reference: payment.reference || null,
                     note: payment.note || null
@@ -1036,7 +1121,7 @@ export default {
             }, 0);
         },
         purchasePaymentDifference() {
-            return Number((this.purchaseTotal - this.purchasePaidTotal).toFixed(4));
+            return Number(Utils.fixedNumber(this.purchaseTotal - this.purchasePaidTotal));
         }
     },
     watch: {

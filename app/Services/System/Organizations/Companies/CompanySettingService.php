@@ -84,9 +84,9 @@ final class CompanySettingService {
     ];
 
     private const DEFAULT_NUMERIC_VALIDATION = [
-        "decimal_precision" => 4,
+        "decimal_precision" => 3,
         "default_min_value" => 0,
-        "default_max_value" => 999999999999.9999,
+        "default_max_value" => 999999999999.999,
         "max_file_size_kb" => 4096
     ];
 

@@ -6,15 +6,9 @@
 body.br-layout .table > thead,
 body.br-layout .br-table-header-surface {
   vertical-align: middle;
-  background:
-    linear-gradient(180deg, var(--br-table-thead-highlight-top) 0%, transparent 52%),
-    linear-gradient(
-      168deg,
-      var(--br-table-thead-mid-a) 0%,
-      var(--br-table-thead-mid-b) 40%,
-      var(--br-table-thead-mid-c) 100%
-    ) !important;
-  background-color: transparent !important;
+  background: var(--br-table-thead-bg) !important;
+  background-color: var(--br-table-thead-bg) !important;
+  background-image: none !important;
   box-shadow: inset 0 -1px 0 var(--br-table-thead-edge);
 }
 
@@ -114,7 +108,7 @@ body.br-layout .table.table-sm > thead > tr > th {
 .br-filter-bar .form-label {
   margin-bottom: 0.3rem;
   color: var(--br-text-muted);
-  font-size: 0.75rem !important;
+  font-size: var(--br-ui-font-size) !important;
   font-weight: 600 !important;
   line-height: 1.25;
 }
@@ -122,7 +116,7 @@ body.br-layout .table.table-sm > thead > tr > th {
 body.br-layout .form-label {
   margin-bottom: 1px;
   color: color-mix(in srgb, var(--br-secondary) 72%, var(--br-text-muted));
-  font-size: 0.78rem !important;
+  font-size: var(--br-ui-font-size) !important;
   font-weight: 600 !important;
   line-height: 1.2;
   letter-spacing: 0;

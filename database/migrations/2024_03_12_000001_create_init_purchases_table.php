@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
@@ -19,7 +19,7 @@ return new class extends Migration {
             $table->string("email", 255)->nullable();
             $table->string("address", 255)->nullable();
             $table->unsignedSmallInteger("payment_term_days")->default(0);
-            $table->decimal("credit_limit", 16, 4)->nullable();
+            $table->decimal("credit_limit", 15, 3)->nullable();
             $table->enum("status", ["active", "inactive"])->default("active");
             $table->timestamp("created_at")->useCurrent()->nullable();
             $table->integer("created_by")->nullable();
@@ -77,12 +77,12 @@ return new class extends Migration {
             $table->unsignedBigInteger("approved_by")->nullable();
             $table->timestamp("approved_at")->nullable();
             $table->enum("delivery_mode", ["immediate", "pending"])->default("immediate");
-            $table->decimal("subtotal", 16, 4)->default(0);
-            $table->decimal("tax", 16, 4)->default(0);
-            $table->decimal("expense_total", 16, 4)->default(0);
-            $table->decimal("total", 16, 4)->default(0);
-            $table->decimal("paid_amount", 16, 4)->default(0);
-            $table->decimal("balance_due", 16, 4)->default(0);
+            $table->decimal("subtotal", 15, 3)->default(0);
+            $table->decimal("tax", 15, 3)->default(0);
+            $table->decimal("expense_total", 15, 3)->default(0);
+            $table->decimal("total", 15, 3)->default(0);
+            $table->decimal("paid_amount", 15, 3)->default(0);
+            $table->decimal("balance_due", 15, 3)->default(0);
             $table->enum("payment_status", ["unpaid", "partial", "paid", "overpaid"])->default("unpaid");
             $table->text("observation")->nullable();
             $table->enum("status", [
@@ -111,10 +111,10 @@ return new class extends Migration {
             $table->unsignedBigInteger("purchase_header_id");
             $table->unsignedBigInteger("item_id");
             $table->string("name", 255);
-            $table->decimal("quantity", 16, 4);
-            $table->decimal("received_quantity", 16, 4)->default(0);
-            $table->decimal("unit_cost", 16, 4);
-            $table->decimal("subtotal", 16, 4);
+            $table->decimal("quantity", 15, 3);
+            $table->decimal("received_quantity", 15, 3)->default(0);
+            $table->decimal("unit_cost", 15, 3);
+            $table->decimal("subtotal", 15, 3);
             $table->enum("status", ["pending", "partial", "received", "canceled"])->default("pending");
             $table->timestamp("created_at")->useCurrent()->nullable();
             $table->integer("created_by")->nullable();
@@ -150,9 +150,9 @@ return new class extends Migration {
             $table->unsignedBigInteger("purchase_item_id");
             $table->unsignedBigInteger("item_id");
             $table->unsignedBigInteger("inventory_movement_id")->nullable();
-            $table->decimal("quantity", 16, 4);
-            $table->decimal("unit_cost", 16, 4);
-            $table->decimal("total_cost", 16, 4);
+            $table->decimal("quantity", 15, 3);
+            $table->decimal("unit_cost", 15, 3);
+            $table->decimal("total_cost", 15, 3);
             $table->timestamp("created_at")->useCurrent()->nullable();
             $table->integer("created_by")->nullable();
             $table->foreign("purchase_receipt_id")->references("id")->on("purchase_receipts")->onDelete("cascade");
@@ -169,13 +169,13 @@ return new class extends Migration {
             $table->unsignedBigInteger("tax_id")->nullable();
             $table->string("name", 255);
             $table->text("description")->nullable();
-            $table->decimal("rate", 16, 4)->default(0);
+            $table->decimal("rate", 15, 3)->default(0);
             $table->enum("calculation_type", ["percentage", "fixed"])->default("percentage");
             $table->enum("operation_type", ["addition", "subtraction"])->default("addition");
             $table->boolean("is_required")->default(true);
             $table->unsignedInteger("quantity")->default(1);
-            $table->decimal("base_amount", 16, 4)->default(0);
-            $table->decimal("amount", 16, 4)->default(0);
+            $table->decimal("base_amount", 15, 3)->default(0);
+            $table->decimal("amount", 15, 3)->default(0);
             $table->enum("status", ["active", "canceled", "inactive"])->default("active");
             $table->timestamp("created_at")->useCurrent()->nullable();
             $table->integer("created_by")->nullable();
@@ -192,7 +192,7 @@ return new class extends Migration {
             $table->unsignedBigInteger("purchase_header_id");
             $table->unsignedBigInteger("payment_method_id")->nullable();
             $table->string("name", 255);
-            $table->decimal("amount", 16, 4)->default(0);
+            $table->decimal("amount", 15, 3)->default(0);
             $table->string("reference", 100)->nullable();
             $table->text("note")->nullable();
             $table->enum("status", ["active", "canceled", "inactive"])->default("active");
@@ -211,7 +211,7 @@ return new class extends Migration {
             $table->unsignedBigInteger("purchase_header_id");
             $table->string("expense_type", 40);
             $table->string("name", 150);
-            $table->decimal("amount", 16, 4)->default(0);
+            $table->decimal("amount", 15, 3)->default(0);
             $table->string("allocation_method", 20)->default("value");
             $table->string("note", 500)->nullable();
             $table->timestamps();
@@ -249,11 +249,11 @@ return new class extends Migration {
             $table->unsignedBigInteger("purchase_item_id");
             $table->unsignedBigInteger("item_id");
             $table->unsignedBigInteger("inventory_movement_id")->nullable();
-            $table->decimal("quantity", 16, 4);
-            $table->decimal("unit_cost", 16, 4);
-            $table->decimal("allocated_expense_total", 16, 4)->default(0);
-            $table->decimal("inventory_unit_cost", 16, 4);
-            $table->decimal("total_cost", 16, 4);
+            $table->decimal("quantity", 15, 3);
+            $table->decimal("unit_cost", 15, 3);
+            $table->decimal("allocated_expense_total", 15, 3)->default(0);
+            $table->decimal("inventory_unit_cost", 15, 3);
+            $table->decimal("total_cost", 15, 3);
             $table->timestamp("created_at")->useCurrent()->nullable();
 
             $table->foreign("company_id")->references("id")->on("companies")->onDelete("cascade");

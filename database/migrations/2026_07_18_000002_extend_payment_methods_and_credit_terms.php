@@ -137,19 +137,19 @@ return new class extends Migration {
             }
 
             if(!Schema::hasColumn("sales_header", "installment_extra_percentage")) {
-                $table->decimal("installment_extra_percentage", 16, 4)->default(0)->after("payment_modality");
+                $table->decimal("installment_extra_percentage", 15, 3)->default(0)->after("payment_modality");
             }
 
             if(!Schema::hasColumn("sales_header", "installment_extra_amount")) {
-                $table->decimal("installment_extra_amount", 16, 4)->default(0)->after("installment_extra_percentage");
+                $table->decimal("installment_extra_amount", 15, 3)->default(0)->after("installment_extra_percentage");
             }
 
             if(!Schema::hasColumn("sales_header", "paid_amount")) {
-                $table->decimal("paid_amount", 16, 4)->default(0)->after("total");
+                $table->decimal("paid_amount", 15, 3)->default(0)->after("total");
             }
 
             if(!Schema::hasColumn("sales_header", "balance_due")) {
-                $table->decimal("balance_due", 16, 4)->default(0)->after("paid_amount");
+                $table->decimal("balance_due", 15, 3)->default(0)->after("paid_amount");
             }
 
             if(!Schema::hasColumn("sales_header", "payment_status")) {
@@ -163,11 +163,11 @@ return new class extends Migration {
             }
 
             if(!Schema::hasColumn("purchase_headers", "installment_extra_percentage")) {
-                $table->decimal("installment_extra_percentage", 16, 4)->default(0)->after("payment_modality");
+                $table->decimal("installment_extra_percentage", 15, 3)->default(0)->after("payment_modality");
             }
 
             if(!Schema::hasColumn("purchase_headers", "installment_extra_amount")) {
-                $table->decimal("installment_extra_amount", 16, 4)->default(0)->after("installment_extra_percentage");
+                $table->decimal("installment_extra_amount", 15, 3)->default(0)->after("installment_extra_percentage");
             }
         });
 
@@ -199,12 +199,12 @@ return new class extends Migration {
                 $table->date("issue_date");
                 $table->date("due_date")->nullable();
                 $table->enum("payment_modality", ["cash_on_delivery", "installments"]);
-                $table->decimal("original_amount", 16, 4)->default(0);
-                $table->decimal("extra_percentage", 16, 4)->default(0);
-                $table->decimal("extra_amount", 16, 4)->default(0);
-                $table->decimal("total_amount", 16, 4)->default(0);
-                $table->decimal("paid_amount", 16, 4)->default(0);
-                $table->decimal("pending_amount", 16, 4)->default(0);
+                $table->decimal("original_amount", 15, 3)->default(0);
+                $table->decimal("extra_percentage", 15, 3)->default(0);
+                $table->decimal("extra_amount", 15, 3)->default(0);
+                $table->decimal("total_amount", 15, 3)->default(0);
+                $table->decimal("paid_amount", 15, 3)->default(0);
+                $table->decimal("pending_amount", 15, 3)->default(0);
                 $table->enum("status", ["pending", "partial", "paid", "overdue", "canceled"])->default("pending");
                 $table->string("observation", 500)->nullable();
                 $table->timestamp("created_at")->useCurrent()->nullable();
@@ -228,9 +228,9 @@ return new class extends Migration {
                 $table->unsignedBigInteger("sale_account_receivable_id");
                 $table->unsignedInteger("installment_number");
                 $table->date("due_date")->nullable();
-                $table->decimal("amount", 16, 4)->default(0);
-                $table->decimal("paid_amount", 16, 4)->default(0);
-                $table->decimal("pending_amount", 16, 4)->default(0);
+                $table->decimal("amount", 15, 3)->default(0);
+                $table->decimal("paid_amount", 15, 3)->default(0);
+                $table->decimal("pending_amount", 15, 3)->default(0);
                 $table->enum("status", ["pending", "partial", "paid", "overdue", "canceled"])->default("pending");
                 $table->timestamp("created_at")->useCurrent()->nullable();
                 $table->integer("created_by")->nullable();
@@ -250,7 +250,7 @@ return new class extends Migration {
                 $table->unsignedBigInteger("payment_method_id")->nullable();
                 $table->unsignedBigInteger("payment_method_variant_id")->nullable();
                 $table->dateTime("paid_at");
-                $table->decimal("amount", 16, 4)->default(0);
+                $table->decimal("amount", 15, 3)->default(0);
                 $table->string("reference", 100)->nullable();
                 $table->string("observation", 500)->nullable();
                 $table->enum("status", ["active", "canceled"])->default("active");
@@ -280,12 +280,12 @@ return new class extends Migration {
                 $table->date("issue_date");
                 $table->date("due_date")->nullable();
                 $table->enum("payment_modality", ["cash_on_delivery", "installments"]);
-                $table->decimal("original_amount", 16, 4)->default(0);
-                $table->decimal("extra_percentage", 16, 4)->default(0);
-                $table->decimal("extra_amount", 16, 4)->default(0);
-                $table->decimal("total_amount", 16, 4)->default(0);
-                $table->decimal("paid_amount", 16, 4)->default(0);
-                $table->decimal("pending_amount", 16, 4)->default(0);
+                $table->decimal("original_amount", 15, 3)->default(0);
+                $table->decimal("extra_percentage", 15, 3)->default(0);
+                $table->decimal("extra_amount", 15, 3)->default(0);
+                $table->decimal("total_amount", 15, 3)->default(0);
+                $table->decimal("paid_amount", 15, 3)->default(0);
+                $table->decimal("pending_amount", 15, 3)->default(0);
                 $table->enum("status", ["pending", "partial", "paid", "overdue", "canceled"])->default("pending");
                 $table->string("observation", 500)->nullable();
                 $table->timestamp("created_at")->useCurrent()->nullable();
@@ -309,9 +309,9 @@ return new class extends Migration {
                 $table->unsignedBigInteger("purchase_account_payable_id");
                 $table->unsignedInteger("installment_number");
                 $table->date("due_date")->nullable();
-                $table->decimal("amount", 16, 4)->default(0);
-                $table->decimal("paid_amount", 16, 4)->default(0);
-                $table->decimal("pending_amount", 16, 4)->default(0);
+                $table->decimal("amount", 15, 3)->default(0);
+                $table->decimal("paid_amount", 15, 3)->default(0);
+                $table->decimal("pending_amount", 15, 3)->default(0);
                 $table->enum("status", ["pending", "partial", "paid", "overdue", "canceled"])->default("pending");
                 $table->timestamp("created_at")->useCurrent()->nullable();
                 $table->integer("created_by")->nullable();
@@ -331,7 +331,7 @@ return new class extends Migration {
                 $table->unsignedBigInteger("payment_method_id")->nullable();
                 $table->unsignedBigInteger("payment_method_variant_id")->nullable();
                 $table->dateTime("paid_at");
-                $table->decimal("amount", 16, 4)->default(0);
+                $table->decimal("amount", 15, 3)->default(0);
                 $table->string("reference", 100)->nullable();
                 $table->string("observation", 500)->nullable();
                 $table->enum("status", ["active", "canceled"])->default("active");
@@ -386,11 +386,7 @@ return new class extends Migration {
         DB::table("payment_methods")
             ->where("company_id", $companyId)
             ->whereIn("code", ["YAPE", "PLIN"])
-            ->update([
-                "status" => "inactive",
-                "description" => "Migrado a variante de Billetera digital para mantener métodos generales y variantes específicas separadas.",
-                "updated_at" => now()
-            ]);
+            ->delete();
 
     }
 

@@ -40,8 +40,8 @@ final class ServiceSessionItem extends Model {
     ];
 
     protected $casts = [
-        "quantity" => "decimal:4",
-        "unit_price" => "decimal:4",
+        "quantity" => "App\\Casts\\System\\ConfigurableDecimal",
+        "unit_price" => "App\\Casts\\System\\ConfigurableDecimal",
         "started_at" => "datetime",
         "ended_at" => "datetime",
         "duration_minutes" => "integer",

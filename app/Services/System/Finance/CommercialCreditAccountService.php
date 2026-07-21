@@ -7,6 +7,7 @@ namespace App\Services\System\Finance;
 use Illuminate\Support\Collection;
 use Carbon\Carbon;
 
+use App\Helpers\System\Utilities;
 use App\Models\System\Purchases\{PurchaseAccountPayable, PurchaseHeader, PurchasePayableInstallment, PurchasePayablePayment};
 use App\Models\System\Sales\{SaleAccountReceivable, SaleHeader, SaleReceivableInstallment, SaleReceivablePayment};
 
@@ -24,11 +25,11 @@ final class CommercialCreditAccountService {
 
     }
 
-    public static function paymentStatus(float $total, float $paid): string {
+    public static function paymentStatus(float $total, float $paid, ?int $companyId = null): string {
 
-        $total = round($total, 4);
-        $paid = round($paid, 4);
-        $balance = round($total - $paid, 4);
+        $total = Utilities::round($total, null, $companyId);
+        $paid = Utilities::round($paid, null, $companyId);
+        $balance = Utilities::round($total - $paid, null, $companyId);
 
         return match(true) {
             $paid <= 0 => "unpaid",
@@ -47,7 +48,7 @@ final class CommercialCreditAccountService {
         int $userId
     ): ?SaleAccountReceivable {
 
-        if($sale->payment_modality === self::PAID_NOW || round((float) $sale->balance_due, 4) <= 0) {
+        if($sale->payment_modality === self::PAID_NOW || Utilities::round((float) $sale->balance_due, null, (int) $sale->company_id) <= 0) {
 
             return null;
 
@@ -61,7 +62,7 @@ final class CommercialCreditAccountService {
             "issue_date" => $sale->issue_date,
             "due_date" => $firstDueDate,
             "payment_modality" => $sale->payment_modality,
-            "original_amount" => round((float) $sale->total - (float) $sale->installment_extra_amount, 4),
+            "original_amount" => Utilities::round((float) $sale->total - (float) $sale->installment_extra_amount, null, (int) $sale->company_id),
             "extra_percentage" => $sale->installment_extra_percentage,
             "extra_amount" => $sale->installment_extra_amount,
             "total_amount" => $sale->total,
@@ -87,7 +88,7 @@ final class CommercialCreditAccountService {
         int $userId
     ): ?PurchaseAccountPayable {
 
-        if($purchase->payment_modality === self::PAID_NOW || round((float) $purchase->balance_due, 4) <= 0) {
+        if($purchase->payment_modality === self::PAID_NOW || Utilities::round((float) $purchase->balance_due, null, (int) $purchase->company_id) <= 0) {
 
             return null;
 
@@ -101,7 +102,7 @@ final class CommercialCreditAccountService {
             "issue_date" => $purchase->issue_date,
             "due_date" => $firstDueDate ?: $purchase->due_date,
             "payment_modality" => $purchase->payment_modality,
-            "original_amount" => round((float) $purchase->total - (float) $purchase->installment_extra_amount, 4),
+            "original_amount" => Utilities::round((float) $purchase->total - (float) $purchase->installment_extra_amount, null, (int) $purchase->company_id),
             "extra_percentage" => $purchase->installment_extra_percentage,
             "extra_amount" => $purchase->installment_extra_amount,
             "total_amount" => $purchase->total,
@@ -121,12 +122,12 @@ final class CommercialCreditAccountService {
 
     private static function createSaleInstallments(SaleAccountReceivable $account, int $count, ?string $firstDueDate, int $userId): void {
 
-        $amount = round((float) $account->pending_amount / $count, 4);
+        $amount = Utilities::round((float) $account->pending_amount / $count, null, (int) $account->company_id);
         $rows = [];
 
         for($number = 1; $number <= $count; $number++) {
             $lineAmount = $number === $count
-                ? round((float) $account->pending_amount - ($amount * ($count - 1)), 4)
+                ? Utilities::round((float) $account->pending_amount - ($amount * ($count - 1)), null, (int) $account->company_id)
                 : $amount;
 
             $rows[] = [
@@ -149,12 +150,12 @@ final class CommercialCreditAccountService {
 
     private static function createPurchaseInstallments(PurchaseAccountPayable $account, int $count, ?string $firstDueDate, int $userId): void {
 
-        $amount = round((float) $account->pending_amount / $count, 4);
+        $amount = Utilities::round((float) $account->pending_amount / $count, null, (int) $account->company_id);
         $rows = [];
 
         for($number = 1; $number <= $count; $number++) {
             $lineAmount = $number === $count
-                ? round((float) $account->pending_amount - ($amount * ($count - 1)), 4)
+                ? Utilities::round((float) $account->pending_amount - ($amount * ($count - 1)), null, (int) $account->company_id)
                 : $amount;
 
             $rows[] = [

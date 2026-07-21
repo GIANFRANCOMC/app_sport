@@ -99,11 +99,11 @@ final class InventoryMovementService {
 
             }
 
-            $quantityBefore = round((float) $warehouseItem->quantity, 4);
+            $quantityBefore = Utilities::round((float) $warehouseItem->quantity, null, $companyId);
             $quantityChange = self::resolveQuantityChange($type, $quantityBefore, $data);
-            $quantityAfter  = round($quantityBefore + $quantityChange, 4);
-            $valueBefore = round((float) ($warehouseItem->inventory_value ?? 0), 4);
-            $currentAverageCost = round((float) ($warehouseItem->average_cost ?? 0), 4);
+            $quantityAfter  = Utilities::round($quantityBefore + $quantityChange, null, $companyId);
+            $valueBefore = Utilities::round((float) ($warehouseItem->inventory_value ?? 0), null, $companyId);
+            $currentAverageCost = Utilities::round((float) ($warehouseItem->average_cost ?? 0), null, $companyId);
 
             if(abs($quantityChange) < 0.00001) {
 
@@ -118,8 +118,8 @@ final class InventoryMovementService {
             }
 
             $unitCost = self::resolveUnitCost($type, $quantityChange, $currentAverageCost, $data);
-            $valueChange = round($quantityChange * $unitCost, 4);
-            $valueAfter = round($valueBefore + $valueChange, 4);
+            $valueChange = Utilities::round($quantityChange * $unitCost, null, $companyId);
+            $valueAfter = Utilities::round($valueBefore + $valueChange, null, $companyId);
             $averageCost = self::resolveAverageCost(
                 $type,
                 $quantityBefore,
@@ -219,7 +219,7 @@ final class InventoryMovementService {
             foreach($items as $item) {
 
                 $itemId = (int) ($item["item_id"] ?? 0);
-                $quantity = round((float) ($item["quantity"] ?? 0), 4);
+                $quantity = Utilities::round((float) ($item["quantity"] ?? 0), null, $companyId);
 
                 if($quantity <= 0) {
 
@@ -386,7 +386,7 @@ final class InventoryMovementService {
 
             }
 
-            $resultingBalance = round((float) $data["resulting_balance"], 4);
+            $resultingBalance = Utilities::round((float) $data["resulting_balance"], null, (int) ($data["company_id"] ?? 0));
 
             if($resultingBalance < 0) {
 
@@ -394,11 +394,11 @@ final class InventoryMovementService {
 
             }
 
-            return round($resultingBalance - $quantityBefore, 4);
+            return Utilities::round($resultingBalance - $quantityBefore, null, (int) ($data["company_id"] ?? 0));
 
         }
 
-        $quantity = round((float) ($data["quantity"] ?? 0), 4);
+        $quantity = Utilities::round((float) ($data["quantity"] ?? 0), null, (int) ($data["company_id"] ?? 0));
 
         if($quantity <= 0) {
 
@@ -425,7 +425,7 @@ final class InventoryMovementService {
 
         if(array_key_exists("unit_cost", $data) && $data["unit_cost"] !== null) {
 
-            $unitCost = round((float) $data["unit_cost"], 4);
+            $unitCost = Utilities::round((float) $data["unit_cost"], null, (int) ($data["company_id"] ?? 0));
 
             if($unitCost < 0) {
 
@@ -458,7 +458,7 @@ final class InventoryMovementService {
 
         if($type === self::TYPE_ENTRY && $quantityAfter > 0) {
 
-            return round($valueAfter / $quantityAfter, 4);
+            return Utilities::round($valueAfter / $quantityAfter);
 
         }
 

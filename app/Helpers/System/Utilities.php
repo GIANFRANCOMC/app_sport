@@ -20,9 +20,9 @@ class Utilities {
 
     public static $inputs = [
         "maxlength" => 999,
-        "round" => 4,
+        "round" => 3,
         "minValue" => 0,
-        "maxValue" => 999999999999.9999,
+        "maxValue" => 999999999999.999,
         "maxSize" => 4096
     ];
 
@@ -95,20 +95,39 @@ class Utilities {
 
     }
 
-    public static function round($value, $decimals = null, ?int $companyId = null) {
+    public static function decimalPrecision(?int $companyId = null): int {
 
-        if($decimals === null && $companyId !== null && $companyId > 0) {
+        $companyId ??= (int) config("app.company_id");
 
-            $decimals = (int) CompanySettingService::value(
+        if($companyId !== null && $companyId > 0) {
+
+            return max(0, min(8, (int) CompanySettingService::value(
                 $companyId,
                 CompanySettingService::NUMERIC_VALIDATION,
                 "decimal_precision",
                 self::$inputs["round"]
-            );
+            )));
 
         }
 
-        return round((float) $value, $decimals ?? self::$inputs["round"]);
+        return max(0, min(8, (int) self::$inputs["round"]));
+
+    }
+
+    public static function round($value, $decimals = null, ?int $companyId = null) {
+
+        return round((float) $value, $decimals ?? self::decimalPrecision($companyId));
+
+    }
+
+    public static function formatDecimal($value, ?int $companyId = null, ?int $decimals = null): string {
+
+        return number_format(
+            (float) ($value ?? 0),
+            $decimals ?? self::decimalPrecision($companyId),
+            ".",
+            ","
+        );
 
     }
 

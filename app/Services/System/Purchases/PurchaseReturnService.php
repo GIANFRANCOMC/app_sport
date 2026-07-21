@@ -57,8 +57,8 @@ final class PurchaseReturnService {
                     ->where("purchase_return_items.purchase_item_id", $purchaseItem->id)
                     ->where("purchase_returns.status", "confirmed")
                     ->sum("purchase_return_items.quantity");
-                $quantity = round((float) $line["quantity"], 4);
-                $available = round((float) $purchaseItem->received_quantity - $previouslyReturned, 4);
+                $quantity = Utilities::round((float) $line["quantity"], null, $companyId);
+                $available = Utilities::round((float) $purchaseItem->received_quantity - $previouslyReturned, null, $companyId);
                 if($quantity > $available) {
                     throw new DomainException("La devolución supera la cantidad recibida disponible.");
                 }
@@ -85,7 +85,7 @@ final class PurchaseReturnService {
                     "inventory_movement_id" => $movement->id,
                     "quantity" => $quantity,
                     "unit_cost" => $purchaseItem->unit_cost,
-                    "total_cost" => round($quantity * (float) $purchaseItem->unit_cost, 4),
+                    "total_cost" => Utilities::round($quantity * (float) $purchaseItem->unit_cost, null, $companyId),
                     "created_at" => now()
                 ]);
             }

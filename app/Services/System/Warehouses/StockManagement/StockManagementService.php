@@ -89,8 +89,9 @@ class StockManagementService {
                     ];
                 })->values();
 
-                $item->setAttribute("stock_quantity", round((float) $warehouses->sum("quantity"), 4));
-                $item->setAttribute("minimum_stock", round((float) $warehouses->sum("minimum_stock"), 4));
+                $companyId = (int) $item->company_id;
+                $item->setAttribute("stock_quantity", Utilities::round((float) $warehouses->sum("quantity"), null, $companyId));
+                $item->setAttribute("minimum_stock", Utilities::round((float) $warehouses->sum("minimum_stock"), null, $companyId));
                 $item->setAttribute("warehouse_breakdown", $warehouses);
                 $item->setAttribute("alert_warehouses_count", $warehouses->where("requires_attention", true)->count());
 
@@ -177,8 +178,8 @@ class StockManagementService {
                                               ->where("item_id", $item["id"])
                                               ->first();
 
-                $currentQuantity = round((float) ($warehouseItem?->quantity ?? 0), 4);
-                $resultingBalance = round((float) ($item["stock_quantity"] ?? 0), 4);
+                $currentQuantity = Utilities::round((float) ($warehouseItem?->quantity ?? 0), null, (int) $warehouse->branch->company_id);
+                $resultingBalance = Utilities::round((float) ($item["stock_quantity"] ?? 0), null, (int) $warehouse->branch->company_id);
 
                 if(abs($currentQuantity - $resultingBalance) < 0.00001) {
 

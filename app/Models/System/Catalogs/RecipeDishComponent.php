@@ -25,8 +25,8 @@ class RecipeDishComponent extends Model {
     ];
 
     protected $casts = [
-        "quantity" => "decimal:4",
-        "waste_percentage" => "decimal:4"
+        "quantity" => "App\\Casts\\System\\ConfigurableDecimal",
+        "waste_percentage" => "App\\Casts\\System\\ConfigurableDecimal"
     ];
 
     public function recipeDish() {

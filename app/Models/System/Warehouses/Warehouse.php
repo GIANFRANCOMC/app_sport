@@ -40,7 +40,7 @@ class Warehouse extends Model {
 
         }
 
-        $normalized = preg_replace('/^.+\s-\s(Almac(?:én|Ã©n)\s+\d+)$/u', '$1', $name);
+        $normalized = preg_replace('/^.+\s-\s((?:Almacén|Almacen)\s+\d+)$/u', '$1', $name);
 
         return trim($normalized ?: $name);
 

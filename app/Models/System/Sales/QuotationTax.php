@@ -33,11 +33,11 @@ final class QuotationTax extends Model {
     ];
 
     protected $casts = [
-        "rate" => "decimal:4",
+        "rate" => "App\\Casts\\System\\ConfigurableDecimal",
         "is_required" => "boolean",
         "quantity" => "integer",
-        "base_amount" => "decimal:4",
-        "amount" => "decimal:4"
+        "base_amount" => "App\\Casts\\System\\ConfigurableDecimal",
+        "amount" => "App\\Casts\\System\\ConfigurableDecimal"
     ];
 
     public function tax() {

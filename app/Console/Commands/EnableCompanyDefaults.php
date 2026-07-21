@@ -7,6 +7,7 @@ namespace App\Console\Commands;
 use App\Helpers\System\Utilities;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 final class EnableCompanyDefaults extends Command {
 
@@ -150,9 +151,9 @@ final class EnableCompanyDefaults extends Command {
             ['group' => 'loyalty', 'key' => 'enabled', 'value' => 'false', 'description' => 'Activa el calculo de puntos para clientes en ventas confirmadas. Requiere reglas activas en loyalty_point_rules.', 'value_type' => 'boolean'],
             ['group' => 'loyalty', 'key' => 'reverse_points_on_sale_cancellation', 'value' => 'true', 'description' => 'Revierte puntos ganados cuando se anula la venta que los origino.', 'value_type' => 'boolean'],
             ['group' => 'reports', 'key' => 'sale_share_ttl_minutes', 'value' => '4320', 'description' => 'Tiempo de vigencia, en minutos, de los enlaces firmados para compartir o imprimir comprobantes de venta fuera de la sesion autenticada.', 'value_type' => 'integer'],
-            ['group' => 'numeric_validation', 'key' => 'decimal_precision', 'value' => '4', 'description' => 'Cantidad de decimales permitidos y usados para redondear montos, cantidades, costos, tributos, pagos e inventario en validaciones y formularios.', 'value_type' => 'integer'],
+            ['group' => 'numeric_validation', 'key' => 'decimal_precision', 'value' => '3', 'description' => 'Cantidad de decimales permitidos y usados para redondear montos, cantidades, costos, tributos, pagos e inventario en validaciones y formularios.', 'value_type' => 'integer'],
             ['group' => 'numeric_validation', 'key' => 'default_min_value', 'value' => '0', 'description' => 'Valor minimo operativo usado por defecto en validaciones numericas cuando el campo no define una regla mas especifica.', 'value_type' => 'decimal'],
-            ['group' => 'numeric_validation', 'key' => 'default_max_value', 'value' => '999999999999.9999', 'description' => 'Valor maximo operativo usado por defecto en validaciones numericas de cantidades, precios, totales, pagos, costos y saldos.', 'value_type' => 'decimal'],
+            ['group' => 'numeric_validation', 'key' => 'default_max_value', 'value' => '999999999999.999', 'description' => 'Valor maximo operativo usado por defecto en validaciones numericas de cantidades, precios, totales, pagos, costos y saldos.', 'value_type' => 'decimal'],
             ['group' => 'numeric_validation', 'key' => 'max_file_size_kb', 'value' => '4096', 'description' => 'Tamanio maximo por defecto, en KB, para archivos validados desde formularios de la empresa.', 'value_type' => 'integer']
         ];
 
@@ -186,15 +187,17 @@ final class EnableCompanyDefaults extends Command {
     private function seedPaymentMethods(int $companyId): void {
 
         $methods = [
-            ['code' => 'CASH', 'sunat_code' => '008', 'name' => 'Efectivo', 'image_path' => 'System/assets/img/payment-methods/cash.svg', 'scope' => 'both', 'requires_reference' => false, 'is_default' => true],
-            ['code' => 'BANK_DEPOSIT', 'sunat_code' => '001', 'name' => 'Depósito en cuenta', 'image_path' => 'System/assets/img/payment-methods/bank-deposit.svg', 'scope' => 'both', 'requires_reference' => true, 'is_default' => false],
-            ['code' => 'BANK_TRANSFER', 'sunat_code' => '003', 'name' => 'Transferencia de fondos', 'image_path' => 'System/assets/img/payment-methods/bank-transfer.svg', 'scope' => 'both', 'requires_reference' => true, 'is_default' => false],
-            ['code' => 'DEBIT_CARD', 'sunat_code' => '005', 'name' => 'Tarjeta de débito', 'image_path' => 'System/assets/img/payment-methods/debit-card.svg', 'scope' => 'sale', 'requires_reference' => true, 'is_default' => false],
-            ['code' => 'CREDIT_CARD', 'sunat_code' => '006', 'name' => 'Tarjeta de crédito', 'image_path' => 'System/assets/img/payment-methods/credit-card.svg', 'scope' => 'sale', 'requires_reference' => true, 'is_default' => false],
-            ['code' => 'CHECK', 'sunat_code' => '007', 'name' => 'Cheque no negociable', 'image_path' => 'System/assets/img/payment-methods/check.svg', 'scope' => 'both', 'requires_reference' => true, 'is_default' => false],
-            ['code' => 'DIGITAL_WALLET', 'sunat_code' => null, 'name' => 'Billetera digital', 'image_path' => 'System/assets/img/payment-methods/digital-wallet.svg', 'scope' => 'both', 'requires_reference' => true, 'is_default' => false],
-            ['code' => 'YAPE', 'sunat_code' => null, 'name' => 'Yape', 'image_path' => 'System/assets/img/payment-methods/yape.svg', 'scope' => 'both', 'requires_reference' => true, 'is_default' => false],
-            ['code' => 'PLIN', 'sunat_code' => null, 'name' => 'Plin', 'image_path' => 'System/assets/img/payment-methods/plin.svg', 'scope' => 'both', 'requires_reference' => true, 'is_default' => false]
+            ['code' => 'CASH', 'category' => 'cash', 'sunat_code' => '008', 'name' => 'Efectivo', 'description' => 'Pago realizado con dinero físico al momento de la operación.', 'image_path' => 'System/assets/img/payment-methods/cash.svg', 'scope' => 'both', 'requires_reference' => false, 'supports_variants' => false, 'allows_partial_payment' => true, 'is_default' => true],
+            ['code' => 'BANK_DEPOSIT', 'category' => 'bank', 'sunat_code' => '001', 'name' => 'Depósito en cuenta', 'description' => 'Depósito realizado en una cuenta bancaria de la empresa o del proveedor.', 'image_path' => 'System/assets/img/payment-methods/bank-deposit.svg', 'scope' => 'both', 'requires_reference' => true, 'supports_variants' => false, 'allows_partial_payment' => true, 'is_default' => false],
+            ['code' => 'BANK_TRANSFER', 'category' => 'bank', 'sunat_code' => '003', 'name' => 'Transferencia de fondos', 'description' => 'Transferencia bancaria entre cuentas o entidades financieras.', 'image_path' => 'System/assets/img/payment-methods/bank-transfer.svg', 'scope' => 'both', 'requires_reference' => true, 'supports_variants' => false, 'allows_partial_payment' => true, 'is_default' => false],
+            ['code' => 'DEBIT_CARD', 'category' => 'card', 'sunat_code' => '005', 'name' => 'Tarjeta de débito', 'description' => 'Pago con tarjeta de débito; puede registrar marca o red como variante.', 'image_path' => 'System/assets/img/payment-methods/debit-card.svg', 'scope' => 'sale', 'requires_reference' => true, 'supports_variants' => true, 'allows_partial_payment' => true, 'is_default' => false],
+            ['code' => 'CREDIT_CARD', 'category' => 'card', 'sunat_code' => '006', 'name' => 'Tarjeta de crédito', 'description' => 'Pago con tarjeta de crédito; puede registrar marca o red como variante.', 'image_path' => 'System/assets/img/payment-methods/credit-card.svg', 'scope' => 'sale', 'requires_reference' => true, 'supports_variants' => true, 'allows_partial_payment' => true, 'is_default' => false],
+            ['code' => 'CHECK', 'category' => 'bank', 'sunat_code' => '007', 'name' => 'Cheque no negociable', 'description' => 'Cheque emitido como medio de pago bancarizado.', 'image_path' => 'System/assets/img/payment-methods/check.svg', 'scope' => 'both', 'requires_reference' => true, 'supports_variants' => false, 'allows_partial_payment' => true, 'is_default' => false],
+            ['code' => 'DIGITAL_WALLET', 'category' => 'digital_wallet', 'sunat_code' => null, 'name' => 'Billetera digital', 'description' => 'Método general para pagos con billeteras digitales como Yape, Plin, Agora PAY, Bim o IzipayYA.', 'image_path' => 'System/assets/img/payment-methods/digital-wallet.svg', 'scope' => 'both', 'requires_reference' => true, 'supports_variants' => true, 'allows_partial_payment' => true, 'is_default' => false],
+            ['code' => 'MONEY_ORDER', 'category' => 'bank', 'sunat_code' => '002', 'name' => 'Giro', 'description' => 'Giro u orden bancaria reconocida como medio de pago.', 'image_path' => 'System/assets/img/payment-methods/money-order.svg', 'scope' => 'both', 'requires_reference' => true, 'supports_variants' => false, 'allows_partial_payment' => true, 'is_default' => false],
+            ['code' => 'PAYMENT_ORDER', 'category' => 'bank', 'sunat_code' => '004', 'name' => 'Orden de pago', 'description' => 'Orden emitida mediante el sistema financiero para cancelar una operación.', 'image_path' => 'System/assets/img/payment-methods/payment-order.svg', 'scope' => 'both', 'requires_reference' => true, 'supports_variants' => false, 'allows_partial_payment' => true, 'is_default' => false],
+            ['code' => 'REMITTANCE', 'category' => 'bank', 'sunat_code' => null, 'name' => 'Remesa', 'description' => 'Remesa canalizada por el sistema financiero.', 'image_path' => 'System/assets/img/payment-methods/remittance.svg', 'scope' => 'both', 'requires_reference' => true, 'supports_variants' => false, 'allows_partial_payment' => true, 'is_default' => false],
+            ['code' => 'LETTER_OF_CREDIT', 'category' => 'bank', 'sunat_code' => null, 'name' => 'Carta de crédito', 'description' => 'Carta de crédito usada principalmente en compras u operaciones empresariales.', 'image_path' => 'System/assets/img/payment-methods/letter-of-credit.svg', 'scope' => 'purchase', 'requires_reference' => true, 'supports_variants' => false, 'allows_partial_payment' => true, 'is_default' => false]
         ];
 
         foreach($methods as $method) {
@@ -202,6 +205,66 @@ final class EnableCompanyDefaults extends Command {
                 ['company_id' => $companyId, 'code' => $method['code']],
                 $method + ['company_id' => $companyId, 'status' => 'active']
             );
+        }
+
+        DB::table('payment_methods')
+            ->where('company_id', $companyId)
+            ->whereIn('code', ['YAPE', 'PLIN'])
+            ->delete();
+
+        $this->seedPaymentMethodVariants($companyId);
+
+    }
+
+    private function seedPaymentMethodVariants(int $companyId): void {
+
+        if(!Schema::hasTable('payment_method_variants')) {
+            return;
+        }
+
+        $methods = DB::table('payment_methods')
+            ->where('company_id', $companyId)
+            ->whereIn('code', ['DIGITAL_WALLET', 'DEBIT_CARD', 'CREDIT_CARD'])
+            ->pluck('id', 'code');
+
+        $variantsByMethod = [
+            'DIGITAL_WALLET' => [
+                ['code' => 'YAPE', 'name' => 'Yape', 'image_path' => 'System/assets/img/payment-methods/yape.svg', 'description' => 'Billetera digital de uso masivo en Perú.'],
+                ['code' => 'PLIN', 'name' => 'Plin', 'image_path' => 'System/assets/img/payment-methods/plin.svg', 'description' => 'Billetera digital interoperable en Perú.'],
+                ['code' => 'AGORA_PAY', 'name' => 'Agora PAY', 'image_path' => 'System/assets/img/payment-methods/agora-pay.svg', 'description' => 'Billetera digital disponible en Perú.'],
+                ['code' => 'BIM', 'name' => 'Bim', 'image_path' => 'System/assets/img/payment-methods/bim.svg', 'description' => 'Billetera móvil peruana orientada a pagos digitales.'],
+                ['code' => 'IZIPAYYA', 'name' => 'IzipayYA', 'image_path' => 'System/assets/img/payment-methods/izipayya.svg', 'description' => 'Billetera digital antes conocida como Tunki.']
+            ],
+            'DEBIT_CARD' => [
+                ['code' => 'VISA_DEBIT', 'name' => 'Visa débito', 'image_path' => 'System/assets/img/payment-methods/visa.svg', 'description' => 'Pago con tarjeta de débito Visa.'],
+                ['code' => 'MASTERCARD_DEBIT', 'name' => 'Mastercard débito', 'image_path' => 'System/assets/img/payment-methods/mastercard.svg', 'description' => 'Pago con tarjeta de débito Mastercard.']
+            ],
+            'CREDIT_CARD' => [
+                ['code' => 'VISA_CREDIT', 'name' => 'Visa crédito', 'image_path' => 'System/assets/img/payment-methods/visa.svg', 'description' => 'Pago con tarjeta de crédito Visa.'],
+                ['code' => 'MASTERCARD_CREDIT', 'name' => 'Mastercard crédito', 'image_path' => 'System/assets/img/payment-methods/mastercard.svg', 'description' => 'Pago con tarjeta de crédito Mastercard.'],
+                ['code' => 'AMEX_CREDIT', 'name' => 'American Express', 'image_path' => 'System/assets/img/payment-methods/american-express.svg', 'description' => 'Pago con tarjeta American Express.'],
+                ['code' => 'DINERS_CREDIT', 'name' => 'Diners Club', 'image_path' => 'System/assets/img/payment-methods/diners-club.svg', 'description' => 'Pago con tarjeta Diners Club.']
+            ]
+        ];
+
+        foreach($variantsByMethod as $methodCode => $variants) {
+            $methodId = $methods[$methodCode] ?? null;
+            if(!$methodId) continue;
+
+            foreach($variants as $variant) {
+                DB::table('payment_method_variants')->updateOrInsert(
+                    ['company_id' => $companyId, 'payment_method_id' => $methodId, 'code' => $variant['code']],
+                    $variant + [
+                        'company_id' => $companyId,
+                        'payment_method_id' => $methodId,
+                        'sunat_code' => null,
+                        'requires_reference' => true,
+                        'is_default' => false,
+                        'status' => 'active',
+                        'updated_at' => now()
+                    ]
+                );
+            }
         }
 
     }

@@ -485,18 +485,12 @@ export default {
                 : this.numberLabel(record.quantity);
         },
         numberLabel(value) {
-            return Number(value || 0).toLocaleString("es-PE", {
-                minimumFractionDigits: 0,
-                maximumFractionDigits: 2
-            });
+            return Utils.separatorNumber(value || 0, 0);
         },
         amountLabel(value) {
             if(value === undefined || value === null) return "—";
 
-            return `S/ ${Number(value || 0).toLocaleString("es-PE", {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2
-            })}`;
+            return `S/ ${Utils.separatorNumber(value || 0)}`;
         },
         isDefined({value}) {
             return Utils.isDefined({value});

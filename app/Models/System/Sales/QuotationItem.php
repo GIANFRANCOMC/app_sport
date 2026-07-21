@@ -33,10 +33,10 @@ final class QuotationItem extends Model {
     ];
 
     protected $casts = [
-        "quantity" => "decimal:4",
-        "price" => "decimal:4",
+        "quantity" => "App\\Casts\\System\\ConfigurableDecimal",
+        "price" => "App\\Casts\\System\\ConfigurableDecimal",
         "price_includes_tax" => "boolean",
-        "total" => "decimal:4"
+        "total" => "App\\Casts\\System\\ConfigurableDecimal"
     ];
 
     public function item() {

@@ -53,7 +53,7 @@
 
 <script>
 import { generalConfig } from "../Helpers/Constants.js";
-import { isDefined, separatorNumber } from "../Helpers/Utils.js";
+import { isDefined, resolveDecimals, separatorNumber } from "../Helpers/Utils.js";
 
 export default {
     name: "InputNumber",
@@ -125,7 +125,7 @@ export default {
         decimals: {
             type: [String, Number],
             required: false,
-            default: generalConfig.forms.inputs.round
+            default: null
         },
         placeholder: {
             type: String,
@@ -188,7 +188,12 @@ export default {
     computed: {
         formattedValue() {
 
-            return separatorNumber(this.modelValue);
+            return separatorNumber(this.modelValue, this.decimalPlaces);
+
+        },
+        decimalPlaces() {
+
+            return resolveDecimals(this.decimals);
 
         },
         textBottom() {
@@ -242,7 +247,7 @@ export default {
             }else {
 
                 const hasFormattedNumber = this.hasNegative ? /^-?\d+(\.\d+)?$/.test(valueString) : /^\d+(\.\d+)?$/.test(valueString); // Case: 1  2  3.1  5.67  0.329
-                const hasDecimalInitNumber = this.decimals > 0 && (this.hasNegative ? /^-?\d+\.$/.test(valueString) : /^\d+\.$/.test(valueString)); // Case: With decimals (Input: 12. 3134. 23461.)
+                const hasDecimalInitNumber = this.decimalPlaces > 0 && (this.hasNegative ? /^-?\d+\.$/.test(valueString) : /^\d+\.$/.test(valueString)); // Case: With decimals (Input: 12. 3134. 23461.)
 
                 if(this.hasNegative && value == "-") {
 
@@ -266,21 +271,21 @@ export default {
 
                     }else {
 
-                        const regexDecimals = this.hasNegative ? (this.decimals > 0 ? new RegExp(`^-?\\d+(\\.\\d{1,${this.decimals}})?$`) : /^-?\d+$/) :
-                                                                 (this.decimals > 0 ? new RegExp(`^\\d+(\\.\\d{1,${this.decimals}})?$`) : /^\d+$/);
+                        const regexDecimals = this.hasNegative ? (this.decimalPlaces > 0 ? new RegExp(`^-?\\d+(\\.\\d{1,${this.decimalPlaces}})?$`) : /^-?\d+$/) :
+                                                                 (this.decimalPlaces > 0 ? new RegExp(`^\\d+(\\.\\d{1,${this.decimalPlaces}})?$`) : /^\d+$/);
 
                         const hasFormattedDecimal = regexDecimals.test(valueString);
 
                         // hasFormattedDecimal 23.1  43.12 (1.n decimals limit)
                         // hasDecimalInitNumber 23.  65.
 
-                        if(this.decimals > 0) {
+                        if(this.decimalPlaces > 0) {
 
-                            hasFormattedDecimal || hasDecimalInitNumber ? this.emitValue({reset: false, result: numericValue}) : this.emitValue({reset: false, result: Number(numericValue.toFixed(this.decimals))});
+                            hasFormattedDecimal || hasDecimalInitNumber ? this.emitValue({reset: false, result: numericValue}) : this.emitValue({reset: false, result: Number(numericValue.toFixed(this.decimalPlaces))});
 
                         }else {
 
-                            hasFormattedDecimal ? this.emitValue({reset: false, result: numericValue}) : this.emitValue({reset: false, result: Number(numericValue.toFixed(this.decimals))});
+                            hasFormattedDecimal ? this.emitValue({reset: false, result: numericValue}) : this.emitValue({reset: false, result: Number(numericValue.toFixed(this.decimalPlaces))});
 
                         }
 
@@ -344,7 +349,7 @@ export default {
 
             }
 
-            if(this.decimals > 0) {
+            if(this.decimalPlaces > 0) {
 
                 allowedKeys.push(".");
 

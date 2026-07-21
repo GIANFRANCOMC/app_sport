@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 
+use App\Helpers\System\Utilities;
 use App\Models\System\Catalogs\Item;
 use App\Models\System\Purchases\{
     PurchaseHeader,
@@ -27,7 +28,7 @@ use App\Services\System\Warehouses\StockManagement\StockManagementService;
 
 final class PurchaseService {
 
-    private static function allocateExpenses(array $details, array $expenses): array {
+    private static function allocateExpenses(array $details, array $expenses, int $companyId): array {
 
         $allocations = collect($details)
             ->mapWithKeys(fn($detail) => [(int) $detail["item_id"] => 0.0])
@@ -35,7 +36,7 @@ final class PurchaseService {
 
         foreach($expenses as $expense) {
 
-            $amount = round((float) ($expense["amount"] ?? 0), 4);
+            $amount = Utilities::round((float) ($expense["amount"] ?? 0), null, $companyId);
             if($amount <= 0) {
 
                 continue;
@@ -67,8 +68,8 @@ final class PurchaseService {
             foreach($weights as $itemId => $weight) {
 
                 $allocated = (int) $itemId === $lastItemId
-                    ? round($amount - $distributed, 4)
-                    : round($amount * ((float) $weight / $denominator), 4);
+                    ? Utilities::round($amount - $distributed, null, $companyId)
+                    : Utilities::round($amount * ((float) $weight / $denominator), null, $companyId);
                 $allocations[(int) $itemId] += $allocated;
                 $distributed += $allocated;
 
@@ -221,7 +222,7 @@ final class PurchaseService {
             }
 
             $subtotal = collect($data["items"])->sum(fn($item) =>
-                round((float) $item["quantity"] * (float) $item["unit_cost"], 4)
+                Utilities::round((float) $item["quantity"] * (float) $item["unit_cost"], null, $companyId)
             );
             $selectedTaxIds = collect($data["taxes"] ?? [])
                 ->pluck("tax_id")
@@ -242,11 +243,11 @@ final class PurchaseService {
                 $selectedTaxIds,
                 $selectedTaxQuantities
             );
-            $tax = round((float) $taxLines->sum("amount"), 4);
+            $tax = Utilities::round((float) $taxLines->sum("amount"), null, $companyId);
             $expenses = is_array($data["expenses"] ?? null) ? $data["expenses"] : [];
-            $expenseTotal = round((float) collect($expenses)->sum("amount"), 4);
-            $allocatedExpenses = self::allocateExpenses($data["items"], $expenses);
-            $total = round($subtotal + $tax + $expenseTotal, 4);
+            $expenseTotal = Utilities::round((float) collect($expenses)->sum("amount"), null, $companyId);
+            $allocatedExpenses = self::allocateExpenses($data["items"], $expenses, $companyId);
+            $total = Utilities::round($subtotal + $tax + $expenseTotal, null, $companyId);
             $defaultPaymentModality = (string) CompanySettingService::value(
                 $companyId,
                 CompanySettingService::PURCHASES,
@@ -265,8 +266,8 @@ final class PurchaseService {
                     0
                 )
                 : 0.0;
-            $installmentExtraAmount = round($total * ($installmentExtraPercentage / 100), 4);
-            $total = round($total + $installmentExtraAmount, 4);
+            $installmentExtraAmount = Utilities::round($total * ($installmentExtraPercentage / 100), null, $companyId);
+            $total = Utilities::round($total + $installmentExtraAmount, null, $companyId);
             $paymentLines = CommercialDocumentSettlementService::payments(
                 $companyId,
                 "purchase",
@@ -275,9 +276,9 @@ final class PurchaseService {
                 $userId,
                 $paymentModality === CommercialCreditAccountService::PAID_NOW
             );
-            $paidAmount = round((float) $paymentLines->sum("amount"), 4);
-            $balanceDue = round($total - $paidAmount, 4);
-            $paymentStatus = CommercialCreditAccountService::paymentStatus((float) $total, (float) $paidAmount);
+            $paidAmount = Utilities::round((float) $paymentLines->sum("amount"), null, $companyId);
+            $balanceDue = Utilities::round($total - $paidAmount, null, $companyId);
+            $paymentStatus = CommercialCreditAccountService::paymentStatus((float) $total, (float) $paidAmount, (int) $companyId);
 
             $purchaseData = [
                 "company_id" => $companyId,
@@ -360,11 +361,11 @@ final class PurchaseService {
             foreach($data["items"] as $detail) {
 
                 $item = $items->get((int) $detail["item_id"]);
-                $quantity = round((float) $detail["quantity"], 4);
-                $unitCost = round((float) $detail["unit_cost"], 4);
-                $allocatedExpense = round((float) ($allocatedExpenses[$item->id] ?? 0), 4);
+                $quantity = Utilities::round((float) $detail["quantity"], null, $companyId);
+                $unitCost = Utilities::round((float) $detail["unit_cost"], null, $companyId);
+                $allocatedExpense = Utilities::round((float) ($allocatedExpenses[$item->id] ?? 0), null, $companyId);
                 $inventoryUnitCost = $quantity > 0
-                    ? round($unitCost + ($allocatedExpense / $quantity), 4)
+                    ? Utilities::round($unitCost + ($allocatedExpense / $quantity), null, $companyId)
                     : $unitCost;
 
                 PurchaseItem::create([
@@ -377,7 +378,7 @@ final class PurchaseService {
                     "unit_cost" => $unitCost,
                     "allocated_expense_total" => $allocatedExpense,
                     "inventory_unit_cost" => $inventoryUnitCost,
-                    "subtotal" => round($quantity * $unitCost, 4),
+                    "subtotal" => Utilities::round($quantity * $unitCost, null, $companyId),
                     "status" => "pending",
                     "created_at" => now(),
                     "created_by" => $userId
@@ -458,8 +459,8 @@ final class PurchaseService {
 
                 }
 
-                $quantity = round((float) $receivedItem["quantity"], 4);
-                $remaining = round((float) $purchaseItem->quantity - (float) $purchaseItem->received_quantity, 4);
+                $quantity = Utilities::round((float) $receivedItem["quantity"], null, $companyId);
+                $remaining = Utilities::round((float) $purchaseItem->quantity - (float) $purchaseItem->received_quantity, null, $companyId);
 
                 if($quantity <= 0 || $quantity > $remaining) {
 
@@ -495,12 +496,12 @@ final class PurchaseService {
                     "inventory_movement_id" => $movement->id,
                     "quantity" => $quantity,
                     "unit_cost" => $purchaseItem->inventory_unit_cost,
-                    "total_cost" => round($quantity * (float) $purchaseItem->inventory_unit_cost, 4),
+                    "total_cost" => Utilities::round($quantity * (float) $purchaseItem->inventory_unit_cost, null, $companyId),
                     "created_at" => now(),
                     "created_by" => $userId
                 ]);
 
-                $receivedQuantity = round((float) $purchaseItem->received_quantity + $quantity, 4);
+                $receivedQuantity = Utilities::round((float) $purchaseItem->received_quantity + $quantity, null, $companyId);
                 $purchaseItem->update([
                     "received_quantity" => $receivedQuantity,
                     "status" => $receivedQuantity >= (float) $purchaseItem->quantity

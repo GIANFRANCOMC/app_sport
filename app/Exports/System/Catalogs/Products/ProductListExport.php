@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Exports\System\Catalogs\Products;
 
 use App\Models\System\Catalogs\Item;
+use App\Helpers\System\Utilities;
 use App\Services\System\Catalogs\Products\ProductService;
 use Illuminate\Database\Eloquent\Builder;
 use Maatwebsite\Excel\Concerns\{
@@ -247,7 +248,7 @@ final class ProductListExport extends DefaultValueBinder implements FromQuery, W
 
     private function formatDecimal(mixed $value): string {
 
-        return number_format((float) ($value ?? 0), 2, ".", ",");
+        return Utilities::formatDecimal($value, $this->companyId);
 
     }
 

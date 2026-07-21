@@ -30,7 +30,7 @@ final class Supplier extends Model {
 
     protected $casts = [
         "payment_term_days" => "integer",
-        "credit_limit" => "decimal:4"
+        "credit_limit" => "App\\Casts\\System\\ConfigurableDecimal"
     ];
 
     public function purchases() {

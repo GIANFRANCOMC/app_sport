@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
@@ -26,10 +26,10 @@ return new class extends Migration {
             $table->timestamp("delivered_at")->nullable();
             $table->unsignedBigInteger("delivered_by")->nullable();
             $table->string("delivery_observation", 500)->nullable();
-            $table->decimal("subtotal", 16, 4)->default(0);
-            $table->decimal("tax", 16, 4)->default(0);
-            $table->decimal("commission_total", 16, 4)->default(0);
-            $table->decimal("total", 16, 4);
+            $table->decimal("subtotal", 15, 3)->default(0);
+            $table->decimal("tax", 15, 3)->default(0);
+            $table->decimal("commission_total", 15, 3)->default(0);
+            $table->decimal("total", 15, 3);
             $table->text("observation")->nullable();
             $table->enum("status", ["active", "canceled", "inactive"])->default("active");
 
@@ -81,13 +81,13 @@ return new class extends Migration {
             $table->unsignedBigInteger("item_id");
             $table->unsignedBigInteger("currency_id");
             $table->string("name", 255);
-            $table->decimal("quantity", 16, 4);
-            $table->decimal("price", 16, 4);
+            $table->decimal("quantity", 15, 3);
+            $table->decimal("price", 15, 3);
             $table->boolean("price_includes_tax")->default(true);
-            $table->decimal("total", 16, 4);
+            $table->decimal("total", 15, 3);
             $table->enum("commission_type", ["none", "percentage", "fixed"])->default("none");
-            $table->decimal("commission_value", 16, 4)->default(0);
-            $table->decimal("commission_amount", 16, 4)->default(0);
+            $table->decimal("commission_value", 15, 3)->default(0);
+            $table->decimal("commission_amount", 15, 3)->default(0);
             $table->unsignedBigInteger("customer_id");
             $table->enum("type", ["product", "service", "subscription"])->default("product");
             $table->text("observation")->nullable();
@@ -115,13 +115,13 @@ return new class extends Migration {
             $table->unsignedBigInteger("tax_id")->nullable();
             $table->string("name", 255);
             $table->text("description")->nullable();
-            $table->decimal("rate", 16, 4)->default(0);
+            $table->decimal("rate", 15, 3)->default(0);
             $table->enum("calculation_type", ["percentage", "fixed"])->default("percentage");
             $table->enum("operation_type", ["addition", "subtraction"])->default("addition");
             $table->boolean("is_required")->default(true);
             $table->unsignedInteger("quantity")->default(1);
-            $table->decimal("base_amount", 16, 4)->default(0);
-            $table->decimal("amount", 16, 4)->default(0);
+            $table->decimal("base_amount", 15, 3)->default(0);
+            $table->decimal("amount", 15, 3)->default(0);
             $table->enum("status", ["active", "canceled", "inactive"])->default("active");
 
             $table->timestamp("created_at")->useCurrent()->nullable();
@@ -140,7 +140,7 @@ return new class extends Migration {
             $table->unsignedBigInteger("sale_header_id");
             $table->unsignedBigInteger("payment_method_id")->nullable();
             $table->string("name", 255);
-            $table->decimal("amount", 16, 4)->default(0);
+            $table->decimal("amount", 15, 3)->default(0);
             $table->string("reference", 100)->nullable();
             $table->text("note")->nullable();
             $table->enum("status", ["active", "canceled", "inactive"])->default("active");

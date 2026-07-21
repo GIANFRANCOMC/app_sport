@@ -18,7 +18,7 @@ final class InventoryGuideItem extends Model {
         "unit_cost"
     ];
 
-    protected $casts = ["quantity" => "decimal:4", "unit_cost" => "decimal:4"];
+    protected $casts = ["quantity" => "App\\Casts\\System\\ConfigurableDecimal", "unit_cost" => "App\\Casts\\System\\ConfigurableDecimal"];
 
     public function guide() { return $this->belongsTo(InventoryGuide::class, "inventory_guide_id"); }
     public function item() { return $this->belongsTo(Item::class); }

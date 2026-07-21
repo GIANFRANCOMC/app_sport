@@ -15,6 +15,7 @@ Permitir que cada empresa configure tributos, métodos de pago, variantes de pag
 - En ventas y POS, un producto, servicio o membresía con `price_includes_tax = false` forma parte de la base gravable y recibe todos los tributos activos del alcance correspondiente.
 - `payment_methods` representa el método general, por ejemplo `Billetera digital`.
 - `payment_method_variants` representa la opción específica, por ejemplo `Yape`, `Plin`, `Agora PAY`, `Bim` o `IzipayYA`.
+- `YAPE`, `PLIN` y cualquier billetera concreta no deben registrarse como filas principales de `payment_methods`; siempre pertenecen a `payment_method_variants` bajo `DIGITAL_WALLET`.
 - Una venta puede registrar uno o más métodos de pago configurados para `sale` o `both`.
 - Una compra puede registrar uno o más métodos de pago configurados para `purchase` o `both`.
 - En modalidad `paid_now`, la suma de pagos debe coincidir con el total del documento.

@@ -1,12 +1,12 @@
 /**
- * Utilidades para manejo de números
+ * Utilidades para manejo de números.
  */
 
 import { generalConfig } from "./Constants.js";
 import { isDefined } from "./ValidationUtils.js";
 
 /**
- * Valida si un valor es un número válido
+ * Valida si un valor es un número válido.
  * @param {Object} options - {value: *, minValue: number}
  * @returns {boolean} true si es válido
  */
@@ -39,35 +39,67 @@ export function isNumber({value, minValue = 0, maxValue = null, allowEmpty = fal
 }
 
 /**
- * Formatea un número con decimales fijos
+ * Formatea un número con decimales fijos.
  * @param {number} value - Valor numérico
  * @param {number|null} decimals - Número de decimales (null usa el config por defecto)
  * @returns {string} Número formateado
  */
 export function fixedNumber(value, decimals = null) {
-    return Number(value).toFixed(decimals ?? generalConfig.forms.inputs.round);
+
+    return normalizeNumber(value).toFixed(resolveDecimals(decimals));
+
 }
 
 /**
- * Formatea un número con separadores de miles
+ * Formatea un número con separadores de miles y punto decimal.
  * @param {*} value - Valor a formatear
+ * @param {number|null} decimals - Decimales a mostrar
  * @returns {string} Número formateado
  */
-export function separatorNumber(value) {
-    const number = isDefined({value}) ? value : 0;
-    return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+export function separatorNumber(value, decimals = null) {
+
+    const decimalPlaces = resolveDecimals(decimals);
+
+    return new Intl.NumberFormat("en-US", {
+        minimumFractionDigits: decimalPlaces,
+        maximumFractionDigits: decimalPlaces
+    }).format(normalizeNumber(value));
+
 }
 
 /**
- * Calcula el total de un item (cantidad * precio)
+ * Calcula el total de un item (cantidad * precio).
  * @param {Object} options - {item: {quantity: number, price: number}}
  * @returns {number} Total calculado
  */
 export function calculateTotal({item}) {
+
     const quantity = isNumber({value: item?.quantity}) ? Number(String(item.quantity).replace(/,/g, "")) : 0;
     const price = isNumber({value: item?.price}) ? Number(String(item.price).replace(/,/g, "")) : 0;
-    const total = fixedNumber(quantity * price);
-    return total;
+
+    return fixedNumber(quantity * price);
+
 }
 
+export function resolveDecimals(decimals = null) {
 
+    const value = decimals ?? generalConfig.forms.inputs.round;
+    const parsed = Number(value);
+
+    return Number.isFinite(parsed) ? Math.max(0, Math.min(8, Math.trunc(parsed))) : 3;
+
+}
+
+export function normalizeNumber(value) {
+
+    if(!isDefined({value})) return 0;
+
+    const normalized = typeof value === "string"
+        ? value.trim().replace(/,/g, "")
+        : value;
+
+    const parsed = Number(normalized);
+
+    return Number.isFinite(parsed) ? parsed : 0;
+
+}

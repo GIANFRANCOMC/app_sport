@@ -1,4 +1,4 @@
-<template>
+﻿<template>
     <Breadcrumb :list="breadcrumbTitles"/>
 
     <!-- Content -->
@@ -6,7 +6,7 @@
         <div class="col-lg-9 col-12">
             <div class="card">
                 <div class="card-body">
-                    <div class="row g-3 mb-4">
+                    <div class="row g-2 mb-2">
                         <InputSlot
                             hasDiv
                             :title="MODULE.texts.form.branch"
@@ -64,7 +64,7 @@
                             hasTextBottom
                             :textBottomInfo="forms[entity].createUpdate.errors?.issue_date"
                             xl="4"
-                            lg="6"/>
+                            lg="4"/>
                         <InputSlot
                             hasDiv
                             :title="MODULE.texts.form.holder"
@@ -78,6 +78,16 @@
                                 <AddCustomer
                                     :options="customerOptions"
                                     @postAction="addCustomerPostAction"/>
+                            </template>
+                            <template v-slot:defaultAppend>
+                                <a
+                                    href="javascript:void(0)"
+                                    class="br-link br-quick-create-trigger br-quick-create-trigger--link br-sale-customer-history-trigger ms-2"
+                                    :aria-disabled="!forms[entity].createUpdate.data.holder"
+                                    :title="MODULE.texts.actions.viewCustomerHistory"
+                                    @click.prevent="forms[entity].createUpdate.data.holder && viewCustomerHistory()">
+                                    <span v-text="MODULE.texts.actions.viewCustomerHistory"></span>
+                                </a>
                             </template>
                             <template v-slot:input>
                                 <v-select
@@ -298,48 +308,41 @@
                     </template>
                 </InputSlot>
             </div>
-            <div class="w-100 mb-2 mb-md-3">
-                <div class="br-observation-tile">
-                    <div
-                        role="button"
-                        tabindex="0"
-                        class="br-tap-field"
-                        :class="observationHasContent ? 'br-tap-field--has-value' : 'br-tap-field--empty'"
-                        @click="openObservationsModal"
-                        @keydown.enter.prevent="openObservationsModal"
-                        @keydown.space.prevent="openObservationsModal"
-                        :aria-label="observationsFieldAriaLabel">
-                        <div class="br-tap-field__head">
-                            <span class="br-tap-field__eyebrow" v-text="MODULE.texts.form.observation"></span>
-                            <i class="br-tap-field__icon" :class="observationHasContent ? 'fa-solid fa-square-pen' : 'fa-solid fa-note-sticky'" aria-hidden="true"></i>
-                        </div>
+            <div class="br-document-settlement br-sale-settlement mb-2 mb-md-3">
+                <div>
+                    <div class="br-document-settlement__header">
+                        <label class="form-label">Observaciones</label>
+                        <button
+                            type="button"
+                            class="br-btn br-btn-xs br-btn-action-import br-document-payment-config waves-effect"
+                            @click="openObservationsModal">
+                            <span>Cambiar</span>
+                        </button>
+                    </div>
+                    <div class="br-document-observation-summary">
                         <span
                             v-if="observationHasContent"
-                            class="br-tap-field__value"
-                            :class="{ 'br-tap-field__value--expanded': observationPreviewExpanded }"
+                            class="br-document-observation-summary__value"
                             :title="observationPreviewTooltip"
                             v-text="observationDisplayPreview">
                         </span>
-                        <span v-else class="br-tap-field__placeholder" v-text="MODULE.texts.observations.discreteEmpty"></span>
+                        <p v-else class="br-document-settlement__empty mb-0">
+                            Sin observaciones para esta venta.
+                        </p>
                     </div>
-                    <button
-                        v-if="observationHasContent && observationIsTruncatable"
-                        type="button"
-                        class="br-observation-tile__toggle"
-                        :aria-expanded="observationPreviewExpanded"
-                        @click.stop="toggleObservationPreviewExpand">
-                        <span v-text="observationPreviewToggleLabel"></span>
-                    </button>
+                    <p
+                        v-if="forms[entity].createUpdate.errors?.observation?.length"
+                        class="small mb-0 mt-2"
+                        :class="config.forms.errors.styles.default"
+                        v-html="observationErrorsDisplay"></p>
                 </div>
-                <p
-                    v-if="forms[entity].createUpdate.errors?.observation?.length"
-                    class="small mb-0 mt-2"
-                    :class="config.forms.errors.styles.default"
-                    v-html="observationErrorsDisplay"></p>
-            </div>
-            <div class="br-document-settlement br-sale-settlement mb-2 mb-md-3">
                 <div>
-                    <label class="form-label">Impuestos extras</label>
+                    <div class="br-document-settlement__header">
+                        <label class="form-label">Impuestos extras</label>
+                        <button type="button" class="br-btn br-btn-xs br-btn-action-import br-document-payment-config waves-effect" @click="openTaxesModal">
+                            <span>Cambiar</span>
+                        </button>
+                    </div>
                     <div class="br-document-tax-summary">
                         <template v-if="saleOptionalTaxSummary.length">
                             <div
@@ -357,16 +360,17 @@
                             </div>
                         </template>
                         <p v-else class="br-document-settlement__empty mb-0">
-                            Sin impuestos extras configurados para esta venta.
+                            Sin impuestos extras para esta venta.
                         </p>
-                        <button type="button" class="br-document-payment-config" @click="openTaxesModal">
-                            <i class="fa-solid fa-sliders" aria-hidden="true"></i>
-                            <span>Configurar impuestos</span>
-                        </button>
                     </div>
                 </div>
                 <div>
-                    <label class="form-label">Métodos de pago</label>
+                    <div class="br-document-settlement__header">
+                        <label class="form-label">Métodos de pago</label>
+                        <button type="button" class="br-btn br-btn-xs br-btn-action-import br-document-payment-config waves-effect" @click="openPaymentMethodsModal">
+                            <span>Cambiar</span>
+                        </button>
+                    </div>
                     <div class="br-document-payment-summary">
                         <template v-if="salePaymentSummary.length">
                             <div
@@ -384,14 +388,13 @@
                             </div>
                         </template>
                         <p v-else class="br-document-settlement__empty mb-0">
-                            Sin métodos configurados para esta venta.
+                            Sin métodos de pago para esta venta.
                         </p>
-                        <button type="button" class="br-document-payment-config" @click="openPaymentMethodsModal">
-                            <i class="fa-solid fa-sliders" aria-hidden="true"></i>
-                            <span>Configurar métodos</span>
-                        </button>
                     </div>
                 </div>
+            </div>
+            <div class="br-document-summary-card mb-2 mb-md-3">
+                <h3 class="br-document-summary-card__title">Resumen</h3>
                 <div class="br-document-settlement__summary">
                     <span>Subtotal</span>
                     <strong>
@@ -432,14 +435,9 @@
                 </div>
             </div>
             <div class="br-sale-sidebar-actions">
-                <div class="br-sale-sidebar-actions__pair">
-                    <button type="button" class="br-btn br-btn-sm br-btn-primary waves-effect" @click="modalAddDetail({})">
-                        <span v-text="MODULE.texts.actions.addDetail"></span>
-                    </button>
-                    <button type="button" class="br-btn br-btn-sm br-btn-secondary waves-effect" @click="viewSubscriptions({})">
-                        <span v-text="MODULE.texts.actions.viewMemberships"></span>
-                    </button>
-                </div>
+                <button type="button" class="br-btn br-btn-sm br-btn-primary waves-effect" @click="modalAddDetail({})">
+                    <span v-text="MODULE.texts.actions.addDetail"></span>
+                </button>
                 <button
                     type="button"
                     class="br-btn br-btn-success br-sale-sidebar-actions__cta waves-effect"
@@ -458,7 +456,7 @@
         <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
             <div class="modal-content br-entity-modal">
                 <div class="modal-header br-modal-header">
-                    <h5 class="modal-title text-uppercase fw-bold">Configurar impuestos extras</h5>
+                    <h5 class="modal-title text-uppercase fw-bold">Cambiar impuestos extras</h5>
                     <button type="button" class="btn-header-modal" data-bs-dismiss="modal" aria-label="Cerrar">
                         <i class="fa fa-times icon-close-modal" aria-hidden="true"></i>
                     </button>
@@ -506,7 +504,7 @@
                 </div>
                 <div class="modal-footer br-entity-modal__footer">
                     <button type="button" class="br-btn br-btn-cancel" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="button" class="br-btn br-btn-primary" data-bs-dismiss="modal">Listo</button>
+                    <button type="button" class="br-btn br-btn-primary" data-bs-dismiss="modal">Cambiar impuestos</button>
                 </div>
             </div>
         </div>
@@ -516,7 +514,7 @@
         <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
             <div class="modal-content br-entity-modal">
                 <div class="modal-header br-modal-header">
-                    <h5 class="modal-title text-uppercase fw-bold">Configurar métodos de pago</h5>
+                    <h5 class="modal-title text-uppercase fw-bold">Cambiar métodos de pago</h5>
                     <button type="button" class="btn-header-modal" data-bs-dismiss="modal" aria-label="Cerrar">
                         <i class="fa fa-times icon-close-modal" aria-hidden="true"></i>
                     </button>
@@ -535,7 +533,58 @@
                                 :options="salePaymentMethods"
                                 :clearable="false"
                                 :searchable="true"
-                                append-to-body/>
+                                append-to-body
+                                @update:modelValue="syncSalePaymentVariant(payment)">
+                                <template #selected-option="{ label, data }">
+                                    <span class="br-payment-select-option">
+                                        <img
+                                            v-if="paymentAssetUrl(data)"
+                                            :src="paymentAssetUrl(data)"
+                                            alt=""
+                                            class="br-payment-select-option__image">
+                                        <span>{{ label }}</span>
+                                    </span>
+                                </template>
+                                <template #option="{ label, data }">
+                                    <span class="br-payment-select-option">
+                                        <img
+                                            v-if="paymentAssetUrl(data)"
+                                            :src="paymentAssetUrl(data)"
+                                            alt=""
+                                            class="br-payment-select-option__image">
+                                        <span>{{ label }}</span>
+                                    </span>
+                                </template>
+                            </v-select>
+                            <v-select
+                                v-if="salePaymentVariantOptions(payment).length"
+                                v-model="payment.variant"
+                                :options="salePaymentVariantOptions(payment)"
+                                :clearable="false"
+                                :searchable="true"
+                                append-to-body
+                                placeholder="Variante">
+                                <template #selected-option="{ label, data }">
+                                    <span class="br-payment-select-option">
+                                        <img
+                                            v-if="paymentAssetUrl(data)"
+                                            :src="paymentAssetUrl(data)"
+                                            alt=""
+                                            class="br-payment-select-option__image">
+                                        <span>{{ label }}</span>
+                                    </span>
+                                </template>
+                                <template #option="{ label, data }">
+                                    <span class="br-payment-select-option">
+                                        <img
+                                            v-if="paymentAssetUrl(data)"
+                                            :src="paymentAssetUrl(data)"
+                                            alt=""
+                                            class="br-payment-select-option__image">
+                                        <span>{{ label }}</span>
+                                    </span>
+                                </template>
+                            </v-select>
                             <InputNumber
                                 v-model="payment.amount"
                                 title=""
@@ -548,7 +597,7 @@
                                 </template>
                             </InputNumber>
                             <input
-                                v-if="payment.method?.data?.requires_reference"
+                                v-if="paymentRequiresReference(payment)"
                                 v-model.trim="payment.reference"
                                 type="text"
                                 class="form-control"
@@ -578,7 +627,7 @@
                 </div>
                 <div class="modal-footer br-entity-modal__footer">
                     <button type="button" class="br-btn br-btn-cancel" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="button" class="br-btn br-btn-primary" data-bs-dismiss="modal">Listo</button>
+                    <button type="button" class="br-btn br-btn-primary" data-bs-dismiss="modal">Cambiar métodos de pago</button>
                 </div>
             </div>
         </div>
@@ -823,8 +872,8 @@
                         :rows="6"/>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary waves-effect" data-bs-dismiss="modal" v-text="MODULE.texts.actions.close"></button>
-                    <button type="button" class="btn btn-primary waves-effect" @click="saveObservationsModal">
+                    <button type="button" class="br-btn br-btn-cancel" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="br-btn br-btn-primary waves-effect" @click="saveObservationsModal">
                         <i class="fa fa-save"></i>
                         <span class="ms-2" v-text="MODULE.texts.actions.saveObservations"></span>
                     </button>
@@ -842,118 +891,115 @@
                         <i class="fa fa-times icon-close-modal"></i>
                     </button>
                 </div>
-                <div class="modal-body">
-                    <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
-                        <div class="d-block">
-                            <i class="fa fa-user"></i>
-                            <span class="ms-2">Cliente:</span>
-                            <span v-text="forms[entity].createUpdate.data.holder?.data?.document_number" class="fw-bold ms-2"></span>
-                            <span class="fw-bold ms-1">-</span>
-                            <span v-text="forms[entity].createUpdate.data.holder?.data?.name" class="fw-bold ms-1"></span>
+                <div class="modal-body br-sale-customer-history">
+                    <div class="br-sale-customer-history__header">
+                        <div class="br-sale-customer-history__avatar" aria-hidden="true">
+                            <i class="fa-solid fa-user"></i>
+                        </div>
+                        <div class="br-sale-customer-history__identity">
+                            <span class="br-sale-customer-history__eyebrow">Cliente seleccionado</span>
+                            <strong v-text="forms[entity].createUpdate.data.holder?.data?.name ?? 'Sin cliente'"></strong>
+                            <small v-text="forms[entity].createUpdate.data.holder?.data?.document_number ?? ''"></small>
                         </div>
                         <button
                             type="button"
-                            class="btn btn-info-1 btn-sm waves-effect"
-                            @click="refreshSubscriptions()"
+                            class="br-icon-action br-sale-customer-history__refresh"
+                            @click="refreshCustomerHistory()"
                             data-bs-toggle="tooltip"
                             title="Actualizar">
-                            <i class="fa fa-refresh"></i>
+                            <i class="fa-solid fa-rotate" aria-hidden="true"></i>
                         </button>
                     </div>
-                    <div class="row g-3">
-                        <div class="table-responsive">
-                            <table class="table table-sm table-hover br-memberships-table">
-                                <thead>
-                                    <tr>
-                                        <th class="br-memberships-table__th br-memberships-table__th--primary">Fecha de inicio</th>
-                                        <th class="br-memberships-table__th br-memberships-table__th--primary">Fecha de finalización</th>
-                                        <th class="br-memberships-table__th br-memberships-table__th--meta" v-text="MODULE.texts.modal.subscriptionOrigin"></th>
-                                        <th class="br-memberships-table__th br-memberships-table__th--meta" v-text="MODULE.texts.modal.subscriptionCreatedAt"></th>
-                                    </tr>
-                                </thead>
-                                <tbody class="table-border-bottom-0 bg-white">
-                                    <template v-if="forms[entity].createUpdate.extras.modals.subscriptions.data.loading">
-                                        <tr class="text-center">
-                                            <td colspan="99" class="py-4">
-                                                <Loader/>
-                                            </td>
-                                        </tr>
-                                    </template>
-                                    <template v-else>
-                                        <template v-if="(options?.holders?.subscriptions[forms[entity].createUpdate.data.holder?.data?.id] ?? []).length > 0">
-                                            <template v-for="record in options?.holders?.subscriptions[forms[entity].createUpdate.data.holder?.data?.id]" :key="record.id">
-                                                <tr class="align-middle">
-                                                    <td class="br-memberships-table__td">
-                                                        <div class="br-memberships-table__stack">
-                                                            <span class="br-memberships-table__date" v-text="legibleFormatDate({dateString: record.start_date, type: 'weekday_date'})"></span>
-                                                            <span class="br-memberships-table__time br-memberships-table__time--pill" v-text="legibleFormatDate({dateString: record.start_date, type: 'time'})"></span>
-                                                        </div>
+
+                    <template v-if="forms[entity].createUpdate.extras.modals.subscriptions.data.loading">
+                        <div class="br-sale-customer-history__loader">
+                            <Loader/>
+                        </div>
+                    </template>
+                    <template v-else>
+                        <div class="br-sale-customer-history__summary">
+                            <article>
+                                <span><i class="fa-solid fa-receipt" aria-hidden="true"></i> Compras</span>
+                                <strong v-text="customerHistorySummary.salesCount"></strong>
+                            </article>
+                            <article>
+                                <span><i class="fa-solid fa-coins" aria-hidden="true"></i> Total comprado</span>
+                                <strong v-text="`S/ ${separatorNumber(customerHistorySummary.activeSalesTotal)}`"></strong>
+                            </article>
+                            <article>
+                                <span><i class="fa-solid fa-id-card" aria-hidden="true"></i> Membresías activas</span>
+                                <strong v-text="customerHistorySummary.activeSubscriptions"></strong>
+                            </article>
+                        </div>
+
+                        <div class="row g-3">
+                            <div class="col-xl-6 col-lg-6 col-md-12 col-sm-12">
+                                <section class="br-sale-customer-history__panel">
+                                    <header>
+                                        <h6>Historial de compras</h6>
+                                        <small>?ltimos movimientos comerciales del cliente.</small>
+                                    </header>
+                                    <div class="table-responsive">
+                                        <table class="table table-sm table-hover br-entity-table mb-0">
+                                            <thead>
+                                                <tr>
+                                                    <th>Fecha</th>
+                                                    <th>Comprobante</th>
+                                                    <th class="text-end">Total</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr v-if="customerHistorySales.length === 0">
+                                                    <td colspan="3" class="text-center text-muted py-3">Sin compras registradas.</td>
+                                                </tr>
+                                                <tr v-for="record in customerHistorySales" :key="`sale-${record.id}`">
+                                                    <td v-text="legibleFormatDate({dateString: record.created_at})"></td>
+                                                    <td>
+                                                        <span v-text="record?.serie?.legible_serie ?? record?.serie?.serie ?? 'Venta'"></span>
+                                                        <small v-if="record?.status" class="d-block text-muted text-capitalize" v-text="record.status"></small>
                                                     </td>
-                                                    <td class="br-memberships-table__td">
-                                                        <div class="br-memberships-table__stack">
-                                                            <span class="br-memberships-table__date" v-text="legibleFormatDate({dateString: record.end_date, type: 'weekday_date'})"></span>
-                                                            <span class="br-memberships-table__time br-memberships-table__time--pill" v-text="legibleFormatDate({dateString: record.end_date, type: 'time'})"></span>
-                                                        </div>
-                                                    </td>
-                                                    <td class="br-memberships-table__td br-memberships-table__td--meta br-memberships-table__td--center">
-                                                        <span v-if="record.formatted_type" class="br-memberships-table__origin">
-                                                            <i class="fa-solid fa-cash-register br-memberships-table__origin-icon" aria-hidden="true"></i>
-                                                            <span class="br-memberships-table__origin-label" v-text="record.formatted_type"></span>
-                                                        </span>
-                                                        <span v-else class="br-memberships-table__empty">—</span>
-                                                    </td>
-                                                    <td class="br-memberships-table__td br-memberships-table__td--meta">
-                                                        <div v-if="record.created_at" class="br-memberships-table__stack">
-                                                            <span class="br-memberships-table__date" v-text="legibleFormatDate({dateString: record.created_at, type: 'weekday_date'})"></span>
-                                                            <span class="br-memberships-table__time br-memberships-table__time--plain" v-text="legibleFormatDate({dateString: record.created_at, type: 'time'})"></span>
-                                                        </div>
-                                                        <span v-else class="br-memberships-table__empty">—</span>
+                                                    <td class="text-end fw-semibold" v-text="`S/ ${separatorNumber(record.total ?? 0)}`"></td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </section>
+                            </div>
+                            <div class="col-xl-6 col-lg-6 col-md-12 col-sm-12">
+                                <section class="br-sale-customer-history__panel">
+                                    <header>
+                                        <h6>Historial de membresías</h6>
+                                        <small>Vigentes y anteriores para revisar continuidad.</small>
+                                    </header>
+                                    <div class="table-responsive">
+                                        <table class="table table-sm table-hover br-entity-table mb-0">
+                                            <thead>
+                                                <tr>
+                                                    <th>Inicio</th>
+                                                    <th>Fin</th>
+                                                    <th class="text-center">Estado</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr v-if="customerHistorySubscriptions.length === 0">
+                                                    <td colspan="3" class="text-center text-muted py-3">Sin membresías registradas.</td>
+                                                </tr>
+                                                <tr v-for="record in customerHistorySubscriptions" :key="`subscription-${record.id}`">
+                                                    <td v-text="legibleFormatDate({dateString: record.start_date})"></td>
+                                                    <td v-text="legibleFormatDate({dateString: record.end_date})"></td>
+                                                    <td class="text-center">
+                                                        <span
+                                                            :class="['br-status-label', record.status === 'active' ? 'br-status-active' : 'br-status-inactive']"
+                                                            v-text="record.status === 'active' ? 'Activa' : 'Historial'"></span>
                                                     </td>
                                                 </tr>
-                                            </template>
-                                        </template>
-                                        <template v-else>
-                                            <tr>
-                                                <td class="pt-3 pb-3 border-0" colspan="99">
-                                                    <div class="br-table-detail-empty">
-                                                        <div class="br-table-detail-empty__top">
-                                                            <div class="br-table-detail-empty__body">
-                                                                <svg
-                                                                    xmlns="http://www.w3.org/2000/svg"
-                                                                    viewBox="0 0 240 200"
-                                                                    class="br-table-detail-empty__img"
-                                                                    role="img"
-                                                                    aria-labelledby="emptyNoMembershipTitle"
-                                                                    focusable="false">
-                                                                    <title id="emptyNoMembershipTitle">Sin membresías activas</title>
-                                                                    <circle cx="108" cy="76" r="28" fill="none" stroke="#556283" stroke-width="2.5" stroke-linecap="round"/>
-                                                                    <path
-                                                                        d="M48 172c14-46 52-70 60-70s46 24 60 70"
-                                                                        fill="none"
-                                                                        stroke="#4d5a76"
-                                                                        stroke-width="2.25"
-                                                                        stroke-linecap="round"
-                                                                        stroke-linejoin="round"/>
-                                                                    <circle cx="174" cy="58" r="24" fill="#ffffff" stroke="#ef4444" stroke-width="2.25"/>
-                                                                    <path
-                                                                        d="M163 47l22 22M185 47l-22 22"
-                                                                        fill="none"
-                                                                        stroke="#ef4444"
-                                                                        stroke-width="2.75"
-                                                                        stroke-linecap="round"/>
-                                                                </svg>
-                                                                <p class="br-table-detail-empty__text mb-0" v-text="MODULE.texts.emptyActiveMemberships"></p>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        </template>
-                                    </template>
-                                </tbody>
-                            </table>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </section>
+                            </div>
                         </div>
-                    </div>
+                    </template>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary waves-effect" data-bs-dismiss="modal" v-text="MODULE.texts.actions.close"></button>
@@ -1039,9 +1085,9 @@ const MODULE_CONFIG = {
 
 const TEXTS = {
     observations: {
-        emptyHint: "Sin observaciones registradas.",
-        discreteEmpty: "Sin observaciones",
-        modalPlaceholder: "Escriba aquí la observación de la venta…",
+        emptyHint: "Sin observaciones para esta venta.",
+        discreteEmpty: "Sin observaciones para esta venta.",
+        modalPlaceholder: "Escribe aquí la observación de la venta...",
         viewMore: "Ver más",
         viewLess: "Ver menos"
     },
@@ -1070,9 +1116,10 @@ const TEXTS = {
         emailPlaceholder: "Correo electrónico (ej.: cliente@empresa.com)"
     },
     actions: {
-        addDetail: "Agregar detalle",
+        addDetail: "Agregar ítem a la venta",
         generateSale: "Generar venta",
-        viewMemberships: "Ver membresías",
+        viewMemberships: "Ver membresias",
+        viewCustomerHistory: "Historial",
         close: "Cerrar",
         add: "Agregar",
         save: "Guardar",
@@ -1083,20 +1130,19 @@ const TEXTS = {
         send: "Enviar",
         openObservations: "Diligenciar observaciones",
         observationAdd: "Agregar observación",
-        observationEdit: "Modificar observación",
-        saveObservations: "Guardar"
+        observationEdit: "Cambiar observación",
+        saveObservations: "Cambiar observación"
     },
     modal: {
         add: "AGREGAR DETALLE",
         edit: "EDITAR DETALLE",
-        activeMemberships: "Membresías activas",
-        observations: "Observaciones",
+        activeMemberships: "Historial del cliente",
+        observations: "Cambiar observación",
         subscriptionOrigin: "Origen",
         subscriptionCreatedAt: "Fecha de creación"
     },
     emptySaleDetailPrefix: "No hay productos en el detalle. Agréguelos con la acción ",
     emptySaleDetailSuffix: ".",
-    emptyActiveMemberships: "No hay membresías activas registradas para este cliente."
 };
 
 const MODULE = {
@@ -1170,7 +1216,8 @@ export default {
                             default: TEXTS.modal.activeMemberships
                         },
                         data: {
-                            loading: false
+                            loading: false,
+                            tracking: null
                         }
                     },
                     finished: {
@@ -1532,13 +1579,63 @@ export default {
         },
         newSalePayment({amount = ""} = {}) {
 
-            return {
+            const payment = {
                 key: Utils.uuid(),
                 method: this.salePaymentMethods.find(method => method.data?.is_default) || this.salePaymentMethods[0] || null,
+                variant: null,
                 amount,
                 reference: "",
                 note: ""
             };
+
+            this.syncSalePaymentVariant(payment);
+
+            return payment;
+
+        },
+        paymentAssetUrl(record) {
+
+            const path = record?.image_path || record?.data?.image_path;
+
+            if(!path) return "";
+
+            if(/^https?:\/\//i.test(path) || path.startsWith("/")) return path;
+
+            return `/${path}`;
+
+        },
+        salePaymentVariantOptions(payment) {
+
+            const method = payment?.method?.data || {};
+            const variants = method.supports_variants ? (method.variants || []) : [];
+
+            return variants
+                .filter(variant => variant.status !== "inactive")
+                .map(variant => ({
+                    code: variant.id,
+                    label: variant.name,
+                    data: variant
+                }));
+
+        },
+        syncSalePaymentVariant(payment) {
+
+            if(!payment) return;
+
+            const options = this.salePaymentVariantOptions(payment);
+
+            if(options.length === 0) {
+                payment.variant = null;
+                return;
+            }
+
+            const current = options.find(option => Number(option.code) === Number(payment.variant?.code));
+            payment.variant = current || options.find(option => option.data?.is_default) || options[0];
+
+        },
+        paymentRequiresReference(payment) {
+
+            return Boolean(payment?.variant?.data?.requires_reference ?? payment?.method?.data?.requires_reference);
 
         },
         addSalePayment() {
@@ -1654,11 +1751,11 @@ export default {
                 let el = this;
 
                 Swal.fire({
-                    html: `<span>¿Desea eliminar <b>${form?.name}</b> del detalle de la venta?</span>`,
+                    html: `<span>?Desea eliminar <b>${form?.name}</b> del detalle de la venta?</span>`,
                     icon: "warning",
                     allowOutsideClick: false,
                     showCancelButton: true,
-                    confirmButtonText: "Sí, eliminar",
+                    confirmButtonText: "S?, eliminar",
                     cancelButtonText: "Cancelar",
                     customClass: {
                         confirmButton: "btn btn-danger waves-effect",
@@ -1699,11 +1796,11 @@ export default {
                 let el = this;
 
                 Swal.fire({
-                    html: `<span>¿Desea duplicar <b>${form?.name}</b> al detalle de la venta?</span>`,
+                    html: `<span>?Desea duplicar <b>${form?.name}</b> al detalle de la venta?</span>`,
                     icon: "question",
                     allowOutsideClick: false,
                     showCancelButton: true,
-                    confirmButtonText: "Sí, duplicar",
+                    confirmButtonText: "S?, duplicar",
                     cancelButtonText: "Cancelar",
                     customClass: {
                         confirmButton: "btn btn-info-1 waves-effect",
@@ -1736,30 +1833,80 @@ export default {
             record.extras.showDetail = !record.extras.showDetail;
 
         },
+        normalizeSubscriptionsResponse(response) {
+
+            if(!Requests.valid({result: response})) {
+
+                return [];
+
+            }
+
+            return response?.data?.data?.subscriptions ?? response?.data?.subscriptions ?? [];
+
+        },
         viewSubscriptions({}) {
 
-            let form = this.forms[this.entity].createUpdate.extras.modals.subscriptions;
+            this.viewCustomerHistory();
 
-            this.refreshSubscriptions();
+        },
+        viewCustomerHistory() {
+
+            const holder = this.forms[this.entity].createUpdate.data.holder?.data;
+
+            if(!holder?.id) {
+
+                Alerts.toastrs({type: "warning", subtitle: "Seleccione un cliente para ver su historial."});
+                return;
+
+            }
+
+            const form = this.forms[this.entity].createUpdate.extras.modals.subscriptions;
+
+            this.refreshCustomerHistory();
 
             Alerts.modals({type: "show", id: form.id});
 
         },
         async refreshSubscriptions() {
 
-            let form = this.forms[this.entity].createUpdate.extras.modals.subscriptions;
+            return this.refreshCustomerHistory();
+
+        },
+        async refreshCustomerHistory() {
+
+            const form = this.forms[this.entity].createUpdate.extras.modals.subscriptions;
+            const holder = this.forms[this.entity].createUpdate.data.holder?.data;
+
+            if(!holder?.id) {
+
+                return;
+
+            }
 
             form.data.loading = true;
 
             Alerts.tooltips({show: false, time: 0});
 
-            const getSubscriptions = await Utils.getSubscriptions({customer: this.forms[this.entity].createUpdate.data.holder?.data});
+            try {
 
-            this.options.holders.subscriptions[this.forms[this.entity].createUpdate.data.holder?.data?.id] = Requests.valid({result: getSubscriptions}) ? getSubscriptions?.data?.data?.subscriptions : false;
+                const [subscriptionsResponse, trackingResponse] = await Promise.all([
+                    Utils.getSubscriptions({customer: holder}),
+                    Utils.getTrackingCustomers({
+                        customer: holder,
+                        period_type: "last_12_months",
+                        options: {information: ["sales", "subscriptions"]}
+                    })
+                ]);
 
-            form.data.loading = false;
+                this.options.holders.subscriptions[holder.id] = this.normalizeSubscriptionsResponse(subscriptionsResponse);
+                form.data.tracking = Requests.valid({result: trackingResponse}) ? (trackingResponse?.data?.tracking ?? null) : null;
 
-            Alerts.tooltips({show: true});
+            }finally {
+
+                form.data.loading = false;
+                Alerts.tooltips({show: true});
+
+            }
 
         },
         // Entity forms
@@ -2280,6 +2427,47 @@ export default {
             return rest;
 
         },
+        customerHistoryTracking() {
+
+            return this.forms[this.entity].createUpdate.extras.modals.subscriptions.data.tracking ?? {};
+
+        },
+        customerHistorySales() {
+
+            return this.customerHistoryTracking.sales ?? [];
+
+        },
+        customerHistorySubscriptions() {
+
+            const holderId = this.forms[this.entity].createUpdate.data.holder?.data?.id;
+            const trackingSubscriptions = this.customerHistoryTracking.subscriptions ?? [];
+            const activeSubscriptions = this.options?.holders?.subscriptions?.[holderId] ?? [];
+            const records = new Map();
+
+            [...activeSubscriptions, ...trackingSubscriptions].forEach(record => {
+
+                if(record?.id !== undefined && record?.id !== null) {
+
+                    records.set(record.id, record);
+
+                }
+
+            });
+
+            return Array.from(records.values());
+
+        },
+        customerHistorySummary() {
+
+            const summary = this.customerHistoryTracking.summary ?? {};
+
+            return {
+                salesCount: Number(summary.sales_count ?? this.customerHistorySales.length ?? 0),
+                activeSalesTotal: Number(summary.active_sales_total ?? 0),
+                activeSubscriptions: Number(summary.active_subscriptions ?? this.customerHistorySubscriptions.filter(record => record?.status === "active").length ?? 0)
+            };
+
+        },
         branches: function() {
 
             return this.options?.branches?.records.map(e => ({code: e.id, label: e.name, data: e}));
@@ -2366,7 +2554,7 @@ export default {
 
             return this.options?.items?.records.map(e => ({
                 code: e.id,
-                label: [e.name, e.internal_code, e.barcode].filter(Boolean).join(" · "),
+                label: [e.name, e.internal_code, e.barcode].filter(Boolean).join(" ? "),
                 data: e
             }));
 
@@ -2375,7 +2563,7 @@ export default {
 
             return (this.options?.quotations?.records || []).map(record => ({
                 code: record.id,
-                label: `${record.reference} · ${record.holder?.name || "Cliente"} · ${this.separatorNumber(record.total)}`,
+                label: `${record.reference} ? ${record.holder?.name || "Cliente"} ? ${this.separatorNumber(record.total)}`,
                 data: record
             }));
 
@@ -2428,7 +2616,7 @@ export default {
                     return {
                         key: tax.code,
                         name: line.name,
-                        description: this.isFixedTax(tax.data) ? `${line.quantity} vez${Number(line.quantity) === 1 ? "" : "es"} · ${this.taxLabel(tax.data)}` : this.taxLabel(tax.data),
+                        description: this.isFixedTax(tax.data) ? `${line.quantity} vez${Number(line.quantity) === 1 ? "" : "es"} ? ${this.taxLabel(tax.data)}` : this.taxLabel(tax.data),
                         amount: line.amount
                     };
 
@@ -2450,7 +2638,7 @@ export default {
                 .filter(payment => payment.method?.code)
                 .map(payment => ({
                     key: payment.key,
-                    label: payment.method?.label || "Método de pago",
+                    label: payment.variant?.label || payment.method?.label || "Método de pago",
                     reference: payment.reference || "",
                     amount: Number(payment.amount || 0)
                 }));
@@ -2536,6 +2724,8 @@ export default {
                 .filter(payment => payment.method?.code)
                 .map(payment => ({
                     payment_method_id: payment.method.code,
+                    payment_method_variant_id: payment.variant?.code || null,
+                    name: payment.variant?.label || payment.method?.label || null,
                     amount: Number(payment.amount || 0),
                     reference: payment.reference || null,
                     note: payment.note || null
@@ -2594,7 +2784,7 @@ export default {
 
             const max = this.observationPreviewCharLimit;
 
-            return `${full.slice(0, max)}…`;
+            return `${full.slice(0, max)}?`;
 
         },
         observationPreviewTooltip() {
@@ -2670,9 +2860,18 @@ export default {
         },
         "forms.sales.createUpdate.data.holder": async function(newValue) {
 
+            const form = this.forms[this.entity].createUpdate.extras.modals.subscriptions;
+            form.data.tracking = null;
+
+            if(!newValue?.data?.id) {
+
+                return;
+
+            }
+
             const getSubscriptions = await Utils.getSubscriptions({customer: newValue?.data});
 
-            this.options.holders.subscriptions[newValue?.data?.id] = Requests.valid({result: getSubscriptions}) ? getSubscriptions?.data?.subscriptions : false;
+            this.options.holders.subscriptions[newValue.data.id] = this.normalizeSubscriptionsResponse(getSubscriptions);
 
         },
         "forms.sales.createUpdate.extras.modals.details.data.item": function(newValue) {

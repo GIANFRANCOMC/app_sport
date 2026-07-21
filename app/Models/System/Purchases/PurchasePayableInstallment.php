@@ -28,9 +28,9 @@ final class PurchasePayableInstallment extends Model {
 
     protected $casts = [
         "due_date" => "date:Y-m-d",
-        "amount" => "decimal:4",
-        "paid_amount" => "decimal:4",
-        "pending_amount" => "decimal:4"
+        "amount" => "App\\Casts\\System\\ConfigurableDecimal",
+        "paid_amount" => "App\\Casts\\System\\ConfigurableDecimal",
+        "pending_amount" => "App\\Casts\\System\\ConfigurableDecimal"
     ];
 
     public function accountPayable(): BelongsTo {

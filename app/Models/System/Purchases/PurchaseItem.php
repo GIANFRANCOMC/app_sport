@@ -31,12 +31,12 @@ final class PurchaseItem extends Model {
     ];
 
     protected $casts = [
-        "quantity" => "decimal:4",
-        "received_quantity" => "decimal:4",
-        "unit_cost" => "decimal:4",
-        "allocated_expense_total" => "decimal:4",
-        "inventory_unit_cost" => "decimal:4",
-        "subtotal" => "decimal:4"
+        "quantity" => "App\\Casts\\System\\ConfigurableDecimal",
+        "received_quantity" => "App\\Casts\\System\\ConfigurableDecimal",
+        "unit_cost" => "App\\Casts\\System\\ConfigurableDecimal",
+        "allocated_expense_total" => "App\\Casts\\System\\ConfigurableDecimal",
+        "inventory_unit_cost" => "App\\Casts\\System\\ConfigurableDecimal",
+        "subtotal" => "App\\Casts\\System\\ConfigurableDecimal"
     ];
 
     protected $appends = ["remaining_quantity"];

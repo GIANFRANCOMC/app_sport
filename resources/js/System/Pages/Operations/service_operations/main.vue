@@ -1105,8 +1105,8 @@ export default {
                 route: `${this.config.routes.stations}/${station.id}/layout`,
                 data: {
                     service_floor_id: this.selectedFloor?.id,
-                    position_x: Number(station.position_x || 10).toFixed(4),
-                    position_y: Number(station.position_y || 15).toFixed(4),
+                    position_x: Utils.fixedNumber(station.position_x || 10),
+                    position_y: Utils.fixedNumber(station.position_y || 15),
                     color: station.color,
                     shape: station.shape || "round"
                 }
@@ -1192,7 +1192,7 @@ export default {
             return value ? new Intl.DateTimeFormat("es-PE", {dateStyle: "short", timeStyle: "short"}).format(new Date(value)) : "-";
         },
         money(value) {
-            return Number(value || 0).toLocaleString("es-PE", {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            return Utils.separatorNumber(value || 0);
         }
     }
 };

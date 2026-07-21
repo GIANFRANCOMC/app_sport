@@ -476,3 +476,149 @@ svg.br-table-detail-empty__img {
     font-size: 0.9375rem;
   }
 }
+
+/* -------------------------------------------------------------------------
+ * [br] Ventas - acceso e historial del cliente junto al selector
+ * ------------------------------------------------------------------------- */
+.br-sale-customer-history-trigger {
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.28rem;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--br-primary);
+  font-size: var(--br-ui-font-size);
+  font-weight: 650;
+  line-height: 1;
+  text-decoration: none;
+  cursor: pointer;
+  transition: color 0.15s ease, opacity 0.15s ease;
+}
+
+.br-sale-customer-history-trigger:hover,
+.br-sale-customer-history-trigger:focus-visible {
+  color: var(--br-primary-active);
+  outline: 0;
+}
+
+.br-sale-customer-history-trigger[aria-disabled="true"] {
+  color: var(--br-text-muted);
+  cursor: not-allowed;
+  opacity: 0.58;
+  pointer-events: none;
+}
+
+.br-sale-customer-history {
+  background: var(--br-surface);
+}
+
+.br-sale-customer-history__header {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.65rem;
+  margin-bottom: 0.7rem;
+  padding: 0.72rem;
+  border: 1px solid var(--br-border);
+  border-radius: var(--br-radius-sm);
+  background: var(--br-white);
+}
+
+.br-sale-customer-history__avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  background: var(--br-primary-soft);
+  color: var(--br-primary-active);
+  font-size: 0.82rem;
+}
+
+.br-sale-customer-history__identity {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0.08rem;
+}
+
+.br-sale-customer-history__identity strong,
+.br-sale-customer-history__identity small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.br-sale-customer-history__eyebrow,
+.br-sale-customer-history__identity small,
+.br-sale-customer-history__panel header small {
+  color: var(--br-text-muted);
+  font-size: 0.72rem;
+}
+
+.br-sale-customer-history__summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.5rem;
+  margin-bottom: 0.7rem;
+}
+
+.br-sale-customer-history__summary article,
+.br-sale-customer-history__panel {
+  border: 1px solid var(--br-border);
+  border-radius: var(--br-radius-sm);
+  background: var(--br-white);
+}
+
+.br-sale-customer-history__summary article {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding: 0.62rem 0.7rem;
+}
+
+.br-sale-customer-history__summary span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.32rem;
+  color: var(--br-text-muted);
+  font-size: 0.74rem;
+  font-weight: 650;
+}
+
+.br-sale-customer-history__summary strong {
+  color: var(--br-secondary);
+  font-size: 1rem;
+  line-height: 1.1;
+}
+
+.br-sale-customer-history__panel {
+  overflow: hidden;
+}
+
+.br-sale-customer-history__panel header {
+  padding: 0.65rem 0.72rem;
+  border-bottom: 1px solid var(--br-border);
+}
+
+.br-sale-customer-history__panel h6 {
+  margin: 0 0 0.08rem;
+  color: var(--br-secondary);
+  font-size: 0.86rem;
+  font-weight: 750;
+}
+
+.br-sale-customer-history__loader {
+  display: flex;
+  min-height: 12rem;
+  align-items: center;
+  justify-content: center;
+}
+
+@media (max-width: 767.98px) {
+  .br-sale-customer-history__summary {
+    grid-template-columns: 1fr;
+  }
+}

@@ -91,6 +91,10 @@
   --br-border-control: #c5d0dc;
   --br-border-control-hover: #a8b5c4;
 
+  /* Tipografía operativa única: mismo tamaño que el menú lateral. */
+  --br-ui-font-size: 0.705rem;
+  --br-ui-line-height: 1.25;
+
   /* Compatibilidad con plantilla / Bootstrap heredado */
   --br-vuexy-primary: var(--br-primary);
   --br-vuexy-primary-hover: var(--br-primary-hover);
@@ -116,6 +120,12 @@
   --br-vuexy-primary-alpha-70: color-mix(in srgb, var(--br-primary) 70%, transparent);
   --br-vuexy-primary-alpha-95: color-mix(in srgb, var(--br-primary) 95%, transparent);
   --br-vuexy-body-bg: var(--br-surface);
+  --bs-primary: var(--br-primary);
+  --bs-primary-rgb: 40, 153, 229;
+  --bs-link-color: var(--br-primary-active);
+  --bs-link-hover-color: var(--br-primary-hover);
+  --bs-component-active-bg: var(--br-primary);
+  --bs-component-active-color: var(--br-on-primary);
   --br-template-muted: #a5a3ae;
   --br-template-text: #4b465c;
   --br-template-border: #dbdade;
@@ -143,11 +153,11 @@
   --br-sidebar-accent: #5bc3ff;
   --br-sidebar-text-soft: #e6ecf5;
   --br-favorite-strong: #fbbf24;
-  --br-favorite-purple: #6d4b8a;
-  --br-favorite-purple-strong: #4a3268;
-  --br-favorite-purple-muted: #8b6a9a;
-  --br-favorite-purple-soft: #5d4a6e;
-  --br-favorite-purple-shadow: #3d2a52;
+  --br-favorite-gold: #fbbf24;
+  --br-favorite-gold-strong: #b45309;
+  --br-favorite-gold-muted: #d97706;
+  --br-favorite-gold-soft: #fef3c7;
+  --br-favorite-gold-shadow: #92400e;
   --br-favorite-text-shadow: #2d201c;
   --br-favorite-focus-shadow: #2d1f3a;
   --br-favorite-surface-a: #fff9e8;
@@ -187,11 +197,12 @@
    * Thead de tablas — misma familia cromática que el sidebar (.br-menu-brand):
    * pizarra azul-violeta más clara que el navy del menú, acento cian suave al borde inferior.
    */
-  --br-table-thead-highlight-top: color-mix(in srgb, var(--br-primary) 18%, var(--br-white));
-  --br-table-thead-mid-a: #2c8ccb;
-  --br-table-thead-mid-b: #2474ad;
-  --br-table-thead-mid-c: #1a4f83;
-  --br-table-thead-edge: color-mix(in srgb, var(--br-primary) 72%, var(--br-secondary));
+  --br-table-thead-bg: #1a1a35;
+  --br-table-thead-highlight-top: var(--br-table-thead-bg);
+  --br-table-thead-mid-a: var(--br-table-thead-bg);
+  --br-table-thead-mid-b: var(--br-table-thead-bg);
+  --br-table-thead-mid-c: var(--br-table-thead-bg);
+  --br-table-thead-edge: #1a1a35;
   --br-table-thead-text: #ffffff;
 
   /**

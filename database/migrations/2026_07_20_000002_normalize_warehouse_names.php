@@ -76,13 +76,13 @@ return new class extends Migration {
 
         }
 
-        if(preg_match('/^.+\s-\s(Almac(?:én|Ã©n)\s+\d+)$/u', $name, $matches)) {
+        if(preg_match('/^.+\s-\s((?:Almacén|Almacen)\s+\d+)$/u', $name, $matches)) {
 
             return trim($matches[1]);
 
         }
 
-        if(preg_match('/^Almac(?:én|Ã©n)\s-\s.+$/u', $name)) {
+        if(preg_match('/^(?:Almacén|Almacen)\s-\s.+$/u', $name)) {
 
             return "Almacén {$sequence}";
 
