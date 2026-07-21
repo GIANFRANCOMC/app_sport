@@ -269,49 +269,10 @@
             </div>
         </div>
         <div class="col-lg-3 col-12">
-            <div v-if="saleRequiresStockContext" class="br-sale-sidebar-context mb-2 mb-md-3">
-                <InputSlot
-                    hasDiv
-                    :title="MODULE.texts.form.warehouse"
-                    :titleClass="[config.forms.classes.title]"
-                    isRequired
-                    hasTextBottom
-                    :textBottomInfo="forms[entity].createUpdate.errors?.warehouse"
-                    xl="12"
-                    lg="12">
-                    <template v-slot:input>
-                        <v-select
-                            v-model="forms[entity].createUpdate.data.warehouse"
-                            :options="warehouses"
-                            :class="config.forms.classes.select2"
-                            :clearable="false"
-                            :searchable="false"
-                            placeholder="Seleccione"/>
-                    </template>
-                </InputSlot>
-                <InputSlot
-                    hasDiv
-                    :title="MODULE.texts.form.deliveryMode"
-                    :titleClass="[config.forms.classes.title]"
-                    hasTextBottom
-                    :textBottomInfo="forms[entity].createUpdate.errors?.delivery_mode"
-                    xl="12"
-                    lg="12">
-                    <template v-slot:input>
-                        <v-select
-                            v-model="forms[entity].createUpdate.data.delivery_mode"
-                            :options="deliveryModes"
-                            :class="config.forms.classes.select2"
-                            :clearable="false"
-                            :searchable="false"
-                            placeholder="Seleccione"/>
-                    </template>
-                </InputSlot>
-            </div>
-            <div class="br-document-settlement br-sale-settlement mb-2 mb-md-3">
+            <div class="br-document-settlement br-sale-settlement bg-white mb-2 mb-md-3">
                 <div>
                     <div class="br-document-settlement__header">
-                        <label class="form-label">Observaciones</label>
+                        <label class="form-label colon-at-end">Observaciones</label>
                         <button
                             type="button"
                             class="br-btn br-btn-xs br-btn-action-import br-document-payment-config waves-effect"
@@ -338,7 +299,31 @@
                 </div>
                 <div>
                     <div class="br-document-settlement__header">
-                        <label class="form-label">Impuestos extras</label>
+                        <label class="form-label colon-at-end">Almacén</label>
+                        <button type="button" class="br-btn br-btn-xs br-btn-action-import br-document-payment-config waves-effect" @click="openWarehouseModal">
+                            <span>Cambiar</span>
+                        </button>
+                    </div>
+                    <div class="br-document-delivery-summary">
+                        <span class="br-document-delivery-summary__value" v-text="warehouseLabel"></span>
+                        <small v-if="forms[entity].createUpdate.errors?.warehouse" :class="config.forms.errors.styles.default" v-html="forms[entity].createUpdate.errors.warehouse"></small>
+                    </div>
+                </div>
+                <div>
+                    <div class="br-document-settlement__header">
+                        <label class="form-label colon-at-end">Tipo de entrega</label>
+                        <button type="button" class="br-btn br-btn-xs br-btn-action-import br-document-payment-config waves-effect" @click="openDeliveryModal">
+                            <span>Cambiar</span>
+                        </button>
+                    </div>
+                    <div class="br-document-delivery-summary">
+                        <span class="br-document-delivery-summary__value" v-text="deliveryModeLabel"></span>
+                        <small v-if="forms[entity].createUpdate.errors?.delivery_mode" :class="config.forms.errors.styles.default" v-html="forms[entity].createUpdate.errors.delivery_mode"></small>
+                    </div>
+                </div>
+                <div>
+                    <div class="br-document-settlement__header">
+                        <label class="form-label colon-at-end">Impuestos extras</label>
                         <button type="button" class="br-btn br-btn-xs br-btn-action-import br-document-payment-config waves-effect" @click="openTaxesModal">
                             <span>Cambiar</span>
                         </button>
@@ -366,7 +351,7 @@
                 </div>
                 <div>
                     <div class="br-document-settlement__header">
-                        <label class="form-label">Métodos de pago</label>
+                        <label class="form-label colon-at-end">Métodos de pago</label>
                         <button type="button" class="br-btn br-btn-xs br-btn-action-import br-document-payment-config waves-effect" @click="openPaymentMethodsModal">
                             <span>Cambiar</span>
                         </button>
@@ -396,45 +381,55 @@
             <div class="br-document-summary-card mb-2 mb-md-3">
                 <h3 class="br-document-summary-card__title">Resumen</h3>
                 <div class="br-document-settlement__summary">
-                    <span>Subtotal</span>
-                    <strong>
+                    <span class="br-document-settlement__summary-label br-document-settlement__summary-label--primary">Subtotal</span>
+                    <strong class="br-document-settlement__summary-value br-document-settlement__summary-value--primary">
                         {{ forms[entity].createUpdate.data.currency?.data?.sign ?? '' }}
                         {{ separatorNumber(saleSubtotal) }}
                     </strong>
                     <template v-if="saleTaxBreakdown.length">
                         <template v-for="tax in saleTaxBreakdown" :key="`sale-summary-tax-${tax.id}`">
-                            <span>{{ tax.name }}</span>
-                            <strong>
+                            <span class="br-document-settlement__summary-label br-document-settlement__summary-label--primary">{{ tax.name }}</span>
+                            <strong class="br-document-settlement__summary-value br-document-settlement__summary-value--primary">
                                 {{ forms[entity].createUpdate.data.currency?.data?.sign ?? '' }}
                                 {{ separatorNumber(tax.amount) }}
                             </strong>
                         </template>
                     </template>
                     <template v-else>
-                        <span>IGV</span>
-                        <strong>
+                        <span class="br-document-settlement__summary-label br-document-settlement__summary-label--primary">IGV</span>
+                        <strong class="br-document-settlement__summary-value br-document-settlement__summary-value--primary">
                             {{ forms[entity].createUpdate.data.currency?.data?.sign ?? '' }}
                             0.00
                         </strong>
                     </template>
-                    <span>Total</span>
-                    <strong>
+                    <span class="br-document-settlement__summary-label br-document-settlement__summary-label--primary">Total</span>
+                    <strong class="br-document-settlement__summary-value br-document-settlement__summary-value--primary">
                         {{ forms[entity].createUpdate.data.currency?.data?.sign ?? '' }}
                         {{ separatorNumber(total) }}
                     </strong>
-                    <span>Pagado</span>
-                    <strong>
+                    <span class="br-document-settlement__summary-label">
+                        <span>Pagado</span>
+                        <i
+                            class="fa-solid fa-circle-info br-document-settlement__summary-help"
+                            aria-label="Sumatoria de métodos de pago"
+                            data-bs-toggle="tooltip"
+                            data-bs-placement="top"
+                            role="img"
+                            tabindex="0"
+                            title="Sumatoria de métodos de pago"></i>
+                    </span>
+                    <strong class="br-document-settlement__summary-value">
                         {{ forms[entity].createUpdate.data.currency?.data?.sign ?? '' }}
                         {{ separatorNumber(salePaidTotal) }}
                     </strong>
-                    <span>Diferencia</span>
-                    <strong :class="Number(salePaymentDifference) === 0 ? 'text-success' : 'text-danger'">
+                    <span class="br-document-settlement__summary-label">Diferencia</span>
+                    <strong class="br-document-settlement__summary-value">
                         {{ forms[entity].createUpdate.data.currency?.data?.sign ?? '' }}
                         {{ separatorNumber(salePaymentDifference) }}
                     </strong>
                 </div>
             </div>
-            <div class="br-sale-sidebar-actions">
+            <div class="br-sale-sidebar-actions br-sale-sidebar-actions--inline">
                 <button type="button" class="br-btn br-btn-sm br-btn-primary waves-effect" @click="modalAddDetail({})">
                     <span v-text="MODULE.texts.actions.addDetail"></span>
                 </button>
@@ -452,6 +447,83 @@
     </div>
 
     <!-- Modals -->
+    <div class="modal fade" :id="forms[entity].createUpdate.extras.modals.warehouse.id" data-bs-backdrop="static" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-dialog-centered modal-md" role="document">
+            <div class="modal-content br-entity-modal">
+                <div class="modal-header br-modal-header">
+                    <h5 class="modal-title text-uppercase fw-bold">Cambiar almacén</h5>
+                    <button type="button" class="btn-header-modal" data-bs-dismiss="modal" aria-label="Cerrar">
+                        <i class="fa fa-times icon-close-modal" aria-hidden="true"></i>
+                    </button>
+                </div>
+                <div class="modal-body br-entity-modal__body">
+                    <InputSlot
+                        hasDiv
+                        :title="MODULE.texts.form.warehouse"
+                        :titleClass="[config.forms.classes.title]"
+                        isRequired
+                        hasTextBottom
+                        :textBottomInfo="forms[entity].createUpdate.errors?.warehouse"
+                        xl="12"
+                        lg="12">
+                        <template v-slot:input>
+                            <v-select
+                                v-model="forms[entity].createUpdate.data.warehouse"
+                                :options="warehouses"
+                                :class="config.forms.classes.select2"
+                                :clearable="false"
+                                :searchable="false"
+                                append-to-body
+                                placeholder="Seleccione"/>
+                        </template>
+                    </InputSlot>
+                </div>
+                <div class="modal-footer br-entity-modal__footer">
+                    <button type="button" class="br-btn br-btn-cancel" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="br-btn br-btn-primary" data-bs-dismiss="modal">Cambiar almacén</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" :id="forms[entity].createUpdate.extras.modals.delivery.id" data-bs-backdrop="static" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-dialog-centered modal-md" role="document">
+            <div class="modal-content br-entity-modal">
+                <div class="modal-header br-modal-header">
+                    <h5 class="modal-title text-uppercase fw-bold">Cambiar entrega</h5>
+                    <button type="button" class="btn-header-modal" data-bs-dismiss="modal" aria-label="Cerrar">
+                        <i class="fa fa-times icon-close-modal" aria-hidden="true"></i>
+                    </button>
+                </div>
+                <div class="modal-body br-entity-modal__body">
+                    <InputSlot
+                        hasDiv
+                        :title="MODULE.texts.form.deliveryMode"
+                        :titleClass="[config.forms.classes.title]"
+                        hasTextBottom
+                        :textBottomInfo="forms[entity].createUpdate.errors?.delivery_mode"
+                        xl="12"
+                        lg="12">
+                        <template v-slot:input>
+                            <v-select
+                                v-model="forms[entity].createUpdate.data.delivery_mode"
+                                :options="deliveryModes"
+                                :class="config.forms.classes.select2"
+                                :clearable="false"
+                                :searchable="false"
+                                append-to-body
+                                placeholder="Seleccione"/>
+                        </template>
+                    </InputSlot>
+                </div>
+                <div class="modal-footer br-entity-modal__footer">
+                    <button type="button" class="br-btn br-btn-cancel" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="br-btn br-btn-primary" data-bs-dismiss="modal">Cambiar entrega</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="modal fade" :id="forms[entity].createUpdate.extras.modals.taxes.id" data-bs-backdrop="static" tabindex="-1" role="dialog">
         <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
             <div class="modal-content br-entity-modal">
@@ -1116,10 +1188,10 @@ const TEXTS = {
         emailPlaceholder: "Correo electrónico (ej.: cliente@empresa.com)"
     },
     actions: {
-        addDetail: "Agregar ítem a la venta",
+        addDetail: "Agregar ítem",
         generateSale: "Generar venta",
         viewMemberships: "Ver membresias",
-        viewCustomerHistory: "Historial",
+        viewCustomerHistory: "Historial del cliente",
         close: "Cerrar",
         add: "Agregar",
         save: "Guardar",
@@ -1141,8 +1213,8 @@ const TEXTS = {
         subscriptionOrigin: "Origen",
         subscriptionCreatedAt: "Fecha de creación"
     },
-    emptySaleDetailPrefix: "No hay productos en el detalle. Agréguelos con la acción ",
-    emptySaleDetailSuffix: ".",
+    emptySaleDetailPrefix: "Aún no hay ítems en la venta. Usa ",
+    emptySaleDetailSuffix: " para empezar.",
 };
 
 const MODULE = {
@@ -1203,6 +1275,12 @@ export default {
                     observations: {
                         id: Utils.uuid(),
                         draft: ""
+                    },
+                    warehouse: {
+                        id: Utils.uuid()
+                    },
+                    delivery: {
+                        id: Utils.uuid()
                     },
                     taxes: {
                         id: Utils.uuid()
@@ -1575,6 +1653,28 @@ export default {
             this.forms[this.entity].createUpdate.data.observation = draft == null ? "" : String(draft);
 
             Alerts.modals({type: "hide", id: this.forms[this.entity].createUpdate.extras.modals.observations.id});
+
+        },
+        openWarehouseModal() {
+
+            if(!this.forms[this.entity].createUpdate.data.warehouse && this.warehouses.length) {
+
+                this.forms[this.entity].createUpdate.data.warehouse = this.warehouses[0];
+
+            }
+
+            Alerts.modals({type: "show", id: this.forms[this.entity].createUpdate.extras.modals.warehouse.id});
+
+        },
+        openDeliveryModal() {
+
+            if(!this.forms[this.entity].createUpdate.data.delivery_mode) {
+
+                this.forms[this.entity].createUpdate.data.delivery_mode = this.deliveryModes[0];
+
+            }
+
+            Alerts.modals({type: "show", id: this.forms[this.entity].createUpdate.extras.modals.delivery.id});
 
         },
         newSalePayment({amount = ""} = {}) {
@@ -2511,6 +2611,16 @@ export default {
                 {code: "immediate", label: "Entrega inmediata"},
                 {code: "pending", label: "Entrega pendiente"}
             ];
+
+        },
+        deliveryModeLabel() {
+
+            return this.forms[this.entity].createUpdate.data.delivery_mode?.label || "Entrega inmediata";
+
+        },
+        warehouseLabel() {
+
+            return this.forms[this.entity].createUpdate.data.warehouse?.label || "Seleccione almacén";
 
         },
         saleConfigurationIssue() {

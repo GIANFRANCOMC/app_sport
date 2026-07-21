@@ -491,6 +491,18 @@ body.br-layout .br-document-payment-config :where(span, i) {
   background: var(--br-neutral-panel);
 }
 
+.br-document-settlement.bg-white,
+.br-document-settlement.br-sale-settlement.bg-white {
+  background: var(--br-white) !important;
+}
+
+body.br-layout .br-document-settlement__empty {
+  color: var(--br-text-muted);
+  font-size: 0.68rem !important;
+  font-weight: 500;
+  line-height: 1.3 !important;
+}
+
 .br-document-settlement > div {
   display: flex;
   flex-direction: column;
@@ -599,12 +611,12 @@ body.br-layout .br-document-payment-config:active {
 .br-document-summary-card {
   display: flex;
   flex-direction: column;
-  gap: 0.44rem;
+  gap: 0.36rem;
   width: 100%;
-  padding: 0.68rem 0.78rem;
-  border: 1px solid var(--br-border);
-  border-radius: var(--br-radius);
-  background: var(--br-surface-elevated);
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
 }
 
 .br-document-summary-card__title {
@@ -614,7 +626,71 @@ body.br-layout .br-document-payment-config:active {
   font-weight: 700;
   line-height: 1.2;
   letter-spacing: 0.05em;
+  text-align: center;
   text-transform: uppercase;
+}
+
+.br-document-settlement__summary-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.08rem;
+  min-width: 0;
+  font-weight: 520;
+  line-height: 1.1;
+}
+
+body.br-layout .br-document-settlement__summary > .br-document-settlement__summary-label::after {
+  order: 1;
+}
+
+.br-document-settlement__summary-label--primary {
+  color: color-mix(in srgb, var(--br-secondary) 82%, var(--br-text-muted)) !important;
+  font-weight: 650;
+}
+
+.br-document-settlement__summary-value {
+  color: var(--br-text-muted) !important;
+  font-weight: 620;
+}
+
+.br-document-settlement__summary-value--primary {
+  color: var(--br-secondary) !important;
+  font-weight: 760;
+}
+
+.br-document-settlement__summary-help {
+  order: 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  align-self: center;
+  margin-left: 0.08rem;
+  color: inherit;
+  font-size: 0.78em;
+  transform: none;
+  line-height: 1;
+  cursor: default;
+}
+
+.br-document-delivery-summary {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.08rem;
+  color: var(--br-text-muted);
+  line-height: 1.22;
+}
+
+.br-document-delivery-summary__value {
+  color: var(--br-text);
+  font-size: 0.72rem;
+  font-weight: 500;
+  line-height: 1.42;
+}
+
+.br-document-delivery-summary small {
+  font-size: 0.64rem;
+  line-height: 1.2;
 }
 
 .br-payment-select-option {
@@ -649,6 +725,8 @@ body.br-layout .table > thead > tr > th.bg-secondary {
   background-color: transparent !important;
   background-image: none !important;
   color: var(--br-table-thead-text) !important;
+  font-weight: 550 !important;
+  letter-spacing: 0.015em !important;
 }
 
 body.br-layout :where(

@@ -197,12 +197,12 @@
    * Thead de tablas — misma familia cromática que el sidebar (.br-menu-brand):
    * pizarra azul-violeta más clara que el navy del menú, acento cian suave al borde inferior.
    */
-  --br-table-thead-bg: #1a1a35;
+  --br-table-thead-bg: #3a507a;
   --br-table-thead-highlight-top: var(--br-table-thead-bg);
   --br-table-thead-mid-a: var(--br-table-thead-bg);
   --br-table-thead-mid-b: var(--br-table-thead-bg);
   --br-table-thead-mid-c: var(--br-table-thead-bg);
-  --br-table-thead-edge: #1a1a35;
+  --br-table-thead-edge: color-mix(in srgb, var(--br-primary) 32%, var(--br-table-thead-bg));
   --br-table-thead-text: #ffffff;
 
   /**

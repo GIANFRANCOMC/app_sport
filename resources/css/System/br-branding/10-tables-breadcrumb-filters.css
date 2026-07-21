@@ -17,8 +17,8 @@ body.br-layout .table > thead > tr > th.bg-secondary {
   background: transparent !important;
   background-color: transparent !important;
   color: var(--br-table-thead-text) !important;
-  font-weight: 600;
-  letter-spacing: 0.02em;
+  font-weight: 550;
+  letter-spacing: 0.015em;
   border-bottom-color: color-mix(in srgb, var(--br-white) 10%, transparent) !important;
   vertical-align: middle;
 }

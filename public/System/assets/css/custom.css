@@ -3744,6 +3744,7 @@ body.br-layout .br-entity-table > thead > tr > th {
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto;
     align-items: center;
+    width: 100%;
     gap: 0.28rem 0.8rem;
     padding: 0.6rem 0.68rem;
     border: 1px solid color-mix(in srgb, var(--br-secondary) 10%, var(--br-border));
@@ -3753,6 +3754,10 @@ body.br-layout .br-entity-table > thead > tr > th {
 
 .br-document-settlement__summary strong {
     text-align: right;
+}
+
+.br-document-settlement__summary > span::after {
+    content: ":";
 }
 
 .br-document-settlement__taxes {
