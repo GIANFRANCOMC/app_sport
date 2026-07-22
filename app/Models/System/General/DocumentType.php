@@ -35,7 +35,7 @@ class DocumentType extends Model {
         $value = trim((string) ($name ?: $code));
         $normalized = strtoupper($value);
 
-        if($normalized === "BOLETA DE VENTA" || $normalized === "BV") {
+        if(str_contains($normalized, "BOLETA") || $normalized === "BV") {
 
             return "BOLETA";
 

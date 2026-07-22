@@ -13,17 +13,18 @@ return new class extends Migration {
         ["id" => 2, "slug" => "sc_dashboard", "name" => "dashboard", "order" => 2, "dom_id" => "menu-parent-dashboard", "dom_label" => "Dashboard", "dom_icon" => "fa-solid fa-gauge", "has_sub_menu" => false, "status" => "active"],
         ["id" => 14, "slug" => "sc_pos", "name" => "pos", "order" => 3, "dom_id" => "menu-parent-pos", "dom_label" => "POS", "dom_icon" => "fa-solid fa-store", "has_sub_menu" => true, "status" => "active"],
         ["id" => 3, "slug" => "sc_sales", "name" => "sales", "order" => 4, "dom_id" => "menu-parent-sales", "dom_label" => "Ventas", "dom_icon" => "fa-solid fa-cash-register", "has_sub_menu" => true, "status" => "active"],
-        ["id" => 10, "slug" => "sc_cash", "name" => "cash", "order" => 5, "dom_id" => "menu-parent-cash", "dom_label" => "Cajas", "dom_icon" => "fa-solid fa-vault", "has_sub_menu" => true, "status" => "active"],
-        ["id" => 9, "slug" => "sc_purchases", "name" => "purchases", "order" => 6, "dom_id" => "menu-parent-purchases", "dom_label" => "Compras", "dom_icon" => "fa-solid fa-cart-flatbed", "has_sub_menu" => true, "status" => "active"],
-        ["id" => 15, "slug" => "sc_customer_attention", "name" => "customer-attention", "order" => 7, "dom_id" => "menu-parent-customer-attention", "dom_label" => "Atención al cliente", "dom_icon" => "fa-solid fa-headset", "has_sub_menu" => true, "status" => "active"],
-        ["id" => 4, "slug" => "sc_customers", "name" => "customers", "order" => 8, "dom_id" => "menu-parent-customers", "dom_label" => "Gestión de clientes", "dom_icon" => "fa fa-user", "has_sub_menu" => true, "status" => "active"],
-        ["id" => 12, "slug" => "sc_staff", "name" => "staff", "order" => 9, "dom_id" => "menu-parent-staff", "dom_label" => "Gestión de colaboradores", "dom_icon" => "fa-solid fa-users-gear", "has_sub_menu" => true, "status" => "active"],
-        ["id" => 5, "slug" => "sc_items", "name" => "items", "order" => 10, "dom_id" => "menu-parent-items", "dom_label" => "Catálogo comercial", "dom_icon" => "fa fa-book", "has_sub_menu" => true, "status" => "active"],
-        ["id" => 11, "slug" => "sc_inventory", "name" => "inventory", "order" => 11, "dom_id" => "menu-parent-inventory", "dom_label" => "Inventario", "dom_icon" => "fa-solid fa-boxes-stacked", "has_sub_menu" => true, "status" => "active"],
-        ["id" => 13, "slug" => "sc_restaurant_services", "name" => "restaurant-services", "order" => 12, "dom_id" => "menu-parent-restaurant-services", "dom_label" => "Restaurante y servicios", "dom_icon" => "fa-solid fa-bell-concierge", "has_sub_menu" => true, "status" => "active"],
-        ["id" => 6, "slug" => "sc_infrastructure", "name" => "infrastructure", "order" => 13, "dom_id" => "menu-parent-infrastructure", "dom_label" => "Infraestructura", "dom_icon" => "fa-solid fa-industry", "has_sub_menu" => true, "status" => "active"],
-        ["id" => 7, "slug" => "sc_configuration", "name" => "configuration", "order" => 14, "dom_id" => "menu-parent-configuration", "dom_label" => "Configuración", "dom_icon" => "fa fa-gear", "has_sub_menu" => true, "status" => "active"],
-        ["id" => 8, "slug" => "sc_reports", "name" => "reports", "order" => 15, "dom_id" => "menu-parent-reports", "dom_label" => "Reportes", "dom_icon" => "fa fa-print", "has_sub_menu" => false, "status" => "active"]
+        ["id" => 16, "slug" => "sc_quotations", "name" => "quotations", "order" => 5, "dom_id" => "menu-parent-quotations", "dom_label" => "Cotizaciones", "dom_icon" => "fa-solid fa-file-signature", "has_sub_menu" => true, "status" => "active"],
+        ["id" => 10, "slug" => "sc_cash", "name" => "cash", "order" => 6, "dom_id" => "menu-parent-cash", "dom_label" => "Cajas", "dom_icon" => "fa-solid fa-vault", "has_sub_menu" => true, "status" => "active"],
+        ["id" => 9, "slug" => "sc_purchases", "name" => "purchases", "order" => 7, "dom_id" => "menu-parent-purchases", "dom_label" => "Compras", "dom_icon" => "fa-solid fa-cart-flatbed", "has_sub_menu" => true, "status" => "active"],
+        ["id" => 15, "slug" => "sc_customer_attention", "name" => "customer-attention", "order" => 8, "dom_id" => "menu-parent-customer-attention", "dom_label" => "Atención al cliente", "dom_icon" => "fa-solid fa-headset", "has_sub_menu" => true, "status" => "active"],
+        ["id" => 4, "slug" => "sc_customers", "name" => "customers", "order" => 9, "dom_id" => "menu-parent-customers", "dom_label" => "Gestión de clientes", "dom_icon" => "fa fa-user", "has_sub_menu" => true, "status" => "active"],
+        ["id" => 12, "slug" => "sc_staff", "name" => "staff", "order" => 10, "dom_id" => "menu-parent-staff", "dom_label" => "Gestión de colaboradores", "dom_icon" => "fa-solid fa-users-gear", "has_sub_menu" => true, "status" => "active"],
+        ["id" => 5, "slug" => "sc_items", "name" => "items", "order" => 11, "dom_id" => "menu-parent-items", "dom_label" => "Catálogo comercial", "dom_icon" => "fa fa-book", "has_sub_menu" => true, "status" => "active"],
+        ["id" => 11, "slug" => "sc_inventory", "name" => "inventory", "order" => 12, "dom_id" => "menu-parent-inventory", "dom_label" => "Inventario", "dom_icon" => "fa-solid fa-boxes-stacked", "has_sub_menu" => true, "status" => "active"],
+        ["id" => 13, "slug" => "sc_restaurant_services", "name" => "restaurant-services", "order" => 13, "dom_id" => "menu-parent-restaurant-services", "dom_label" => "Restaurante y servicios", "dom_icon" => "fa-solid fa-bell-concierge", "has_sub_menu" => true, "status" => "active"],
+        ["id" => 6, "slug" => "sc_infrastructure", "name" => "infrastructure", "order" => 14, "dom_id" => "menu-parent-infrastructure", "dom_label" => "Infraestructura", "dom_icon" => "fa-solid fa-industry", "has_sub_menu" => true, "status" => "active"],
+        ["id" => 7, "slug" => "sc_configuration", "name" => "configuration", "order" => 15, "dom_id" => "menu-parent-configuration", "dom_label" => "Configuración", "dom_icon" => "fa fa-gear", "has_sub_menu" => true, "status" => "active"],
+        ["id" => 8, "slug" => "sc_reports", "name" => "reports", "order" => 16, "dom_id" => "menu-parent-reports", "dom_label" => "Reportes", "dom_icon" => "fa fa-print", "has_sub_menu" => false, "status" => "active"]
     ];
 
     private const SUB_SECTIONS = [
@@ -33,7 +34,8 @@ return new class extends Migration {
         105 => ["section_id" => 14, "slug" => "sc_restaurant-pos", "name" => "restaurant-pos", "description" => "Gestiona mesas, pedidos en curso y su posterior cobro en POS.", "order" => 2, "dom_id" => "menu-restaurant-pos", "dom_label" => "Restaurante POS", "dom_route" => "restaurant_pos.index"],
         31 => ["section_id" => 3, "slug" => "sc_sales-create", "name" => "sales-create", "description" => "Registra una nueva venta de productos, servicios o membresías.", "order" => 1, "dom_id" => "menu-sales-create", "dom_label" => "Nuevo", "dom_route" => "sales.create"],
         30 => ["section_id" => 3, "slug" => "sc_sales-list", "name" => "sales-list", "description" => "Revisa las ventas registradas y consulta sus detalles.", "order" => 2, "dom_id" => "menu-sales-list", "dom_label" => "Listado", "dom_route" => "sales.index"],
-        33 => ["section_id" => 3, "slug" => "sc_sales-quotations", "name" => "sales-quotations", "description" => "Registra propuestas comerciales y conviértelas en ventas recalculando precios vigentes.", "order" => 3, "dom_id" => "menu-sales-quotations", "dom_label" => "Cotizaciones", "dom_route" => "quotations.index"],
+        34 => ["section_id" => 16, "slug" => "sc_quotations-create", "name" => "quotations-create", "description" => "Registra una propuesta comercial con detalle, tributos y vigencia.", "order" => 1, "dom_id" => "menu-quotations-create", "dom_label" => "Nuevo", "dom_route" => "quotations.create"],
+        33 => ["section_id" => 16, "slug" => "sc_quotations-list", "name" => "quotations-list", "description" => "Consulta propuestas comerciales y conviértelas en ventas recalculando precios vigentes.", "order" => 2, "dom_id" => "menu-quotations-list", "dom_label" => "Listado", "dom_route" => "quotations.index"],
         100 => ["section_id" => 10, "slug" => "sc_cash-registers", "name" => "cash-registers", "description" => "Gestiona cajas configuradas por sucursal y su estado operativo.", "order" => 1, "dom_id" => "menu-cash-registers", "dom_label" => "Cajas", "dom_route" => "cash_registers.registers.index"],
         101 => ["section_id" => 10, "slug" => "sc_cash-sessions", "name" => "cash-sessions", "description" => "Consulta aperturas, cierres, arqueos y diferencias por caja.", "order" => 2, "dom_id" => "menu-cash-sessions", "dom_label" => "Aperturas y cierres", "dom_route" => "cash_registers.sessions.index"],
         102 => ["section_id" => 10, "slug" => "sc_cash-movements", "name" => "cash-movements", "description" => "Registra y consulta entradas, salidas y ajustes manuales de dinero.", "order" => 3, "dom_id" => "menu-cash-movements", "dom_label" => "Movimientos", "dom_route" => "cash_registers.movements.index"],
@@ -74,17 +76,18 @@ return new class extends Migration {
     ];
 
     private const SECTION_ORDERS = [
-        10 => 1, 20 => 2, 32 => 3, 105 => 3, 31 => 4, 30 => 4, 33 => 4,
-        100 => 5, 101 => 5, 102 => 5, 103 => 5, 109 => 5,
-        92 => 6, 90 => 6, 91 => 6,
-        106 => 7, 45 => 7, 44 => 7, 43 => 7,
-        40 => 8, 41 => 8, 42 => 8,
-        71 => 9, 104 => 9,
-        50 => 10, 51 => 10, 52 => 10, 53 => 10, 55 => 10, 59 => 10,
-        54 => 11, 56 => 11, 57 => 11, 107 => 11, 58 => 11,
-        60 => 13, 61 => 13, 62 => 13, 63 => 13,
-        70 => 14, 72 => 14, 73 => 14, 74 => 14,
-        80 => 15
+        10 => 1, 20 => 2, 32 => 3, 105 => 3, 31 => 4, 30 => 4,
+        34 => 5, 33 => 5,
+        100 => 6, 101 => 6, 102 => 6, 103 => 6, 109 => 6,
+        92 => 7, 90 => 7, 91 => 7,
+        106 => 8, 45 => 8, 44 => 8, 43 => 8,
+        40 => 9, 41 => 9, 42 => 9,
+        71 => 10, 104 => 10,
+        50 => 11, 51 => 11, 52 => 11, 53 => 11, 55 => 11, 59 => 11,
+        54 => 12, 56 => 12, 57 => 12, 107 => 12, 58 => 12,
+        60 => 14, 61 => 14, 62 => 14, 63 => 14,
+        70 => 15, 72 => 15, 73 => 15, 74 => 15,
+        80 => 16
     ];
 
     public function up(): void {
@@ -117,8 +120,17 @@ return new class extends Migration {
         DB::table("sub_sections")->where("id", 43)->update(["section_id" => 4, "order" => 4, "dom_label" => "Asistencias por documento"]);
         DB::table("sub_sections")->where("id", 44)->update(["section_id" => 4, "order" => 5]);
         DB::table("sub_sections")->where("id", 45)->update(["section_id" => 4, "order" => 6, "dom_label" => "Libro de reclamaciones y sugerencias"]);
-        DB::table("sub_sections")->whereIn("id", [33, 74, 109])->delete();
-        DB::table("sections")->whereIn("id", [14, 15])->delete();
+        DB::table("sub_sections")->where("id", 33)->update([
+            "section_id" => 3,
+            "slug" => "sc_sales-quotations",
+            "name" => "sales-quotations",
+            "order" => 3,
+            "dom_id" => "menu-sales-quotations",
+            "dom_label" => "Cotizaciones",
+            "dom_route" => "quotations.index"
+        ]);
+        DB::table("sub_sections")->whereIn("id", [34, 74, 109])->delete();
+        DB::table("sections")->whereIn("id", [14, 15, 16])->delete();
 
         $this->clearMenuCache();
 

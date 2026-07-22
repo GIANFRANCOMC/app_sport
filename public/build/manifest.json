@@ -70,9 +70,9 @@
       "_vue-select-aLjIGCfg.js"
     ]
   },
-  "_InputNumber-!~{00X}~.js": {
+  "_InputNumber-!~{00Y}~.js": {
     "file": "assets/InputNumber-Dfq8rM4R.css",
-    "src": "_InputNumber-!~{00X}~.js"
+    "src": "_InputNumber-!~{00Y}~.js"
   },
   "_InputNumber-BchmfICq.js": {
     "file": "assets/InputNumber-BchmfICq.js",
@@ -103,9 +103,9 @@
       "_vue-select-aLjIGCfg.js"
     ]
   },
-  "_InputText-!~{00N}~.js": {
+  "_InputText-!~{00O}~.js": {
     "file": "assets/InputText-CDsBMm8A.css",
-    "src": "_InputText-!~{00N}~.js"
+    "src": "_InputText-!~{00O}~.js"
   },
   "_InputText-j4qJAErY.js": {
     "file": "assets/InputText-j4qJAErY.js",
@@ -166,9 +166,9 @@
       "_Constants-5CGlVUkU.js"
     ]
   },
-  "_WithoutData-!~{00V}~.js": {
+  "_WithoutData-!~{00W}~.js": {
     "file": "assets/WithoutData-BXfRfyP6.css",
-    "src": "_WithoutData-!~{00V}~.js"
+    "src": "_WithoutData-!~{00W}~.js"
   },
   "_WithoutData-B-dpX2Nn.js": {
     "file": "assets/WithoutData-B-dpX2Nn.js",
@@ -204,9 +204,9 @@
     "file": "assets/index-DhXgJQ-f.js",
     "name": "index"
   },
-  "_vue-select-!~{00L}~.js": {
+  "_vue-select-!~{00M}~.js": {
     "file": "assets/vue-select-DA8hhM3z.css",
-    "src": "_vue-select-!~{00L}~.js"
+    "src": "_vue-select-!~{00M}~.js"
   },
   "_vue-select-aLjIGCfg.js": {
     "file": "assets/vue-select-aLjIGCfg.js",
@@ -221,7 +221,7 @@
     "isEntry": true
   },
   "resources/css/System/platform.css": {
-    "file": "assets/platform-BrLLI3hY.css",
+    "file": "assets/platform-Bpbhq1ZS.css",
     "src": "resources/css/System/platform.css",
     "isEntry": true
   },
@@ -858,7 +858,7 @@
     ]
   },
   "resources/js/System/Pages/Sales/pos/main.js": {
-    "file": "assets/main-H7CdfNRw.js",
+    "file": "assets/main-BW0I0WqQ.js",
     "name": "main",
     "src": "resources/js/System/Pages/Sales/pos/main.js",
     "isEntry": true,
@@ -879,8 +879,32 @@
       "_InputTextArea-C9GLxH-n.js"
     ]
   },
+  "resources/js/System/Pages/Sales/quotations/main.js": {
+    "file": "assets/main-DezZ07Ig.js",
+    "name": "main",
+    "src": "resources/js/System/Pages/Sales/quotations/main.js",
+    "isEntry": true,
+    "imports": [
+      "_vue-select-aLjIGCfg.js",
+      "_Constants-5CGlVUkU.js",
+      "resources/js/System/Helpers/Constants.js",
+      "_NumberUtils-DdjHh4fS.js",
+      "_WithoutData-B-dpX2Nn.js",
+      "_InputDate-DZ2sY2vv.js",
+      "_InputNumber-BchmfICq.js",
+      "_InputSlot-DbV2gTFs.js",
+      "_InputText-j4qJAErY.js",
+      "_InputTextArea-C9GLxH-n.js",
+      "_Paginator-G1GEXU6c.js",
+      "_AddCustomer-BesUe04C.js",
+      "_StatusBadge-BqMh2v_h.js",
+      "_index-DhXgJQ-f.js",
+      "_Forms-D6gyWMEC.js",
+      "_StringUtils-BbTBApq-.js"
+    ]
+  },
   "resources/js/System/Pages/Sales/sales/list.js": {
-    "file": "assets/list-DAXA3bVO.js",
+    "file": "assets/list-BEeBoVHz.js",
     "name": "list",
     "src": "resources/js/System/Pages/Sales/sales/list.js",
     "isEntry": true,
@@ -904,7 +928,7 @@
     ]
   },
   "resources/js/System/Pages/Sales/sales/main.js": {
-    "file": "assets/main-B9xhrL5B.js",
+    "file": "assets/main-e442EoST.js",
     "name": "main",
     "src": "resources/js/System/Pages/Sales/sales/main.js",
     "isEntry": true,

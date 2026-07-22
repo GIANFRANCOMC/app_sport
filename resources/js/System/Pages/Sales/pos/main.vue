@@ -938,8 +938,8 @@ export default {
         documentTypeLabel(documentType) {
             const value = String(documentType?.name || documentType?.code || "Comprobante").trim().toUpperCase();
 
-            if(value === "BOLETA DE VENTA" || value === "BV") return "BOLETA";
-            if(value === "FA") return "FACTURA";
+            if(value.includes("BOLETA") || value === "BV") return "Boleta";
+            if(value === "FACTURA" || value === "FA") return "Factura";
 
             return value;
         },

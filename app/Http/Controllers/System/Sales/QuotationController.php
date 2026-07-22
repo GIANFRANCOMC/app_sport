@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Validator;
 
 use App\Helpers\System\Utilities;
 use App\Http\Controllers\System\Base\BaseController;
-use App\Services\System\Sales\QuotationService;
+use App\Services\System\Sales\{QuotationService, SaleConfigService};
 
 final class QuotationController extends BaseController {
 
@@ -17,7 +17,19 @@ final class QuotationController extends BaseController {
 
     public function index() {
 
-        return view("System/general/Sales/quotations/main");
+        return view("System/general/Sales/quotations/main", ["pageMode" => "list"]);
+
+    }
+
+    public function create() {
+
+        return view("System/general/Sales/quotations/main", ["pageMode" => "create"]);
+
+    }
+
+    public function initParams(Request $request) {
+
+        return SaleConfigService::getInitParams($this->getCompanyId(), "main", $this->getUserId());
 
     }
 

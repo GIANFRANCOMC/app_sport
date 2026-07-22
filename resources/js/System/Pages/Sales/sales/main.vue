@@ -42,7 +42,20 @@
                                     :class="config.forms.classes.select2"
                                     :clearable="false"
                                     :searchable="false"
-                                    placeholder="Seleccione"/>
+                                    placeholder="Seleccione">
+                                    <template #selected-option="option">
+                                        <span class="br-document-serie-option">
+                                            <strong v-text="option.label"></strong>
+                                            <small v-text="option.description"></small>
+                                        </span>
+                                    </template>
+                                    <template #option="option">
+                                        <span class="br-document-serie-option">
+                                            <strong v-text="option.label"></strong>
+                                            <small v-text="option.description"></small>
+                                        </span>
+                                    </template>
+                                </v-select>
                             </template>
                         </InputSlot>
                         <div v-if="saleConfigurationIssue" class="col-12">
@@ -72,10 +85,11 @@
                             isRequired
                             hasTextBottom
                             :textBottomInfo="forms[entity].createUpdate.errors?.holder_id"
-                            xl="12"
-                            lg="12">
+                            xl="6"
+                            lg="6">
                             <template v-slot:default>
                                 <AddCustomer
+                                    v-if="!hasQuotationApplied"
                                     :options="customerOptions"
                                     @postAction="addCustomerPostAction"/>
                             </template>
@@ -95,26 +109,22 @@
                                     :options="holders"
                                     :class="config.forms.classes.select2"
                                     :clearable="false"
+                                    :disabled="hasQuotationApplied"
                                     :searchable="true"
-                                    placeholder="Seleccione"/>
-                            </template>
-                        </InputSlot>
-                        <InputSlot
-                            v-if="quotationOptions.length"
-                            hasDiv
-                            :title="MODULE.texts.form.quotation"
-                            :titleClass="[config.forms.classes.title]"
-                            xl="6"
-                            lg="12">
-                            <template v-slot:input>
-                                <v-select
-                                    v-model="forms[entity].createUpdate.data.quotation"
-                                    :options="quotationOptions"
-                                    :class="config.forms.classes.select2"
-                                    :clearable="true"
-                                    :searchable="true"
-                                    placeholder="Jalar una cotización"
-                                    @option:selected="applyQuotationDraft"/>
+                                    placeholder="Seleccione">
+                                    <template #selected-option="option">
+                                        <span class="br-document-holder-option">
+                                            <strong v-text="holderDocumentTypeLabel(option)"></strong>
+                                            <span v-text="holderDocumentDescription(option)"></span>
+                                        </span>
+                                    </template>
+                                    <template #option="option">
+                                        <span class="br-document-holder-option">
+                                            <strong v-text="holderDocumentTypeLabel(option)"></strong>
+                                            <span v-text="holderDocumentDescription(option)"></span>
+                                        </span>
+                                    </template>
+                                </v-select>
                             </template>
                         </InputSlot>
                     </div>
@@ -146,12 +156,26 @@
                                                         v-model="record.quantity"
                                                         @change="calculateDuration({mode: 'record', record})"
                                                         :decimals="getItemDecimals({mode: 'result', record})"/>
-                                                    <div class="d-flex justify-content-center gap-2 mt-1">
-                                                        <button class="btn btn-danger btn-xs waves-effect" type="button" @click="changeQuantityDetail({record, keyRecord, type: 'subtract'})">
-                                                            <i class="fa fa-minus"></i>
+                                                    <div class="br-sale-detail-qty-actions">
+                                                        <button
+                                                            class="br-sale-detail-qty-btn br-sale-detail-qty-btn--minus waves-effect"
+                                                            type="button"
+                                                            data-bs-toggle="tooltip"
+                                                            data-bs-placement="top"
+                                                            title="Restar unidad"
+                                                            aria-label="Restar unidad"
+                                                            @click="changeQuantityDetail({record, keyRecord, type: 'subtract'})">
+                                                            <i class="fa fa-minus" aria-hidden="true"></i>
                                                         </button>
-                                                        <button class="btn btn-info-1 btn-xs waves-effect" type="button" @click="changeQuantityDetail({record, keyRecord, type: 'add'})">
-                                                            <i class="fa fa-plus"></i>
+                                                        <button
+                                                            class="br-sale-detail-qty-btn br-sale-detail-qty-btn--plus waves-effect"
+                                                            type="button"
+                                                            data-bs-toggle="tooltip"
+                                                            data-bs-placement="top"
+                                                            title="Agregar unidad"
+                                                            aria-label="Agregar unidad"
+                                                            @click="changeQuantityDetail({record, keyRecord, type: 'add'})">
+                                                            <i class="fa fa-plus" aria-hidden="true"></i>
                                                         </button>
                                                     </div>
                                                 </td>
@@ -174,22 +198,41 @@
                                                     <InputSlot
                                                         hasDiv
                                                         :isInputGroup="false"
-                                                        :divInputClass="['d-flex flex-wrap justify-content-center gap-2 gap-md-1']"
+                                                        :divInputClass="['br-sale-detail-actions']"
                                                         xl="12"
                                                         lg="12">
                                                         <template v-slot:input>
-                                                            <button class="btn btn-danger btn-xs waves-effect" type="button" @click="deleteDetail({record, keyRecord})">
-                                                                <i class="fa fa-times"></i>
-                                                                <span class="ms-1" v-text="MODULE.texts.actions.delete"></span>
+                                                            <button
+                                                                class="br-sale-detail-action br-sale-detail-action--danger waves-effect"
+                                                                type="button"
+                                                                data-bs-toggle="tooltip"
+                                                                data-bs-placement="top"
+                                                                :title="MODULE.texts.actions.delete"
+                                                                :aria-label="MODULE.texts.actions.delete"
+                                                                @click="deleteDetail({record, keyRecord})">
+                                                                <i class="fa fa-times" aria-hidden="true"></i>
                                                             </button>
-                                                            <button v-if="!isSubscription(record?.type)" class="btn btn-info-1 btn-xs waves-effect" type="button" @click="duplicateDetail({record, keyRecord})">
-                                                                <i class="fa fa-copy"></i>
-                                                                <span class="ms-1" v-text="MODULE.texts.actions.duplicate"></span>
+                                                            <button
+                                                                v-if="!isSubscription(record?.type)"
+                                                                class="br-sale-detail-action br-sale-detail-action--primary waves-effect"
+                                                                type="button"
+                                                                data-bs-toggle="tooltip"
+                                                                data-bs-placement="top"
+                                                                :title="MODULE.texts.actions.duplicate"
+                                                                :aria-label="MODULE.texts.actions.duplicate"
+                                                                @click="duplicateDetail({record, keyRecord})">
+                                                                <i class="fa fa-copy" aria-hidden="true"></i>
                                                             </button>
                                                             <template v-if="isSubscription(record?.type)">
-                                                                <button class="btn btn-success btn-xs waves-effect" type="button" @click="viewDetail({record, keyRecord})">
-                                                                    <i :class="record?.extras?.showDetail ? 'fa fa-eye-slash' : 'fa fa-eye'"></i>
-                                                                    <span class="ms-1" v-text="record?.extras?.showDetail ? 'Detalle' : 'Detalle'"></span>
+                                                                <button
+                                                                    class="br-sale-detail-action br-sale-detail-action--success waves-effect"
+                                                                    type="button"
+                                                                    data-bs-toggle="tooltip"
+                                                                    data-bs-placement="top"
+                                                                    title="Ver detalle"
+                                                                    aria-label="Ver detalle"
+                                                                    @click="viewDetail({record, keyRecord})">
+                                                                    <i :class="record?.extras?.showDetail ? 'fa fa-eye-slash' : 'fa fa-eye'" aria-hidden="true"></i>
                                                                 </button>
                                                             </template>
                                                         </template>
@@ -276,8 +319,12 @@
                         <button
                             type="button"
                             class="br-btn br-btn-xs br-btn-action-import br-document-payment-config waves-effect"
+                            data-bs-toggle="tooltip"
+                            data-bs-placement="top"
+                            title="Cambiar observaciones"
+                            aria-label="Cambiar observaciones"
                             @click="openObservationsModal">
-                            <span>Cambiar</span>
+                            <i class="fa-solid fa-pen" aria-hidden="true"></i>
                         </button>
                     </div>
                     <div class="br-document-observation-summary">
@@ -299,9 +346,40 @@
                 </div>
                 <div>
                     <div class="br-document-settlement__header">
+                        <label class="form-label colon-at-end">Cotización</label>
+                        <button
+                            type="button"
+                            class="br-btn br-btn-xs br-btn-action-import br-document-payment-config waves-effect"
+                            data-bs-toggle="tooltip"
+                            data-bs-placement="top"
+                            title="Cambiar cotización"
+                            aria-label="Cambiar cotización"
+                            @click="openQuotationModal">
+                            <i class="fa-solid fa-pen" aria-hidden="true"></i>
+                        </button>
+                    </div>
+                    <div class="br-document-quotation-summary">
+                        <template v-if="hasQuotationApplied">
+                            <strong v-text="forms[entity].createUpdate.data.quotation?.data?.reference || 'Cotización aplicada'"></strong>
+                            <small v-text="quotationSummaryLabel"></small>
+                        </template>
+                        <p v-else class="br-document-settlement__empty mb-0">
+                            Sin cotización para esta venta.
+                        </p>
+                    </div>
+                </div>
+                <div>
+                    <div class="br-document-settlement__header">
                         <label class="form-label colon-at-end">Almacén</label>
-                        <button type="button" class="br-btn br-btn-xs br-btn-action-import br-document-payment-config waves-effect" @click="openWarehouseModal">
-                            <span>Cambiar</span>
+                        <button
+                            type="button"
+                            class="br-btn br-btn-xs br-btn-action-import br-document-payment-config waves-effect"
+                            data-bs-toggle="tooltip"
+                            data-bs-placement="top"
+                            title="Cambiar almacén"
+                            aria-label="Cambiar almacén"
+                            @click="openWarehouseModal">
+                            <i class="fa-solid fa-pen" aria-hidden="true"></i>
                         </button>
                     </div>
                     <div class="br-document-delivery-summary">
@@ -312,8 +390,15 @@
                 <div>
                     <div class="br-document-settlement__header">
                         <label class="form-label colon-at-end">Tipo de entrega</label>
-                        <button type="button" class="br-btn br-btn-xs br-btn-action-import br-document-payment-config waves-effect" @click="openDeliveryModal">
-                            <span>Cambiar</span>
+                        <button
+                            type="button"
+                            class="br-btn br-btn-xs br-btn-action-import br-document-payment-config waves-effect"
+                            data-bs-toggle="tooltip"
+                            data-bs-placement="top"
+                            title="Cambiar tipo de entrega"
+                            aria-label="Cambiar tipo de entrega"
+                            @click="openDeliveryModal">
+                            <i class="fa-solid fa-pen" aria-hidden="true"></i>
                         </button>
                     </div>
                     <div class="br-document-delivery-summary">
@@ -324,8 +409,15 @@
                 <div>
                     <div class="br-document-settlement__header">
                         <label class="form-label colon-at-end">Impuestos extras</label>
-                        <button type="button" class="br-btn br-btn-xs br-btn-action-import br-document-payment-config waves-effect" @click="openTaxesModal">
-                            <span>Cambiar</span>
+                        <button
+                            type="button"
+                            class="br-btn br-btn-xs br-btn-action-import br-document-payment-config waves-effect"
+                            data-bs-toggle="tooltip"
+                            data-bs-placement="top"
+                            title="Cambiar impuestos extras"
+                            aria-label="Cambiar impuestos extras"
+                            @click="openTaxesModal">
+                            <i class="fa-solid fa-pen" aria-hidden="true"></i>
                         </button>
                     </div>
                     <div class="br-document-tax-summary">
@@ -352,8 +444,15 @@
                 <div>
                     <div class="br-document-settlement__header">
                         <label class="form-label colon-at-end">Métodos de pago</label>
-                        <button type="button" class="br-btn br-btn-xs br-btn-action-import br-document-payment-config waves-effect" @click="openPaymentMethodsModal">
-                            <span>Cambiar</span>
+                        <button
+                            type="button"
+                            class="br-btn br-btn-xs br-btn-action-import br-document-payment-config waves-effect"
+                            data-bs-toggle="tooltip"
+                            data-bs-placement="top"
+                            title="Cambiar métodos de pago"
+                            aria-label="Cambiar métodos de pago"
+                            @click="openPaymentMethodsModal">
+                            <i class="fa-solid fa-pen" aria-hidden="true"></i>
                         </button>
                     </div>
                     <div class="br-document-payment-summary">
@@ -402,8 +501,8 @@
                             0.00
                         </strong>
                     </template>
-                    <span class="br-document-settlement__summary-label br-document-settlement__summary-label--primary">Total</span>
-                    <strong class="br-document-settlement__summary-value br-document-settlement__summary-value--primary">
+                    <span class="br-document-settlement__summary-label br-document-settlement__summary-label--total">Total</span>
+                    <strong class="br-document-settlement__summary-value br-document-settlement__summary-value--total">
                         {{ forms[entity].createUpdate.data.currency?.data?.sign ?? '' }}
                         {{ separatorNumber(total) }}
                     </strong>
@@ -436,8 +535,8 @@
                 <button
                     type="button"
                     class="br-btn br-btn-success br-sale-sidebar-actions__cta waves-effect"
-                    :disabled="Boolean(saleConfigurationIssue)"
-                    :title="saleConfigurationIssue?.message || MODULE.texts.actions.generateSale"
+                    :disabled="Boolean(saleSubmitBlocker)"
+                    :title="saleSubmitBlocker?.message || MODULE.texts.actions.generateSale"
                     @click="createUpdateEntity()">
                     <i class="fa-solid fa-cash-register" aria-hidden="true"></i>
                     <span v-text="MODULE.texts.actions.generateSale"></span>
@@ -519,6 +618,46 @@
                 <div class="modal-footer br-entity-modal__footer">
                     <button type="button" class="br-btn br-btn-cancel" data-bs-dismiss="modal">Cancelar</button>
                     <button type="button" class="br-btn br-btn-primary" data-bs-dismiss="modal">Cambiar entrega</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" :id="forms[entity].createUpdate.extras.modals.quotation.id" data-bs-backdrop="static" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-dialog-centered modal-md" role="document">
+            <div class="modal-content br-entity-modal">
+                <div class="modal-header br-modal-header">
+                    <h5 class="modal-title text-uppercase fw-bold">Cambiar cotización</h5>
+                    <button type="button" class="btn-header-modal" data-bs-dismiss="modal" aria-label="Cerrar">
+                        <i class="fa fa-times icon-close-modal" aria-hidden="true"></i>
+                    </button>
+                </div>
+                <div class="modal-body br-entity-modal__body">
+                    <InputSlot
+                        hasDiv
+                        :title="MODULE.texts.form.quotation"
+                        :titleClass="[config.forms.classes.title]"
+                        xl="12"
+                        lg="12">
+                        <template v-slot:input>
+                            <v-select
+                                v-model="forms[entity].createUpdate.data.quotation"
+                                :options="quotationOptions"
+                                :class="config.forms.classes.select2"
+                                :clearable="false"
+                                :searchable="true"
+                                append-to-body
+                                placeholder="Seleccione cotización"
+                                @option:selected="applyQuotationDraft"/>
+                        </template>
+                    </InputSlot>
+                    <p class="br-document-settlement__empty mb-0 mt-2">
+                        Al aplicar una cotización, el cliente queda bloqueado para conservar la trazabilidad.
+                    </p>
+                </div>
+                <div class="modal-footer br-entity-modal__footer">
+                    <button type="button" class="br-btn br-btn-cancel" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="br-btn br-btn-primary" data-bs-dismiss="modal">Cambiar cotización</button>
                 </div>
             </div>
         </div>
@@ -1282,6 +1421,9 @@ export default {
                     delivery: {
                         id: Utils.uuid()
                     },
+                    quotation: {
+                        id: Utils.uuid()
+                    },
                     taxes: {
                         id: Utils.uuid()
                     },
@@ -1350,6 +1492,22 @@ export default {
 
         if(initParams && initOthers) {
 
+            const pendingQuotationId = window.sessionStorage.getItem("br_sale_pending_quotation_id");
+
+            if(pendingQuotationId) {
+
+                const quotation = this.quotationOptions.find(record => Number(record.code) === Number(pendingQuotationId));
+
+                if(quotation) {
+
+                    await this.applyQuotationDraft(quotation);
+
+                }
+
+                window.sessionStorage.removeItem("br_sale_pending_quotation_id");
+
+            }
+
             Alerts.swals({show: false});
 
         }
@@ -1360,10 +1518,47 @@ export default {
 
             const value = String(documentType?.name || documentType?.code || "Comprobante").trim().toUpperCase();
 
-            if(value === "BOLETA DE VENTA" || value === "BV") return "BOLETA";
-            if(value === "FA") return "FACTURA";
+            if(value.includes("BOLETA") || value === "BV") return "Boleta";
+            if(value === "FACTURA" || value === "FA") return "Factura";
 
             return value;
+
+        },
+        documentTypeTechnicalLabel(documentType) {
+
+            const value = String(documentType?.name || documentType?.code || "Comprobante").trim().toUpperCase();
+
+            if(value.includes("BOLETA") || value === "BV") return "BOLETA";
+            if(value === "FACTURA" || value === "FA") return "FACTURA";
+
+            return value;
+
+        },
+        holderDocumentTypeLabel(holder = {}) {
+
+            const customer = holder?.data ?? holder;
+            const documentType = customer?.identity_document_type;
+
+            if(documentType?.name || documentType?.code) {
+
+                return String(documentType.name || documentType.code).trim().toUpperCase();
+
+            }
+
+            const documentTypeId = customer?.identity_document_type_id;
+            const record = (this.options?.customers?.identityDocumentTypes || [])
+                .find(type => Number(type.id) === Number(documentTypeId));
+
+            return String(record?.code || record?.name || "Doc.").trim().toUpperCase();
+
+        },
+        holderDocumentDescription(holder = {}) {
+
+            const customer = holder?.data ?? holder;
+            const documentNumber = customer?.document_number || "S/D";
+            const name = customer?.name || "Cliente";
+
+            return `${documentNumber}, ${name}`;
 
         },
         taxLabel(tax = {}) {
@@ -1495,6 +1690,7 @@ export default {
             const draft = result.data.data;
             const form = this.forms[this.entity].createUpdate.data;
 
+            form.quotation = quotation;
             form.quotation_header_id = draft.quotation_header_id;
             form.branch = this.branches.find(branch => Number(branch.code) === Number(draft.branch_id)) || form.branch;
             form.holder = this.holders.find(holder => Number(holder.code) === Number(draft.holder_id)) || form.holder;
@@ -1675,6 +1871,11 @@ export default {
             }
 
             Alerts.modals({type: "show", id: this.forms[this.entity].createUpdate.extras.modals.delivery.id});
+
+        },
+        openQuotationModal() {
+
+            Alerts.modals({type: "show", id: this.forms[this.entity].createUpdate.extras.modals.quotation.id});
 
         },
         newSalePayment({amount = ""} = {}) {
@@ -2013,6 +2214,13 @@ export default {
         async createUpdateEntity() {
 
             const functionName = "createUpdateEntity";
+
+            if(this.saleSubmitBlocker) {
+
+                Alerts.toastrs({type: "warning", subtitle: this.saleSubmitBlocker.message});
+                return;
+
+            }
 
             Alerts.swals({});
             this.formErrors({functionName, type: "clear"});
@@ -2583,7 +2791,8 @@ export default {
 
                 return series.map(e => ({
                     code: e.id,
-                    label: `${e.legible_serie} - ${this.documentTypeLabel(e?.document_type)}`,
+                    label: this.documentTypeLabel(e?.document_type),
+                    description: `Serie ${e.legible_serie}`,
                     data: e
                 }));
 
@@ -2618,6 +2827,20 @@ export default {
             return this.forms[this.entity].createUpdate.data.delivery_mode?.label || "Entrega inmediata";
 
         },
+        hasQuotationApplied() {
+
+            return Boolean(this.forms[this.entity].createUpdate.data.quotation_header_id);
+
+        },
+        quotationSummaryLabel() {
+
+            const quotation = this.forms[this.entity].createUpdate.data.quotation?.data || {};
+            const holder = quotation?.holder?.name || this.forms[this.entity].createUpdate.data.holder?.data?.name || "Cliente";
+            const total = quotation?.total != null ? ` · S/ ${this.separatorNumber(quotation.total)}` : "";
+
+            return `${holder}${total}`;
+
+        },
         warehouseLabel() {
 
             return this.forms[this.entity].createUpdate.data.warehouse?.label || "Seleccione almacén";
@@ -2650,6 +2873,82 @@ export default {
             return null;
 
         },
+        saleHasDetails() {
+
+            return (this.forms[this.entity].createUpdate.data.details || []).length > 0;
+
+        },
+        saleIsCredit() {
+
+            return ["cash_on_delivery", "installments"].includes(this.forms[this.entity].createUpdate.data.payment_modality);
+
+        },
+        saleHasValidPayments() {
+
+            const payments = this.forms[this.entity].createUpdate.data.payments || [];
+
+            return payments.some(payment => payment.method?.code && Number(payment.amount || 0) > 0);
+
+        },
+        salePaymentIsBalanced() {
+
+            return Math.abs(Number(this.salePaymentDifference || 0)) < 0.000001;
+
+        },
+        saleSubmitBlocker() {
+
+            if(this.saleConfigurationIssue) return this.saleConfigurationIssue;
+
+            const form = this.forms[this.entity].createUpdate.data;
+
+            if(!this.saleHasDetails) {
+
+                return {
+                    title: "Falta detalle",
+                    message: "Agrega al menos un ítem a la venta."
+                };
+
+            }
+
+            if(Number(this.total || 0) <= 0) {
+
+                return {
+                    title: "Total inválido",
+                    message: "El total de la venta debe ser mayor a cero."
+                };
+
+            }
+
+            if(!this.isDefined({value: form?.holder})) {
+
+                return {
+                    title: "Falta cliente",
+                    message: "Selecciona un cliente para generar la venta."
+                };
+
+            }
+
+            if(!this.saleIsCredit && !this.saleHasValidPayments) {
+
+                return {
+                    title: "Falta método de pago",
+                    message: "Configura al menos un método de pago con monto mayor a cero."
+                };
+
+            }
+
+            if(!this.saleIsCredit && !this.salePaymentIsBalanced) {
+
+                return {
+                    title: "Pago incompleto",
+                    message: "El monto pagado debe coincidir con el total de la venta."
+                };
+
+            }
+
+            return null;
+
+        },
         holders: function() {
 
             return this.options?.holders?.records.map(e => ({code: e.id, label: `${e.document_number} - ${e.name}`, data: e}));
@@ -2673,7 +2972,7 @@ export default {
 
             return (this.options?.quotations?.records || []).map(record => ({
                 code: record.id,
-                label: `${record.reference} ? ${record.holder?.name || "Cliente"} ? ${this.separatorNumber(record.total)}`,
+                label: `${record.reference} - ${record.holder?.name || "Cliente"} - S/ ${this.separatorNumber(record.total)}`,
                 data: record
             }));
 

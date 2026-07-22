@@ -21,7 +21,8 @@ El menú no debe agrupar por tecnología ni por controlador, sino por intención
 La estructura recomendada separa responsabilidades:
 
 - `POS`: puntos de venta rápidos, tanto mostrador como restaurante.
-- `Ventas`: ventas documentadas, listados y cotizaciones.
+- `Ventas`: ventas documentadas y sus listados.
+- `Cotizaciones`: propuestas comerciales con alta y listado propios, convertibles a venta.
 - `Cajas`: operación financiera diaria de caja.
 - `Atención al cliente`: flujos de contacto, servicios en curso, notificaciones, reclamaciones y asistencia pública por documento.
 - `Gestión de colaboradores`: usuarios internos y asistencia laboral.
@@ -34,17 +35,18 @@ La estructura recomendada separa responsabilidades:
 2. `sc_dashboard` - Dashboard.
 3. `sc_pos` - POS.
 4. `sc_sales` - Ventas.
-5. `sc_cash` - Cajas.
-6. `sc_purchases` - Compras.
-7. `sc_customer_attention` - Atención al cliente.
-8. `sc_customers` - Gestión de clientes.
-9. `sc_staff` - Gestión de colaboradores.
-10. `sc_items` - Catálogo comercial.
-11. `sc_inventory` - Inventario.
-12. `sc_restaurant_services` - Restaurante y servicios.
-13. `sc_infrastructure` - Infraestructura.
-14. `sc_configuration` - Configuración.
-15. `sc_reports` - Reportes.
+5. `sc_quotations` - Cotizaciones.
+6. `sc_cash` - Cajas.
+7. `sc_purchases` - Compras.
+8. `sc_customer_attention` - Atención al cliente.
+9. `sc_customers` - Gestión de clientes.
+10. `sc_staff` - Gestión de colaboradores.
+11. `sc_items` - Catálogo comercial.
+12. `sc_inventory` - Inventario.
+13. `sc_restaurant_services` - Restaurante y servicios.
+14. `sc_infrastructure` - Infraestructura.
+15. `sc_configuration` - Configuración.
+16. `sc_reports` - Reportes.
 
 ## Orden por empresa
 
@@ -62,50 +64,52 @@ La estructura recomendada separa responsabilidades:
 4. `restaurant_pos.index` - POS / Restaurante POS.
 5. `sales.create` - Ventas / Nuevo.
 6. `sales.index` - Ventas / Listado.
-7. `quotations.index` - Ventas / Cotizaciones.
-8. `cash_registers.registers.index` - Cajas / Cajas.
-9. `cash_registers.sessions.index` - Cajas / Aperturas y cierres.
-10. `cash_registers.movements.index` - Cajas / Movimientos.
-11. `cash_registers.summary.index` - Cajas / Resumen.
-12. `misc_expenses.index` - Cajas / Gastos varios.
-13. `purchases.create` - Compras / Nuevo.
-14. `purchases.index` - Compras / Listado.
-15. `suppliers.index` - Compras / Proveedores.
-16. `service_sessions.index` - Atención al cliente / Servicios en curso.
-17. `book_complaints.index` - Atención al cliente / Libro de reclamaciones.
-18. `tracking_notifications.index` - Atención al cliente / Notificaciones.
-19. `tracking_attendances.index` - Atención al cliente / Asistencias por documento.
-20. `customers.index` - Gestión de clientes / Clientes.
-21. `tracking_customers.index` - Gestión de clientes / Historial.
-22. `tracking_subscriptions.index` - Gestión de clientes / Membresías.
-23. `users.index` - Gestión de colaboradores / Colaboradores.
-24. `user_attendances.index` - Gestión de colaboradores / Asistencia del personal.
-25. `products.index` - Catálogo comercial / Productos.
-26. `services.index` - Catálogo comercial / Servicios.
-27. `subscriptions.index` - Catálogo comercial / Membresías.
-28. `categories.index` - Catálogo comercial / Categorías.
-29. `brands.index` - Catálogo comercial / Marcas.
-30. `recipes.index` - Catálogo comercial / Recetas y platillos.
-31. `stocks_management.stock.index` - Inventario / Control de stock.
-32. `stocks_management.kardex.index` - Inventario / Kardex.
-33. `stocks_management.transfers.index` - Inventario / Traslados.
-34. `stocks_management.guides.index` - Inventario / Guías.
-35. `stocks_management.valued.index` - Inventario / Kardex valorizado.
-36. `branches.index` - Infraestructura / Sucursales.
-37. `assets.index` - Infraestructura / Activos.
-38. `assets_management.index` - Infraestructura / Gestión de activos.
-39. `biometric_devices.index` - Infraestructura / Dispositivos biométricos.
-40. `companies.index` - Configuración / Mi empresa.
-41. `roles.index` - Configuración / Perfiles de acceso.
-42. `master_data.index` - Configuración / Maestros internos.
-43. `business_profile.index` - Configuración / Rubro y módulos.
-44. `reports.index` - Reportes / Reportes.
+7. `quotations.create` - Cotizaciones / Nuevo.
+8. `quotations.index` - Cotizaciones / Listado.
+9. `cash_registers.registers.index` - Cajas / Cajas.
+10. `cash_registers.sessions.index` - Cajas / Aperturas y cierres.
+11. `cash_registers.movements.index` - Cajas / Movimientos.
+12. `cash_registers.summary.index` - Cajas / Resumen.
+13. `misc_expenses.index` - Cajas / Gastos varios.
+14. `purchases.create` - Compras / Nuevo.
+15. `purchases.index` - Compras / Listado.
+16. `suppliers.index` - Compras / Proveedores.
+17. `service_sessions.index` - Atención al cliente / Servicios en curso.
+18. `book_complaints.index` - Atención al cliente / Libro de reclamaciones.
+19. `tracking_notifications.index` - Atención al cliente / Notificaciones.
+20. `tracking_attendances.index` - Atención al cliente / Asistencias por documento.
+21. `customers.index` - Gestión de clientes / Clientes.
+22. `tracking_customers.index` - Gestión de clientes / Historial.
+23. `tracking_subscriptions.index` - Gestión de clientes / Membresías.
+24. `users.index` - Gestión de colaboradores / Colaboradores.
+25. `user_attendances.index` - Gestión de colaboradores / Asistencia del personal.
+26. `products.index` - Catálogo comercial / Productos.
+27. `services.index` - Catálogo comercial / Servicios.
+28. `subscriptions.index` - Catálogo comercial / Membresías.
+29. `categories.index` - Catálogo comercial / Categorías.
+30. `brands.index` - Catálogo comercial / Marcas.
+31. `recipes.index` - Catálogo comercial / Recetas y platillos.
+32. `stocks_management.stock.index` - Inventario / Control de stock.
+33. `stocks_management.kardex.index` - Inventario / Kardex.
+34. `stocks_management.transfers.index` - Inventario / Traslados.
+35. `stocks_management.guides.index` - Inventario / Guías.
+36. `stocks_management.valued.index` - Inventario / Kardex valorizado.
+37. `branches.index` - Infraestructura / Sucursales.
+38. `assets.index` - Infraestructura / Activos.
+39. `assets_management.index` - Infraestructura / Gestión de activos.
+40. `biometric_devices.index` - Infraestructura / Dispositivos biométricos.
+41. `companies.index` - Configuración / Mi empresa.
+42. `roles.index` - Configuración / Perfiles de acceso.
+43. `master_data.index` - Configuración / Maestros internos.
+44. `business_profile.index` - Configuración / Rubro y módulos.
+45. `reports.index` - Reportes / Reportes.
 
 ## Actualizaciones recientes
 
 - Se elimina la cabecera visible `Operación`.
 - `POS` agrupa `Venta POS` y `Restaurante POS` para separar venta rápida de ventas documentadas.
-- `Ventas` conserva `Nuevo`, `Listado` y `Cotizaciones`.
+- `Ventas` conserva `Nuevo` y `Listado`.
+- `Cotizaciones` se separa como cabecera propia con `Nuevo` y `Listado`, para trazabilidad de propuestas antes de convertirlas en venta.
 - Caja se agrupa en `Cajas`: `Cajas`, `Aperturas y cierres`, `Movimientos`, `Resumen` y `Gastos varios`.
 - `Atención al cliente` agrupa `Servicios en curso`, `Libro de reclamaciones`, `Notificaciones` y `Asistencias por documento`.
 - `users.index` y `user_attendances.index` se agrupan en `Gestión de colaboradores`.

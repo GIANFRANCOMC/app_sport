@@ -118,9 +118,14 @@ final class QuotationService {
             ] + $detail)->all());
 
             if($taxLines->isNotEmpty()) {
-                QuotationTax::insert($taxLines->map(function($tax) use($quotation) {
+                QuotationTax::insert($taxLines->map(function($tax) use($companyId, $userId, $quotation) {
                     unset($tax["_total_impact"]);
-                    return ["quotation_header_id" => $quotation->id] + $tax;
+                    return [
+                        "company_id" => $companyId,
+                        "quotation_header_id" => $quotation->id,
+                        "created_at" => now(),
+                        "created_by" => $userId
+                    ] + $tax;
                 })->all());
             }
 
