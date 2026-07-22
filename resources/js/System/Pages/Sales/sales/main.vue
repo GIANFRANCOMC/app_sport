@@ -2,8 +2,8 @@
     <Breadcrumb :list="breadcrumbTitles"/>
 
     <!-- Content -->
-    <div class="row g-4">
-        <div class="col-lg-9 col-12">
+    <div class="br-sale-create-grid">
+        <div class="br-sale-create-main">
             <div class="card">
                 <div class="card-body">
                     <div class="row g-2 mb-2">
@@ -85,8 +85,8 @@
                             isRequired
                             hasTextBottom
                             :textBottomInfo="forms[entity].createUpdate.errors?.holder_id"
-                            xl="6"
-                            lg="6">
+                            xl="8"
+                            lg="8">
                             <template v-slot:default>
                                 <AddCustomer
                                     v-if="!hasQuotationApplied"
@@ -128,7 +128,25 @@
                             </template>
                         </InputSlot>
                     </div>
-                    <div class="row g-3">
+                    <div class="br-sale-detail-toolbar">
+                        <span
+                            class="br-sale-detail-toolbar__counter"
+                            v-text="`Detalle de la venta · ${forms[entity].createUpdate.data.details.length} ${forms[entity].createUpdate.data.details.length === 1 ? 'ítem' : 'ítems'}`">
+                        </span>
+                        <div class="br-sale-detail-toolbar__actions">
+                            <button type="button" class="br-btn br-btn-sm br-btn-primary waves-effect" @click="modalAddDetail({})">
+                                <span v-text="MODULE.texts.actions.addDetail"></span>
+                            </button>
+                            <button
+                                type="button"
+                                class="br-btn br-btn-sm br-btn-cancel br-sale-detail-toolbar__clear waves-effect"
+                                :disabled="forms[entity].createUpdate.data.details.length <= 0"
+                                @click="clearDetails">
+                                <span>Limpiar ítems</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="br-sale-detail-table-shell">
                         <div class="table-responsive">
                             <table class="table">
                                 <thead class="text-center">
@@ -182,9 +200,7 @@
                                                 <td class="text-center">
                                                     <InputNumber v-model="record.price">
                                                         <template v-slot:inputGroupPrepend v-if="isDefined({value: record?.currency})">
-                                                            <div class="input-group-text br-input-currency-addon">
-                                                                <span class="br-input-currency-addon__sign" v-text="record?.currency?.sign"></span>
-                                                            </div>
+                                                            <span class="input-group-text br-currency-prefix" v-text="record?.currency?.sign"></span>
                                                         </template>
                                                     </InputNumber>
                                                 </td>
@@ -195,48 +211,41 @@
                                                     </span>
                                                 </td>
                                                 <td class="text-center">
-                                                    <InputSlot
-                                                        hasDiv
-                                                        :isInputGroup="false"
-                                                        :divInputClass="['br-sale-detail-actions']"
-                                                        xl="12"
-                                                        lg="12">
-                                                        <template v-slot:input>
+                                                    <div class="br-sale-detail-actions">
+                                                        <button
+                                                            class="br-sale-detail-action br-sale-detail-action--danger waves-effect"
+                                                            type="button"
+                                                            data-bs-toggle="tooltip"
+                                                            data-bs-placement="top"
+                                                            :title="MODULE.texts.actions.delete"
+                                                            :aria-label="MODULE.texts.actions.delete"
+                                                            @click="deleteDetail({record, keyRecord})">
+                                                            <i class="fa fa-times" aria-hidden="true"></i>
+                                                        </button>
+                                                        <button
+                                                            v-if="!isSubscription(record?.type)"
+                                                            class="br-sale-detail-action br-sale-detail-action--primary waves-effect"
+                                                            type="button"
+                                                            data-bs-toggle="tooltip"
+                                                            data-bs-placement="top"
+                                                            :title="MODULE.texts.actions.duplicate"
+                                                            :aria-label="MODULE.texts.actions.duplicate"
+                                                            @click="duplicateDetail({record, keyRecord})">
+                                                            <i class="fa fa-copy" aria-hidden="true"></i>
+                                                        </button>
+                                                        <template v-if="isSubscription(record?.type)">
                                                             <button
-                                                                class="br-sale-detail-action br-sale-detail-action--danger waves-effect"
+                                                                class="br-sale-detail-action br-sale-detail-action--success waves-effect"
                                                                 type="button"
                                                                 data-bs-toggle="tooltip"
                                                                 data-bs-placement="top"
-                                                                :title="MODULE.texts.actions.delete"
-                                                                :aria-label="MODULE.texts.actions.delete"
-                                                                @click="deleteDetail({record, keyRecord})">
-                                                                <i class="fa fa-times" aria-hidden="true"></i>
+                                                                title="Ver detalle"
+                                                                aria-label="Ver detalle"
+                                                                @click="viewDetail({record, keyRecord})">
+                                                                <i :class="record?.extras?.showDetail ? 'fa fa-eye-slash' : 'fa fa-eye'" aria-hidden="true"></i>
                                                             </button>
-                                                            <button
-                                                                v-if="!isSubscription(record?.type)"
-                                                                class="br-sale-detail-action br-sale-detail-action--primary waves-effect"
-                                                                type="button"
-                                                                data-bs-toggle="tooltip"
-                                                                data-bs-placement="top"
-                                                                :title="MODULE.texts.actions.duplicate"
-                                                                :aria-label="MODULE.texts.actions.duplicate"
-                                                                @click="duplicateDetail({record, keyRecord})">
-                                                                <i class="fa fa-copy" aria-hidden="true"></i>
-                                                            </button>
-                                                            <template v-if="isSubscription(record?.type)">
-                                                                <button
-                                                                    class="br-sale-detail-action br-sale-detail-action--success waves-effect"
-                                                                    type="button"
-                                                                    data-bs-toggle="tooltip"
-                                                                    data-bs-placement="top"
-                                                                    title="Ver detalle"
-                                                                    aria-label="Ver detalle"
-                                                                    @click="viewDetail({record, keyRecord})">
-                                                                    <i :class="record?.extras?.showDetail ? 'fa fa-eye-slash' : 'fa fa-eye'" aria-hidden="true"></i>
-                                                                </button>
-                                                            </template>
                                                         </template>
-                                                    </InputSlot>
+                                                    </div>
                                                 </td>
                                             </tr>
                                             <template v-if="record?.extras?.showDetail">
@@ -292,6 +301,7 @@
                                                                 height="84"
                                                                 loading="lazy"
                                                                 decoding="async"/>
+                                                            <strong class="br-table-detail-empty__title" v-text="MODULE.texts.emptySaleDetailTitle"></strong>
                                                             <p class="br-table-detail-empty__text">
                                                                 <span v-text="MODULE.texts.emptySaleDetailPrefix"></span>
                                                                 <a href="javascript:void(0)" class="br-link br-table-detail-empty__link" @click.prevent="modalAddDetail({})" v-text="MODULE.texts.actions.addDetail"></a>
@@ -311,8 +321,8 @@
                 </div>
             </div>
         </div>
-        <div class="col-lg-3 col-12">
-            <div class="br-document-settlement br-sale-settlement bg-white mb-2 mb-md-3">
+        <div class="br-sale-create-side">
+            <div class="br-document-settlement br-sale-settlement bg-white">
                 <div>
                     <div class="br-document-settlement__header">
                         <label class="form-label colon-at-end">Observaciones</label>
@@ -347,16 +357,29 @@
                 <div>
                     <div class="br-document-settlement__header">
                         <label class="form-label colon-at-end">Cotización</label>
-                        <button
-                            type="button"
-                            class="br-btn br-btn-xs br-btn-action-import br-document-payment-config waves-effect"
-                            data-bs-toggle="tooltip"
-                            data-bs-placement="top"
-                            title="Cambiar cotización"
-                            aria-label="Cambiar cotización"
-                            @click="openQuotationModal">
-                            <i class="fa-solid fa-pen" aria-hidden="true"></i>
-                        </button>
+                        <div class="br-document-settlement__actions">
+                            <button
+                                type="button"
+                                class="br-btn br-btn-xs br-btn-action-import br-document-payment-config waves-effect"
+                                data-bs-toggle="tooltip"
+                                data-bs-placement="top"
+                                title="Cambiar cotización"
+                                aria-label="Cambiar cotización"
+                                @click="openQuotationModal">
+                                <i class="fa-solid fa-pen" aria-hidden="true"></i>
+                            </button>
+                            <button
+                                v-if="hasQuotationApplied"
+                                type="button"
+                                class="br-btn br-btn-xs br-document-payment-config br-document-payment-config--danger waves-effect"
+                                data-bs-toggle="tooltip"
+                                data-bs-placement="top"
+                                title="Quitar cotización"
+                                aria-label="Quitar cotización"
+                                @click="clearQuotation">
+                                <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+                            </button>
+                        </div>
                     </div>
                     <div class="br-document-quotation-summary">
                         <template v-if="hasQuotationApplied">
@@ -366,25 +389,6 @@
                         <p v-else class="br-document-settlement__empty mb-0">
                             Sin cotización para esta venta.
                         </p>
-                    </div>
-                </div>
-                <div>
-                    <div class="br-document-settlement__header">
-                        <label class="form-label colon-at-end">Almacén</label>
-                        <button
-                            type="button"
-                            class="br-btn br-btn-xs br-btn-action-import br-document-payment-config waves-effect"
-                            data-bs-toggle="tooltip"
-                            data-bs-placement="top"
-                            title="Cambiar almacén"
-                            aria-label="Cambiar almacén"
-                            @click="openWarehouseModal">
-                            <i class="fa-solid fa-pen" aria-hidden="true"></i>
-                        </button>
-                    </div>
-                    <div class="br-document-delivery-summary">
-                        <span class="br-document-delivery-summary__value" v-text="warehouseLabel"></span>
-                        <small v-if="forms[entity].createUpdate.errors?.warehouse" :class="config.forms.errors.styles.default" v-html="forms[entity].createUpdate.errors.warehouse"></small>
                     </div>
                 </div>
                 <div>
@@ -404,6 +408,25 @@
                     <div class="br-document-delivery-summary">
                         <span class="br-document-delivery-summary__value" v-text="deliveryModeLabel"></span>
                         <small v-if="forms[entity].createUpdate.errors?.delivery_mode" :class="config.forms.errors.styles.default" v-html="forms[entity].createUpdate.errors.delivery_mode"></small>
+                    </div>
+                </div>
+                <div>
+                    <div class="br-document-settlement__header">
+                        <label class="form-label colon-at-end">Almacén</label>
+                        <button
+                            type="button"
+                            class="br-btn br-btn-xs br-btn-action-import br-document-payment-config waves-effect"
+                            data-bs-toggle="tooltip"
+                            data-bs-placement="top"
+                            title="Cambiar almacén"
+                            aria-label="Cambiar almacén"
+                            @click="openWarehouseModal">
+                            <i class="fa-solid fa-pen" aria-hidden="true"></i>
+                        </button>
+                    </div>
+                    <div class="br-document-delivery-summary">
+                        <span class="br-document-delivery-summary__value" v-text="warehouseLabel"></span>
+                        <small v-if="forms[entity].createUpdate.errors?.warehouse" :class="config.forms.errors.styles.default" v-html="forms[entity].createUpdate.errors.warehouse"></small>
                     </div>
                 </div>
                 <div>
@@ -476,71 +499,68 @@
                         </p>
                     </div>
                 </div>
-            </div>
-            <div class="br-document-summary-card mb-2 mb-md-3">
-                <h3 class="br-document-summary-card__title">Resumen</h3>
-                <div class="br-document-settlement__summary">
-                    <span class="br-document-settlement__summary-label br-document-settlement__summary-label--primary">Subtotal</span>
-                    <strong class="br-document-settlement__summary-value br-document-settlement__summary-value--primary">
-                        {{ forms[entity].createUpdate.data.currency?.data?.sign ?? '' }}
-                        {{ separatorNumber(saleSubtotal) }}
-                    </strong>
-                    <template v-if="saleTaxBreakdown.length">
-                        <template v-for="tax in saleTaxBreakdown" :key="`sale-summary-tax-${tax.id}`">
-                            <span class="br-document-settlement__summary-label br-document-settlement__summary-label--primary">{{ tax.name }}</span>
-                            <strong class="br-document-settlement__summary-value br-document-settlement__summary-value--primary">
-                                {{ forms[entity].createUpdate.data.currency?.data?.sign ?? '' }}
-                                {{ separatorNumber(tax.amount) }}
-                            </strong>
-                        </template>
-                    </template>
-                    <template v-else>
-                        <span class="br-document-settlement__summary-label br-document-settlement__summary-label--primary">IGV</span>
+                <div class="br-document-settlement__summary-section">
+                    <h3 class="br-document-summary-card__title">Resumen</h3>
+                    <div class="br-document-settlement__summary">
+                        <span class="br-document-settlement__summary-label br-document-settlement__summary-label--primary">Subtotal</span>
                         <strong class="br-document-settlement__summary-value br-document-settlement__summary-value--primary">
                             {{ forms[entity].createUpdate.data.currency?.data?.sign ?? '' }}
-                            0.00
+                            {{ separatorNumber(saleSubtotal) }}
                         </strong>
-                    </template>
-                    <span class="br-document-settlement__summary-label br-document-settlement__summary-label--total">Total</span>
-                    <strong class="br-document-settlement__summary-value br-document-settlement__summary-value--total">
-                        {{ forms[entity].createUpdate.data.currency?.data?.sign ?? '' }}
-                        {{ separatorNumber(total) }}
-                    </strong>
-                    <span class="br-document-settlement__summary-label">
-                        <span>Pagado</span>
-                        <i
-                            class="fa-solid fa-circle-info br-document-settlement__summary-help"
-                            aria-label="Sumatoria de métodos de pago"
-                            data-bs-toggle="tooltip"
-                            data-bs-placement="top"
-                            role="img"
-                            tabindex="0"
-                            title="Sumatoria de métodos de pago"></i>
-                    </span>
-                    <strong class="br-document-settlement__summary-value">
-                        {{ forms[entity].createUpdate.data.currency?.data?.sign ?? '' }}
-                        {{ separatorNumber(salePaidTotal) }}
-                    </strong>
-                    <span class="br-document-settlement__summary-label">Diferencia</span>
-                    <strong class="br-document-settlement__summary-value">
-                        {{ forms[entity].createUpdate.data.currency?.data?.sign ?? '' }}
-                        {{ separatorNumber(salePaymentDifference) }}
-                    </strong>
+                        <template v-if="saleTaxBreakdown.length">
+                            <template v-for="tax in saleTaxBreakdown" :key="`sale-summary-tax-${tax.id}`">
+                                <span class="br-document-settlement__summary-label br-document-settlement__summary-label--primary">{{ tax.name }}</span>
+                                <strong class="br-document-settlement__summary-value br-document-settlement__summary-value--primary">
+                                    {{ forms[entity].createUpdate.data.currency?.data?.sign ?? '' }}
+                                    {{ separatorNumber(tax.amount) }}
+                                </strong>
+                            </template>
+                        </template>
+                        <template v-else>
+                            <span class="br-document-settlement__summary-label br-document-settlement__summary-label--primary">IGV</span>
+                            <strong class="br-document-settlement__summary-value br-document-settlement__summary-value--primary">
+                                {{ forms[entity].createUpdate.data.currency?.data?.sign ?? '' }}
+                                0.00
+                            </strong>
+                        </template>
+                        <span class="br-document-settlement__summary-label br-document-settlement__summary-label--total">Total</span>
+                        <strong class="br-document-settlement__summary-value br-document-settlement__summary-value--total">
+                            {{ forms[entity].createUpdate.data.currency?.data?.sign ?? '' }}
+                            {{ separatorNumber(total) }}
+                        </strong>
+                        <span class="br-document-settlement__summary-label">
+                            <span>Pagado</span>
+                            <i
+                                class="fa-solid fa-circle-info br-document-settlement__summary-help"
+                                aria-label="Sumatoria de métodos de pago"
+                                data-bs-toggle="tooltip"
+                                data-bs-placement="top"
+                                role="img"
+                                tabindex="0"
+                                title="Sumatoria de métodos de pago"></i>
+                        </span>
+                        <strong class="br-document-settlement__summary-value">
+                            {{ forms[entity].createUpdate.data.currency?.data?.sign ?? '' }}
+                            {{ separatorNumber(salePaidTotal) }}
+                        </strong>
+                        <span class="br-document-settlement__summary-label">Diferencia</span>
+                        <strong class="br-document-settlement__summary-value">
+                            {{ forms[entity].createUpdate.data.currency?.data?.sign ?? '' }}
+                            {{ separatorNumber(salePaymentDifference) }}
+                        </strong>
+                    </div>
                 </div>
-            </div>
-            <div class="br-sale-sidebar-actions br-sale-sidebar-actions--inline">
-                <button type="button" class="br-btn br-btn-sm br-btn-primary waves-effect" @click="modalAddDetail({})">
-                    <span v-text="MODULE.texts.actions.addDetail"></span>
-                </button>
-                <button
-                    type="button"
-                    class="br-btn br-btn-success br-sale-sidebar-actions__cta waves-effect"
-                    :disabled="Boolean(saleSubmitBlocker)"
-                    :title="saleSubmitBlocker?.message || MODULE.texts.actions.generateSale"
-                    @click="createUpdateEntity()">
-                    <i class="fa-solid fa-cash-register" aria-hidden="true"></i>
-                    <span v-text="MODULE.texts.actions.generateSale"></span>
-                </button>
+                <div class="br-document-settlement__submit-section">
+                    <button
+                        type="button"
+                        class="br-btn br-btn-success br-sale-sidebar-actions__cta waves-effect"
+                        :disabled="Boolean(saleSubmitBlocker)"
+                        :title="saleSubmitBlocker?.message || MODULE.texts.actions.generateSale"
+                        @click="createUpdateEntity()">
+                        <i class="fa-solid fa-cash-register" aria-hidden="true"></i>
+                        <span v-text="MODULE.texts.actions.generateSale"></span>
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -804,7 +824,7 @@
                                 :minValue="0"
                                 :placeholder="separatorNumber(total)">
                                 <template v-slot:inputGroupPrepend>
-                                    <span class="input-group-text br-currency-prefix">{{ forms[entity].createUpdate.data.currency?.data?.sign ?? '' }}</span>
+                                    <span class="input-group-text br-currency-prefix" v-text="forms[entity].createUpdate.data.currency?.data?.sign ?? ''"></span>
                                 </template>
                             </InputNumber>
                             <input
@@ -933,9 +953,7 @@
                             xl="4"
                             lg="4">
                             <template v-slot:inputGroupPrepend v-if="isDefined({value: forms[entity].createUpdate.extras.modals.details.data.item?.data?.currency})">
-                                <div class="input-group-text br-input-currency-addon">
-                                    <span class="br-input-currency-addon__sign" v-text="forms[entity].createUpdate.extras.modals.details.data.item?.data?.currency?.sign"></span>
-                                </div>
+                                <span class="input-group-text br-currency-prefix" v-text="forms[entity].createUpdate.extras.modals.details.data.item?.data?.currency?.sign"></span>
                             </template>
                         </InputNumber>
                         <InputSlot
@@ -946,9 +964,7 @@
                             xl="4"
                             lg="4">
                             <template v-slot:inputGroupPrepend v-if="isDefined({value: forms[entity].createUpdate.data.currency?.data})">
-                                <div class="input-group-text br-input-currency-addon">
-                                    <span class="br-input-currency-addon__sign" v-text="forms[entity].createUpdate.data.currency?.data?.sign"></span>
-                                </div>
+                                <span class="input-group-text br-currency-prefix" v-text="forms[entity].createUpdate.data.currency?.data?.sign"></span>
                             </template>
                             <template v-slot:input>
                                 <input class="form-control" disabled :value="separatorNumber(totalModalDetail)"/>
@@ -982,11 +998,9 @@
                             xl="6"
                             lg="6">
                             <template v-slot:inputGroupPrepend>
-                                <div class="input-group-text br-input-currency-addon">
-                                    <span
-                                        class="br-input-currency-addon__sign"
-                                        v-text="forms[entity].createUpdate.extras.modals.details.data.commission_type === 'percentage' ? '%' : (forms[entity].createUpdate.extras.modals.details.data.item?.data?.currency?.sign || forms[entity].createUpdate.data.currency?.data?.sign || '')"></span>
-                                </div>
+                                <span
+                                    class="input-group-text br-currency-prefix"
+                                    v-text="forms[entity].createUpdate.extras.modals.details.data.commission_type === 'percentage' ? '%' : (forms[entity].createUpdate.extras.modals.details.data.item?.data?.currency?.sign || forms[entity].createUpdate.data.currency?.data?.sign || '')"></span>
                             </template>
                         </InputNumber>
                         <template v-if="isSubscription(forms[entity].createUpdate.extras.modals.details.data.type)">
@@ -1354,6 +1368,7 @@ const TEXTS = {
     },
     emptySaleDetailPrefix: "Aún no hay ítems en la venta. Usa ",
     emptySaleDetailSuffix: " para empezar.",
+    emptySaleDetailTitle: "Prepara el detalle de la venta",
 };
 
 const MODULE = {
@@ -1736,7 +1751,10 @@ export default {
             });
 
             form.payments = [this.newSalePayment({amount: this.total})];
-            Alerts.toastrs({type: "success", subtitle: "Cotización cargada con precios vigentes."});
+            Alerts.generateAlert({
+                type: "success",
+                msgContent: "Cotización cargada con precios vigentes."
+            });
 
         },
         calculateSaleTaxLine(tax = {}) {
@@ -1876,6 +1894,20 @@ export default {
         openQuotationModal() {
 
             Alerts.modals({type: "show", id: this.forms[this.entity].createUpdate.extras.modals.quotation.id});
+
+        },
+        clearQuotation() {
+
+            const form = this.forms[this.entity].createUpdate.data;
+
+            form.quotation = null;
+            form.quotation_header_id = null;
+
+            window.sessionStorage.removeItem("br_sale_pending_quotation_id");
+            Alerts.generateAlert({
+                type: "warning",
+                msgContent: "Cotización retirada de la venta."
+            });
 
         },
         newSalePayment({amount = ""} = {}) {
@@ -2037,6 +2069,46 @@ export default {
             }
 
         },
+        clearDetails() {
+
+            const form = this.forms[this.entity].createUpdate.data;
+
+            if(!form.details.length) {
+
+                Alerts.generateAlert({
+                    type: "warning",
+                    msgContent: "No hay ítems para limpiar en el detalle de la venta."
+                });
+                return;
+
+            }
+
+            Swal.fire({
+                html: "<span>¿Desea limpiar todos los ítems del detalle de la venta?</span>",
+                icon: "warning",
+                allowOutsideClick: false,
+                showCancelButton: true,
+                confirmButtonText: "Sí, limpiar",
+                cancelButtonText: "Cancelar",
+                customClass: {
+                    confirmButton: "btn btn-danger waves-effect",
+                    cancelButton: "btn btn-secondary waves-effect ms-3"
+                }
+            }).then(result => {
+
+                if(!result.isConfirmed) return;
+
+                form.details = [];
+                form.payments = [this.newSalePayment({amount: ""})];
+
+                Alerts.generateAlert({
+                    type: "success",
+                    msgContent: "Detalle de venta limpiado correctamente."
+                });
+
+            });
+
+        },
         deleteDetail({record, keyRecord}) {
 
             const functionName = "deleteDetail";
@@ -2052,11 +2124,11 @@ export default {
                 let el = this;
 
                 Swal.fire({
-                    html: `<span>?Desea eliminar <b>${form?.name}</b> del detalle de la venta?</span>`,
+                    html: `<span>¿Desea eliminar <b>${form?.name}</b> del detalle de la venta?</span>`,
                     icon: "warning",
                     allowOutsideClick: false,
                     showCancelButton: true,
-                    confirmButtonText: "S?, eliminar",
+                    confirmButtonText: "Sí, eliminar",
                     cancelButtonText: "Cancelar",
                     customClass: {
                         confirmButton: "btn btn-danger waves-effect",
@@ -2097,11 +2169,11 @@ export default {
                 let el = this;
 
                 Swal.fire({
-                    html: `<span>?Desea duplicar <b>${form?.name}</b> al detalle de la venta?</span>`,
+                    html: `<span>¿Desea duplicar <b>${form?.name}</b> al detalle de la venta?</span>`,
                     icon: "question",
                     allowOutsideClick: false,
                     showCancelButton: true,
-                    confirmButtonText: "S?, duplicar",
+                    confirmButtonText: "Sí, duplicar",
                     cancelButtonText: "Cancelar",
                     customClass: {
                         confirmButton: "btn btn-info-1 waves-effect",

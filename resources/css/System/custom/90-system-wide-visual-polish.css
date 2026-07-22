@@ -801,7 +801,7 @@ body > .vs__dropdown-menu,
 .br-layout .table-responsive,
 .br-layout .br-entity-table,
 .br-layout .br-inventory__table-wrap {
-  border-radius: var(--br-radius);
+  border-radius: 0;
 }
 
 .br-layout .table tbody tr {

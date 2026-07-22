@@ -555,7 +555,7 @@
 }
 
 .br-branch-series-audit .table-responsive {
-  border-radius: 0 0 var(--br-radius-md) var(--br-radius-md);
+  border-radius: 0;
 }
 
 /* --- [br-customers] Bloques de cliente e historial --- */

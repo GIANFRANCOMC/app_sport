@@ -71,14 +71,14 @@
 .br-cash__panel {
   padding: 0;
   border: 0;
-  border-radius: var(--br-radius-md);
+  border-radius: 0;
   background: transparent;
   overflow: hidden;
 }
 
 .br-cash__panel .table-responsive {
   border: 1px solid var(--br-border);
-  border-radius: var(--br-radius-md);
+  border-radius: 0;
   background: var(--br-surface-elevated);
   overflow: hidden;
 }
@@ -193,7 +193,7 @@
 
 .br-cash-inventory-count .table-responsive {
   border: 1px solid var(--br-border);
-  border-radius: var(--br-radius-sm);
+  border-radius: 0;
   background: var(--br-white);
   overflow: auto;
 }

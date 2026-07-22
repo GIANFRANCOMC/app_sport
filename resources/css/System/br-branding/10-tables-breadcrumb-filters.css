@@ -10,6 +10,7 @@ body.br-layout .br-table-header-surface {
   background-color: var(--br-table-thead-bg) !important;
   background-image: none !important;
   box-shadow: inset 0 -1px 0 var(--br-table-thead-edge);
+  border-radius: 0 !important;
 }
 
 body.br-layout .table > thead > tr > th,
@@ -20,7 +21,25 @@ body.br-layout .table > thead > tr > th.bg-secondary {
   font-weight: 550;
   letter-spacing: 0.015em;
   border-bottom-color: color-mix(in srgb, var(--br-white) 10%, transparent) !important;
+  border-radius: 0 !important;
   vertical-align: middle;
+}
+
+body.br-layout .table,
+body.br-layout .table-responsive,
+body.br-layout .br-entity-table,
+body.br-layout .br-inventory__table-wrap,
+body.br-layout .br-sale-detail-table-shell {
+  border-radius: 0 !important;
+}
+
+body.br-layout .table-responsive,
+body.br-layout .br-sale-detail-table-shell {
+  border-color: var(--br-border-muted) !important;
+}
+
+body.br-layout .table :is(thead, tbody, tfoot, tr, th, td) {
+  border-radius: 0 !important;
 }
 
 body.br-layout .table.table-sm > thead > tr > th {

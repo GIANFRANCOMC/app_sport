@@ -4310,14 +4310,14 @@ body.br-layout .br-entity-table > thead > tr > th {
 .br-cash__panel {
   padding: 0;
   border: 0;
-  border-radius: var(--br-radius-md);
+  border-radius: 0;
   background: transparent;
   overflow: hidden;
 }
 
 .br-cash__panel .table-responsive {
   border: 1px solid var(--br-border);
-  border-radius: var(--br-radius-md);
+  border-radius: 0;
   background: var(--br-surface-elevated);
   overflow: hidden;
 }
@@ -4432,7 +4432,7 @@ body.br-layout .br-entity-table > thead > tr > th {
 
 .br-cash-inventory-count .table-responsive {
   border: 1px solid var(--br-border);
-  border-radius: var(--br-radius-sm);
+  border-radius: 0;
   background: var(--br-white);
   overflow: auto;
 }
@@ -7503,7 +7503,7 @@ body.br-layout .br-entity-table > thead > tr > th {
 }
 
 .br-branch-series-audit .table-responsive {
-  border-radius: 0 0 var(--br-radius-md) var(--br-radius-md);
+  border-radius: 0;
 }
 
 /* --- [br-customers] Bloques de cliente e historial --- */
@@ -9205,7 +9205,7 @@ body > .vs__dropdown-menu,
 .br-layout .table-responsive,
 .br-layout .br-entity-table,
 .br-layout .br-inventory__table-wrap {
-  border-radius: var(--br-radius);
+  border-radius: 0;
 }
 
 .br-layout .table tbody tr {
