@@ -34,6 +34,7 @@ return new class extends Migration {
         105 => ["section_id" => 14, "slug" => "sc_restaurant-pos", "name" => "restaurant-pos", "description" => "Gestiona mesas, pedidos en curso y su posterior cobro en POS.", "order" => 2, "dom_id" => "menu-restaurant-pos", "dom_label" => "Restaurante POS", "dom_route" => "restaurant_pos.index"],
         31 => ["section_id" => 3, "slug" => "sc_sales-create", "name" => "sales-create", "description" => "Registra una nueva venta de productos, servicios o membresías.", "order" => 1, "dom_id" => "menu-sales-create", "dom_label" => "Nuevo", "dom_route" => "sales.create"],
         30 => ["section_id" => 3, "slug" => "sc_sales-list", "name" => "sales-list", "description" => "Revisa las ventas registradas y consulta sus detalles.", "order" => 2, "dom_id" => "menu-sales-list", "dom_label" => "Listado", "dom_route" => "sales.index"],
+        35 => ["section_id" => 3, "slug" => "sc_sales-deliveries", "name" => "sales-deliveries", "description" => "Controla ventas con entrega pendiente y registra despachos parciales o totales.", "order" => 3, "dom_id" => "menu-sales-deliveries", "dom_label" => "Entregas pendientes", "dom_route" => "sales.deliveries.index"],
         34 => ["section_id" => 16, "slug" => "sc_quotations-create", "name" => "quotations-create", "description" => "Registra una propuesta comercial con detalle, tributos y vigencia.", "order" => 1, "dom_id" => "menu-quotations-create", "dom_label" => "Nuevo", "dom_route" => "quotations.create"],
         33 => ["section_id" => 16, "slug" => "sc_quotations-list", "name" => "quotations-list", "description" => "Consulta propuestas comerciales y conviértelas en ventas recalculando precios vigentes.", "order" => 2, "dom_id" => "menu-quotations-list", "dom_label" => "Listado", "dom_route" => "quotations.index"],
         100 => ["section_id" => 10, "slug" => "sc_cash-registers", "name" => "cash-registers", "description" => "Gestiona cajas configuradas por sucursal y su estado operativo.", "order" => 1, "dom_id" => "menu-cash-registers", "dom_label" => "Cajas", "dom_route" => "cash_registers.registers.index"],
@@ -76,7 +77,7 @@ return new class extends Migration {
     ];
 
     private const SECTION_ORDERS = [
-        10 => 1, 20 => 2, 32 => 3, 105 => 3, 31 => 4, 30 => 4,
+        10 => 1, 20 => 2, 32 => 3, 105 => 3, 31 => 4, 30 => 4, 35 => 4,
         34 => 5, 33 => 5,
         100 => 6, 101 => 6, 102 => 6, 103 => 6, 109 => 6,
         92 => 7, 90 => 7, 91 => 7,

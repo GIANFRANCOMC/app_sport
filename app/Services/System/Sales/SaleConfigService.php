@@ -28,7 +28,7 @@ final class SaleConfigService extends BaseConfigService {
 
     protected static function cachePages(): array {
 
-        return ["main", "list"];
+        return ["main", "list", "deliveries"];
 
     }
 
@@ -36,17 +36,23 @@ final class SaleConfigService extends BaseConfigService {
 
         $references = CompanyReferenceDataService::for($companyId, $userId);
 
-        if($page === "list") {
+        if($page === "list" || $page === "deliveries") {
 
             return self::data([
                 "branches" => self::data([
                     "records" => $references->branchesWithSeries()
+                ]),
+                "warehouses" => self::data([
+                    "records" => $references->stockWarehouses()
                 ]),
                 "customers" => self::data([
                     "records" => $references->customers()
                 ]),
                 "salesHeader" => self::data([
                     "statuses" => SaleHeader::getStatuses()
+                ]),
+                "saleDeliveries" => self::data([
+                    "statuses" => \App\Models\System\Sales\SaleDelivery::getStatuses()
                 ])
             ]);
 

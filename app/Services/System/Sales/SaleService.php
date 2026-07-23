@@ -337,12 +337,15 @@ class SaleService {
      * @param int $userId User ID
      * @return void
      */
-    private static function updateWarehouseInventory(
+    public static function applyInventoryExit(
         Warehouse $warehouse,
         SaleBody $saleBody,
         array $detail,
-        int $userId
-    ): void {
+        int $userId,
+        string $originType = InventoryMovementService::ORIGIN_SALE,
+        string $reason = "Salida generada por venta.",
+        array $metadata = []
+    ): ?InventoryMovement {
 
         $companyId = (int) $warehouse->branch->company_id;
         $allowNegativeStock = (bool) CompanySettingService::value(
@@ -361,28 +364,30 @@ class SaleService {
             $allowNegativeStock
         )) {
 
-            return;
+            return null;
 
         }
 
         if(!in_array($saleBody->type, ["product"])) {
 
-            return;
+            return null;
 
         }
 
-        InventoryMovementService::apply([
+        $quantity = Utilities::round((float) ($detail["quantity"] ?? $saleBody->quantity), null, $companyId);
+
+        return InventoryMovementService::apply([
             "company_id"     => $companyId,
             "warehouse_id"   => (int) $warehouse->id,
             "item_id"        => (int) $saleBody->item_id,
             "user_id"        => $userId,
             "movement_type"  => InventoryMovementService::TYPE_EXIT,
-            "origin_type"    => InventoryMovementService::ORIGIN_SALE,
+            "origin_type"    => $originType,
             "origin_id"      => (int) $saleBody->id,
-            "quantity"       => (float) $saleBody->quantity,
-            "reason"         => "Salida generada por venta.",
+            "quantity"       => $quantity,
+            "reason"         => $reason,
             "allow_negative" => $allowNegativeStock,
-            "metadata"       => [
+            "metadata"       => $metadata + [
                 "sale_header_id" => (int) $saleBody->sale_header_id
             ]
         ]);
@@ -785,6 +790,7 @@ class SaleService {
             $saleHeader->issue_date  = $data["issue_date"];
             $deliveryMode = $data["delivery_mode"] ?? "immediate";
             $deliveryStatus = $data["delivery_status"] ?? ($deliveryMode === "immediate" ? "delivered" : "pending");
+            $deliveryStatus = $deliveryMode === "pending" && $requiresWarehouse ? "pending" : $deliveryStatus;
             $saleHeader->delivery_mode = $deliveryMode;
             $saleHeader->delivery_status = $deliveryStatus;
             $saleHeader->delivered_at = $deliveryStatus === "delivered" ? now() : null;
@@ -854,16 +860,22 @@ class SaleService {
                 $saleBody = self::createSaleBody($saleHeader, $detail, $userId);
                 $saleBodies->push($saleBody);
 
-                // Update warehouse inventory for products
-                if($warehouse) {
+                // Update warehouse inventory for products only when the sale is delivered immediately.
+                if($warehouse && $deliveryMode === "immediate") {
 
-                    self::updateWarehouseInventory($warehouse, $saleBody, $detail, $userId);
+                    self::applyInventoryExit($warehouse, $saleBody, $detail, $userId);
 
                 }
 
                 // Create subscription for subscription items
                 self::createSubscription($saleHeader, $saleBody, $detail, $companyId, $data["branch_id"], $userId);
                 self::consumeItemCapacity($catalogItems->get((int) $detail["item_id"]), $saleBody, $userId);
+
+            }
+
+            if($warehouse && $deliveryMode === "pending") {
+
+                SaleDeliveryService::createPendingForSale($saleHeader, $saleBodies, (int) $warehouse->id, (int) $userId);
 
             }
 
@@ -952,6 +964,7 @@ class SaleService {
             );
 
             $allPositions = $saleHeader->allPositions;
+            SaleDeliveryService::cancelForSale($saleHeader, (int) $companyId, (int) $userId);
             self::restoreItemCapacityForCanceledSale($allPositions, (int) $companyId, (int) $userId);
             CustomerLoyaltyPointService::reverseForCanceledSale($saleHeader, (int) $companyId, (int) $userId);
 
@@ -965,6 +978,7 @@ class SaleService {
                     ->where("company_id", $companyId)
                     ->whereIn("origin_type", [
                         InventoryMovementService::ORIGIN_SALE,
+                        InventoryMovementService::ORIGIN_SALE_DELIVERY,
                         InventoryMovementService::ORIGIN_RECIPE_SALE
                     ])
                     ->whereIn("origin_id", $allPositions->pluck("id"))
@@ -1054,6 +1068,7 @@ class SaleService {
 
             // Update sale header
             $saleHeader->status      = "canceled";
+            $saleHeader->delivery_status = "canceled";
             $saleHeader->updated_at  = now();
             $saleHeader->updated_by  = $userId;
             $saleHeader->canceled_at = now();

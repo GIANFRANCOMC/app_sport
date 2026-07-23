@@ -456,7 +456,7 @@ Uso: registra egresos financieros no asociados a mercadería. Si se vincula a un
 
 Cabecera de venta. Campos: `serie_id`, `sequential`, `holder_id`, `seller_id`, `currency_id`, `warehouse_id`, `cash_session_id`, `quotation_header_id`, `issue_date`, `delivery_mode`, `delivery_status`, `delivered_at`, `delivered_by`, `delivery_observation`, `subtotal`, `tax`, `commission_total`, `total`, `observation`, `status`.
 
-Relaciones: pertenece a serie, cliente comprador, vendedor, moneda, almacén, caja, cotización opcional y usuario que confirmó entrega; tiene detalles. El seguimiento de entrega registra estado operativo sin cambiar todavía el momento del movimiento de inventario.
+Relaciones: pertenece a serie, cliente comprador, vendedor, moneda, almacén, caja, cotización opcional y usuario que confirmó entrega; tiene detalles y, cuando aplica, un seguimiento en `sale_deliveries`.
 
 Cuando `quotation_header_id` tiene valor, la venta se originó desde una cotización. Al concretarse, la cotización pasa a `converted` y conserva la referencia a la venta.
 
@@ -467,6 +467,32 @@ Detalle de venta. Campos: `sale_header_id`, `item_id`, `currency_id`, `name`, `q
 La comision del detalle es una foto historica. `commission_type` admite `none`, `percentage` o `fixed`; `commission_amount` guarda el monto calculado y no modifica el total cobrado.
 
 Relaciones: pertenece a cabecera, item, moneda y cliente.
+
+### sale_deliveries
+
+Cabecera operativa de entrega pendiente. Campos: `company_id`, `sale_header_id`, `warehouse_id`, `total_quantity`, `delivered_quantity`, `pending_quantity`, `status`, `last_delivered_at`, `last_delivered_by`, `observation` y auditoría.
+
+Uso: se crea solo cuando una venta con productos contabilizables nace con `delivery_mode = pending`. En ese caso la venta queda registrada, pero no descuenta stock todavía. El descuento real ocurre cuando se registra una entrega parcial o total desde `Ventas > Entregas pendientes`.
+
+Estados: `pending`, `partial`, `delivered` y `canceled`.
+
+### sale_delivery_items
+
+Detalle pendiente por producto vendido. Campos: `company_id`, `sale_delivery_id`, `sale_body_id`, `item_id`, `quantity_ordered`, `quantity_delivered`, `quantity_pending`, `status` y auditoría.
+
+Uso: permite entregar una venta por partes. Cada línea conserva cuánto se vendió, cuánto ya salió físicamente del almacén y cuánto queda pendiente.
+
+### sale_delivery_events
+
+Historial de cada acto de entrega. Campos: `company_id`, `sale_delivery_id`, `warehouse_id`, `delivered_by`, `delivered_at`, `total_quantity`, `observation` y `status`.
+
+Uso: registra quién entregó, desde qué almacén y cuándo. Es la cabecera de trazabilidad para auditoría y reportes.
+
+### sale_delivery_event_items
+
+Detalle de productos entregados en un evento. Campos: `company_id`, `sale_delivery_event_id`, `sale_delivery_item_id`, `sale_body_id`, `item_id`, `inventory_movement_id`, `quantity` y `created_at`.
+
+Uso: conecta la entrega con el movimiento de inventario generado. `inventory_movement_id` puede ser nulo cuando la salida corresponde a una composición o lógica que no genera movimiento directo del producto vendido.
 
 ### quotation_headers
 

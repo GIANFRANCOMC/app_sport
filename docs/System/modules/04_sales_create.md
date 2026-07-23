@@ -104,13 +104,16 @@ Permite crear una venta con productos, servicios o membresias. Una venta puede g
 - La venta soporta `payment_modality`: `paid_now` exige pago completo, `cash_on_delivery` permite saldo pendiente y `installments` aplica el recargo configurado en `company_settings.sales.installment_extra_percentage`.
 - Cuando una venta queda con saldo por modalidad `cash_on_delivery` o `installments`, el backend crea `sale_accounts_receivable`, sus cuotas en `sale_receivable_installments` y la trazabilidad de pagos iniciales en `sale_receivable_payments`.
 
-## Actualizacion: seguimiento de entrega
+## Actualización: seguimiento de entrega
 
 - `sales_header.delivery_mode` indica si la venta nace con entrega inmediata o queda pendiente.
 - `sales_header.delivery_status` permite consultar si la venta está `delivered`, `pending`, `partial` o `canceled`.
-- En venta normal y POS, si no se envia seguimiento, el backend asume `delivery_mode = immediate` y `delivery_status = delivered`.
+- En venta normal y POS, si no se envía seguimiento, el backend asume `delivery_mode = immediate` y `delivery_status = delivered`.
 - Cuando el estado es `delivered`, se guarda `delivered_at` y `delivered_by`.
-- Esta trazabilidad no cambia todavía el momento del movimiento de inventario: el stock se descuenta al confirmar la venta, como venia funcionando. Si luego se implementa despacho diferido, este campo será la base para mover el descuento al evento de entrega.
+- Si `delivery_mode = immediate`, la venta descuenta stock al confirmarse, como una entrega ya realizada.
+- Si `delivery_mode = pending`, el backend crea `sale_deliveries` y `sale_delivery_items`, no descuenta stock al confirmar la venta y deja el despacho para `Ventas > Entregas pendientes`.
+- Cada entrega registrada crea `sale_delivery_events`, `sale_delivery_event_items` y movimientos de inventario con origen `sale_delivery`. La venta puede quedar `partial` hasta completar todas las cantidades.
+- Al anular una venta, las entregas pendientes se cancelan. Si la empresa tiene activa la reposición automática por anulación, también se consideran los movimientos originados por entregas parciales ya realizadas.
 # Venta POS
 
 - `sales.pos` se muestra bajo la cabecera `Ventas`, antes de `Nuevo` y `Listado`, porque genera una venta real y comparte validaciones, caja, pagos, tributos e inventario con el flujo principal.

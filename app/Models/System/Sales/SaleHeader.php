@@ -332,6 +332,12 @@ class SaleHeader extends Model {
 
     }
 
+    public function delivery() {
+
+        return $this->hasOne(SaleDelivery::class, "sale_header_id", "id");
+
+    }
+
     public function accountReceivable() {
 
         return $this->hasOne(SaleAccountReceivable::class, "sale_header_id", "id");

@@ -65,6 +65,7 @@ export default defineConfig({
                 // System Pages - Sales
                 'resources/js/System/Pages/Sales/sales/list.js',
                 'resources/js/System/Pages/Sales/sales/main.js',
+                'resources/js/System/Pages/Sales/sales/deliveries.js',
                 'resources/js/System/Pages/Sales/pos/main.js',
                 'resources/js/System/Pages/Sales/quotations/main.js',
 

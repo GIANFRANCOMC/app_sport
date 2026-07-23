@@ -311,7 +311,9 @@ const ENTITY_SPECIAL_ROUTES = {
         initData: "initData"
     },
     sales: {
-        cancel: "cancel"
+        cancel: "cancel",
+        deliveries: "deliveries",
+        deliver: "deliveries"
     },
     tracking_subscriptions: {
         cancel: "cancel",

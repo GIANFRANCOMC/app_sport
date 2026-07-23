@@ -24,6 +24,7 @@ class StoreSaleRequest extends CompanyFormRequest {
     protected function prepareForValidation(): void {
 
         $this->merge([
+            "delivery_mode" => $this->input("delivery_mode") ?: "immediate",
             "payment_modality" => $this->input("payment_modality") ?: "paid_now",
             "taxes" => $this->normalizeTaxes(),
             "payments" => $this->normalizePayments(),

@@ -29,6 +29,7 @@ final class InventoryMovementService {
     public const ORIGIN_PRODUCT_OPENING      = "product_opening";
     public const ORIGIN_MANUAL               = "manual";
     public const ORIGIN_SALE                 = "sale";
+    public const ORIGIN_SALE_DELIVERY        = "sale_delivery";
     public const ORIGIN_SALE_CANCELLATION    = "sale_cancellation";
     public const ORIGIN_PURCHASE             = "purchase";
     public const ORIGIN_PURCHASE_CANCELLATION = "purchase_cancellation";

@@ -75,7 +75,8 @@ return [
         'service_operations.sessions.cancel' => 'operate',
         'service_operations.items.start' => 'operate',
         'service_operations.items.complete' => 'operate',
-        'service_operations.items.preparation-status' => 'operate'
+        'service_operations.items.preparation-status' => 'operate',
+        'sales.deliveries.deliver' => 'operate'
     ],
 
     /* Endpoints compartidos por varias pantallas del mismo módulo técnico. */
@@ -88,10 +89,12 @@ return [
         'assets.categories.list' => ['assets.index'],
         'assets.categories.store' => ['assets.index'],
         'assets.categories.update' => ['assets.index'],
-        'sales.initParams' => ['sales.index', 'sales.create', 'sales.pos'],
+        'sales.initParams' => ['sales.index', 'sales.create', 'sales.deliveries.index', 'sales.pos'],
         'sales.list' => ['sales.index'],
         'sales.cancel' => ['sales.index'],
         'sales.store' => ['sales.create', 'sales.pos'],
+        'sales.deliveries' => ['sales.deliveries.index'],
+        'sales.deliveries.deliver' => ['sales.deliveries.index'],
 
         'user_attendances.initParams' => ['user_attendances.index'],
         'user_attendances.list' => ['user_attendances.index'],

@@ -8,8 +8,9 @@ use App\Http\Controllers\System\Base\BaseController;
 use App\Helpers\System\{Utilities};
 use Illuminate\Http\{JsonResponse, Request};
 
-use App\Http\Requests\System\Sales\{CancelSaleRequest, StoreSaleRequest, UpdateSaleRequest};
-use App\Services\System\Sales\{SaleConfigService, SaleService};
+use App\Http\Requests\System\Sales\{CancelSaleRequest, StoreSaleDeliveryRequest, StoreSaleRequest, UpdateSaleRequest};
+use App\Models\System\Sales\SaleDelivery;
+use App\Services\System\Sales\{SaleConfigService, SaleDeliveryService, SaleService};
 use App\Services\System\Organizations\AccessScopeService;
 
 class SaleController extends BaseController {
@@ -61,6 +62,25 @@ class SaleController extends BaseController {
 
     }
 
+    public function deliveries(Request $request) {
+
+        $filters = [
+            "branch_id"       => $request->input("branch_id"),
+            "warehouse_id"    => $request->input("warehouse_id"),
+            "holder_id"       => $request->input("holder_id"),
+            "delivery_status" => $request->input("delivery_status"),
+            "search"          => $request->input("search")
+        ];
+
+        return SaleDeliveryService::paginatePending(
+            $this->getCompanyId(),
+            $filters,
+            $this->getPerPage($request, Utilities::$per_page_default),
+            $this->getUserId()
+        );
+
+    }
+
     /**
      * Display the sales index page
      *
@@ -80,6 +100,12 @@ class SaleController extends BaseController {
     public function create() {
 
         return view("System/general/Sales/sales/main");
+
+    }
+
+    public function deliveriesPage() {
+
+        return view("System/general/Sales/sales/deliveries");
 
     }
 
@@ -189,6 +215,53 @@ class SaleController extends BaseController {
 
     }
 
+    public function deliver(StoreSaleDeliveryRequest $request, int $id): JsonResponse {
+
+        try {
+
+            $delivery = SaleDelivery::query()
+                ->where("company_id", $this->getCompanyId())
+                ->find($id);
+
+            if(!$delivery) {
+
+                return $this->notFoundResponse();
+
+            }
+
+            $warehouseId = (int) ($request->warehouse_id ?? $delivery->warehouse_id);
+            if(!AccessScopeService::canAccess($this->getAuthUser(), AccessScopeService::WAREHOUSE, $warehouseId)) {
+
+                return $this->errorResponse("warehouse_not_available", [], 403);
+
+            }
+
+            $delivery = SaleDeliveryService::deliver(
+                $delivery,
+                $request->validated(),
+                $this->getCompanyId(),
+                $this->getUserId()
+            );
+
+            return response()->json([
+                "bool" => true,
+                "msg" => $delivery->status === "delivered"
+                    ? "Entrega registrada correctamente. La venta quedó completamente entregada."
+                    : "Entrega parcial registrada correctamente. Aún quedan productos pendientes.",
+                "data" => $delivery
+            ]);
+
+        }catch(\Throwable $e) {
+
+            return response()->json([
+                "bool" => false,
+                "msg"  => $e->getMessage()
+            ], 422);
+
+        }
+
+    }
+
     /**
      * Prepare sale data from request
      *
@@ -208,9 +281,15 @@ class SaleController extends BaseController {
             "holder_id"   => $request->holder_id,
             "currency_id" => $request->currency_id,
             "issue_date"  => $request->issue_date,
+            "delivery_mode" => $request->delivery_mode ?? "immediate",
+            "delivery_status" => $request->delivery_status,
+            "delivery_observation" => $request->delivery_observation,
             "observation" => $request->observation,
             "taxes"       => $request->taxes ?? [],
             "payments"    => $request->payments ?? [],
+            "payment_modality" => $request->payment_modality ?? "paid_now",
+            "installment_count" => $request->installment_count,
+            "first_due_date" => $request->first_due_date,
             "details"     => $request->details
         ];
 
