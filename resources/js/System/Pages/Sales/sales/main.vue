@@ -156,7 +156,7 @@
                                         <th class="min-w-150px" style="width: 20%;">CANTIDAD</th>
                                         <th class="min-w-150px" style="width: 20%;">PRECIO UNITARIO</th>
                                         <th class="min-w-150px text-end pe-3" style="width: 20%;">TOTAL</th>
-                                        <th style="width: 10%;">ACCIONES</th>
+                                        <th style="width: 10%;" aria-label="Acciones"></th>
                                     </tr>
                                 </thead>
                                 <tbody class="table-border-bottom-0 bg-white">
@@ -182,6 +182,7 @@
                                                             data-bs-placement="top"
                                                             title="Restar unidad"
                                                             aria-label="Restar unidad"
+                                                            :disabled="Number(record.quantity ?? 0) <= 1"
                                                             @click="changeQuantityDetail({record, keyRecord, type: 'subtract'})">
                                                             <i class="fa fa-minus" aria-hidden="true"></i>
                                                         </button>
@@ -325,26 +326,6 @@
             <div class="br-document-settlement br-sale-settlement bg-white">
                 <div>
                     <div class="br-document-settlement__header">
-                        <label class="form-label colon-at-end">Sucursal</label>
-                        <button
-                            v-if="canChangeBranch"
-                            type="button"
-                            class="br-btn br-btn-xs br-btn-action-import br-document-payment-config waves-effect"
-                            data-bs-toggle="tooltip"
-                            data-bs-placement="top"
-                            title="Cambiar sucursal"
-                            aria-label="Cambiar sucursal"
-                            @click="openBranchModal">
-                            <i class="fa-solid fa-pen" aria-hidden="true"></i>
-                        </button>
-                    </div>
-                    <div class="br-document-delivery-summary">
-                        <span class="br-document-delivery-summary__value" v-text="branchLabel"></span>
-                        <small v-if="forms[entity].createUpdate.errors?.branch" :class="config.forms.errors.styles.default" v-html="forms[entity].createUpdate.errors.branch"></small>
-                    </div>
-                </div>
-                <div>
-                    <div class="br-document-settlement__header">
                         <label class="form-label colon-at-end">Observaciones</label>
                         <button
                             type="button"
@@ -434,6 +415,7 @@
                     <div class="br-document-settlement__header">
                         <label class="form-label colon-at-end">Almacén</label>
                         <button
+                            v-if="canChangeWarehouse"
                             type="button"
                             class="br-btn br-btn-xs br-btn-action-import br-document-payment-config waves-effect"
                             data-bs-toggle="tooltip"
@@ -453,6 +435,7 @@
                     <div class="br-document-settlement__header">
                         <label class="form-label colon-at-end">Impuestos extras</label>
                         <button
+                            v-if="canChangeTaxes"
                             type="button"
                             class="br-btn br-btn-xs br-btn-action-import br-document-payment-config waves-effect"
                             data-bs-toggle="tooltip"
@@ -488,6 +471,7 @@
                     <div class="br-document-settlement__header">
                         <label class="form-label colon-at-end">Métodos de pago</label>
                         <button
+                            v-if="canChangePaymentMethods"
                             type="button"
                             class="br-btn br-btn-xs br-btn-action-import br-document-payment-config waves-effect"
                             data-bs-toggle="tooltip"
@@ -954,39 +938,50 @@
                                     :clearable="false"
                                     :searchable="true"
                                     placeholder="Seleccione">
+                                    <template #selected-option="{ label }">
+                                        <span class="br-sale-catalog-selected-option">
+                                            <span class="br-sale-catalog-selected-option__label" v-text="label"></span>
+                                        </span>
+                                    </template>
                                     <template #option="{ data }">
                                         <div class="br-sale-catalog-option">
                                             <div class="br-sale-catalog-option__head">
                                                 <strong v-text="data?.name"></strong>
-                                                <span v-if="data?.formatted_type" v-text="data?.formatted_type"></span>
+                                                <span v-if="data?.formatted_type" class="br-sale-catalog-option__type" v-text="data?.formatted_type"></span>
                                             </div>
-                                            <div class="br-sale-catalog-option__codes">
-                                                <small v-if="data?.internal_code">
-                                                    <span>Cód. interno:</span>
-                                                    <strong v-text="data.internal_code"></strong>
-                                                </small>
-                                                <small v-if="data?.barcode">
-                                                    <span>Cód. barras:</span>
-                                                    <strong v-text="data.barcode"></strong>
-                                                </small>
-                                            </div>
-                                            <div class="br-sale-catalog-option__meta">
-                                                <span>
-                                                    <i class="fa fa-money-bill" aria-hidden="true"></i>
-                                                    <small>Precio unitario:</small>
-                                                    <strong v-text="`${data?.currency?.sign ?? ''} ${separatorNumber(data?.price)}`"></strong>
-                                                </span>
-                                                <span v-if="isDefined({value: data?.min_price}) || isDefined({value: data?.max_price})">
-                                                    <i class="fa fa-arrows-left-right" aria-hidden="true"></i>
-                                                    <small>Rango:</small>
-                                                    <strong v-if="isDefined({value: data?.min_price})" v-text="`Min. ${data?.currency?.sign ?? ''} ${separatorNumber(data?.min_price)}`"></strong>
-                                                    <strong v-if="isDefined({value: data?.max_price})" v-text="`Max. ${data?.currency?.sign ?? ''} ${separatorNumber(data?.max_price)}`"></strong>
-                                                </span>
-                                                <span v-if="isSubscription(data?.type)">
-                                                    <i class="fa fa-clock" aria-hidden="true"></i>
-                                                    <small>Duración:</small>
-                                                    <strong v-text="data?.formatted_duration" class="text-lowercase"></strong>
-                                                </span>
+                                            <div class="br-sale-catalog-option__line">
+                                                <div class="br-sale-catalog-option__meta">
+                                                    <span class="br-sale-catalog-option__meta-card is-price">
+                                                        <i class="fa fa-money-bill" aria-hidden="true"></i>
+                                                        <small>Venta</small>
+                                                        <strong v-text="`${data?.currency?.sign ?? ''} ${separatorNumber(data?.price)}`"></strong>
+                                                    </span>
+                                                    <span v-if="isDefined({value: data?.min_price})" class="br-sale-catalog-option__meta-card is-range is-min">
+                                                        <i class="fa fa-arrow-down" aria-hidden="true"></i>
+                                                        <small>Mín.</small>
+                                                        <strong v-text="`${data?.currency?.sign ?? ''} ${separatorNumber(data?.min_price)}`"></strong>
+                                                    </span>
+                                                    <span v-if="isDefined({value: data?.max_price})" class="br-sale-catalog-option__meta-card is-range is-max">
+                                                        <i class="fa fa-arrow-up" aria-hidden="true"></i>
+                                                        <small>Máx.</small>
+                                                        <strong v-text="`${data?.currency?.sign ?? ''} ${separatorNumber(data?.max_price)}`"></strong>
+                                                    </span>
+                                                    <span v-if="isSubscription(data?.type)" class="br-sale-catalog-option__meta-card is-duration">
+                                                        <i class="fa fa-clock" aria-hidden="true"></i>
+                                                        <small>Duración</small>
+                                                        <strong v-text="data?.formatted_duration" class="text-lowercase"></strong>
+                                                    </span>
+                                                </div>
+                                                <div class="br-sale-catalog-option__codes">
+                                                    <small v-if="data?.internal_code">
+                                                        <span>Cód. interno</span>
+                                                        <strong v-text="data.internal_code"></strong>
+                                                    </small>
+                                                    <small v-if="data?.barcode">
+                                                        <span>Cód. barras</span>
+                                                        <strong v-text="data.barcode"></strong>
+                                                    </small>
+                                                </div>
                                             </div>
                                         </div>
                                     </template>
@@ -994,16 +989,69 @@
                             </template>
                         </InputSlot>
                         <InputSlot
-                            v-if="isDefined({value: forms[entity].createUpdate.extras.modals.details.data.extras?.min_price}) || isDefined({value: forms[entity].createUpdate.extras.modals.details.data.extras?.max_price})"
+                            v-if="selectedModalItem"
                             hasDiv
+                            :title="selectedModalCatalogSectionTitle"
+                            :titleClass="[config.forms.classes.title, 'colon-at-end']"
                             :isInputGroup="false"
-                            :divInputClass="['d-flex flex-column flex-md-row flex-wrap justify-content-center align-items-start align-items-md-center gap-2 p-2 border rounded border-light bg-warning-subtle']"
+                            :divInputClass="['br-sale-selected-catalog']"
                             xl="12"
                             lg="12">
                             <template v-slot:input>
-                                <span class="fw-bold colon-at-end">Rango de precios</span>
-                                <span v-if="isDefined({value: forms[entity].createUpdate.extras.modals.details.data.extras?.min_price})" v-text="'Min: '+forms[entity].createUpdate.extras.modals.details.data.item?.data?.currency?.sign+' '+separatorNumber(forms[entity].createUpdate.extras.modals.details.data.extras?.min_price)" class="fw-semibold text-danger"></span>
-                                <span v-if="isDefined({value: forms[entity].createUpdate.extras.modals.details.data.extras?.max_price})" v-text="'Max: '+forms[entity].createUpdate.extras.modals.details.data.item?.data?.currency?.sign+' '+separatorNumber(forms[entity].createUpdate.extras.modals.details.data.extras?.max_price)" class="fw-semibold text-dark"></span>
+                                <div class="br-sale-catalog-option br-sale-catalog-option--selected">
+                                    <div class="br-sale-catalog-option__line">
+                                        <div class="br-sale-catalog-option__meta">
+                                            <span class="br-sale-catalog-option__meta-card is-price">
+                                                <i class="fa fa-money-bill" aria-hidden="true"></i>
+                                                <small>Venta</small>
+                                                <strong v-text="`${selectedModalItem?.currency?.sign ?? ''} ${separatorNumber(selectedModalItem?.price)}`"></strong>
+                                            </span>
+                                            <span v-if="isDefined({value: selectedModalItem?.min_price})" class="br-sale-catalog-option__meta-card is-range is-min">
+                                                <i class="fa fa-arrow-down" aria-hidden="true"></i>
+                                                <small>Mín.</small>
+                                                <strong v-text="`${selectedModalItem?.currency?.sign ?? ''} ${separatorNumber(selectedModalItem?.min_price)}`"></strong>
+                                            </span>
+                                            <span v-if="isDefined({value: selectedModalItem?.max_price})" class="br-sale-catalog-option__meta-card is-range is-max">
+                                                <i class="fa fa-arrow-up" aria-hidden="true"></i>
+                                                <small>Máx.</small>
+                                                <strong v-text="`${selectedModalItem?.currency?.sign ?? ''} ${separatorNumber(selectedModalItem?.max_price)}`"></strong>
+                                            </span>
+                                            <span v-if="isSubscription(selectedModalItem?.type)" class="br-sale-catalog-option__meta-card is-duration">
+                                                <i class="fa fa-clock" aria-hidden="true"></i>
+                                                <small>Duración</small>
+                                                <strong v-text="selectedModalItem?.formatted_duration" class="text-lowercase"></strong>
+                                            </span>
+                                        </div>
+                                        <div class="br-sale-catalog-option__codes">
+                                            <small v-if="selectedModalItem?.internal_code">
+                                                <span>Cód. interno</span>
+                                                <strong v-text="selectedModalItem.internal_code"></strong>
+                                            </small>
+                                            <small v-if="selectedModalItem?.barcode">
+                                                <span>Cód. barras</span>
+                                                <strong v-text="selectedModalItem.barcode"></strong>
+                                            </small>
+                                        </div>
+                                    </div>
+                                    <div class="br-sale-catalog-info-toggle">
+                                        <button
+                                            type="button"
+                                            class="br-link br-link-primary"
+                                            @click="selectedCatalogInfoExpanded = !selectedCatalogInfoExpanded"
+                                            v-text="selectedCatalogInfoExpanded ? 'Ocultar información adicional' : 'Mostrar información adicional'">
+                                        </button>
+                                    </div>
+                                    <div v-if="selectedCatalogInfoExpanded" class="br-sale-catalog-info">
+                                        <div
+                                            v-for="detail in selectedModalItemAdditionalDetails"
+                                            :key="detail.label"
+                                            class="br-sale-catalog-info__item">
+                                            <span class="colon-at-end" v-text="detail.label"></span>
+                                            <strong v-if="detail.strong" v-text="detail.value"></strong>
+                                            <small v-else v-text="detail.value"></small>
+                                        </div>
+                                    </div>
+                                </div>
                             </template>
                         </InputSlot>
                         <InputNumber
@@ -1026,6 +1074,7 @@
                             isRequired
                             :minValue="forms[entity].createUpdate.extras.modals.details.data.extras?.min_price"
                             :maxValue="forms[entity].createUpdate.extras.modals.details.data.extras?.max_price"
+                            :disabled="!selectedModalItem"
                             hasTextBottom
                             :textBottomInfo="forms[entity].createUpdate.extras.modals.details.errors?.price"
                             xl="4"
@@ -1049,6 +1098,7 @@
                             </template>
                         </InputSlot>
                         <InputSlot
+                            v-if="false && selectedModalItem"
                             hasDiv
                             :title="MODULE.texts.form.commissionType"
                             :titleClass="[config.forms.classes.title]"
@@ -1062,15 +1112,17 @@
                                     :class="config.forms.classes.select2"
                                     :clearable="false"
                                     :searchable="false"
+                                    :disabled="true"
                                     @close="tooltips({show: true, time: 500})"/>
                             </template>
                         </InputSlot>
                         <InputNumber
+                            v-if="false && selectedModalItem"
                             v-model="forms[entity].createUpdate.extras.modals.details.data.commission_value"
                             hasDiv
                             :title="MODULE.texts.form.commissionValue"
                             :titleClass="[config.forms.classes.title]"
-                            :disabled="forms[entity].createUpdate.extras.modals.details.data.commission_type === 'none'"
+                            :disabled="true"
                             :minValue="0"
                             :maxValue="forms[entity].createUpdate.extras.modals.details.data.commission_type === 'percentage' ? 100 : null"
                             xl="6"
@@ -1129,15 +1181,25 @@
                                             </label>
                                         </div>
                                     </div>
-                                    <div class="d-flex flex-wrap justify-content-center align-items-center gap-2 p-2 mt-1 border rounded border-light bg-success-subtle w-100">
-                                        <span class="fw-bold colon-at-end text-dark">Duración total calculada</span>
-                                        <div class="d-flex flex-wrap justify-content-center align-items-center fw-semibold gap-1">
-                                            <span class="text-lowercase" v-text="forms[entity].createUpdate.extras.modals.details.data.extras.formatted_duration"></span>
-                                            <span class="">x</span>
-                                            <span class="text-lowercase" v-text="isDefined({value: forms[entity].createUpdate.extras.modals.details.data.quantity}) ? separatorNumber(forms[entity].createUpdate.extras.modals.details.data.quantity) : '0'"></span>
-                                            <span class="text-lowercase" v-text="Number(forms[entity].createUpdate.extras.modals.details.data.quantity) === 1 ? 'periodo' : 'periodos'"></span>
-                                            <span class="">=</span>
-                                            <span class="fw-bold text-dark text-lowercase" v-text="forms[entity].createUpdate.extras.modals.details.data.extras.formatted_total_duration"></span>
+                                    <div class="br-sale-membership-duration justify-content-center">
+                                        <span class="br-sale-membership-duration__title colon-at-end">Duración total calculada</span>
+                                        <div class="br-sale-membership-duration__formula">
+                                            <span>
+                                                <small>Base</small>
+                                                <strong class="text-lowercase" v-text="forms[entity].createUpdate.extras.modals.details.data.extras.formatted_duration"></strong>
+                                            </span>
+                                            <i>x</i>
+                                            <span>
+                                                <small>Periodos</small>
+                                                <strong class="text-lowercase">
+                                                    {{ isDefined({value: forms[entity].createUpdate.extras.modals.details.data.quantity}) ? separatorNumber(forms[entity].createUpdate.extras.modals.details.data.quantity) : '0' }}
+                                                </strong>
+                                            </span>
+                                            <i>=</i>
+                                            <span class="is-result">
+                                                <small>Resultado</small>
+                                                <strong class="text-lowercase" v-text="forms[entity].createUpdate.extras.modals.details.data.extras.formatted_total_duration"></strong>
+                                            </span>
                                         </div>
                                     </div>
                                 </template>
@@ -1148,8 +1210,7 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary waves-effect" data-bs-dismiss="modal" v-text="MODULE.texts.actions.close"></button>
                     <button type="button" class="btn waves-effect btn-primary" @click="addDetail()">
-                        <i class="fa fa-plus" aria-hidden="true"></i>
-                        <span class="ms-2" v-text="MODULE.texts.actions.add"></span>
+                        <span v-text="MODULE.texts.actions.add"></span>
                     </button>
                 </div>
             </div>
@@ -1408,8 +1469,8 @@ const TEXTS = {
         quantityPeriods: "Cantidad de períodos",
         price: "Precio",
         total: "Total",
-        commissionType: "Comision",
-        commissionValue: "Valor de comision",
+        commissionType: "Comisión",
+        commissionValue: "Valor de comisión",
         footerTotalLabel: "Importe total:",
         membershipDetail: "Detalle de la membresía",
         detailRowMembershipLabel: "Membresía",
@@ -1437,8 +1498,8 @@ const TEXTS = {
         saveObservations: "Cambiar observación"
     },
     modal: {
-        add: "AGREGAR DETALLE",
-        edit: "EDITAR DETALLE",
+        add: "Agregar ítem",
+        edit: "Editar ítem",
         activeMemberships: "Historial del cliente",
         observations: "Cambiar observación",
         subscriptionOrigin: "Origen",
@@ -1573,7 +1634,8 @@ export default {
         return {
             ...crudModule,
             MODULE: MODULE,
-            observationPreviewExpanded: false
+            observationPreviewExpanded: false,
+            selectedCatalogInfoExpanded: false
         };
 
     },
@@ -2116,6 +2178,7 @@ export default {
                     Alerts.toastrs({type: "success", subtitle: `Se ha agregado <b><small>(${form?.quantity})</small> ${form?.name}</b> al detalle de la venta.`});
 
                     this.clearForm({functionName});
+                    this.$nextTick(() => this.resetActionTooltips());
 
                 }
 
@@ -2129,6 +2192,8 @@ export default {
 
         },
         changeQuantityDetail({record, keyRecord, type = "add"}) {
+
+            this.resetActionTooltips();
 
             let operation = 0;
 
@@ -2199,6 +2264,8 @@ export default {
         },
         deleteDetail({record, keyRecord}) {
 
+            this.resetActionTooltips();
+
             const functionName = "deleteDetail";
 
             this.formErrors({functionName, type: "clear"});
@@ -2243,6 +2310,8 @@ export default {
 
         },
         duplicateDetail({record, keyRecord}) {
+
+            this.resetActionTooltips();
 
             const functionName = "duplicateDetail";
 
@@ -2291,7 +2360,15 @@ export default {
         },
         viewDetail({record, keyRecord}) {
 
+            this.resetActionTooltips();
+
             record.extras.showDetail = !record.extras.showDetail;
+
+        },
+        resetActionTooltips() {
+
+            Alerts.tooltips({show: false, time: 0});
+            setTimeout(() => Alerts.tooltips({show: true}), 140);
 
         },
         normalizeSubscriptionsResponse(response) {
@@ -2842,6 +2919,83 @@ export default {
             Alerts.tooltips({show, time});
 
         },
+        itemTypeLabel(item = {}) {
+
+            if(item?.type === "service") return "Servicio";
+            if(item?.type === "subscription") return "Membresía";
+            if(item?.type === "recipe" || item?.type === "dish") return "Platillo";
+
+            return "Producto";
+
+        },
+        booleanCatalogLabel(value) {
+
+            return [true, 1, "1", "true"].includes(value) ? "Sí" : "No";
+
+        },
+        catalogCategoriesLabel(item = {}) {
+
+            const links = item?.category_items || item?.categoryItems || item?.categories || [];
+            const names = links
+                .map(categoryLink => categoryLink?.category?.name || categoryLink?.name || categoryLink?.label)
+                .filter(Boolean);
+
+            return names.length ? names.join(", ") : "Sin categorías";
+
+        },
+        catalogCommissionLabel(item = {}) {
+
+            const type = item?.commission_type || (Number(item?.commission_rate || 0) > 0 ? "percentage" : "none");
+            const value = Number(item?.commission_value ?? item?.commission_rate ?? 0);
+
+            if(type === "none" || value <= 0) return "Sin comisión configurada";
+
+            if(type === "percentage") return `Porcentaje: ${this.separatorNumber(value)}%`;
+
+            const sign = item?.currency?.sign || this.forms[this.entity].createUpdate.data.currency?.data?.sign || "";
+
+            return `Monto fijo: ${sign} ${this.separatorNumber(value)}`;
+
+        },
+        catalogCapacityLabel(item = {}) {
+
+            if(![true, 1, "1", "true"].includes(item?.capacity_control_enabled)) {
+
+                return "Sin control de cupos";
+
+            }
+
+            const limit = Number(item?.capacity_limit || 0);
+            const used = Number(item?.capacity_used || 0);
+            const available = item?.available_capacity ?? Math.max(0, limit - used);
+
+            return `${available} disponibles de ${limit}`;
+
+        },
+        catalogExpirationLabel(item = {}) {
+
+            if(!item?.expires_at) return "Sin fecha de vencimiento";
+
+            return this.legibleFormatDate({dateString: item.expires_at, type: "date"}) || "Sin fecha de vencimiento";
+
+        },
+        catalogTextValue(value, fallback = "No registrado") {
+
+            if(Array.isArray(value)) {
+
+                const normalized = value
+                    .map(row => typeof row === "string" ? row : (row?.label || row?.name || row?.description))
+                    .filter(Boolean);
+
+                return normalized.length ? normalized.join(", ") : fallback;
+
+            }
+
+            if(value === null || value === undefined || String(value).trim() === "") return fallback;
+
+            return String(value).trim();
+
+        },
         async sendWhatsapp({data = null, action = "reportSale"}) {
 
             const phoneNumber = this.forms[this.entity].createUpdate.extras.modals.finished.data.whatsapp;
@@ -2938,7 +3092,7 @@ export default {
         },
         branches: function() {
 
-            return this.options?.branches?.records.map(e => ({code: e.id, label: e.name, data: e}));
+            return (this.options?.branches?.records || []).map(e => ({code: e.id, label: e.name, data: e}));
 
         },
         series: function() {
@@ -2984,7 +3138,22 @@ export default {
         },
         canChangeBranch() {
 
-            return this.branches.length > 1;
+            return (this.branches || []).length > 1;
+
+        },
+        canChangeWarehouse() {
+
+            return (this.warehouses || []).length > 1;
+
+        },
+        canChangeTaxes() {
+
+            return true;
+
+        },
+        canChangePaymentMethods() {
+
+            return true;
 
         },
         branchLabel() {
@@ -3150,7 +3319,7 @@ export default {
         commissionTypeOptions() {
 
             return [
-                {code: "none", label: "Sin comision"},
+                {code: "none", label: "Sin comisión"},
                 {code: "percentage", label: "Porcentaje"},
                 {code: "fixed", label: "Monto fijo por unidad"}
             ];
@@ -3405,6 +3574,69 @@ export default {
             return this.calculateTotal({item: this.forms[this.entity].createUpdate.extras.modals.details.data});
 
         },
+        selectedModalItem() {
+
+            return this.forms[this.entity].createUpdate.extras.modals.details.data.item?.data || null;
+
+        },
+        selectedModalCatalogSectionTitle() {
+
+            return this.itemTypeLabel(this.selectedModalItem);
+
+        },
+        selectedModalItemAdditionalDetails() {
+
+            const item = this.selectedModalItem;
+
+            if(!item) return [];
+
+            const details = [
+                {label: "Tipo", value: this.itemTypeLabel(item), strong: true},
+                {label: "Marca", value: item?.brand?.name || "Sin marca"},
+                {label: "Categorías", value: this.catalogCategoriesLabel(item)},
+                {label: "Descripción", value: this.catalogTextValue(item?.description, "Sin descripción")},
+                {label: "Incluye IGV", value: this.booleanCatalogLabel(item?.price_includes_tax)},
+                {label: "Cupos", value: this.catalogCapacityLabel(item)},
+                {label: "Vencimiento", value: this.catalogExpirationLabel(item)},
+                {label: "Comisión", value: this.catalogCommissionLabel(item)}
+            ];
+
+            if(item?.estimated_duration_minutes) {
+
+                details.push({label: "Tiempo estimado", value: `${item.estimated_duration_minutes} min`});
+
+            }
+
+            if(this.isSubscription(item?.type) && item?.formatted_duration) {
+
+                details.push({label: "Duración", value: item.formatted_duration});
+
+            }
+
+            if(item?.benefits) {
+
+                details.push({label: "Beneficios", value: this.catalogTextValue(item.benefits, "Sin beneficios")});
+
+            }
+
+            if(item?.restrictions) {
+
+                details.push({label: "Restricciones", value: this.catalogTextValue(item.restrictions, "Sin restricciones")});
+
+            }
+
+            if(item?.see_my_web !== undefined || item?.see_my_web_price !== undefined) {
+
+                details.push({
+                    label: "Catálogo externo",
+                    value: `${this.booleanCatalogLabel(item?.see_my_web)}${item?.see_my_web_price !== undefined ? ` · precio visible: ${this.booleanCatalogLabel(item.see_my_web_price)}` : ""}`
+                });
+
+            }
+
+            return details;
+
+        },
         modalDetailsTitle() {
 
             const mode   = this.forms[this.entity].createUpdate.extras.modals.details.data?.mode;
@@ -3456,6 +3688,8 @@ export default {
         "forms.sales.createUpdate.extras.modals.details.data.item": function(newValue) {
 
             const data = newValue?.data;
+
+            this.selectedCatalogInfoExpanded = false;
 
             const modalData = this.forms[this.entity].createUpdate.extras.modals.details.data;
 

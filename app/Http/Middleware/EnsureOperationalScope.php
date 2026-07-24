@@ -90,6 +90,10 @@ final class EnsureOperationalScope {
                 || !AccessScopeService::canAccess($request->user(), AccessScopeService::WAREHOUSE, (int) $warehouseId);
         }
 
+        if($request->route()?->getName() === 'sales.deliveries.deliver') {
+            return $this->saleDeliveryResourceDenied($request, $id);
+        }
+
         if($prefix === 'sales') {
             $sale = DB::table('sales_header')
                 ->join('series', 'series.id', '=', 'sales_header.serie_id')
@@ -108,6 +112,29 @@ final class EnsureOperationalScope {
         }
 
         return false;
+
+    }
+
+    private function saleDeliveryResourceDenied(Request $request, int $deliveryId): bool {
+
+        $delivery = DB::table('sale_deliveries')
+            ->join('sales_header', 'sales_header.id', '=', 'sale_deliveries.sale_header_id')
+            ->join('series', 'series.id', '=', 'sales_header.serie_id')
+            ->where('sale_deliveries.company_id', $request->user()->company_id)
+            ->where('sale_deliveries.id', $deliveryId)
+            ->select([
+                'series.branch_id',
+                'sale_deliveries.warehouse_id'
+            ])
+            ->first();
+
+        return !$delivery
+            || !AccessScopeService::canAccess($request->user(), AccessScopeService::BRANCH, (int) $delivery->branch_id)
+            || ($delivery->warehouse_id && !AccessScopeService::canAccess(
+                $request->user(),
+                AccessScopeService::WAREHOUSE,
+                (int) $delivery->warehouse_id
+            ));
 
     }
 

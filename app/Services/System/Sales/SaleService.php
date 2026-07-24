@@ -117,7 +117,7 @@ class SaleService {
                      ->get(["id", "commission_rate", "commission_type", "commission_value"])
                      ->keyBy("id");
 
-        return array_map(function(array $detail) use($items) {
+        return array_map(function(array $detail) use($items, $companyId) {
 
             $item = $items->get((int) ($detail["item_id"] ?? 0));
             $fallbackRate = (float) ($item?->commission_rate ?? 0);

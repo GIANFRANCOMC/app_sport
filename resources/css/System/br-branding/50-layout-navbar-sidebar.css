@@ -893,8 +893,16 @@ body.br-layout .form-check-input:disabled {
 .br-layout input[type="month"]:focus-visible,
 .br-layout input[type="week"]:focus,
 .br-layout input[type="week"]:focus-visible {
-  outline: 2px solid var(--br-primary);
-  outline-offset: 2px;
+  outline: 0 !important;
+  box-shadow: none !important;
+}
+
+.br-layout .input-group:has(input[type="date"]):focus-within,
+.br-layout .input-group:has(input[type="datetime-local"]):focus-within,
+.br-layout .input-group:has(input[type="time"]):focus-within,
+.br-layout .input-group:has(input[type="month"]):focus-within,
+.br-layout .input-group:has(input[type="week"]):focus-within {
+  box-shadow: none !important;
 }
 
 /* Chrome/Chromium: segmentos día/mes/año al abrir o tabular el date */
