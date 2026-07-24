@@ -325,6 +325,26 @@
             <div class="br-document-settlement br-sale-settlement bg-white">
                 <div>
                     <div class="br-document-settlement__header">
+                        <label class="form-label colon-at-end">Sucursal</label>
+                        <button
+                            v-if="canChangeBranch"
+                            type="button"
+                            class="br-btn br-btn-xs br-btn-action-import br-document-payment-config waves-effect"
+                            data-bs-toggle="tooltip"
+                            data-bs-placement="top"
+                            title="Cambiar sucursal"
+                            aria-label="Cambiar sucursal"
+                            @click="openBranchModal">
+                            <i class="fa-solid fa-pen" aria-hidden="true"></i>
+                        </button>
+                    </div>
+                    <div class="br-document-delivery-summary">
+                        <span class="br-document-delivery-summary__value" v-text="branchLabel"></span>
+                        <small v-if="forms[entity].createUpdate.errors?.branch" :class="config.forms.errors.styles.default" v-html="forms[entity].createUpdate.errors.branch"></small>
+                    </div>
+                </div>
+                <div>
+                    <div class="br-document-settlement__header">
                         <label class="form-label colon-at-end">Observaciones</label>
                         <button
                             type="button"
@@ -566,6 +586,45 @@
     </div>
 
     <!-- Modals -->
+    <div class="modal fade" :id="forms[entity].createUpdate.extras.modals.branch.id" data-bs-backdrop="static" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-dialog-centered modal-md" role="document">
+            <div class="modal-content br-entity-modal">
+                <div class="modal-header br-modal-header">
+                    <h5 class="modal-title text-uppercase fw-bold">Cambiar sucursal</h5>
+                    <button type="button" class="btn-header-modal" data-bs-dismiss="modal" aria-label="Cerrar">
+                        <i class="fa fa-times icon-close-modal" aria-hidden="true"></i>
+                    </button>
+                </div>
+                <div class="modal-body br-entity-modal__body">
+                    <InputSlot
+                        hasDiv
+                        :title="MODULE.texts.form.branch"
+                        :titleClass="[config.forms.classes.title]"
+                        isRequired
+                        hasTextBottom
+                        :textBottomInfo="forms[entity].createUpdate.errors?.branch"
+                        xl="12"
+                        lg="12">
+                        <template v-slot:input>
+                            <v-select
+                                v-model="forms[entity].createUpdate.data.branch"
+                                :options="branches"
+                                :class="config.forms.classes.select2"
+                                :clearable="false"
+                                :searchable="false"
+                                append-to-body
+                                placeholder="Seleccione"/>
+                        </template>
+                    </InputSlot>
+                </div>
+                <div class="modal-footer br-entity-modal__footer">
+                    <button type="button" class="br-btn br-btn-cancel" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="br-btn br-btn-primary" data-bs-dismiss="modal">Cambiar sucursal</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="modal fade" :id="forms[entity].createUpdate.extras.modals.warehouse.id" data-bs-backdrop="static" tabindex="-1" role="dialog">
         <div class="modal-dialog modal-dialog-centered modal-md" role="document">
             <div class="modal-content br-entity-modal">
@@ -615,25 +674,29 @@
                     </button>
                 </div>
                 <div class="modal-body br-entity-modal__body">
-                    <InputSlot
-                        hasDiv
-                        :title="MODULE.texts.form.deliveryMode"
-                        :titleClass="[config.forms.classes.title]"
-                        hasTextBottom
-                        :textBottomInfo="forms[entity].createUpdate.errors?.delivery_mode"
-                        xl="12"
-                        lg="12">
-                        <template v-slot:input>
-                            <v-select
-                                v-model="forms[entity].createUpdate.data.delivery_mode"
-                                :options="deliveryModes"
-                                :class="config.forms.classes.select2"
-                                :clearable="false"
-                                :searchable="false"
-                                append-to-body
-                                placeholder="Seleccione"/>
-                        </template>
-                    </InputSlot>
+                    <div class="br-choice-group br-choice-group--stacked" role="radiogroup" :aria-label="MODULE.texts.form.deliveryMode">
+                        <label
+                            v-for="mode in deliveryModes"
+                            :key="mode.code"
+                            :class="['br-choice-option', {'is-selected': forms[entity].createUpdate.data.delivery_mode?.code === mode.code}]">
+                            <input
+                                class="br-choice-option__input"
+                                type="radio"
+                                name="sale_delivery_mode"
+                                :value="mode.code"
+                                :checked="forms[entity].createUpdate.data.delivery_mode?.code === mode.code"
+                                @change="forms[entity].createUpdate.data.delivery_mode = mode">
+                            <span class="br-choice-option__indicator" aria-hidden="true"></span>
+                            <span>
+                                <strong v-text="mode.label"></strong>
+                                <small v-text="mode.description"></small>
+                            </span>
+                        </label>
+                    </div>
+                    <small
+                        v-if="forms[entity].createUpdate.errors?.delivery_mode"
+                        :class="config.forms.errors.styles.default"
+                        v-html="forms[entity].createUpdate.errors.delivery_mode"></small>
                 </div>
                 <div class="modal-footer br-entity-modal__footer">
                     <button type="button" class="br-btn br-btn-cancel" data-bs-dismiss="modal">Cancelar</button>
@@ -891,24 +954,39 @@
                                     :clearable="false"
                                     :searchable="true"
                                     placeholder="Seleccione">
-                                    <template #option="{ label, data }">
-                                        <div class="pb-1">
-                                            <span v-text="label" class="d-block fw-bold"></span>
-                                            <div class="d-block">
-                                                <i class="fa fa-money-bill text-success small"></i>
-                                                <small class="ms-2 colon-at-end">Precio unitario</small>
-                                                <small v-text="data?.currency?.sign+' '+separatorNumber(data?.price)" class="ms-2 fw-bold"></small>
+                                    <template #option="{ data }">
+                                        <div class="br-sale-catalog-option">
+                                            <div class="br-sale-catalog-option__head">
+                                                <strong v-text="data?.name"></strong>
+                                                <span v-if="data?.formatted_type" v-text="data?.formatted_type"></span>
                                             </div>
-                                            <div class="d-block" v-if="isDefined({value: data?.min_price}) || isDefined({value: data?.max_price})">
-                                                <i class="fa fa-arrows-alt-h text-warning small"></i>
-                                                <small class="ms-2 colon-at-end">Rango de precios</small>
-                                                <small v-if="isDefined({value: data?.min_price})" v-text="'Min: '+data?.currency?.sign+' '+data?.min_price" class="ms-2 fw-bold"></small>
-                                                <small v-if="isDefined({value: data?.max_price})" v-text="'Max: '+data?.currency?.sign+' '+data?.max_price" class="ms-2 fw-bold"></small>
+                                            <div class="br-sale-catalog-option__codes">
+                                                <small v-if="data?.internal_code">
+                                                    <span>Cód. interno:</span>
+                                                    <strong v-text="data.internal_code"></strong>
+                                                </small>
+                                                <small v-if="data?.barcode">
+                                                    <span>Cód. barras:</span>
+                                                    <strong v-text="data.barcode"></strong>
+                                                </small>
                                             </div>
-                                            <div class="d-block" v-if="isSubscription(data?.type)">
-                                                <i class="fa fa-clock text-info small"></i>
-                                                <small class="ms-2 colon-at-end">Duración de la {{ data?.formatted_type.toLowerCase() }}</small>
-                                                <small v-text="data?.formatted_duration" class="ms-2 fw-bold text-lowercase"></small>
+                                            <div class="br-sale-catalog-option__meta">
+                                                <span>
+                                                    <i class="fa fa-money-bill" aria-hidden="true"></i>
+                                                    <small>Precio unitario:</small>
+                                                    <strong v-text="`${data?.currency?.sign ?? ''} ${separatorNumber(data?.price)}`"></strong>
+                                                </span>
+                                                <span v-if="isDefined({value: data?.min_price}) || isDefined({value: data?.max_price})">
+                                                    <i class="fa fa-arrows-left-right" aria-hidden="true"></i>
+                                                    <small>Rango:</small>
+                                                    <strong v-if="isDefined({value: data?.min_price})" v-text="`Min. ${data?.currency?.sign ?? ''} ${separatorNumber(data?.min_price)}`"></strong>
+                                                    <strong v-if="isDefined({value: data?.max_price})" v-text="`Max. ${data?.currency?.sign ?? ''} ${separatorNumber(data?.max_price)}`"></strong>
+                                                </span>
+                                                <span v-if="isSubscription(data?.type)">
+                                                    <i class="fa fa-clock" aria-hidden="true"></i>
+                                                    <small>Duración:</small>
+                                                    <strong v-text="data?.formatted_duration" class="text-lowercase"></strong>
+                                                </span>
                                             </div>
                                         </div>
                                     </template>
@@ -1430,6 +1508,9 @@ export default {
                         id: Utils.uuid(),
                         draft: ""
                     },
+                    branch: {
+                        id: Utils.uuid()
+                    },
                     warehouse: {
                         id: Utils.uuid()
                     },
@@ -1867,6 +1948,13 @@ export default {
             this.forms[this.entity].createUpdate.data.observation = draft == null ? "" : String(draft);
 
             Alerts.modals({type: "hide", id: this.forms[this.entity].createUpdate.extras.modals.observations.id});
+
+        },
+        openBranchModal() {
+
+            if(!this.canChangeBranch) return;
+
+            Alerts.modals({type: "show", id: this.forms[this.entity].createUpdate.extras.modals.branch.id});
 
         },
         openWarehouseModal() {
@@ -2889,9 +2977,19 @@ export default {
         deliveryModes() {
 
             return [
-                {code: "immediate", label: "Entrega inmediata"},
-                {code: "pending", label: "Entrega pendiente"}
+                {code: "immediate", label: "Entrega inmediata", description: "Descuenta el stock al generar la venta."},
+                {code: "pending", label: "Entrega pendiente", description: "La venta queda registrada y el stock se descuenta al entregar."}
             ];
+
+        },
+        canChangeBranch() {
+
+            return this.branches.length > 1;
+
+        },
+        branchLabel() {
+
+            return this.forms[this.entity].createUpdate.data.branch?.label || "Seleccione sucursal";
 
         },
         deliveryModeLabel() {
@@ -3035,7 +3133,7 @@ export default {
 
             return this.options?.items?.records.map(e => ({
                 code: e.id,
-                label: [e.name, e.internal_code, e.barcode].filter(Boolean).join(" ? "),
+                label: e.name,
                 data: e
             }));
 
@@ -3097,7 +3195,7 @@ export default {
                     return {
                         key: tax.code,
                         name: line.name,
-                        description: this.isFixedTax(tax.data) ? `${line.quantity} vez${Number(line.quantity) === 1 ? "" : "es"} ? ${this.taxLabel(tax.data)}` : this.taxLabel(tax.data),
+                        description: this.isFixedTax(tax.data) ? `${line.quantity} vez${Number(line.quantity) === 1 ? "" : "es"} × ${this.taxLabel(tax.data)}` : this.taxLabel(tax.data),
                         amount: line.amount
                     };
 
@@ -3265,7 +3363,7 @@ export default {
 
             const max = this.observationPreviewCharLimit;
 
-            return `${full.slice(0, max)}?`;
+            return `${full.slice(0, max)}...`;
 
         },
         observationPreviewTooltip() {

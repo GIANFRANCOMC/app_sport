@@ -59,11 +59,15 @@ class SaleService {
      */
     private static function calculateTotal(array $details, int $companyId): float {
 
-        return array_reduce($details, function($carry, $detail) {
+        $total = 0;
 
-            return $carry + Utilities::round(floatval($detail["quantity"]) * floatval($detail["price"]), null, $companyId);
+        foreach($details as $detail) {
 
-        }, 0);
+            $total += Utilities::round(floatval($detail["quantity"]) * floatval($detail["price"]), null, $companyId);
+
+        }
+
+        return $total;
 
     }
 
