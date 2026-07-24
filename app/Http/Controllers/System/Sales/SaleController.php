@@ -279,6 +279,7 @@ class SaleController extends BaseController {
             "service_session_id" => $request->service_session_id,
             "source_channel" => $request->source_channel ?? "sale",
             "holder_id"   => $request->holder_id,
+            "seller_id"   => $request->seller_id,
             "currency_id" => $request->currency_id,
             "issue_date"  => $request->issue_date,
             "delivery_mode" => $request->delivery_mode ?? "immediate",

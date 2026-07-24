@@ -13,9 +13,10 @@
     <Teleport to="body">
         <!-- Modal Create -->
         <div
-            class="modal fade br-entity-modal br-quick-create-modal"
+            class="modal fade br-entity-modal br-modal-shell br-quick-create-modal"
             :id="forms[entity].createUpdate.extras.modals.default.id"
             data-bs-backdrop="static"
+            data-bs-keyboard="false"
             tabindex="-1"
             aria-hidden="true"
             role="dialog"
@@ -23,17 +24,17 @@
             @hidden.bs.modal="handleClose"
             @shown.bs.modal="handleShown">
             <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
-                <div class="modal-content">
-                <div class="modal-header br-entity-modal__header">
+                <div class="modal-content br-entity-modal br-modal-shell">
+                <div class="modal-header br-entity-modal__header br-modal-shell__header">
                     <div>
                         <p class="br-entity-modal__eyebrow mb-1">Gestión de clientes</p>
                         <h2 class="modal-title br-entity-modal__title" v-text="modalTitles.createUpdate[isUpdate ? 'update' : 'store']"></h2>
                     </div>
-                    <button type="button" class="br-modal-close" :aria-label="MODULE.texts.modal.close" @click="closeModal">
+                    <button type="button" class="br-modal-close br-modal-shell__close" :aria-label="MODULE.texts.modal.close" @click="closeModal">
                         <i class="fa-solid fa-xmark" aria-hidden="true"></i>
                     </button>
                 </div>
-                <div class="modal-body br-entity-modal__body br-quick-create-modal__body">
+                <div class="modal-body br-entity-modal__body br-modal-shell__body br-quick-create-modal__body">
                     <form @submit.prevent="saveEntity">
                         <div class="row g-3">
                             <InputSlot
@@ -205,7 +206,7 @@
                         </div>
                     </form>
                 </div>
-                <div class="modal-footer br-entity-modal__footer">
+                <div class="modal-footer br-entity-modal__footer br-modal-shell__footer">
                     <button
                         type="button"
                         class="br-btn br-btn-cancel"

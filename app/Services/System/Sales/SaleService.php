@@ -109,6 +109,26 @@ class SaleService {
 
     }
 
+    private static function resolveSellerId(array $data, int $companyId, int $userId): int {
+
+        $sellerId = (int) ($data["seller_id"] ?? $userId);
+
+        $exists = User::query()
+                      ->where("company_id", $companyId)
+                      ->where("status", "active")
+                      ->whereKey($sellerId)
+                      ->exists();
+
+        if(!$exists) {
+
+            throw new Exception("El vendedor seleccionado no está disponible para esta empresa.");
+
+        }
+
+        return $sellerId;
+
+    }
+
     private static function normalizeCommissionDetails(array $details, int $companyId): array {
 
         $items = Item::query()
@@ -702,6 +722,7 @@ class SaleService {
         DB::transaction(function() use($data, $companyId, $userId, &$saleHeader) {
 
             $cashSession = self::resolveCashSession($data, (int) $companyId, (int) $userId);
+            $sellerId = self::resolveSellerId($data, (int) $companyId, (int) $userId);
             self::validateSerieBelongsToBranch((int) $data["serie_id"], (int) $data["branch_id"]);
             $data["details"] = self::normalizeCommissionDetails($data["details"], (int) $companyId);
             $catalogItems = self::lockCatalogItemsForSale($data["details"], (int) $companyId);
@@ -786,7 +807,7 @@ class SaleService {
             $saleHeader->serie_id    = $data["serie_id"];
             $saleHeader->sequential  = $newSequential;
             $saleHeader->holder_id   = $data["holder_id"];
-            $saleHeader->seller_id   = $userId;
+            $saleHeader->seller_id   = $sellerId;
             $saleHeader->currency_id = $data["currency_id"];
             $saleHeader->warehouse_id = $warehouse?->id;
             $saleHeader->cash_session_id = $cashSession?->id;
@@ -1248,4 +1269,3 @@ class SaleService {
     }
 
 }
-

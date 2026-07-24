@@ -183,6 +183,32 @@
   background-color: var(--br-secondary-soft);
 }
 
+.br-btn-neutral {
+  border-color: color-mix(in srgb, var(--br-neutral) 88%, var(--br-secondary)) !important;
+  background: var(--br-neutral) !important;
+  color: var(--br-white) !important;
+  box-shadow: none !important;
+}
+
+.br-btn-neutral:hover,
+.br-btn-neutral:focus-visible {
+  border-color: var(--br-neutral-700) !important;
+  background: var(--br-neutral-700) !important;
+  color: var(--br-white) !important;
+  outline: 0 !important;
+  box-shadow: none !important;
+}
+
+.br-btn-neutral:active {
+  border-color: var(--br-neutral-800) !important;
+  background: var(--br-neutral-800) !important;
+}
+
+.br-btn-neutral:disabled {
+  cursor: not-allowed;
+  opacity: 0.62;
+}
+
 .br-btn-action-search {
   border-color: var(--br-secondary);
   background: var(--br-secondary);

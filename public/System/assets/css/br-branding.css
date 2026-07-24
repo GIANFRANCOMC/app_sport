@@ -1224,19 +1224,23 @@ body > .vs__dropdown-menu .vs__dropdown-option--highlight {
 
 /* Franja inferior del detalle (!important ante .table / .bg-white del tbody) */
 body.br-layout .br-table-footer-stripe > td {
-  padding-top: var(--br-table-footer-cell-pad-y);
-  padding-bottom: var(--br-table-footer-cell-pad-y);
+  padding-top: 0.76rem;
+  padding-bottom: 0.76rem;
   vertical-align: middle;
-  background-color: var(--br-table-footer-stripe-fallback) !important;
-  background-color: var(--br-table-footer-stripe) !important;
+  background-color: var(--br-table-thead-bg) !important;
 }
 
 body.br-layout .br-table-footer-stripe__label {
   font-size: var(--br-table-footer-label-size);
-  font-weight: var(--br-table-footer-label-weight);
-  letter-spacing: var(--br-table-footer-label-tracking);
-  color: var(--br-secondary);
+  font-weight: 820;
+  letter-spacing: 0.04em;
+  color: var(--br-white);
   font-variant-numeric: tabular-nums;
+}
+
+body.br-layout .br-table-footer-stripe .br-amount-inline__sign,
+body.br-layout .br-table-footer-stripe .br-amount-inline__amount {
+  color: var(--br-white);
 }
 
 @media (max-width: 575.98px) {
@@ -1528,45 +1532,176 @@ body.br-layout .modal-header.br-modal-header .modal-title {
  * Cerrar modal: rojo de marca (fondo como antes); borde más suave. Posición en custom.css.
  */
 body.br-layout .modal-header.br-modal-header .btn-header-modal {
-  background-color: var(--br-danger);
-  background-image: linear-gradient(
-    180deg,
-    color-mix(in srgb, var(--br-danger) 88%, white) 0%,
-    color-mix(in srgb, var(--br-danger-hover) 82%, white) 100%
-  );
-  border: 1px solid color-mix(in srgb, var(--br-white) 38%, transparent);
+  position: static;
+  width: 1.85rem;
+  height: 1.85rem;
+  min-width: 1.85rem;
+  margin: 0;
+  color: var(--br-text-muted);
+  background: var(--br-white);
+  background-image: none;
+  border: 1px solid color-mix(in srgb, var(--br-border) 78%, transparent);
   border-radius: var(--br-radius-sm);
-  box-shadow:
-    var(--br-shadow-sm),
-    0 2px 10px color-mix(in srgb, var(--br-danger) 32%, transparent);
+  box-shadow: none;
+  transform: none;
   transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 body.br-layout .modal-header.br-modal-header .btn-header-modal:hover {
-  background-color: var(--br-danger-hover);
-  background-image: linear-gradient(
-    180deg,
-    color-mix(in srgb, var(--br-danger-hover) 85%, white) 0%,
-    color-mix(in srgb, var(--br-danger) 78%, white) 100%
-  );
-  border-color: color-mix(in srgb, var(--br-white) 52%, transparent);
-  box-shadow:
-    0 2px 6px color-mix(in srgb, var(--br-secondary) 8%, transparent),
-    0 4px 14px color-mix(in srgb, var(--br-danger) 38%, transparent);
+  color: var(--br-danger);
+  background: color-mix(in srgb, var(--br-danger) 8%, var(--br-white));
+  background-image: none;
+  border-color: color-mix(in srgb, var(--br-danger) 24%, var(--br-border));
+  box-shadow: none;
+  transform: none;
 }
 
 body.br-layout .modal-header.br-modal-header .btn-header-modal:active {
-  background-color: var(--br-danger-hover);
-  background-image: linear-gradient(
-    180deg,
-    color-mix(in srgb, var(--br-danger-hover) 78%, white) 0%,
-    var(--br-danger-hover) 100%
-  );
+  background: color-mix(in srgb, var(--br-danger) 10%, var(--br-white));
+  background-image: none;
+  transform: none;
 }
 
 body.br-layout .modal-header.br-modal-header .btn-header-modal:focus-visible {
   outline: none;
-  box-shadow: var(--br-focus-ring), 0 2px 10px color-mix(in srgb, var(--br-danger) 30%, transparent);
+  box-shadow: var(--br-focus-ring);
+}
+
+/* -------------------------------------------------------------------------
+ * [br] Modal reutilizable - estructura estándar para nuevos módulos.
+ * Header con título a la izquierda y cierre centrado verticalmente.
+ * Footer con cierre/cancelación a la izquierda y acciones a la derecha.
+ * ------------------------------------------------------------------------- */
+body.br-layout .br-modal-shell.modal-content,
+body.br-layout .br-modal-shell .modal-content {
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--br-border) 82%, transparent);
+  border-radius: var(--br-radius-lg);
+  background: var(--br-white);
+  box-shadow: 0 1rem 2.2rem color-mix(in srgb, var(--br-secondary) 16%, transparent);
+}
+
+body.br-layout .br-modal-shell .br-modal-shell__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem;
+  min-height: 3.15rem;
+  padding: 0.76rem 0.9rem 0.72rem 1rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--br-border) 84%, transparent);
+  background: color-mix(in srgb, var(--br-primary-soft) 18%, var(--br-white));
+}
+
+body.br-layout .br-modal-shell .br-modal-shell__header > .modal-title {
+  flex: 1 1 auto;
+  margin: 0 !important;
+  padding: 0;
+  text-align: left;
+  color: var(--br-secondary);
+  letter-spacing: 0.04em;
+}
+
+body.br-layout .br-modal-shell .br-modal-shell__heading {
+  display: grid;
+  gap: 0.08rem;
+  min-width: 0;
+}
+
+body.br-layout .br-modal-shell .br-modal-shell__subtitle {
+  color: var(--br-text-muted);
+  font-size: 0.66rem !important;
+  line-height: 1.2 !important;
+}
+
+body.br-layout .br-modal-shell .br-modal-shell__close {
+  position: static;
+  flex: 0 0 auto;
+  align-self: center;
+  width: 1.55rem;
+  height: 1.55rem;
+  min-width: 1.55rem;
+  margin: 0 0 0 auto;
+  color: var(--br-text-muted);
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  box-shadow: none;
+  transform: none;
+}
+
+body.br-layout .br-modal-shell .br-modal-shell__close:hover,
+body.br-layout .br-modal-shell .br-modal-shell__close:focus-visible {
+  color: var(--br-danger);
+  background: transparent;
+  outline: 0;
+  box-shadow: none;
+}
+
+body.br-layout .br-modal-shell .br-modal-shell__body {
+  padding: 1rem;
+  background: #f7f8fa;
+}
+
+body.br-layout .br-modal-shell .br-modal-shell__footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.8rem;
+  padding: 0.78rem 1rem;
+  border-top: 1px solid color-mix(in srgb, var(--br-border) 84%, transparent);
+  background: #f7f8fa;
+}
+
+body.br-layout .br-modal-shell .br-modal-shell__footer > * {
+  margin: 0 !important;
+}
+
+body.br-layout .br-modal-shell .br-modal-shell__footer-close,
+body.br-layout .br-modal-shell .br-modal-shell__footer-actions {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.48rem;
+}
+
+body.br-layout .br-modal-shell .br-modal-shell__footer-close {
+  justify-content: flex-start;
+  margin-right: auto !important;
+}
+
+body.br-layout .br-modal-shell .br-modal-shell__footer-actions {
+  justify-content: flex-end;
+  margin-left: auto !important;
+}
+
+body.br-layout .br-modal-shell .br-modal-shell__footer-left {
+  margin-right: auto !important;
+}
+
+body.br-layout .br-modal-shell .br-modal-shell__footer-right {
+  margin-left: auto !important;
+}
+
+body.br-layout .br-modal-shell .br-modal-shell__footer > .br-btn-cancel:first-child,
+body.br-layout .br-modal-shell .br-modal-shell__footer > .btn-secondary:first-child {
+  margin-right: auto !important;
+}
+
+@media (max-width: 575.98px) {
+  body.br-layout .br-modal-shell .br-modal-shell__header,
+  body.br-layout .br-modal-shell .br-modal-shell__body,
+  body.br-layout .br-modal-shell .br-modal-shell__footer {
+    padding-right: 0.78rem;
+    padding-left: 0.78rem;
+  }
+
+  body.br-layout .br-modal-shell .br-modal-shell__footer {
+    align-items: stretch;
+  }
+
+  body.br-layout .br-modal-shell .br-modal-shell__footer-actions {
+    flex: 1 1 auto;
+  }
 }
 
 /* -------------------------------------------------------------------------
@@ -2323,6 +2458,32 @@ body.br-layout .modal-header.br-modal-header .btn-header-modal:focus-visible {
 
 .br-btn.br-btn-cancel:active {
   background-color: var(--br-secondary-soft);
+}
+
+.br-btn-neutral {
+  border-color: color-mix(in srgb, var(--br-neutral) 88%, var(--br-secondary)) !important;
+  background: var(--br-neutral) !important;
+  color: var(--br-white) !important;
+  box-shadow: none !important;
+}
+
+.br-btn-neutral:hover,
+.br-btn-neutral:focus-visible {
+  border-color: var(--br-neutral-700) !important;
+  background: var(--br-neutral-700) !important;
+  color: var(--br-white) !important;
+  outline: 0 !important;
+  box-shadow: none !important;
+}
+
+.br-btn-neutral:active {
+  border-color: var(--br-neutral-800) !important;
+  background: var(--br-neutral-800) !important;
+}
+
+.br-btn-neutral:disabled {
+  cursor: not-allowed;
+  opacity: 0.62;
 }
 
 .br-btn-action-search {
@@ -6428,6 +6589,7 @@ body.br-layout .br-document-payment-config--danger:focus-visible {
 
 .br-sale-selected-catalog {
   margin-top: -0.34rem;
+  padding: 0;
   border: 0 !important;
   background: transparent !important;
   box-shadow: none !important;
@@ -6449,7 +6611,7 @@ body.br-layout .br-document-payment-config--danger:focus-visible {
 }
 
 .br-sale-catalog-option--selected {
-  padding: 0.38rem 0 0.24rem;
+  padding: 0.34rem 0 0.2rem;
   border: 0;
   border-radius: 0;
   background: transparent;
@@ -6918,6 +7080,11 @@ body.br-layout .br-document-payment-config--danger:focus-visible {
   border-color: var(--br-success) !important;
 }
 
+.br-sale-detail-action--warning {
+  background: var(--br-orange);
+  border-color: var(--br-orange) !important;
+}
+
 .br-sale-detail-qty-btn:disabled {
   cursor: not-allowed;
   opacity: 0.48;
@@ -6932,6 +7099,91 @@ body.br-layout .br-document-payment-config--danger:focus-visible {
   filter: brightness(0.95);
   outline: 0 !important;
   box-shadow: none !important;
+}
+
+.br-sale-detail-membership-row > td,
+.br-sale-detail-membership-row:hover > td {
+  padding: 0.24rem 0.78rem 0.56rem 0.46rem !important;
+  border-top: 0 !important;
+  background: color-mix(in srgb, var(--br-primary-soft) 8%, var(--br-white)) !important;
+  box-shadow: none !important;
+}
+
+.br-sale-detail-membership {
+  display: grid;
+  grid-template-columns: minmax(7.5rem, 0.18fr) 1fr;
+  gap: 0.72rem;
+  align-items: center;
+  margin: 0;
+  padding: 0.42rem 0.16rem 0.28rem;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.br-sale-detail-membership__heading {
+  display: grid;
+  gap: 0.06rem;
+  align-content: center;
+  min-width: 0;
+}
+
+.br-sale-detail-membership__heading strong {
+  color: var(--br-secondary);
+  font-size: 0.64rem !important;
+  font-weight: 820;
+  letter-spacing: 0.06em;
+  line-height: 1.1;
+  text-transform: uppercase;
+}
+
+.br-sale-detail-membership__heading small {
+  color: var(--br-text-muted);
+  font-size: 0.62rem !important;
+  line-height: 1.16;
+}
+
+.br-sale-detail-membership__fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.br-sale-detail-membership__date {
+  display: inline-grid;
+  gap: 0.08rem;
+  min-width: 0;
+  padding: 0.3rem 0.46rem;
+  background: color-mix(in srgb, var(--br-white) 76%, var(--br-primary-soft));
+}
+
+.br-sale-detail-membership__date span {
+  color: var(--br-text-muted);
+  font-size: 0.62rem !important;
+  font-weight: 720;
+  line-height: 1.1;
+}
+
+.br-sale-detail-membership__date strong {
+  overflow: hidden;
+  color: var(--br-secondary);
+  font-size: 0.68rem !important;
+  font-weight: 680;
+  line-height: 1.16;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 767.98px) {
+  .br-sale-detail-membership {
+    grid-template-columns: 1fr;
+  }
+
+  .br-sale-detail-membership__fields {
+    grid-template-columns: 1fr;
+  }
 }
 
 body.br-layout .br-quotation-builder {

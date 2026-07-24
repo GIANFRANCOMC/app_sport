@@ -152,7 +152,7 @@
                                 <thead class="text-center">
                                     <tr>
                                         <th style="width: 10%;">#</th>
-                                        <th class="min-w-150px" style="width: 20%;">DESCRIPCIÓN</th>
+                                        <th class="min-w-150px" style="width: 20%;">ÍTEM</th>
                                         <th class="min-w-150px" style="width: 20%;">CANTIDAD</th>
                                         <th class="min-w-150px" style="width: 20%;">PRECIO UNITARIO</th>
                                         <th class="min-w-150px text-end pe-3" style="width: 20%;">TOTAL</th>
@@ -214,12 +214,22 @@
                                                 <td class="text-center">
                                                     <div class="br-sale-detail-actions">
                                                         <button
+                                                            class="br-sale-detail-action br-sale-detail-action--warning waves-effect"
+                                                            type="button"
+                                                            data-bs-toggle="tooltip"
+                                                            data-bs-placement="top"
+                                                            title="Rectificar ítem"
+                                                            aria-label="Rectificar ítem"
+                                                            @click="modalEditDetail({record, keyRecord})">
+                                                            <i class="fa fa-pen" aria-hidden="true"></i>
+                                                        </button>
+                                                        <button
                                                             class="br-sale-detail-action br-sale-detail-action--danger waves-effect"
                                                             type="button"
                                                             data-bs-toggle="tooltip"
                                                             data-bs-placement="top"
-                                                            :title="MODULE.texts.actions.delete"
-                                                            :aria-label="MODULE.texts.actions.delete"
+                                                            title="Eliminar ítem"
+                                                            aria-label="Eliminar ítem"
                                                             @click="deleteDetail({record, keyRecord})">
                                                             <i class="fa fa-times" aria-hidden="true"></i>
                                                         </button>
@@ -229,8 +239,8 @@
                                                             type="button"
                                                             data-bs-toggle="tooltip"
                                                             data-bs-placement="top"
-                                                            :title="MODULE.texts.actions.duplicate"
-                                                            :aria-label="MODULE.texts.actions.duplicate"
+                                                            title="Duplicar ítem"
+                                                            aria-label="Duplicar ítem"
                                                             @click="duplicateDetail({record, keyRecord})">
                                                             <i class="fa fa-copy" aria-hidden="true"></i>
                                                         </button>
@@ -251,23 +261,22 @@
                                             </tr>
                                             <template v-if="record?.extras?.showDetail">
                                                 <template v-if="isSubscription(record?.type)">
-                                                    <tr>
-                                                        <td class="text-center align-middle br-table-expand-label br-table-expand-label--black-text colon-at-end" v-text="MODULE.texts.form.detailRowMembershipLabel"></td>
+                                                    <tr class="br-sale-detail-membership-row">
                                                         <td colspan="5">
-                                                            <div class="row g-3 pt-3 pb-4 px-4">
-                                                                <div class="col-6">
-                                                                    <InputDatetime
-                                                                        title="Fecha de inicio"
-                                                                        v-model="record.extras.start_date"
-                                                                        @change="calculateDuration({mode: 'record', record})"
-                                                                        isRequired/>
+                                                            <div class="br-sale-detail-membership">
+                                                                <div class="br-sale-detail-membership__heading">
+                                                                    <strong class="colon-at-end" v-text="MODULE.texts.form.detailRowMembershipLabel"></strong>
+                                                                    <small>Vigencia aplicada al detalle</small>
                                                                 </div>
-                                                                <div class="col-6">
-                                                                    <InputDatetime
-                                                                        title="Fecha de finalización"
-                                                                        v-model="record.extras.end_date"
-                                                                        isRequired
-                                                                        disabled/>
+                                                                <div class="br-sale-detail-membership__fields">
+                                                                    <div class="br-sale-detail-membership__date">
+                                                                        <span class="colon-at-end">Fecha de inicio</span>
+                                                                        <strong v-text="formatSaleDetailDateTime(record.extras.start_date)"></strong>
+                                                                    </div>
+                                                                    <div class="br-sale-detail-membership__date">
+                                                                        <span class="colon-at-end">Fecha de finalización</span>
+                                                                        <strong v-text="formatSaleDetailDateTime(record.extras.end_date)"></strong>
+                                                                    </div>
                                                                 </div>
                                                             </div>
                                                         </td>
@@ -390,6 +399,25 @@
                         <p v-else class="br-document-settlement__empty mb-0">
                             Sin cotización para esta venta.
                         </p>
+                    </div>
+                </div>
+                <div>
+                    <div class="br-document-settlement__header">
+                        <label class="form-label colon-at-end">Vendedor</label>
+                        <button
+                            type="button"
+                            class="br-btn br-btn-xs br-btn-action-import br-document-payment-config waves-effect"
+                            data-bs-toggle="tooltip"
+                            data-bs-placement="top"
+                            title="Cambiar vendedor"
+                            aria-label="Cambiar vendedor"
+                            @click="openSellerModal">
+                            <i class="fa-solid fa-pen" aria-hidden="true"></i>
+                        </button>
+                    </div>
+                    <div class="br-document-delivery-summary">
+                        <span class="br-document-delivery-summary__value" v-text="sellerLabel"></span>
+                        <small v-if="forms[entity].createUpdate.errors?.seller" :class="config.forms.errors.styles.default" v-html="forms[entity].createUpdate.errors.seller"></small>
                     </div>
                 </div>
                 <div>
@@ -570,16 +598,16 @@
     </div>
 
     <!-- Modals -->
-    <div class="modal fade" :id="forms[entity].createUpdate.extras.modals.branch.id" data-bs-backdrop="static" tabindex="-1" role="dialog">
+    <div class="modal fade" :id="forms[entity].createUpdate.extras.modals.branch.id" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" role="dialog">
         <div class="modal-dialog modal-dialog-centered modal-md" role="document">
-            <div class="modal-content br-entity-modal">
-                <div class="modal-header br-modal-header">
+            <div class="modal-content br-entity-modal br-modal-shell">
+                <div class="modal-header br-modal-header br-modal-shell__header">
                     <h5 class="modal-title text-uppercase fw-bold">Cambiar sucursal</h5>
-                    <button type="button" class="btn-header-modal" data-bs-dismiss="modal" aria-label="Cerrar">
-                        <i class="fa fa-times icon-close-modal" aria-hidden="true"></i>
+                    <button type="button" class="br-modal-close br-modal-shell__close" data-bs-dismiss="modal" aria-label="Cerrar">
+                        <i class="fa-solid fa-xmark" aria-hidden="true"></i>
                     </button>
                 </div>
-                <div class="modal-body br-entity-modal__body">
+                <div class="modal-body br-entity-modal__body br-modal-shell__body">
                     <InputSlot
                         hasDiv
                         :title="MODULE.texts.form.branch"
@@ -601,7 +629,7 @@
                         </template>
                     </InputSlot>
                 </div>
-                <div class="modal-footer br-entity-modal__footer">
+                <div class="modal-footer br-entity-modal__footer br-modal-shell__footer">
                     <button type="button" class="br-btn br-btn-cancel" data-bs-dismiss="modal">Cancelar</button>
                     <button type="button" class="br-btn br-btn-primary" data-bs-dismiss="modal">Cambiar sucursal</button>
                 </div>
@@ -609,16 +637,16 @@
         </div>
     </div>
 
-    <div class="modal fade" :id="forms[entity].createUpdate.extras.modals.warehouse.id" data-bs-backdrop="static" tabindex="-1" role="dialog">
+    <div class="modal fade" :id="forms[entity].createUpdate.extras.modals.warehouse.id" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" role="dialog">
         <div class="modal-dialog modal-dialog-centered modal-md" role="document">
-            <div class="modal-content br-entity-modal">
-                <div class="modal-header br-modal-header">
+            <div class="modal-content br-entity-modal br-modal-shell">
+                <div class="modal-header br-modal-header br-modal-shell__header">
                     <h5 class="modal-title text-uppercase fw-bold">Cambiar almacén</h5>
-                    <button type="button" class="btn-header-modal" data-bs-dismiss="modal" aria-label="Cerrar">
-                        <i class="fa fa-times icon-close-modal" aria-hidden="true"></i>
+                    <button type="button" class="br-modal-close br-modal-shell__close" data-bs-dismiss="modal" aria-label="Cerrar">
+                        <i class="fa-solid fa-xmark" aria-hidden="true"></i>
                     </button>
                 </div>
-                <div class="modal-body br-entity-modal__body">
+                <div class="modal-body br-entity-modal__body br-modal-shell__body">
                     <InputSlot
                         hasDiv
                         :title="MODULE.texts.form.warehouse"
@@ -640,7 +668,7 @@
                         </template>
                     </InputSlot>
                 </div>
-                <div class="modal-footer br-entity-modal__footer">
+                <div class="modal-footer br-entity-modal__footer br-modal-shell__footer">
                     <button type="button" class="br-btn br-btn-cancel" data-bs-dismiss="modal">Cancelar</button>
                     <button type="button" class="br-btn br-btn-primary" data-bs-dismiss="modal">Cambiar almacén</button>
                 </div>
@@ -648,16 +676,16 @@
         </div>
     </div>
 
-    <div class="modal fade" :id="forms[entity].createUpdate.extras.modals.delivery.id" data-bs-backdrop="static" tabindex="-1" role="dialog">
+    <div class="modal fade" :id="forms[entity].createUpdate.extras.modals.delivery.id" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" role="dialog">
         <div class="modal-dialog modal-dialog-centered modal-md" role="document">
-            <div class="modal-content br-entity-modal">
-                <div class="modal-header br-modal-header">
+            <div class="modal-content br-entity-modal br-modal-shell">
+                <div class="modal-header br-modal-header br-modal-shell__header">
                     <h5 class="modal-title text-uppercase fw-bold">Cambiar entrega</h5>
-                    <button type="button" class="btn-header-modal" data-bs-dismiss="modal" aria-label="Cerrar">
-                        <i class="fa fa-times icon-close-modal" aria-hidden="true"></i>
+                    <button type="button" class="br-modal-close br-modal-shell__close" data-bs-dismiss="modal" aria-label="Cerrar">
+                        <i class="fa-solid fa-xmark" aria-hidden="true"></i>
                     </button>
                 </div>
-                <div class="modal-body br-entity-modal__body">
+                <div class="modal-body br-entity-modal__body br-modal-shell__body">
                     <div class="br-choice-group br-choice-group--stacked" role="radiogroup" :aria-label="MODULE.texts.form.deliveryMode">
                         <label
                             v-for="mode in deliveryModes"
@@ -682,7 +710,7 @@
                         :class="config.forms.errors.styles.default"
                         v-html="forms[entity].createUpdate.errors.delivery_mode"></small>
                 </div>
-                <div class="modal-footer br-entity-modal__footer">
+                <div class="modal-footer br-entity-modal__footer br-modal-shell__footer">
                     <button type="button" class="br-btn br-btn-cancel" data-bs-dismiss="modal">Cancelar</button>
                     <button type="button" class="br-btn br-btn-primary" data-bs-dismiss="modal">Cambiar entrega</button>
                 </div>
@@ -690,16 +718,16 @@
         </div>
     </div>
 
-    <div class="modal fade" :id="forms[entity].createUpdate.extras.modals.quotation.id" data-bs-backdrop="static" tabindex="-1" role="dialog">
+    <div class="modal fade" :id="forms[entity].createUpdate.extras.modals.quotation.id" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" role="dialog">
         <div class="modal-dialog modal-dialog-centered modal-md" role="document">
-            <div class="modal-content br-entity-modal">
-                <div class="modal-header br-modal-header">
+            <div class="modal-content br-entity-modal br-modal-shell">
+                <div class="modal-header br-modal-header br-modal-shell__header">
                     <h5 class="modal-title text-uppercase fw-bold">Cambiar cotización</h5>
-                    <button type="button" class="btn-header-modal" data-bs-dismiss="modal" aria-label="Cerrar">
-                        <i class="fa fa-times icon-close-modal" aria-hidden="true"></i>
+                    <button type="button" class="br-modal-close br-modal-shell__close" data-bs-dismiss="modal" aria-label="Cerrar">
+                        <i class="fa-solid fa-xmark" aria-hidden="true"></i>
                     </button>
                 </div>
-                <div class="modal-body br-entity-modal__body">
+                <div class="modal-body br-entity-modal__body br-modal-shell__body">
                     <InputSlot
                         hasDiv
                         :title="MODULE.texts.form.quotation"
@@ -722,7 +750,7 @@
                         Al aplicar una cotización, el cliente queda bloqueado para conservar la trazabilidad.
                     </p>
                 </div>
-                <div class="modal-footer br-entity-modal__footer">
+                <div class="modal-footer br-entity-modal__footer br-modal-shell__footer">
                     <button type="button" class="br-btn br-btn-cancel" data-bs-dismiss="modal">Cancelar</button>
                     <button type="button" class="br-btn br-btn-primary" data-bs-dismiss="modal">Cambiar cotización</button>
                 </div>
@@ -730,16 +758,55 @@
         </div>
     </div>
 
-    <div class="modal fade" :id="forms[entity].createUpdate.extras.modals.taxes.id" data-bs-backdrop="static" tabindex="-1" role="dialog">
-        <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
-            <div class="modal-content br-entity-modal">
-                <div class="modal-header br-modal-header">
-                    <h5 class="modal-title text-uppercase fw-bold">Cambiar impuestos extras</h5>
-                    <button type="button" class="btn-header-modal" data-bs-dismiss="modal" aria-label="Cerrar">
-                        <i class="fa fa-times icon-close-modal" aria-hidden="true"></i>
+    <div class="modal fade" :id="forms[entity].createUpdate.extras.modals.seller.id" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-dialog-centered modal-md" role="document">
+            <div class="modal-content br-entity-modal br-modal-shell">
+                <div class="modal-header br-modal-header br-modal-shell__header">
+                    <h5 class="modal-title text-uppercase fw-bold">Cambiar vendedor</h5>
+                    <button type="button" class="br-modal-close br-modal-shell__close" data-bs-dismiss="modal" aria-label="Cerrar">
+                        <i class="fa-solid fa-xmark" aria-hidden="true"></i>
                     </button>
                 </div>
-                <div class="modal-body br-entity-modal__body">
+                <div class="modal-body br-entity-modal__body br-modal-shell__body">
+                    <InputSlot
+                        hasDiv
+                        title="Vendedor"
+                        :titleClass="[config.forms.classes.title]"
+                        xl="12"
+                        lg="12">
+                        <template v-slot:input>
+                            <v-select
+                                v-model="forms[entity].createUpdate.data.seller"
+                                :options="users"
+                                :class="config.forms.classes.select2"
+                                :clearable="false"
+                                :searchable="true"
+                                append-to-body
+                                placeholder="Seleccione vendedor"/>
+                        </template>
+                    </InputSlot>
+                    <p class="br-document-settlement__empty mb-0 mt-2">
+                        Las comisiones de la venta quedarán asociadas al vendedor seleccionado.
+                    </p>
+                </div>
+                <div class="modal-footer br-entity-modal__footer br-modal-shell__footer">
+                    <button type="button" class="br-btn br-btn-cancel" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="br-btn br-btn-primary" data-bs-dismiss="modal">Cambiar vendedor</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" :id="forms[entity].createUpdate.extras.modals.taxes.id" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+            <div class="modal-content br-entity-modal br-modal-shell">
+                <div class="modal-header br-modal-header br-modal-shell__header">
+                    <h5 class="modal-title text-uppercase fw-bold">Cambiar impuestos extras</h5>
+                    <button type="button" class="br-modal-close br-modal-shell__close" data-bs-dismiss="modal" aria-label="Cerrar">
+                        <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+                    </button>
+                </div>
+                <div class="modal-body br-entity-modal__body br-modal-shell__body">
                     <p class="br-document-payment-intro">
                         Activa solo los cargos adicionales que aplican para esta venta.
                     </p>
@@ -780,7 +847,7 @@
                         No hay impuestos extras configurados para ventas.
                     </p>
                 </div>
-                <div class="modal-footer br-entity-modal__footer">
+                <div class="modal-footer br-entity-modal__footer br-modal-shell__footer">
                     <button type="button" class="br-btn br-btn-cancel" data-bs-dismiss="modal">Cancelar</button>
                     <button type="button" class="br-btn br-btn-primary" data-bs-dismiss="modal">Cambiar impuestos</button>
                 </div>
@@ -788,16 +855,16 @@
         </div>
     </div>
 
-    <div class="modal fade" :id="forms[entity].createUpdate.extras.modals.payments.id" data-bs-backdrop="static" tabindex="-1" role="dialog">
+    <div class="modal fade" :id="forms[entity].createUpdate.extras.modals.payments.id" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" role="dialog">
         <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
-            <div class="modal-content br-entity-modal">
-                <div class="modal-header br-modal-header">
+            <div class="modal-content br-entity-modal br-modal-shell">
+                <div class="modal-header br-modal-header br-modal-shell__header">
                     <h5 class="modal-title text-uppercase fw-bold">Cambiar métodos de pago</h5>
-                    <button type="button" class="btn-header-modal" data-bs-dismiss="modal" aria-label="Cerrar">
-                        <i class="fa fa-times icon-close-modal" aria-hidden="true"></i>
+                    <button type="button" class="br-modal-close br-modal-shell__close" data-bs-dismiss="modal" aria-label="Cerrar">
+                        <i class="fa-solid fa-xmark" aria-hidden="true"></i>
                     </button>
                 </div>
-                <div class="modal-body br-entity-modal__body">
+                <div class="modal-body br-entity-modal__body br-modal-shell__body">
                     <p class="br-document-payment-intro">
                         Distribuye el importe total entre uno o más métodos configurados para ventas.
                     </p>
@@ -903,7 +970,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="modal-footer br-entity-modal__footer">
+                <div class="modal-footer br-entity-modal__footer br-modal-shell__footer">
                     <button type="button" class="br-btn br-btn-cancel" data-bs-dismiss="modal">Cancelar</button>
                     <button type="button" class="br-btn br-btn-primary" data-bs-dismiss="modal">Cambiar métodos de pago</button>
                 </div>
@@ -911,16 +978,16 @@
         </div>
     </div>
 
-    <div class="modal fade" :id="forms[entity].createUpdate.extras.modals.details.id" data-bs-backdrop="static" tabindex="-1" role="dialog">
+    <div class="modal fade" :id="forms[entity].createUpdate.extras.modals.details.id" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" role="dialog">
         <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
-            <div class="modal-content">
-                <div class="modal-header br-modal-header">
+            <div class="modal-content br-entity-modal br-modal-shell">
+                <div class="modal-header br-modal-header br-modal-shell__header">
                     <h5 class="modal-title text-uppercase fw-bold" v-text="modalDetailsTitle"></h5>
-                    <button type="button" class="btn-header-modal" data-bs-dismiss="modal">
-                        <i class="fa fa-times icon-close-modal"></i>
+                    <button type="button" class="br-modal-close br-modal-shell__close" data-bs-dismiss="modal">
+                        <i class="fa-solid fa-xmark" aria-hidden="true"></i>
                     </button>
                 </div>
-                <div class="modal-body">
+                <div class="modal-body br-entity-modal__body br-modal-shell__body">
                     <div class="row g-3">
                         <InputSlot
                             hasDiv
@@ -936,7 +1003,9 @@
                                     :class="config.forms.classes.select2"
                                     @close="tooltips({show: true, time: 500})"
                                     :clearable="false"
+                                    :disabled="isModalDetailUpdate"
                                     :searchable="true"
+                                    append-to-body
                                     placeholder="Seleccione">
                                     <template #selected-option="{ label }">
                                         <span class="br-sale-catalog-selected-option">
@@ -1207,26 +1276,30 @@
                         </template>
                     </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary waves-effect" data-bs-dismiss="modal" v-text="MODULE.texts.actions.close"></button>
-                    <button type="button" class="btn waves-effect btn-primary" @click="addDetail()">
-                        <span v-text="MODULE.texts.actions.add"></span>
+                <div class="modal-footer br-entity-modal__footer br-modal-shell__footer">
+                    <button type="button" class="br-btn br-btn-cancel br-modal-shell__footer-left waves-effect" data-bs-dismiss="modal" v-text="MODULE.texts.actions.close"></button>
+                    <button
+                        type="button"
+                        class="br-btn br-btn-primary br-modal-shell__footer-right waves-effect"
+                        :disabled="!selectedModalItem"
+                        @click="addDetail()">
+                        <span v-text="modalDetailsActionLabel"></span>
                     </button>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="modal fade" :id="forms[entity].createUpdate.extras.modals.observations.id" data-bs-backdrop="static" tabindex="-1" role="dialog">
+    <div class="modal fade" :id="forms[entity].createUpdate.extras.modals.observations.id" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" role="dialog">
         <div class="modal-dialog modal-dialog-centered modal-md" role="document">
-            <div class="modal-content">
-                <div class="modal-header br-modal-header">
+            <div class="modal-content br-entity-modal br-modal-shell">
+                <div class="modal-header br-modal-header br-modal-shell__header">
                     <h5 class="modal-title text-uppercase fw-bold" v-text="MODULE.texts.modal.observations"></h5>
-                    <button type="button" class="btn-header-modal" data-bs-dismiss="modal" :aria-label="MODULE.texts.actions.close">
-                        <i class="fa fa-times icon-close-modal"></i>
+                    <button type="button" class="br-modal-close br-modal-shell__close" data-bs-dismiss="modal" :aria-label="MODULE.texts.actions.close">
+                        <i class="fa-solid fa-xmark" aria-hidden="true"></i>
                     </button>
                 </div>
-                <div class="modal-body">
+                <div class="modal-body br-entity-modal__body br-modal-shell__body">
                     <InputTextArea
                         v-model="forms[entity].createUpdate.extras.modals.observations.draft"
                         hasDiv
@@ -1235,7 +1308,7 @@
                         :placeholder="MODULE.texts.observations.modalPlaceholder"
                         :rows="6"/>
                 </div>
-                <div class="modal-footer">
+                <div class="modal-footer br-entity-modal__footer br-modal-shell__footer">
                     <button type="button" class="br-btn br-btn-cancel" data-bs-dismiss="modal">Cancelar</button>
                     <button type="button" class="br-btn br-btn-primary waves-effect" @click="saveObservationsModal">
                         <i class="fa fa-save"></i>
@@ -1246,16 +1319,16 @@
         </div>
     </div>
 
-    <div class="modal fade" :id="forms[entity].createUpdate.extras.modals.subscriptions.id" data-bs-backdrop="static" tabindex="-1" role="dialog">
+    <div class="modal fade" :id="forms[entity].createUpdate.extras.modals.subscriptions.id" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" role="dialog">
         <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
-            <div class="modal-content">
-                <div class="modal-header br-modal-header">
+            <div class="modal-content br-entity-modal br-modal-shell">
+                <div class="modal-header br-modal-header br-modal-shell__header">
                     <h5 class="modal-title text-uppercase fw-bold" v-text="MODULE.texts.modal.activeMemberships"></h5>
-                    <button type="button" class="btn-header-modal" data-bs-dismiss="modal">
-                        <i class="fa fa-times icon-close-modal"></i>
+                    <button type="button" class="br-modal-close br-modal-shell__close" data-bs-dismiss="modal">
+                        <i class="fa-solid fa-xmark" aria-hidden="true"></i>
                     </button>
                 </div>
-                <div class="modal-body br-sale-customer-history">
+                <div class="modal-body br-entity-modal__body br-modal-shell__body br-sale-customer-history">
                     <div class="br-sale-customer-history__header">
                         <div class="br-sale-customer-history__avatar" aria-hidden="true">
                             <i class="fa-solid fa-user"></i>
@@ -1301,7 +1374,7 @@
                                 <section class="br-sale-customer-history__panel">
                                     <header>
                                         <h6>Historial de compras</h6>
-                                        <small>?ltimos movimientos comerciales del cliente.</small>
+                                        <small>Últimos movimientos comerciales del cliente.</small>
                                     </header>
                                     <div class="table-responsive">
                                         <table class="table table-sm table-hover br-entity-table mb-0">
@@ -1365,8 +1438,8 @@
                         </div>
                     </template>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary waves-effect" data-bs-dismiss="modal" v-text="MODULE.texts.actions.close"></button>
+                <div class="modal-footer br-entity-modal__footer br-modal-shell__footer">
+                    <button type="button" class="br-btn br-btn-cancel waves-effect" data-bs-dismiss="modal" v-text="MODULE.texts.actions.close"></button>
                 </div>
             </div>
         </div>
@@ -1499,7 +1572,7 @@ const TEXTS = {
     },
     modal: {
         add: "Agregar ítem",
-        edit: "Editar ítem",
+        edit: "Rectificar ítem",
         activeMemberships: "Historial del cliente",
         observations: "Cambiar observación",
         subscriptionOrigin: "Origen",
@@ -1561,7 +1634,8 @@ export default {
                                 formatted_type: "",
                                 showDetail: true
                             },
-                            mode: "add"
+                            mode: "add",
+                            edit_index: null
                         },
                         errors: {}
                     },
@@ -1579,6 +1653,9 @@ export default {
                         id: Utils.uuid()
                     },
                     quotation: {
+                        id: Utils.uuid()
+                    },
+                    seller: {
                         id: Utils.uuid()
                     },
                     taxes: {
@@ -1618,6 +1695,7 @@ export default {
                 holder: null,
                 quotation: null,
                 quotation_header_id: null,
+                seller: null,
                 currency: null,
                 observation: "",
                 selected_taxes: [],
@@ -1635,7 +1713,8 @@ export default {
             ...crudModule,
             MODULE: MODULE,
             observationPreviewExpanded: false,
-            selectedCatalogInfoExpanded: false
+            selectedCatalogInfoExpanded: false,
+            syncingDetailModal: false
         };
 
     },
@@ -1969,6 +2048,7 @@ export default {
             this.options.taxes = initParams.data?.config?.taxes;
             this.options.paymentMethods = initParams.data?.config?.paymentMethods;
             this.options.quotations = initParams.data?.config?.quotations;
+            this.options.users = initParams.data?.config?.users;
 
             return Requests.valid({result: initParams});
 
@@ -1981,6 +2061,7 @@ export default {
                 this.forms[this.entity].createUpdate.data.warehouse  = (this.warehouses).length > 0 ? this.warehouses[0] : null;
                 this.forms[this.entity].createUpdate.data.issue_date = Utils.getCurrentDate();
                 this.forms[this.entity].createUpdate.data.holder     = (this.holders).length > 0 ? this.holders[0] : null;
+                this.forms[this.entity].createUpdate.data.seller     = this.defaultSellerOption;
                 this.forms[this.entity].createUpdate.data.currency   = (this.currencies).length > 0 ? this.currencies[0] : null;
                 this.forms[this.entity].createUpdate.data.payments   = [this.newSalePayment({amount: this.total})];
 
@@ -2044,6 +2125,17 @@ export default {
         openQuotationModal() {
 
             Alerts.modals({type: "show", id: this.forms[this.entity].createUpdate.extras.modals.quotation.id});
+
+        },
+        openSellerModal() {
+
+            if(!this.forms[this.entity].createUpdate.data.seller) {
+
+                this.forms[this.entity].createUpdate.data.seller = this.defaultSellerOption;
+
+            }
+
+            Alerts.modals({type: "show", id: this.forms[this.entity].createUpdate.extras.modals.seller.id});
 
         },
         clearQuotation() {
@@ -2152,8 +2244,33 @@ export default {
             let form = this.forms[this.entity].createUpdate.extras.modals.details;
 
             form.data.mode = "add";
+            form.data.edit_index = null;
 
             Alerts.modals({type: "show", id: form.id});
+
+        },
+        modalEditDetail({record, keyRecord}) {
+
+            this.resetActionTooltips();
+
+            const form = this.forms[this.entity].createUpdate.extras.modals.details;
+            const itemCode = record?.item?.code ?? record?.item_id ?? record?.item?.id;
+            const itemOption = (this.items || []).find(item => Number(item.code) === Number(itemCode)) || record?.item || null;
+
+            this.syncingDetailModal = true;
+            form.errors = {};
+            form.data = {
+                ...Utils.cloneJson(record),
+                item: itemOption,
+                mode: "update",
+                edit_index: keyRecord
+            };
+            this.selectedCatalogInfoExpanded = false;
+
+            this.$nextTick(() => {
+                this.syncingDetailModal = false;
+                Alerts.modals({type: "show", id: form.id});
+            });
 
         },
         addDetail() {
@@ -2168,6 +2285,9 @@ export default {
 
             if(validateForm?.bool) {
 
+                const detailIndex = Number(form.edit_index);
+
+                delete form.edit_index;
                 delete form.item.data;
 
                 if(["add"].includes(form.mode)) {
@@ -2179,6 +2299,24 @@ export default {
 
                     this.clearForm({functionName});
                     this.$nextTick(() => this.resetActionTooltips());
+
+                }
+
+                if(["update"].includes(form.mode)) {
+
+                    const details = this.forms[this.entity].createUpdate.data.details;
+
+                    if(Number.isInteger(detailIndex) && details[detailIndex]) {
+
+                        details.splice(detailIndex, 1, {...form, id: form.id || details[detailIndex].id || Utils.uuid()});
+
+                        Alerts.toastrs({type: "success", subtitle: `<b>${form?.name}</b> ha sido rectificado en el detalle de la venta.`});
+
+                        this.clearForm({functionName});
+                        Alerts.modals({type: "hide", id: this.forms[this.entity].createUpdate.extras.modals.details.id});
+                        this.$nextTick(() => this.resetActionTooltips());
+
+                    }
 
                 }
 
@@ -2472,6 +2610,7 @@ export default {
                 form.serie_id    = form?.serie?.code;
                 form.warehouse_id = this.saleRequiresStockContext ? form?.warehouse?.code : null;
                 form.holder_id   = form?.holder?.code;
+                form.seller_id   = form?.seller?.code;
                 form.currency_id = form?.currency?.code;
                 form.delivery_mode = this.saleRequiresStockContext ? (form?.delivery_mode?.code || "immediate") : null;
                 form.payments = this.salePaymentPayload;
@@ -2487,6 +2626,7 @@ export default {
                 delete form.serie;
                 delete form.warehouse;
                 delete form.holder;
+                delete form.seller;
                 delete form.currency;
                 delete form.quotation;
                 delete form.delivery_status;
@@ -2557,6 +2697,8 @@ export default {
                 case "addDetail":
                     this.forms[this.entity].createUpdate.extras.modals.details.data.id   = null;
                     this.forms[this.entity].createUpdate.extras.modals.details.data.item = null;
+                    this.forms[this.entity].createUpdate.extras.modals.details.data.mode = "add";
+                    this.forms[this.entity].createUpdate.extras.modals.details.data.edit_index = null;
                     break;
 
                 case "createUpdateEntity":
@@ -2566,6 +2708,7 @@ export default {
                     this.forms[this.entity].createUpdate.data.observation = "";
                     this.forms[this.entity].createUpdate.data.quotation = null;
                     this.forms[this.entity].createUpdate.data.quotation_header_id = null;
+                    this.forms[this.entity].createUpdate.data.seller = this.defaultSellerOption;
                     this.forms[this.entity].createUpdate.data.warehouse   = (this.warehouses).length > 0 ? this.warehouses[0] : null;
                     this.forms[this.entity].createUpdate.extras.modals.observations.draft = "";
                     this.forms[this.entity].createUpdate.data.selected_taxes = [];
@@ -2914,6 +3057,13 @@ export default {
             return Utils.legibleFormatDate({dateString, type});
 
         },
+        formatSaleDetailDateTime(value = null) {
+
+            if(!this.isDefined({value})) return "Sin fecha";
+
+            return this.legibleFormatDate({dateString: value, type: "datetime"}) || String(value).replace("T", " ");
+
+        },
         tooltips({show = true, time = 10}) {
 
             Alerts.tooltips({show, time});
@@ -3049,6 +3199,22 @@ export default {
             return rest;
 
         },
+        users() {
+
+            return (this.options?.users?.records || []).map(record => ({
+                code: record.id,
+                label: record.name,
+                data: record
+            }));
+
+        },
+        defaultSellerOption() {
+
+            const currentUserId = Number(this.options?.users?.current_id || 0);
+
+            return this.users.find(record => Number(record.code) === currentUserId) || this.users[0] || null;
+
+        },
         customerHistoryTracking() {
 
             return this.forms[this.entity].createUpdate.extras.modals.subscriptions.data.tracking ?? {};
@@ -3164,6 +3330,11 @@ export default {
         deliveryModeLabel() {
 
             return this.forms[this.entity].createUpdate.data.delivery_mode?.label || "Entrega inmediata";
+
+        },
+        sellerLabel() {
+
+            return this.forms[this.entity].createUpdate.data.seller?.label || "Seleccione vendedor";
 
         },
         hasQuotationApplied() {
@@ -3644,6 +3815,16 @@ export default {
 
             return titles?.[mode] ?? "";
 
+        },
+        modalDetailsActionLabel() {
+
+            return this.isModalDetailUpdate ? "Rectificar" : this.MODULE.texts.actions.add;
+
+        },
+        isModalDetailUpdate() {
+
+            return this.forms[this.entity].createUpdate.extras.modals.details.data?.mode === "update";
+
         }
     },
     watch: {
@@ -3686,6 +3867,8 @@ export default {
 
         },
         "forms.sales.createUpdate.extras.modals.details.data.item": function(newValue) {
+
+            if(this.syncingDetailModal) return;
 
             const data = newValue?.data;
 

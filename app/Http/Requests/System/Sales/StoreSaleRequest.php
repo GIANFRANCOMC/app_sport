@@ -48,6 +48,7 @@ class StoreSaleRequest extends CompanyFormRequest {
             "branch_id"   => "required|integer",
             "serie_id"    => "required|integer",
             "holder_id"   => "required|integer",
+            "seller_id"   => ["nullable", "integer", new BelongsToCompany("users", ["status" => "active"], "El vendedor seleccionado no pertenece a la empresa.")],
             "currency_id" => ["required", "integer", new BelongsToCompany("currencies", ["status" => "active"], "La moneda seleccionada no pertenece a la empresa.")],
             "warehouse_id" => "nullable|integer",
             "cash_session_id" => "nullable|integer",
@@ -146,6 +147,7 @@ class StoreSaleRequest extends CompanyFormRequest {
             "serie_id"    => "serie",
             "warehouse_id" => "warehouse",
             "holder_id"   => "holder",
+            "seller_id"   => "seller",
             "currency_id" => "currency"
         ];
 

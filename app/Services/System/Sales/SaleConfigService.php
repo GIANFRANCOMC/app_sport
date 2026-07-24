@@ -99,6 +99,10 @@ final class SaleConfigService extends BaseConfigService {
             "paymentMethods" => self::data([
                 "records" => $references->paymentMethodsFor("sale")
             ]),
+            "users" => self::data([
+                "records" => $references->users(),
+                "current_id" => $userId
+            ]),
             "cashSessions" => self::data([
                 "records" => $cashSessions->latest("opened_at")->get()
             ]),

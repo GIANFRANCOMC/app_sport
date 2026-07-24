@@ -1,6 +1,6 @@
 {
-  "_AddCustomer-BifvKZMi.js": {
-    "file": "assets/AddCustomer-BifvKZMi.js",
+  "_AddCustomer-DHvtBI58.js": {
+    "file": "assets/AddCustomer-DHvtBI58.js",
     "name": "AddCustomer",
     "imports": [
       "resources/js/System/Helpers/Constants.js",
@@ -221,7 +221,7 @@
     "isEntry": true
   },
   "resources/css/System/platform.css": {
-    "file": "assets/platform-Wwazp4Rr.css",
+    "file": "assets/platform-1UONtN4d.css",
     "src": "resources/css/System/platform.css",
     "isEntry": true
   },
@@ -858,7 +858,7 @@
     ]
   },
   "resources/js/System/Pages/Sales/pos/main.js": {
-    "file": "assets/main-CME4TShz.js",
+    "file": "assets/main-BoWayNYE.js",
     "name": "main",
     "src": "resources/js/System/Pages/Sales/pos/main.js",
     "isEntry": true,
@@ -867,7 +867,7 @@
       "resources/js/System/Helpers/Constants.js",
       "_Constants-DWyyRVn3.js",
       "_NumberUtils-DOMtHCFX.js",
-      "_AddCustomer-BifvKZMi.js",
+      "_AddCustomer-DHvtBI58.js",
       "_WithoutData-BObj9QYA.js",
       "_InputNumber-CsMcOk6j.js",
       "_InputText-DqGiuJpd.js",
@@ -880,7 +880,7 @@
     ]
   },
   "resources/js/System/Pages/Sales/quotations/main.js": {
-    "file": "assets/main-DJ_TC6n0.js",
+    "file": "assets/main-Dokft0oq.js",
     "name": "main",
     "src": "resources/js/System/Pages/Sales/quotations/main.js",
     "isEntry": true,
@@ -896,7 +896,7 @@
       "_InputText-DqGiuJpd.js",
       "_InputTextArea-BODVHffU.js",
       "_Paginator-G1GEXU6c.js",
-      "_AddCustomer-BifvKZMi.js",
+      "_AddCustomer-DHvtBI58.js",
       "_StatusBadge-BqMh2v_h.js",
       "_index-DhXgJQ-f.js",
       "_Forms-Cujfu1on.js",
@@ -949,7 +949,7 @@
     ]
   },
   "resources/js/System/Pages/Sales/sales/main.js": {
-    "file": "assets/main-BT83xFu2.js",
+    "file": "assets/main-DypjcQKM.js",
     "name": "main",
     "src": "resources/js/System/Pages/Sales/sales/main.js",
     "isEntry": true,
@@ -970,7 +970,7 @@
       "_InputTextArea-BODVHffU.js",
       "_Paginator-G1GEXU6c.js",
       "_PrintSale-JWzrBpu5.js",
-      "_AddCustomer-BifvKZMi.js",
+      "_AddCustomer-DHvtBI58.js",
       "_StatusBadge-BqMh2v_h.js",
       "_index-DhXgJQ-f.js",
       "_StringUtils-kpYama5M.js"

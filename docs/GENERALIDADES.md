@@ -161,6 +161,9 @@ Las modales de System deben usar el patrón global:
 - Header, body y footer con espaciado estándar.
 - Botón de cerrar visible y consistente.
 - Footer con superficie neutral cuando aplique.
+- Nuevas pantallas deben reutilizar `@System/Components/Generics/FormModal.vue` como base. El componente aplica `br-entity-modal`, `br-modal-standard` y `br-modal-shell`, bloquea backdrop/teclado y expone slots `header`, `body`, `footerClose` y `footer`.
+- El footer del componente reserva el cierre/cancelación a la izquierda y las acciones de trabajo a la derecha. No duplicar estructuras `modal-header`, `modal-body` y `modal-footer` directamente salvo migraciones legacy.
+- El header del componente muestra eyebrow opcional, título, subtítulo opcional y X centrada verticalmente; el body usa superficie neutral y el footer `#f7f8fa`.
 
 SweetAlert debe usarse para confirmaciones, errores, success y procesos globales. No introducir delays artificiales con `setTimeout`; si hay trabajo asíncrono, mostrar loader inmediatamente.
 
