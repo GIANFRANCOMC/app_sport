@@ -596,6 +596,7 @@ export default {
                 item: null,
                 quantity: 1,
                 price: 0,
+                igv_exempt: false,
                 price_includes_tax: true,
                 name: "",
                 observation: ""
@@ -611,7 +612,8 @@ export default {
             detail.quantity = detail.quantity || 1;
             detail.price = Number(item.price || 0);
             detail.currency = item.currency || this.form.currency?.data || null;
-            detail.price_includes_tax = Boolean(item.price_includes_tax ?? true);
+            detail.igv_exempt = Boolean(item.igv_exempt ?? false);
+            detail.price_includes_tax = detail.igv_exempt ? false : Boolean(item.price_includes_tax ?? true);
         },
         syncDetailTotal(detail) {
             detail.quantity = this.fixedNumber(detail.quantity || 0);
@@ -619,6 +621,24 @@ export default {
         },
         lineTotal(detail) {
             return this.fixedNumber(Number(detail.quantity || 0) * Number(detail.price || 0));
+        },
+        isIgvTax(tax = {}) {
+            const code = String(tax?.code || "").toUpperCase();
+            const name = String(tax?.name || "").toUpperCase();
+
+            return code.includes("IGV") || name === "IGV";
+        },
+        detailIsIgvExempt(detail = {}) {
+            const value = detail?.item?.data?.igv_exempt ?? detail?.igv_exempt ?? false;
+
+            return [true, 1, "1", "true"].includes(value);
+        },
+        detailIncludesTax(detail = {}) {
+            if(this.detailIsIgvExempt(detail)) return false;
+
+            const value = detail?.item?.data?.price_includes_tax ?? detail?.price_includes_tax ?? true;
+
+            return [true, 1, "1", "true"].includes(value);
         },
         calculateTaxAmount(tax) {
             if(tax.calculation_type === "fixed") {
@@ -628,8 +648,9 @@ export default {
             const taxableBase = this.form.details.reduce((sum, detail) => {
                 const total = this.lineTotal(detail);
                 const rate = Number(tax.rate || 0) / 100;
+                if(this.isIgvTax(tax) && this.detailIsIgvExempt(detail)) return sum;
 
-                return sum + (detail.price_includes_tax ? (total - (total / (1 + rate))) : (total * rate));
+                return sum + (this.detailIncludesTax(detail) ? (total - (total / (1 + rate))) : (total * rate));
             }, 0);
 
             return this.fixedNumber(taxableBase);
@@ -642,7 +663,8 @@ export default {
             const rate = Number(tax.rate || 0) / 100;
 
             return this.fixedNumber(this.form.details.reduce((sum, detail) => {
-                if(Boolean(detail.price_includes_tax)) return sum;
+                if(this.isIgvTax(tax) && this.detailIsIgvExempt(detail)) return sum;
+                if(this.detailIncludesTax(detail)) return sum;
 
                 return sum + (this.lineTotal(detail) * rate);
             }, 0));
@@ -727,7 +749,8 @@ export default {
                     name: detail.name || detail.item.label,
                     quantity: detail.quantity,
                     price: detail.price,
-                    price_includes_tax: detail.price_includes_tax,
+                    igv_exempt: this.detailIsIgvExempt(detail),
+                    price_includes_tax: this.detailIsIgvExempt(detail) ? false : this.detailIncludesTax(detail),
                     observation: detail.observation || null
                 })),
                 taxes: this.taxBreakdown.map(tax => ({

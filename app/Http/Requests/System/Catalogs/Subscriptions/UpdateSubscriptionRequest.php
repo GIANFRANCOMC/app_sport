@@ -45,6 +45,7 @@ class UpdateSubscriptionRequest extends CompanyFormRequest {
             "duration_type"  => "required|in:hour,day,today,month,year",
             "price"          => "required|numeric|min:$minValue|max:$maxValue|decimal:0,$round",
             "price_includes_tax" => "nullable|boolean",
+            "igv_exempt" => "nullable|boolean",
             "commission_type" => "nullable|in:none,percentage,fixed",
             "commission_value" => "nullable|numeric|min:0|max:$maxValue|decimal:0,$round",
             "currency_id"    => ["required", "integer", new BelongsToCompany("currencies", ["status" => "active"], "La moneda seleccionada no pertenece a la empresa.")],

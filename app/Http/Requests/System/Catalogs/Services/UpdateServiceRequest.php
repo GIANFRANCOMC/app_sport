@@ -43,6 +43,7 @@ class UpdateServiceRequest extends CompanyFormRequest {
             "description"   => "nullable|string|max:100",
             "price"         => "required|numeric|min:$minValue|max:$maxValue|decimal:0,$round",
             "price_includes_tax" => "nullable|boolean",
+            "igv_exempt" => "nullable|boolean",
             "currency_id"   => ["required", "integer", new BelongsToCompany("currencies", ["status" => "active"], "La moneda seleccionada no pertenece a la empresa.")],
             "estimated_duration_minutes" => "nullable|integer|min:1|max:10080",
             "capacity_control_enabled" => "nullable|boolean",

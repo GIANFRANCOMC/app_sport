@@ -222,6 +222,24 @@ class SaleService {
 
     }
 
+    private static function normalizeTaxFlags(array $details, $items): array {
+
+        return array_map(function(array $detail) use($items) {
+
+            $item = $items->get((int) ($detail["item_id"] ?? 0));
+            $igvExempt = filter_var($item?->igv_exempt ?? false, FILTER_VALIDATE_BOOL);
+
+            $detail["igv_exempt"] = $igvExempt;
+            $detail["price_includes_tax"] = $igvExempt
+                ? false
+                : filter_var($item?->price_includes_tax ?? true, FILTER_VALIDATE_BOOL);
+
+            return $detail;
+
+        }, $details);
+
+    }
+
     private static function capacityQuantity(mixed $quantity): int {
 
         return max(1, (int) ceil((float) $quantity));
@@ -333,7 +351,10 @@ class SaleService {
         $saleBody->name           = $detail["name"];
         $saleBody->quantity       = $detail["quantity"];
         $saleBody->price          = $detail["price"];
-        $saleBody->price_includes_tax = filter_var($detail["price_includes_tax"] ?? true, FILTER_VALIDATE_BOOL);
+        $saleBody->igv_exempt = filter_var($detail["igv_exempt"] ?? false, FILTER_VALIDATE_BOOL);
+        $saleBody->price_includes_tax = $saleBody->igv_exempt
+            ? false
+            : filter_var($detail["price_includes_tax"] ?? true, FILTER_VALIDATE_BOOL);
         $saleBody->total          = Utilities::round((floatval($saleBody->quantity) * floatval($saleBody->price)), null, (int) $saleHeader->company_id);
         $saleBody->commission_type = $detail["commission_type"] ?? "none";
         $saleBody->commission_value = $detail["commission_value"] ?? 0;
@@ -727,6 +748,7 @@ class SaleService {
             $data["details"] = self::normalizeCommissionDetails($data["details"], (int) $companyId);
             $catalogItems = self::lockCatalogItemsForSale($data["details"], (int) $companyId);
             self::validateSaleCatalogItems($data["details"], $catalogItems);
+            $data["details"] = self::normalizeTaxFlags($data["details"], $catalogItems);
             $requiresWarehouse = self::saleRequiresWarehouse($data["details"]);
             $warehouse = $requiresWarehouse ? self::resolveWarehouse($data, (int) $companyId) : null;
 

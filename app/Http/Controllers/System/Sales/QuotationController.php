@@ -84,6 +84,7 @@ final class QuotationController extends BaseController {
             "details.*.quantity" => ["required", "numeric", "gt:0", "decimal:0,$round"],
             "details.*.price" => ["nullable", "numeric", "min:0", "decimal:0,$round"],
             "details.*.price_includes_tax" => ["nullable", "boolean"],
+            "details.*.igv_exempt" => ["nullable", "boolean"],
             "details.*.observation" => ["nullable", "string", "max:1000"]
         ], [
             "required" => "Campo obligatorio.",

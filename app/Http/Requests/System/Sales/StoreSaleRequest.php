@@ -88,6 +88,7 @@ class StoreSaleRequest extends CompanyFormRequest {
             "details.*.price" => "required|numeric|min:0.1|max:$maxValue|decimal:0,$round",
             "details.*.total" => "nullable|numeric|min:0|max:$maxValue|decimal:0,$round",
             "details.*.price_includes_tax" => "nullable|boolean",
+            "details.*.igv_exempt" => "nullable|boolean",
             "details.*.commission_type" => "nullable|in:none,percentage,fixed",
             "details.*.commission_value" => "nullable|numeric|min:0|max:$maxValue|decimal:0,$round",
             "details.*.commission_amount" => "nullable|numeric|min:0|max:$maxValue|decimal:0,$round",
@@ -186,7 +187,9 @@ class StoreSaleRequest extends CompanyFormRequest {
                 $detail["total"] = $this->normalizeDecimalFromArray($detail, "total");
                 $detail["commission_value"] = $this->normalizeDecimalFromArray($detail, "commission_value");
                 $detail["commission_amount"] = $this->normalizeDecimalFromArray($detail, "commission_amount");
+                $detail["igv_exempt"] = filter_var($detail["igv_exempt"] ?? false, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? false;
                 $detail["price_includes_tax"] = filter_var($detail["price_includes_tax"] ?? false, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? false;
+                if($detail["igv_exempt"]) $detail["price_includes_tax"] = false;
 
                 return $detail;
 

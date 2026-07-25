@@ -265,8 +265,12 @@
                             <dd>{{ selectedItemDetail?.barcode || 'No registrado' }}</dd>
                         </div>
                         <div>
+                            <dt>IGV exonerado</dt>
+                            <dd>{{ boolLabel(itemIsIgvExempt(selectedItemDetail)) }}</dd>
+                        </div>
+                        <div>
                             <dt>Incluye IGV</dt>
-                            <dd>{{ boolLabel(includesTax(selectedItemDetail)) }}</dd>
+                            <dd>{{ itemIsIgvExempt(selectedItemDetail) ? 'No aplica' : boolLabel(includesTax(selectedItemDetail)) }}</dd>
                         </div>
                     </dl>
                 </div>
@@ -802,10 +806,17 @@ export default {
         taxIsRequired(tax = {}) {
             return [true, 1, "1", "true"].includes(tax?.is_required);
         },
+        isIgvTax(tax = {}) {
+            const code = String(tax?.code || "").toUpperCase();
+            const name = String(tax?.name || "").toUpperCase();
+
+            return code.includes("IGV") || name === "IGV";
+        },
         calculateSaleTaxLine(tax = {}) {
             const rate = Number(tax?.rate || 0);
             const calculationType = tax?.calculation_type || "percentage";
             const operationType = tax?.operation_type || "addition";
+            const isIgvTax = this.isIgvTax(tax);
             let base = 0;
             let amount = 0;
             let totalImpact = 0;
@@ -817,6 +828,7 @@ export default {
                 this.cart.forEach(line => {
                     const lineTotal = this.lineTotal(line);
                     if(lineTotal <= 0) return;
+                    if(isIgvTax && this.itemIsIgvExempt(line.item)) return;
 
                     const taxIsIncluded = this.includesTax(line.item) && operationType === "addition" && rate > 0;
 
@@ -1083,7 +1095,14 @@ export default {
         today() {
             return new Date().toISOString().slice(0, 10);
         },
+        itemIsIgvExempt(item) {
+            const value = item?.igv_exempt ?? item?.data?.igv_exempt ?? false;
+
+            return [true, 1, "1", "true"].includes(value);
+        },
         includesTax(item) {
+            if(this.itemIsIgvExempt(item)) return false;
+
             const value = item?.price_includes_tax ?? item?.data?.price_includes_tax ?? true;
 
             return [true, 1, "1", "true"].includes(value);
@@ -1152,7 +1171,7 @@ export default {
             return categories.length ? categories.join(", ") : "Sin categorías";
         },
         boolLabel(value) {
-            return value ? "S?" : "No";
+            return value ? "Sí" : "No";
         },
         openSaleConfirmation() {
             if(!this.cart.length) {
@@ -1208,6 +1227,7 @@ export default {
                     name: line.item.name,
                     quantity: line.quantity,
                     price: line.price,
+                    igv_exempt: this.itemIsIgvExempt(line.item),
                     price_includes_tax: this.includesTax(line.item),
                     commission_type: line.item?.commission_type || (Number(line.item?.commission_rate || 0) > 0 ? "percentage" : "none"),
                     commission_value: Number(line.item?.commission_value ?? line.item?.commission_rate ?? 0),

@@ -71,11 +71,11 @@
     ]
   },
   "_InputNumber-!~{00Z}~.js": {
-    "file": "assets/InputNumber-Dfq8rM4R.css",
+    "file": "assets/InputNumber-LYVn9dBE.css",
     "src": "_InputNumber-!~{00Z}~.js"
   },
-  "_InputNumber-CsMcOk6j.js": {
-    "file": "assets/InputNumber-CsMcOk6j.js",
+  "_InputNumber-DsxMP7gD.js": {
+    "file": "assets/InputNumber-DsxMP7gD.js",
     "name": "InputNumber",
     "imports": [
       "_Constants-DWyyRVn3.js",
@@ -84,7 +84,7 @@
       "_vue-select-aLjIGCfg.js"
     ],
     "css": [
-      "assets/InputNumber-Dfq8rM4R.css"
+      "assets/InputNumber-LYVn9dBE.css"
     ]
   },
   "_InputSelect2-BAgu0j50.js": {
@@ -221,7 +221,7 @@
     "isEntry": true
   },
   "resources/css/System/platform.css": {
-    "file": "assets/platform-1UONtN4d.css",
+    "file": "assets/platform-AnuwrqlN.css",
     "src": "resources/css/System/platform.css",
     "isEntry": true
   },
@@ -297,7 +297,7 @@
     ]
   },
   "resources/js/System/Pages/Assets/assets/main.js": {
-    "file": "assets/main-BPMQ_iKp.js",
+    "file": "assets/main-ooPI5fOJ.js",
     "name": "main",
     "src": "resources/js/System/Pages/Assets/assets/main.js",
     "isEntry": true,
@@ -310,7 +310,7 @@
       "_InternalCodePrefixMixin-B7kflBMB.js",
       "_WithoutData-BObj9QYA.js",
       "_InputDate-Biagoabs.js",
-      "_InputNumber-CsMcOk6j.js",
+      "_InputNumber-DsxMP7gD.js",
       "_InputSelect2-BAgu0j50.js",
       "_InputSlot-BeksQ5gf.js",
       "_InputText-DqGiuJpd.js",
@@ -323,7 +323,7 @@
     ]
   },
   "resources/js/System/Pages/Assets/assets_management/main.js": {
-    "file": "assets/main-BoY_yopN.js",
+    "file": "assets/main-BJxXkYSo.js",
     "name": "main",
     "src": "resources/js/System/Pages/Assets/assets_management/main.js",
     "isEntry": true,
@@ -335,7 +335,7 @@
       "_StatusBadge-BqMh2v_h.js",
       "_WithoutData-BObj9QYA.js",
       "_InputDate-Biagoabs.js",
-      "_InputNumber-CsMcOk6j.js",
+      "_InputNumber-DsxMP7gD.js",
       "_InputSelect2-BAgu0j50.js",
       "_InputSlot-BeksQ5gf.js",
       "_InputText-DqGiuJpd.js",
@@ -367,7 +367,7 @@
     ]
   },
   "resources/js/System/Pages/Catalogs/categories/main.js": {
-    "file": "assets/main-BOZotxan.js",
+    "file": "assets/main-DQupX72d.js",
     "name": "main",
     "src": "resources/js/System/Pages/Catalogs/categories/main.js",
     "isEntry": true,
@@ -380,7 +380,7 @@
       "_InternalCodePrefixMixin-B7kflBMB.js",
       "_WithoutData-BObj9QYA.js",
       "_InputDate-Biagoabs.js",
-      "_InputNumber-CsMcOk6j.js",
+      "_InputNumber-DsxMP7gD.js",
       "_InputSelect2-BAgu0j50.js",
       "_InputSlot-BeksQ5gf.js",
       "_InputText-DqGiuJpd.js",
@@ -393,7 +393,7 @@
     ]
   },
   "resources/js/System/Pages/Catalogs/products/main.js": {
-    "file": "assets/main-D0PxHOmh.js",
+    "file": "assets/main-DUv4ZYyJ.js",
     "name": "main",
     "src": "resources/js/System/Pages/Catalogs/products/main.js",
     "isEntry": true,
@@ -409,7 +409,7 @@
       "_InternalCodePrefixMixin-B7kflBMB.js",
       "_WithoutData-BObj9QYA.js",
       "_InputDate-Biagoabs.js",
-      "_InputNumber-CsMcOk6j.js",
+      "_InputNumber-DsxMP7gD.js",
       "_InputSelect2-BAgu0j50.js",
       "_InputSlot-BeksQ5gf.js",
       "_InputText-DqGiuJpd.js",
@@ -421,7 +421,7 @@
     ]
   },
   "resources/js/System/Pages/Catalogs/services/main.js": {
-    "file": "assets/main-DJ8mgb3t.js",
+    "file": "assets/main-LqRXsfFz.js",
     "name": "main",
     "src": "resources/js/System/Pages/Catalogs/services/main.js",
     "isEntry": true,
@@ -435,7 +435,7 @@
       "_InternalCodePrefixMixin-B7kflBMB.js",
       "_WithoutData-BObj9QYA.js",
       "_InputDate-Biagoabs.js",
-      "_InputNumber-CsMcOk6j.js",
+      "_InputNumber-DsxMP7gD.js",
       "_InputSelect2-BAgu0j50.js",
       "_InputSlot-BeksQ5gf.js",
       "_InputText-DqGiuJpd.js",
@@ -447,7 +447,7 @@
     ]
   },
   "resources/js/System/Pages/Catalogs/subscriptions/main.js": {
-    "file": "assets/main-BdMZeHjY.js",
+    "file": "assets/main-_Hc9sVYq.js",
     "name": "main",
     "src": "resources/js/System/Pages/Catalogs/subscriptions/main.js",
     "isEntry": true,
@@ -461,7 +461,7 @@
       "_InternalCodePrefixMixin-B7kflBMB.js",
       "_WithoutData-BObj9QYA.js",
       "_InputDate-Biagoabs.js",
-      "_InputNumber-CsMcOk6j.js",
+      "_InputNumber-DsxMP7gD.js",
       "_InputSelect2-BAgu0j50.js",
       "_InputSlot-BeksQ5gf.js",
       "_InputText-DqGiuJpd.js",
@@ -473,7 +473,7 @@
     ]
   },
   "resources/js/System/Pages/Customers/customers/main.js": {
-    "file": "assets/main-BrEYAlTE.js",
+    "file": "assets/main-HdJrqmMv.js",
     "name": "main",
     "src": "resources/js/System/Pages/Customers/customers/main.js",
     "isEntry": true,
@@ -484,7 +484,7 @@
       "_Constants-DWyyRVn3.js",
       "_WithoutData-BObj9QYA.js",
       "_InputDate-Biagoabs.js",
-      "_InputNumber-CsMcOk6j.js",
+      "_InputNumber-DsxMP7gD.js",
       "_InputSelect2-BAgu0j50.js",
       "_InputSlot-BeksQ5gf.js",
       "_InputText-DqGiuJpd.js",
@@ -503,7 +503,7 @@
     ]
   },
   "resources/js/System/Pages/Customers/tracking_attendances/main.js": {
-    "file": "assets/main-BmRc1CZ4.js",
+    "file": "assets/main-Bb8b2OVL.js",
     "name": "main",
     "src": "resources/js/System/Pages/Customers/tracking_attendances/main.js",
     "isEntry": true,
@@ -515,7 +515,7 @@
       "_WithoutData-BObj9QYA.js",
       "_InputDate-Biagoabs.js",
       "_InputDatetime-DZl2WW9d.js",
-      "_InputNumber-CsMcOk6j.js",
+      "_InputNumber-DsxMP7gD.js",
       "_InputSelect2-BAgu0j50.js",
       "_InputSlot-BeksQ5gf.js",
       "_InputText-DqGiuJpd.js",
@@ -529,7 +529,7 @@
     ]
   },
   "resources/js/System/Pages/Customers/tracking_customers/main.js": {
-    "file": "assets/main-CGAz6H1c.js",
+    "file": "assets/main-DW6f-OhZ.js",
     "name": "main",
     "src": "resources/js/System/Pages/Customers/tracking_customers/main.js",
     "isEntry": true,
@@ -541,7 +541,7 @@
       "_BusinessUtils-CcicfuVS.js",
       "_WithoutData-BObj9QYA.js",
       "_InputDate-Biagoabs.js",
-      "_InputNumber-CsMcOk6j.js",
+      "_InputNumber-DsxMP7gD.js",
       "_InputSelect2-BAgu0j50.js",
       "_InputSlot-BeksQ5gf.js",
       "_InputText-DqGiuJpd.js",
@@ -551,7 +551,7 @@
     ]
   },
   "resources/js/System/Pages/Customers/tracking_notifications/main.js": {
-    "file": "assets/main-DeVC4UUR.js",
+    "file": "assets/main-DgP9MmUx.js",
     "name": "main",
     "src": "resources/js/System/Pages/Customers/tracking_notifications/main.js",
     "isEntry": true,
@@ -561,7 +561,7 @@
       "_Constants-DWyyRVn3.js",
       "_WithoutData-BObj9QYA.js",
       "_InputDate-Biagoabs.js",
-      "_InputNumber-CsMcOk6j.js",
+      "_InputNumber-DsxMP7gD.js",
       "_InputSelect2-BAgu0j50.js",
       "_InputSlot-BeksQ5gf.js",
       "_InputText-DqGiuJpd.js",
@@ -572,7 +572,7 @@
     ]
   },
   "resources/js/System/Pages/Customers/tracking_subscriptions/main.js": {
-    "file": "assets/main-CdGwV8VT.js",
+    "file": "assets/main-DjrWKpqG.js",
     "name": "main",
     "src": "resources/js/System/Pages/Customers/tracking_subscriptions/main.js",
     "isEntry": true,
@@ -583,7 +583,7 @@
       "_StatusBadge-BqMh2v_h.js",
       "_WithoutData-BObj9QYA.js",
       "_InputDate-Biagoabs.js",
-      "_InputNumber-CsMcOk6j.js",
+      "_InputNumber-DsxMP7gD.js",
       "_InputSelect2-BAgu0j50.js",
       "_InputSlot-BeksQ5gf.js",
       "_InputText-DqGiuJpd.js",
@@ -593,7 +593,7 @@
     ]
   },
   "resources/js/System/Pages/Devices/biometric_devices/main.js": {
-    "file": "assets/main-BdRYg1I5.js",
+    "file": "assets/main-BlOU2N1o.js",
     "name": "main",
     "src": "resources/js/System/Pages/Devices/biometric_devices/main.js",
     "isEntry": true,
@@ -604,7 +604,7 @@
       "_Constants-DWyyRVn3.js",
       "_WithoutData-BObj9QYA.js",
       "_InputDate-Biagoabs.js",
-      "_InputNumber-CsMcOk6j.js",
+      "_InputNumber-DsxMP7gD.js",
       "_InputSelect2-BAgu0j50.js",
       "_InputSlot-BeksQ5gf.js",
       "_InputText-DqGiuJpd.js",
@@ -618,7 +618,7 @@
     ]
   },
   "resources/js/System/Pages/Essentials/dashboard/main.js": {
-    "file": "assets/main-CZSgOCho.js",
+    "file": "assets/main-mO4UZWhb.js",
     "name": "main",
     "src": "resources/js/System/Pages/Essentials/dashboard/main.js",
     "isEntry": true,
@@ -629,7 +629,7 @@
       "_NumberUtils-DOMtHCFX.js",
       "_WithoutData-BObj9QYA.js",
       "_InputDate-Biagoabs.js",
-      "_InputNumber-CsMcOk6j.js",
+      "_InputNumber-DsxMP7gD.js",
       "_InputSelect2-BAgu0j50.js",
       "_InputSlot-BeksQ5gf.js",
       "_InputText-DqGiuJpd.js",
@@ -640,7 +640,7 @@
     ]
   },
   "resources/js/System/Pages/Essentials/home/main.js": {
-    "file": "assets/main-ahz0QTms.js",
+    "file": "assets/main-BttclTY5.js",
     "name": "main",
     "src": "resources/js/System/Pages/Essentials/home/main.js",
     "isEntry": true,
@@ -650,7 +650,7 @@
       "_Constants-DWyyRVn3.js",
       "_WithoutData-BObj9QYA.js",
       "_InputDate-Biagoabs.js",
-      "_InputNumber-CsMcOk6j.js",
+      "_InputNumber-DsxMP7gD.js",
       "_InputSelect2-BAgu0j50.js",
       "_InputSlot-BeksQ5gf.js",
       "_InputText-DqGiuJpd.js",
@@ -662,7 +662,7 @@
     ]
   },
   "resources/js/System/Pages/Essentials/reports/main.js": {
-    "file": "assets/main-3TnlpXn4.js",
+    "file": "assets/main-Cd1qw3n2.js",
     "name": "main",
     "src": "resources/js/System/Pages/Essentials/reports/main.js",
     "isEntry": true,
@@ -674,7 +674,7 @@
       "_WithoutData-BObj9QYA.js",
       "_InputDate-Biagoabs.js",
       "_InputText-DqGiuJpd.js",
-      "_InputNumber-CsMcOk6j.js",
+      "_InputNumber-DsxMP7gD.js",
       "_InputSelect2-BAgu0j50.js",
       "_InputSlot-BeksQ5gf.js",
       "_Paginator-G1GEXU6c.js",
@@ -698,7 +698,7 @@
     ]
   },
   "resources/js/System/Pages/Operations/service_operations/main.js": {
-    "file": "assets/main-CGz64ews.js",
+    "file": "assets/main-BScs5iBn.js",
     "name": "main",
     "src": "resources/js/System/Pages/Operations/service_operations/main.js",
     "isEntry": true,
@@ -708,14 +708,14 @@
       "_Constants-DWyyRVn3.js",
       "_NumberUtils-DOMtHCFX.js",
       "_WithoutData-BObj9QYA.js",
-      "_InputNumber-CsMcOk6j.js",
+      "_InputNumber-DsxMP7gD.js",
       "_InputText-DqGiuJpd.js",
       "_Paginator-G1GEXU6c.js",
       "_index-DhXgJQ-f.js"
     ]
   },
   "resources/js/System/Pages/Organizations/book_complaints/main.js": {
-    "file": "assets/main-CNsHcElx.js",
+    "file": "assets/main-C1LxjoQt.js",
     "name": "main",
     "src": "resources/js/System/Pages/Organizations/book_complaints/main.js",
     "isEntry": true,
@@ -727,7 +727,7 @@
       "_StatusBadge-BqMh2v_h.js",
       "_WithoutData-BObj9QYA.js",
       "_InputDate-Biagoabs.js",
-      "_InputNumber-CsMcOk6j.js",
+      "_InputNumber-DsxMP7gD.js",
       "_InputSelect2-BAgu0j50.js",
       "_InputSlot-BeksQ5gf.js",
       "_InputText-DqGiuJpd.js",
@@ -740,7 +740,7 @@
     ]
   },
   "resources/js/System/Pages/Organizations/branches/main.js": {
-    "file": "assets/main-CMwMXwXX.js",
+    "file": "assets/main-DJG3pAgi.js",
     "name": "main",
     "src": "resources/js/System/Pages/Organizations/branches/main.js",
     "isEntry": true,
@@ -753,7 +753,7 @@
       "_InternalCodePrefixMixin-B7kflBMB.js",
       "_WithoutData-BObj9QYA.js",
       "_InputDate-Biagoabs.js",
-      "_InputNumber-CsMcOk6j.js",
+      "_InputNumber-DsxMP7gD.js",
       "_InputSelect2-BAgu0j50.js",
       "_InputSlot-BeksQ5gf.js",
       "_InputText-DqGiuJpd.js",
@@ -766,7 +766,7 @@
     ]
   },
   "resources/js/System/Pages/Organizations/companies/main.js": {
-    "file": "assets/main-a1QCWBM1.js",
+    "file": "assets/main-C9UxfKxk.js",
     "name": "main",
     "src": "resources/js/System/Pages/Organizations/companies/main.js",
     "isEntry": true,
@@ -778,7 +778,7 @@
       "_StringUtils-kpYama5M.js",
       "_WithoutData-BObj9QYA.js",
       "_InputDate-Biagoabs.js",
-      "_InputNumber-CsMcOk6j.js",
+      "_InputNumber-DsxMP7gD.js",
       "_InputSelect2-BAgu0j50.js",
       "_InputSlot-BeksQ5gf.js",
       "_InputText-DqGiuJpd.js",
@@ -795,7 +795,7 @@
     ]
   },
   "resources/js/System/Pages/Organizations/roles/main.js": {
-    "file": "assets/main-BrDWXtKR.js",
+    "file": "assets/main-BwSK8vxa.js",
     "name": "main",
     "src": "resources/js/System/Pages/Organizations/roles/main.js",
     "isEntry": true,
@@ -805,7 +805,7 @@
       "_vue-select-aLjIGCfg.js",
       "_WithoutData-BObj9QYA.js",
       "_InputDate-Biagoabs.js",
-      "_InputNumber-CsMcOk6j.js",
+      "_InputNumber-DsxMP7gD.js",
       "_InputSelect2-BAgu0j50.js",
       "_InputSlot-BeksQ5gf.js",
       "_InputText-DqGiuJpd.js",
@@ -833,7 +833,7 @@
     ]
   },
   "resources/js/System/Pages/Organizations/users/main.js": {
-    "file": "assets/main-DXDUnrvZ.js",
+    "file": "assets/main-B9krVczA.js",
     "name": "main",
     "src": "resources/js/System/Pages/Organizations/users/main.js",
     "isEntry": true,
@@ -845,7 +845,7 @@
       "_StringUtils-kpYama5M.js",
       "_WithoutData-BObj9QYA.js",
       "_InputDate-Biagoabs.js",
-      "_InputNumber-CsMcOk6j.js",
+      "_InputNumber-DsxMP7gD.js",
       "_InputSelect2-BAgu0j50.js",
       "_InputSlot-BeksQ5gf.js",
       "_InputText-DqGiuJpd.js",
@@ -858,7 +858,7 @@
     ]
   },
   "resources/js/System/Pages/Sales/pos/main.js": {
-    "file": "assets/main-BoWayNYE.js",
+    "file": "assets/main-YVkzZ-g-.js",
     "name": "main",
     "src": "resources/js/System/Pages/Sales/pos/main.js",
     "isEntry": true,
@@ -869,7 +869,7 @@
       "_NumberUtils-DOMtHCFX.js",
       "_AddCustomer-DHvtBI58.js",
       "_WithoutData-BObj9QYA.js",
-      "_InputNumber-CsMcOk6j.js",
+      "_InputNumber-DsxMP7gD.js",
       "_InputText-DqGiuJpd.js",
       "_index-DhXgJQ-f.js",
       "_Forms-Cujfu1on.js",
@@ -880,7 +880,7 @@
     ]
   },
   "resources/js/System/Pages/Sales/quotations/main.js": {
-    "file": "assets/main-Dokft0oq.js",
+    "file": "assets/main-h1LuDlpE.js",
     "name": "main",
     "src": "resources/js/System/Pages/Sales/quotations/main.js",
     "isEntry": true,
@@ -891,7 +891,7 @@
       "_NumberUtils-DOMtHCFX.js",
       "_WithoutData-BObj9QYA.js",
       "_InputDate-Biagoabs.js",
-      "_InputNumber-CsMcOk6j.js",
+      "_InputNumber-DsxMP7gD.js",
       "_InputSlot-BeksQ5gf.js",
       "_InputText-DqGiuJpd.js",
       "_InputTextArea-BODVHffU.js",
@@ -904,7 +904,7 @@
     ]
   },
   "resources/js/System/Pages/Sales/sales/deliveries.js": {
-    "file": "assets/deliveries-4wtU413v.js",
+    "file": "assets/deliveries-Cm98d4lj.js",
     "name": "deliveries",
     "src": "resources/js/System/Pages/Sales/sales/deliveries.js",
     "isEntry": true,
@@ -915,7 +915,7 @@
       "_NumberUtils-DOMtHCFX.js",
       "_WithoutData-BObj9QYA.js",
       "_InputDate-Biagoabs.js",
-      "_InputNumber-CsMcOk6j.js",
+      "_InputNumber-DsxMP7gD.js",
       "_InputSlot-BeksQ5gf.js",
       "_InputText-DqGiuJpd.js",
       "_InputTextArea-BODVHffU.js",
@@ -925,7 +925,7 @@
     ]
   },
   "resources/js/System/Pages/Sales/sales/list.js": {
-    "file": "assets/list-B1SR2ars.js",
+    "file": "assets/list-ClUfiKux.js",
     "name": "list",
     "src": "resources/js/System/Pages/Sales/sales/list.js",
     "isEntry": true,
@@ -938,7 +938,7 @@
       "_BusinessUtils-CcicfuVS.js",
       "_WithoutData-BObj9QYA.js",
       "_InputDate-Biagoabs.js",
-      "_InputNumber-CsMcOk6j.js",
+      "_InputNumber-DsxMP7gD.js",
       "_InputSelect2-BAgu0j50.js",
       "_InputSlot-BeksQ5gf.js",
       "_InputText-DqGiuJpd.js",
@@ -949,7 +949,7 @@
     ]
   },
   "resources/js/System/Pages/Sales/sales/main.js": {
-    "file": "assets/main-DypjcQKM.js",
+    "file": "assets/main-N77CJe57.js",
     "name": "main",
     "src": "resources/js/System/Pages/Sales/sales/main.js",
     "isEntry": true,
@@ -963,7 +963,7 @@
       "_WithoutData-BObj9QYA.js",
       "_InputDate-Biagoabs.js",
       "_InputDatetime-DZl2WW9d.js",
-      "_InputNumber-CsMcOk6j.js",
+      "_InputNumber-DsxMP7gD.js",
       "_InputSelect2-BAgu0j50.js",
       "_InputSlot-BeksQ5gf.js",
       "_InputText-DqGiuJpd.js",
@@ -977,7 +977,7 @@
     ]
   },
   "resources/js/System/Pages/Warehouses/stocks_management/main.js": {
-    "file": "assets/main-CJbCwK2R.js",
+    "file": "assets/main-cIJQdEEm.js",
     "name": "main",
     "src": "resources/js/System/Pages/Warehouses/stocks_management/main.js",
     "isEntry": true,
@@ -988,7 +988,7 @@
       "_NumberUtils-DOMtHCFX.js",
       "_WithoutData-BObj9QYA.js",
       "_InputDate-Biagoabs.js",
-      "_InputNumber-CsMcOk6j.js",
+      "_InputNumber-DsxMP7gD.js",
       "_InputSelect2-BAgu0j50.js",
       "_InputSlot-BeksQ5gf.js",
       "_InputText-DqGiuJpd.js",

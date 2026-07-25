@@ -240,10 +240,29 @@
                                             v-model="forms[entity].createUpdate.data.price_includes_tax"
                                             class="form-check-input"
                                             type="checkbox"
+                                            :disabled="forms[entity].createUpdate.data.igv_exempt"
                                             role="switch">
                                         <span>
                                             <strong>Incluye IGV</strong>
                                             <small>Si está activo, el precio de venta ya contiene el impuesto y no incrementará el total al vender.</small>
+                                        </span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="form-group col-xl-4 col-lg-4 col-md-12 col-sm-12">
+                                <label class="form-label fw-bold colon-at-end fs-6">IGV exonerado</label>
+                                <div class="br-entity-publication-settings br-tax-inclusion-control">
+                                    <label class="br-entity-switch" for="subscription_igv_exempt">
+                                        <input
+                                            id="subscription_igv_exempt"
+                                            v-model="forms[entity].createUpdate.data.igv_exempt"
+                                            class="form-check-input"
+                                            type="checkbox"
+                                            role="switch"
+                                            @change="syncTaxExemption(forms[entity].createUpdate.data)">
+                                        <span>
+                                            <strong>Exonerado de IGV</strong>
+                                            <small>Si está activo, el IGV no se calcula para esta membresía al vender.</small>
                                         </span>
                                     </label>
                                 </div>
@@ -477,6 +496,7 @@ const FORM_FIELDS = {
     duration_type: null,
     price: "",
     price_includes_tax: true,
+    igv_exempt: false,
     min_price: "",
     max_price: "",
     attendance_limit_per_day: "",
@@ -502,6 +522,7 @@ const FORM_FIELD_CONFIG = {
     duration_type: {getCode: true},
     price: {toNumber: true, minValue: 0},
     price_includes_tax: {toBoolean: true},
+    igv_exempt: {toBoolean: true},
     min_price: {toNumber: true, minValue: 0},
     max_price: {toNumber: true, minValue: 0},
     attendance_limit_per_day: {toNumber: true, minValue: 1},
@@ -525,6 +546,7 @@ const VALIDATION_RULES = {
     duration_type: {required: true},
     price: {required: true, number: true, min: 0},
     price_includes_tax: {required: false},
+    igv_exempt: {required: false},
     min_price: {required: false, number: true, min: 0},
     max_price: {required: false, number: true, min: 0},
     attendance_limit_per_day: {required: false, number: true, min: 1},
@@ -548,6 +570,7 @@ const ERROR_LABELS = {
     duration_type: "Duración (tipo)",
     price: "Precio de venta",
     price_includes_tax: "Precio incluye IGV",
+    igv_exempt: "IGV exonerado",
     min_price: "Precio mínimo",
     max_price: "Precio máximo",
     attendance_limit_per_day: "Límite diario",
@@ -766,7 +789,8 @@ export default {
                 entityForms.data.duration_value   = record.duration_value;
                 entityForms.data.duration_type    = durationTypeOption;
                 entityForms.data.price            = record.price;
-                entityForms.data.price_includes_tax = Boolean(record.price_includes_tax ?? true);
+                entityForms.data.price_includes_tax = Boolean(record.price_includes_tax ?? true) && !Boolean(record.igv_exempt ?? false);
+                entityForms.data.igv_exempt       = Boolean(record.igv_exempt ?? false);
                 entityForms.data.min_price        = record.min_price;
                 entityForms.data.max_price        = record.max_price;
                 entityForms.data.attendance_limit_per_day = record.attendance_limit_per_day;
@@ -791,6 +815,7 @@ export default {
                 entityForms.data.duration_type  = this.durationTypes.length > 0 ? this.durationTypes[0] : null;
                 entityForms.data.currency       = this.currencies.length > 0 ? this.currencies[0] : null;
                 entityForms.data.price_includes_tax = true;
+                entityForms.data.igv_exempt = false;
                 entityForms.data.capacity_control_enabled = false;
                 entityForms.data.capacity_limit = "";
                 entityForms.data.commission_type = this.commissionTypeOptions[0];
@@ -810,6 +835,11 @@ export default {
 
             Alerts.toastrs({type: "success", subtitle: "Código interno generado correctamente."});
             Alerts.tooltips({show: false});
+
+        },
+        syncTaxExemption(form = {}) {
+
+            if(form.igv_exempt) form.price_includes_tax = false;
 
         },
         async saveEntity() {
@@ -841,6 +871,7 @@ export default {
                 }
 
                 const preparedData  = Forms.prepareFormData(formData, this.MODULE.formFieldConfig);
+                if(preparedData.igv_exempt) preparedData.price_includes_tax = false;
                 if(!preparedData.capacity_control_enabled) preparedData.capacity_limit = null;
                 preparedData.benefits = this.textToArray(formData.benefits_text);
                 preparedData.restrictions = this.textToArray(formData.restrictions_text);

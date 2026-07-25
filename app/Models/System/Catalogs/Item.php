@@ -35,6 +35,7 @@ class Item extends Model {
         "description",
         "price",
         "price_includes_tax",
+        "igv_exempt",
         "min_price",
         "max_price",
         "currency_id",
@@ -63,6 +64,7 @@ class Item extends Model {
 
     protected $casts = [
         "price_includes_tax" => "boolean",
+        "igv_exempt" => "boolean",
         "estimated_duration_minutes" => "integer",
         "capacity_control_enabled" => "boolean",
         "capacity_limit" => "integer",

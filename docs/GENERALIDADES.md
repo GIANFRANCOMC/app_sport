@@ -213,6 +213,7 @@ Criterios:
 - Los taxes pueden ser porcentaje o monto fijo.
 - Un impuesto puede ser obligatorio u opcional.
 - Los impuestos opcionales no porcentuales pueden requerir cantidad de aplicaciones.
+- `items.igv_exempt` exonera solo IGV y tiene prioridad sobre `items.price_includes_tax`; si está activo, la UI debe desmarcar y deshabilitar `Incluye IGV`.
 - Ventas normales y POS deben compartir cálculo, trazabilidad de pagos, impuestos aplicados y generación de cabecera/detalle.
 - Los métodos de pago deben guardar monto por método y sumar el total del documento.
 

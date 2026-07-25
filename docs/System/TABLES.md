@@ -234,7 +234,7 @@ Relaciones: pertenece a empresa; se une a items por `category_items`.
 
 ### items
 
-Productos, servicios y membresias de catalogo. Campos: `company_id`, `brand_id`, `currency_id`, `internal_code`, `barcode`, `name`, `description`, `price`, `price_includes_tax`, `min_price`, `max_price`, `type`, `duration_type`, `duration_value`, `estimated_duration_minutes`, `capacity_control_enabled`, `capacity_limit`, `capacity_used`, `expires_at`, `see_my_web`, `see_my_web_price`, `status`.
+Productos, servicios y membresias de catalogo. Campos: `company_id`, `brand_id`, `currency_id`, `internal_code`, `barcode`, `name`, `description`, `price`, `price_includes_tax`, `igv_exempt`, `min_price`, `max_price`, `type`, `duration_type`, `duration_value`, `estimated_duration_minutes`, `capacity_control_enabled`, `capacity_limit`, `capacity_used`, `expires_at`, `see_my_web`, `see_my_web_price`, `status`.
 
 `barcode` almacena un EAN-13 opcional a nivel de tabla. No declara un índice único ni un índice compuesto adicional; la unicidad por empresa es una regla de negocio validada en backend mediante `UniqueInCompany`. El módulo Productos lo exige para nuevos productos; Servicios y Membresías no usan código de barras, marca ni inventario físico.
 
@@ -462,7 +462,7 @@ Cuando `quotation_header_id` tiene valor, la venta se originó desde una cotizac
 
 ### sales_body
 
-Detalle de venta. Campos: `sale_header_id`, `item_id`, `currency_id`, `name`, `quantity`, `price`, `price_includes_tax`, `total`, `commission_type`, `commission_value`, `commission_amount`, `customer_id`, `type`, `observation`, `extras`, `status`.
+Detalle de venta. Campos: `sale_header_id`, `item_id`, `currency_id`, `name`, `quantity`, `price`, `price_includes_tax`, `igv_exempt`, `total`, `commission_type`, `commission_value`, `commission_amount`, `customer_id`, `type`, `observation`, `extras`, `status`.
 
 La comision del detalle es una foto historica. `commission_type` admite `none`, `percentage` o `fixed`; `commission_amount` guarda el monto calculado y no modifica el total cobrado.
 
@@ -504,7 +504,7 @@ Estados: `draft`, `sent`, `accepted`, `converted`, `canceled` y `expired`.
 
 ### quotation_items
 
-Detalle histórico de la cotización. Guarda `item_id`, `currency_id`, `name`, `type`, `quantity`, `price`, `price_includes_tax`, `total` y `observation`.
+Detalle histórico de la cotización. Guarda `item_id`, `currency_id`, `name`, `type`, `quantity`, `price`, `price_includes_tax`, `igv_exempt`, `total` y `observation`.
 
 El precio guardado es la foto de la propuesta. Al convertir a venta se compara contra el precio vigente y se marca si fue recalculado.
 

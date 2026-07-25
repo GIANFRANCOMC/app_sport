@@ -9,7 +9,7 @@
                 <slot name="inputGroupPrepend"></slot>
                 <input
                     type="text"
-                    :value="isEditing ? modelValue : formattedValue"
+                    :value="displayValue"
                     @focus="handleFocus"
                     @blur="handleBlur"
                     @input="handleTyping($event.target.value)"
@@ -34,7 +34,7 @@
             <slot name="inputGroupPrepend"></slot>
             <input
                 type="text"
-                :value="isEditing ? modelValue : formattedValue"
+                :value="displayValue"
                 @focus="handleFocus"
                 @blur="handleBlur"
                 @input="handleTyping($event.target.value)"
@@ -182,7 +182,8 @@ export default {
     },
     data() {
         return {
-            isEditing: false
+            isEditing: false,
+            localValue: ""
         };
     },
     computed: {
@@ -207,6 +208,11 @@ export default {
             return resolveDecimals(this.decimals);
 
         },
+        displayValue() {
+
+            return this.isEditing ? this.localValue : this.formattedValue;
+
+        },
         textBottom() {
 
             try {
@@ -226,8 +232,31 @@ export default {
 
         }
     },
+    watch: {
+        modelValue: {
+            immediate: true,
+            handler(value) {
+
+                if(!this.isEditing) {
+
+                    this.localValue = this.editableValue(value);
+
+                }
+
+            }
+        }
+    },
     methods: {
+        editableValue(value) {
+
+            if(!isDefined({value})) return "";
+
+            return String(value).replace(/,/g, "");
+
+        },
         handleTyping(value) {
+
+            this.localValue = value;
 
             // If value is completely empty, emit null
             const trimmedValue = String(value ?? "").trim();
@@ -258,12 +287,13 @@ export default {
 
             }
 
-            let valueString = String(value ?? "").trim();
+            let valueString = String(value ?? "").trim().replace(/,/g, "");
 
             // If value is empty, emit null to keep field empty
             if(valueString === "" || valueString === "-" || valueString === ".") {
 
                 this.emitValue({reset: false, result: null});
+                this.localValue = "";
                 return;
 
             }
@@ -277,7 +307,9 @@ export default {
                 if(!isNumber({value: valueString, minValue: this.hasNegative ? -maxValue : 0})) {
 
                     // If not a valid number, keep current value or null
-                    this.emitValue({reset: false, result: isDefined({value: this.modelValue}) ? this.modelValue : null});
+                    const result = isDefined({value: this.modelValue}) ? this.modelValue : null;
+                    this.localValue = this.editableValue(result);
+                    this.emitValue({reset: false, result});
                     return;
 
                 }
@@ -308,25 +340,35 @@ export default {
 
                     if(hasFormattedDecimal || hasDecimalInitNumber) {
 
+                        this.localValue = String(numericValue);
                         this.emitValue({reset: false, result: numericValue});
 
                     }else {
 
-                        this.emitValue({reset: false, result: Number(numericValue.toFixed(this.decimalPlaces))});
+                        const result = Number(numericValue.toFixed(this.decimalPlaces));
+
+                        this.localValue = String(result);
+                        this.emitValue({reset: false, result});
 
                     }
 
                 }else {
 
                     // No decimals, emit as integer
-                    this.emitValue({reset: false, result: hasFormattedDecimal ? numericValue : Math.round(numericValue)});
+                    const result = hasFormattedDecimal ? numericValue : Math.round(numericValue);
+
+                    this.localValue = String(result);
+                    this.emitValue({reset: false, result});
 
                 }
 
             }else {
 
                 // Invalid format, keep current value if exists, otherwise null
-                this.emitValue({reset: false, result: isDefined({value: this.modelValue}) ? this.modelValue : null});
+                const result = isDefined({value: this.modelValue}) ? this.modelValue : null;
+
+                this.localValue = this.editableValue(result);
+                this.emitValue({reset: false, result});
 
             }
 
@@ -355,17 +397,18 @@ export default {
         handleFocus() {
 
             this.isEditing = true;
+            this.localValue = this.editableValue(this.modelValue);
 
         },
         handleBlur() {
 
+            this.updateValue(this.localValue);
             this.isEditing = false;
-            this.updateValue(this.modelValue);
 
         },
         handleEnterKey() {
 
-            this.updateValue(this.modelValue);
+            this.updateValue(this.localValue);
             this.$emit("enterKeyPressed");
 
         },

@@ -242,6 +242,7 @@ class ProductController extends BaseController {
             "description"      => $request->input("description"),
             "price"            => $request->input("price"),
             "price_includes_tax" => $request->boolean("price_includes_tax"),
+            "igv_exempt"       => $request->boolean("igv_exempt"),
             "min_price"        => $request->input("min_price"),
             "max_price"        => $request->input("max_price"),
             "commission_type"  => $request->input("commission_type"),

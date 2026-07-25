@@ -151,12 +151,14 @@
                             <table class="table">
                                 <thead class="text-center">
                                     <tr>
-                                        <th style="width: 10%;">#</th>
-                                        <th class="min-w-150px" style="width: 20%;">ÍTEM</th>
-                                        <th class="min-w-150px" style="width: 20%;">CANTIDAD</th>
-                                        <th class="min-w-150px" style="width: 20%;">PRECIO UNITARIO</th>
-                                        <th class="min-w-150px text-end pe-3" style="width: 20%;">TOTAL</th>
-                                        <th style="width: 10%;" aria-label="Acciones"></th>
+                                        <th style="width: 5%;">#</th>
+                                        <th class="min-w-150px" style="width: 18%;">ÍTEM</th>
+                                        <th class="min-w-120px text-end" style="width: 11%;">CANTIDAD</th>
+                                        <th class="min-w-170px text-end" style="width: 18%;">PRECIO DE VENTA</th>
+                                        <th class="min-w-130px text-end br-sale-detail-calc-head" style="width: 14%;">SUBTOTAL</th>
+                                        <th class="min-w-110px text-end br-sale-detail-calc-head" style="width: 10%;">IGV</th>
+                                        <th class="min-w-120px text-end pe-3 br-sale-detail-calc-head br-sale-detail-calc-head--total" style="width: 12%;">TOTAL</th>
+                                        <th style="width: 7%;" aria-label="Acciones"></th>
                                     </tr>
                                 </thead>
                                 <tbody class="table-border-bottom-0 bg-white">
@@ -174,41 +176,46 @@
                                                         v-model="record.quantity"
                                                         @change="calculateDuration({mode: 'record', record})"
                                                         :decimals="getItemDecimals({mode: 'result', record})"/>
-                                                    <div class="br-sale-detail-qty-actions">
-                                                        <button
-                                                            class="br-sale-detail-qty-btn br-sale-detail-qty-btn--minus waves-effect"
-                                                            type="button"
+                                                </td>
+                                                <td class="text-end align-middle">
+                                                    <div class="br-sale-detail-price-cell">
+                                                        <InputNumber v-model="record.price">
+                                                            <template v-slot:inputGroupPrepend v-if="isDefined({value: record?.currency})">
+                                                                <span class="input-group-text br-currency-prefix" v-text="record?.currency?.sign"></span>
+                                                            </template>
+                                                        </InputNumber>
+                                                        <span
+                                                            class="br-sale-detail-igv-label"
+                                                            :class="detailTaxInclusionInfo(record).className"
                                                             data-bs-toggle="tooltip"
                                                             data-bs-placement="top"
-                                                            title="Restar unidad"
-                                                            aria-label="Restar unidad"
-                                                            :disabled="Number(record.quantity ?? 0) <= 1"
-                                                            @click="changeQuantityDetail({record, keyRecord, type: 'subtract'})">
-                                                            <i class="fa fa-minus" aria-hidden="true"></i>
-                                                        </button>
-                                                        <button
-                                                            class="br-sale-detail-qty-btn br-sale-detail-qty-btn--plus waves-effect"
-                                                            type="button"
-                                                            data-bs-toggle="tooltip"
-                                                            data-bs-placement="top"
-                                                            title="Agregar unidad"
-                                                            aria-label="Agregar unidad"
-                                                            @click="changeQuantityDetail({record, keyRecord, type: 'add'})">
-                                                            <i class="fa fa-plus" aria-hidden="true"></i>
-                                                        </button>
+                                                            :title="detailTaxInclusionInfo(record).title"
+                                                            v-text="detailTaxInclusionInfo(record).label">
+                                                        </span>
                                                     </div>
                                                 </td>
-                                                <td class="text-center">
-                                                    <InputNumber v-model="record.price">
-                                                        <template v-slot:inputGroupPrepend v-if="isDefined({value: record?.currency})">
-                                                            <span class="input-group-text br-currency-prefix" v-text="record?.currency?.sign"></span>
-                                                        </template>
-                                                    </InputNumber>
-                                                </td>
-                                                <td class="text-end align-middle pe-3" :title="MODULE.texts.form.total">
+                                                <td class="text-end align-middle br-sale-detail-calc-cell">
                                                     <span class="br-amount-inline">
                                                         <span class="br-amount-inline__sign" v-text="record.currency?.sign ?? ''"></span>
-                                                        <span class="br-amount-inline__amount" v-text="separatorNumber(calculateTotal({item: record}))"></span>
+                                                        <span class="br-amount-inline__amount" v-text="separatorNumber(detailLineBaseTotal(record))"></span>
+                                                    </span>
+                                                </td>
+                                                <td class="text-end align-middle br-sale-detail-calc-cell">
+                                                    <span v-if="detailIgvInfo(record).isAmount" class="br-amount-inline br-sale-detail-tax-amount">
+                                                        <span class="br-amount-inline__sign" v-text="detailIgvInfo(record).sign"></span>
+                                                        <span class="br-amount-inline__amount" v-text="detailIgvInfo(record).amount"></span>
+                                                    </span>
+                                                    <span
+                                                        v-else
+                                                        class="br-sale-detail-tax"
+                                                        :class="detailIgvInfo(record).className"
+                                                        v-text="detailIgvInfo(record).label">
+                                                    </span>
+                                                </td>
+                                                <td class="text-end align-middle pe-3 br-sale-detail-calc-cell br-sale-detail-calc-cell--total" :title="MODULE.texts.form.total">
+                                                    <span class="br-amount-inline">
+                                                        <span class="br-amount-inline__sign" v-text="record.currency?.sign ?? ''"></span>
+                                                        <span class="br-amount-inline__amount" v-text="separatorNumber(detailFinalTotal(record))"></span>
                                                     </span>
                                                 </td>
                                                 <td class="text-center">
@@ -262,20 +269,23 @@
                                             <template v-if="record?.extras?.showDetail">
                                                 <template v-if="isSubscription(record?.type)">
                                                     <tr class="br-sale-detail-membership-row">
-                                                        <td colspan="5">
+                                                        <td colspan="7">
                                                             <div class="br-sale-detail-membership">
                                                                 <div class="br-sale-detail-membership__heading">
                                                                     <strong class="colon-at-end" v-text="MODULE.texts.form.detailRowMembershipLabel"></strong>
                                                                     <small>Vigencia aplicada al detalle</small>
                                                                 </div>
                                                                 <div class="br-sale-detail-membership__fields">
-                                                                    <div class="br-sale-detail-membership__date">
-                                                                        <span class="colon-at-end">Fecha de inicio</span>
-                                                                        <strong v-text="formatSaleDetailDateTime(record.extras.start_date)"></strong>
-                                                                    </div>
-                                                                    <div class="br-sale-detail-membership__date">
-                                                                        <span class="colon-at-end">Fecha de finalización</span>
-                                                                        <strong v-text="formatSaleDetailDateTime(record.extras.end_date)"></strong>
+                                                                    <div class="br-sale-detail-membership__timeline">
+                                                                        <div class="br-sale-detail-membership__date">
+                                                                            <span class="colon-at-end">Inicio</span>
+                                                                            <strong v-text="formatSaleDetailDateTime(record.extras.start_date)"></strong>
+                                                                        </div>
+                                                                        <i class="fa-solid fa-arrow-right-long" aria-hidden="true"></i>
+                                                                        <div class="br-sale-detail-membership__date">
+                                                                            <span class="colon-at-end">Fin</span>
+                                                                            <strong v-text="formatSaleDetailDateTime(record.extras.end_date)"></strong>
+                                                                        </div>
                                                                     </div>
                                                                 </div>
                                                             </div>
@@ -284,14 +294,26 @@
                                                 </template>
                                             </template>
                                         </template>
-                                        <tr class="br-table-footer-stripe">
-                                            <td colspan="4" class="text-end align-middle br-table-footer-stripe__label">
-                                                <span v-text="MODULE.texts.form.footerTotalLabel" class="text-uppercase"></span>
+                                        <tr class="br-table-footer-stripe br-sale-detail-total-row">
+                                            <td colspan="4" class="text-start align-middle ps-3 br-table-footer-stripe__label">
+                                                <span v-text="MODULE.texts.form.footerTotalLabel"></span>
                                             </td>
-                                            <td class="text-end align-middle pe-3">
+                                            <td class="text-end align-middle br-sale-detail-calc-cell">
                                                 <span class="br-amount-inline br-amount-inline--emphasis">
                                                     <span class="br-amount-inline__sign" v-text="forms[entity].createUpdate.data.currency?.data?.sign ?? ''"></span>
-                                                    <span class="br-amount-inline__amount" v-text="separatorNumber(total)"></span>
+                                                    <span class="br-amount-inline__amount" v-text="separatorNumber(saleDetailSubtotalTotal)"></span>
+                                                </span>
+                                            </td>
+                                            <td class="text-end align-middle br-sale-detail-calc-cell">
+                                                <span class="br-amount-inline br-amount-inline--emphasis">
+                                                    <span class="br-amount-inline__sign" v-text="forms[entity].createUpdate.data.currency?.data?.sign ?? ''"></span>
+                                                    <span class="br-amount-inline__amount" v-text="separatorNumber(saleDetailIgvTotal)"></span>
+                                                </span>
+                                            </td>
+                                            <td class="text-end align-middle pe-3 br-sale-detail-calc-cell br-sale-detail-calc-cell--total">
+                                                <span class="br-amount-inline br-amount-inline--emphasis">
+                                                    <span class="br-amount-inline__sign" v-text="forms[entity].createUpdate.data.currency?.data?.sign ?? ''"></span>
+                                                    <span class="br-amount-inline__amount" v-text="separatorNumber(saleDetailFinalTotal)"></span>
                                                 </span>
                                             </td>
                                             <td class="align-middle"></td>
@@ -333,6 +355,7 @@
         </div>
         <div class="br-sale-create-side">
             <div class="br-document-settlement br-sale-settlement bg-white">
+                <h3 class="br-document-settlement__group-title">Información</h3>
                 <div>
                     <div class="br-document-settlement__header">
                         <label class="form-label colon-at-end">Observaciones</label>
@@ -420,9 +443,13 @@
                         <small v-if="forms[entity].createUpdate.errors?.seller" :class="config.forms.errors.styles.default" v-html="forms[entity].createUpdate.errors.seller"></small>
                     </div>
                 </div>
-                <div>
-                    <div class="br-document-settlement__header">
-                        <label class="form-label colon-at-end">Tipo de entrega</label>
+                <h3 class="br-document-settlement__group-title">Entrega</h3>
+                <div class="br-document-settlement__inline-value">
+                    <div class="br-document-settlement__header br-document-settlement__header--inline">
+                        <span class="br-document-settlement__inline-copy">
+                            <label class="form-label colon-at-end">Tipo de entrega</label>
+                            <span class="br-document-delivery-summary__value" v-text="deliveryModeLabel"></span>
+                        </span>
                         <button
                             type="button"
                             class="br-btn br-btn-xs br-btn-action-import br-document-payment-config waves-effect"
@@ -434,14 +461,14 @@
                             <i class="fa-solid fa-pen" aria-hidden="true"></i>
                         </button>
                     </div>
-                    <div class="br-document-delivery-summary">
-                        <span class="br-document-delivery-summary__value" v-text="deliveryModeLabel"></span>
-                        <small v-if="forms[entity].createUpdate.errors?.delivery_mode" :class="config.forms.errors.styles.default" v-html="forms[entity].createUpdate.errors.delivery_mode"></small>
-                    </div>
+                    <small v-if="forms[entity].createUpdate.errors?.delivery_mode" :class="config.forms.errors.styles.default" v-html="forms[entity].createUpdate.errors.delivery_mode"></small>
                 </div>
-                <div>
-                    <div class="br-document-settlement__header">
-                        <label class="form-label colon-at-end">Almacén</label>
+                <div class="br-document-settlement__inline-value">
+                    <div class="br-document-settlement__header br-document-settlement__header--inline">
+                        <span class="br-document-settlement__inline-copy">
+                            <label class="form-label colon-at-end">Almacén</label>
+                            <span class="br-document-delivery-summary__value" v-text="warehouseLabel"></span>
+                        </span>
                         <button
                             v-if="canChangeWarehouse"
                             type="button"
@@ -454,11 +481,9 @@
                             <i class="fa-solid fa-pen" aria-hidden="true"></i>
                         </button>
                     </div>
-                    <div class="br-document-delivery-summary">
-                        <span class="br-document-delivery-summary__value" v-text="warehouseLabel"></span>
-                        <small v-if="forms[entity].createUpdate.errors?.warehouse" :class="config.forms.errors.styles.default" v-html="forms[entity].createUpdate.errors.warehouse"></small>
-                    </div>
+                    <small v-if="forms[entity].createUpdate.errors?.warehouse" :class="config.forms.errors.styles.default" v-html="forms[entity].createUpdate.errors.warehouse"></small>
                 </div>
+                <h3 class="br-document-settlement__group-title">Pago</h3>
                 <div>
                     <div class="br-document-settlement__header">
                         <label class="form-label colon-at-end">Impuestos extras</label>
@@ -517,13 +542,13 @@
                                 :key="payment.key"
                                 class="br-document-payment-summary__row">
                                 <span>
-                                    <strong v-text="payment.label"></strong>
+                                    <span class="br-document-delivery-summary__value" v-text="payment.label"></span>
                                     <small v-if="payment.reference" v-text="payment.reference"></small>
                                 </span>
-                                <b>
+                                <span class="br-document-payment-summary__amount">
                                     {{ forms[entity].createUpdate.data.currency?.data?.sign ?? '' }}
                                     {{ separatorNumber(payment.amount) }}
-                                </b>
+                                </span>
                             </div>
                         </template>
                         <p v-else class="br-document-settlement__empty mb-0">
@@ -531,31 +556,10 @@
                         </p>
                     </div>
                 </div>
+                <h3 class="br-document-settlement__group-title">Resumen</h3>
                 <div class="br-document-settlement__summary-section">
-                    <h3 class="br-document-summary-card__title">Resumen</h3>
                     <div class="br-document-settlement__summary">
-                        <span class="br-document-settlement__summary-label br-document-settlement__summary-label--primary">Subtotal</span>
-                        <strong class="br-document-settlement__summary-value br-document-settlement__summary-value--primary">
-                            {{ forms[entity].createUpdate.data.currency?.data?.sign ?? '' }}
-                            {{ separatorNumber(saleSubtotal) }}
-                        </strong>
-                        <template v-if="saleTaxBreakdown.length">
-                            <template v-for="tax in saleTaxBreakdown" :key="`sale-summary-tax-${tax.id}`">
-                                <span class="br-document-settlement__summary-label br-document-settlement__summary-label--primary">{{ tax.name }}</span>
-                                <strong class="br-document-settlement__summary-value br-document-settlement__summary-value--primary">
-                                    {{ forms[entity].createUpdate.data.currency?.data?.sign ?? '' }}
-                                    {{ separatorNumber(tax.amount) }}
-                                </strong>
-                            </template>
-                        </template>
-                        <template v-else>
-                            <span class="br-document-settlement__summary-label br-document-settlement__summary-label--primary">IGV</span>
-                            <strong class="br-document-settlement__summary-value br-document-settlement__summary-value--primary">
-                                {{ forms[entity].createUpdate.data.currency?.data?.sign ?? '' }}
-                                0.00
-                            </strong>
-                        </template>
-                        <span class="br-document-settlement__summary-label br-document-settlement__summary-label--total">Total</span>
+                        <span class="br-document-settlement__summary-label br-document-settlement__summary-label--total">Total a pagar</span>
                         <strong class="br-document-settlement__summary-value br-document-settlement__summary-value--total">
                             {{ forms[entity].createUpdate.data.currency?.data?.sign ?? '' }}
                             {{ separatorNumber(total) }}
@@ -575,11 +579,19 @@
                             {{ forms[entity].createUpdate.data.currency?.data?.sign ?? '' }}
                             {{ separatorNumber(salePaidTotal) }}
                         </strong>
-                        <span class="br-document-settlement__summary-label">Diferencia</span>
-                        <strong class="br-document-settlement__summary-value">
-                            {{ forms[entity].createUpdate.data.currency?.data?.sign ?? '' }}
-                            {{ separatorNumber(salePaymentDifference) }}
-                        </strong>
+                        <div
+                            v-if="(forms[entity].createUpdate.data.details || []).length > 0"
+                            class="br-document-settlement__summary-status"
+                            :class="salePaymentStatusInfo.className">
+                            <span>
+                                <i :class="['fa-solid', salePaymentStatusInfo.icon]" aria-hidden="true"></i>
+                                <span v-text="salePaymentStatusInfo.label"></span>
+                            </span>
+                            <strong v-if="salePaymentStatusInfo.amount !== null">
+                                {{ forms[entity].createUpdate.data.currency?.data?.sign ?? '' }}
+                                {{ separatorNumber(salePaymentStatusInfo.amount) }}
+                            </strong>
+                        </div>
                     </div>
                 </div>
                 <div class="br-document-settlement__submit-section">
@@ -1133,39 +1145,25 @@
                             :decimals="getItemDecimals({mode: 'result', record: forms[entity].createUpdate.extras.modals.details.data})"
                             hasTextBottom
                             :textBottomInfo="forms[entity].createUpdate.extras.modals.details.errors?.quantity"
-                            xl="4"
-                            lg="4"/>
+                            xl="6"
+                            lg="6"/>
                         <InputNumber
-                            v-model="forms[entity].createUpdate.extras.modals.details.data.price"
+                            v-model="modalUnitPriceDisplay"
                             hasDiv
                             :title="MODULE.texts.form.price"
                             :titleClass="[config.forms.classes.title]"
                             isRequired
-                            :minValue="forms[entity].createUpdate.extras.modals.details.data.extras?.min_price"
-                            :maxValue="forms[entity].createUpdate.extras.modals.details.data.extras?.max_price"
+                            :minValue="modalMinUnitPriceDisplay"
+                            :maxValue="modalMaxUnitPriceDisplay"
                             :disabled="!selectedModalItem"
                             hasTextBottom
                             :textBottomInfo="forms[entity].createUpdate.extras.modals.details.errors?.price"
-                            xl="4"
-                            lg="4">
+                            xl="6"
+                            lg="6">
                             <template v-slot:inputGroupPrepend v-if="isDefined({value: forms[entity].createUpdate.extras.modals.details.data.item?.data?.currency})">
                                 <span class="input-group-text br-currency-prefix" v-text="forms[entity].createUpdate.extras.modals.details.data.item?.data?.currency?.sign"></span>
                             </template>
                         </InputNumber>
-                        <InputSlot
-                            hasDiv
-                            :title="MODULE.texts.form.total"
-                            :titleClass="[config.forms.classes.title]"
-                            isRequired
-                            xl="4"
-                            lg="4">
-                            <template v-slot:inputGroupPrepend v-if="isDefined({value: forms[entity].createUpdate.data.currency?.data})">
-                                <span class="input-group-text br-currency-prefix" v-text="forms[entity].createUpdate.data.currency?.data?.sign"></span>
-                            </template>
-                            <template v-slot:input>
-                                <input class="form-control" disabled :value="separatorNumber(totalModalDetail)"/>
-                            </template>
-                        </InputSlot>
                         <InputSlot
                             v-if="false && selectedModalItem"
                             hasDiv
@@ -1540,11 +1538,12 @@ const TEXTS = {
         commercialCatalog: "Catálogo comercial",
         quantity: "Cantidad",
         quantityPeriods: "Cantidad de períodos",
-        price: "Precio",
+        price: "Precio de venta",
+        igv: "IGV",
         total: "Total",
         commissionType: "Comisión",
         commissionValue: "Valor de comisión",
-        footerTotalLabel: "Importe total:",
+        footerTotalLabel: "Totales",
         membershipDetail: "Detalle de la membresía",
         detailRowMembershipLabel: "Membresía",
         startDate: "Fecha de inicio",
@@ -1616,6 +1615,7 @@ export default {
                             name: "",
                             quantity: 1,
                             price: 0,
+                            igv_exempt: false,
                             commission_type: "none",
                             commission_value: 0,
                             observation: "",
@@ -1839,6 +1839,200 @@ export default {
             return (tax?.calculation_type || "percentage") === "fixed";
 
         },
+        isIgvTax(tax = {}) {
+
+            const code = String(tax?.code || "").toUpperCase();
+            const name = String(tax?.name || "").toUpperCase();
+
+            return code.includes("IGV") || name === "IGV";
+
+        },
+        saleIgvTaxConfig() {
+
+            return (this.appliedSaleTaxes || [])
+                .map(tax => tax?.data || tax)
+                .find(tax => this.isIgvTax(tax) && (tax?.calculation_type || "percentage") === "percentage") || null;
+
+        },
+        saleIgvRate() {
+
+            const tax = this.saleIgvTaxConfig();
+            const rate = Number(tax?.rate || 0);
+
+            return Number.isFinite(rate) ? rate : 0;
+
+        },
+        saleNumber(value) {
+
+            const normalized = typeof value === "string" ? value.replace(/,/g, "") : value;
+            const number = Number(normalized);
+
+            return Number.isFinite(number) ? number : 0;
+
+        },
+        detailIsIgvExempt(detail = {}) {
+
+            const value = detail?.item?.data?.igv_exempt ?? detail?.igv_exempt ?? false;
+
+            return [true, 1, "1", "true"].includes(value);
+
+        },
+        detailShouldExtractIncludedIgv(detail = {}) {
+
+            return this.detailIncludesTax(detail) && this.saleIgvRate() > 0;
+
+        },
+        detailUnitPriceDisplay(detail = {}) {
+
+            if(!this.isDefined({value: detail?.price})) return null;
+
+            const price = this.saleNumber(detail?.price);
+
+            if(this.detailShouldExtractIncludedIgv(detail)) {
+
+                return this.fixedNumber(price / (1 + (this.saleIgvRate() / 100)));
+
+            }
+
+            return this.fixedNumber(price);
+
+        },
+        detailLineGrossTotalRaw(detail = {}) {
+
+            return this.saleNumber(detail?.quantity) * this.saleNumber(detail?.price);
+
+        },
+        detailLineBaseTotalRaw(detail = {}) {
+
+            const lineTotal = this.detailLineGrossTotalRaw(detail);
+
+            if(this.detailShouldExtractIncludedIgv(detail)) {
+
+                return lineTotal / (1 + (this.saleIgvRate() / 100));
+
+            }
+
+            return lineTotal;
+
+        },
+        detailLineBaseTotal(detail = {}) {
+
+            return this.fixedNumber(this.detailLineBaseTotalRaw(detail));
+
+        },
+        detailIgvAmount(detail = {}) {
+
+            if(this.detailIsIgvExempt(detail)) return 0;
+
+            const tax = this.saleIgvTaxConfig();
+            const rate = this.saleIgvRate();
+            const lineTotal = Number(this.fixedNumber(this.detailLineGrossTotalRaw(detail)));
+            const lineBase = Number(this.detailLineBaseTotal(detail) || 0);
+
+            if(!tax || rate <= 0 || lineTotal <= 0 || lineBase <= 0) return 0;
+
+            if(this.detailIncludesTax(detail)) {
+
+                return this.fixedNumber(lineTotal - lineBase);
+
+            }
+
+            return this.fixedNumber(lineBase * (rate / 100));
+
+        },
+        detailFinalTotal(detail = {}) {
+
+            if(this.detailIncludesTax(detail) || this.detailIsIgvExempt(detail)) {
+
+                return this.fixedNumber(this.detailLineGrossTotalRaw(detail));
+
+            }
+
+            return this.fixedNumber(Number(this.detailLineBaseTotal(detail) || 0) + Number(this.detailIgvAmount(detail) || 0));
+
+        },
+        detailIgvInfo(detail = {}) {
+
+            const sign = detail?.currency?.sign || this.forms[this.entity].createUpdate.data.currency?.data?.sign || "";
+
+            if(this.detailIsIgvExempt(detail)) {
+
+                return {
+                    isAmount: true,
+                    sign,
+                    amount: this.separatorNumber(0),
+                    label: `${sign} ${this.separatorNumber(0)}`.trim(),
+                    className: "br-sale-detail-tax--exempt"
+                };
+
+            }
+
+            const tax = this.saleIgvTaxConfig();
+
+            if(!tax) {
+
+                return {label: "No aplica", className: "br-sale-detail-tax--muted"};
+
+            }
+
+            const rate = this.saleIgvRate();
+            const lineTotal = Number(this.detailFinalTotal(detail) || 0);
+
+            if(rate <= 0 || lineTotal <= 0) {
+
+                return {label: "No aplica", className: "br-sale-detail-tax--muted"};
+
+            }
+
+            const amount = Number(this.detailIgvAmount(detail));
+
+            return {
+                isAmount: true,
+                sign,
+                amount: this.separatorNumber(amount),
+                label: `${sign} ${this.separatorNumber(amount)}`.trim(),
+                className: this.detailIncludesTax(detail) ? "br-sale-detail-tax--included" : "br-sale-detail-tax--charged"
+            };
+
+        },
+        detailTaxInclusionInfo(detail = {}) {
+
+            if(this.detailIsIgvExempt(detail)) {
+
+                return {
+                    label: "Exo. IGV",
+                    title: "IGV exonerado",
+                    className: "br-sale-detail-igv-label--not-applicable"
+                };
+
+            }
+
+            if(this.detailIncludesTax(detail)) {
+
+                return {
+                    label: "Inc. IGV",
+                    title: "Incluye IGV",
+                    className: "br-sale-detail-igv-label--yes"
+                };
+
+            }
+
+            return {
+                label: "Más IGV",
+                title: "Más IGV adicional",
+                className: "br-sale-detail-igv-label--no"
+            };
+
+        },
+        detailIncludesTax(detail = {}) {
+
+            if(this.detailIsIgvExempt(detail)) return false;
+
+            const value = detail?.item?.data?.price_includes_tax ?? detail?.price_includes_tax ?? true;
+
+            return [true, 1, "1", "true"].includes(value);
+
+        },
         taxQuantityMinimum(tax = {}) {
 
             return Math.max(1, Number(tax?.min_apply_quantity ?? 1));
@@ -1946,6 +2140,7 @@ export default {
                     name: detail.name,
                     quantity: detail.quantity,
                     price: detail.price,
+                    igv_exempt: detail.igv_exempt,
                     price_includes_tax: detail.price_includes_tax,
                     commission_type: itemData.commission_type || "none",
                     commission_value: Number(itemData.commission_value || itemData.commission_rate || 0),
@@ -1984,6 +2179,7 @@ export default {
             const rate = Number(tax?.rate || 0);
             const calculationType = tax?.calculation_type || "percentage";
             const operationType = tax?.operation_type || "addition";
+            const isIgvTax = this.isIgvTax(tax);
             let base = 0;
             let amount = 0;
             let totalImpact = 0;
@@ -1996,15 +2192,17 @@ export default {
             }else {
 
                 (this.forms[this.entity].createUpdate.data.details || []).forEach(detail => {
-                    const lineTotal = Number(this.calculateTotal({item: detail}) || 0);
+                    const lineTotalRaw = this.detailLineGrossTotalRaw(detail);
+                    const lineTotal = Number(this.fixedNumber(lineTotalRaw));
                     if(lineTotal <= 0) return;
+                    if(isIgvTax && this.detailIsIgvExempt(detail)) return;
 
-                    const priceIncludesTax = Boolean(detail?.item?.data?.price_includes_tax ?? detail?.price_includes_tax ?? true);
+                    const priceIncludesTax = this.detailIncludesTax(detail);
                     const taxIsIncluded = priceIncludesTax && operationType === "addition" && rate > 0;
 
                     if(taxIsIncluded) {
 
-                        const lineBase = Number(this.fixedNumber(lineTotal / (1 + (rate / 100))));
+                        const lineBase = Number(this.fixedNumber(lineTotalRaw / (1 + (rate / 100))));
                         const lineAmount = Number(this.fixedNumber(lineTotal - lineBase));
                         base += lineBase;
                         amount += lineAmount;
@@ -2329,37 +2527,6 @@ export default {
             }
 
         },
-        changeQuantityDetail({record, keyRecord, type = "add"}) {
-
-            this.resetActionTooltips();
-
-            let operation = 0;
-
-            const quantity = record?.quantity ?? 0;
-
-            if(["add"].includes(type)) {
-
-                operation = Number(quantity) + 1;
-
-            }else if(["subtract"].includes(type)) {
-
-                operation = Number(quantity) - 1;
-
-            }
-
-            if(Number(operation) > 0) {
-
-                record.quantity = operation;
-
-                this.calculateDuration({record});
-
-            }else {
-
-                Alerts.generateAlert({type: "error", msgContent: this.config.forms.errors.labels.min_number_0});
-
-            }
-
-        },
         clearDetails() {
 
             const form = this.forms[this.entity].createUpdate.data;
@@ -2635,7 +2802,8 @@ export default {
 
                 form.details.forEach(detail => {
 
-                    detail.price_includes_tax = Boolean(detail?.item?.data?.price_includes_tax ?? detail?.price_includes_tax ?? true);
+                    detail.igv_exempt = this.detailIsIgvExempt(detail);
+                    detail.price_includes_tax = detail.igv_exempt ? false : this.detailIncludesTax(detail);
                     detail.item_id = detail?.item?.code;
                     detail.currency_id = detail?.currency?.id;
 
@@ -2831,7 +2999,7 @@ export default {
 
                 if(!this.isDefined({value: form?.price}) || Number(form?.price) <= 0) {
 
-                    result.price.push(`${isDescriptive ? "Precio:" : ""} ${this.config.forms.errors.labels.min_number_0}`);
+                    result.price.push(`${isDescriptive ? "Precio de venta:" : ""} ${this.config.forms.errors.labels.min_number_0}`);
                     result.bool = false;
 
                 }
@@ -3575,11 +3743,32 @@ export default {
 
             for(let detail of this.forms[this.entity].createUpdate.data.details) {
 
-                total += Number(this.calculateTotal({item: detail}));
+                total += Number(this.fixedNumber(this.detailLineGrossTotalRaw(detail)));
 
             }
 
             return this.fixedNumber(total);
+
+        },
+        saleDetailSubtotalTotal() {
+
+            return this.fixedNumber((this.forms[this.entity].createUpdate.data.details || []).reduce((total, detail) => {
+                return total + Number(this.detailLineBaseTotal(detail) || 0);
+            }, 0));
+
+        },
+        saleDetailIgvTotal() {
+
+            return this.fixedNumber((this.forms[this.entity].createUpdate.data.details || []).reduce((total, detail) => {
+                return total + Number(this.detailIgvAmount(detail) || 0);
+            }, 0));
+
+        },
+        saleDetailFinalTotal() {
+
+            return this.fixedNumber((this.forms[this.entity].createUpdate.data.details || []).reduce((total, detail) => {
+                return total + Number(this.detailFinalTotal(detail) || 0);
+            }, 0));
 
         },
         saleSubtotal: function() {
@@ -3619,11 +3808,11 @@ export default {
 
             return this.fixedNumber((this.forms[this.entity].createUpdate.data.details || []).reduce((total, detail) => {
 
-                const priceIncludesTax = Boolean(detail?.item?.data?.price_includes_tax ?? detail?.price_includes_tax ?? true);
+                const priceIncludesTax = this.detailIncludesTax(detail);
 
                 if(priceIncludesTax) return total;
 
-                return total + Number(this.calculateTotal({item: detail}));
+                return total + Number(this.fixedNumber(this.detailLineGrossTotalRaw(detail)));
 
             }, 0));
 
@@ -3661,6 +3850,55 @@ export default {
         salePaymentDifference() {
 
             return this.fixedNumber(Number(this.total || 0) - Number(this.salePaidTotal || 0));
+
+        },
+        salePaymentStatusInfo() {
+
+            const details = this.forms[this.entity].createUpdate.data.details || [];
+
+            if(details.length <= 0) {
+
+                return {
+                    amount: null,
+                    className: "br-document-payment-status--empty",
+                    icon: "fa-circle-info",
+                    label: "Sin ítems"
+                };
+
+            }
+
+            const difference = Number(this.salePaymentDifference || 0);
+            const precision = Math.max(0, Number(this.config?.forms?.inputs?.round ?? 3));
+            const tolerance = precision > 0 ? (1 / (10 ** precision)) : 1;
+
+            if(Math.abs(difference) <= tolerance) {
+
+                return {
+                    amount: null,
+                    className: "br-document-payment-status--complete",
+                    icon: "fa-check",
+                    label: "Pago completo"
+                };
+
+            }
+
+            if(difference > 0) {
+
+                return {
+                    amount: difference,
+                    className: "br-document-payment-status--pending",
+                    icon: "fa-clock",
+                    label: "Pendiente"
+                };
+
+            }
+
+            return {
+                amount: Math.abs(difference),
+                className: "br-document-payment-status--overpaid",
+                icon: "fa-triangle-exclamation",
+                label: "Pago excedido"
+            };
 
         },
         saleDetailEmptyImageUrl() {
@@ -3740,9 +3978,36 @@ export default {
             return `${this.MODULE.texts.form.observation}. ${this.observationsCtaButtonLabel}`;
 
         },
-        totalModalDetail: function() {
+        modalUnitPriceDisplay: {
 
-            return this.calculateTotal({item: this.forms[this.entity].createUpdate.extras.modals.details.data});
+            get() {
+
+                return this.forms[this.entity].createUpdate.extras.modals.details.data?.price ?? null;
+
+            },
+            set(value) {
+
+                this.forms[this.entity].createUpdate.extras.modals.details.data.price = value;
+
+            }
+
+        },
+        modalMinUnitPriceDisplay() {
+
+            const value = this.forms[this.entity].createUpdate.extras.modals.details.data.extras?.min_price;
+
+            if(!this.isDefined({value})) return null;
+
+            return value;
+
+        },
+        modalMaxUnitPriceDisplay() {
+
+            const value = this.forms[this.entity].createUpdate.extras.modals.details.data.extras?.max_price;
+
+            if(!this.isDefined({value})) return null;
+
+            return value;
 
         },
         selectedModalItem() {
@@ -3766,7 +4031,8 @@ export default {
                 {label: "Marca", value: item?.brand?.name || "Sin marca"},
                 {label: "Categorías", value: this.catalogCategoriesLabel(item)},
                 {label: "Descripción", value: this.catalogTextValue(item?.description, "Sin descripción")},
-                {label: "Incluye IGV", value: this.booleanCatalogLabel(item?.price_includes_tax)},
+                {label: "IGV exonerado", value: this.booleanCatalogLabel(item?.igv_exempt)},
+                {label: "Incluye IGV", value: item?.igv_exempt ? "No aplica" : this.booleanCatalogLabel(item?.price_includes_tax)},
                 {label: "Cupos", value: this.catalogCapacityLabel(item)},
                 {label: "Vencimiento", value: this.catalogExpirationLabel(item)},
                 {label: "Comisión", value: this.catalogCommissionLabel(item)}
@@ -3880,6 +4146,8 @@ export default {
             modalData.currency = data?.currency;
             modalData.name     = data?.name;
             modalData.price    = Number(data?.price ?? 0);
+            modalData.igv_exempt = Boolean(data?.igv_exempt ?? false);
+            modalData.price_includes_tax = modalData.igv_exempt ? false : Boolean(data?.price_includes_tax ?? true);
             modalData.commission_type = data?.commission_type || (Number(data?.commission_rate || 0) > 0 ? "percentage" : "none");
             modalData.commission_value = Number(data?.commission_value ?? data?.commission_rate ?? 0);
 

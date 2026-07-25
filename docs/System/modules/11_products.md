@@ -66,6 +66,7 @@ En escritorio, la descarga se presenta como un botón verde compacto con el icon
 - `items.currency_id`: moneda.
 - `items.price`: precio de venta.
 - `items.price_includes_tax`: indica si el precio de venta ya incluye IGV. Por defecto queda activo para venta al público.
+- `items.igv_exempt`: indica si el producto está exonerado de IGV. Cuando está activo, no se calcula IGV para ese detalle y `price_includes_tax` queda desactivado.
 - `items.min_price`: límite inferior opcional.
 - `items.max_price`: límite superior opcional.
 - `items.commission_type`: regla interna de comisión para ventas del producto (`none`, `percentage`, `fixed`).
@@ -144,7 +145,8 @@ Si un almacén activo no tiene valores explícitos, se crea con cantidad y míni
 - El código interno es único entre productos de la empresa.
 - El código de barras es único entre todos los items de la empresa.
 - Precio, stock inicial y stock mínimo no pueden ser negativos.
-- `price_includes_tax` se guarda como booleano y se usa en ventas para decidir si los impuestos configurados incrementan o no el total del detalle.
+- `price_includes_tax` se guarda como booleano y se usa en ventas para decidir si el IGV configurado incrementa o no el total del detalle.
+- `igv_exempt` se guarda como booleano y tiene prioridad sobre `price_includes_tax`: el detalle no genera IGV, no aporta base gravada y el precio completo queda como precio del producto.
 - La comisión es opcional y no altera el precio ni el total cobrado al cliente; se guarda como dato interno para liquidaciones y reportes.
 - Si la comisión es porcentual, no puede superar el 100%. Si es monto fijo, se calcula por unidad vendida.
 - El control de cupos es opcional. Si está desactivado, `capacity_limit` queda nulo y `capacity_used` queda en cero.
@@ -358,7 +360,7 @@ Incluye:
 
 - Marcas demo: Hola, Gympe y Wellness.
 - Categorias demo: Bebidas, Suplementos, Accesorios, Servicios y Membresias.
-- 30 productos con codigo interno, codigo de barras, precio, rango de precios, marca, categoria y `price_includes_tax`.
+- 30 productos con codigo interno, codigo de barras, precio, rango de precios, marca, categoria, `price_includes_tax` e `igv_exempt`.
 - 10 servicios comerciales sin inventario.
 - 10 membresias con duracion.
 - Stock inicial por cada almacen activo de la empresa demo.

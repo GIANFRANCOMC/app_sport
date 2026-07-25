@@ -33,6 +33,7 @@ class SaleBody extends Model {
         "quantity",
         "price",
         "price_includes_tax",
+        "igv_exempt",
         "total",
         "commission_type",
         "commission_value",

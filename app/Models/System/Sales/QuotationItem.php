@@ -23,6 +23,7 @@ final class QuotationItem extends Model {
         "quantity",
         "price",
         "price_includes_tax",
+        "igv_exempt",
         "total",
         "observation",
         "status",
@@ -36,6 +37,7 @@ final class QuotationItem extends Model {
         "quantity" => "App\\Casts\\System\\ConfigurableDecimal",
         "price" => "App\\Casts\\System\\ConfigurableDecimal",
         "price_includes_tax" => "boolean",
+        "igv_exempt" => "boolean",
         "total" => "App\\Casts\\System\\ConfigurableDecimal"
     ];
 

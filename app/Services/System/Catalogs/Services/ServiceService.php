@@ -32,6 +32,7 @@ class ServiceService {
         "description",
         "price",
         "price_includes_tax",
+        "igv_exempt",
         "min_price",
         "max_price",
         "currency_id",
@@ -93,7 +94,7 @@ class ServiceService {
 
         foreach(self::ALLOWED_FIELDS as $field) {
 
-            if(isset($data[$field])) {
+            if(array_key_exists($field, $data)) {
 
                 if(in_array($field, ["min_price", "max_price"])) {
 
@@ -110,6 +111,12 @@ class ServiceService {
                 }
 
             }
+
+        }
+
+        if((bool) ($itemData["igv_exempt"] ?? false)) {
+
+            $itemData["price_includes_tax"] = false;
 
         }
 
@@ -130,7 +137,7 @@ class ServiceService {
 
         foreach(self::ALLOWED_FIELDS as $field) {
 
-            if(isset($data[$field])) {
+            if(array_key_exists($field, $data)) {
 
                 if(in_array($field, ["min_price", "max_price"])) {
 
@@ -171,6 +178,12 @@ class ServiceService {
         if($item->barcode !== null) {
 
             $updateData["barcode"] = null;
+
+        }
+
+        if((bool) ($updateData["igv_exempt"] ?? $item->igv_exempt ?? false)) {
+
+            $updateData["price_includes_tax"] = false;
 
         }
 

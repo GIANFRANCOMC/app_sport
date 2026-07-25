@@ -83,10 +83,15 @@ Permite crear una venta con productos, servicios o membresias. Una venta puede g
 ## Actualizacion: IGV incluido, almacen de venta y caja
 
 - `items.price_includes_tax` define si el precio de venta del producto, servicio o membresia ya contiene IGV.
-- La venta envia `details.*.price_includes_tax` y guarda la foto del valor en `sales_body.price_includes_tax`.
+- `items.igv_exempt` define si el producto, servicio o membresia está exonerado de IGV. Este valor tiene prioridad sobre `price_includes_tax`.
+- La venta envia `details.*.price_includes_tax` y `details.*.igv_exempt`, y guarda la foto de ambos valores en `sales_body`.
 - Si el precio incluye IGV, los impuestos configurados para venta no incrementan el total de ese detalle.
 - Si el precio no incluye IGV, todos los impuestos activos de alcance `sale` o `both` se calculan sobre ese detalle y aumentan el total.
-- Los tributos iniciales de venta son `IGV` al 18% obligatorio e `ICBP` fijo de 0.50 opcional; ambos se muestran por su nombre en el frontend y el resumen evita usar una fila generica llamada `Impuestos`.
+- Si el item está exonerado de IGV, el IGV no se calcula para ese detalle y el precio completo queda como precio del item. Esta exoneración solo aplica al IGV, no a tributos fijos opcionales como ICBP.
+- El detalle de venta muestra una columna `IGV` por item: importe calculado cuando aplica, `S/ 0.000` cuando `igv_exempt = true` y `No aplica` cuando no existe un IGV activo o no corresponde cálculo.
+- Cuando el item incluye IGV, la UI muestra `Precio de venta` como precio final unitario, extrae el `Subtotal` sin IGV con la tasa configurada en `taxes` y muestra el `IGV` contenido.
+- Cuando el item no incluye IGV, `Precio de venta` se interpreta como base sin IGV, el `IGV` configurado se suma al detalle y `Total` muestra el importe final de la línea.
+- Los tributos iniciales de venta para Peru son `IGV` obligatorio e `ICBP` fijo opcional, pero la tasa, monto y obligatoriedad salen de `taxes` por empresa; ambos se muestran por su nombre en el frontend y el resumen evita usar una fila generica llamada `Impuestos`.
 - `taxes.calculation_type` permite porcentaje o monto fijo, y `taxes.operation_type` permite sumar o restar el monto calculado.
 - `taxes.is_required` define si el tributo es obligatorio. El IGV de venta es obligatorio; el ICBP de venta es opcional y el usuario lo marca solo cuando corresponde.
 - Si el precio incluye IGV, el resumen muestra el IGV contenido sin aumentar el total. Si el precio no incluye IGV, el IGV se suma al total.
@@ -103,6 +108,28 @@ Permite crear una venta con productos, servicios o membresias. Una venta puede g
 - Las billeteras específicas, como `Yape`, `Plin`, `Agora PAY`, `Bim` o `IzipayYA`, se registran como variantes de `Billetera digital` en `payment_method_variants`.
 - La venta soporta `payment_modality`: `paid_now` exige pago completo, `cash_on_delivery` permite saldo pendiente y `installments` aplica el recargo configurado en `company_settings.sales.installment_extra_percentage`.
 - Cuando una venta queda con saldo por modalidad `cash_on_delivery` o `installments`, el backend crea `sale_accounts_receivable`, sus cuotas en `sale_receivable_installments` y la trazabilidad de pagos iniciales en `sale_receivable_payments`.
+
+## Visualización del detalle
+
+- La tabla de detalle usa columnas rectas y compactas: `#`, `Ítem`, `Cantidad`, `Precio de venta`, `Subtotal`, `IGV`, `Total` y acciones. La fila final muestra `Totales` y suma `Subtotal`, `IGV` y `Total` bajo sus columnas respectivas para que el usuario valide los importes visibles sin depender del resumen lateral. No muestra unidad porque el catálogo comercial actual no expone una unidad estándar para todos los tipos vendibles.
+- La cantidad se edita directamente con `InputNumber`; no se muestran botones de sumar o restar unidades para evitar duplicar acciones y mantener una lectura limpia de la línea.
+- `Precio de venta` representa el precio unitario configurado en el catálogo o digitado por el vendedor. En la misma celda se muestra cómo debe interpretarse el impuesto con etiquetas compactas: `Inc. IGV` cuando el IGV ya está contenido, `Más IGV` cuando el IGV se agrega al precio y `Exo. IGV` para ítems exonerados o inafectos. Cada etiqueta mantiene tooltip con el texto completo.
+- `Subtotal` representa la base contable total del item antes de impuestos.
+- `IGV` representa el impuesto calculado para toda la cantidad. Sale del impuesto activo configurado en `taxes` para ventas; la tasa inicial peruana es solo dato semilla y no una constante fija en frontend ni backend.
+- `Total` es el importe final que pagará el cliente por el item.
+- Cuando `Incluye IGV = Sí`: `Total = Cantidad x Precio de venta`, `Subtotal = Total / (1 + tasa IGV configurable)` e `IGV = Total - Subtotal`. La UI usa los decimales configurados por empresa y redondea los importes visibles por línea para evitar desfases como `S/ 200.001`.
+- Cuando `Incluye IGV = No`: `Subtotal = Cantidad x Precio de venta`, `IGV = Subtotal redondeado x tasa IGV configurable`, `Total = Subtotal + IGV`.
+- Cuando `Incluye IGV = No aplica`: `Subtotal = Cantidad x Precio de venta`, `IGV = S/ 0.000`, `Total = Subtotal`.
+- El importe total de la venta suma los totales de línea ya redondeados a la precisión configurada por empresa. Esta regla hace que el total siempre coincida con los importes visibles en la tabla.
+- El panel lateral agrupa la información en bloques: `Información` para observaciones, cotización y vendedor; `Entrega` para tipo de entrega y almacén; y `Pago` para impuestos extras y métodos de pago.
+- El resumen lateral queda enfocado en el cobro: `Total a pagar`, `Pagado` y el estado final solo cuando existe detalle. Si el pago cuadra muestra `Pago completo`; si falta dinero muestra `Pendiente` con el importe; si se excede muestra `Pago excedido`. El desglose de subtotal e IGV vive en la tabla de detalle.
+- Ejemplo con IGV configurado en 18% y 3 decimales, gravado con IGV incluido: cantidad `1`, precio de venta `S/ 100.000`, incluye IGV `Sí`, subtotal `S/ 84.746`, IGV `S/ 15.254`, total `S/ 100.000`.
+- Ejemplo con IGV configurado en 18% y 3 decimales, gravado con IGV incluido y cantidad `2`: precio de venta `S/ 100.000`, subtotal `S/ 169.492`, IGV `S/ 30.508`, total `S/ 200.000`.
+- Ejemplo con IGV configurado en 18% y 3 decimales, gravado sin IGV incluido: cantidad `1`, precio de venta `S/ 100.000`, incluye IGV `No`, subtotal `S/ 100.000`, IGV `S/ 18.000`, total `S/ 118.000`.
+- Ejemplo exonerado: cantidad `1`, precio de venta `S/ 100.000`, incluye IGV `No aplica`, subtotal `S/ 100.000`, IGV `S/ 0.000`, total `S/ 100.000`.
+- La modal de agregar o rectificar item se mantiene operativa y simple: catálogo comercial, cantidad y precio de venta. El desglose tributario completo vive en la tabla de detalle para que el usuario vea cómo se llega al total en cada línea.
+- La fila de membresía muestra la vigencia como una línea `Inicio -> Fin`, usando `extras.start_date` y `extras.end_date`, para que el usuario lea el periodo como una continuidad y no como dos campos sueltos.
+- El importe total conserva una franja de cierre alineada con el encabezado de tabla para reforzar el monto final sin competir con el resumen lateral.
 
 ## Actualización: seguimiento de entrega
 
@@ -143,8 +170,8 @@ Permite crear una venta con productos, servicios o membresias. Una venta puede g
 - La vista POS registra localmente sus componentes (`Breadcrumb`, `Loader`, `WithoutData`, `InputNumber`, `AddCustomer`) para evitar dependencias implícitas globales al reutilizar este patrón en nuevos módulos.
 - El boton `Generar venta` se oculta hasta que la caja, cliente, pagos y detalle esten completos, evitando una accion visualmente disponible cuando todavia falta informacion.
 - Al abrir o cerrar una caja, `CashRegisterService` invalida la cache de `CashRegisterConfigService` y `SaleConfigService` para que POS muestre solo cajas abiertas vigentes al volver a ingresar.
-- Los impuestos configurados para ventas se aplican automaticamente sobre productos cuyo precio no incluye IGV (`price_includes_tax = false`).
-- El POS calcula subtotal, base imponible, impuestos y total con la misma regla de crear venta: los precios con IGV incluido no suman impuesto adicional; los precios sin IGV incluido reciben todos los impuestos activos de alcance `sale` o `both`.
+- Los impuestos configurados para ventas se aplican automaticamente sobre productos cuyo precio no incluye IGV (`price_includes_tax = false`) y no estén exonerados (`igv_exempt = false`).
+- El POS calcula subtotal, base imponible, impuestos y total con la misma regla de crear venta: los precios con IGV incluido no suman impuesto adicional; los precios sin IGV incluido reciben IGV; los exonerados no generan IGV.
 - El POS muestra cada tributo por nombre, por ejemplo `IGV`, y soporta tributos porcentuales, fijos, de suma o de resta usando la misma regla de backend.
 - En venta normal y POS, el bloque `Impuestos extras` muestra solo tributos opcionales, como `ICBP`. Los obligatorios, como `IGV`, no se seleccionan; se calculan automáticamente y aparecen en el resumen.
 - Si existe una sesion de caja abierta, POS puede asociar la venta a `cash_session_id` para alimentar movimientos de caja.

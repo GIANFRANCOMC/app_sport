@@ -13,6 +13,8 @@ Permitir que cada empresa configure tributos, métodos de pago, variantes de pag
 - Los tributos iniciales de compra son `PURCHASE-IGV` / `IGV` al 18%, cálculo porcentual, operación de suma y obligatorio; y `PURCHASE-ICBP` / `ICBP` con monto fijo de 0.50, operación de suma y opcional.
 - En ventas y POS, un producto, servicio o membresía con `price_includes_tax = true` ya contiene IGV en su precio y no recibe IGV adicional.
 - En ventas y POS, un producto, servicio o membresía con `price_includes_tax = false` forma parte de la base gravable y recibe todos los tributos activos del alcance correspondiente.
+- En ventas, POS y cotizaciones, un producto, servicio o membresía con `igv_exempt = true` queda fuera del cálculo de `IGV`: no aporta base gravada ni importe de IGV. Este campo solo exonera IGV; otros tributos configurados, como cargos fijos opcionales, mantienen su propia regla.
+- Cuando `igv_exempt = true`, el backend fuerza `price_includes_tax = false` para evitar estados contradictorios. En la UI, `Incluye IGV` queda desmarcado y deshabilitado.
 - `payment_methods` representa el método general, por ejemplo `Billetera digital`.
 - `payment_method_variants` representa la opción específica, por ejemplo `Yape`, `Plin`, `Agora PAY`, `Bim` o `IzipayYA`.
 - `YAPE`, `PLIN` y cualquier billetera concreta no deben registrarse como filas principales de `payment_methods`; siempre pertenecen a `payment_method_variants` bajo `DIGITAL_WALLET`.
@@ -126,7 +128,8 @@ Guardan abonos posteriores contra una cuenta por cobrar o por pagar. Conservan m
 - `operation_type = addition` suma al total.
 - `operation_type = subtraction` descuenta del total y guarda el monto con signo negativo.
 - Los tributos múltiples se calculan de forma independiente sobre la misma base. No hay cálculo en cascada por ahora.
-- En ventas y POS, si el item incluye IGV, el IGV se calcula como contenido dentro del precio y no incrementa el total. Si el item no incluye IGV, el IGV incrementa el total.
+- En ventas y POS, si el item incluye IGV, el IGV se calcula como contenido dentro del precio y no incrementa el total. Si el item no incluye IGV, el IGV incrementa el total. Si el item está exonerado de IGV, el IGV no se calcula para ese detalle.
+- En la UI de venta, el precio configurado con IGV incluido se descompone visualmente: `Precio unitario` muestra la base sin IGV, la columna `IGV` muestra el importe contenido y `Total` conserva el precio final. Esta separación es visual y de edición guiada; la persistencia mantiene la foto tributaria del detalle.
 - Los métodos de pago seleccionados deben pertenecer a la empresa y estar activos.
 - Si se envía `payment_method_variant_id`, la variante debe pertenecer al método general indicado y a la misma empresa.
 - Cada método de pago debe indicar su importe.

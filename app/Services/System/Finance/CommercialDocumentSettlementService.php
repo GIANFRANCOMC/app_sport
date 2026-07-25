@@ -232,6 +232,7 @@ final class CommercialDocumentSettlementService {
         $operationType = in_array($tax->operation_type, ["addition", "subtraction"], true)
             ? $tax->operation_type
             : "addition";
+        $isIgvTax = self::isIgvTax($tax);
         $base = 0.0;
         $amount = 0.0;
         $totalImpact = 0.0;
@@ -247,6 +248,12 @@ final class CommercialDocumentSettlementService {
 
                 $lineTotal = Utilities::round((float) ($detail["quantity"] ?? 0) * (float) ($detail["price"] ?? 0), null, $companyId);
                 if($lineTotal <= 0) continue;
+
+                if($isIgvTax && filter_var($detail["igv_exempt"] ?? false, FILTER_VALIDATE_BOOL)) {
+
+                    continue;
+
+                }
 
                 $priceIncludesTax = filter_var($detail["price_includes_tax"] ?? true, FILTER_VALIDATE_BOOL);
                 $taxIsIncluded = $priceIncludesTax && $operationType === "addition" && $rate > 0;
@@ -306,6 +313,15 @@ final class CommercialDocumentSettlementService {
         }
 
         return Utilities::round($amount, null, $companyId);
+
+    }
+
+    private static function isIgvTax(Tax $tax): bool {
+
+        $code = strtoupper((string) ($tax->code ?? ""));
+        $name = strtoupper((string) ($tax->name ?? ""));
+
+        return str_contains($code, "IGV") || $name === "IGV";
 
     }
 

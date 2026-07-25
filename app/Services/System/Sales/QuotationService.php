@@ -71,7 +71,10 @@ final class QuotationService {
                     "type" => (string) $item->type,
                     "quantity" => $quantity,
                     "price" => $price,
-                    "price_includes_tax" => filter_var($detail["price_includes_tax"] ?? $item->price_includes_tax ?? true, FILTER_VALIDATE_BOOL),
+                    "igv_exempt" => filter_var($detail["igv_exempt"] ?? $item->igv_exempt ?? false, FILTER_VALIDATE_BOOL),
+                    "price_includes_tax" => filter_var($detail["igv_exempt"] ?? $item->igv_exempt ?? false, FILTER_VALIDATE_BOOL)
+                        ? false
+                        : filter_var($detail["price_includes_tax"] ?? $item->price_includes_tax ?? true, FILTER_VALIDATE_BOOL),
                     "total" => Utilities::round($quantity * $price),
                     "observation" => $detail["observation"] ?? null
                 ];
@@ -177,7 +180,10 @@ final class QuotationService {
                     "name" => $item?->name ?? $detail->name,
                     "quantity" => (float) $detail->quantity,
                     "price" => $price,
-                    "price_includes_tax" => (bool) ($item?->price_includes_tax ?? $detail->price_includes_tax),
+                    "igv_exempt" => (bool) ($item?->igv_exempt ?? $detail->igv_exempt),
+                    "price_includes_tax" => (bool) ($item?->igv_exempt ?? $detail->igv_exempt)
+                        ? false
+                        : (bool) ($item?->price_includes_tax ?? $detail->price_includes_tax),
                     "observation" => $detail->observation,
                     "recalculated_from_quote" => Utilities::round((float) $detail->price) !== $price
                 ];

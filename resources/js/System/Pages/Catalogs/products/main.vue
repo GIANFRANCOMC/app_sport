@@ -433,10 +433,30 @@
                                                 v-model="productForm.data.price_includes_tax"
                                                 class="form-check-input"
                                                 type="checkbox"
+                                                :disabled="productForm.data.igv_exempt"
                                                 role="switch">
                                             <span>
                                                 <strong>Incluye IGV</strong>
                                                 <small>Si está activo, el precio de venta ya contiene el impuesto y no incrementará el total al vender.</small>
+                                            </span>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div class="form-group col-xl-4 col-lg-4 col-md-12 col-sm-12">
+                                    <label class="form-label fw-bold colon-at-end fs-6">IGV exonerado</label>
+                                    <div class="br-entity-publication-settings br-tax-inclusion-control">
+                                        <label class="br-entity-switch" for="product_igv_exempt">
+                                            <input
+                                                id="product_igv_exempt"
+                                                v-model="productForm.data.igv_exempt"
+                                                class="form-check-input"
+                                                type="checkbox"
+                                                role="switch"
+                                                @change="syncTaxExemption(productForm.data)">
+                                            <span>
+                                                <strong>Exonerado de IGV</strong>
+                                                <small>Si está activo, el IGV no se calcula para este producto al vender.</small>
                                             </span>
                                         </label>
                                     </div>
@@ -868,7 +888,7 @@ const FORM_TABS = [
         id: "general",
         label: "Datos y precio",
         description: "Identidad y rango de precios",
-        fields: ["internal_code", "barcode", "name", "price", "min_price", "max_price", "price_includes_tax", "expires_at", "commission_type", "commission_value", "currency", "currency_id", "brand", "brand_id", "status"]
+        fields: ["internal_code", "barcode", "name", "price", "min_price", "max_price", "price_includes_tax", "igv_exempt", "expires_at", "commission_type", "commission_value", "currency", "currency_id", "brand", "brand_id", "status"]
     },
     {
         id: "inventory",
@@ -891,6 +911,7 @@ const FORM_FIELDS = {
     description: "",
     price: "",
     price_includes_tax: true,
+    igv_exempt: false,
     expires_at: "",
     commission_type: "none",
     commission_value: "",
@@ -914,6 +935,7 @@ const FORM_FIELD_CONFIG = {
     description: {normalize: true},
     price: {toNumber: true, minValue: 0},
     price_includes_tax: {toBoolean: true},
+    igv_exempt: {toBoolean: true},
     expires_at: {normalize: true},
     commission_value: {toNumber: true, minValue: 0},
     capacity_control_enabled: {toBoolean: true},
@@ -935,6 +957,7 @@ const VALIDATION_RULES = {
     description: {required: false},
     price: {required: true, number: true, min: 0},
     price_includes_tax: {required: false},
+    igv_exempt: {required: false},
     expires_at: {required: false},
     commission_type: {required: true},
     commission_value: {required: false, number: true, min: 0},
@@ -958,6 +981,7 @@ const ERROR_LABELS = {
     description: "Descripción comercial adicional",
     price: "Precio de venta",
     price_includes_tax: "Precio incluye IGV",
+    igv_exempt: "IGV exonerado",
     expires_at: "Fecha de vencimiento",
     min_price: "Precio mínimo",
     max_price: "Precio máximo",
@@ -1420,7 +1444,8 @@ export default {
                     name: record.name,
                     description: record.description,
                     price: record.price,
-                    price_includes_tax: Boolean(record.price_includes_tax ?? true),
+                    price_includes_tax: Boolean(record.price_includes_tax ?? true) && !Boolean(record.igv_exempt ?? false),
+                    igv_exempt: Boolean(record.igv_exempt ?? false),
                     expires_at: record.expires_at ? String(record.expires_at).slice(0, 10) : "",
                     commission_type: record.commission_type ?? (Number(record.commission_rate || 0) > 0 ? "percentage" : "none"),
                     commission_value: Number(record.commission_value ?? record.commission_rate ?? 0),
@@ -1446,6 +1471,7 @@ export default {
                     categories: [],
                     brand: null,
                     price_includes_tax: true,
+                    igv_exempt: false,
                     expires_at: "",
                     commission_type: "none",
                     commission_value: "",
@@ -1525,6 +1551,11 @@ export default {
             if(!this.productForm.data.see_my_web) this.productForm.data.see_my_web_price = false;
 
         },
+        syncTaxExemption(form = {}) {
+
+            if(form.igv_exempt) form.price_includes_tax = false;
+
+        },
         async saveEntity() {
 
             if(this.isSaving) return;
@@ -1550,6 +1581,7 @@ export default {
                 }
 
                 const preparedData = Forms.prepareFormData(formData, this.MODULE.formFieldConfig);
+                if(preparedData.igv_exempt) preparedData.price_includes_tax = false;
                 if(!preparedData.see_my_web) preparedData.see_my_web_price = false;
                 if(preparedData.commission_type === "none") preparedData.commission_value = 0;
                 if(!preparedData.capacity_control_enabled) preparedData.capacity_limit = null;

@@ -12,6 +12,7 @@ Administra ítems `service`: se venden, no descuentan stock y pueden medirse den
 - `commission_rate` se conserva como compatibilidad historica para servicios que ya tenian comision porcentual.
 - En ventas, la comision se guarda como foto en `sales_body` y se suma en `sales_header.commission_total`; no modifica el total cobrado al cliente.
 - `price_includes_tax` define si el precio ya contiene IGV.
+- `igv_exempt` define si el servicio está exonerado de IGV. Cuando está activo, no se calcula IGV para ese detalle y `price_includes_tax` queda desactivado.
 - Moneda, categoría y código interno se validan por empresa.
 - Crear o editar invalida las configuraciones dependientes de ventas y catálogo.
 

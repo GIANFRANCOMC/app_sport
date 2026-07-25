@@ -35,6 +35,7 @@ class ProductService {
         "description",
         "price",
         "price_includes_tax",
+        "igv_exempt",
         "min_price",
         "max_price",
         "commission_type",
@@ -145,6 +146,12 @@ class ProductService {
 
         }
 
+        if((bool) ($itemData["igv_exempt"] ?? false)) {
+
+            $itemData["price_includes_tax"] = false;
+
+        }
+
         return $itemData;
 
     }
@@ -226,6 +233,12 @@ class ProductService {
                 }
 
             }
+
+        }
+
+        if((bool) ($updateData["igv_exempt"] ?? $item->igv_exempt ?? false)) {
+
+            $updateData["price_includes_tax"] = false;
 
         }
 

@@ -290,10 +290,29 @@
                                             v-model="forms[entity].createUpdate.data.price_includes_tax"
                                             class="form-check-input"
                                             type="checkbox"
+                                            :disabled="forms[entity].createUpdate.data.igv_exempt"
                                             role="switch">
                                         <span>
                                             <strong>Incluye IGV</strong>
                                             <small>Si está activo, el precio de venta ya contiene el impuesto y no incrementará el total al vender.</small>
+                                        </span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="form-group col-xl-4 col-lg-4 col-md-12 col-sm-12">
+                                <label class="form-label fw-bold colon-at-end fs-6">IGV exonerado</label>
+                                <div class="br-entity-publication-settings br-tax-inclusion-control">
+                                    <label class="br-entity-switch" for="service_igv_exempt">
+                                        <input
+                                            id="service_igv_exempt"
+                                            v-model="forms[entity].createUpdate.data.igv_exempt"
+                                            class="form-check-input"
+                                            type="checkbox"
+                                            role="switch"
+                                            @change="syncTaxExemption(forms[entity].createUpdate.data)">
+                                        <span>
+                                            <strong>Exonerado de IGV</strong>
+                                            <small>Si está activo, el IGV no se calcula para este servicio al vender.</small>
                                         </span>
                                     </label>
                                 </div>
@@ -427,6 +446,7 @@ const FORM_FIELDS = {
     description: "",
     price: "",
     price_includes_tax: true,
+    igv_exempt: false,
     min_price: "",
     max_price: "",
     estimated_duration_minutes: "",
@@ -448,6 +468,7 @@ const FORM_FIELD_CONFIG = {
     description: {normalize: true},
     price: {toNumber: true, minValue: 0},
     price_includes_tax: {toBoolean: true},
+    igv_exempt: {toBoolean: true},
     min_price: {toNumber: true, minValue: 0},
     max_price: {toNumber: true, minValue: 0},
     estimated_duration_minutes: {toNumber: true, minValue: 1},
@@ -469,6 +490,7 @@ const VALIDATION_RULES = {
     description: {required: false},
     price: {required: true, number: true, min: 0},
     price_includes_tax: {required: false},
+    igv_exempt: {required: false},
     min_price: {required: false, number: true, min: 0},
     max_price: {required: false, number: true, min: 0},
     estimated_duration_minutes: {required: false, number: true, min: 1},
@@ -490,6 +512,7 @@ const ERROR_LABELS = {
     description: "Descripción",
     price: "Precio de venta",
     price_includes_tax: "Precio incluye IGV",
+    igv_exempt: "IGV exonerado",
     min_price: "Precio mínimo",
     max_price: "Precio máximo",
     estimated_duration_minutes: "Duración estimada",
@@ -698,7 +721,8 @@ export default {
                 entityForms.data.name             = record.name;
                 entityForms.data.description      = record.description;
                 entityForms.data.price            = record.price;
-                entityForms.data.price_includes_tax = Boolean(record.price_includes_tax ?? true);
+                entityForms.data.price_includes_tax = Boolean(record.price_includes_tax ?? true) && !Boolean(record.igv_exempt ?? false);
+                entityForms.data.igv_exempt       = Boolean(record.igv_exempt ?? false);
                 entityForms.data.min_price        = record.min_price;
                 entityForms.data.max_price        = record.max_price;
                 entityForms.data.estimated_duration_minutes = record.estimated_duration_minutes;
@@ -719,6 +743,7 @@ export default {
                 entityForms.data.internal_code = this.generateCode({length: 7});
                 entityForms.data.currency      = this.currencies.length > 0 ? this.currencies[0] : null;
                 entityForms.data.price_includes_tax = true;
+                entityForms.data.igv_exempt = false;
                 entityForms.data.capacity_control_enabled = false;
                 entityForms.data.capacity_limit = "";
                 entityForms.data.commission_type = this.commissionTypeOptions[0];
@@ -738,6 +763,11 @@ export default {
 
             Alerts.toastrs({type: "success", subtitle: "Código interno generado correctamente."});
             Alerts.tooltips({show: false});
+
+        },
+        syncTaxExemption(form = {}) {
+
+            if(form.igv_exempt) form.price_includes_tax = false;
 
         },
         async saveEntity() {
@@ -769,6 +799,7 @@ export default {
                 }
 
                 const preparedData  = Forms.prepareFormData(formData, this.MODULE.formFieldConfig);
+                if(preparedData.igv_exempt) preparedData.price_includes_tax = false;
                 if(!preparedData.capacity_control_enabled) preparedData.capacity_limit = null;
                 const id            = preparedData.id;
                 const isUpdate      = this.isDefined(id);
