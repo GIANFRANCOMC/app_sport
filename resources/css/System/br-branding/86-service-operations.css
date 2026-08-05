@@ -99,93 +99,6 @@
   color: var(--br-success-hover);
 }
 
-.br-service-stations {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 0.8rem;
-}
-
-.br-service-station {
-  display: flex;
-  flex-direction: column;
-  min-height: 12rem;
-  padding: 0.9rem;
-  border: 1px solid var(--br-border);
-  border-top: 3px solid var(--br-success);
-  border-radius: var(--br-radius-md);
-  background: var(--br-surface-elevated);
-  box-shadow: var(--br-shadow-sm);
-}
-
-.br-service-station.is-pending {
-  border-top-color: var(--br-orange);
-}
-
-.br-service-station.is-progress {
-  border-top-color: var(--br-primary);
-}
-
-.br-service-station > header {
-  display: flex;
-  align-items: center;
-  gap: 0.65rem;
-}
-
-.br-service-station > header > span:last-child,
-.br-service-station__session {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-}
-
-.br-service-station > header strong {
-  color: var(--br-secondary);
-  font-size: 0.9rem;
-}
-
-.br-service-station > header small,
-.br-service-station__session small {
-  color: var(--br-text-muted);
-  font-size: 0.72rem;
-}
-
-.br-service-station__icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 2rem;
-  height: 2rem;
-  flex: 0 0 2rem;
-  border-radius: var(--br-radius-sm);
-  background: var(--br-primary-soft);
-  color: var(--br-primary-active);
-}
-
-.br-service-station__session {
-  flex: 1 1 auto;
-  justify-content: center;
-  gap: 0.08rem;
-  padding: 0.75rem 0;
-}
-
-.br-service-station__session > span {
-  overflow: hidden;
-  color: var(--br-secondary);
-  font-size: 0.78rem;
-  font-weight: 700;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.br-service-station__session > strong {
-  color: var(--br-primary-active);
-  font-size: 1rem;
-}
-
-.br-service-station__session.is-empty > span {
-  color: var(--br-success-hover);
-}
-
 .br-service-detail {
   position: fixed;
   z-index: 1090;
@@ -387,12 +300,6 @@
   font-size: 0.82rem;
 }
 
-@media (max-width: 1200px) {
-  .br-service-stations {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-}
-
 @media (max-width: 768px) {
   .br-service-toolbar {
     align-items: stretch;
@@ -403,10 +310,6 @@
   .br-service-toolbar__actions,
   .br-service-toolbar__actions .br-btn {
     width: 100%;
-  }
-
-  .br-service-stations {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .br-service-add-item {
@@ -425,12 +328,6 @@
   .br-service-detail {
     top: 0;
     height: 100vh;
-  }
-}
-
-@media (max-width: 480px) {
-  .br-service-stations {
-    grid-template-columns: 1fr;
   }
 }
 

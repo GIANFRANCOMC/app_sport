@@ -107,7 +107,7 @@ $config->currencies->records = MasterReferenceDataService::currencies($companyId
 ## Interfaz y experiencia de usuario
 
 - Mantener una interfaz seria, minimalista y coherente con el propósito operativo de System.
-- Reutilizar los tokens `--br-*` y colocar los estilos del sistema en `public/System/assets/css/custom.css`.
+- Reutilizar los tokens `--br-*` y colocar los estilos del sistema en el parcial correspondiente de `resources/css/System/br-branding`.
 - Evitar colores aislados que no pertenezcan al branding vigente.
 - Usar iconos conocidos para acciones compactas y texto visible para comandos que puedan ser ambiguos.
 - Los `form-label` deben usar la clase global sin `fs-6`: tamaño compacto, peso medio y color secundario suavizado. Evitar labels grandes o excesivamente oscuros en formularios operativos.

@@ -1,7 +1,4 @@
 /* --- [br-pos] Ajustes de caja, ticket y venta rápida --- */
-.br-pos-product {
-  min-height: 9.35rem;
-}
 
 .br-pos-product:hover {
   border-color: color-mix(in srgb, var(--br-pos-item-accent, var(--br-primary)) 34%, var(--br-border));
@@ -304,19 +301,6 @@
   background: var(--br-surface-subtle);
 }
 
-.br-pos-payments__header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.75rem;
-}
-
-.br-pos-payments__header > span {
-  color: var(--br-secondary);
-  font-size: 0.82rem;
-  font-weight: 800;
-}
-
 .br-pos-payments__add {
   display: inline-flex;
   align-items: center;
@@ -448,7 +432,6 @@
 }
 
 .br-pos-cash-static strong {
-  color: var(--br-secondary);
   font-size: 0.92rem;
   font-weight: 850;
 }
@@ -633,80 +616,8 @@
   font-weight: 700;
 }
 
-.br-pos-product__brand {
-  display: inline-flex !important;
-  align-items: center;
-  gap: 0.25rem;
-  width: fit-content;
-  max-width: 100%;
-  margin-top: 0.1rem;
-  padding: 0.12rem 0.38rem;
-  border: 1px solid color-mix(in srgb, var(--br-primary) 18%, var(--br-border));
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--br-primary-soft) 56%, var(--br-white));
-}
-
-.br-pos-product__brand span {
-  color: var(--br-primary-active);
-  font-size: 0.58rem;
-  font-weight: 850;
-  text-transform: uppercase;
-}
-
-.br-pos-product__brand b {
-  overflow: hidden;
-  color: var(--br-secondary);
-  font-size: 0.66rem;
-  font-weight: 800;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
 .br-pos-product__description {
   margin-top: 0.1rem;
-}
-
-.br-pos-product__codes {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.22rem;
-}
-
-.br-pos-product__codes span {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.22rem;
-  width: fit-content;
-  max-width: 100%;
-  padding: 0.08rem 0.3rem;
-  border-radius: 0.3rem;
-  background: var(--br-white);
-}
-
-.br-pos-product__codes b {
-  color: var(--br-text-muted);
-  font-size: 0.58rem;
-  font-style: normal;
-  font-weight: 850;
-  text-transform: uppercase;
-}
-
-.br-pos-product__codes em {
-  overflow: hidden;
-  color: var(--br-secondary);
-  font-size: 0.65rem;
-  font-style: normal;
-  font-weight: 750;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.br-pos-product__codes .is-internal {
-  border: 1px solid color-mix(in srgb, var(--br-secondary) 12%, var(--br-border));
-}
-
-.br-pos-product__codes .is-barcode {
-  border: 1px solid color-mix(in srgb, var(--br-primary) 16%, var(--br-border));
 }
 
 .br-pos-sale-modal__body {
@@ -861,24 +772,11 @@
 }
 
 .br-pos .br-pos-category .br-pos-category__count {
-  position: absolute;
   right: 0.48rem;
   top: 0.38rem;
-  display: inline-flex !important;
-  align-items: center;
-  justify-content: center;
   min-width: 1.15rem;
   height: 1.15rem;
-  padding: 0 0.28rem;
-  border-radius: 999px;
-  background: var(--br-white);
-  color: var(--br-secondary);
-  font-size: 0.66rem;
-  font-weight: 850;
-  line-height: 1;
-  opacity: 1;
   flex: 0 0 auto;
-  box-shadow: 0 0.2rem 0.5rem color-mix(in srgb, var(--br-text) 14%, transparent);
 }
 
 .br-pos .br-pos-category.is-active .br-pos-category__count,
@@ -1024,17 +922,10 @@
 
 /* --- [br-pos] Categorías y ticket final --- */
 .br-pos .br-pos-category {
-  position: relative;
-  justify-content: center;
-  min-height: 2.55rem;
   padding: 0.62rem 1.15rem 0.52rem;
   border-color: color-mix(in srgb, var(--br-orange) 72%, var(--br-border));
   border-radius: 0.72rem;
-  background: var(--br-orange);
-  color: var(--br-white);
-  text-align: center;
   box-shadow: 0 0.22rem 0.5rem color-mix(in srgb, var(--br-on-warning) 8%, transparent);
-  overflow: visible;
 }
 
 .br-pos .br-pos-category:nth-child(even) {
@@ -1045,8 +936,6 @@
 
 .br-pos .br-pos-category:hover,
 .br-pos .br-pos-category.is-active {
-  border-color: var(--br-orange-hover);
-  background: var(--br-orange-hover);
   color: var(--br-white);
   transform: translateY(-1px);
   box-shadow: 0 0.4rem 0.85rem color-mix(in srgb, var(--br-orange-hover) 16%, transparent);
@@ -1061,22 +950,14 @@
 }
 
 .br-pos .br-pos-category.is-active::before {
-  content: "\2713";
-  position: absolute;
   left: -0.38rem;
   top: -0.42rem;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
   width: 1.05rem;
   height: 1.05rem;
   border: 1px solid color-mix(in srgb, var(--br-success) 30%, var(--br-white));
-  border-radius: 999px;
   background: var(--br-white);
   color: var(--br-success-hover);
   font-size: 0.58rem;
-  font-weight: 900;
-  line-height: 1;
   box-shadow: 0 0.2rem 0.5rem color-mix(in srgb, var(--br-text) 16%, transparent);
 }
 
@@ -1088,31 +969,16 @@
 }
 
 .br-pos .br-pos-category strong {
-  color: currentColor;
   font-size: 0.74rem;
-  font-weight: 850;
-  line-height: 1.1;
-  text-transform: uppercase;
 }
 
 .br-pos .br-pos-category .br-pos-category__count {
-  position: absolute;
   right: -0.42rem;
   top: -0.45rem;
-  display: inline-flex !important;
-  align-items: center;
-  justify-content: center;
   min-width: 1.18rem;
   height: 1.18rem;
   padding: 0 0.28rem;
   border: 1px solid color-mix(in srgb, var(--br-secondary) 10%, var(--br-white));
-  border-radius: 999px;
-  background: var(--br-white);
-  color: var(--br-secondary);
-  font-size: 0.66rem;
-  font-weight: 850;
-  line-height: 1;
-  opacity: 1;
   box-shadow: 0 0.2rem 0.5rem color-mix(in srgb, var(--br-text) 14%, transparent);
 }
 
@@ -1133,30 +999,22 @@
 /* --- [br-pos] Ajuste final de columnas y categorías accesibles --- */
 .br-pos {
   height: calc(100vh - 9.5rem);
-  overflow: hidden;
 }
 
 .br-pos__catalog {
-  min-height: 0;
-  overflow: auto;
   padding-right: 0.15rem;
 }
 
 .br-pos .br-pos-ticket {
-  position: sticky;
   top: 1rem;
-  height: 100%;
   max-height: calc(100vh - 8.5rem);
 }
 
 .br-pos .br-pos-ticket__items {
-  flex: 1 1 auto;
   min-height: 0;
-  overflow: auto;
 }
 
 .br-pos .br-pos-categories {
-  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 0.78rem;
   padding: 0.48rem 0.48rem 0.18rem;
 }
@@ -1166,17 +1024,14 @@
   padding: 0.68rem 1.1rem 0.56rem;
   border-color: color-mix(in srgb, var(--br-orange) 74%, var(--br-border));
   background: var(--br-orange);
-  color: var(--br-white);
 }
 
 .br-pos .br-pos-category:nth-child(3n + 2) {
   border-color: color-mix(in srgb, var(--br-neutral-700) 82%, var(--br-border));
-  background: var(--br-neutral-700);
 }
 
 .br-pos .br-pos-category:nth-child(3n + 3) {
   border-color: color-mix(in srgb, var(--br-success) 74%, var(--br-border));
-  background: var(--br-success);
 }
 
 .br-pos .br-pos-category:hover,
@@ -1188,29 +1043,15 @@
 .br-pos .br-pos-category:nth-child(3n + 2):hover,
 .br-pos .br-pos-category:nth-child(3n + 2).is-active {
   border-color: var(--br-neutral-800);
-  background: var(--br-neutral-800);
-}
-
-.br-pos .br-pos-category:nth-child(3n + 3):hover,
-.br-pos .br-pos-category:nth-child(3n + 3).is-active {
-  border-color: var(--br-success-hover);
-  background: var(--br-success-hover);
 }
 
 .br-pos .br-pos-category strong {
   font-size: 0.79rem;
-  letter-spacing: 0;
 }
 
 .br-pos .br-pos-category.is-active::before {
   left: -0.45rem;
   top: -0.48rem;
-  width: 1.18rem;
-  height: 1.18rem;
-  border: 2px solid var(--br-white);
-  background: var(--br-success-hover);
-  color: var(--br-white);
-  font-size: 0.62rem;
   box-shadow:
     0 0 0 1px color-mix(in srgb, var(--br-success) 42%, var(--br-border)),
     0 0.24rem 0.55rem color-mix(in srgb, var(--br-text) 18%, transparent);
@@ -1230,10 +1071,6 @@
 }
 
 @media (max-width: 992px) {
-  .br-pos {
-    height: auto;
-    overflow: visible;
-  }
 
   .br-pos__catalog {
     overflow: visible;
@@ -1241,7 +1078,6 @@
   }
 
   .br-pos .br-pos-ticket {
-    height: auto;
     max-height: none;
   }
 }
@@ -1249,18 +1085,11 @@
 @media (max-width: 768px) {
   .br-pos .br-pos-categories {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
     overflow: visible;
     padding-inline: 0.25rem;
   }
 
   .br-pos .br-pos-category {
     min-width: 0;
-  }
-}
-
-@media (max-width: 420px) {
-  .br-pos .br-pos-categories {
-    grid-template-columns: 1fr;
   }
 }

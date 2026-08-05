@@ -3,41 +3,13 @@ import path from "node:path";
 import {fileURLToPath} from "node:url";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const args = new Set(process.argv.slice(2));
-const shouldSeed = args.has("--seed");
 
 const bundles = [
     {
         name: "br-branding",
         sourceDir: "resources/css/System/br-branding",
         output: "public/System/assets/css/br-branding.css",
-        description: "tokens y componentes visuales transversales",
-        split: [
-            [1, "00-tokens.css"],
-            [197, "10-tables-breadcrumb-filters.css"],
-            [755, "20-sales-tables-status.css"],
-            [1234, "30-modals-fields-forms.css"],
-            [1877, "40-buttons-quick-create.css"],
-            [2846, "50-layout-navbar-sidebar.css"],
-            [4278, "60-dashboard-sales.css"],
-        ],
-    },
-    {
-        name: "custom",
-        sourceDir: "resources/css/System/custom",
-        output: "public/System/assets/css/custom.css",
-        description: "pantallas y ajustes System/Guest heredados",
-        split: [
-            [1, "00-base-guest.css"],
-            [707, "10-roles-core-legacy.css"],
-            [3057, "20-inventory.css"],
-            [3626, "30-purchases-suppliers.css"],
-            [4287, "40-cash.css"],
-            [4544, "50-pos-base.css"],
-            [4961, "60-service-operations.css"],
-            [5724, "70-pos-extensions.css"],
-            [6991, "80-dashboard-actions-customers.css"],
-        ],
+        description: "tokens, componentes visuales y estilos de módulos System/Guest",
     },
     {
         name: "br-login",
@@ -81,33 +53,6 @@ function normalizeCss(content) {
         .replace(/^\s*@charset\s+["']UTF-8["'];\s*/i, "")
         .replace(/\r\n/g, "\n")
         .trim();
-}
-
-function splitByLineNumbers(content, splitPlan) {
-    const lines = content.replace(/\r\n/g, "\n").split("\n");
-    return splitPlan.map(([startLine, fileName], index) => {
-        const next = splitPlan[index + 1]?.[0] ?? (lines.length + 1);
-        const chunk = lines.slice(startLine - 1, next - 1).join("\n");
-
-        return [fileName, normalizeCss(chunk)];
-    });
-}
-
-function seedBundle(bundle) {
-    const sourceFile = absolute(bundle.output);
-    const sourceDir = absolute(bundle.sourceDir);
-
-    if (!fs.existsSync(sourceFile)) {
-        throw new Error(`No existe ${bundle.output}; no se puede crear semilla.`);
-    }
-
-    ensureDir(sourceDir);
-
-    const chunks = splitByLineNumbers(readUtf8(sourceFile), bundle.split);
-
-    for (const [fileName, chunk] of chunks) {
-        writeUtf8(path.join(sourceDir, fileName), `${chunk}\n`);
-    }
 }
 
 function cssFiles(sourceDir) {
@@ -171,16 +116,10 @@ function writeViteEntrypoint() {
     writeUtf8(absolute("resources/css/System/platform.css"), content);
 }
 
-if (shouldSeed) {
-    for (const bundle of bundles) {
-        seedBundle(bundle);
-    }
-}
-
 for (const bundle of bundles) {
     buildBundle(bundle);
 }
 
 writeViteEntrypoint();
 
-console.log(`CSS System ${shouldSeed ? "sembrado y " : ""}generado correctamente.`);
+console.log("CSS System generado correctamente.");

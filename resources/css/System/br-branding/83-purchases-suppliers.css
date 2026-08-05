@@ -101,7 +101,7 @@
     align-items: center;
     width: 100%;
     gap: 0.28rem 0.8rem;
-    padding: 0.6rem 0.68rem;
+    padding: 0.6rem 0;
     border: 1px solid color-mix(in srgb, var(--br-secondary) 10%, var(--br-border));
     border-radius: var(--br-radius-sm);
     background: var(--br-secondary-soft);
@@ -229,44 +229,6 @@
     outline: 0;
 }
 
-.br-entity-modebar {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
-    margin-bottom: 0.8rem;
-    padding: 0.22rem;
-    border: 1px solid var(--br-border);
-    border-radius: var(--br-radius-sm);
-    background: var(--br-white);
-}
-
-.br-entity-modebar__item {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.38rem;
-    min-height: 2.15rem;
-    padding: 0.42rem 0.72rem;
-    border: 0;
-    border-radius: var(--br-radius-sm);
-    background: transparent;
-    color: var(--br-text-muted);
-    font-size: 0.78rem;
-    font-weight: 800;
-    transition: var(--br-transition);
-}
-
-.br-entity-modebar__item.is-active {
-    background: var(--br-secondary);
-    color: var(--br-on-secondary);
-}
-
-.br-entity-modebar__item:not(.is-active):hover,
-.br-entity-modebar__item:not(.is-active):focus-visible {
-    background: var(--br-primary-soft);
-    color: var(--br-primary-active);
-    outline: 0;
-}
-
 @media (max-width: 767.98px) {
     .br-document-payment-row,
     .br-document-payment-row:has(input[placeholder="Referencia"]) {
@@ -276,10 +238,6 @@
     .br-document-payment-row .br-icon-action {
         justify-self: start;
     }
-}
-
-.br-purchases__remove {
-    color: var(--br-danger);
 }
 
 .br-purchases__receipt-summary {

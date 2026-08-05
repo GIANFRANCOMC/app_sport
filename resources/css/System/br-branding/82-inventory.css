@@ -138,15 +138,6 @@
     color: var(--br-white);
 }
 
-.br-inventory__row-action {
-    width: 1.85rem;
-    height: 1.85rem;
-    border-color: var(--br-primary);
-    background: var(--br-primary);
-    color: var(--br-white);
-    font-size: 0.64rem;
-}
-
 .br-inventory__table-wrap {
     width: 100%;
     padding: 0;
@@ -180,7 +171,6 @@
 .br-inventory__col-current,
 .br-inventory__col-minimum { width: 15%; }
 .br-inventory__col-status { width: 21%; }
-.br-inventory__col-actions { width: 12%; }
 
 .br-inventory__table td:last-child {
     overflow: visible;
@@ -261,14 +251,6 @@
     color: var(--br-danger);
 }
 
-.br-inventory__movement-action {
-    width: 2rem;
-    height: 2rem;
-    border-color: color-mix(in srgb, var(--br-secondary) 20%, var(--br-border));
-    background: color-mix(in srgb, var(--br-secondary-soft) 55%, var(--br-white));
-    color: var(--br-secondary);
-}
-
 .br-inventory__kardex-filters {
     display: grid;
     grid-template-columns: minmax(12rem, 1fr) minmax(9rem, 0.7fr) minmax(9rem, 0.7fr) auto;
@@ -293,16 +275,6 @@
 .br-inventory__kardex-table th:nth-child(5) { width: 10%; }
 .br-inventory__kardex-table th:nth-child(6) { width: 33%; }
 
-.br-inventory__selected-product {
-    display: grid;
-    gap: 0.14rem;
-    margin-bottom: 1rem;
-    padding: 0.7rem 0.8rem;
-    border: 1px solid var(--br-border);
-    border-radius: var(--br-radius-sm);
-    background: var(--br-neutral-soft);
-}
-
 .br-inventory__selected-product > span,
 .br-inventory__selected-product > small,
 .br-inventory__field-help {
@@ -310,54 +282,9 @@
     font-size: 0.72rem;
 }
 
-.br-inventory__selected-product > strong {
-    color: var(--br-secondary);
-}
-
 .br-inventory-transfer {
     padding: 0;
     background: var(--br-white);
-}
-
-.br-inventory-valued {
-    display: flex;
-    align-items: flex-start;
-    gap: 0.85rem;
-    padding: 1rem;
-    border: 1px solid var(--br-border);
-    border-radius: var(--br-radius-sm);
-    background: var(--br-white);
-}
-
-.br-inventory-valued__icon {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 2.25rem;
-    height: 2.25rem;
-    flex: 0 0 2.25rem;
-    border-radius: var(--br-radius-sm);
-    background: var(--br-secondary-soft);
-    color: var(--br-secondary);
-}
-
-.br-inventory-valued h2 {
-    margin: 0;
-    color: var(--br-secondary);
-    font-size: 0.9rem;
-}
-
-.br-inventory-valued p {
-    max-width: 48rem;
-    margin: 0.25rem 0;
-    color: var(--br-text-muted);
-    font-size: 0.76rem;
-}
-
-.br-inventory-valued span {
-    color: var(--br-primary-active);
-    font-size: 0.68rem;
-    font-weight: 600;
 }
 
 .br-inventory-operation__subtitle {

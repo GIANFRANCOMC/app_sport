@@ -736,40 +736,6 @@ html.layout-menu-collapsed body.br-layout .br-layout-navbar.navbar-detached {
   letter-spacing: 0.02em;
 }
 
-.br-navbar-user__meta {
-  display: grid;
-  gap: 0.02rem;
-  min-width: 0;
-  text-align: left;
-}
-
-.br-navbar-user__name,
-.br-navbar-user__role {
-  display: block;
-  max-width: 8.5rem;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.br-navbar-user__name {
-  color: var(--br-secondary);
-  font-size: 0.7rem;
-  font-weight: 800;
-  line-height: 1.05;
-}
-
-.br-navbar-user__role {
-  color: var(--br-secondary);
-  font-size: 0.66rem;
-  font-weight: 750;
-  line-height: 1;
-}
-
-.br-navbar-user__chevron {
-  display: none;
-}
-
 .br-navbar-user__menu {
   min-width: 14rem;
   margin-top: 0.5rem !important;
@@ -894,11 +860,6 @@ html.layout-menu-collapsed body.br-layout .br-layout-navbar.navbar-detached {
     height: 2.75rem;
     min-height: 2.75rem !important;
     padding-inline: 0.55rem !important;
-  }
-
-  .br-navbar-user__meta,
-  .br-navbar-user__chevron {
-    display: none;
   }
 
   .br-navbar-user__toggle {

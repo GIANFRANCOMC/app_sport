@@ -20,7 +20,7 @@ Aunque productos, servicios y membresías comparten la tabla `items`, este módu
 - Modelo: `app/Models/System/Catalogs/Item.php`
 - Vue: `resources/js/System/Pages/Catalogs/products/main.vue`
 - Generador PNG reutilizable: `resources/js/System/Components/BarcodeDownloadButton.vue`
-- Estilos: `public/System/assets/css/custom.css`, bloque `SYSTEM PRODUCTS`
+- Estilos: `public/System/assets/css/br-branding.css`, parcial `br-branding/81-core-roles-entities.css`
 - Tablas: `items`, `brands`, `category_items`, `categories`, `warehouses`, `warehouse_items`
 
 ## Exportación Excel
@@ -342,7 +342,7 @@ Productos incorpora una acción compacta **Carga masiva** junto a Descargar Exce
 - Los inputs inválidos muestran un contorno rojo sobre el control completo, incluyendo moneda, contadores, botones anexos y `vue-select`; el texto de error usa una escala menor que el label.
 - El modal rápido usa Bootstrap y se teletransporta a `body`. Su backdrop se identifica con `br-quick-create-backdrop`, conserva la modal de Producto debajo y devuelve el foco al contexto anterior al cerrarse.
 - Los errores de validación se muestran dentro del modal rápido y bajo sus campos. SweetAlert se reserva para confirmar una creación exitosa.
-- `custom.css` utiliza versionado por fecha de modificación en el layout System para evitar que el navegador conserve estilos anteriores durante las mejoras visuales.
+- `br-branding.css` utiliza versionado por fecha de modificación en el layout System para evitar que el navegador conserve estilos anteriores durante las mejoras visuales.
 - El breadcrumb global es compacto, se alinea a la derecha y resalta únicamente la ubicación actual con el azul de marca.
 - El listado omite la columna Publicación; esa configuración se consulta y modifica dentro del formulario.
 - Los generadores ocultan únicamente su propio tooltip mediante `Alerts.dismissTooltip()`; no destruyen las instancias de otros controles.

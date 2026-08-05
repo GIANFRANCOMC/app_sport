@@ -129,10 +129,10 @@
                         </InputSlot>
                     </div>
                     <div class="br-sale-detail-toolbar">
-                        <span
-                            class="br-sale-detail-toolbar__counter"
+                        <label
+                            :class="[config.forms.classes.title, 'br-sale-detail-toolbar__counter']"
                             v-text="`Detalle de la venta · ${forms[entity].createUpdate.data.details.length} ${forms[entity].createUpdate.data.details.length === 1 ? 'ítem' : 'ítems'}`">
-                        </span>
+                        </label>
                         <div class="br-sale-detail-toolbar__actions">
                             <button type="button" class="br-btn br-btn-sm br-btn-primary waves-effect" @click="modalAddDetail({})">
                                 <span v-text="MODULE.texts.actions.addDetail"></span>

@@ -18,7 +18,7 @@ El módulo separa dos conceptos:
 - Núcleo transaccional: `InventoryMovementService`
 - Modelo de kardex: `InventoryMovement`
 - Vista: `resources/js/System/Pages/Warehouses/stocks_management/main.vue`
-- Estilos reutilizables: bloque `br-inventory` de `public/System/assets/css/custom.css`
+- Estilos reutilizables: bloque `br-inventory` de `resources/css/System/br-branding/82-inventory.css`
 
 ## Tipos de movimiento
 

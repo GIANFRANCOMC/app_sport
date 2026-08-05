@@ -1,6 +1,6 @@
 /* -------------------------------------------------------------------------
  * [br] Pulido visual final de plataforma
- * Este archivo se carga al final de custom.css para normalizar pantallas
+ * Este archivo se carga al final de br-branding.css para normalizar pantallas
  * legacy y módulos Vue con la misma escala, altura y energía visual.
  * Colores: sólo tokens `--br-*`.
  * ------------------------------------------------------------------------- */

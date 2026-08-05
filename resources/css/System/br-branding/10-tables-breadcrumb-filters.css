@@ -6,9 +6,6 @@
 body.br-layout .table > thead,
 body.br-layout .br-table-header-surface {
   vertical-align: middle;
-  background: var(--br-table-thead-bg) !important;
-  background-color: var(--br-table-thead-bg) !important;
-  background-image: none !important;
   box-shadow: inset 0 -1px 0 var(--br-table-thead-edge);
   border-radius: 0 !important;
 }

@@ -18,7 +18,7 @@ Inicio y Dashboard se excluyen del directorio de Home porque son accesos estruct
 - Modelo de preferencias: `UserPreference`
 - Vista: `resources/views/System/general/Essentials/home/main.blade.php`
 - Vue: `resources/js/System/Pages/Essentials/home`
-- Estilos: `public/System/assets/css/custom.css`, bloque `SYSTEM HOME`
+- Estilos: `public/System/assets/css/br-branding.css`, parcial `br-branding/81-core-roles-entities.css`
 - Layout global: `resources/views/System/layouts/main.blade.php`
 - Branding global de favoritos: `public/System/assets/css/br-branding.css`
 - Tablas: `users`, `user_preferences`, `companies_sub_sections`, `sections`, `sub_sections`

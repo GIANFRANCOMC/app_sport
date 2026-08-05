@@ -7,15 +7,6 @@ body.br-layout {
 }
 
 /* --- [br-layout] Navbar fijo limpio, sin velo superior --- */
-html.layout-navbar-fixed body.br-layout .layout-page:before {
-  display: none !important;
-  height: 0 !important;
-  background: transparent !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-  -webkit-mask: none !important;
-  mask: none !important;
-}
 
 /* --- [br-layout] Fondo del sidebar (.br-menu-brand) --- */
 .br-layout .br-menu-brand.bg-menu-theme {
@@ -38,7 +29,6 @@ html.layout-navbar-fixed body.br-layout .layout-page:before {
   transition:
     width var(--br-sidebar-hover-duration, 0.1s) var(--br-sidebar-hover-easing, ease-out),
     transform var(--br-sidebar-hover-duration, 0.1s) var(--br-sidebar-hover-easing, ease-out) !important;
-  transition-delay: 0s !important;
 }
 
 .br-layout .br-menu-brand,
@@ -322,7 +312,6 @@ html:not(.layout-menu-collapsed) .br-layout .br-menu-brand .menu-inner .menu-ite
   font-size: 0.86rem;
   font-weight: 700;
   line-height: 1.15;
-  letter-spacing: 0;
   color: var(--br-white) !important;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -338,7 +327,6 @@ html:not(.layout-menu-collapsed) .br-layout .br-menu-brand .menu-inner .menu-ite
   font-weight: 500;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  line-height: 1.2;
   color: color-mix(in srgb, var(--br-primary-muted) 92%, transparent) !important;
   background: none !important;
   border: none !important;
@@ -700,10 +688,6 @@ html.layout-menu-collapsed:not(.layout-menu-hover) body.br-layout .br-menu-brand
  * [br] Contenido principal + Bootstrap bajo .br-layout
  * .br-layout-content, .btn-primary, paginación, checks, pills, badges tema, …
  * ------------------------------------------------------------------------- */
-.br-layout .br-layout-content {
-  background-color: var(--br-surface);
-  background-image: none;
-}
 
 .br-layout .br-navbar-brand-link:focus-visible {
   outline: none;
@@ -1349,7 +1333,7 @@ body.br-layout .form-check-input:disabled {
     0 5px 18px color-mix(in srgb, var(--br-favorite-gold-strong) 18%, transparent);
 }
 
-/* Como .modal-header .btn-header-modal (custom.css): rojo var(--br-danger-bootstrap) e icono blanco, sin animación de desplazamiento */
+/* Como .modal-header .btn-header-modal: rojo var(--br-danger-bootstrap) e icono blanco, sin animación de desplazamiento */
 .br-layout .br-fab-favorites__close {
   flex-shrink: 0;
   display: inline-flex;
@@ -1650,7 +1634,6 @@ body.br-layout .form-check-input:disabled {
   height: 1.2rem;
   padding: 0 0.3rem;
   border-radius: 50rem;
-  color: var(--br-secondary);
   background: var(--br-secondary-soft);
   font-size: 0.6rem;
   font-weight: 700;

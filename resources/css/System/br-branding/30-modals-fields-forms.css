@@ -27,7 +27,7 @@ body.br-layout .modal-header.br-modal-header .modal-title {
 }
 
 /*
- * Cerrar modal: rojo de marca (fondo como antes); borde más suave. Posición en custom.css.
+ * Cerrar modal: rojo de marca (fondo como antes); borde más suave.
  */
 body.br-layout .modal-header.br-modal-header .btn-header-modal {
   position: static;
@@ -206,211 +206,10 @@ body.br-layout .br-modal-shell .br-modal-shell__footer > .btn-secondary:first-ch
  * [br] Campo tocable — una sola acción (notas, descripciones cortas en sidebar)
  * Borde ligero; vacío = discontinuo; hover suave sin “caja” pesada.
  * ------------------------------------------------------------------------- */
-.br-tap-field {
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  gap: 0.35rem;
-  width: 100%;
-  margin: 0;
-  padding: 0.625rem 0.75rem;
-  text-align: left;
-  font: inherit;
-  color: inherit;
-  border: 1px solid var(--br-border);
-  border-radius: var(--br-radius);
-  background: var(--br-surface-elevated);
-  cursor: pointer;
-  box-shadow: none;
-  transform: translateY(0);
-  transition:
-    border-color 0.2s ease,
-    background-color 0.2s ease,
-    box-shadow 0.2s ease,
-    transform 0.2s ease;
-}
-
-.br-tap-field--empty {
-  border-style: dashed;
-  border-color: var(--br-border-strong);
-  background-color: var(--br-neutral-soft);
-}
-
-.br-tap-field--has-value {
-  border-style: solid;
-  border-color: color-mix(in srgb, var(--br-primary) 22%, transparent);
-  background-color: var(--br-primary-soft);
-}
-
-.br-tap-field:hover {
-  border-color: var(--br-primary-muted);
-  background: var(--br-primary-soft);
-  box-shadow: var(--br-shadow-sm);
-  transform: translateY(-1px);
-}
-
-.br-tap-field--empty:hover {
-  border-color: var(--br-text-placeholder);
-  background-color: var(--br-control-disabled-hover);
-  box-shadow: 0 3px 12px color-mix(in srgb, var(--br-text) 7%, transparent);
-  transform: translateY(-1px);
-}
-
-.br-tap-field--has-value:hover {
-  border-color: color-mix(in srgb, var(--br-primary) 45%, transparent);
-  background-color: var(--br-control-focus-bg);
-  box-shadow: 0 4px 16px color-mix(in srgb, var(--br-primary) 14%, transparent);
-  transform: translateY(-1px);
-}
-
-.br-tap-field:hover .br-tap-field__eyebrow {
-  color: var(--br-primary);
-}
-
-.br-tap-field--empty:hover .br-tap-field__placeholder {
-  color: var(--br-text-muted);
-}
-
-.br-tap-field:active {
-  transform: translateY(0);
-  box-shadow: none;
-  transition-duration: 0.08s;
-}
-
-.br-tap-field:focus-visible {
-  outline: none;
-  box-shadow: var(--br-focus-ring);
-}
-
-.br-tap-field:focus-visible:hover {
-  box-shadow: var(--br-focus-ring), 0 3px 12px color-mix(in srgb, var(--br-text) 6%, transparent);
-}
-
-.br-tap-field__head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.5rem;
-}
-
-.br-tap-field__eyebrow {
-  font-size: 0.6875rem;
-  font-weight: 600;
-  letter-spacing: 0.07em;
-  text-transform: uppercase;
-  color: var(--br-text-muted);
-}
-
-.br-tap-field__icon {
-  flex-shrink: 0;
-  font-size: 0.875rem;
-  color: var(--br-text-placeholder);
-  transition: color 0.2s ease, transform 0.2s ease;
-}
-
-.br-tap-field:hover .br-tap-field__icon {
-  color: var(--br-primary);
-  transform: scale(1.06);
-}
-
-.br-tap-field:active .br-tap-field__icon {
-  transform: scale(1);
-}
-
-.br-tap-field__value {
-  font-size: 0.8125rem;
-  line-height: 1.45;
-  color: var(--br-text);
-  display: -webkit-box;
-  -webkit-line-clamp: 5;
-  line-clamp: 5;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  word-break: break-word;
-}
-
-.br-tap-field__value--expanded {
-  display: block;
-  -webkit-line-clamp: unset;
-  line-clamp: unset;
-  overflow: visible;
-  max-height: none;
-}
-
-.br-observation-tile {
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  gap: 0.25rem;
-  width: 100%;
-}
-
-.br-observation-tile__toggle {
-  align-self: flex-start;
-  margin: 0;
-  padding: 0.2rem 0.35rem;
-  font-size: 0.75rem;
-  font-weight: 600;
-  line-height: 1.3;
-  color: var(--br-primary);
-  background: transparent;
-  border: none;
-  border-radius: var(--br-radius-sm);
-  cursor: pointer;
-  text-decoration: underline;
-  text-underline-offset: 0.18em;
-  transition: var(--br-transition);
-}
-
-.br-observation-tile__toggle:hover {
-  color: var(--br-primary-hover);
-  background: var(--br-primary-soft);
-}
-
-.br-observation-tile__toggle:focus-visible {
-  outline: none;
-  box-shadow: var(--br-focus-ring);
-}
-
-.br-tap-field__placeholder {
-  font-size: 0.8125rem;
-  line-height: 1.45;
-  color: var(--br-text-placeholder);
-}
 
 /* -------------------------------------------------------------------------
  * [br] Prefijo moneda — .input-group-text con InputNumber / precio (ventas, modales)
  * ------------------------------------------------------------------------- */
-.br-input-currency-addon {
-  justify-content: center;
-  min-width: 0;
-  width: auto;
-  padding-left: 0.48rem !important;
-  padding-right: 0.48rem !important;
-  font-weight: 500 !important;
-  font-size: var(--br-ui-font-size) !important;
-  line-height: 1.25 !important;
-  color: var(--br-on-secondary) !important;
-  background: linear-gradient(
-    180deg,
-    color-mix(in srgb, var(--br-secondary) 86%, white) 0%,
-    color-mix(in srgb, var(--br-secondary-hover) 82%, white) 100%
-  ) !important;
-  border-color: var(--br-secondary) !important;
-  border-color: color-mix(in srgb, var(--br-secondary) 78%, white) !important;
-  font-variant-numeric: tabular-nums;
-  box-shadow: var(--br-shadow-sm);
-  user-select: none;
-  -webkit-user-select: none;
-}
-
-.br-input-currency-addon__sign {
-  font-weight: 500;
-  letter-spacing: 0.02em !important;
-  white-space: nowrap;
-  user-select: none;
-  -webkit-user-select: none;
-}
 
 /* -------------------------------------------------------------------------
  * [br] Tipografía y enlaces — .br-link, .br-link-muted, .br-link-inverse
@@ -431,23 +230,6 @@ body.br-layout .br-modal-shell .br-modal-shell__footer > .btn-secondary:first-ch
 .br-link:focus-visible {
   outline: none;
   box-shadow: var(--br-focus-ring);
-}
-
-.br-link-muted {
-  color: var(--br-text-muted);
-  font-weight: 400;
-}
-
-.br-link-muted:hover {
-  color: var(--br-primary);
-}
-
-.br-link-inverse {
-  color: color-mix(in srgb, var(--br-white) 92%, transparent);
-}
-
-.br-link-inverse:hover {
-  color: var(--br-white);
 }
 
 /* -------------------------------------------------------------------------

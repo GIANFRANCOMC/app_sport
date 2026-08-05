@@ -79,25 +79,8 @@
  * ------------------------------------------------------------------------- */
 
 /* Rótulo de celda en fila expandida (p. ej. “Membresía” + fechas) */
-.br-table-expand-label {
-  font-size: var(--br-table-expand-label-size);
-  font-weight: var(--br-table-expand-label-weight);
-  letter-spacing: var(--br-table-expand-label-tracking);
-  text-transform: uppercase;
-  color: var(--br-secondary) !important;
-  background-color: var(--br-table-expand-label-bg-fallback) !important;
-  background-color: var(--br-table-expand-label-bg) !important;
-  white-space: nowrap;
-}
 
 /* Texto negro sobre el fondo gris por defecto del rótulo (p. ej. celda Membresía) */
-.br-table-expand-label.br-table-expand-label--black-text {
-  color: var(--br-danger-dark) !important;
-  font-size: 0.8125rem;
-  /* Laterales como celda de .table-bordered */
-  border-inline: var(--bs-border-width) solid
-    var(--bs-table-border-color, var(--bs-border-color));
-}
 
 /* -------------------------------------------------------------------------
  * [br] Tabla membresías activas — `.br-memberships-table` en <table>
@@ -220,7 +203,6 @@
   min-width: 3.75rem;
   padding: 0.28em 0.52em;
   font-size: 0.6875rem;
-  font-weight: 700;
   line-height: 1.2;
   border-radius: 0.25rem;
   border: 1px solid transparent;
