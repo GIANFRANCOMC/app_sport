@@ -356,6 +356,7 @@
   font-size: var(--br-amount-value-size);
   font-weight: var(--br-amount-value-weight);
   color: var(--br-secondary);
+  font-variant-numeric: tabular-nums;
 }
 
 /* Énfasis: pie de tabla / total general (misma estructura, mayor escala) */

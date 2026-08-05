@@ -130,7 +130,7 @@
                     </div>
                     <div class="br-sale-detail-toolbar">
                         <label
-                            :class="[config.forms.classes.title, 'br-sale-detail-toolbar__counter']"
+                            class="form-label br-sale-detail-toolbar__counter"
                             v-text="`Detalle de la venta · ${forms[entity].createUpdate.data.details.length} ${forms[entity].createUpdate.data.details.length === 1 ? 'ítem' : 'ítems'}`">
                         </label>
                         <div class="br-sale-detail-toolbar__actions">
@@ -139,10 +139,10 @@
                             </button>
                             <button
                                 type="button"
-                                class="br-btn br-btn-sm br-btn-cancel br-sale-detail-toolbar__clear waves-effect"
+                                class="br-btn br-btn-sm br-sale-detail-toolbar__clear waves-effect"
                                 :disabled="forms[entity].createUpdate.data.details.length <= 0"
                                 @click="clearDetails">
-                                <span>Limpiar ítems</span>
+                                <span>Limpiar</span>
                             </button>
                         </div>
                     </div>
@@ -158,7 +158,7 @@
                                         <th class="min-w-130px text-end br-sale-detail-calc-head" style="width: 14%;">SUBTOTAL</th>
                                         <th class="min-w-110px text-end br-sale-detail-calc-head" style="width: 10%;">IGV</th>
                                         <th class="min-w-120px text-end pe-3 br-sale-detail-calc-head br-sale-detail-calc-head--total" style="width: 12%;">TOTAL</th>
-                                        <th style="width: 7%;" aria-label="Acciones"></th>
+                                        <th style="width: 4%;" aria-label="Acciones"></th>
                                     </tr>
                                 </thead>
                                 <tbody class="table-border-bottom-0 bg-white">
@@ -219,50 +219,50 @@
                                                     </span>
                                                 </td>
                                                 <td class="text-center">
-                                                    <div class="br-sale-detail-actions">
+                                                    <div
+                                                        class="br-sale-detail-actions-tooltip"
+                                                        data-bs-toggle="tooltip"
+                                                        data-bs-placement="left"
+                                                        title="Acciones del ítem">
+                                                        <div class="dropdown br-sale-detail-actions">
                                                         <button
-                                                            class="br-sale-detail-action br-sale-detail-action--warning waves-effect"
+                                                            class="br-sale-detail-actions__trigger waves-effect"
                                                             type="button"
-                                                            data-bs-toggle="tooltip"
-                                                            data-bs-placement="top"
-                                                            title="Rectificar ítem"
-                                                            aria-label="Rectificar ítem"
-                                                            @click="modalEditDetail({record, keyRecord})">
-                                                            <i class="fa fa-pen" aria-hidden="true"></i>
+                                                            data-bs-toggle="dropdown"
+                                                            data-bs-boundary="viewport"
+                                                            aria-expanded="false"
+                                                            aria-label="Acciones del ítem"
+                                                            @click="hideDetailActionsTooltip">
+                                                            <i class="fa-solid fa-ellipsis-vertical" aria-hidden="true"></i>
                                                         </button>
-                                                        <button
-                                                            class="br-sale-detail-action br-sale-detail-action--danger waves-effect"
-                                                            type="button"
-                                                            data-bs-toggle="tooltip"
-                                                            data-bs-placement="top"
-                                                            title="Eliminar ítem"
-                                                            aria-label="Eliminar ítem"
-                                                            @click="deleteDetail({record, keyRecord})">
-                                                            <i class="fa fa-times" aria-hidden="true"></i>
-                                                        </button>
-                                                        <button
-                                                            v-if="!isSubscription(record?.type)"
-                                                            class="br-sale-detail-action br-sale-detail-action--primary waves-effect"
-                                                            type="button"
-                                                            data-bs-toggle="tooltip"
-                                                            data-bs-placement="top"
-                                                            title="Duplicar ítem"
-                                                            aria-label="Duplicar ítem"
-                                                            @click="duplicateDetail({record, keyRecord})">
-                                                            <i class="fa fa-copy" aria-hidden="true"></i>
-                                                        </button>
-                                                        <template v-if="isSubscription(record?.type)">
-                                                            <button
-                                                                class="br-sale-detail-action br-sale-detail-action--success waves-effect"
-                                                                type="button"
-                                                                data-bs-toggle="tooltip"
-                                                                data-bs-placement="top"
-                                                                title="Ver detalle"
-                                                                aria-label="Ver detalle"
-                                                                @click="viewDetail({record, keyRecord})">
-                                                                <i :class="record?.extras?.showDetail ? 'fa fa-eye-slash' : 'fa fa-eye'" aria-hidden="true"></i>
-                                                            </button>
-                                                        </template>
+                                                        <ul class="dropdown-menu dropdown-menu-end br-sale-detail-actions__menu">
+                                                            <li>
+                                                                <button type="button" class="dropdown-item" @click="modalEditDetail({record, keyRecord})">
+                                                                    <i class="fa-solid fa-pen" aria-hidden="true"></i>
+                                                                    <span>Editar</span>
+                                                                </button>
+                                                            </li>
+                                                            <li v-if="!isSubscription(record?.type)">
+                                                                <button type="button" class="dropdown-item" @click="duplicateDetail({record, keyRecord})">
+                                                                    <i class="fa-solid fa-copy" aria-hidden="true"></i>
+                                                                    <span>Duplicar</span>
+                                                                </button>
+                                                            </li>
+                                                            <li v-else>
+                                                                <button type="button" class="dropdown-item" @click="viewDetail({record, keyRecord})">
+                                                                    <i :class="record?.extras?.showDetail ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye'" aria-hidden="true"></i>
+                                                                    <span v-text="record?.extras?.showDetail ? 'Ocultar detalle' : 'Ver detalle'"></span>
+                                                                </button>
+                                                            </li>
+                                                            <li><hr class="dropdown-divider"></li>
+                                                            <li>
+                                                                <button type="button" class="dropdown-item br-sale-detail-actions__delete" @click="deleteDetail({record, keyRecord})">
+                                                                    <i class="fa-solid fa-trash" aria-hidden="true"></i>
+                                                                    <span>Eliminar</span>
+                                                                </button>
+                                                            </li>
+                                                        </ul>
+                                                        </div>
                                                     </div>
                                                 </td>
                                             </tr>
@@ -355,227 +355,150 @@
         </div>
         <div class="br-sale-create-side">
             <div class="br-document-settlement br-sale-settlement bg-white">
-                <h3 class="br-document-settlement__group-title">Información</h3>
-                <div>
-                    <div class="br-document-settlement__header">
-                        <label class="form-label colon-at-end">Observaciones</label>
-                        <button
-                            type="button"
-                            class="br-btn br-btn-xs br-btn-action-import br-document-payment-config waves-effect"
-                            data-bs-toggle="tooltip"
-                            data-bs-placement="top"
-                            title="Cambiar observaciones"
-                            aria-label="Cambiar observaciones"
-                            @click="openObservationsModal">
-                            <i class="fa-solid fa-pen" aria-hidden="true"></i>
-                        </button>
-                    </div>
-                    <div class="br-document-observation-summary">
-                        <span
-                            v-if="observationHasContent"
-                            class="br-document-observation-summary__value"
-                            :title="observationPreviewTooltip"
-                            v-text="observationDisplayPreview">
-                        </span>
-                        <p v-else class="br-document-settlement__empty mb-0">
-                            Sin observaciones para esta venta.
-                        </p>
-                    </div>
+                <div class="br-document-settlement__group-header">
+                    <h3 class="br-document-settlement__group-title">Información</h3>
+                    <button type="button" class="br-sale-section-edit" @click="openInformationSectionModal">
+                        <i class="fa-solid fa-pen" aria-hidden="true"></i>
+                        <span>Editar</span>
+                    </button>
+                </div>
+                <div class="br-document-settlement__field br-document-settlement__field--inline">
+                    <label class="form-label colon-at-end">Vendedor</label>
+                    <span v-if="forms[entity].createUpdate.data.seller" class="br-document-delivery-summary__value" v-text="sellerLabel"></span>
+                    <span v-else class="br-document-settlement__field-value--empty">Sin vendedor</span>
+                    <small v-if="forms[entity].createUpdate.errors?.seller" :class="config.forms.errors.styles.default" v-html="forms[entity].createUpdate.errors.seller"></small>
+                </div>
+                <div class="br-document-settlement__field br-document-settlement__field--inline">
+                    <label class="form-label colon-at-end">Cotización</label>
+                    <span
+                        v-if="hasQuotationApplied"
+                        class="br-document-delivery-summary__value"
+                        :title="quotationSummaryLabel"
+                        v-text="forms[entity].createUpdate.data.quotation?.data?.reference || 'Cotización aplicada'">
+                    </span>
+                    <span v-else class="br-document-settlement__field-value--empty">Sin cotización</span>
+                </div>
+                <div class="br-document-settlement__field br-document-settlement__field--inline">
+                    <label class="form-label colon-at-end">Observaciones</label>
+                    <span
+                        v-if="observationHasContent"
+                        class="br-document-delivery-summary__value"
+                        v-text="observationDisplayPreview">
+                    </span>
+                    <span v-else class="br-document-settlement__field-value--empty">Sin observaciones</span>
                     <p
                         v-if="forms[entity].createUpdate.errors?.observation?.length"
                         class="small mb-0 mt-2"
                         :class="config.forms.errors.styles.default"
                         v-html="observationErrorsDisplay"></p>
                 </div>
-                <div>
-                    <div class="br-document-settlement__header">
-                        <label class="form-label colon-at-end">Cotización</label>
-                        <div class="br-document-settlement__actions">
-                            <button
-                                type="button"
-                                class="br-btn br-btn-xs br-btn-action-import br-document-payment-config waves-effect"
-                                data-bs-toggle="tooltip"
-                                data-bs-placement="top"
-                                title="Cambiar cotización"
-                                aria-label="Cambiar cotización"
-                                @click="openQuotationModal">
-                                <i class="fa-solid fa-pen" aria-hidden="true"></i>
-                            </button>
-                            <button
-                                v-if="hasQuotationApplied"
-                                type="button"
-                                class="br-btn br-btn-xs br-document-payment-config br-document-payment-config--danger waves-effect"
-                                data-bs-toggle="tooltip"
-                                data-bs-placement="top"
-                                title="Quitar cotización"
-                                aria-label="Quitar cotización"
-                                @click="clearQuotation">
-                                <i class="fa-solid fa-xmark" aria-hidden="true"></i>
-                            </button>
-                        </div>
-                    </div>
-                    <div class="br-document-quotation-summary">
-                        <template v-if="hasQuotationApplied">
-                            <strong v-text="forms[entity].createUpdate.data.quotation?.data?.reference || 'Cotización aplicada'"></strong>
-                            <small v-text="quotationSummaryLabel"></small>
-                        </template>
-                        <p v-else class="br-document-settlement__empty mb-0">
-                            Sin cotización para esta venta.
-                        </p>
-                    </div>
+                <div class="br-document-settlement__group-header">
+                    <h3 class="br-document-settlement__group-title">Entrega</h3>
+                    <button type="button" class="br-sale-section-edit" @click="openDeliverySectionModal">
+                        <i class="fa-solid fa-pen" aria-hidden="true"></i>
+                        <span>Editar</span>
+                    </button>
                 </div>
-                <div>
-                    <div class="br-document-settlement__header">
-                        <label class="form-label colon-at-end">Vendedor</label>
-                        <button
-                            type="button"
-                            class="br-btn br-btn-xs br-btn-action-import br-document-payment-config waves-effect"
-                            data-bs-toggle="tooltip"
-                            data-bs-placement="top"
-                            title="Cambiar vendedor"
-                            aria-label="Cambiar vendedor"
-                            @click="openSellerModal">
-                            <i class="fa-solid fa-pen" aria-hidden="true"></i>
-                        </button>
-                    </div>
-                    <div class="br-document-delivery-summary">
-                        <span class="br-document-delivery-summary__value" v-text="sellerLabel"></span>
-                        <small v-if="forms[entity].createUpdate.errors?.seller" :class="config.forms.errors.styles.default" v-html="forms[entity].createUpdate.errors.seller"></small>
-                    </div>
-                </div>
-                <h3 class="br-document-settlement__group-title">Entrega</h3>
-                <div class="br-document-settlement__inline-value">
-                    <div class="br-document-settlement__header br-document-settlement__header--inline">
-                        <span class="br-document-settlement__inline-copy">
-                            <label class="form-label colon-at-end">Tipo de entrega</label>
-                            <span class="br-document-delivery-summary__value" v-text="deliveryModeLabel"></span>
-                        </span>
-                        <button
-                            type="button"
-                            class="br-btn br-btn-xs br-btn-action-import br-document-payment-config waves-effect"
-                            data-bs-toggle="tooltip"
-                            data-bs-placement="top"
-                            title="Cambiar tipo de entrega"
-                            aria-label="Cambiar tipo de entrega"
-                            @click="openDeliveryModal">
-                            <i class="fa-solid fa-pen" aria-hidden="true"></i>
-                        </button>
-                    </div>
+                <div class="br-document-settlement__field br-document-settlement__field--inline">
+                    <label class="form-label colon-at-end">Tipo de entrega</label>
+                    <span v-if="forms[entity].createUpdate.data.delivery_mode" class="br-document-delivery-summary__value" v-text="deliveryModeLabel"></span>
+                    <span v-else class="br-document-settlement__field-value--empty">Sin tipo de entrega</span>
                     <small v-if="forms[entity].createUpdate.errors?.delivery_mode" :class="config.forms.errors.styles.default" v-html="forms[entity].createUpdate.errors.delivery_mode"></small>
                 </div>
-                <div class="br-document-settlement__inline-value">
-                    <div class="br-document-settlement__header br-document-settlement__header--inline">
-                        <span class="br-document-settlement__inline-copy">
-                            <label class="form-label colon-at-end">Almacén</label>
-                            <span class="br-document-delivery-summary__value" v-text="warehouseLabel"></span>
-                        </span>
-                        <button
-                            v-if="canChangeWarehouse"
-                            type="button"
-                            class="br-btn br-btn-xs br-btn-action-import br-document-payment-config waves-effect"
-                            data-bs-toggle="tooltip"
-                            data-bs-placement="top"
-                            title="Cambiar almacén"
-                            aria-label="Cambiar almacén"
-                            @click="openWarehouseModal">
-                            <i class="fa-solid fa-pen" aria-hidden="true"></i>
-                        </button>
-                    </div>
+                <div class="br-document-settlement__field br-document-settlement__field--inline">
+                    <label class="form-label colon-at-end">Almacén</label>
+                    <span v-if="forms[entity].createUpdate.data.warehouse" class="br-document-delivery-summary__value" v-text="warehouseLabel"></span>
+                    <span v-else class="br-document-settlement__field-value--empty">Sin almacén</span>
                     <small v-if="forms[entity].createUpdate.errors?.warehouse" :class="config.forms.errors.styles.default" v-html="forms[entity].createUpdate.errors.warehouse"></small>
                 </div>
-                <h3 class="br-document-settlement__group-title">Pago</h3>
-                <div>
-                    <div class="br-document-settlement__header">
-                        <label class="form-label colon-at-end">Impuestos extras</label>
-                        <button
-                            v-if="canChangeTaxes"
-                            type="button"
-                            class="br-btn br-btn-xs br-btn-action-import br-document-payment-config waves-effect"
-                            data-bs-toggle="tooltip"
-                            data-bs-placement="top"
-                            title="Cambiar impuestos extras"
-                            aria-label="Cambiar impuestos extras"
-                            @click="openTaxesModal">
-                            <i class="fa-solid fa-pen" aria-hidden="true"></i>
-                        </button>
-                    </div>
-                    <div class="br-document-tax-summary">
-                        <template v-if="saleOptionalTaxSummary.length">
+                <div class="br-document-settlement__group-header">
+                    <h3 class="br-document-settlement__group-title">Pago</h3>
+                    <button
+                        v-if="canChangeTaxes || canChangePaymentMethods"
+                        type="button"
+                        class="br-sale-section-edit"
+                        @click="openPaymentSectionModal">
+                        <i class="fa-solid fa-pen" aria-hidden="true"></i>
+                        <span>Editar</span>
+                    </button>
+                </div>
+                <div
+                    class="br-document-settlement__field"
+                    :class="{'br-document-settlement__field--inline': !saleOptionalTaxSummary.length}">
+                    <label class="form-label" :class="{'colon-at-end': !saleOptionalTaxSummary.length}">Impuestos extras</label>
+                    <span v-if="!saleOptionalTaxSummary.length" class="br-document-settlement__field-value--empty">Sin impuestos extras</span>
+                    <div v-if="saleOptionalTaxSummary.length" class="br-document-tax-summary">
                             <div
                                 v-for="tax in saleOptionalTaxSummary"
                                 :key="tax.key"
                                 class="br-document-tax-summary__row">
                                 <span>
-                                    <strong v-text="tax.name"></strong>
-                                    <small v-text="tax.description"></small>
+                                    <strong class="br-document-delivery-summary__value" v-text="tax.name"></strong>
+                                    <small v-if="tax.description" v-text="tax.description"></small>
                                 </span>
-                                <b>
+                                <b class="br-document-delivery-summary__value br-amount-inline__amount">
                                     {{ forms[entity].createUpdate.data.currency?.data?.sign ?? '' }}
                                     {{ separatorNumber(tax.amount) }}
                                 </b>
                             </div>
-                        </template>
-                        <p v-else class="br-document-settlement__empty mb-0">
-                            Sin impuestos extras para esta venta.
-                        </p>
                     </div>
                 </div>
-                <div>
-                    <div class="br-document-settlement__header">
-                        <label class="form-label colon-at-end">Métodos de pago</label>
-                        <button
-                            v-if="canChangePaymentMethods"
-                            type="button"
-                            class="br-btn br-btn-xs br-btn-action-import br-document-payment-config waves-effect"
-                            data-bs-toggle="tooltip"
-                            data-bs-placement="top"
-                            title="Cambiar métodos de pago"
-                            aria-label="Cambiar métodos de pago"
-                            @click="openPaymentMethodsModal">
-                            <i class="fa-solid fa-pen" aria-hidden="true"></i>
-                        </button>
-                    </div>
-                    <div class="br-document-payment-summary">
-                        <template v-if="salePaymentSummary.length">
+                <div
+                    class="br-document-settlement__field"
+                    :class="{'br-document-settlement__field--inline': !salePaymentSummary.length}">
+                    <label class="form-label" :class="{'colon-at-end': !salePaymentSummary.length}">Métodos de pago</label>
+                    <span v-if="!salePaymentSummary.length" class="br-document-settlement__field-value--empty">Sin métodos de pago</span>
+                    <div v-if="salePaymentSummary.length" class="br-document-payment-summary">
                             <div
                                 v-for="payment in salePaymentSummary"
                                 :key="payment.key"
                                 class="br-document-payment-summary__row">
                                 <span>
-                                    <span class="br-document-delivery-summary__value" v-text="payment.label"></span>
+                                    <strong class="br-document-delivery-summary__value br-document-payment-summary__method">
+                                        <img
+                                            v-if="payment.imageUrl"
+                                            :src="payment.imageUrl"
+                                            alt=""
+                                            class="br-payment-select-option__image br-document-payment-summary__image">
+                                        <span v-text="payment.label"></span>
+                                    </strong>
                                     <small v-if="payment.reference" v-text="payment.reference"></small>
                                 </span>
-                                <span class="br-document-payment-summary__amount">
+                                <b class="br-document-delivery-summary__value br-document-payment-summary__amount br-amount-inline__amount">
                                     {{ forms[entity].createUpdate.data.currency?.data?.sign ?? '' }}
                                     {{ separatorNumber(payment.amount) }}
-                                </span>
+                                </b>
                             </div>
-                        </template>
-                        <p v-else class="br-document-settlement__empty mb-0">
-                            Sin métodos de pago para esta venta.
-                        </p>
                     </div>
                 </div>
-                <h3 class="br-document-settlement__group-title">Resumen</h3>
+                <div class="br-document-settlement__group-header">
+                    <h3 class="br-document-settlement__group-title">Resumen</h3>
+                </div>
                 <div class="br-document-settlement__summary-section">
                     <div class="br-document-settlement__summary">
+                        <span class="br-document-settlement__summary-label">Subtotal</span>
+                        <strong class="br-document-settlement__summary-value br-amount-inline__amount">
+                            {{ forms[entity].createUpdate.data.currency?.data?.sign ?? '' }}
+                            {{ separatorNumber(saleDetailSubtotalTotal) }}
+                        </strong>
+                        <span class="br-document-settlement__summary-label">IGV</span>
+                        <strong class="br-document-settlement__summary-value br-amount-inline__amount">
+                            {{ forms[entity].createUpdate.data.currency?.data?.sign ?? '' }}
+                            {{ separatorNumber(saleDetailIgvTotal) }}
+                        </strong>
+                        <span class="br-document-settlement__summary-label">Impuestos extras</span>
+                        <strong class="br-document-settlement__summary-value br-amount-inline__amount">
+                            {{ forms[entity].createUpdate.data.currency?.data?.sign ?? '' }}
+                            {{ separatorNumber(saleExtraTaxTotal) }}
+                        </strong>
+                        <div class="br-document-settlement__summary-divider" aria-hidden="true"></div>
                         <span class="br-document-settlement__summary-label br-document-settlement__summary-label--total">Total a pagar</span>
-                        <strong class="br-document-settlement__summary-value br-document-settlement__summary-value--total">
+                        <strong class="br-document-settlement__summary-value br-document-settlement__summary-value--total br-amount-inline__amount">
                             {{ forms[entity].createUpdate.data.currency?.data?.sign ?? '' }}
                             {{ separatorNumber(total) }}
                         </strong>
-                        <span class="br-document-settlement__summary-label">
-                            <span>Pagado</span>
-                            <i
-                                class="fa-solid fa-circle-info br-document-settlement__summary-help"
-                                aria-label="Sumatoria de métodos de pago"
-                                data-bs-toggle="tooltip"
-                                data-bs-placement="top"
-                                role="img"
-                                tabindex="0"
-                                title="Sumatoria de métodos de pago"></i>
-                        </span>
-                        <strong class="br-document-settlement__summary-value">
+                        <span class="br-document-settlement__summary-label">Pagado</span>
+                        <strong class="br-document-settlement__summary-value br-amount-inline__amount">
                             {{ forms[entity].createUpdate.data.currency?.data?.sign ?? '' }}
                             {{ separatorNumber(salePaidTotal) }}
                         </strong>
@@ -587,7 +510,7 @@
                                 <i :class="['fa-solid', salePaymentStatusInfo.icon]" aria-hidden="true"></i>
                                 <span v-text="salePaymentStatusInfo.label"></span>
                             </span>
-                            <strong v-if="salePaymentStatusInfo.amount !== null">
+                            <strong v-if="salePaymentStatusInfo.amount !== null" class="br-amount-inline__amount">
                                 {{ forms[entity].createUpdate.data.currency?.data?.sign ?? '' }}
                                 {{ separatorNumber(salePaymentStatusInfo.amount) }}
                             </strong>
@@ -595,15 +518,21 @@
                     </div>
                 </div>
                 <div class="br-document-settlement__submit-section">
-                    <button
-                        type="button"
-                        class="br-btn br-btn-success br-sale-sidebar-actions__cta waves-effect"
-                        :disabled="Boolean(saleSubmitBlocker)"
-                        :title="saleSubmitBlocker?.message || MODULE.texts.actions.generateSale"
-                        @click="createUpdateEntity()">
-                        <i class="fa-solid fa-cash-register" aria-hidden="true"></i>
-                        <span v-text="MODULE.texts.actions.generateSale"></span>
-                    </button>
+                    <span
+                        class="br-sale-submit-tooltip"
+                        :data-bs-toggle="!saleHasDetails ? 'tooltip' : null"
+                        data-bs-placement="top"
+                        :tabindex="!saleHasDetails ? 0 : null"
+                        :title="!saleHasDetails ? 'Agrega al menos un ítem para continuar' : null">
+                        <button
+                            type="button"
+                            class="br-btn br-btn-success br-sale-sidebar-actions__cta waves-effect"
+                            :disabled="Boolean(saleSubmitBlocker)"
+                            @click="createUpdateEntity()">
+                            <i class="fa-solid fa-cash-register" aria-hidden="true"></i>
+                            <span v-text="MODULE.texts.actions.generateSale"></span>
+                        </button>
+                    </span>
                 </div>
             </div>
         </div>
@@ -689,10 +618,10 @@
     </div>
 
     <div class="modal fade" :id="forms[entity].createUpdate.extras.modals.delivery.id" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" role="dialog">
-        <div class="modal-dialog modal-dialog-centered modal-md" role="document">
+        <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
             <div class="modal-content br-entity-modal br-modal-shell">
                 <div class="modal-header br-modal-header br-modal-shell__header">
-                    <h5 class="modal-title text-uppercase fw-bold">Cambiar entrega</h5>
+                    <h5 class="modal-title text-uppercase fw-bold">Editar entrega</h5>
                     <button type="button" class="br-modal-close br-modal-shell__close" data-bs-dismiss="modal" aria-label="Cerrar">
                         <i class="fa-solid fa-xmark" aria-hidden="true"></i>
                     </button>
@@ -721,10 +650,32 @@
                         v-if="forms[entity].createUpdate.errors?.delivery_mode"
                         :class="config.forms.errors.styles.default"
                         v-html="forms[entity].createUpdate.errors.delivery_mode"></small>
+                    <div v-if="canChangeWarehouse" class="mt-3 pt-2 border-top">
+                        <InputSlot
+                            hasDiv
+                            :title="MODULE.texts.form.warehouse"
+                            :titleClass="[config.forms.classes.title]"
+                            isRequired
+                            hasTextBottom
+                            :textBottomInfo="forms[entity].createUpdate.errors?.warehouse"
+                            xl="12"
+                            lg="12">
+                            <template v-slot:input>
+                                <v-select
+                                    v-model="forms[entity].createUpdate.data.warehouse"
+                                    :options="warehouses"
+                                    :class="config.forms.classes.select2"
+                                    :clearable="false"
+                                    :searchable="false"
+                                    append-to-body
+                                    placeholder="Seleccione"/>
+                            </template>
+                        </InputSlot>
+                    </div>
                 </div>
                 <div class="modal-footer br-entity-modal__footer br-modal-shell__footer">
                     <button type="button" class="br-btn br-btn-cancel" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="button" class="br-btn br-btn-primary" data-bs-dismiss="modal">Cambiar entrega</button>
+                    <button type="button" class="br-btn br-btn-primary" data-bs-dismiss="modal">Guardar entrega</button>
                 </div>
             </div>
         </div>
@@ -820,7 +771,7 @@
                 </div>
                 <div class="modal-body br-entity-modal__body br-modal-shell__body">
                     <p class="br-document-payment-intro">
-                        Activa solo los cargos adicionales que aplican para esta venta.
+                        Activa solo los cargos adicionales que correspondan.
                     </p>
                     <div class="br-document-taxes-modal" v-if="optionalSaleTaxes.length">
                         <div
@@ -871,12 +822,52 @@
         <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
             <div class="modal-content br-entity-modal br-modal-shell">
                 <div class="modal-header br-modal-header br-modal-shell__header">
-                    <h5 class="modal-title text-uppercase fw-bold">Cambiar métodos de pago</h5>
+                    <h5 class="modal-title text-uppercase fw-bold">Editar pago</h5>
                     <button type="button" class="br-modal-close br-modal-shell__close" data-bs-dismiss="modal" aria-label="Cerrar">
                         <i class="fa-solid fa-xmark" aria-hidden="true"></i>
                     </button>
                 </div>
                 <div class="modal-body br-entity-modal__body br-modal-shell__body">
+                    <section v-if="canChangeTaxes" class="br-sale-section-modal__block">
+                        <h6>Impuestos extras</h6>
+                        <p class="br-document-payment-intro">Activa solo los cargos adicionales que correspondan.</p>
+                        <div v-if="optionalSaleTaxes.length" class="br-document-taxes-modal">
+                            <div
+                                v-for="tax in optionalSaleTaxes"
+                                :key="`optional-sale-tax-section-${tax.code}`"
+                                class="br-document-tax-option">
+                                <label class="br-entity-switch br-document-tax-option__switch">
+                                    <input
+                                        v-model="forms[entity].createUpdate.data.selected_taxes"
+                                        class="form-check-input"
+                                        type="checkbox"
+                                        :value="tax.code"
+                                        @change="syncSelectedTaxQuantity(tax.data)">
+                                    <span>
+                                        <strong>{{ tax.data.name }}</strong>
+                                        <small>{{ taxLabel(tax.data) }}</small>
+                                    </span>
+                                </label>
+                                <InputNumber
+                                    v-if="isFixedTax(tax.data) && selectedTaxIds().includes(tax.code)"
+                                    v-model="forms[entity].createUpdate.data.selected_tax_quantities[tax.code]"
+                                    title=""
+                                    :inputClass="['form-control', 'br-tax-quantity']"
+                                    :decimals="0"
+                                    :minValue="taxQuantityMinimum(tax.data)"
+                                    :maxValue="taxQuantityMaximum(tax.data)"
+                                    :hasNegative="false"
+                                    @change="normalizeSelectedTaxQuantity(tax.code)">
+                                    <template v-slot:inputGroupPrepend>
+                                        <span class="input-group-text br-tax-quantity__label">Veces</span>
+                                    </template>
+                                </InputNumber>
+                            </div>
+                        </div>
+                        <p v-else class="br-document-settlement__empty mb-0">No hay impuestos extras configurados.</p>
+                    </section>
+                    <section v-if="canChangePaymentMethods" class="br-sale-section-modal__block">
+                        <h6>Métodos de pago</h6>
                     <p class="br-document-payment-intro">
                         Distribuye el importe total entre uno o más métodos configurados para ventas.
                     </p>
@@ -981,10 +972,11 @@
                             </strong>
                         </div>
                     </div>
+                    </section>
                 </div>
                 <div class="modal-footer br-entity-modal__footer br-modal-shell__footer">
                     <button type="button" class="br-btn br-btn-cancel" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="button" class="br-btn br-btn-primary" data-bs-dismiss="modal">Cambiar métodos de pago</button>
+                    <button type="button" class="br-btn br-btn-primary" data-bs-dismiss="modal">Guardar pago</button>
                 </div>
             </div>
         </div>
@@ -1289,28 +1281,73 @@
     </div>
 
     <div class="modal fade" :id="forms[entity].createUpdate.extras.modals.observations.id" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" role="dialog">
-        <div class="modal-dialog modal-dialog-centered modal-md" role="document">
+        <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
             <div class="modal-content br-entity-modal br-modal-shell">
                 <div class="modal-header br-modal-header br-modal-shell__header">
-                    <h5 class="modal-title text-uppercase fw-bold" v-text="MODULE.texts.modal.observations"></h5>
+                    <h5 class="modal-title text-uppercase fw-bold">Editar información</h5>
                     <button type="button" class="br-modal-close br-modal-shell__close" data-bs-dismiss="modal" :aria-label="MODULE.texts.actions.close">
                         <i class="fa-solid fa-xmark" aria-hidden="true"></i>
                     </button>
                 </div>
                 <div class="modal-body br-entity-modal__body br-modal-shell__body">
-                    <InputTextArea
-                        v-model="forms[entity].createUpdate.extras.modals.observations.draft"
-                        hasDiv
-                        :divClass="['p-0']"
-                        title=""
-                        :placeholder="MODULE.texts.observations.modalPlaceholder"
-                        :rows="6"/>
+                    <div class="row g-3 br-sale-section-modal">
+                        <InputSlot
+                            hasDiv
+                            title="Vendedor"
+                            :titleClass="[config.forms.classes.title]"
+                            xl="6"
+                            lg="6">
+                            <template v-slot:input>
+                                <v-select
+                                    v-model="forms[entity].createUpdate.data.seller"
+                                    :options="users"
+                                    :class="config.forms.classes.select2"
+                                    :clearable="false"
+                                    :searchable="true"
+                                    append-to-body
+                                    placeholder="Seleccione vendedor"/>
+                            </template>
+                        </InputSlot>
+                        <InputSlot
+                            hasDiv
+                            :title="MODULE.texts.form.quotation"
+                            :titleClass="[config.forms.classes.title]"
+                            xl="6"
+                            lg="6">
+                            <template v-slot:input>
+                                <v-select
+                                    v-model="forms[entity].createUpdate.data.quotation"
+                                    :options="quotationOptions"
+                                    :class="config.forms.classes.select2"
+                                    :clearable="false"
+                                    :searchable="true"
+                                    append-to-body
+                                    placeholder="Seleccione cotización"
+                                    @option:selected="applyQuotationDraft"/>
+                            </template>
+                        </InputSlot>
+                        <InputTextArea
+                            v-model="forms[entity].createUpdate.extras.modals.observations.draft"
+                            hasDiv
+                            title="Observaciones"
+                            :titleClass="[config.forms.classes.title]"
+                            :placeholder="MODULE.texts.observations.modalPlaceholder"
+                            :rows="4"
+                            xl="12"
+                            lg="12"/>
+                        <div v-if="hasQuotationApplied" class="col-12">
+                            <button type="button" class="br-sale-section-modal__remove" @click="clearQuotation">
+                                <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+                                <span>Quitar cotización aplicada</span>
+                            </button>
+                        </div>
+                    </div>
                 </div>
                 <div class="modal-footer br-entity-modal__footer br-modal-shell__footer">
                     <button type="button" class="br-btn br-btn-cancel" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="button" class="br-btn br-btn-primary waves-effect" @click="saveObservationsModal">
+                    <button type="button" class="br-btn br-btn-primary waves-effect" @click="saveInformationSectionModal">
                         <i class="fa fa-save"></i>
-                        <span class="ms-2" v-text="MODULE.texts.actions.saveObservations"></span>
+                        <span class="ms-2">Guardar información</span>
                     </button>
                 </div>
             </div>
@@ -1520,8 +1557,6 @@ const MODULE_CONFIG = {
 
 const TEXTS = {
     observations: {
-        emptyHint: "Sin observaciones para esta venta.",
-        discreteEmpty: "Sin observaciones para esta venta.",
         modalPlaceholder: "Escribe aquí la observación de la venta...",
         viewMore: "Ver más",
         viewLess: "Ver menos"
@@ -1712,7 +1747,6 @@ export default {
         return {
             ...crudModule,
             MODULE: MODULE,
-            observationPreviewExpanded: false,
             selectedCatalogInfoExpanded: false,
             syncingDetailModal: false
         };
@@ -2000,8 +2034,8 @@ export default {
             if(this.detailIsIgvExempt(detail)) {
 
                 return {
-                    label: "Exo. IGV",
-                    title: "IGV exonerado",
+                    label: "Exonerado",
+                    title: "Operación exonerada: no se calcula IGV.",
                     className: "br-sale-detail-igv-label--not-applicable"
                 };
 
@@ -2010,16 +2044,16 @@ export default {
             if(this.detailIncludesTax(detail)) {
 
                 return {
-                    label: "Inc. IGV",
-                    title: "Incluye IGV",
+                    label: "Incl. IGV",
+                    title: "El precio ingresado ya contiene el IGV",
                     className: "br-sale-detail-igv-label--yes"
                 };
 
             }
 
             return {
-                label: "Más IGV",
-                title: "Más IGV adicional",
+                label: "- IGV",
+                title: "El precio no incluye IGV; se calcula por separado y se suma al total.",
                 className: "br-sale-detail-igv-label--no"
             };
 
@@ -2277,9 +2311,48 @@ export default {
             Alerts.modals({type: "show", id: this.forms[this.entity].createUpdate.extras.modals.observations.id});
 
         },
-        toggleObservationPreviewExpand() {
+        openInformationSectionModal() {
 
-            this.observationPreviewExpanded = !this.observationPreviewExpanded;
+            const form = this.forms[this.entity].createUpdate;
+            const observation = form.data.observation;
+
+            form.extras.modals.observations.draft = observation == null ? "" : String(observation);
+
+            if(!form.data.seller) form.data.seller = this.defaultSellerOption;
+
+            Alerts.modals({type: "show", id: form.extras.modals.observations.id});
+
+        },
+        saveInformationSectionModal() {
+
+            const form = this.forms[this.entity].createUpdate;
+            const draft = form.extras.modals.observations.draft;
+
+            form.data.observation = draft == null ? "" : String(draft);
+            Alerts.modals({type: "hide", id: form.extras.modals.observations.id});
+
+        },
+        openDeliverySectionModal() {
+
+            const form = this.forms[this.entity].createUpdate;
+
+            if(!form.data.delivery_mode) form.data.delivery_mode = this.deliveryModes[0];
+            if(!form.data.warehouse && this.warehouses.length) form.data.warehouse = this.warehouses[0];
+
+            Alerts.modals({type: "show", id: form.extras.modals.delivery.id});
+
+        },
+        openPaymentSectionModal() {
+
+            const form = this.forms[this.entity].createUpdate;
+
+            if((form.data.payments || []).length === 0) {
+
+                form.data.payments = [this.newSalePayment({amount: this.total})];
+
+            }
+
+            Alerts.modals({type: "show", id: form.extras.modals.payments.id});
 
         },
         saveObservationsModal() {
@@ -2549,8 +2622,8 @@ export default {
                 confirmButtonText: "Sí, limpiar",
                 cancelButtonText: "Cancelar",
                 customClass: {
-                    confirmButton: "btn btn-danger waves-effect",
-                    cancelButton: "btn btn-secondary waves-effect ms-3"
+                    confirmButton: "br-btn br-btn-danger waves-effect",
+                    cancelButton: "br-btn br-btn-cancel waves-effect ms-3"
                 }
             }).then(result => {
 
@@ -2674,6 +2747,20 @@ export default {
 
             Alerts.tooltips({show: false, time: 0});
             setTimeout(() => Alerts.tooltips({show: true}), 140);
+
+        },
+        hideDetailActionsTooltip(event) {
+
+            const button = event?.currentTarget;
+            const trigger = button?.closest(".br-sale-detail-actions-tooltip");
+            const tooltip = trigger ? window.bootstrap?.Tooltip?.getInstance(trigger) : null;
+
+            if(!tooltip) return;
+
+            tooltip.disable();
+            tooltip.hide();
+
+            button?.closest(".dropdown")?.addEventListener("hidden.bs.dropdown", () => tooltip.enable(), {once: true});
 
         },
         normalizeSubscriptionsResponse(response) {
@@ -3497,12 +3584,12 @@ export default {
         },
         deliveryModeLabel() {
 
-            return this.forms[this.entity].createUpdate.data.delivery_mode?.label || "Entrega inmediata";
+            return this.forms[this.entity].createUpdate.data.delivery_mode?.label || "Sin tipo de entrega";
 
         },
         sellerLabel() {
 
-            return this.forms[this.entity].createUpdate.data.seller?.label || "Seleccione vendedor";
+            return this.forms[this.entity].createUpdate.data.seller?.label || "Sin vendedor";
 
         },
         hasQuotationApplied() {
@@ -3521,7 +3608,7 @@ export default {
         },
         warehouseLabel() {
 
-            return this.forms[this.entity].createUpdate.data.warehouse?.label || "Seleccione almacén";
+            return this.forms[this.entity].createUpdate.data.warehouse?.label || "Sin almacén";
 
         },
         saleConfigurationIssue() {
@@ -3583,7 +3670,7 @@ export default {
 
                 return {
                     title: "Falta detalle",
-                    message: "Agrega al menos un ítem a la venta."
+                    message: "Agrega al menos un ítem para continuar"
                 };
 
             }
@@ -3702,8 +3789,8 @@ export default {
 
                     return {
                         key: tax.code,
-                        name: line.name,
-                        description: this.isFixedTax(tax.data) ? `${line.quantity} vez${Number(line.quantity) === 1 ? "" : "es"} × ${this.taxLabel(tax.data)}` : this.taxLabel(tax.data),
+                        name: this.isFixedTax(tax.data) ? `${line.name} × ${line.quantity}` : line.name,
+                        description: this.isFixedTax(tax.data) ? "" : this.taxLabel(tax.data),
                         amount: line.amount
                     };
 
@@ -3723,12 +3810,21 @@ export default {
 
             return (this.forms[this.entity].createUpdate.data.payments || [])
                 .filter(payment => payment.method?.code)
-                .map(payment => ({
-                    key: payment.key,
-                    label: payment.variant?.label || payment.method?.label || "Método de pago",
-                    reference: payment.reference || "",
-                    amount: Number(payment.amount || 0)
-                }));
+                .map(payment => {
+
+                    const label = payment.variant?.label || payment.method?.label || "Método de pago";
+                    const imageUrl = this.paymentAssetUrl(payment.variant?.data)
+                        || this.paymentAssetUrl(payment.method?.data);
+
+                    return {
+                        key: payment.key,
+                        label,
+                        imageUrl,
+                        reference: payment.reference || "",
+                        amount: Number(payment.amount || 0)
+                    };
+
+                });
 
         },
         saleRequiresStockContext() {
@@ -3769,6 +3865,21 @@ export default {
             return this.fixedNumber((this.forms[this.entity].createUpdate.data.details || []).reduce((total, detail) => {
                 return total + Number(this.detailFinalTotal(detail) || 0);
             }, 0));
+
+        },
+        saleExtraTaxTotal() {
+
+            const total = (this.saleTaxBreakdown || []).reduce((sum, tax) => {
+
+                const taxConfig = this.taxById(tax.id);
+
+                if(this.isIgvTax(taxConfig)) return sum;
+
+                return sum + Number(tax.totalImpact || 0);
+
+            }, 0);
+
+            return this.fixedNumber(total);
 
         },
         saleSubtotal: function() {
@@ -3920,40 +4031,9 @@ export default {
             return this.observationFullText.length > 0;
 
         },
-        /** Preview length before "Ver más" (sidebar). */
-        observationPreviewCharLimit() {
-
-            return 400;
-
-        },
-        observationIsTruncatable() {
-
-            return this.observationFullText.length > this.observationPreviewCharLimit;
-
-        },
         observationDisplayPreview() {
 
-            const full = this.observationFullText;
-
-            if(!full) return "";
-
-            if(this.observationPreviewExpanded || !this.observationIsTruncatable) return full;
-
-            const max = this.observationPreviewCharLimit;
-
-            return `${full.slice(0, max)}...`;
-
-        },
-        observationPreviewTooltip() {
-
-            if(!this.observationHasContent || this.observationPreviewExpanded || !this.observationIsTruncatable) return "";
-
             return this.observationFullText;
-
-        },
-        observationPreviewToggleLabel() {
-
-            return this.observationPreviewExpanded ? this.MODULE.texts.observations.viewLess : this.MODULE.texts.observations.viewMore;
 
         },
         observationErrorsDisplay() {
@@ -4094,9 +4174,10 @@ export default {
         }
     },
     watch: {
-        "forms.sales.createUpdate.data.observation"() {
+        saleHasDetails() {
 
-            this.observationPreviewExpanded = false;
+            Alerts.tooltips({show: false, time: 0});
+            this.$nextTick(() => Alerts.tooltips({show: true, time: 0}));
 
         },
         total(value) {
