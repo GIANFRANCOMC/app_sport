@@ -13,7 +13,7 @@ use App\Models\System\Catalogs\Item;
 use App\Models\System\Customers\Subscription;
 use App\Models\System\Finance\{CashMovement, CashSession};
 use App\Models\System\Organizations\{Serie, User};
-use App\Models\System\Sales\{QuotationHeader, SaleBody, SaleHeader, SalePayment, SaleTax};
+use App\Models\System\Sales\{QuotationHeader, SaleBody, SaleDeliveryMethod, SaleHeader, SalePayment, SaleTax};
 use App\Models\System\Warehouses\{InventoryMovement, Warehouse};
 use App\Services\System\Finance\{CommercialCreditAccountService, CommercialDocumentSettlementService};
 use App\Services\System\Organizations\Companies\CompanySettingService;
@@ -590,6 +590,30 @@ class SaleService {
 
     }
 
+    private static function resolveDeliveryMethodId(array $data, int $companyId, bool $requiresPhysicalDelivery): ?int {
+
+        if(!$requiresPhysicalDelivery) {
+            return null;
+        }
+
+        $methodId = (int) ($data["delivery_method_id"] ?? 0);
+        if($methodId <= 0) {
+            throw new \DomainException("Selecciona una modalidad de entrega activa.");
+        }
+
+        $method = SaleDeliveryMethod::query()
+            ->where("company_id", $companyId)
+            ->where("status", "active")
+            ->find($methodId);
+
+        if(!$method) {
+            throw new \DomainException("Selecciona una modalidad de entrega activa.");
+        }
+
+        return (int) $method->id;
+
+    }
+
     private static function resolveCashSession(
         array $data,
         int $companyId,
@@ -751,6 +775,15 @@ class SaleService {
             $data["details"] = self::normalizeTaxFlags($data["details"], $catalogItems);
             $requiresWarehouse = self::saleRequiresWarehouse($data["details"]);
             $warehouse = $requiresWarehouse ? self::resolveWarehouse($data, (int) $companyId) : null;
+            $usesSaleDeliveryFlow = SaleDeliveryPolicy::usesManagedDelivery(
+                (string) ($data["source_channel"] ?? "sale"),
+                $requiresWarehouse
+            );
+            $deliveryMethodId = self::resolveDeliveryMethodId($data, (int) $companyId, $usesSaleDeliveryFlow);
+            $deliveryStatus = SaleDeliveryPolicy::initialStatus(
+                $data["delivery_status"] ?? null,
+                $usesSaleDeliveryFlow
+            );
 
             // Get new sequential number
             $newSequential = SaleHeader::getNewSequential($data["serie_id"]);
@@ -790,7 +823,7 @@ class SaleService {
             $taxImpactTotal = Utilities::round((float) $taxLines->sum("_total_impact"), null, (int) $companyId);
             $includedTaxTotal = Utilities::round($taxTotal - $taxImpactTotal, null, (int) $companyId);
             $subtotal = Utilities::round($grossSubtotal - $includedTaxTotal, null, (int) $companyId);
-            $total = Utilities::round($grossSubtotal + $taxImpactTotal, null, (int) $companyId);
+            $baseTotal = Utilities::round($grossSubtotal + $taxImpactTotal, null, (int) $companyId);
             $defaultPaymentModality = (string) CompanySettingService::value(
                 (int) $companyId,
                 CompanySettingService::SALES,
@@ -801,7 +834,26 @@ class SaleService {
                 $data["payment_modality"] ?? null,
                 $defaultPaymentModality
             );
-            $installmentExtraPercentage = $paymentModality === CommercialCreditAccountService::INSTALLMENTS
+            $paymentLines = CommercialDocumentSettlementService::payments(
+                (int) $companyId,
+                "sale",
+                (float) $baseTotal,
+                $data["payments"] ?? [],
+                (int) $userId,
+                $paymentModality === CommercialCreditAccountService::PAID_NOW
+            );
+            $paidAmount = Utilities::round((float) $paymentLines->sum("amount"), null, (int) $companyId);
+            $financedPrincipal = $paymentModality === CommercialCreditAccountService::INSTALLMENTS
+                ? Utilities::round($baseTotal - $paidAmount, null, (int) $companyId)
+                : 0.0;
+
+            if($paymentModality === CommercialCreditAccountService::INSTALLMENTS && $financedPrincipal <= 0) {
+
+                throw new \DomainException("El crédito en cuotas requiere un saldo pendiente por financiar.");
+
+            }
+
+            $installmentExtraPercentage = $paymentModality === CommercialCreditAccountService::INSTALLMENTS && $financedPrincipal > 0
                 ? (float) CompanySettingService::value(
                     (int) $companyId,
                     CompanySettingService::SALES,
@@ -809,17 +861,8 @@ class SaleService {
                     0
                 )
                 : 0.0;
-            $installmentExtraAmount = Utilities::round($total * ($installmentExtraPercentage / 100), null, (int) $companyId);
-            $total = Utilities::round($total + $installmentExtraAmount, null, (int) $companyId);
-            $paymentLines = CommercialDocumentSettlementService::payments(
-                (int) $companyId,
-                "sale",
-                (float) $total,
-                $data["payments"] ?? [],
-                (int) $userId,
-                $paymentModality === CommercialCreditAccountService::PAID_NOW
-            );
-            $paidAmount = Utilities::round((float) $paymentLines->sum("amount"), null, (int) $companyId);
+            $installmentExtraAmount = Utilities::round($financedPrincipal * ($installmentExtraPercentage / 100), null, (int) $companyId);
+            $total = Utilities::round($baseTotal + $installmentExtraAmount, null, (int) $companyId);
             $balanceDue = Utilities::round($total - $paidAmount, null, (int) $companyId);
             $paymentStatus = CommercialCreditAccountService::paymentStatus((float) $total, (float) $paidAmount, (int) $companyId);
 
@@ -832,13 +875,12 @@ class SaleService {
             $saleHeader->seller_id   = $sellerId;
             $saleHeader->currency_id = $data["currency_id"];
             $saleHeader->warehouse_id = $warehouse?->id;
+            $saleHeader->delivery_method_id = $deliveryMethodId;
             $saleHeader->cash_session_id = $cashSession?->id;
             $saleHeader->quotation_header_id = $data["quotation_header_id"] ?? null;
             $saleHeader->issue_date  = $data["issue_date"];
-            $deliveryMode = $data["delivery_mode"] ?? "immediate";
-            $deliveryStatus = $data["delivery_status"] ?? ($deliveryMode === "immediate" ? "delivered" : "pending");
-            $deliveryStatus = $deliveryMode === "pending" && $requiresWarehouse ? "pending" : $deliveryStatus;
-            $saleHeader->delivery_mode = $deliveryMode;
+            // Campo legado conservado para compatibilidad; el estado es la fuente operativa.
+            $saleHeader->delivery_mode = SaleDeliveryPolicy::legacyMode($deliveryStatus);
             $saleHeader->delivery_status = $deliveryStatus;
             $saleHeader->delivered_at = $deliveryStatus === "delivered" ? now() : null;
             $saleHeader->delivered_by = $deliveryStatus === "delivered" ? $userId : null;
@@ -907,8 +949,7 @@ class SaleService {
                 $saleBody = self::createSaleBody($saleHeader, $detail, $userId);
                 $saleBodies->push($saleBody);
 
-                // Update warehouse inventory for products only when the sale is delivered immediately.
-                if($warehouse && $deliveryMode === "immediate") {
+                if($warehouse && SaleDeliveryPolicy::shouldExitInventory($deliveryStatus, $requiresWarehouse)) {
 
                     self::applyInventoryExit($warehouse, $saleBody, $detail, $userId);
 
@@ -920,7 +961,7 @@ class SaleService {
 
             }
 
-            if($warehouse && $deliveryMode === "pending") {
+            if($warehouse && SaleDeliveryPolicy::shouldCreatePendingDelivery($deliveryStatus, $requiresWarehouse)) {
 
                 SaleDeliveryService::createPendingForSale($saleHeader, $saleBodies, (int) $warehouse->id, (int) $userId);
 
@@ -1219,7 +1260,7 @@ class SaleService {
         $serieIds = $branches->pluck("series.*.id")->flatten();
 
         $query = SaleHeader::whereIn("serie_id", $serieIds)
-                           ->with(["serie.documentType", "serie.branch", "holder", "currency", "warehouse", "taxes", "payments"]);
+                           ->with(["serie.documentType", "serie.branch", "holder", "currency", "warehouse", "deliveryMethod", "taxes", "payments"]);
 
         // Apply filters
         self::applyFilters($query, $filters);

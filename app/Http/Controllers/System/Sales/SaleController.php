@@ -282,7 +282,7 @@ class SaleController extends BaseController {
             "seller_id"   => $request->seller_id,
             "currency_id" => $request->currency_id,
             "issue_date"  => $request->issue_date,
-            "delivery_mode" => $request->delivery_mode ?? "immediate",
+            "delivery_method_id" => $request->delivery_method_id,
             "delivery_status" => $request->delivery_status,
             "delivery_observation" => $request->delivery_observation,
             "observation" => $request->observation,

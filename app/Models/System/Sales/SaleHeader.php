@@ -30,6 +30,7 @@ class SaleHeader extends Model {
         "legible_total",
         "formatted_status",
         "formatted_delivery_mode",
+        "formatted_delivery_method",
         "formatted_delivery_status",
         "formatted_payment_modality",
         "formatted_payment_status"
@@ -43,6 +44,7 @@ class SaleHeader extends Model {
         "seller_id",
         "currency_id",
             "warehouse_id",
+            "delivery_method_id",
             "cash_session_id",
             "quotation_header_id",
             "issue_date",
@@ -136,6 +138,12 @@ class SaleHeader extends Model {
 
     }
 
+    public function getFormattedDeliveryMethodAttribute(): string {
+
+        return $this->deliveryMethod?->name ?? "";
+
+    }
+
     public function getFormattedDeliveryStatusAttribute() {
 
         return self::getDeliveryStatuses("first", $this->attributes["delivery_status"] ?? "")["label"] ?? "";
@@ -196,7 +204,7 @@ class SaleHeader extends Model {
         $modalities = [
             ["code" => "paid_now", "label" => "Pago al momento"],
             ["code" => "cash_on_delivery", "label" => "Contraentrega"],
-            ["code" => "installments", "label" => "Pago por cuotas"]
+            ["code" => "installments", "label" => "Crédito en cuotas"]
         ];
 
         return Utilities::getValues($modalities, $type, $code);
@@ -284,6 +292,12 @@ class SaleHeader extends Model {
     public function warehouse() {
 
         return $this->belongsTo(Warehouse::class, "warehouse_id", "id");
+
+    }
+
+    public function deliveryMethod() {
+
+        return $this->belongsTo(SaleDeliveryMethod::class, "delivery_method_id", "id");
 
     }
 

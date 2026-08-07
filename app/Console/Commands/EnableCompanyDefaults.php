@@ -33,6 +33,7 @@ final class EnableCompanyDefaults extends Command {
             $this->seedSettings($companyId);
             $this->seedTaxes($companyId);
             $this->seedPaymentMethods($companyId);
+            $this->seedSaleDeliveryMethods($companyId);
 
             if(!$this->option('skip-modules')) {
                 $this->enableModules($companyId);
@@ -213,6 +214,27 @@ final class EnableCompanyDefaults extends Command {
             ->delete();
 
         $this->seedPaymentMethodVariants($companyId);
+
+    }
+
+    private function seedSaleDeliveryMethods(int $companyId): void {
+
+        if(!Schema::hasTable('sale_delivery_methods')) {
+            return;
+        }
+
+        $methods = [
+            ['code' => 'local_pickup', 'name' => 'Recojo en local', 'description' => 'El cliente recoge lo vendido en un local de la empresa.', 'sort_order' => 10, 'is_default' => true],
+            ['code' => 'delivery', 'name' => 'Delivery', 'description' => 'La empresa entrega lo vendido en la ubicación indicada por el cliente.', 'sort_order' => 20, 'is_default' => false],
+            ['code' => 'shipping', 'name' => 'Envío', 'description' => 'Lo vendido se remite mediante transporte propio o un tercero.', 'sort_order' => 30, 'is_default' => false]
+        ];
+
+        foreach($methods as $method) {
+            DB::table('sale_delivery_methods')->updateOrInsert(
+                ['company_id' => $companyId, 'code' => $method['code']],
+                $method + ['company_id' => $companyId, 'status' => 'active']
+            );
+        }
 
     }
 

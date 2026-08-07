@@ -26,6 +26,10 @@ final class SaleDeliveryService {
 
     public static function createPendingForSale(SaleHeader $saleHeader, $saleBodies, ?int $warehouseId, int $userId): ?SaleDelivery {
 
+        if($saleHeader->delivery_status !== "pending") {
+            return null;
+        }
+
         $productBodies = collect($saleBodies)
             ->filter(fn($body) => $body instanceof SaleBody && $body->type === "product" && $body->status === "active")
             ->values();
@@ -73,10 +77,14 @@ final class SaleDeliveryService {
         $query = SaleDelivery::query()
             ->where("company_id", $companyId)
             ->whereIn("status", ["pending", "partial"])
+            ->whereHas("saleHeader", fn($sale) => $sale
+                ->where("status", "active")
+                ->whereIn("delivery_status", ["pending", "partial"]))
             ->with([
                 "saleHeader.serie.documentType",
                 "saleHeader.serie.branch",
                 "saleHeader.holder",
+                "saleHeader.deliveryMethod",
                 "warehouse.branch",
                 "items.saleBody.currency",
                 "items.item:id,internal_code,barcode,name",

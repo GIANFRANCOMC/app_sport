@@ -92,6 +92,7 @@ Route::middleware(['auth', 'verified', 'module.permission', 'resource.scope'])->
 
     // Finance
     Route::prefix('/cash_registers')->group($systemRoute.'/Finance/CashRegister.php');
+    Route::prefix('/accounts_receivable')->group($systemRoute.'/Finance/AccountsReceivable.php');
     Route::prefix('/misc_expenses')->group($systemRoute.'/Finance/MiscExpense.php');
 
     // Purchases

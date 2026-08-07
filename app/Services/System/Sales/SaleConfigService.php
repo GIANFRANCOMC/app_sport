@@ -15,6 +15,7 @@ use App\Services\System\Base\{
     CompanyReferenceDataService,
     MasterReferenceDataService
 };
+use App\Services\System\Organizations\Companies\CompanySettingService;
 
 final class SaleConfigService extends BaseConfigService {
 
@@ -99,6 +100,9 @@ final class SaleConfigService extends BaseConfigService {
             "paymentMethods" => self::data([
                 "records" => $references->paymentMethodsFor("sale")
             ]),
+            "saleDeliveryMethods" => self::data([
+                "records" => $references->saleDeliveryMethods()
+            ]),
             "users" => self::data([
                 "records" => $references->users(),
                 "current_id" => $userId
@@ -116,7 +120,23 @@ final class SaleConfigService extends BaseConfigService {
                     ->get(["id", "reference", "holder_id", "issue_date", "valid_until", "total", "status"])
             ]),
             "salesHeader" => self::data([
-                "statuses" => SaleHeader::getStatuses()
+                "statuses" => SaleHeader::getStatuses(),
+                "deliveryStatuses" => collect(SaleHeader::getDeliveryStatuses())
+                    ->whereIn("code", ["pending", "delivered"])
+                    ->values(),
+                "paymentModalities" => SaleHeader::getPaymentModalities(),
+                "defaultPaymentModality" => CompanySettingService::value(
+                    $companyId,
+                    CompanySettingService::SALES,
+                    "default_payment_modality",
+                    "paid_now"
+                ),
+                "installmentExtraPercentage" => (float) CompanySettingService::value(
+                    $companyId,
+                    CompanySettingService::SALES,
+                    "installment_extra_percentage",
+                    0
+                )
             ])
         ]);
 

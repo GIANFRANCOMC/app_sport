@@ -154,7 +154,7 @@
                                         <th style="width: 5%;">#</th>
                                         <th class="min-w-150px" style="width: 18%;">ÍTEM</th>
                                         <th class="min-w-120px text-end" style="width: 11%;">CANTIDAD</th>
-                                        <th class="min-w-170px text-end" style="width: 18%;">PRECIO DE VENTA</th>
+                                        <th class="min-w-170px text-end" style="width: 18%;">PRECIO UNITARIO</th>
                                         <th class="min-w-130px text-end br-sale-detail-calc-head" style="width: 14%;">SUBTOTAL</th>
                                         <th class="min-w-110px text-end br-sale-detail-calc-head" style="width: 10%;">IGV</th>
                                         <th class="min-w-120px text-end pe-3 br-sale-detail-calc-head br-sale-detail-calc-head--total" style="width: 12%;">TOTAL</th>
@@ -169,7 +169,17 @@
                                                     <span v-text="keyRecord + 1"></span>
                                                 </td>
                                                 <td class="text-start">
-                                                    <span class="text-break" v-text="record.name"></span>
+                                                    <div class="br-sale-detail-item-cell">
+                                                        <span class="text-break" v-text="record.name"></span>
+                                                        <span
+                                                            class="br-sale-detail-igv-label"
+                                                            :class="detailTaxInclusionInfo(record).className"
+                                                            data-bs-toggle="tooltip"
+                                                            data-bs-placement="top"
+                                                            :title="detailTaxInclusionInfo(record).title"
+                                                            v-text="detailTaxInclusionInfo(record).label">
+                                                        </span>
+                                                    </div>
                                                 </td>
                                                 <td class="text-center">
                                                     <InputNumber
@@ -184,14 +194,6 @@
                                                                 <span class="input-group-text br-currency-prefix" v-text="record?.currency?.sign"></span>
                                                             </template>
                                                         </InputNumber>
-                                                        <span
-                                                            class="br-sale-detail-igv-label"
-                                                            :class="detailTaxInclusionInfo(record).className"
-                                                            data-bs-toggle="tooltip"
-                                                            data-bs-placement="top"
-                                                            :title="detailTaxInclusionInfo(record).title"
-                                                            v-text="detailTaxInclusionInfo(record).label">
-                                                        </span>
                                                     </div>
                                                 </td>
                                                 <td class="text-end align-middle br-sale-detail-calc-cell">
@@ -400,10 +402,10 @@
                     </button>
                 </div>
                 <div class="br-document-settlement__field br-document-settlement__field--inline">
-                    <label class="form-label colon-at-end">Tipo de entrega</label>
-                    <span v-if="forms[entity].createUpdate.data.delivery_mode" class="br-document-delivery-summary__value" v-text="deliveryModeLabel"></span>
-                    <span v-else class="br-document-settlement__field-value--empty">Sin tipo de entrega</span>
-                    <small v-if="forms[entity].createUpdate.errors?.delivery_mode" :class="config.forms.errors.styles.default" v-html="forms[entity].createUpdate.errors.delivery_mode"></small>
+                    <label class="form-label colon-at-end">Entrega</label>
+                    <span class="br-document-delivery-summary__value" v-text="deliverySummaryLabel"></span>
+                    <small v-if="forms[entity].createUpdate.errors?.delivery_method" :class="config.forms.errors.styles.default" v-html="forms[entity].createUpdate.errors.delivery_method"></small>
+                    <small v-if="forms[entity].createUpdate.errors?.delivery_status" :class="config.forms.errors.styles.default" v-html="forms[entity].createUpdate.errors.delivery_status"></small>
                 </div>
                 <div class="br-document-settlement__field br-document-settlement__field--inline">
                     <label class="form-label colon-at-end">Almacén</label>
@@ -491,6 +493,13 @@
                             {{ forms[entity].createUpdate.data.currency?.data?.sign ?? '' }}
                             {{ separatorNumber(saleExtraTaxTotal) }}
                         </strong>
+                        <template v-if="saleUsesInstallments">
+                            <span class="br-document-settlement__summary-label">Recargo por cuotas</span>
+                            <strong class="br-document-settlement__summary-value br-amount-inline__amount">
+                                {{ forms[entity].createUpdate.data.currency?.data?.sign ?? '' }}
+                                {{ separatorNumber(saleInstallmentExtraAmount) }}
+                            </strong>
+                        </template>
                         <div class="br-document-settlement__summary-divider" aria-hidden="true"></div>
                         <span class="br-document-settlement__summary-label br-document-settlement__summary-label--total">Total a pagar</span>
                         <strong class="br-document-settlement__summary-value br-document-settlement__summary-value--total br-amount-inline__amount">
@@ -627,48 +636,70 @@
                     </button>
                 </div>
                 <div class="modal-body br-entity-modal__body br-modal-shell__body">
-                    <div class="br-choice-group br-choice-group--stacked" role="radiogroup" :aria-label="MODULE.texts.form.deliveryMode">
-                        <label
-                            v-for="mode in deliveryModes"
-                            :key="mode.code"
-                            :class="['br-choice-option', {'is-selected': forms[entity].createUpdate.data.delivery_mode?.code === mode.code}]">
-                            <input
-                                class="br-choice-option__input"
-                                type="radio"
-                                name="sale_delivery_mode"
-                                :value="mode.code"
-                                :checked="forms[entity].createUpdate.data.delivery_mode?.code === mode.code"
-                                @change="forms[entity].createUpdate.data.delivery_mode = mode">
-                            <span class="br-choice-option__indicator" aria-hidden="true"></span>
-                            <span>
-                                <strong v-text="mode.label"></strong>
-                                <small v-text="mode.description"></small>
-                            </span>
-                        </label>
+                    <div v-if="!saleRequiresStockContext" class="alert alert-info py-2 mb-3">
+                        Esta venta no contiene ítems que requieran entrega física. La modalidad no aplica y el estado será Entregado.
                     </div>
-                    <small
-                        v-if="forms[entity].createUpdate.errors?.delivery_mode"
-                        :class="config.forms.errors.styles.default"
-                        v-html="forms[entity].createUpdate.errors.delivery_mode"></small>
-                    <div v-if="canChangeWarehouse" class="mt-3 pt-2 border-top">
+                    <div class="row g-2">
                         <InputSlot
                             hasDiv
                             :title="MODULE.texts.form.warehouse"
                             :titleClass="[config.forms.classes.title]"
-                            isRequired
+                            :isRequired="saleRequiresStockContext"
                             hasTextBottom
                             :textBottomInfo="forms[entity].createUpdate.errors?.warehouse"
-                            xl="12"
-                            lg="12">
+                            xl="4"
+                            lg="4">
                             <template v-slot:input>
                                 <v-select
                                     v-model="forms[entity].createUpdate.data.warehouse"
                                     :options="warehouses"
                                     :class="config.forms.classes.select2"
                                     :clearable="false"
-                                    :searchable="false"
+                                    :searchable="warehouses.length > 6"
+                                    :disabled="!saleRequiresStockContext"
                                     append-to-body
-                                    placeholder="Seleccione"/>
+                                    placeholder="Sin almacén"/>
+                            </template>
+                        </InputSlot>
+                        <InputSlot
+                            hasDiv
+                            title="Modalidad de entrega"
+                            :titleClass="[config.forms.classes.title]"
+                            :isRequired="saleRequiresStockContext"
+                            hasTextBottom
+                            :textBottomInfo="forms[entity].createUpdate.errors?.delivery_method"
+                            xl="4"
+                            lg="4">
+                            <template v-slot:input>
+                                <v-select
+                                    v-model="forms[entity].createUpdate.data.delivery_method"
+                                    :options="deliveryMethods"
+                                    :class="config.forms.classes.select2"
+                                    :clearable="false"
+                                    :searchable="false"
+                                    :disabled="!saleRequiresStockContext"
+                                    append-to-body
+                                    placeholder="No aplica"/>
+                            </template>
+                        </InputSlot>
+                        <InputSlot
+                            hasDiv
+                            title="Estado de entrega"
+                            :titleClass="[config.forms.classes.title]"
+                            :isRequired="saleRequiresStockContext"
+                            hasTextBottom
+                            :textBottomInfo="forms[entity].createUpdate.errors?.delivery_status"
+                            xl="4"
+                            lg="4">
+                            <template v-slot:input>
+                                <v-select
+                                    v-model="forms[entity].createUpdate.data.delivery_status"
+                                    :options="deliveryStatuses"
+                                    :class="config.forms.classes.select2"
+                                    :clearable="false"
+                                    :searchable="false"
+                                    :disabled="!saleRequiresStockContext"
+                                    append-to-body/>
                             </template>
                         </InputSlot>
                     </div>
@@ -867,9 +898,34 @@
                         <p v-else class="br-document-settlement__empty mb-0">No hay impuestos extras configurados.</p>
                     </section>
                     <section v-if="canChangePaymentMethods" class="br-sale-section-modal__block">
+                        <h6>Modalidad de pago</h6>
+                        <p class="br-document-payment-intro">Define si el saldo se paga ahora o se registra en cuentas por cobrar.</p>
+                        <div class="br-sale-credit-mode" role="radiogroup" aria-label="Modalidad de pago">
+                            <label
+                                v-for="modality in salePaymentModalities"
+                                :key="modality.code"
+                                class="br-sale-credit-mode__option"
+                                :class="{'is-selected': forms[entity].createUpdate.data.payment_modality === modality.code}">
+                                <input
+                                    v-model="forms[entity].createUpdate.data.payment_modality"
+                                    type="radio"
+                                    :value="modality.code"
+                                    @change="changeSalePaymentModality">
+                                <span>
+                                    <i
+                                        :class="['fa-solid', modality.code === 'installments' ? 'fa-calendar-days' : (modality.code === 'cash_on_delivery' ? 'fa-truck' : 'fa-money-bill-wave')]"
+                                        aria-hidden="true"></i>
+                                    <strong v-text="modality.label"></strong>
+                                </span>
+                            </label>
+                        </div>
+                    </section>
+                    <section v-if="canChangePaymentMethods" class="br-sale-section-modal__block">
                         <h6>Métodos de pago</h6>
                     <p class="br-document-payment-intro">
-                        Distribuye el importe total entre uno o más métodos configurados para ventas.
+                        {{ saleUsesInstallments
+                            ? 'Registra solo el pago inicial. El saldo restante se financiará.'
+                            : 'Distribuye el importe total entre uno o más métodos configurados para ventas.' }}
                     </p>
                     <div class="br-document-payments br-document-payments--modal">
                         <div
@@ -939,7 +995,8 @@
                                 :titleClass="[]"
                                 :inputClass="['form-control', 'br-document-payment-amount']"
                                 :minValue="0"
-                                :placeholder="separatorNumber(total)">
+                                :maxValue="saleUsesInstallments ? saleBaseTotal : total"
+                                :placeholder="separatorNumber(saleUsesInstallments ? 0 : total)">
                                 <template v-slot:inputGroupPrepend>
                                     <span class="input-group-text br-currency-prefix" v-text="forms[entity].createUpdate.data.currency?.data?.sign ?? ''"></span>
                                 </template>
@@ -965,13 +1022,67 @@
                             <span>Agregar método</span>
                         </button>
                         <div class="br-document-payment-modal-total">
-                            <span>Diferencia</span>
-                            <strong :class="Number(salePaymentDifference) === 0 ? 'text-success' : 'text-danger'">
+                            <span v-text="saleUsesInstallments ? 'Pago inicial' : 'Diferencia'"></span>
+                            <strong :class="!saleUsesInstallments && Number(salePaymentDifference) !== 0 ? 'text-danger' : 'text-success'">
                                 {{ forms[entity].createUpdate.data.currency?.data?.sign ?? '' }}
-                                {{ separatorNumber(salePaymentDifference) }}
+                                {{ separatorNumber(saleUsesInstallments ? salePaidTotal : salePaymentDifference) }}
                             </strong>
                         </div>
                     </div>
+                    </section>
+                    <section v-if="saleUsesInstallments" class="br-sale-section-modal__block br-sale-credit-terms">
+                        <h6>Condiciones del crédito</h6>
+                        <p class="br-document-payment-intro">El recargo se calcula únicamente sobre el capital pendiente, no sobre lo pagado hoy.</p>
+                        <div class="br-sale-credit-terms__fields">
+                            <label class="br-sale-credit-terms__field">
+                                <span>Número de cuotas</span>
+                                <input
+                                    v-model.number="forms[entity].createUpdate.data.installment_count"
+                                    type="number"
+                                    class="form-control"
+                                    min="1"
+                                    max="120"
+                                    step="1">
+                            </label>
+                            <label class="br-sale-credit-terms__field">
+                                <span>Vencimiento de la primera cuota</span>
+                                <input
+                                    v-model="forms[entity].createUpdate.data.first_due_date"
+                                    type="date"
+                                    class="form-control"
+                                    :min="forms[entity].createUpdate.data.issue_date">
+                            </label>
+                        </div>
+                        <div class="br-sale-credit-preview">
+                            <div>
+                                <span>Capital pendiente</span>
+                                <strong class="br-amount-inline__amount">
+                                    {{ forms[entity].createUpdate.data.currency?.data?.sign ?? '' }}
+                                    {{ separatorNumber(saleFinancedPrincipal) }}
+                                </strong>
+                            </div>
+                            <div>
+                                <span>Recargo ({{ separatorNumber(saleInstallmentExtraPercentage) }} %)</span>
+                                <strong class="br-amount-inline__amount">
+                                    {{ forms[entity].createUpdate.data.currency?.data?.sign ?? '' }}
+                                    {{ separatorNumber(saleInstallmentExtraAmount) }}
+                                </strong>
+                            </div>
+                            <div class="br-sale-credit-preview__total">
+                                <span>Total por cobrar</span>
+                                <strong class="br-amount-inline__amount">
+                                    {{ forms[entity].createUpdate.data.currency?.data?.sign ?? '' }}
+                                    {{ separatorNumber(saleReceivableTotal) }}
+                                </strong>
+                            </div>
+                            <small>
+                                {{ forms[entity].createUpdate.data.installment_count || 1 }} cuotas aproximadas de
+                                <span class="br-amount-inline__amount">
+                                    {{ forms[entity].createUpdate.data.currency?.data?.sign ?? '' }}
+                                    {{ separatorNumber(saleInstallmentAmount) }}
+                                </span>
+                            </small>
+                        </div>
                     </section>
                 </div>
                 <div class="modal-footer br-entity-modal__footer br-modal-shell__footer">
@@ -1566,7 +1677,7 @@ const TEXTS = {
         serie: "Tipo de comprobante",
         warehouse: "Almacén",
         issueDate: "Fecha de emisión",
-        deliveryMode: "Tipo de entrega",
+        deliveryMode: "Modalidad de entrega",
         holder: "Cliente",
         quotation: "Cotización",
         observation: "Observaciones",
@@ -1726,7 +1837,8 @@ export default {
                 serie: null,
                 warehouse: null,
                 issue_date: "",
-                delivery_mode: {code: "immediate", label: "Entrega inmediata"},
+                delivery_method: null,
+                delivery_status: {code: "delivered", label: "Entregado"},
                 holder: null,
                 quotation: null,
                 quotation_header_id: null,
@@ -1736,6 +1848,9 @@ export default {
                 selected_taxes: [],
                 selected_tax_quantities: {},
                 payments: [],
+                payment_modality: "paid_now",
+                installment_count: 2,
+                first_due_date: "",
                 status: "",
                 details: []
             },
@@ -2044,7 +2159,7 @@ export default {
             if(this.detailIncludesTax(detail)) {
 
                 return {
-                    label: "Incl. IGV",
+                    label: "IGV incluido",
                     title: "El precio ingresado ya contiene el IGV",
                     className: "br-sale-detail-igv-label--yes"
                 };
@@ -2052,7 +2167,7 @@ export default {
             }
 
             return {
-                label: "- IGV",
+                label: "+ IGV adicional",
                 title: "El precio no incluye IGV; se calcula por separado y se suma al total.",
                 className: "br-sale-detail-igv-label--no"
             };
@@ -2279,8 +2394,12 @@ export default {
             this.options.salesHeader = initParams.data?.config?.salesHeader;
             this.options.taxes = initParams.data?.config?.taxes;
             this.options.paymentMethods = initParams.data?.config?.paymentMethods;
+            this.options.saleDeliveryMethods = initParams.data?.config?.saleDeliveryMethods;
             this.options.quotations = initParams.data?.config?.quotations;
             this.options.users = initParams.data?.config?.users;
+
+            const salesHeaderConfig = this.options.salesHeader || {};
+            this.forms[this.entity].createUpdate.data.payment_modality = salesHeaderConfig.defaultPaymentModality || "paid_now";
 
             return Requests.valid({result: initParams});
 
@@ -2291,11 +2410,16 @@ export default {
 
                 this.forms[this.entity].createUpdate.data.branch     = (this.branches).length > 0 ? this.branches[0] : null;
                 this.forms[this.entity].createUpdate.data.warehouse  = (this.warehouses).length > 0 ? this.warehouses[0] : null;
+                this.forms[this.entity].createUpdate.data.delivery_method = this.defaultDeliveryMethod;
+                this.forms[this.entity].createUpdate.data.delivery_status = this.deliveryStatuses.find(status => status.code === "delivered") || null;
                 this.forms[this.entity].createUpdate.data.issue_date = Utils.getCurrentDate();
+                this.forms[this.entity].createUpdate.data.first_due_date = this.defaultFirstDueDate();
                 this.forms[this.entity].createUpdate.data.holder     = (this.holders).length > 0 ? this.holders[0] : null;
                 this.forms[this.entity].createUpdate.data.seller     = this.defaultSellerOption;
                 this.forms[this.entity].createUpdate.data.currency   = (this.currencies).length > 0 ? this.currencies[0] : null;
-                this.forms[this.entity].createUpdate.data.payments   = [this.newSalePayment({amount: this.total})];
+                this.forms[this.entity].createUpdate.data.payments   = [this.newSalePayment({
+                    amount: this.saleUsesInstallments ? "" : this.total
+                })];
 
                 resolve(true);
 
@@ -2336,7 +2460,8 @@ export default {
 
             const form = this.forms[this.entity].createUpdate;
 
-            if(!form.data.delivery_mode) form.data.delivery_mode = this.deliveryModes[0];
+            if(!form.data.delivery_method) form.data.delivery_method = this.defaultDeliveryMethod;
+            if(!form.data.delivery_status) form.data.delivery_status = this.deliveryStatuses.find(status => status.code === "delivered") || null;
             if(!form.data.warehouse && this.warehouses.length) form.data.warehouse = this.warehouses[0];
 
             Alerts.modals({type: "show", id: form.extras.modals.delivery.id});
@@ -2348,11 +2473,56 @@ export default {
 
             if((form.data.payments || []).length === 0) {
 
-                form.data.payments = [this.newSalePayment({amount: this.total})];
+                form.data.payments = [this.newSalePayment({amount: this.saleUsesInstallments ? "" : this.total})];
 
             }
 
             Alerts.modals({type: "show", id: form.extras.modals.payments.id});
+
+        },
+        defaultFirstDueDate() {
+
+            const issueDate = this.forms[this.entity].createUpdate.data.issue_date || Utils.getCurrentDate();
+            const parts = String(issueDate).split("-").map(Number);
+
+            if(parts.length !== 3 || parts.some(part => !Number.isFinite(part))) return issueDate;
+
+            const [year, month, day] = parts;
+            const lastDay = new Date(year, month + 1, 0).getDate();
+            const dueDate = new Date(year, month, Math.min(day, lastDay));
+
+            return [
+                dueDate.getFullYear(),
+                String(dueDate.getMonth() + 1).padStart(2, "0"),
+                String(dueDate.getDate()).padStart(2, "0")
+            ].join("-");
+
+        },
+        changeSalePaymentModality() {
+
+            const form = this.forms[this.entity].createUpdate.data;
+
+            if(form.payment_modality === "installments") {
+
+                if(!form.first_due_date) form.first_due_date = this.defaultFirstDueDate();
+                if(!Number(form.installment_count)) form.installment_count = 2;
+
+                if(form.payments.length === 1 && Number(form.payments[0].amount || 0) === Number(this.saleBaseTotal || 0)) {
+
+                    form.payments[0].amount = "";
+
+                }
+
+                return;
+
+            }
+
+            if(form.payment_modality === "paid_now") {
+
+                if(form.payments.length === 0) form.payments = [this.newSalePayment()];
+                if(form.payments.length === 1) form.payments[0].amount = Number(this.saleBaseTotal || 0);
+
+            }
 
         },
         saveObservationsModal() {
@@ -2384,11 +2554,8 @@ export default {
         },
         openDeliveryModal() {
 
-            if(!this.forms[this.entity].createUpdate.data.delivery_mode) {
-
-                this.forms[this.entity].createUpdate.data.delivery_mode = this.deliveryModes[0];
-
-            }
+            if(!this.forms[this.entity].createUpdate.data.delivery_method) this.forms[this.entity].createUpdate.data.delivery_method = this.defaultDeliveryMethod;
+            if(!this.forms[this.entity].createUpdate.data.delivery_status) this.forms[this.entity].createUpdate.data.delivery_status = this.deliveryStatuses.find(status => status.code === "delivered") || null;
 
             Alerts.modals({type: "show", id: this.forms[this.entity].createUpdate.extras.modals.delivery.id});
 
@@ -2486,7 +2653,7 @@ export default {
         },
         addSalePayment() {
 
-            const pending = this.salePaymentDifference > 0 ? this.salePaymentDifference : "";
+            const pending = !this.saleUsesInstallments && this.salePaymentDifference > 0 ? this.salePaymentDifference : "";
 
             this.forms[this.entity].createUpdate.data.payments.push(this.newSalePayment({amount: pending}));
 
@@ -2502,7 +2669,7 @@ export default {
 
             if((this.forms[this.entity].createUpdate.data.payments || []).length === 0) {
 
-                this.forms[this.entity].createUpdate.data.payments = [this.newSalePayment({amount: this.total})];
+                this.forms[this.entity].createUpdate.data.payments = [this.newSalePayment({amount: this.saleUsesInstallments ? "" : this.total})];
 
             }
 
@@ -2630,7 +2797,7 @@ export default {
                 if(!result.isConfirmed) return;
 
                 form.details = [];
-                form.payments = [this.newSalePayment({amount: ""})];
+                form.payments = [this.newSalePayment({amount: this.saleUsesInstallments ? "" : this.total})];
 
                 Alerts.generateAlert({
                     type: "success",
@@ -2866,7 +3033,8 @@ export default {
                 form.holder_id   = form?.holder?.code;
                 form.seller_id   = form?.seller?.code;
                 form.currency_id = form?.currency?.code;
-                form.delivery_mode = this.saleRequiresStockContext ? (form?.delivery_mode?.code || "immediate") : null;
+                form.delivery_method_id = this.saleRequiresStockContext ? form?.delivery_method?.code : null;
+                form.delivery_status = this.saleRequiresStockContext ? (form?.delivery_status?.code || "delivered") : "delivered";
                 form.payments = this.salePaymentPayload;
                 form.taxes = this.saleTaxBreakdown.map(tax => ({
                     tax_id: tax.id,
@@ -2883,7 +3051,7 @@ export default {
                 delete form.seller;
                 delete form.currency;
                 delete form.quotation;
-                delete form.delivery_status;
+                delete form.delivery_method;
                 delete form.selected_taxes;
                 delete form.selected_tax_quantities;
 
@@ -2965,12 +3133,17 @@ export default {
                     this.forms[this.entity].createUpdate.data.quotation_header_id = null;
                     this.forms[this.entity].createUpdate.data.seller = this.defaultSellerOption;
                     this.forms[this.entity].createUpdate.data.warehouse   = (this.warehouses).length > 0 ? this.warehouses[0] : null;
+                    this.forms[this.entity].createUpdate.data.delivery_method = this.defaultDeliveryMethod;
+                    this.forms[this.entity].createUpdate.data.delivery_status = this.deliveryStatuses.find(status => status.code === "delivered") || null;
                     this.forms[this.entity].createUpdate.extras.modals.observations.draft = "";
                     this.forms[this.entity].createUpdate.data.selected_taxes = [];
                     this.forms[this.entity].createUpdate.data.selected_tax_quantities = {};
-                    this.forms[this.entity].createUpdate.data.payments   = [this.newSalePayment({amount: this.total})];
+                    this.forms[this.entity].createUpdate.data.payment_modality = this.options.salesHeader?.defaultPaymentModality || "paid_now";
+                    this.forms[this.entity].createUpdate.data.installment_count = 2;
+                    this.forms[this.entity].createUpdate.data.first_due_date = this.defaultFirstDueDate();
                     this.forms[this.entity].createUpdate.data.status      = "";
                     this.forms[this.entity].createUpdate.data.details     = [];
+                    this.forms[this.entity].createUpdate.data.payments   = [this.newSalePayment({amount: ""})];
                     break;
             }
 
@@ -3118,6 +3291,8 @@ export default {
                 result.branch      = [];
                 result.serie       = [];
                 result.warehouse   = [];
+                result.delivery_method = [];
+                result.delivery_status = [];
                 result.issue_date  = [];
                 result.holder      = [];
                 result.currency    = [];
@@ -3146,6 +3321,16 @@ export default {
                     result.warehouse.push(`${isDescriptive ? "Almacén:" : ""} ${this.config.forms.errors.labels.required}`);
                     result.bool = false;
 
+                }
+
+                if(this.saleRequiresStockContext && !this.isDefined({value: form?.delivery_method})) {
+                    result.delivery_method.push(`${isDescriptive ? "Modalidad de entrega:" : ""} ${this.config.forms.errors.labels.required}`);
+                    result.bool = false;
+                }
+
+                if(this.saleRequiresStockContext && !this.isDefined({value: form?.delivery_status})) {
+                    result.delivery_status.push(`${isDescriptive ? "Estado de entrega:" : ""} ${this.config.forms.errors.labels.required}`);
+                    result.bool = false;
                 }
 
                 if(!this.isDefined({value: form?.issue_date})) {
@@ -3549,12 +3734,27 @@ export default {
                 }));
 
         },
-        deliveryModes() {
+        deliveryMethods() {
 
-            return [
-                {code: "immediate", label: "Entrega inmediata", description: "Descuenta el stock al generar la venta."},
-                {code: "pending", label: "Entrega pendiente", description: "La venta queda registrada y el stock se descuenta al entregar."}
-            ];
+            return (this.options?.saleDeliveryMethods?.records || []).map(method => ({
+                code: method.id,
+                label: method.name,
+                description: method.description,
+                data: method
+            }));
+
+        },
+        defaultDeliveryMethod() {
+
+            return this.deliveryMethods.find(method => method.data?.is_default) || this.deliveryMethods[0] || null;
+
+        },
+        deliveryStatuses() {
+
+            return (this.options?.salesHeader?.deliveryStatuses || [
+                {code: "pending", label: "Pendiente"},
+                {code: "delivered", label: "Entregado"}
+            ]).map(status => ({code: status.code, label: status.label}));
 
         },
         canChangeBranch() {
@@ -3582,9 +3782,16 @@ export default {
             return this.forms[this.entity].createUpdate.data.branch?.label || "Seleccione sucursal";
 
         },
-        deliveryModeLabel() {
+        deliverySummaryLabel() {
 
-            return this.forms[this.entity].createUpdate.data.delivery_mode?.label || "Sin tipo de entrega";
+            const method = this.saleRequiresStockContext
+                ? (this.forms[this.entity].createUpdate.data.delivery_method?.label || "Sin modalidad")
+                : "No aplica";
+            const status = this.saleRequiresStockContext
+                ? (this.forms[this.entity].createUpdate.data.delivery_status?.label || "Sin estado")
+                : "Entregado";
+
+            return `${method} · ${status}`;
 
         },
         sellerLabel() {
@@ -3648,6 +3855,20 @@ export default {
             return ["cash_on_delivery", "installments"].includes(this.forms[this.entity].createUpdate.data.payment_modality);
 
         },
+        saleUsesInstallments() {
+
+            return this.forms[this.entity].createUpdate.data.payment_modality === "installments";
+
+        },
+        salePaymentModalities() {
+
+            return this.options.salesHeader?.paymentModalities || [
+                {code: "paid_now", label: "Pago al momento"},
+                {code: "cash_on_delivery", label: "Contraentrega"},
+                {code: "installments", label: "Crédito en cuotas"}
+            ];
+
+        },
         saleHasValidPayments() {
 
             const payments = this.forms[this.entity].createUpdate.data.payments || [];
@@ -3707,6 +3928,42 @@ export default {
                 return {
                     title: "Pago incompleto",
                     message: "El monto pagado debe coincidir con el total de la venta."
+                };
+
+            }
+
+            if(this.saleUsesInstallments && Number(this.salePaidTotal || 0) > Number(this.saleBaseTotal || 0)) {
+
+                return {
+                    title: "Pago inicial excedido",
+                    message: "El pago inicial no puede superar el importe de la venta antes del financiamiento."
+                };
+
+            }
+
+            if(this.saleUsesInstallments && Number(this.saleFinancedPrincipal || 0) <= 0) {
+
+                return {
+                    title: "Sin saldo por financiar",
+                    message: "Reduce el pago inicial o selecciona Pago al momento."
+                };
+
+            }
+
+            if(this.saleUsesInstallments && (!Number.isInteger(Number(form.installment_count)) || Number(form.installment_count) < 1)) {
+
+                return {
+                    title: "Cuotas inválidas",
+                    message: "Indica una cantidad válida de cuotas."
+                };
+
+            }
+
+            if(this.saleUsesInstallments && !form.first_due_date) {
+
+                return {
+                    title: "Falta fecha de vencimiento",
+                    message: "Indica la fecha de vencimiento de la primera cuota."
                 };
 
             }
@@ -3809,7 +4066,7 @@ export default {
         salePaymentSummary() {
 
             return (this.forms[this.entity].createUpdate.data.payments || [])
-                .filter(payment => payment.method?.code)
+                .filter(payment => payment.method?.code && Number(payment.amount || 0) > 0)
                 .map(payment => {
 
                     const label = payment.variant?.label || payment.method?.label || "Método de pago";
@@ -3928,9 +4185,45 @@ export default {
             }, 0));
 
         },
-        total: function() {
+        saleBaseTotal() {
 
             return this.fixedNumber(Number(this.saleGrossSubtotal || 0) + Number(this.saleTaxImpactTotal || 0));
+
+        },
+        saleFinancedPrincipal() {
+
+            if(!this.saleIsCredit) return this.fixedNumber(0);
+
+            return this.fixedNumber(Math.max(0, Number(this.saleBaseTotal || 0) - Number(this.salePaidTotal || 0)));
+
+        },
+        saleInstallmentExtraPercentage() {
+
+            return this.saleUsesInstallments
+                ? Number(this.options.salesHeader?.installmentExtraPercentage || 0)
+                : 0;
+
+        },
+        saleInstallmentExtraAmount() {
+
+            return this.fixedNumber(Number(this.saleFinancedPrincipal || 0) * (Number(this.saleInstallmentExtraPercentage || 0) / 100));
+
+        },
+        saleReceivableTotal() {
+
+            return this.fixedNumber(Number(this.saleFinancedPrincipal || 0) + Number(this.saleInstallmentExtraAmount || 0));
+
+        },
+        saleInstallmentAmount() {
+
+            const count = Math.max(1, Number(this.forms[this.entity].createUpdate.data.installment_count || 1));
+
+            return this.fixedNumber(Number(this.saleReceivableTotal || 0) / count);
+
+        },
+        total: function() {
+
+            return this.fixedNumber(Number(this.saleBaseTotal || 0) + Number(this.saleInstallmentExtraAmount || 0));
 
         },
         salePaymentPayload() {
@@ -3940,7 +4233,7 @@ export default {
             if(selected.length === 0) return [];
 
             return selected
-                .filter(payment => payment.method?.code)
+                .filter(payment => payment.method?.code && Number(payment.amount || 0) > 0)
                 .map(payment => ({
                     payment_method_id: payment.method.code,
                     payment_method_variant_id: payment.variant?.code || null,
@@ -3999,7 +4292,7 @@ export default {
                     amount: difference,
                     className: "br-document-payment-status--pending",
                     icon: "fa-clock",
-                    label: "Pendiente"
+                    label: this.saleUsesInstallments ? "Crédito en cuotas" : "Pendiente"
                 };
 
             }
@@ -4184,7 +4477,7 @@ export default {
 
             const payments = this.forms[this.entity].createUpdate.data.payments || [];
 
-            if(payments.length === 1) {
+            if(!this.saleIsCredit && payments.length === 1) {
 
                 payments[0].amount = Number(value || 0);
 

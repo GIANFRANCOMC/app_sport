@@ -54,6 +54,13 @@ final class CommercialCreditAccountService {
 
         }
 
+        $isInstallmentCredit = $sale->payment_modality === self::INSTALLMENTS;
+        $receivablePrincipal = $isInstallmentCredit
+            ? Utilities::round((float) $sale->balance_due - (float) $sale->installment_extra_amount, null, (int) $sale->company_id)
+            : Utilities::round((float) $sale->total - (float) $sale->installment_extra_amount, null, (int) $sale->company_id);
+        $receivableTotal = $isInstallmentCredit ? $sale->balance_due : $sale->total;
+        $receivablePaid = $isInstallmentCredit ? 0 : $sale->paid_amount;
+
         $account = SaleAccountReceivable::create([
             "company_id" => $sale->company_id,
             "sale_header_id" => $sale->id,
@@ -62,19 +69,23 @@ final class CommercialCreditAccountService {
             "issue_date" => $sale->issue_date,
             "due_date" => $firstDueDate,
             "payment_modality" => $sale->payment_modality,
-            "original_amount" => Utilities::round((float) $sale->total - (float) $sale->installment_extra_amount, null, (int) $sale->company_id),
+            "original_amount" => $receivablePrincipal,
             "extra_percentage" => $sale->installment_extra_percentage,
             "extra_amount" => $sale->installment_extra_amount,
-            "total_amount" => $sale->total,
-            "paid_amount" => $sale->paid_amount,
+            "total_amount" => $receivableTotal,
+            "paid_amount" => $receivablePaid,
             "pending_amount" => $sale->balance_due,
-            "status" => $sale->payment_status === "partial" ? "partial" : "pending",
+            "status" => $isInstallmentCredit ? "pending" : ($sale->payment_status === "partial" ? "partial" : "pending"),
             "created_at" => now(),
             "created_by" => $userId
         ]);
 
         self::createSaleInstallments($account, max(1, $installmentCount), $firstDueDate, $userId);
-        self::createSalePaymentTrace($account, $paymentLines, $userId);
+        if(!$isInstallmentCredit) {
+
+            self::createSalePaymentTrace($account, $paymentLines, $userId);
+
+        }
 
         return $account;
 

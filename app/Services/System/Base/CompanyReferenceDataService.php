@@ -14,6 +14,7 @@ use App\Models\System\Devices\BiometricDevice;
 use App\Models\System\Finance\{PaymentMethod, Tax};
 use App\Models\System\Finance\CashRegister;
 use App\Models\System\Organizations\{Branch, Role, User};
+use App\Models\System\Sales\SaleDeliveryMethod;
 use App\Models\System\Warehouses\Warehouse;
 use App\Services\System\Organizations\AccessScopeService;
 
@@ -196,6 +197,18 @@ final class CompanyReferenceDataService {
                             ->orderByDesc("is_default")
                             ->orderBy("name")
                             ->get();
+
+    }
+
+    public function saleDeliveryMethods(): Collection {
+
+        return SaleDeliveryMethod::query()
+                                 ->where("company_id", $this->companyId)
+                                 ->where("status", "active")
+                                 ->orderByDesc("is_default")
+                                 ->orderBy("sort_order")
+                                 ->orderBy("name")
+                                 ->get();
 
     }
 

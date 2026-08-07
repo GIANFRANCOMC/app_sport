@@ -62,6 +62,9 @@ export default defineConfig({
                 // System Pages - Operations
                 'resources/js/System/Pages/Operations/service_operations/main.js',
 
+                // System Pages - Finance
+                'resources/js/System/Pages/Finance/accounts_receivable/main.js',
+
                 // System Pages - Sales
                 'resources/js/System/Pages/Sales/sales/list.js',
                 'resources/js/System/Pages/Sales/sales/main.js',

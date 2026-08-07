@@ -24,7 +24,9 @@ class StoreSaleRequest extends CompanyFormRequest {
     protected function prepareForValidation(): void {
 
         $this->merge([
-            "delivery_mode" => $this->input("delivery_mode") ?: "immediate",
+            "delivery_method_id" => $this->nullableIntegerInput($this->input("delivery_method_id")),
+            "delivery_status" => $this->input("delivery_status")
+                ?: ($this->input("delivery_mode") === "pending" ? "pending" : "delivered"),
             "payment_modality" => $this->input("payment_modality") ?: "paid_now",
             "taxes" => $this->normalizeTaxes(),
             "payments" => $this->normalizePayments(),
@@ -57,11 +59,12 @@ class StoreSaleRequest extends CompanyFormRequest {
             "source_channel" => "nullable|in:sale,pos",
             "issue_date"  => "required|date",
             "delivery_mode" => "nullable|in:immediate,pending",
-            "delivery_status" => "nullable|in:pending,partial,delivered",
+            "delivery_method_id" => ["nullable", "integer", new BelongsToCompany("sale_delivery_methods", ["status" => "active"], "La modalidad de entrega no pertenece a la empresa.")],
+            "delivery_status" => "required|in:pending,delivered",
             "delivery_observation" => "nullable|string|max:500",
             "payment_modality" => "nullable|in:paid_now,cash_on_delivery,installments",
-            "installment_count" => "nullable|integer|min:1|max:120",
-            "first_due_date" => "nullable|date|after_or_equal:issue_date",
+            "installment_count" => "required_if:payment_modality,installments|nullable|integer|min:1|max:120",
+            "first_due_date" => "required_if:payment_modality,installments|nullable|date|after_or_equal:issue_date",
             "observation" => "nullable|string|max:300",
             "taxes" => "nullable|array|max:20",
             "taxes.*.tax_id" => "required_with:taxes|integer",
@@ -147,6 +150,7 @@ class StoreSaleRequest extends CompanyFormRequest {
             "branch_id"   => "branch",
             "serie_id"    => "serie",
             "warehouse_id" => "warehouse",
+            "delivery_method_id" => "delivery_method",
             "holder_id"   => "holder",
             "seller_id"   => "seller",
             "currency_id" => "currency"
