@@ -72,10 +72,12 @@ Todos los servicios `*ConfigService` heredan de `BaseConfigService`.
 - La clave incluye módulo, empresa y página: `init_params:{modulo}:company:{id}:page:{page}`.
 - El TTL predeterminado es una hora.
 - Cada servicio implementa únicamente `getCachePrefix()` y `buildConfig()`.
+- Los servicios dependientes del colaborador añaden `userId` a la clave y registran ese ID en `init_params:user_index:company:{companyId}`.
 - Los módulos con más de una página declaran `cachePages()`; actualmente Ventas usa `main` y `list`.
 - Una página vacía o desconocida se normaliza a la primera página soportada.
 - `clearAllCache($companyId)` elimina todas las páginas declaradas por el módulo.
 - `InitParamsCacheInvalidationService` resuelve dependencias entre recursos y módulos consumidores.
+- La invalidación dependiente del usuario recorre solamente IDs que realmente generaron caché; no consulta la tabla `users` durante una limpieza.
 - No se invalida caché cuando una mutación no modifica datos incluidos en `initParams`.
 
 Los maestros activos se reutilizan durante seis horas mediante `MasterReferenceDataService`. `MasterDataService` invalida esa caché y los `initParams` dependientes después de cada mutación correcta.
@@ -117,10 +119,10 @@ Los modelos no deben exponer métodos genéricos como `getAll($type, $companyId)
 
 ## Menú por empresa
 
-`CompanySectionService` consulta y almacena las secciones habilitadas por `companies_sub_sections`.
+`CompanySectionService` consulta y almacena categorías, secciones, grupos y opciones habilitadas por `companies_sub_sections`.
 
 - El layout solicita las secciones al servicio; no lee claves de caché directamente.
-- La clave es `company_sections:company:{id}` y su TTL es de 30 minutos.
+- La clave es `company_sections:company:{id}:role:{roleId|all}` y su TTL es de 30 minutos.
 - La consulta selecciona únicamente los campos requeridos por sidebar, favoritos y Home.
 - `CompanySubSectionObserver` invalida automáticamente la empresa afectada al crear, editar o eliminar una asignación.
 - `Company` ya no contiene `getActiveSections`; la consulta pertenece al servicio que conoce su uso y caché.

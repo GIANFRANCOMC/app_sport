@@ -37,7 +37,8 @@ Revisar siempre:
 - Mientras el proyecto permita ejecutar `migrate:fresh`, modificar directamente la migración base propietaria de la tabla.
 - No crear migraciones incrementales para añadir, retirar o alterar campos, relaciones, restricciones o índices de tablas existentes.
 - Las tablas nuevas relacionadas con un módulo existente deben incorporarse en la migración base del dominio y respetar el orden de sus claves foráneas.
-- Registrar menús y asignaciones iniciales en la migración maestra correspondiente, no en una migración de parche.
+- Registrar el menú en las tablas `menu_categories`, `sections`, `menu_groups` y `sub_sections`. Para instalaciones nuevas, consolidar el catálogo inicial en `SystemNavigationSeeder`.
+- Los defaults por organización pertenecen a `CompanyProvisioningService`, no a migraciones ni seeders.
 - Solo adoptar migraciones incrementales cuando el proyecto entre en una etapa con datos persistentes que no puedan reiniciarse, o cuando se solicite explícitamente.
 
 ## Caché de `initParams` y dependencias
@@ -49,6 +50,7 @@ Revisar siempre:
 - Usar `InitParamsCacheInvalidationService::invalidate($resource, $companyId)` después de completar correctamente la transacción.
 - No invalidar caché por crear ventas, cambiar stock, cancelar asistencias o actualizar asignaciones si esos registros no forman parte de `initParams`.
 - La invalidación siempre es por empresa y por recurso. No usar `Cache::flush()` para resolver dependencias funcionales.
+- Los servicios con `USER_SCOPED_CACHE=true` registran automáticamente los usuarios que generaron caché. La invalidación no debe consultar todos los usuarios de la organización.
 - La matriz central vive en `app/Services/System/Base/InitParamsCacheInvalidationService.php`.
 - Al añadir un nuevo `ConfigService` que consuma datos compartidos, registrarlo en la dependencia correspondiente y validar su contrato de caché.
 
@@ -92,6 +94,9 @@ $config->currencies->records = MasterReferenceDataService::currencies($companyId
 
 ## Secciones y menú
 
+- La fuente canónica son las tablas `menu_categories`, `sections`, `menu_groups` y `sub_sections`.
+- `SystemNavigationSeeder` solo inicializa una base vacía; `SystemCatalogSyncService` no redefine el catálogo, sino que lo proyecta a organizaciones y perfiles de acceso total.
+- `menu_categories` define categorías y `menu_groups` añade agrupaciones visuales sin alterar permisos.
 - Obtener módulos habilitados mediante `CompanySectionService::getSections($companyId)`.
 - Obtener módulos visibles para un colaborador mediante `CompanySectionService::getSections($companyId, $roleId)`.
 - Las rutas internas usan `module.permission`; todo módulo nuevo debe registrar `sub_sections.dom_route` y mapear endpoints compartidos en `config/permissions.php`.

@@ -2,7 +2,7 @@
 
 ## Resumen
 
-Gympe atiende exclusivamente subdominios registrados, por ejemplo `demo.gympe.test` o `cliente.app.ejemplo.com`. El dominio raíz pertenece a otro proyecto y este código no lo atiende.
+Gympe atiende subdominios tenant registrados, por ejemplo `demo.gympe.test`, y reserva `app.gympe.test` para la administración central del SaaS. El dominio raíz pertenece a otro proyecto y este código no lo atiende.
 
 Cada tenant dispone de:
 
@@ -23,6 +23,8 @@ La conexión `landlord` contiene únicamente el registro central:
 - `tenant_databases`: slug, empresa raíz esperada, nombre de BD, estado y última resolución;
 - `tenant_domains`: host exacto y activo asociado al tenant;
 - `tenant_audit_logs`: altas, cambios de estado, verificaciones, rechazos de host y resultados operativos.
+- `platform_users`: administradores exclusivos del panel `app`; no reutiliza usuarios tenant.
+- `tenant_announcements`: avisos programables y activables por cliente.
 
 Landlord no almacena host, usuario ni contraseña de MySQL. Las credenciales pertenecen al entorno seguro del servidor y nunca deben aparecer en Git, tablas, logs o respuestas HTTP.
 
@@ -36,7 +38,7 @@ Orden de defensas:
 
 1. `TrustProxies` interpreta proxy y HTTPS solo desde proxies permitidos.
 2. `TrustHosts` acepta exclusivamente `<slug>.<TENANCY_BASE_DOMAIN>`.
-3. `ResolveTenant` exige subdominio válido, registrado y activo.
+3. `ResolveTenant` deriva `app.<TENANCY_BASE_DOMAIN>` hacia landlord; para cualquier otro subdominio exige un tenant registrado y activo.
 4. Se activa la conexión tenant antes de sesión, autenticación y rutas.
 5. `EnsureTenantSession` comprueba que la sesión pertenezca al mismo `tenant_database_id`.
 6. `EnsureAuthenticatedSession` valida estado del usuario y `session_version`.
@@ -65,10 +67,12 @@ TENANT_DB_PREFIX=gympe_tenant_
 TENANT_ENFORCE_DB_PREFIX=true
 
 TENANCY_BASE_DOMAIN=gympe.test
+TENANCY_PLATFORM_SUBDOMAIN=app
 TENANCY_ENFORCE_SUBDOMAINS=true
-TENANCY_RESERVED_SUBDOMAINS=www,api,admin,mail,static,assets
+TENANCY_RESERVED_SUBDOMAINS=www,api,admin,app,mail,static,assets
 TENANCY_RESOLVER_CACHE_SECONDS=60
 TENANT_SESSION_COOKIE_PREFIX=gympe_tenant
+PLATFORM_SESSION_COOKIE=gympe_platform_session
 ```
 
 `SESSION_DOMAIN` debe permanecer vacío. Un dominio compartido, como `.gympe.test`, compartiría cookies entre clientes y está prohibido.
@@ -79,6 +83,7 @@ Preparar landlord:
 
 ```bash
 php artisan migrate --database=landlord --path=database/migrations/landlord --force
+php artisan platform:admin admin@mi-saas.test --name="Administrador SaaS"
 ```
 
 Crear un tenant local:
@@ -87,7 +92,10 @@ Crear un tenant local:
 php artisan tenant:create demo \
   --commercial-name="Demo Gym" \
   --legal-name="Demo Gym S.A.C." \
-  --document-number=20600000001
+  --document-number=20600000001 \
+  --admin-name="Administrador" \
+  --admin-email=admin@demo.test \
+  --admin-password="UnaClaveSegura123"
 ```
 
 En producción, infraestructura debe crear previamente la BD y conceder al usuario runtime solo permisos operativos:
@@ -98,10 +106,16 @@ php artisan tenant:create cliente \
   --skip-create-database \
   --commercial-name="Cliente" \
   --legal-name="Cliente S.A.C." \
-  --document-number=20600000010
+  --document-number=20600000010 \
+  --admin-email=admin@cliente.test \
+  --admin-password="UnaClaveSegura123"
 ```
 
+`tenant:create` ejecuta las migraciones, crea explícitamente la fila `companies` y reutiliza `SystemCatalogSyncService` y `CompanyProvisioningService`. No depende de datos insertados por una migración. Si no se usa `--skip-migrate`, la contraseña administrativa es obligatoria y debe tener al menos ocho caracteres.
+
 ## Operación
+
+El panel `app.<TENANCY_BASE_DOMAIN>` permite crear clientes, activar, inactivar o suspender tenants, administrar sus módulos y publicar avisos. La activación de módulos actualiza `companies_sub_sections` dentro de la base aislada del cliente e invalida su caché de navegación.
 
 ```bash
 php artisan tenant:list
@@ -170,5 +184,6 @@ Estas tareas no se resuelven dentro del repositorio y deben formar parte del pla
 ## Documentación relacionada
 
 - [Seguridad y autenticación](SECURITY_AND_AUTH.md)
+- [Instalación y aprovisionamiento](DATABASE_INSTALLATION.md)
 - [Laragon y XAMPP](deployment/LOCAL_SUBDOMAINS.md)
 - [AWS y DigitalOcean](deployment/PRODUCTION_SUBDOMAINS.md)

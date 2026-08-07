@@ -256,10 +256,10 @@ Formato recomendado por módulo:
 
 Las reglas visuales transversales se administran en este archivo. Las mejoras puntuales de una pantalla se documentan en el módulo correspondiente al implementarse.
 
-- Las migraciones se separan por dependencia y dominio cuando ello conserva un `migrate:fresh` determinista; no se crean migraciones correctivas si la base puede editarse directamente.
+- Las migraciones crean esquema y transformaciones históricas necesarias; catálogos vigentes y defaults organizacionales se sincronizan mediante servicios idempotentes.
 - Los servicios de escritura, configuración y referencias reciben `companyId` y `userId` explícitos. Los observers de auditoría pueden obtener el actor desde el request de frontera, sin consultar `Auth` dentro del dominio.
 - Las pruebas automatizadas se incorporan únicamente cuando el usuario las solicite; no deben crearse de forma implícita.
-- Usar `php artisan company:enable {company_id}` para habilitar datos base de una empresa sin insertar manualmente tabla por tabla.
+- Usar `php artisan system:install` para una base vacía, `system:sync` para el catálogo, `company:enable {company_id}` para defaults y `system:doctor` para validar integridad.
 - Mantener sincronizados los nuevos endpoints con `config/permissions.php` cuando compartan un prefijo entre varias páginas.
 - Los reportes deben reutilizar consultas filtradas, declarar límites por empresa y rechazar volúmenes excesivos antes de materializar colecciones.
 - Los reportes compartibles fuera de sesión deben usar rutas firmadas y con expiración. No compartir rutas basadas solo en ids o parámetros codificados.

@@ -13,11 +13,13 @@ Esta carpeta es la memoria funcional y tecnica del proyecto. Esta separada en do
 4. [System/ARCHITECTURE.md](System/ARCHITECTURE.md): arquitectura tecnica de System.
 5. [System/DEVELOPMENT_GUIDE.md](System/DEVELOPMENT_GUIDE.md): reglas de desarrollo y criterio para cambios.
 6. [System/TABLES.md](System/TABLES.md): tablas usadas por System.
-7. [System/modules/00_menu_order.md](System/modules/00_menu_order.md): orden oficial de modulos segun menu.
-8. [Guest/README.md](Guest/README.md): entrada al portal publico.
-9. [Guest/ARCHITECTURE.md](Guest/ARCHITECTURE.md): arquitectura tecnica de Guest.
-10. [Guest/TABLES.md](Guest/TABLES.md): tablas usadas por Guest.
-11. [REQUEST_GUIDE.md](REQUEST_GUIDE.md): como pedir cambios.
+7. [System/DATABASE_INSTALLATION.md](System/DATABASE_INSTALLATION.md): instalación, sincronización y aprovisionamiento.
+8. [System/modules/00_menu_order.md](System/modules/00_menu_order.md): orden oficial de modulos segun menu.
+9. [System/TESTING.md](System/TESTING.md): aislamiento de pruebas y contratos vigentes.
+10. [Guest/README.md](Guest/README.md): entrada al portal publico.
+11. [Guest/ARCHITECTURE.md](Guest/ARCHITECTURE.md): arquitectura tecnica de Guest.
+12. [Guest/TABLES.md](Guest/TABLES.md): tablas usadas por Guest.
+13. [REQUEST_GUIDE.md](REQUEST_GUIDE.md): como pedir cambios.
 
 ## Regla importante
 

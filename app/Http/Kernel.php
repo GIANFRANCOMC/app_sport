@@ -37,6 +37,7 @@ class Kernel extends HttpKernel
             \Illuminate\Session\Middleware\StartSession::class,
             \App\Http\Middleware\EnsureTenantSession::class,
             \App\Http\Middleware\EnsureAuthenticatedSession::class,
+            \App\Http\Middleware\ShareTenantAnnouncements::class,
             \Illuminate\View\Middleware\ShareErrorsFromSession::class,
             \App\Http\Middleware\VerifyCsrfToken::class,
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
@@ -72,5 +73,6 @@ class Kernel extends HttpKernel
         'module.permission' => \App\Http\Middleware\EnsureModulePermission::class,
         'resource.scope' => \App\Http\Middleware\EnsureOperationalScope::class,
         'public.attendance.access' => \App\Http\Middleware\EnsurePublicAttendanceAccess::class,
+        'platform.auth' => \App\Http\Middleware\EnsurePlatformAuthenticated::class,
     ];
 }

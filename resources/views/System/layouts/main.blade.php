@@ -104,15 +104,31 @@
 
                             }
                         @endphp
-                        <li class="menu-header divider py-0">
-                            <span class="menu-header-text text-uppercase divider-text">Menú</span>
-                        </li>
-                        @foreach($sections as $section)
+                        @php
+                            $allPreferences = collect($valuePreferences)->pluck("sub_section_id")->toArray();
+                            $allFiltered = collect($subSectionIds)->filter(fn($id) => !in_array($id, $allPreferences))->toArray();
+                            $sectionFiltered = count($valuePreferences) > 0
+                                ? array_merge($allFiltered, $visiblePreferences)
+                                : $subSectionIds;
+                        @endphp
+                        @foreach($sections->groupBy(fn($section) => $section->menuCategory?->id ?? 0) as $categorySections)
+                            @continue(!$categorySections->pluck('subSections')->flatten()->whereIn('id', $sectionFiltered)->isNotEmpty())
                             @php
-                                $allPreferences = collect($valuePreferences)->pluck("sub_section_id")->toArray();
-                                $allFiltered    = collect($subSectionIds)->filter(fn($e) => !in_array($e, $allPreferences))->toArray();
-
-                                $sectionFiltered     = count($valuePreferences) > 0 ? array_merge($allFiltered, $visiblePreferences) : $subSectionIds;
+                                $menuCategory = $categorySections->first()->menuCategory;
+                            @endphp
+                            @if($menuCategory?->slug !== 'principal')
+                                <li class="menu-header divider py-0 br-menu-category">
+                                    @php
+                                        $menuCategoryName = $menuCategory?->name ?? 'Menú';
+                                    @endphp
+                                    <span class="menu-header-text text-uppercase divider-text">
+                                        <span class="br-menu-category__full">{{ $menuCategoryName }}</span>
+                                        <span class="br-menu-category__short" aria-hidden="true">{{ Str::upper(Str::substr($menuCategoryName, 0, 3)) }}</span>
+                                    </span>
+                                </li>
+                            @endif
+                        @foreach($categorySections as $section)
+                            @php
                                 $subSectionsFiltered = $section->subSections->whereIn("id", $sectionFiltered);
 
                                 $reference = $subSectionsFiltered->first();
@@ -130,17 +146,46 @@
                                 </a>
                                 @if($section->has_sub_menu)
                                     <ul class="menu-sub">
-                                        @foreach($subSectionsFiltered as $subSection)
-                                            <li class="menu-item {{ $subSection->dom_id }}" id="{{ $subSection->dom_id }}">
-                                                <a href="{{ $subSection->dom_route_url }}" class="fw-regular menu-link">
-                                                    <span class="br-menu-child-bullet" aria-hidden="true"></span>
-                                                    <div class="text-truncate">{{ $subSection->dom_label }}</div>
-                                                </a>
-                                            </li>
+                                        @foreach($subSectionsFiltered->groupBy(fn($subSection) => $subSection->menuGroup?->id ?? 0) as $menuGroupItems)
+                                            @php
+                                                $menuGroup = $menuGroupItems->first()->menuGroup;
+                                                $hasNestedGroups = $menuGroup
+                                                    && $subSectionsFiltered->pluck('menu_group_id')->filter()->unique()->count() > 1;
+                                                $menuGroupIsActive = $menuGroupItems
+                                                    ->contains(fn($subSection) => request()->routeIs($subSection->dom_route));
+                                            @endphp
+                                            @if($hasNestedGroups)
+                                                <li class="menu-item br-menu-group {{ $menuGroupIsActive ? 'open' : '' }}" id="menu-group-{{ $menuGroup->slug }}">
+                                                    <a href="javascript:void(0);" class="menu-link menu-toggle br-menu-group__toggle">
+                                                        <span class="br-menu-child-bullet" aria-hidden="true"></span>
+                                                        <div class="text-truncate">{{ $menuGroup->name }}</div>
+                                                    </a>
+                                                    <ul class="menu-sub br-menu-group__items">
+                                                        @foreach($menuGroupItems as $subSection)
+                                                            <li class="menu-item {{ $subSection->dom_id }}" id="{{ $subSection->dom_id }}">
+                                                                <a href="{{ $subSection->dom_route_url }}" class="fw-regular menu-link">
+                                                                    <span class="br-menu-child-bullet" aria-hidden="true"></span>
+                                                                    <div class="text-truncate">{{ $subSection->dom_label }}</div>
+                                                                </a>
+                                                            </li>
+                                                        @endforeach
+                                                    </ul>
+                                                </li>
+                                            @else
+                                                @foreach($menuGroupItems as $subSection)
+                                                    <li class="menu-item {{ $subSection->dom_id }}" id="{{ $subSection->dom_id }}">
+                                                        <a href="{{ $subSection->dom_route_url }}" class="fw-regular menu-link">
+                                                            <span class="br-menu-child-bullet" aria-hidden="true"></span>
+                                                            <div class="text-truncate">{{ $subSection->dom_label }}</div>
+                                                        </a>
+                                                    </li>
+                                                @endforeach
+                                            @endif
                                         @endforeach
                                     </ul>
                                 @endif
                             </li>
+                        @endforeach
                         @endforeach
                         <li class="menu-item br-menu-logout-item">
                             <a href="javascript:void(0)" class="menu-link br-menu-logout" onclick="$('#logout').submit();" role="button" aria-label="Cerrar sesión" title="Cerrar sesión">
@@ -275,6 +320,14 @@
                     </nav>
                     <div class="content-wrapper br-layout-content">
                         <div class="container-xxl flex-grow-1 container-p-y">
+                            @foreach(($tenantAnnouncements ?? collect()) as $announcement)
+                                <div class="alert alert-{{ $announcement->severity }} alert-dismissible br-tenant-announcement" role="alert">
+                                    <div><strong>{{ $announcement->title }}</strong><div>{{ $announcement->message }}</div></div>
+                                    @if($announcement->dismissible)
+                                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+                                    @endif
+                                </div>
+                            @endforeach
                             @yield('content')
                         </div>
                         <div class="content-backdrop fade"></div>

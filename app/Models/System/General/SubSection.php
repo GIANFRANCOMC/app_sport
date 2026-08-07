@@ -21,6 +21,7 @@ class SubSection extends Model {
 
     protected $fillable = [
         "section_id",
+        "menu_group_id",
         "slug",
         "name",
         "description",
@@ -59,6 +60,12 @@ class SubSection extends Model {
     public function section() {
 
         return $this->belongsTo(Section::class, "section_id", "id");
+
+    }
+
+    public function menuGroup() {
+
+        return $this->belongsTo(MenuGroup::class, "menu_group_id", "id");
 
     }
 

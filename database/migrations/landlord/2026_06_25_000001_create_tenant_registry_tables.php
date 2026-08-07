@@ -12,6 +12,17 @@ return new class extends Migration {
 
     public function up(): void {
 
+        Schema::connection($this->connection)->create('platform_users', function(Blueprint $table): void {
+            $table->id();
+            $table->string('name', 150);
+            $table->string('email', 190)->unique();
+            $table->string('password');
+            $table->enum('status', ['active', 'inactive'])->default('active');
+            $table->timestamp('last_login_at')->nullable();
+            $table->timestamp('created_at')->useCurrent()->nullable();
+            $table->timestamp('updated_at')->nullable();
+        });
+
         Schema::connection($this->connection)->create('tenant_databases', function(Blueprint $table): void {
             $table->id();
             $table->string('slug', 120)->unique();
@@ -55,13 +66,36 @@ return new class extends Migration {
             $table->foreign('tenant_database_id')->references('id')->on('tenant_databases')->nullOnDelete();
         });
 
+        Schema::connection($this->connection)->create('tenant_announcements', function(Blueprint $table): void {
+            $table->id();
+            $table->unsignedBigInteger('tenant_database_id')->nullable();
+            $table->string('title', 180);
+            $table->text('message');
+            $table->enum('severity', ['info', 'success', 'warning', 'danger'])->default('info');
+            $table->timestamp('starts_at')->nullable();
+            $table->timestamp('ends_at')->nullable();
+            $table->boolean('dismissible')->default(true);
+            $table->enum('status', ['active', 'inactive'])->default('active');
+            $table->timestamp('created_at')->useCurrent()->nullable();
+            $table->unsignedBigInteger('created_by')->nullable();
+            $table->timestamp('updated_at')->nullable();
+            $table->unsignedBigInteger('updated_by')->nullable();
+
+            $table->foreign('tenant_database_id')->references('id')->on('tenant_databases')->cascadeOnDelete();
+            $table->foreign('created_by')->references('id')->on('platform_users')->nullOnDelete();
+            $table->foreign('updated_by')->references('id')->on('platform_users')->nullOnDelete();
+            $table->index(['tenant_database_id', 'status', 'starts_at', 'ends_at'], 'tenant_announcements_visibility_index');
+        });
+
     }
 
     public function down(): void {
 
+        Schema::connection($this->connection)->dropIfExists('tenant_announcements');
         Schema::connection($this->connection)->dropIfExists('tenant_audit_logs');
         Schema::connection($this->connection)->dropIfExists('tenant_domains');
         Schema::connection($this->connection)->dropIfExists('tenant_databases');
+        Schema::connection($this->connection)->dropIfExists('platform_users');
 
     }
 

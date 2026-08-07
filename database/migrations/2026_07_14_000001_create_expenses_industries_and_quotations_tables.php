@@ -222,18 +222,15 @@ return new class extends Migration {
         $profiles = [
             "gym" => [
                 "name" => "Gimnasio y membresías",
-                "description" => "Base para gimnasios, estudios deportivos y negocios con membresías, asistencias y servicios recurrentes.",
-                "disable" => [59, 105]
+                "description" => "Base para gimnasios, estudios deportivos y negocios con membresías, asistencias y servicios recurrentes."
             ],
             "restaurant" => [
                 "name" => "Restaurante y comida",
-                "description" => "Base para restaurantes, cafeterías y negocios de comida con POS, mesas, recetas y cocina.",
-                "disable" => [42, 52, 43]
+                "description" => "Base para restaurantes, cafeterías y negocios de comida con POS, mesas, recetas y cocina."
             ],
             "retail" => [
                 "name" => "Comercio y retail",
-                "description" => "Base para tiendas con productos, inventario, compras, caja y ventas rápidas.",
-                "disable" => [42, 52, 43, 59, 105, 106]
+                "description" => "Base para tiendas con productos, inventario, compras, caja y ventas rápidas."
             ]
         ];
 
@@ -258,7 +255,6 @@ return new class extends Migration {
                     ->value("id");
 
                 foreach($enabledModules as $subSectionId) {
-                    $isEnabled = !in_array($subSectionId, $profile["disable"], true);
                     DB::table("business_industry_module_sets")->updateOrInsert(
                         [
                             "company_id" => $companyId,
@@ -266,10 +262,8 @@ return new class extends Migration {
                             "sub_section_id" => $subSectionId
                         ],
                         [
-                            "is_enabled_by_default" => $isEnabled,
-                            "reason" => $isEnabled
-                                ? "Módulo sugerido para el rubro {$profile["name"]}."
-                                : "Módulo normalmente no usado por el rubro {$profile["name"]}; puede habilitarse manualmente si aplica.",
+                            "is_enabled_by_default" => true,
+                            "reason" => "Módulo disponible para el rubro {$profile["name"]}.",
                             "status" => "active",
                             "created_at" => now(),
                             "updated_at" => now()

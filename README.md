@@ -20,13 +20,15 @@ cp .env.example .env
 php artisan key:generate
 ```
 
-Configura landlord, conexión tenant y `TENANCY_BASE_DOMAIN` antes de migrar. Luego:
+Configura landlord, conexión tenant y `TENANCY_BASE_DOMAIN` antes de migrar. Luego crea landlord y el tenant indicando obligatoriamente su administrador:
 
 ```bash
 php artisan migrate --database=landlord --path=database/migrations/landlord
-php artisan tenant:create demo --commercial-name="Demo Gym" --legal-name="Demo Gym S.A.C." --document-number=20600000001
+php artisan tenant:create demo --commercial-name="Demo Gym" --legal-name="Demo Gym S.A.C." --document-number=20600000001 --admin-email=admin@demo.test --admin-password="UnaClaveSegura123"
 npm run dev
 ```
+
+Para una instalación no tenant sobre una base vacía utiliza `php artisan system:install`. El procedimiento completo está en [Instalación de base de datos](docs/System/DATABASE_INSTALLATION.md).
 
 En Windows, `copy .env.example .env` reemplaza al comando `cp`.
 
@@ -48,6 +50,8 @@ Empieza en [docs/README.md](docs/README.md). Las referencias principales son:
 - [Generalidades](docs/GENERALIDADES.md)
 - [Arquitectura System](docs/System/ARCHITECTURE.md)
 - [Multi-tenant](docs/System/MULTITENANT.md)
+- [Instalación y aprovisionamiento](docs/System/DATABASE_INSTALLATION.md)
+- [Pruebas automatizadas](docs/System/TESTING.md)
 - [Seguridad y autenticación](docs/System/SECURITY_AND_AUTH.md)
 - [Tablas System](docs/System/TABLES.md)
 - [Portal Guest](docs/Guest/README.md)

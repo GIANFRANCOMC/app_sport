@@ -29,8 +29,9 @@ APP_URL=https://cliente.app.ejemplo.com
 LOG_LEVEL=warning
 
 TENANCY_BASE_DOMAIN=app.ejemplo.com
+TENANCY_PLATFORM_SUBDOMAIN=app
 TENANCY_ENFORCE_SUBDOMAINS=true
-TENANCY_RESERVED_SUBDOMAINS=www,api,admin,mail,static,assets
+TENANCY_RESERVED_SUBDOMAINS=www,api,admin,app,mail,static,assets
 TENANCY_RESOLVER_CACHE_SECONDS=60
 TENANT_ENFORCE_DB_PREFIX=true
 
@@ -81,6 +82,7 @@ composer install --no-dev --optimize-autoloader
 npm ci
 npm run build
 php artisan migrate --database=landlord --path=database/migrations/landlord --force
+php artisan platform:admin admin@ejemplo.com --name="Administrador SaaS"
 php artisan optimize:clear
 php artisan config:cache
 php artisan route:cache
@@ -89,6 +91,8 @@ php artisan queue:restart
 ```
 
 No ejecutar migraciones tenant indiscriminadamente desde una petición web. Debe existir un despliegue controlado que recorra tenants, registre resultado y permita reintento.
+
+La creación controlada de cada tenant debe proporcionar `--admin-email` y `--admin-password`, además de `--skip-create-database` cuando infraestructura haya preparado la base. El flujo completo está en [Instalación y aprovisionamiento](../DATABASE_INSTALLATION.md).
 
 ## Operación
 

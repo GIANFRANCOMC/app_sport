@@ -18,6 +18,7 @@ class Section extends Model {
     ];
 
     protected $fillable = [
+        "menu_category_id",
         "slug",
         "name",
         "order",
@@ -52,6 +53,20 @@ class Section extends Model {
     }
 
     // Relationships
+    public function menuCategory() {
+
+        return $this->belongsTo(MenuCategory::class, "menu_category_id", "id");
+
+    }
+
+    public function menuGroups() {
+
+        return $this->hasMany(MenuGroup::class, "section_id", "id")
+                    ->where("status", "active")
+                    ->orderBy("order");
+
+    }
+
     public function subSections() {
 
         return $this->hasMany(SubSection::class, "section_id", "id")

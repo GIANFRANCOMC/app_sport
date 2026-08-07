@@ -23,7 +23,7 @@ final class TestConfigService extends BaseConfigService {
 
     }
 
-    protected static function buildConfig(int $companyId, string $page): stdClass {
+    protected static function buildConfig(int $companyId, string $page, ?int $userId = null): stdClass {
 
         return self::data([
             "company_id" => $companyId,
@@ -38,9 +38,9 @@ class BaseConfigServiceTest extends TestCase {
 
     public function test_cache_is_isolated_by_company_and_page(): void {
 
-        $main = TestConfigService::getInitParams(101, "main");
-        $list = TestConfigService::getInitParams(101, "list");
-        $otherCompany = TestConfigService::getInitParams(102, "main");
+        $main = TestConfigService::getInitParams(101, "main", 1);
+        $list = TestConfigService::getInitParams(101, "list", 1);
+        $otherCompany = TestConfigService::getInitParams(102, "main", 1);
 
         $this->assertSame("main", $main->config->page);
         $this->assertSame("list", $list->config->page);
@@ -54,8 +54,8 @@ class BaseConfigServiceTest extends TestCase {
 
     public function test_empty_or_unknown_page_falls_back_to_first_supported_page(): void {
 
-        $empty = TestConfigService::getInitParams(103, "");
-        $unknown = TestConfigService::getInitParams(103, "unknown");
+        $empty = TestConfigService::getInitParams(103, "", 1);
+        $unknown = TestConfigService::getInitParams(103, "unknown", 1);
 
         $this->assertSame("main", $empty->config->page);
         $this->assertSame("main", $unknown->config->page);
@@ -64,8 +64,8 @@ class BaseConfigServiceTest extends TestCase {
 
     public function test_clear_all_cache_forgets_every_supported_page(): void {
 
-        TestConfigService::getInitParams(104, "main");
-        TestConfigService::getInitParams(104, "list");
+        TestConfigService::getInitParams(104, "main", 1);
+        TestConfigService::getInitParams(104, "list", 1);
 
         TestConfigService::clearAllCache(104);
 

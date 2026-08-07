@@ -7,7 +7,6 @@ namespace App\Services\System\Base;
 use Illuminate\Support\Facades\Cache;
 use InvalidArgumentException;
 use stdClass;
-use App\Models\System\Organizations\User;
 use App\Services\System\Organizations\Companies\CompanySettingService;
 
 /**
@@ -45,6 +44,10 @@ abstract class BaseConfigService {
 
         $page = self::normalizePage($page);
 
+        if(static::usesUserScopedCache()) {
+            static::registerUserCacheScope($companyId, $userId);
+        }
+
         return Cache::remember(
             static::cacheKey($companyId, $page, $userId),
             static::CACHE_TTL,
@@ -63,14 +66,11 @@ abstract class BaseConfigService {
 
         if(static::usesUserScopedCache()) {
 
-            User::query()
-                ->where("company_id", $companyId)
-                ->pluck("id")
-                ->each(function($userId) use($pages, $companyId): void {
-                    foreach(array_unique($pages) as $cachePage) {
-                        Cache::forget(static::cacheKey($companyId, $cachePage, (int) $userId));
-                    }
-                });
+            foreach(static::registeredUserIds($companyId) as $userId) {
+                foreach(array_unique($pages) as $cachePage) {
+                    Cache::forget(static::cacheKey($companyId, $cachePage, $userId));
+                }
+            }
 
             return;
 
@@ -139,9 +139,46 @@ abstract class BaseConfigService {
 
     }
 
+    public static function registerUserCacheScope(int $companyId, int $userId): void {
+
+        self::validateCompanyId($companyId);
+        if($userId <= 0) {
+            throw new InvalidArgumentException("User ID must be greater than zero.");
+        }
+
+        $key = self::userIndexKey($companyId);
+        $userIds = collect(Cache::get($key, []))
+            ->push($userId)
+            ->map(fn($id) => (int) $id)
+            ->filter(fn($id) => $id > 0)
+            ->unique()
+            ->values()
+            ->all();
+        Cache::put($key, $userIds, static::CACHE_TTL);
+
+    }
+
+    public static function userIndexKey(int $companyId): string {
+
+        self::validateCompanyId($companyId);
+        return "init_params:user_index:company:{$companyId}";
+
+    }
+
     protected static function data(array $attributes = []): stdClass {
 
         return (object) $attributes;
+
+    }
+
+    private static function registeredUserIds(int $companyId): array {
+
+        return collect(Cache::get(self::userIndexKey($companyId), []))
+            ->map(fn($id) => (int) $id)
+            ->filter(fn($id) => $id > 0)
+            ->unique()
+            ->values()
+            ->all();
 
     }
 

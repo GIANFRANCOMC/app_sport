@@ -10,6 +10,7 @@ Windows `hosts` no admite comodines. Añadir cada tenant en `C:\Windows\System32
 127.0.0.1 demo.gympe.test
 127.0.0.1 andina.gympe.test
 127.0.0.1 fitcenter.gympe.test
+127.0.0.1 app.gympe.test
 ```
 
 ## Laragon con Apache
@@ -36,6 +37,7 @@ APP_ENV=local
 APP_DEBUG=true
 APP_URL=http://demo.gympe.test
 TENANCY_BASE_DOMAIN=gympe.test
+TENANCY_PLATFORM_SUBDOMAIN=app
 TENANCY_ENFORCE_SUBDOMAINS=true
 SESSION_DOMAIN=
 SESSION_SECURE_COOKIE=false
@@ -88,11 +90,14 @@ Reiniciar Apache y crear las entradas `hosts` indicadas arriba.
 
 ```bash
 php artisan migrate --database=landlord --path=database/migrations/landlord
-php artisan tenant:create demo --commercial-name="Demo Gym" --legal-name="Demo Gym S.A.C." --document-number=20600000001
+php artisan platform:admin admin@gympe.test --name="Administrador SaaS"
+php artisan tenant:create demo --commercial-name="Demo Gym" --legal-name="Demo Gym S.A.C." --document-number=20600000001 --admin-email=admin@demo.test --admin-password="UnaClaveSegura123"
 php artisan optimize:clear
 ```
 
-Abrir `http://demo.gympe.test`. `http://gympe.test`, `http://localhost` y subdominios no registrados deben ser rechazados por este código.
+Después del alta, ejecutar `php artisan system:doctor` sobre la conexión tenant activa cuando se necesite verificar catálogo y referencias. Consulta [Instalación y aprovisionamiento](../DATABASE_INSTALLATION.md).
+
+Abrir `http://app.gympe.test` para la administración SaaS y `http://demo.gympe.test` para el tenant. `http://gympe.test`, `http://localhost` y subdominios no registrados deben ser rechazados por este código.
 
 ## Diagnóstico
 

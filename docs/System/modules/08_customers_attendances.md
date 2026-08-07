@@ -4,6 +4,8 @@
 
 Registra el ingreso y la salida de clientes. Valida cliente, membresía vigente, asistencia activa y límite diario permitido por la membresía.
 
+En el menú pertenece a `Clientes > Membresías`, inmediatamente después de `Membresías`, porque su operación depende de una membresía vigente. No forma parte del grupo general de comunicaciones de Atención al cliente.
+
 Esta lógica es independiente de `user_attendances`, que controla jornadas laborales de colaboradores.
 
 ## Archivos

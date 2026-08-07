@@ -241,8 +241,60 @@ body.br-layout ::placeholder {
 
 .br-layout .br-menu-brand .menu-header-text,
 .br-layout .br-menu-brand .menu-header-text.divider-text {
-  font-size: var(--br-ui-font-size);
-  letter-spacing: 0.075em;
+  font-size: 0.56rem;
+  font-weight: 400;
+  letter-spacing: 0.065em;
+}
+
+.br-layout .br-menu-brand .br-menu-category__short {
+  display: none;
+}
+
+.br-layout .br-menu-brand .br-menu-group > .br-menu-group__toggle {
+  min-height: 1.6rem !important;
+  color: color-mix(in srgb, var(--br-white) 76%, transparent) !important;
+  font-size: 0.64rem !important;
+  font-weight: 400 !important;
+  letter-spacing: 0.015em;
+  margin: 0.08rem 0.32rem !important;
+  width: calc(100% - 0.64rem) !important;
+  border-radius: 0.4rem !important;
+  background: color-mix(in srgb, var(--br-white) 5%, transparent) !important;
+}
+
+.br-layout .br-menu-brand .br-menu-group > .br-menu-group__items {
+  margin: 0.08rem 0 0.16rem 0.66rem;
+  padding: 0.08rem 0 0.08rem 0.18rem;
+  border-left: 1px solid color-mix(in srgb, var(--br-white) 13%, transparent);
+}
+
+.br-layout .br-menu-brand .br-menu-group > .br-menu-group__items .menu-link {
+  min-height: 1.42rem !important;
+  padding-left: 0.72rem !important;
+  font-size: 0.68rem !important;
+  font-weight: 400 !important;
+  color: color-mix(in srgb, var(--br-white) 68%, transparent) !important;
+}
+
+.br-layout .br-menu-brand .br-menu-group > .br-menu-group__toggle:hover,
+.br-layout .br-menu-brand .br-menu-group.open > .br-menu-group__toggle {
+  background: color-mix(in srgb, var(--br-white) 10%, transparent) !important;
+  color: var(--br-white) !important;
+}
+
+.br-tenant-announcement {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  border-radius: 0.65rem;
+  font-size: 0.82rem;
+}
+
+.br-layout .br-menu-brand .br-menu-group > .br-menu-group__items .br-menu-child-bullet {
+  width: 0.28rem !important;
+  min-width: 0.28rem !important;
+  height: 0.28rem !important;
 }
 
 .br-layout .br-menu-brand .br-sidebar-profile-wrap {
@@ -412,9 +464,20 @@ html.layout-menu-collapsed:not(.layout-menu-hover) body.br-layout .br-menu-brand
   opacity: 1 !important;
   width: auto !important;
   color: color-mix(in srgb, var(--br-white) 62%, transparent) !important;
-  font-size: var(--br-ui-font-size) !important;
-  letter-spacing: 0.075em !important;
+  font-size: 0.56rem !important;
+  font-weight: 400 !important;
+  letter-spacing: 0.05em !important;
   line-height: 1 !important;
+}
+
+@media (min-width: 1200px) {
+  html.layout-menu-collapsed:not(.layout-menu-hover) body.br-layout .br-menu-brand .br-menu-category__full {
+    display: none !important;
+  }
+
+  html.layout-menu-collapsed:not(.layout-menu-hover) body.br-layout .br-menu-brand .br-menu-category__short {
+    display: inline !important;
+  }
 }
 
 html.layout-menu-collapsed:not(.layout-menu-hover) body.br-layout .br-menu-brand .menu-link {

@@ -584,6 +584,28 @@ html:not(.layout-menu-collapsed) .br-layout .br-menu-brand .menu-inner .menu-ite
   }
 }
 
+.br-menu-brand .br-menu-category {
+  margin-top: 0.45rem;
+  padding-block: 0.35rem 0.2rem !important;
+}
+
+.br-menu-brand .br-menu-category .divider-text {
+  color: var(--br-text-muted);
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+.br-menu-brand .br-menu-group-label {
+  padding: 0.65rem 1rem 0.25rem 3.05rem;
+  color: var(--br-text-muted);
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
 html:not(.layout-menu-collapsed)
   .br-layout
   .br-menu-brand

@@ -22,6 +22,15 @@ final class ResolveTenant {
 
     public function handle(Request $request, Closure $next): Response {
 
+        if($this->isPlatformHost($request->getHost())) {
+            $this->context->set(null);
+            $this->connectionManager->disconnect();
+            Config::set('session.cookie', (string) config('tenancy.platform_session_cookie', 'gympe_platform_session'));
+            Config::set('session.domain', null);
+
+            return $next($request);
+        }
+
         $tenant = $this->resolver->resolveByHost($request->getHost());
 
         if(!$tenant) {
@@ -48,6 +57,16 @@ final class ResolveTenant {
         Config::set('session.domain', null);
 
         return $next($request);
+
+    }
+
+    private function isPlatformHost(string $host): bool {
+
+        $host = $this->resolver->normalizeHost($host);
+        $subdomain = (string) config('tenancy.platform_subdomain', 'app');
+        $baseDomain = (string) config('tenancy.base_domain');
+
+        return $host === "{$subdomain}.{$baseDomain}";
 
     }
 

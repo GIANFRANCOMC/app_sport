@@ -112,23 +112,35 @@ Uso: permite activar o desactivar módulos de forma masiva según el rubro de la
 
 Relaciones: pertenece a empresa, rubro y `sub_sections`. La aplicación del rubro actualiza `companies_sub_sections` e invalida la caché del menú de la empresa.
 
+### menu_categories
+
+Categorías visuales de primer nivel. Campos: `slug`, `name`, `order`, `status` y timestamps.
+
+Relaciones: tiene muchas `sections`. La definición vigente reside en la base de datos y se administra junto con `sections`, `menu_groups` y `sub_sections`.
+
 ### sections
 
-Secciones de menu principal. Campos: `slug`, `name`, `order`, `dom_id`, `dom_label`, `dom_icon`, `has_sub_menu`, `status`.
+Secciones de menú principal. Campos: `menu_category_id`, `slug`, `name`, `order`, `dom_id`, `dom_label`, `dom_icon`, `has_sub_menu`, `status`.
 
-Relaciones: tiene `sub_sections`.
+Relaciones: pertenece a `menu_categories`; tiene `menu_groups` y `sub_sections`.
+
+### menu_groups
+
+Agrupaciones visuales opcionales dentro de una sección. Campos: `section_id`, `slug`, `name`, `order`, `status` y timestamps.
+
+Relaciones: pertenece a `sections`; agrupa `sub_sections`. No concede permisos por sí misma.
 
 ### sub_sections
 
-Items de menú. Campos: `section_id`, `slug`, `name`, `description`, `order`, `dom_id`, `dom_label`, `dom_icon`, `dom_route`, `status`.
+Ítems de menú. Campos: `section_id`, `menu_group_id`, `slug`, `name`, `description`, `order`, `dom_id`, `dom_label`, `dom_icon`, `dom_route`, `status`.
 
 `description` contiene un resumen breve del propósito del acceso. Home lo usa para dar contexto, ampliar la búsqueda local y diferenciar módulos con nombres similares.
 
-Relaciones: pertenece a `sections`; se habilita por empresa mediante `companies_sub_sections`.
+Relaciones: pertenece a `sections` y opcionalmente a `menu_groups`; se habilita por empresa mediante `companies_sub_sections`.
 
 ### companies_sub_sections
 
-Permite activar/desactivar subsecciones para una empresa. Campos: `company_id`, `sub_section_id`, `status`.
+Permite activar, desactivar y ordenar opciones para una empresa. Campos: `company_id`, `sub_section_id`, `section_order`, `sub_section_order`, `status`.
 
 Relaciones: une `companies` con `sub_sections`.
 

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Services\System\Organizations\Companies;
 
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\{Cache, Route};
 use InvalidArgumentException;
 
 use App\Models\System\General\Section;
@@ -76,6 +76,7 @@ final class CompanySectionService {
         $query = Section::query()
                       ->select([
                           "id",
+                          "menu_category_id",
                           "slug",
                           "name",
                           "order",
@@ -113,11 +114,12 @@ final class CompanySectionService {
 
         }
 
-        return $query->with(["subSections" => function($query) use($companyId, $allowedSubSectionIds, $mustFilterByRole) {
+        return $query->with(["menuCategory:id,slug,name,order,status", "subSections" => function($query) use($companyId, $allowedSubSectionIds, $mustFilterByRole) {
 
                           $query->select([
                                     "id",
                                     "section_id",
+                                    "menu_group_id",
                                     "slug",
                                     "name",
                                     "description",
@@ -153,7 +155,7 @@ final class CompanySectionService {
                           $query->orderByRaw("COALESCE(company_sub_section_order, `sub_sections`.`order`, 999)")
                                 ->orderBy("sub_sections.order");
 
-                      }])
+                      }, "subSections.menuGroup:id,section_id,slug,name,order,status"])
                       ->orderByRaw("COALESCE(company_section_order, `sections`.`order`, 999)")
                       ->orderBy("sections.order")
                       ->get()
@@ -164,7 +166,9 @@ final class CompanySectionService {
                           $section->subSections->each(function($subSection) {
 
                               $subSection->setAppends([]);
-                              $subSection->dom_route_url = route($subSection->dom_route);
+                              $subSection->dom_route_url = Route::has($subSection->dom_route)
+                                  ? route($subSection->dom_route)
+                                  : '#';
 
                           });
 

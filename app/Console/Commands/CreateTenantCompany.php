@@ -6,11 +6,14 @@ namespace App\Console\Commands;
 
 use App\Models\System\Tenancy\{TenantDatabase, TenantDomain};
 use App\Services\System\Tenancy\{LandlordSchemaService, TenantConnectionManager};
+use App\Services\System\Database\SystemCatalogSyncService;
+use App\Services\System\Organizations\Companies\CompanyProvisioningService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\{Artisan, Cache, DB};
 use Illuminate\Support\Str;
 use InvalidArgumentException;
 use Throwable;
+use Database\Seeders\SystemNavigationSeeder;
 
 final class CreateTenantCompany extends Command {
 
@@ -22,6 +25,9 @@ final class CreateTenantCompany extends Command {
         {--commercial-name= : Nombre comercial inicial}
         {--legal-name= : Razón social inicial}
         {--document-number=99999999999 : Documento inicial}
+        {--admin-name=Administrador : Nombre del administrador inicial}
+        {--admin-email=admin@example.com : Correo del administrador inicial}
+        {--admin-password= : Contraseña del administrador inicial}
         {--force : Actualiza el registro landlord si ya existe}
         {--skip-create-database : Usa una base creada previamente por infraestructura}
         {--skip-migrate : Solo crea DB y registry, sin ejecutar migraciones tenant}
@@ -29,7 +35,11 @@ final class CreateTenantCompany extends Command {
 
     protected $description = 'Crea una compañía tenant con base de datos aislada y subdominio registrado.';
 
-    public function handle(TenantConnectionManager $connectionManager): int {
+    public function handle(
+        TenantConnectionManager $connectionManager,
+        CompanyProvisioningService $provisioning,
+        SystemCatalogSyncService $catalog
+    ): int {
 
         $slug = $this->normalizeSlug((string) $this->argument('slug'));
         $companyId = (int) $this->option('company-id');
@@ -57,8 +67,34 @@ final class CreateTenantCompany extends Command {
 
             if(!$this->option('skip-migrate')) {
                 $this->runTenantMigrations();
-                $this->hydrateCompany($companyId, $slug);
-                $this->call('company:enable', ['company_id' => $companyId]);
+                Artisan::call('db:seed', [
+                    '--class' => SystemNavigationSeeder::class,
+                    '--database' => config('tenancy.tenant_connection', 'tenant'),
+                    '--force' => true
+                ]);
+                $provisioning->createOrUpdate([
+                    'slug' => $slug,
+                    'commercial_name' => $this->option('commercial-name') ?: Str::headline($slug),
+                    'legal_name' => $this->option('legal-name') ?: Str::upper(Str::headline($slug)),
+                    'document_number' => (string) $this->option('document-number'),
+                    'email' => (string) $this->option('admin-email'),
+                ], $companyId);
+                $catalog->sync($companyId);
+                $provisioning->enable($companyId);
+
+                $adminPassword = (string) $this->option('admin-password');
+                if($adminPassword === '' && $this->input->isInteractive()) {
+                    $adminPassword = (string) $this->secret('Contraseña del administrador inicial');
+                }
+                if(strlen($adminPassword) < 8) {
+                    throw new InvalidArgumentException('admin-password es obligatorio y debe tener al menos 8 caracteres.');
+                }
+                $provisioning->ensureAdminUser(
+                    $companyId,
+                    (string) $this->option('admin-name'),
+                    (string) $this->option('admin-email'),
+                    $adminPassword
+                );
             }
 
             DB::connection('landlord')
@@ -226,20 +262,6 @@ final class CreateTenantCompany extends Command {
         ]);
 
         $this->line(Artisan::output());
-
-    }
-
-    private function hydrateCompany(int $companyId, string $slug): void {
-
-        DB::table('companies')
-            ->where('id', $companyId)
-            ->update([
-                'slug' => $slug,
-                'commercial_name' => $this->option('commercial-name') ?: Str::headline($slug),
-                'legal_name' => $this->option('legal-name') ?: Str::upper(Str::headline($slug)),
-                'document_number' => (string) $this->option('document-number'),
-                'updated_at' => now()
-            ]);
 
     }
 

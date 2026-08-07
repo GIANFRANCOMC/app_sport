@@ -62,6 +62,10 @@ class RouteServiceProvider extends ServiceProvider
                 ->prefix('api')
                 ->group(base_path('routes/api.php'));
 
+            Route::domain(config('tenancy.platform_subdomain', 'app').'.'.config('tenancy.base_domain'))
+                ->middleware('web')
+                ->group(base_path('routes/platform.php'));
+
             Route::middleware('web')
                 ->group(base_path('routes/web.php'));
         });

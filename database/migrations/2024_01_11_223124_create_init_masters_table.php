@@ -97,8 +97,17 @@ return new class extends Migration {
         Schema::table("currencies", function(Blueprint $table) {
             $table->foreign("company_id")->references("id")->on("companies")->onDelete("cascade");
         });
+        Schema::create("menu_categories", function(Blueprint $table) {
+            $table->id();
+            $table->string("slug", 100)->unique();
+            $table->string("name", 100);
+            $table->integer("order")->default(0);
+            $table->enum("status", ["active", "inactive"])->default("active");
+            $table->timestamps();
+        });
         Schema::create("sections", function(Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger("menu_category_id")->nullable();
             $table->string("slug", 255);
             $table->string("name", 255);
             $table->integer("order")->nullable();
@@ -112,10 +121,25 @@ return new class extends Migration {
             $table->integer("created_by")->nullable();
             $table->timestamp("updated_at")->nullable();
             $table->integer("updated_by")->nullable();
+
+            $table->foreign("menu_category_id")->references("id")->on("menu_categories")->nullOnDelete();
+        });
+        Schema::create("menu_groups", function(Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger("section_id");
+            $table->string("slug", 100);
+            $table->string("name", 100);
+            $table->integer("order")->default(0);
+            $table->enum("status", ["active", "inactive"])->default("active");
+            $table->timestamps();
+
+            $table->foreign("section_id")->references("id")->on("sections")->cascadeOnDelete();
+            $table->unique(["section_id", "slug"]);
         });
         Schema::create("sub_sections", function(Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger("section_id");
+            $table->unsignedBigInteger("menu_group_id")->nullable();
             $table->string("slug", 255);
             $table->string("name", 255);
             $table->string("description", 255)->nullable();
@@ -132,6 +156,7 @@ return new class extends Migration {
             $table->integer("updated_by")->nullable();
 
             $table->foreign("section_id")->references("id")->on("sections")->onDelete("cascade");
+            $table->foreign("menu_group_id")->references("id")->on("menu_groups")->nullOnDelete();
         });
         Schema::create("companies_sub_sections", function(Blueprint $table) {
             $table->id();
@@ -241,7 +266,7 @@ return new class extends Migration {
             $table->foreign("company_id")->references("id")->on("companies")->onDelete("cascade");
             $table->foreign("user_id")->references("id")->on("users")->onDelete("cascade");
         });
-        // Initial data lives in 2024_12_31_235959_insert_initial_system_data.php.
+        // Los datos se aprovisionan después del esquema mediante system:install.
 
     }
 
@@ -259,7 +284,9 @@ return new class extends Migration {
         Schema::dropIfExists("roles");
         Schema::dropIfExists("companies_sub_sections");
         Schema::dropIfExists("sub_sections");
+        Schema::dropIfExists("menu_groups");
         Schema::dropIfExists("sections");
+        Schema::dropIfExists("menu_categories");
         Schema::dropIfExists("companies");
         Schema::dropIfExists("currencies");
         Schema::dropIfExists("document_types");

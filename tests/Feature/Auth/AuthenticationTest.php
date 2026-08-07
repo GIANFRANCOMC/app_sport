@@ -2,14 +2,30 @@
 
 namespace Tests\Feature\Auth;
 
-use App\Models\User;
+use App\Http\Middleware\{EnsureAuthenticatedSession, EnsureTenantSession, ResolveTenant, TrustHosts};
+use App\Models\System\Organizations\User;
 use App\Providers\RouteServiceProvider;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
+use Tests\Concerns\ProvisionsSystemDatabase;
 
 class AuthenticationTest extends TestCase
 {
     use RefreshDatabase;
+    use ProvisionsSystemDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        config(['public_access.captcha.enabled' => false]);
+        $this->provisionSystemDatabase();
+        $this->withoutMiddleware([
+            TrustHosts::class,
+            ResolveTenant::class,
+            EnsureTenantSession::class,
+            EnsureAuthenticatedSession::class,
+        ]);
+    }
 
     public function test_login_screen_can_be_rendered(): void
     {
@@ -20,11 +36,12 @@ class AuthenticationTest extends TestCase
 
     public function test_users_can_authenticate_using_the_login_screen(): void
     {
-        $user = User::factory()->create();
+        $user = User::where('company_id', 1)->where('email', 'admin@example.test')->firstOrFail();
 
         $response = $this->post('/login', [
             'email' => $user->email,
             'password' => 'password',
+            'company_id' => 1,
         ]);
 
         $this->assertAuthenticated();
@@ -33,11 +50,12 @@ class AuthenticationTest extends TestCase
 
     public function test_users_can_not_authenticate_with_invalid_password(): void
     {
-        $user = User::factory()->create();
+        $user = User::where('company_id', 1)->where('email', 'admin@example.test')->firstOrFail();
 
         $this->post('/login', [
             'email' => $user->email,
             'password' => 'wrong-password',
+            'company_id' => 1,
         ]);
 
         $this->assertGuest();
@@ -45,11 +63,11 @@ class AuthenticationTest extends TestCase
 
     public function test_users_can_logout(): void
     {
-        $user = User::factory()->create();
+        $user = User::where('company_id', 1)->where('email', 'admin@example.test')->firstOrFail();
 
         $response = $this->actingAs($user)->post('/logout');
 
         $this->assertGuest();
-        $response->assertRedirect('/');
+        $response->assertRedirect('/?company=' . base64_encode('1'));
     }
 }

@@ -22,22 +22,20 @@ System no debe asumir comportamiento de visitantes publicos. Si una funcionalida
 2. [DEVELOPMENT_GUIDE.md](DEVELOPMENT_GUIDE.md)
 3. [BACKEND_CONVENTIONS.md](BACKEND_CONVENTIONS.md)
 4. [TABLES.md](TABLES.md)
-5. [modules/00_menu_order.md](modules/00_menu_order.md)
-6. Modulos numerados en [modules](modules)
-7. Decisiones de evolucion en [new_requirements](new_requirements)
+5. [DATABASE_INSTALLATION.md](DATABASE_INSTALLATION.md)
+6. [TESTING.md](TESTING.md)
+7. [modules/00_menu_order.md](modules/00_menu_order.md)
+8. Modulos numerados en [modules](modules)
+9. Decisiones de evolucion en [new_requirements](new_requirements)
 
 ## Modulos Por Menu
 
-El orden base sale del seed/menu adjunto:
+El menú se consulta desde `menu_categories`, `sections`, `menu_groups` y `sub_sections`, y se organiza en cuatro categorías:
 
-1. Inicio
-2. Dashboard
-3. Ventas
-4. Gestion de clientes
-5. Catalogo comercial
-6. Infraestructura
-7. Configuracion
-8. Reportes
+1. Principal.
+2. Operaciones.
+3. Gestión.
+4. Administración.
 
 Dentro de cada seccion, los archivos de `modules` siguen la numeracion del menu y luego agregan modulos tecnicos de soporte.
 
@@ -47,7 +45,7 @@ Antes de tocar cualquier modulo System, revisar [../GENERALIDADES.md](../GENERAL
 
 ## Criterios De Mantenimiento
 
-- Mantener la lista de modulos sincronizada con seeds de `sections`, `sub_sections`, perfiles y menu lateral.
+- Mantener el catálogo de módulos en las tablas de navegación. `SystemNavigationSeeder` se utiliza únicamente para inicializar una base vacía.
 - Cada modulo documenta tablas, rutas, reglas y comportamiento backend vigente.
 - Evitar duplicar criterios visuales aqui; si aplica a varios modulos, moverlo a `GENERALIDADES.md`.
 - Las decisiones visuales transversales se mantienen en `GENERALIDADES.md`; cada pantalla documenta sus mejoras en su módulo.
