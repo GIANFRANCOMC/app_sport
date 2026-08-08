@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\Artisan;
+use Illuminate\Database\{Seeder};
+use Illuminate\Support\Facades\{Artisan};
 
 final class LandlordTenantDemoSeeder extends Seeder {
     public function run(): void {
@@ -29,7 +29,8 @@ final class LandlordTenantDemoSeeder extends Seeder {
             ],
         ];
 
-        foreach ($tenants as $tenant) {
+        foreach($tenants as $tenant) {
+
             Artisan::call("tenant:create", [
                 "slug" => $tenant["slug"],
                 "--commercial-name" => $tenant["commercial_name"],
@@ -37,6 +38,7 @@ final class LandlordTenantDemoSeeder extends Seeder {
                 "--document-number" => $tenant["document_number"],
                 "--force" => true,
             ]);
+
         }
 
     }

@@ -2,10 +2,9 @@
 
 declare(strict_types=1);
 
-use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\Migrations\{Migration};
+use Illuminate\Database\Schema\{Blueprint};
+use Illuminate\Support\Facades\{DB, Schema};
 
 return new class extends Migration {
     protected $connection = "landlord";
@@ -24,13 +23,17 @@ return new class extends Migration {
 
         $existingColumns = array_values(array_filter(
             $sensitiveColumns,
-            static fn (string $column): bool => $schema->hasColumn("tenant_databases", $column)
+            static fn(string $column): bool => $schema->hasColumn("tenant_databases", $column)
         ));
 
-        if ($existingColumns !== []) {
-            $schema->table("tenant_databases", function (Blueprint $table) use ($existingColumns): void {
+        if($existingColumns !== []) {
+
+            $schema->table("tenant_databases", function(Blueprint $table) use ($existingColumns): void {
+
                 $table->dropColumn($existingColumns);
+
             });
+
         }
 
         DB::connection($this->connection)

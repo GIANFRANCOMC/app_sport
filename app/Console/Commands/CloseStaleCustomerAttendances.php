@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Models\System\Tenancy\TenantDatabase;
-use App\Services\System\Customers\Tracking\AttendanceMaintenanceService;
-use App\Services\System\Tenancy\TenantAdministrationService;
-use App\Services\System\Tenancy\TenantConnectionManager;
-use Illuminate\Console\Command;
+use App\Models\System\Tenancy\{TenantDatabase};
+use App\Services\System\Customers\Tracking\{AttendanceMaintenanceService};
+use App\Services\System\Tenancy\{TenantAdministrationService, TenantConnectionManager};
+use Illuminate\Console\{Command};
 use Throwable;
 
 final class CloseStaleCustomerAttendances extends Command {
@@ -29,11 +28,11 @@ final class CloseStaleCustomerAttendances extends Command {
         $companyId = $this->option("company");
         $tenants = TenantDatabase::query()
             ->where("status", "active")
-            ->when($tenantSlug, fn ($query) => $query->where("slug", $tenantSlug))
+            ->when($tenantSlug, fn($query) => $query->where("slug", $tenantSlug))
             ->orderBy("id")
             ->get();
 
-        if ($tenants->isEmpty()) {
+        if($tenants->isEmpty()) {
 
             $this->error("No existen tenants activos para procesar.");
 
@@ -44,7 +43,7 @@ final class CloseStaleCustomerAttendances extends Command {
         $rows = [];
         $hasFailure = false;
 
-        foreach ($tenants as $tenant) {
+        foreach($tenants as $tenant) {
 
             try {
 
@@ -57,7 +56,7 @@ final class CloseStaleCustomerAttendances extends Command {
                 $rows[] = [$tenant->slug, $summary["companies"], $summary["closed"], $summary["skipped"], "OK"];
                 $administration->audit($tenant, "close_stale_customer_attendances", "success", $summary, "scheduler");
 
-            } catch (Throwable $exception) {
+            } catch(Throwable $exception) {
 
                 $hasFailure = true;
                 $rows[] = [$tenant->slug, 0, 0, 0, $exception->getMessage()];

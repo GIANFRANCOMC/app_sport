@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Observers\System\Organizations;
 
-use App\Models\System\Organizations\CompanySubSection;
-use App\Services\System\Organizations\Companies\CompanySectionService;
+use App\Models\System\Organizations\{CompanySubSection};
+use App\Services\System\Organizations\Companies\{CompanySectionService};
 
 final class CompanySubSectionObserver {
     public function saved(CompanySubSection $companySubSection): void {
@@ -15,7 +15,7 @@ final class CompanySubSectionObserver {
             (int) $companySubSection->getOriginal("company_id"),
         ];
 
-        foreach (array_unique(array_filter($companyIds)) as $companyId) {
+        foreach(array_unique(array_filter($companyIds)) as $companyId) {
 
             CompanySectionService::clearCompanyCache($companyId);
 

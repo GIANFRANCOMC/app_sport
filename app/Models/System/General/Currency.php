@@ -2,12 +2,11 @@
 
 namespace App\Models\System\General;
 
-use App\Helpers\System\Utilities;
+use App\Helpers\System\{Utilities};
 use App\Models\System\Assets\{BranchAsset};
 use App\Models\System\Catalogs\{Item};
-use App\Models\System\Sales\SaleBody;
-use App\Models\System\Sales\SaleHeader;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\System\Sales\{SaleBody, SaleHeader};
+use Illuminate\Database\Eloquent\{Model};
 
 class Currency extends Model {
     protected $table = "currencies";

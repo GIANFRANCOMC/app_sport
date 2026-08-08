@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\System\Organizations\UserAttendances;
 
-use App\Http\Requests\System\Base\CompanyFormRequest;
-use App\Rules\System\Defaults\BelongsToCompany;
-use App\Services\System\Organizations\Users\UserAttendanceService;
-use Illuminate\Validation\Rule;
+use App\Http\Requests\System\Base\{CompanyFormRequest};
+use App\Rules\System\Defaults\{BelongsToCompany};
+use App\Services\System\Organizations\Users\{UserAttendanceService};
+use Illuminate\Validation\{Rule};
 
 final class CheckInUserAttendanceRequest extends CompanyFormRequest {
     public function rules(): array {

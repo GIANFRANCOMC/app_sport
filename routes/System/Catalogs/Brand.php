@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
-use App\Http\Controllers\System\Catalogs\BrandController;
-use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\System\Catalogs\{BrandController};
+use Illuminate\Support\Facades\{Route};
 
 $entity = "brands";
 

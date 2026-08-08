@@ -2,12 +2,12 @@
 
 namespace App\Models\System\Sales;
 
-use App\Helpers\System\Utilities;
+use App\Helpers\System\{Utilities};
 use App\Models\System\Catalogs\{Item};
 use App\Models\System\Customers\{Customer};
 use App\Models\System\General\{Currency};
 use Exception;
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\{Model};
 
 class SaleBody extends Model {
     protected $table = "sales_body";
@@ -66,7 +66,7 @@ class SaleBody extends Model {
 
             return json_decode($this->extras);
 
-        } catch (Exception $e) {
+        } catch(Exception $e) {
 
             return "";
 

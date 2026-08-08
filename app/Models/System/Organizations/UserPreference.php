@@ -2,9 +2,9 @@
 
 namespace App\Models\System\Organizations;
 
-use App\Helpers\System\Utilities;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\DB;
+use App\Helpers\System\{Utilities};
+use Illuminate\Database\Eloquent\{Model};
+use Illuminate\Support\Facades\{DB};
 use stdClass;
 
 class UserPreference extends Model {
@@ -55,13 +55,14 @@ class UserPreference extends Model {
 
     public static function updateItems($userId, $slug = "", $data = null, $extras = []) {
 
-        return DB::transaction(function () use ($userId, $slug, $data, $extras) {
+        return DB::transaction(function() use ($userId, $slug, $data, $extras) {
 
             $companyId = (int) User::query()->whereKey($userId)->value("company_id");
 
-            if ($companyId <= 0) {
+            if($companyId <= 0) {
 
                 throw new \DomainException("No se pudo identificar la empresa del usuario.");
+
             }
 
             $activePreferences = UserPreference::where("company_id", $companyId)
@@ -74,7 +75,7 @@ class UserPreference extends Model {
 
             $userPreference = $activePreferences->first();
 
-            if (! Utilities::isDefined($userPreference)) {
+            if(!Utilities::isDefined($userPreference)) {
 
                 $userPreference = new UserPreference();
                 $userPreference->company_id = $companyId;
@@ -85,7 +86,7 @@ class UserPreference extends Model {
                 $userPreference->created_at = now();
                 $userPreference->created_by = $userId;
 
-            } elseif ($activePreferences->count() > 1) {
+            }elseif($activePreferences->count() > 1) {
 
                 UserPreference::where("company_id", $companyId)
                     ->whereIn("id", $activePreferences->skip(1)->pluck("id"))
@@ -97,13 +98,13 @@ class UserPreference extends Model {
 
             }
 
-            if (in_array($slug, ["config_companies_sub_sections"])) {
+            if(in_array($slug, ["config_companies_sub_sections"])) {
 
                 $value = Utilities::isDefined($userPreference->value) ? (json_decode($userPreference->value) ?: new stdClass()) : new stdClass();
 
                 $subSectionsValue = collect($value->sub_sections ?? [])
-                    ->filter(fn ($item) => intval($item->sub_section_id ?? 0) > 0)
-                    ->mapWithKeys(function ($item) {
+                    ->filter(fn($item) => intval($item->sub_section_id ?? 0) > 0)
+                    ->mapWithKeys(function($item) {
 
                         $subSectionId = intval($item->sub_section_id);
 
@@ -115,12 +116,12 @@ class UserPreference extends Model {
 
                     });
 
-                foreach ($data["records"] ?? [] as $record) {
+                foreach($data["records"] ?? [] as $record) {
 
                     $subSectionId = intval($record["sub_section_id"] ?? 0);
                     $actionType = $extras["type"] ?? "store_update";
 
-                    if ($subSectionId <= 0 || ! in_array($actionType, ["store_update"])) {
+                    if($subSectionId <= 0 || !in_array($actionType, ["store_update"])) {
 
                         continue;
 
@@ -132,9 +133,9 @@ class UserPreference extends Model {
                         "is_favorite" => false,
                     ]);
 
-                    foreach (["visible_in_menu", "is_favorite"] as $field) {
+                    foreach(["visible_in_menu", "is_favorite"] as $field) {
 
-                        if (array_key_exists($field, $record) && is_bool($record[$field])) {
+                        if(array_key_exists($field, $record) && is_bool($record[$field])) {
 
                             $preferenceValue->{$field} = $record[$field];
 

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models\System\Organizations;
 
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\{Model};
 
 final class BusinessIndustry extends Model {
     protected $table = "business_industries";

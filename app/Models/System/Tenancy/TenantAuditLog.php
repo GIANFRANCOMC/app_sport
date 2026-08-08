@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models\System\Tenancy;
 
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\{Model};
 
 final class TenantAuditLog extends Model {
     protected $connection = "landlord";
@@ -32,6 +32,8 @@ final class TenantAuditLog extends Model {
     ];
 
     public function tenantDatabase() {
+
         return $this->belongsTo(TenantDatabase::class, "tenant_database_id");
+
     }
 }

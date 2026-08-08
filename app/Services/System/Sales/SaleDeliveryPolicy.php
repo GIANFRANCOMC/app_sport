@@ -17,8 +17,10 @@ final class SaleDeliveryPolicy {
 
     public static function initialStatus(?string $requestedStatus, bool $requiresPhysicalDelivery): string {
 
-        if (! $requiresPhysicalDelivery) {
+        if(!$requiresPhysicalDelivery) {
+
             return self::DELIVERED;
+
         }
 
         return $requestedStatus === self::PENDING

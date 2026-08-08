@@ -5,11 +5,9 @@ declare(strict_types=1);
 namespace App\Http\Controllers\System\Essentials;
 
 use App\Helpers\System\{Utilities};
-use App\Http\Controllers\System\Base\BaseController;
-use App\Services\System\Essentials\DashboardConfigService;
-use App\Services\System\Essentials\DashboardService;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
+use App\Http\Controllers\System\Base\{BaseController};
+use App\Services\System\Essentials\{DashboardConfigService, DashboardService};
+use Illuminate\Http\{JsonResponse, Request};
 
 class DashboardController extends BaseController {
     /**

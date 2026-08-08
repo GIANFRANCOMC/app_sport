@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
-use App\Services\System\Customers\Tracking\TrackingAttendanceBusinessService;
-use App\Services\System\Organizations\Users\UserAttendanceService;
-use Carbon\Carbon;
+use App\Services\System\Customers\Tracking\{TrackingAttendanceBusinessService};
+use App\Services\System\Organizations\Users\{UserAttendanceService};
+use Carbon\{Carbon};
 use DomainException;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\DB;
-use Tests\Concerns\ProvisionsSystemDatabase;
-use Tests\TestCase;
+use Illuminate\Foundation\Testing\{RefreshDatabase};
+use Illuminate\Support\Facades\{DB};
+use Tests\Concerns\{ProvisionsSystemDatabase};
+use Tests\{TestCase};
 
 final class AttendanceFlowsTest extends TestCase {
     use ProvisionsSystemDatabase;

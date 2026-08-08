@@ -4,15 +4,18 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\System\Purchases;
 
-use App\Http\Requests\System\Base\CompanyFormRequest;
-use App\Rules\System\Defaults\BelongsToCompany;
+use App\Http\Requests\System\Base\{CompanyFormRequest};
+use App\Rules\System\Defaults\{BelongsToCompany};
 
 final class StorePurchaseReturnRequest extends CompanyFormRequest {
     public function authorize(): bool {
+
         return parent::authorize();
+
     }
 
     public function rules(): array {
+
         $round = $this->decimalPrecision();
         $maxValue = $this->numericMaxValue();
 
@@ -25,5 +28,6 @@ final class StorePurchaseReturnRequest extends CompanyFormRequest {
             "items.*.purchase_item_id" => ["required", "integer", "distinct"],
             "items.*.quantity" => ["required", "numeric", "gt:0", "max:{$maxValue}", "decimal:0,{$round}"],
         ];
+
     }
 }

@@ -5,17 +5,12 @@ declare(strict_types=1);
 namespace App\Http\Controllers\System\Sales;
 
 use App\Helpers\System\{Utilities};
-use App\Http\Controllers\System\Base\BaseController;
-use App\Http\Requests\System\Sales\CancelSaleRequest;
-use App\Http\Requests\System\Sales\StoreSaleDeliveryRequest;
-use App\Http\Requests\System\Sales\StoreSaleRequest;
-use App\Models\System\Sales\SaleDelivery;
-use App\Services\System\Organizations\AccessScopeService;
-use App\Services\System\Sales\SaleConfigService;
-use App\Services\System\Sales\SaleDeliveryService;
-use App\Services\System\Sales\SaleService;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
+use App\Http\Controllers\System\Base\{BaseController};
+use App\Http\Requests\System\Sales\{CancelSaleRequest, StoreSaleDeliveryRequest, StoreSaleRequest};
+use App\Models\System\Sales\{SaleDelivery};
+use App\Services\System\Organizations\{AccessScopeService};
+use App\Services\System\Sales\{SaleConfigService, SaleDeliveryService, SaleService};
+use Illuminate\Http\{JsonResponse, Request};
 
 class SaleController extends BaseController {
     /**
@@ -127,7 +122,7 @@ class SaleController extends BaseController {
             $data = $this->prepareSaleData($request);
             $sale = SaleService::create($data, $this->getCompanyId(), $this->getUserId());
 
-            if (! Utilities::isDefined($sale)) {
+            if(!Utilities::isDefined($sale)) {
 
                 return $this->errorResponse("create_failed");
 
@@ -135,7 +130,7 @@ class SaleController extends BaseController {
 
             return $this->createdResponse($sale, "created", "sale");
 
-        } catch (\Exception $e) {
+        } catch(\Exception $e) {
 
             return $this->handleException($e, "create");
 
@@ -154,20 +149,20 @@ class SaleController extends BaseController {
 
             $sale = SaleService::findById($this->getCompanyId(), $id);
 
-            if (! Utilities::isDefined($sale)) {
+            if(!Utilities::isDefined($sale)) {
 
                 return $this->notFoundResponse();
 
             }
 
             // Verify company ownership
-            if ($serie = $sale->serie) {
+            if($serie = $sale->serie) {
 
                 $branch = $serie->branch;
 
-                if (! Utilities::isDefined($branch)
+                if(!Utilities::isDefined($branch)
                     || $branch->company_id !== $this->getCompanyId()
-                    || ! AccessScopeService::canAccess($this->getAuthUser(), AccessScopeService::BRANCH, (int) $branch->id)) {
+                    || !AccessScopeService::canAccess($this->getAuthUser(), AccessScopeService::BRANCH, (int) $branch->id)) {
 
                     return $this->errorResponse("unauthorized", [], 403);
 
@@ -177,7 +172,7 @@ class SaleController extends BaseController {
 
             $sale = SaleService::cancel($sale, $this->getCompanyId(), $this->getUserId());
 
-            if (! Utilities::isDefined($sale)) {
+            if(!Utilities::isDefined($sale)) {
 
                 return $this->errorResponse("cancel_failed");
 
@@ -197,7 +192,7 @@ class SaleController extends BaseController {
                 "sale" => $sale,
             ]);
 
-        } catch (\Exception $e) {
+        } catch(\Exception $e) {
 
             return $this->handleException($e, "cancel");
 
@@ -213,14 +208,14 @@ class SaleController extends BaseController {
                 ->where("company_id", $this->getCompanyId())
                 ->find($id);
 
-            if (! $delivery) {
+            if(!$delivery) {
 
                 return $this->notFoundResponse();
 
             }
 
             $warehouseId = (int) ($request->warehouse_id ?? $delivery->warehouse_id);
-            if (! AccessScopeService::canAccess($this->getAuthUser(), AccessScopeService::WAREHOUSE, $warehouseId)) {
+            if(!AccessScopeService::canAccess($this->getAuthUser(), AccessScopeService::WAREHOUSE, $warehouseId)) {
 
                 return $this->errorResponse("warehouse_not_available", [], 403);
 
@@ -241,7 +236,7 @@ class SaleController extends BaseController {
                 "data" => $delivery,
             ]);
 
-        } catch (\Throwable $e) {
+        } catch(\Throwable $e) {
 
             return response()->json([
                 "bool" => false,

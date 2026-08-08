@@ -2,9 +2,7 @@
 
 namespace App\Exports;
 
-use Maatwebsite\Excel\Concerns\FromCollection;
-use Maatwebsite\Excel\Concerns\WithColumnWidths;
-use Maatwebsite\Excel\Concerns\WithHeadings;
+use Maatwebsite\Excel\Concerns\{FromCollection, WithColumnWidths, WithHeadings};
 
 class UserExport implements FromCollection, WithColumnWidths, WithHeadings {
     protected $data;

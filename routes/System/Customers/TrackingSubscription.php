@@ -1,7 +1,7 @@
 <?php
 
 use App\Http\Controllers\System\Customers\{TrackingSubscriptionController};
-use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\{Route};
 
 $entity = "tracking_subscriptions";
 

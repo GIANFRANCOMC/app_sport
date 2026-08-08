@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Services\System\Organizations\Companies;
 
-use App\Models\System\Organizations\CompanySetting;
-use Illuminate\Support\Facades\Schema;
+use App\Models\System\Organizations\{CompanySetting};
+use Illuminate\Support\Facades\{Schema};
 
 final class CompanySettingService {
     public const INTERNAL_CODE_PREFIXES = "internal_code_prefixes";
@@ -105,7 +105,7 @@ final class CompanySettingService {
 
         $cacheKey = "{$companyId}:{$group}";
 
-        if (array_key_exists($cacheKey, self::$groupCache)) {
+        if(array_key_exists($cacheKey, self::$groupCache)) {
 
             return self::$groupCache[$cacheKey];
 
@@ -126,7 +126,7 @@ final class CompanySettingService {
             default => []
         };
 
-        if (! Schema::hasTable("company_settings")) {
+        if(!Schema::hasTable("company_settings")) {
 
             return self::$groupCache[$cacheKey] = $values;
 
@@ -139,7 +139,7 @@ final class CompanySettingService {
             ->orderBy("id")
             ->get(["key", "value", "value_type"]);
 
-        foreach ($settings as $setting) {
+        foreach($settings as $setting) {
 
             $values[$setting->key] = self::castValue($setting->value, $setting->value_type);
 
@@ -159,7 +159,7 @@ final class CompanySettingService {
 
     public static function clearCache(?int $companyId = null): void {
 
-        if ($companyId === null) {
+        if($companyId === null) {
 
             self::$groupCache = [];
 
@@ -167,9 +167,9 @@ final class CompanySettingService {
 
         }
 
-        foreach (array_keys(self::$groupCache) as $cacheKey) {
+        foreach(array_keys(self::$groupCache) as $cacheKey) {
 
-            if (str_starts_with($cacheKey, "{$companyId}:")) {
+            if(str_starts_with($cacheKey, "{$companyId}:")) {
 
                 unset(self::$groupCache[$cacheKey]);
 

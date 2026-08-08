@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\System\Essentials;
 
-use App\Services\System\Base\BaseConfigService;
+use App\Services\System\Base\{BaseConfigService};
 use stdClass;
 
 final class ReportConfigService extends BaseConfigService {

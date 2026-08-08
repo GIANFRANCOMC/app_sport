@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace App\Models\System\Customers;
 
-use App\Models\System\Organizations\Company;
-use App\Models\System\Organizations\User;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\System\Organizations\{Company, User};
+use Illuminate\Database\Eloquent\{Model};
 
 final class AttendanceCorrection extends Model {
     protected $table = "attendance_corrections";

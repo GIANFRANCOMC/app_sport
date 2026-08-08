@@ -4,13 +4,9 @@ declare(strict_types=1);
 
 namespace App\Exports\System\Catalogs\Products;
 
-use Maatwebsite\Excel\Concerns\FromArray;
-use Maatwebsite\Excel\Concerns\ShouldAutoSize;
-use Maatwebsite\Excel\Concerns\WithHeadings;
-use Maatwebsite\Excel\Concerns\WithStyles;
-use PhpOffice\PhpSpreadsheet\Style\Alignment;
-use PhpOffice\PhpSpreadsheet\Style\Fill;
-use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
+use Maatwebsite\Excel\Concerns\{FromArray, ShouldAutoSize, WithHeadings, WithStyles};
+use PhpOffice\PhpSpreadsheet\Style\{Alignment, Fill};
+use PhpOffice\PhpSpreadsheet\Worksheet\{Worksheet};
 
 final class ProductImportTemplateExport implements FromArray, ShouldAutoSize, WithHeadings, WithStyles {
     public function array(): array {

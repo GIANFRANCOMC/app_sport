@@ -4,13 +4,13 @@ namespace App\Models\System\Organizations;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 
-use App\Helpers\System\Utilities;
+use App\Helpers\System\{Utilities};
 use App\Models\System\General\{IdentityDocumentType};
 use App\Models\System\Organizations\{Company};
 use App\Models\System\Sales\{SaleHeader};
-use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\Notifiable;
-use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Foundation\Auth\{User as Authenticatable};
+use Illuminate\Notifications\{Notifiable};
+use Laravel\Sanctum\{HasApiTokens};
 
 class User extends Authenticatable {
     use HasApiTokens, Notifiable;
@@ -99,11 +99,11 @@ class User extends Authenticatable {
 
     public function getFormattedPreferencesAttribute() {
 
-        if ($this->relationLoaded("preferences")) {
+        if($this->relationLoaded("preferences")) {
 
             $preferences = $this->getRelation("preferences");
 
-        } else {
+        }else {
 
             $preferences = $this->preferences()
                 ->where("company_id", $this->company_id)
@@ -115,7 +115,7 @@ class User extends Authenticatable {
 
         return $preferences
             ->where("company_id", (int) $this->company_id)
-            ->mapWithKeys(function ($e) {
+            ->mapWithKeys(function($e) {
 
                 return [$e->slug => json_decode($e->value)];
 

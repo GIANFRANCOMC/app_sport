@@ -4,15 +4,12 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\System\Catalogs;
 
-use App\Helpers\System\Utilities;
-use App\Http\Controllers\System\Base\BaseController;
-use App\Http\Requests\System\Catalogs\Brands\StoreBrandRequest;
-use App\Http\Requests\System\Catalogs\Brands\UpdateBrandRequest;
-use App\Services\System\Base\InitParamsCacheInvalidationService;
-use App\Services\System\Catalogs\Brands\BrandConfigService;
-use App\Services\System\Catalogs\Brands\BrandService;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
+use App\Helpers\System\{Utilities};
+use App\Http\Controllers\System\Base\{BaseController};
+use App\Http\Requests\System\Catalogs\Brands\{StoreBrandRequest, UpdateBrandRequest};
+use App\Services\System\Base\{InitParamsCacheInvalidationService};
+use App\Services\System\Catalogs\Brands\{BrandConfigService, BrandService};
+use Illuminate\Http\{JsonResponse, Request};
 
 final class BrandController extends BaseController {
     private const TRANSLATION_NAMESPACE = "System.Catalogs.brand";
@@ -60,7 +57,7 @@ final class BrandController extends BaseController {
 
             return $this->createdResponse($brand, "created", "brand");
 
-        } catch (\Exception $exception) {
+        } catch(\Exception $exception) {
 
             return $this->handleException($exception, "create");
 
@@ -74,7 +71,7 @@ final class BrandController extends BaseController {
 
             $brand = BrandService::findByIdAndCompany($id, $this->getCompanyId(), null);
 
-            if (! $brand) {
+            if(!$brand) {
 
                 return $this->notFoundResponse();
 
@@ -94,7 +91,7 @@ final class BrandController extends BaseController {
 
             return $this->updatedResponse($brand, "updated", "brand");
 
-        } catch (\Exception $exception) {
+        } catch(\Exception $exception) {
 
             return $this->handleException($exception, "update");
 

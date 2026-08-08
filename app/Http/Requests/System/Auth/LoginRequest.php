@@ -2,20 +2,17 @@
 
 namespace App\Http\Requests\System\Auth;
 
-use App\Helpers\System\Utilities;
-use App\Models\System\Organizations\Company;
-use App\Models\System\Organizations\User;
-use App\Services\Security\TurnstileVerificationService;
-use App\Services\System\Auth\AuthenticationAuditService;
-use App\Services\System\Tenancy\TenantContext;
-use Illuminate\Auth\Events\Lockout;
-use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Http\Exceptions\HttpResponseException;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\RateLimiter;
-use Illuminate\Support\Str;
-use Illuminate\Validation\ValidationException;
+use App\Helpers\System\{Utilities};
+use App\Models\System\Organizations\{Company, User};
+use App\Services\Security\{TurnstileVerificationService};
+use App\Services\System\Auth\{AuthenticationAuditService};
+use App\Services\System\Tenancy\{TenantContext};
+use Illuminate\Auth\Events\{Lockout};
+use Illuminate\Foundation\Http\{FormRequest};
+use Illuminate\Http\Exceptions\{HttpResponseException};
+use Illuminate\Support\Facades\{Auth, Hash, RateLimiter};
+use Illuminate\Support\{Str};
+use Illuminate\Validation\{ValidationException};
 
 class LoginRequest extends FormRequest {
     /**
@@ -66,7 +63,7 @@ class LoginRequest extends FormRequest {
             ->first();
 
         // Check if the company is active
-        if (! Utilities::isDefined($company) || $company->status !== "active") {
+        if(!Utilities::isDefined($company) || $company->status !== "active") {
 
             AuthenticationAuditService::record(
                 $this,
@@ -91,7 +88,7 @@ class LoginRequest extends FormRequest {
             ->first();
 
         // Attempt to authenticate the user
-        if (! Utilities::isDefined($user) || ! Hash::check($credentials["password"], $user->password)) {
+        if(!Utilities::isDefined($user) || !Hash::check($credentials["password"], $user->password)) {
 
             RateLimiter::hit($this->throttleKey());
             AuthenticationAuditService::record(
@@ -110,7 +107,7 @@ class LoginRequest extends FormRequest {
 
         }
 
-        if (! TurnstileVerificationService::verify(
+        if(!TurnstileVerificationService::verify(
             $this->input("cf-turnstile-response"),
             $this->ip()
         )) {
@@ -144,8 +141,10 @@ class LoginRequest extends FormRequest {
      */
     public function ensureIsNotRateLimited(): void {
 
-        if (! RateLimiter::tooManyAttempts($this->throttleKey(), 5)) {
+        if(!RateLimiter::tooManyAttempts($this->throttleKey(), 5)) {
+
             return;
+
         }
 
         event(new Lockout($this));

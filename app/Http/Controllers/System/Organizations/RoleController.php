@@ -4,16 +4,12 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\System\Organizations;
 
-use App\Helpers\System\Utilities;
-use App\Http\Controllers\System\Base\BaseController;
-use App\Http\Requests\System\Organizations\Roles\DuplicateRoleRequest;
-use App\Http\Requests\System\Organizations\Roles\StoreRoleRequest;
-use App\Services\System\Base\InitParamsCacheInvalidationService;
-use App\Services\System\Organizations\Roles\RoleConfigService;
-use App\Services\System\Organizations\Roles\RolePermissionService;
-use App\Services\System\Organizations\Roles\RoleService;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
+use App\Helpers\System\{Utilities};
+use App\Http\Controllers\System\Base\{BaseController};
+use App\Http\Requests\System\Organizations\Roles\{DuplicateRoleRequest, StoreRoleRequest};
+use App\Services\System\Base\{InitParamsCacheInvalidationService};
+use App\Services\System\Organizations\Roles\{RoleConfigService, RolePermissionService, RoleService};
+use Illuminate\Http\{JsonResponse, Request};
 
 class RoleController extends BaseController {
     private const TRANSLATION_NAMESPACE = "System.Organizations.role";

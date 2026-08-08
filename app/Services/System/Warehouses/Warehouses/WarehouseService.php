@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Services\System\Warehouses\Warehouses;
 
-use App\Models\System\Organizations\Branch;
-use App\Models\System\Warehouses\Warehouse;
+use App\Models\System\Organizations\{Branch};
+use App\Models\System\Warehouses\{Warehouse};
 
 /**
  * Service class for managing Warehouse operations
@@ -52,7 +52,7 @@ class WarehouseService {
 
         $warehouses = $branch->warehousesAll;
 
-        if ($warehouses->isEmpty()) {
+        if($warehouses->isEmpty()) {
 
             return 0;
 
@@ -62,7 +62,7 @@ class WarehouseService {
         $seq = 1;
 
         // Update warehouses efficiently
-        foreach ($warehouses as $warehouse) {
+        foreach($warehouses as $warehouse) {
 
             $cleanName = Warehouse::plainName((string) $warehouse->name);
 

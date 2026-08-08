@@ -4,19 +4,15 @@ declare(strict_types=1);
 
 namespace App\Services\System\Organizations\Users;
 
-use App\Helpers\System\Utilities;
-use App\Models\System\Organizations\Branch;
-use App\Models\System\Organizations\User;
-use App\Models\System\Organizations\UserAttendance;
-use App\Models\System\Organizations\UserAttendanceBreak;
-use App\Models\System\Organizations\UserAttendanceCorrection;
-use App\Services\System\Devices\BiometricDevices\BiometricDeviceService;
-use App\Services\System\Organizations\AccessScopeService;
-use Carbon\Carbon;
+use App\Helpers\System\{Utilities};
+use App\Models\System\Organizations\{Branch, User, UserAttendance, UserAttendanceBreak, UserAttendanceCorrection};
+use App\Services\System\Devices\BiometricDevices\{BiometricDeviceService};
+use App\Services\System\Organizations\{AccessScopeService};
+use Carbon\{Carbon};
 use DomainException;
-use Illuminate\Contracts\Pagination\LengthAwarePaginator;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Contracts\Pagination\{LengthAwarePaginator};
+use Illuminate\Database\Eloquent\{Builder};
+use Illuminate\Support\Facades\{DB};
 
 final class UserAttendanceService {
     public const SOURCE_MANUAL = "manual_form";
@@ -49,7 +45,7 @@ final class UserAttendanceService {
 
     public static function checkIn(array $data): UserAttendance {
 
-        return DB::transaction(function () use ($data) {
+        return DB::transaction(function() use ($data) {
 
             $companyId = (int) $data["company_id"];
             $branchId = (int) $data["branch_id"];
@@ -68,10 +64,11 @@ final class UserAttendanceService {
                 ->lockForUpdate()
                 ->first();
 
-            if ($activeAttendance) {
+            if($activeAttendance) {
 
                 $branchName = $activeAttendance->branch()->value("name") ?? "otra sucursal";
                 throw new DomainException("El colaborador ya tiene una jornada en curso en {$branchName}.");
+
             }
 
             return UserAttendance::create([
@@ -101,15 +98,18 @@ final class UserAttendanceService {
         $branchId = (int) $data["branch_id"];
         $device = BiometricDeviceService::findByIdAndCompany($deviceId, $companyId, ["active"]);
 
-        if (! $device || (int) $device->branch_id !== $branchId) {
+        if(!$device || (int) $device->branch_id !== $branchId) {
+
             throw new DomainException("El dispositivo biométrico no está activo en la sucursal seleccionada.");
+
         }
 
         $user = BiometricDeviceService::findUserByDeviceUserId($deviceId, $deviceUserId, $companyId);
 
-        if (! $user) {
+        if(!$user) {
 
             throw new DomainException("No se encontró un colaborador activo para la identidad biométrica.");
+
         }
 
         return self::checkIn([
@@ -123,7 +123,7 @@ final class UserAttendanceService {
 
     public static function checkOut(array $data): UserAttendance {
 
-        return DB::transaction(function () use ($data) {
+        return DB::transaction(function() use ($data) {
 
             $companyId = (int) $data["company_id"];
             $branchId = (int) $data["branch_id"];
@@ -142,29 +142,34 @@ final class UserAttendanceService {
                 ->lockForUpdate()
                 ->first();
 
-            if (! $attendance) {
+            if(!$attendance) {
 
                 throw new DomainException("El colaborador no tiene una jornada en curso.");
+
             }
 
-            if ((int) $attendance->branch_id !== $branchId) {
+            if((int) $attendance->branch_id !== $branchId) {
 
                 throw new DomainException("La jornada en curso pertenece a otra sucursal.");
+
             }
 
-            if (UserAttendanceBreak::query()
+            if(UserAttendanceBreak::query()
                 ->where("company_id", $companyId)
                 ->where("user_attendance_id", $attendance->id)
                 ->where("status", "active")
                 ->exists()) {
+
                 throw new DomainException("Finaliza la pausa en curso antes de registrar la salida.");
+
             }
 
             $checkedInAt = Carbon::parse($attendance->checked_in_at);
 
-            if ($checkedOutAt->lessThanOrEqualTo($checkedInAt)) {
+            if($checkedOutAt->lessThanOrEqualTo($checkedInAt)) {
 
                 throw new DomainException("La salida debe ser posterior al ingreso.");
+
             }
 
             $attendance->checked_out_at = $checkedOutAt;
@@ -187,25 +192,30 @@ final class UserAttendanceService {
 
     public static function startBreak(int $companyId, int $attendanceId, int $actorId, ?string $reason = null): UserAttendanceBreak {
 
-        return DB::transaction(function () use ($companyId, $attendanceId, $actorId, $reason) {
+        return DB::transaction(function() use ($companyId, $attendanceId, $actorId, $reason) {
+
             $attendance = UserAttendance::query()
                 ->where("company_id", $companyId)
                 ->where("status", self::STATUS_ACTIVE)
                 ->lockForUpdate()
                 ->find($attendanceId);
 
-            if (! $attendance) {
+            if(!$attendance) {
+
                 throw new DomainException("La jornada no está disponible para iniciar una pausa.");
+
             }
 
             self::requireActorBranchAccess($companyId, $actorId, (int) $attendance->branch_id);
 
-            if (UserAttendanceBreak::query()
+            if(UserAttendanceBreak::query()
                 ->where("company_id", $companyId)
                 ->where("user_attendance_id", $attendanceId)
                 ->where("status", "active")
                 ->exists()) {
+
                 throw new DomainException("La jornada ya tiene una pausa en curso.");
+
             }
 
             return UserAttendanceBreak::create([
@@ -216,20 +226,24 @@ final class UserAttendanceService {
                 "status" => "active",
                 "created_by" => $actorId,
             ]);
+
         });
 
     }
 
     public static function endBreak(int $companyId, int $attendanceId, int $actorId): UserAttendanceBreak {
 
-        return DB::transaction(function () use ($companyId, $attendanceId, $actorId) {
+        return DB::transaction(function() use ($companyId, $attendanceId, $actorId) {
+
             $attendance = UserAttendance::query()
                 ->where("company_id", $companyId)
                 ->lockForUpdate()
                 ->find($attendanceId);
 
-            if (! $attendance) {
+            if(!$attendance) {
+
                 throw new DomainException("La jornada no existe o pertenece a otra empresa.");
+
             }
 
             self::requireActorBranchAccess($companyId, $actorId, (int) $attendance->branch_id);
@@ -241,8 +255,10 @@ final class UserAttendanceService {
                 ->lockForUpdate()
                 ->first();
 
-            if (! $break) {
+            if(!$break) {
+
                 throw new DomainException("La jornada no tiene una pausa en curso.");
+
             }
 
             $break->ended_at = now();
@@ -252,20 +268,24 @@ final class UserAttendanceService {
             $break->save();
 
             return $break;
+
         });
 
     }
 
     public static function requestCorrection(int $companyId, int $attendanceId, int $actorId, array $data): UserAttendanceCorrection {
 
-        return DB::transaction(function () use ($companyId, $attendanceId, $actorId, $data) {
+        return DB::transaction(function() use ($companyId, $attendanceId, $actorId, $data) {
+
             $attendance = UserAttendance::query()
                 ->where("company_id", $companyId)
                 ->lockForUpdate()
                 ->find($attendanceId);
 
-            if (! $attendance) {
+            if(!$attendance) {
+
                 throw new DomainException("La jornada no existe o pertenece a otra empresa.");
+
             }
 
             self::requireActorBranchAccess($companyId, $actorId, (int) $attendance->branch_id);
@@ -279,21 +299,25 @@ final class UserAttendanceService {
                 "reason" => $data["reason"],
                 "status" => "pending",
             ]);
+
         });
 
     }
 
     public static function reviewCorrection(int $companyId, int $correctionId, int $actorId, bool $approve, ?string $note): UserAttendanceCorrection {
 
-        return DB::transaction(function () use ($companyId, $correctionId, $actorId, $approve, $note) {
+        return DB::transaction(function() use ($companyId, $correctionId, $actorId, $approve, $note) {
+
             $correction = UserAttendanceCorrection::query()
                 ->where("company_id", $companyId)
                 ->where("status", "pending")
                 ->lockForUpdate()
                 ->find($correctionId);
 
-            if (! $correction) {
+            if(!$correction) {
+
                 throw new DomainException("La solicitud de corrección ya fue revisada o no existe.");
+
             }
 
             $attendance = UserAttendance::query()
@@ -301,32 +325,40 @@ final class UserAttendanceService {
                 ->lockForUpdate()
                 ->find($correction->user_attendance_id);
 
-            if (! $attendance) {
+            if(!$attendance) {
+
                 throw new DomainException("La jornada asociada ya no está disponible.");
+
             }
 
             self::requireActorBranchAccess($companyId, $actorId, (int) $attendance->branch_id);
 
-            if ($approve) {
+            if($approve) {
+
                 $attendance->checked_in_at = $correction->requested_check_in_at ?? $attendance->checked_in_at;
                 $attendance->checked_out_at = $correction->requested_check_out_at ?? $attendance->checked_out_at;
 
-                if ($attendance->checked_out_at && Carbon::parse($attendance->checked_out_at)->lessThanOrEqualTo(Carbon::parse($attendance->checked_in_at))) {
+                if($attendance->checked_out_at && Carbon::parse($attendance->checked_out_at)->lessThanOrEqualTo(Carbon::parse($attendance->checked_in_at))) {
+
                     throw new DomainException("La salida corregida debe ser posterior al ingreso.");
+
                 }
 
-                if ($attendance->checked_out_at) {
+                if($attendance->checked_out_at) {
+
                     $metrics = self::calculateMetrics(
                         $attendance,
                         Carbon::parse($attendance->checked_in_at),
                         Carbon::parse($attendance->checked_out_at)
                     );
                     $attendance->fill($metrics);
+
                 }
 
                 $attendance->updated_at = now();
                 $attendance->updated_by = $actorId;
                 $attendance->save();
+
             }
 
             $correction->status = $approve ? "approved" : "rejected";
@@ -336,6 +368,7 @@ final class UserAttendanceService {
             $correction->save();
 
             return $correction;
+
         });
 
     }
@@ -364,32 +397,44 @@ final class UserAttendanceService {
             ->with([
                 "branch",
                 "user",
-                "breaks" => fn ($query) => $query->orderByDesc("started_at"),
-                "corrections" => fn ($query) => $query->orderByDesc("id"),
+                "breaks" => fn($query) => $query->orderByDesc("started_at"),
+                "corrections" => fn($query) => $query->orderByDesc("id"),
             ]);
 
-        if ($allowedBranchIds !== null) {
+        if($allowedBranchIds !== null) {
+
             $query->whereIn("branch_id", $allowedBranchIds);
+
         }
 
-        if (! empty($filters["branch_id"])) {
+        if(!empty($filters["branch_id"])) {
+
             $query->where("branch_id", (int) $filters["branch_id"]);
+
         }
 
-        if (! empty($filters["user_id"])) {
+        if(!empty($filters["user_id"])) {
+
             $query->where("user_id", (int) $filters["user_id"]);
+
         }
 
-        if (! empty($filters["status"])) {
+        if(!empty($filters["status"])) {
+
             $query->where("status", (string) $filters["status"]);
+
         }
 
-        if (! empty($filters["date_from"])) {
+        if(!empty($filters["date_from"])) {
+
             $query->where("work_date", ">=", $filters["date_from"]);
+
         }
 
-        if (! empty($filters["date_to"])) {
+        if(!empty($filters["date_to"])) {
+
             $query->where("work_date", "<=", $filters["date_to"]);
+
         }
 
         return $query;
@@ -413,12 +458,16 @@ final class UserAttendanceService {
             ->where("status", self::STATUS_FINALIZED)
             ->whereBetween("work_date", [$start->toDateString(), $end->toDateString()]);
 
-        if ($allowedBranchIds !== null) {
+        if($allowedBranchIds !== null) {
+
             $query->whereIn("branch_id", $allowedBranchIds);
+
         }
 
-        if ($branchId) {
+        if($branchId) {
+
             $query->where("branch_id", $branchId);
+
         }
 
         $records = $query->orderBy("work_date")->get();
@@ -430,8 +479,8 @@ final class UserAttendanceService {
             "total_minutes" => $totalMinutes,
             "total_hours" => Utilities::round($totalMinutes / 60, null, $companyId),
             "days" => $records
-                ->groupBy(fn (UserAttendance $attendance) => $attendance->work_date->toDateString())
-                ->map(fn ($dayRecords, $date) => [
+                ->groupBy(fn(UserAttendance $attendance) => $attendance->work_date->toDateString())
+                ->map(fn($dayRecords, $date) => [
                     "date" => $date,
                     "worked_minutes" => (int) $dayRecords->sum("worked_minutes"),
                     "worked_hours" => Utilities::round(((int) $dayRecords->sum("worked_minutes")) / 60, null, $companyId),
@@ -450,9 +499,10 @@ final class UserAttendanceService {
             ->lockForUpdate()
             ->find($userId);
 
-        if (! $user) {
+        if(!$user) {
 
             throw new DomainException("El colaborador no está activo o no pertenece a la empresa.");
+
         }
 
         return $user;
@@ -466,9 +516,10 @@ final class UserAttendanceService {
             ->where("status", "active")
             ->find($branchId);
 
-        if (! $branch) {
+        if(!$branch) {
 
             throw new DomainException("La sucursal no está activa o no pertenece a la empresa.");
+
         }
 
         return $branch;
@@ -477,7 +528,7 @@ final class UserAttendanceService {
 
     private static function requireActorBranchAccess(int $companyId, ?int $actorId, int $branchId): void {
 
-        if (! $actorId) {
+        if(!$actorId) {
 
             return;
 
@@ -488,9 +539,10 @@ final class UserAttendanceService {
             ->where("status", "active")
             ->find($actorId);
 
-        if (! $actor || ! AccessScopeService::canAccess($actor, AccessScopeService::BRANCH, $branchId)) {
+        if(!$actor || !AccessScopeService::canAccess($actor, AccessScopeService::BRANCH, $branchId)) {
 
             throw new DomainException("No tienes acceso operativo a la sucursal de esta jornada.");
+
         }
 
     }
@@ -508,17 +560,22 @@ final class UserAttendanceService {
             ->where("company_id", $attendance->company_id)
             ->where("weekday", $weekday)
             ->where("status", "active")
-            ->where(function ($query) use ($attendance) {
+            ->where(function($query) use ($attendance) {
+
                 $query->where("user_id", $attendance->user_id)->orWhereNull("user_id");
+
             })
-            ->where(function ($query) use ($attendance) {
+            ->where(function($query) use ($attendance) {
+
                 $query->where("branch_id", $attendance->branch_id)->orWhereNull("branch_id");
+
             })
             ->orderByRaw("user_id is null")
             ->orderByRaw("branch_id is null")
             ->first();
 
-        if (! $schedule || ! $schedule->is_working_day) {
+        if(!$schedule || !$schedule->is_working_day) {
+
             return [
                 "worked_minutes" => $workedMinutes,
                 "ordinary_minutes" => 0,
@@ -526,12 +583,15 @@ final class UserAttendanceService {
                 "overtime_minutes" => $workedMinutes,
                 "break_minutes" => $breakMinutes,
             ];
+
         }
 
         $scheduledStart = Carbon::parse($checkIn->toDateString()." ".$schedule->starts_at);
         $scheduledEnd = Carbon::parse($checkIn->toDateString()." ".$schedule->ends_at);
-        if ($schedule->crosses_midnight || $scheduledEnd->lessThanOrEqualTo($scheduledStart)) {
+        if($schedule->crosses_midnight || $scheduledEnd->lessThanOrEqualTo($scheduledStart)) {
+
             $scheduledEnd->addDay();
+
         }
 
         $scheduledMinutes = $scheduledStart->diffInMinutes($scheduledEnd);

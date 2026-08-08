@@ -1,15 +1,16 @@
 <?php
 
-use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\Migrations\{Migration};
+use Illuminate\Database\Schema\{Blueprint};
+use Illuminate\Support\Facades\{DB, Schema};
 
 return new class extends Migration {
     public function up(): void {
 
-        if (! Schema::hasTable("sale_delivery_methods")) {
-            Schema::create("sale_delivery_methods", function (Blueprint $table) {
+        if(!Schema::hasTable("sale_delivery_methods")) {
+
+            Schema::create("sale_delivery_methods", function(Blueprint $table) {
+
                 $table->id();
                 $table->unsignedBigInteger("company_id");
                 $table->string("code", 50);
@@ -26,20 +27,26 @@ return new class extends Migration {
                 $table->foreign("company_id")->references("id")->on("companies")->onDelete("cascade");
                 $table->unique(["company_id", "code"], "sale_delivery_methods_company_code_uq");
                 $table->index(["company_id", "status", "sort_order"], "sale_delivery_methods_company_status_idx");
+
             });
+
         }
 
         $this->seedDeliveryMethods();
 
-        if (Schema::hasTable("sales_header") && ! Schema::hasColumn("sales_header", "delivery_method_id")) {
-            Schema::table("sales_header", function (Blueprint $table) {
+        if(Schema::hasTable("sales_header") && !Schema::hasColumn("sales_header", "delivery_method_id")) {
+
+            Schema::table("sales_header", function(Blueprint $table) {
+
                 $table->unsignedBigInteger("delivery_method_id")->nullable()->after("warehouse_id");
                 $table->foreign("delivery_method_id", "sales_header_delivery_method_fk")
                     ->references("id")
                     ->on("sale_delivery_methods")
                     ->nullOnDelete();
                 $table->index(["company_id", "delivery_method_id"], "sales_header_company_delivery_method_idx");
+
             });
+
         }
 
         $this->normalizeHistoricalDeliveryStatuses();
@@ -49,12 +56,16 @@ return new class extends Migration {
 
     public function down(): void {
 
-        if (Schema::hasTable("sales_header") && Schema::hasColumn("sales_header", "delivery_method_id")) {
-            Schema::table("sales_header", function (Blueprint $table) {
+        if(Schema::hasTable("sales_header") && Schema::hasColumn("sales_header", "delivery_method_id")) {
+
+            Schema::table("sales_header", function(Blueprint $table) {
+
                 $table->dropForeign("sales_header_delivery_method_fk");
                 $table->dropIndex("sales_header_company_delivery_method_idx");
                 $table->dropColumn("delivery_method_id");
+
             });
+
         }
 
         Schema::dropIfExists("sale_delivery_methods");
@@ -63,8 +74,10 @@ return new class extends Migration {
 
     private function seedDeliveryMethods(): void {
 
-        if (! Schema::hasTable("companies") || ! Schema::hasTable("sale_delivery_methods")) {
+        if(!Schema::hasTable("companies") || !Schema::hasTable("sale_delivery_methods")) {
+
             return;
+
         }
 
         $methods = [
@@ -91,8 +104,10 @@ return new class extends Migration {
             ],
         ];
 
-        DB::table("companies")->orderBy("id")->pluck("id")->each(function ($companyId) use ($methods) {
-            foreach ($methods as $method) {
+        DB::table("companies")->orderBy("id")->pluck("id")->each(function($companyId) use ($methods) {
+
+            foreach($methods as $method) {
+
                 DB::table("sale_delivery_methods")->updateOrInsert(
                     ["company_id" => (int) $companyId, "code" => $method["code"]],
                     $method + [
@@ -101,17 +116,21 @@ return new class extends Migration {
                         "created_at" => now(),
                     ]
                 );
+
             }
+
         });
 
     }
 
     private function normalizeHistoricalDeliveryStatuses(): void {
 
-        if (! Schema::hasTable("sales_header")
-            || ! Schema::hasColumn("sales_header", "delivery_mode")
-            || ! Schema::hasColumn("sales_header", "delivery_status")) {
+        if(!Schema::hasTable("sales_header")
+            || !Schema::hasColumn("sales_header", "delivery_mode")
+            || !Schema::hasColumn("sales_header", "delivery_status")) {
+
             return;
+
         }
 
         DB::table("sales_header")
@@ -132,24 +151,30 @@ return new class extends Migration {
 
     private function backfillPendingDeliveryTracking(): void {
 
-        if (! Schema::hasTable("sales_header")
-            || ! Schema::hasTable("sales_body")
-            || ! Schema::hasTable("sale_deliveries")
-            || ! Schema::hasTable("sale_delivery_items")) {
+        if(!Schema::hasTable("sales_header")
+            || !Schema::hasTable("sales_body")
+            || !Schema::hasTable("sale_deliveries")
+            || !Schema::hasTable("sale_delivery_items")) {
+
             return;
+
         }
 
         DB::table("sales_header")
             ->where("status", "active")
             ->where("delivery_status", "pending")
-            ->whereNotExists(function ($query) {
+            ->whereNotExists(function($query) {
+
                 $query->selectRaw("1")
                     ->from("sale_deliveries")
                     ->whereColumn("sale_deliveries.sale_header_id", "sales_header.id");
+
             })
             ->orderBy("id")
-            ->chunkById(200, function ($sales) {
-                foreach ($sales as $sale) {
+            ->chunkById(200, function($sales) {
+
+                foreach($sales as $sale) {
+
                     $items = DB::table("sales_body")
                         ->where("company_id", (int) $sale->company_id)
                         ->where("sale_header_id", (int) $sale->id)
@@ -157,11 +182,13 @@ return new class extends Migration {
                         ->where("status", "active")
                         ->get(["id", "item_id", "quantity"]);
 
-                    if ($items->isEmpty()) {
+                    if($items->isEmpty()) {
+
                         continue;
+
                     }
 
-                    $total = (float) $items->sum(fn ($item) => (float) $item->quantity);
+                    $total = (float) $items->sum(fn($item) => (float) $item->quantity);
                     $deliveryId = DB::table("sale_deliveries")->insertGetId([
                         "company_id" => (int) $sale->company_id,
                         "sale_header_id" => (int) $sale->id,
@@ -175,7 +202,7 @@ return new class extends Migration {
                         "created_by" => $sale->created_by,
                     ]);
 
-                    DB::table("sale_delivery_items")->insert($items->map(fn ($item) => [
+                    DB::table("sale_delivery_items")->insert($items->map(fn($item) => [
                         "company_id" => (int) $sale->company_id,
                         "sale_delivery_id" => $deliveryId,
                         "sale_body_id" => (int) $item->id,
@@ -187,7 +214,9 @@ return new class extends Migration {
                         "created_at" => $sale->created_at ?? now(),
                         "created_by" => $sale->created_by,
                     ])->all());
+
                 }
+
             }, "id");
 
     }

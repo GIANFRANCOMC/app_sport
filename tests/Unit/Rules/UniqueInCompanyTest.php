@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Rules;
 
-use App\Rules\System\Defaults\UniqueInCompany;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
+use App\Rules\System\Defaults\{UniqueInCompany};
+use Illuminate\Support\Facades\{Auth, DB};
 use Mockery;
-use Tests\TestCase;
+use Tests\{TestCase};
 
 class UniqueInCompanyTest extends TestCase {
     public function test_it_rejects_a_value_already_used_by_the_company(): void {
@@ -134,7 +133,7 @@ class UniqueInCompanyTest extends TestCase {
 
         $errors = [];
 
-        $rule->validate($attribute, $value, function (string $message) use (&$errors) {
+        $rule->validate($attribute, $value, function(string $message) use (&$errors) {
 
             $errors[] = $message;
 

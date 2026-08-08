@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\System\Customers\Customers;
 
-use App\Rules\System\Defaults\BelongsToCompany;
-use App\Rules\System\Defaults\DocumentNumberLength;
-use App\Rules\System\Defaults\UniqueInCompany;
-use Illuminate\Foundation\Http\FormRequest;
+use App\Rules\System\Defaults\{BelongsToCompany, DocumentNumberLength, UniqueInCompany};
+use Illuminate\Foundation\Http\{FormRequest};
 
 final class UpdateCustomerRequest extends FormRequest {
     public function authorize(): bool {

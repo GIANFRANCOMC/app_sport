@@ -4,15 +4,10 @@ declare(strict_types=1);
 
 namespace App\Exports\System\Purchases;
 
-use App\Services\System\Purchases\PurchaseService;
-use Maatwebsite\Excel\Concerns\FromQuery;
-use Maatwebsite\Excel\Concerns\ShouldAutoSize;
-use Maatwebsite\Excel\Concerns\WithHeadings;
-use Maatwebsite\Excel\Concerns\WithMapping;
-use Maatwebsite\Excel\Concerns\WithStyles;
-use PhpOffice\PhpSpreadsheet\Style\Alignment;
-use PhpOffice\PhpSpreadsheet\Style\Fill;
-use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
+use App\Services\System\Purchases\{PurchaseService};
+use Maatwebsite\Excel\Concerns\{FromQuery, ShouldAutoSize, WithHeadings, WithMapping, WithStyles};
+use PhpOffice\PhpSpreadsheet\Style\{Alignment, Fill};
+use PhpOffice\PhpSpreadsheet\Worksheet\{Worksheet};
 
 final class PurchaseListExport implements FromQuery, ShouldAutoSize, WithHeadings, WithMapping, WithStyles {
     public function __construct(

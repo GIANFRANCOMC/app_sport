@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Helpers\System;
 
-use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\{App};
 
 /**
  * Translation Helper
@@ -55,7 +55,7 @@ class TranslationHelper {
         $isTranslationFound = ($translation !== $translationKey) && (strpos($translation, "/") === false);
 
         // If translation not found, try English fallback
-        if (! $isTranslationFound && $locale !== "en") {
+        if(!$isTranslationFound && $locale !== "en") {
 
             $translation = trans($translationKey, $replace, "en");
             $isTranslationFound = ($translation !== $translationKey) && (strpos($translation, "/") === false);
@@ -63,7 +63,7 @@ class TranslationHelper {
         }
 
         // If still not found, use default messages
-        if (! $isTranslationFound) {
+        if(!$isTranslationFound) {
 
             $translation = self::getDefaultMessage($entity, $key, $replace);
 
@@ -135,9 +135,9 @@ class TranslationHelper {
         $message = $defaultMessages[$key] ?? ucfirst(str_replace("_", " ", $key));
 
         // Apply replacements if any
-        if (! empty($replace)) {
+        if(!empty($replace)) {
 
-            foreach ($replace as $search => $value) {
+            foreach($replace as $search => $value) {
 
                 $message = str_replace(":".$search, $value, $message);
                 $message = str_replace("{".$search."}", $value, $message);

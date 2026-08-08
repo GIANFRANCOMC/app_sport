@@ -4,10 +4,9 @@ declare(strict_types=1);
 
 namespace App\Models\System\Purchases;
 
-use App\Models\System\Finance\PaymentMethod;
-use App\Models\System\Finance\PaymentMethodVariant;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Models\System\Finance\{PaymentMethod, PaymentMethodVariant};
+use Illuminate\Database\Eloquent\Relations\{BelongsTo};
+use Illuminate\Database\Eloquent\{Model};
 
 final class PurchasePayablePayment extends Model {
     protected $table = "purchase_payable_payments";

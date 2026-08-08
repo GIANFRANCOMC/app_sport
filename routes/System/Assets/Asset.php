@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-use App\Http\Controllers\System\Assets\AssetCategoryController;
+use App\Http\Controllers\System\Assets\{AssetCategoryController};
 use App\Http\Controllers\System\Assets\{AssetController};
-use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\{Route};
 
 $entity = "assets";
 

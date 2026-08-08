@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Concerns;
 
-use App\Services\System\Database\SystemCatalogSyncService;
-use App\Services\System\Organizations\Companies\CompanyProvisioningService;
-use Database\Seeders\SystemNavigationSeeder;
+use App\Services\System\Database\{SystemCatalogSyncService};
+use App\Services\System\Organizations\Companies\{CompanyProvisioningService};
+use Database\Seeders\{SystemNavigationSeeder};
 
 trait ProvisionsSystemDatabase {
     protected function provisionSystemDatabase(): void {
+
         app(SystemNavigationSeeder::class)->run();
         $provisioning = app(CompanyProvisioningService::class);
         $provisioning->createOrUpdate([
@@ -22,5 +23,6 @@ trait ProvisionsSystemDatabase {
         app(SystemCatalogSyncService::class)->sync(1);
         $provisioning->enable(1);
         $provisioning->ensureAdminUser(1, "Administrador de pruebas", "admin@example.test", "password");
+
     }
 }

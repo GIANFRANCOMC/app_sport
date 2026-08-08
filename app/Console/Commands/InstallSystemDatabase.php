@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Services\System\Database\SystemCatalogSyncService;
-use App\Services\System\Organizations\Companies\CompanyProvisioningService;
-use Database\Seeders\SystemNavigationSeeder;
-use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Artisan;
-use Illuminate\Support\Str;
+use App\Services\System\Database\{SystemCatalogSyncService};
+use App\Services\System\Organizations\Companies\{CompanyProvisioningService};
+use Database\Seeders\{SystemNavigationSeeder};
+use Illuminate\Console\{Command};
+use Illuminate\Support\Facades\{Artisan};
+use Illuminate\Support\{Str};
 
 final class InstallSystemDatabase extends Command {
     protected $signature = "system:install
@@ -27,17 +27,24 @@ final class InstallSystemDatabase extends Command {
     protected $description = "Instala esquema, catálogo y organización inicial en un flujo único e idempotente.";
 
     public function handle(CompanyProvisioningService $provisioning, SystemCatalogSyncService $catalog): int {
-        if ($this->option("fresh") && ! $this->confirm("Esto eliminará todos los datos. ¿Deseas continuar?", false)) {
+
+        if($this->option("fresh") && !$this->confirm("Esto eliminará todos los datos. ¿Deseas continuar?", false)) {
+
             return self::FAILURE;
+
         }
 
         $migrationCommand = $this->option("fresh") ? "migrate:fresh" : "migrate";
         $migrationOptions = ["--force" => true];
-        if ($this->option("seed")) {
+        if($this->option("seed")) {
+
             $migrationOptions["--seed"] = true;
+
         }
-        $this->components->task("Aplicando esquema de base de datos", function () use ($migrationCommand, $migrationOptions) {
+        $this->components->task("Aplicando esquema de base de datos", function() use ($migrationCommand, $migrationOptions) {
+
             return Artisan::call($migrationCommand, $migrationOptions) === self::SUCCESS;
+
         });
         Artisan::call("db:seed", [
             "--class" => SystemNavigationSeeder::class,
@@ -45,13 +52,17 @@ final class InstallSystemDatabase extends Command {
         ]);
 
         $password = (string) ($this->option("admin-password") ?: "");
-        if ($password === "" && $this->input->isInteractive()) {
+        if($password === "" && $this->input->isInteractive()) {
+
             $password = (string) $this->secret("Contraseña del administrador");
+
         }
-        if (strlen($password) < 8) {
+        if(strlen($password) < 8) {
+
             $this->components->error("La contraseña del administrador debe tener al menos 8 caracteres.");
 
             return self::FAILURE;
+
         }
 
         $companyId = (int) $this->option("company-id");
@@ -77,5 +88,6 @@ final class InstallSystemDatabase extends Command {
         $this->components->info("Sistema listo para {$this->option("commercial-name")} ({$slug}).");
 
         return self::SUCCESS;
+
     }
 }

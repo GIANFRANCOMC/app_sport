@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Services\System\Customers\Tracking;
 
-use App\Helpers\System\Utilities;
-use App\Models\System\Customers\SubscriptionEmail;
-use App\Services\System\Organizations\BusinessAuditService;
+use App\Helpers\System\{Utilities};
+use App\Models\System\Customers\{SubscriptionEmail};
+use App\Services\System\Organizations\{BusinessAuditService};
 use DomainException;
 
 /**
@@ -26,9 +26,9 @@ class TrackingNotificationService {
 
         $status = $filters["status"] ?? null;
 
-        return SubscriptionEmail::when(Utilities::isDefined($status), function ($query) use ($status) {
+        return SubscriptionEmail::when(Utilities::isDefined($status), function($query) use ($status) {
 
-            $query->where(function ($query) use ($status) {
+            $query->where(function($query) use ($status) {
 
                 $query->where("status", $status);
 
@@ -47,8 +47,10 @@ class TrackingNotificationService {
             ->where("company_id", $companyId)
             ->findOrFail($notificationId);
 
-        if ($notification->status !== "failed") {
+        if($notification->status !== "failed") {
+
             throw new DomainException("Solo se pueden reintentar notificaciones fallidas.");
+
         }
 
         $before = $notification->getAttributes();

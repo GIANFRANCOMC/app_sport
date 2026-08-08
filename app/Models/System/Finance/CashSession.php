@@ -4,10 +4,9 @@ declare(strict_types=1);
 
 namespace App\Models\System\Finance;
 
-use App\Models\System\Organizations\Branch;
-use App\Models\System\Organizations\User;
-use App\Models\System\Sales\SaleHeader;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\System\Organizations\{Branch, User};
+use App\Models\System\Sales\{SaleHeader};
+use Illuminate\Database\Eloquent\{Model};
 
 final class CashSession extends Model {
     protected $table = "cash_sessions";

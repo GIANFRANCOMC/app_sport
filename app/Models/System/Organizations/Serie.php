@@ -2,9 +2,9 @@
 
 namespace App\Models\System\Organizations;
 
-use App\Helpers\System\Utilities;
+use App\Helpers\System\{Utilities};
 use App\Models\System\General\{DocumentType};
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\{Model};
 
 class Serie extends Model {
     protected $table = "series";

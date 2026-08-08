@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\System\Catalogs\Services;
 
-use App\Http\Requests\System\Base\CompanyFormRequest;
-use App\Http\Requests\System\Concerns\AppliesInternalCodePrefix;
-use App\Rules\System\Defaults\BelongsToCompany;
-use App\Rules\System\Defaults\UniqueInCompany;
-use Illuminate\Validation\Validator;
+use App\Http\Requests\System\Base\{CompanyFormRequest};
+use App\Http\Requests\System\Concerns\{AppliesInternalCodePrefix};
+use App\Rules\System\Defaults\{BelongsToCompany, UniqueInCompany};
+use Illuminate\Validation\{Validator};
 
 class UpdateServiceRequest extends CompanyFormRequest {
     use AppliesInternalCodePrefix;
@@ -55,7 +54,7 @@ class UpdateServiceRequest extends CompanyFormRequest {
             "status" => "required|in:active,inactive",
         ];
 
-        if ($this->filled("min_price") && (float) $this->input("min_price") > 0) {
+        if($this->filled("min_price") && (float) $this->input("min_price") > 0) {
 
             $validations["max_price"] = "nullable|numeric|min:$minValue|decimal:0,$round";
 
@@ -68,7 +67,7 @@ class UpdateServiceRequest extends CompanyFormRequest {
     public function after(): array {
 
         return [
-            function (Validator $validator) {
+            function(Validator $validator) {
 
                 $this->validateCommission($validator);
                 $this->validateCapacity($validator);
@@ -102,13 +101,13 @@ class UpdateServiceRequest extends CompanyFormRequest {
 
     private function validateCapacity(Validator $validator): void {
 
-        if ($validator->errors()->has("capacity_limit") || ! $this->boolean("capacity_control_enabled")) {
+        if($validator->errors()->has("capacity_limit") || !$this->boolean("capacity_control_enabled")) {
 
             return;
 
         }
 
-        if (! $this->filled("capacity_limit")) {
+        if(!$this->filled("capacity_limit")) {
 
             $validator->errors()->add("capacity_limit", "Indica cuántos cupos estarán disponibles.");
 
@@ -118,7 +117,7 @@ class UpdateServiceRequest extends CompanyFormRequest {
 
     private function validateCommission(Validator $validator): void {
 
-        if ($validator->errors()->hasAny(["commission_type", "commission_value"])) {
+        if($validator->errors()->hasAny(["commission_type", "commission_value"])) {
 
             return;
 
@@ -127,7 +126,7 @@ class UpdateServiceRequest extends CompanyFormRequest {
         $type = (string) $this->input("commission_type", "none");
         $value = (float) ($this->input("commission_value") ?? 0);
 
-        if ($type === "percentage" && $value > 100) {
+        if($type === "percentage" && $value > 100) {
 
             $validator->errors()->add("commission_value", "No puede superar el 100%.");
 

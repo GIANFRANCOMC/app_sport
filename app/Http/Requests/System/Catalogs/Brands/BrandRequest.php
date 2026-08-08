@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\System\Catalogs\Brands;
 
-use App\Http\Requests\System\Base\CompanyFormRequest;
-use App\Rules\System\Defaults\UniqueInCompany;
-use App\Services\System\Base\InternalCodeService;
+use App\Http\Requests\System\Base\{CompanyFormRequest};
+use App\Rules\System\Defaults\{UniqueInCompany};
+use App\Services\System\Base\{InternalCodeService};
 
 abstract class BrandRequest extends CompanyFormRequest {
     public function rules(): array {

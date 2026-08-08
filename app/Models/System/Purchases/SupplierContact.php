@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models\System\Purchases;
 
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\{Model};
 
 final class SupplierContact extends Model {
     protected $table = "supplier_contacts";

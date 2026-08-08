@@ -4,12 +4,11 @@ declare(strict_types=1);
 
 namespace App\Services\System\Catalogs\Categories;
 
-use App\Helpers\System\TranslationHelper;
-use App\Helpers\System\Utilities;
+use App\Helpers\System\{TranslationHelper, Utilities};
 use App\Models\System\Catalogs\{Category};
-use Illuminate\Contracts\Pagination\LengthAwarePaginator;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Contracts\Pagination\{LengthAwarePaginator};
+use Illuminate\Database\Eloquent\{Builder};
+use Illuminate\Support\Facades\{DB};
 
 /**
  * Service class for managing module operations
@@ -70,9 +69,9 @@ class CategoryService {
             "created_by" => $userId,
         ];
 
-        foreach (self::ALLOWED_FIELDS as $field) {
+        foreach(self::ALLOWED_FIELDS as $field) {
 
-            if (isset($data[$field])) {
+            if(isset($data[$field])) {
 
                 $categoryData[$field] = $data[$field];
 
@@ -94,11 +93,11 @@ class CategoryService {
 
         $updateData = [];
 
-        foreach (self::ALLOWED_FIELDS as $field) {
+        foreach(self::ALLOWED_FIELDS as $field) {
 
-            if (isset($data[$field])) {
+            if(isset($data[$field])) {
 
-                if ($data[$field] !== $category->$field) {
+                if($data[$field] !== $category->$field) {
 
                     $updateData[$field] = $data[$field];
 
@@ -125,7 +124,7 @@ class CategoryService {
 
         $category = null;
 
-        DB::transaction(function () use ($data, $companyId, $userId, &$category) {
+        DB::transaction(function() use ($data, $companyId, $userId, &$category) {
 
             // Prepare data with only allowed fields
             $categoryData = self::prepareCategoryDataForCreate($data, $companyId, $userId);
@@ -149,9 +148,9 @@ class CategoryService {
      */
     public static function update(Category $category, array $data, int $userId): Category {
 
-        DB::transaction(function () use ($category, $data, $userId) {
+        DB::transaction(function() use ($category, $data, $userId) {
 
-            if (($data["status"] ?? null) === "inactive" && $category->status !== "inactive") {
+            if(($data["status"] ?? null) === "inactive" && $category->status !== "inactive") {
 
                 self::assertCategoryHasNoActiveItems(
                     (int) $category->company_id,
@@ -165,7 +164,7 @@ class CategoryService {
             $updateData = self::prepareCategoryDataForUpdate($category, $data);
 
             // Only update if there are changes
-            if (! empty($updateData)) {
+            if(!empty($updateData)) {
 
                 $updateData["updated_at"] = now();
                 $updateData["updated_by"] = $userId;
@@ -192,13 +191,13 @@ class CategoryService {
         $query = Category::where("id", $id)
             ->where("company_id", $companyId);
 
-        if ($statuses !== null && ! empty($statuses)) {
+        if($statuses !== null && !empty($statuses)) {
 
             $query->whereIn("status", $statuses);
 
         }
 
-        if ($relations !== null && ! empty($relations)) {
+        if($relations !== null && !empty($relations)) {
 
             $query->with($relations);
 
@@ -219,9 +218,9 @@ class CategoryService {
 
         $query = Category::where("company_id", $companyId)
             ->withCount([
-                "items as active_items_count" => function ($builder) {
+                "items as active_items_count" => function($builder) {
 
-                    $builder->whereHas("item", function ($itemQuery) {
+                    $builder->whereHas("item", function($itemQuery) {
 
                         $itemQuery->where("status", "active");
 
@@ -234,25 +233,25 @@ class CategoryService {
         $filterBy = $filters["filter_by"] ?? null;
         $word = $filters["word"] ?? null;
 
-        if (Utilities::isDefined($word) && Utilities::isDefined($filterBy)) {
+        if(Utilities::isDefined($word) && Utilities::isDefined($filterBy)) {
 
             $searchTerm = Utilities::getWordSearch($word);
 
-            if ($filterBy === "all") {
+            if($filterBy === "all") {
 
                 // Search across all searchable fields
-                $query->where(function (Builder $q) use ($searchTerm) {
+                $query->where(function(Builder $q) use ($searchTerm) {
 
                     $searchableFields = self::SEARCHABLE_FIELDS;
                     $firstField = array_shift($searchableFields);
 
-                    if ($firstField) {
+                    if($firstField) {
 
                         $q->where($firstField, "like", $searchTerm);
 
                     }
 
-                    foreach ($searchableFields as $field) {
+                    foreach($searchableFields as $field) {
 
                         $q->orWhere($field, "like", $searchTerm);
 
@@ -260,7 +259,7 @@ class CategoryService {
 
                 });
 
-            } elseif (in_array($filterBy, self::SEARCHABLE_FIELDS, true)) {
+            }elseif(in_array($filterBy, self::SEARCHABLE_FIELDS, true)) {
 
                 // Search in specific field
                 $query->where($filterBy, "like", $searchTerm);
@@ -277,7 +276,8 @@ class CategoryService {
 
     public static function delete(int $companyId, int $categoryId): void {
 
-        DB::transaction(function () use ($companyId, $categoryId) {
+        DB::transaction(function() use ($companyId, $categoryId) {
+
             $category = Category::query()
                 ->where("company_id", $companyId)
                 ->lockForUpdate()
@@ -285,6 +285,7 @@ class CategoryService {
             self::assertCategoryHasNoActiveItems($companyId, $categoryId, "No puedes eliminar una categoría asociada a productos activos.");
 
             $category->delete();
+
         });
 
     }
@@ -299,9 +300,10 @@ class CategoryService {
             ->where("items.status", "active")
             ->exists();
 
-        if ($hasActiveItems) {
+        if($hasActiveItems) {
 
             throw new \DomainException($message);
+
         }
 
     }

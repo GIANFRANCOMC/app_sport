@@ -4,23 +4,17 @@ declare(strict_types=1);
 
 namespace App\Services\System\General;
 
-use App\Models\System\Finance\PaymentMethod;
-use App\Models\System\Finance\PaymentMethodVariant;
-use App\Models\System\Finance\Tax;
-use App\Models\System\General\Currency;
-use App\Models\System\General\DocumentType;
-use App\Models\System\General\IdentityDocumentType;
-use App\Models\System\Organizations\CompanySetting;
-use App\Services\System\Base\InitParamsCacheInvalidationService;
-use App\Services\System\Base\MasterReferenceDataService;
-use App\Services\System\Organizations\Companies\CompanySettingService;
-use App\Services\System\Tenancy\TenantStoragePath;
+use App\Models\System\Finance\{PaymentMethod, PaymentMethodVariant, Tax};
+use App\Models\System\General\{Currency, DocumentType, IdentityDocumentType};
+use App\Models\System\Organizations\{CompanySetting};
+use App\Services\System\Base\{InitParamsCacheInvalidationService, MasterReferenceDataService};
+use App\Services\System\Organizations\Companies\{CompanySettingService};
+use App\Services\System\Tenancy\{TenantStoragePath};
 use DomainException;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
+use Illuminate\Database\Eloquent\{Model};
+use Illuminate\Http\{UploadedFile};
+use Illuminate\Support\Facades\{DB, Storage};
+use Illuminate\Support\{Str};
 
 final class MasterDataService {
     private const DEFINITIONS = [
@@ -57,7 +51,8 @@ final class MasterDataService {
         $obsoleteImagePath = null;
 
         try {
-            $record = DB::transaction(function () use (
+
+            $record = DB::transaction(function() use (
                 $companyId,
                 $userId,
                 $resource,
@@ -75,20 +70,23 @@ final class MasterDataService {
                 $duplicateQuery = $definition["model"]::query()
                     ->where("company_id", $companyId);
 
-                foreach (self::uniqueKey($resource, $data) as $column => $value) {
+                foreach(self::uniqueKey($resource, $data) as $column => $value) {
+
                     $duplicateQuery->where($column, $value);
+
                 }
 
                 $duplicate = $duplicateQuery
-                    ->when($id, fn ($query) => $query->where("id", "!=", $id))
+                    ->when($id, fn($query) => $query->where("id", "!=", $id))
                     ->exists();
 
-                if ($duplicate) {
+                if($duplicate) {
 
                     throw new DomainException("Ya existe un registro equivalente en la empresa.");
+
                 }
 
-                if (($data["status"] ?? $record->status) === "inactive" && $id) {
+                if(($data["status"] ?? $record->status) === "inactive" && $id) {
 
                     self::assertCanDeactivate($companyId, $resource, $id);
 
@@ -113,26 +111,33 @@ final class MasterDataService {
                     default => ["code", "name", "status"]
                 };
 
-                if ($resource === "taxes" && ($data["calculation_type"] ?? null) === "percentage") {
+                if($resource === "taxes" && ($data["calculation_type"] ?? null) === "percentage") {
+
                     $data["min_apply_quantity"] = null;
                     $data["max_apply_quantity"] = null;
+
                 }
 
-                if ($resource === "company-settings") {
-                    if (preg_match(
+                if($resource === "company-settings") {
+
+                    if(preg_match(
                         "/(?:secret|password|token|credential|api[_-]?key|private[_-]?key)/",
                         strtolower((string) $data["key"])
                     )) {
+
                         throw new DomainException("Los secretos y credenciales deben configurarse por entorno, no en company_settings.");
+
                     }
 
                     $data["value"] = self::normalizeSettingValue(
                         $data["value"] ?? null,
                         (string) $data["value_type"]
                     );
+
                 }
 
-                if (in_array($resource, ["payment-methods", "payment-method-variants"], true) && ($data["image"] ?? null) instanceof UploadedFile) {
+                if(in_array($resource, ["payment-methods", "payment-method-variants"], true) && ($data["image"] ?? null) instanceof UploadedFile) {
+
                     $obsoleteImagePath = $record->image_path;
                     $newImagePath = $data["image"]->storeAs(
                         TenantStoragePath::for("finance/{$resource}"),
@@ -140,6 +145,7 @@ final class MasterDataService {
                         "public"
                     );
                     $data["image_path"] = $newImagePath;
+
                 }
 
                 unset($data["image"]);
@@ -149,8 +155,10 @@ final class MasterDataService {
                 $record->{$id ? "updated_by" : "created_by"} = $userId;
                 $record->save();
 
-                if ($resource === "company-settings") {
+                if($resource === "company-settings") {
+
                     CompanySettingService::clearCache($companyId);
+
                 }
 
                 MasterReferenceDataService::clearCache($companyId);
@@ -162,16 +170,23 @@ final class MasterDataService {
                 return $record->fresh();
 
             });
-        } catch (\Throwable $exception) {
-            if ($newImagePath) {
+
+        } catch(\Throwable $exception) {
+
+            if($newImagePath) {
+
                 Storage::disk("public")->delete($newImagePath);
+
             }
 
             throw $exception;
+
         }
 
-        if ($obsoleteImagePath && $obsoleteImagePath !== $newImagePath) {
+        if($obsoleteImagePath && $obsoleteImagePath !== $newImagePath) {
+
             Storage::disk("public")->delete($obsoleteImagePath);
+
         }
 
         return $record;
@@ -207,17 +222,17 @@ final class MasterDataService {
             default => []
         };
 
-        foreach ($references as [$table, $column]) {
+        foreach($references as [$table, $column]) {
 
-            if (DB::table($table)
+            if(DB::table($table)
                 ->where($column, $id)
-                ->where(function ($query) use ($companyId, $table) {
+                ->where(function($query) use ($companyId, $table) {
 
-                    if ($table !== "companies") {
+                    if($table !== "companies") {
 
                         $query->where("company_id", $companyId);
 
-                    } else {
+                    }else {
 
                         $query->where("id", $companyId);
 
@@ -227,6 +242,7 @@ final class MasterDataService {
                 ->exists()) {
 
                 throw new DomainException("No se puede inactivar el registro porque está siendo utilizado.");
+
             }
 
         }
@@ -287,8 +303,10 @@ final class MasterDataService {
 
     private static function normalizeSettingValue(mixed $value, string $type): ?string {
 
-        if ($value === null || $value === "") {
+        if($value === null || $value === "") {
+
             return null;
+
         }
 
         return match ($type) {
@@ -313,13 +331,19 @@ final class MasterDataService {
     private static function normalizeJsonValue(mixed $value): string {
 
         try {
-            if (is_string($value)) {
+
+            if(is_string($value)) {
+
                 $value = json_decode($value, true, 512, JSON_THROW_ON_ERROR);
+
             }
 
             return json_encode($value, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE);
-        } catch (\JsonException) {
+
+        } catch(\JsonException) {
+
             throw new DomainException("La configuración debe contener JSON válido.");
+
         }
 
     }

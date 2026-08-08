@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace App\Models\System\Finance;
 
-use App\Models\System\Organizations\Branch;
-use App\Models\System\Organizations\User;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\System\Organizations\{Branch, User};
+use Illuminate\Database\Eloquent\{Model};
 
 final class CashMovement extends Model {
     protected $table = "cash_movements";

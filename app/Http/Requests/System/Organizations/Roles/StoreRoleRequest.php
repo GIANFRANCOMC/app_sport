@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\System\Organizations\Roles;
 
-use App\Http\Requests\System\Base\CompanyFormRequest;
-use App\Rules\System\Defaults\BelongsToCompany;
-use Illuminate\Validation\Rule;
+use App\Http\Requests\System\Base\{CompanyFormRequest};
+use App\Rules\System\Defaults\{BelongsToCompany};
+use Illuminate\Validation\{Rule};
 
 class StoreRoleRequest extends CompanyFormRequest {
     protected function prepareForValidation(): void {

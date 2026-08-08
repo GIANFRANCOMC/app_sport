@@ -2,12 +2,11 @@
 
 namespace App\Models\System\Customers;
 
-use App\Helpers\System\Utilities;
-use App\Models\System\Devices\BiometricDevice;
-use App\Models\System\Organizations\Branch;
-use App\Models\System\Organizations\Company;
-use Carbon\Carbon;
-use Illuminate\Database\Eloquent\Model;
+use App\Helpers\System\{Utilities};
+use App\Models\System\Devices\{BiometricDevice};
+use App\Models\System\Organizations\{Branch, Company};
+use Carbon\{Carbon};
+use Illuminate\Database\Eloquent\{Model};
 
 class Attendance extends Model {
     protected $table = "attendances";
@@ -52,7 +51,7 @@ class Attendance extends Model {
         $startDate = $this->attributes["start_date"] ?? null;
         $endDate = $this->attributes["end_date"] ?? null;
 
-        if (! Utilities::isDefined($startDate) || ! Utilities::isDefined($endDate)) {
+        if(!Utilities::isDefined($startDate) || !Utilities::isDefined($endDate)) {
 
             return 0;
 

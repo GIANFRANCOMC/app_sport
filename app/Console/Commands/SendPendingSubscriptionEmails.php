@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Models\System\Tenancy\TenantDatabase;
-use App\Services\System\Notifications\NotificationService;
-use App\Services\System\Tenancy\TenantAdministrationService;
-use App\Services\System\Tenancy\TenantConnectionManager;
-use Illuminate\Console\Command;
+use App\Models\System\Tenancy\{TenantDatabase};
+use App\Services\System\Notifications\{NotificationService};
+use App\Services\System\Tenancy\{TenantAdministrationService, TenantConnectionManager};
+use Illuminate\Console\{Command};
 use Throwable;
 
 final class SendPendingSubscriptionEmails extends Command {
@@ -28,21 +27,25 @@ final class SendPendingSubscriptionEmails extends Command {
         $tenantSlug = $this->option("tenant");
         $tenants = TenantDatabase::query()
             ->where("status", "active")
-            ->when($tenantSlug, fn ($query) => $query->where("slug", $tenantSlug))
+            ->when($tenantSlug, fn($query) => $query->where("slug", $tenantSlug))
             ->orderBy("id")
             ->get();
 
-        if ($tenants->isEmpty()) {
+        if($tenants->isEmpty()) {
+
             $this->error("No existen tenants activos para procesar.");
 
             return self::FAILURE;
+
         }
 
         $rows = [];
         $hasFailure = false;
 
-        foreach ($tenants as $tenant) {
+        foreach($tenants as $tenant) {
+
             try {
+
                 $connectionManager->connect($tenant);
                 $summary = NotificationService::sendSubscriptionEmails(
                     $companyId === null ? null : (int) $companyId,
@@ -50,15 +53,21 @@ final class SendPendingSubscriptionEmails extends Command {
                 );
                 $rows[] = [$tenant->slug, $summary["processed"], $summary["sent"], $summary["failed"], "OK"];
                 $administration->audit($tenant, "scheduled_notifications", "success", $summary, "scheduler");
-            } catch (Throwable $exception) {
+
+            } catch(Throwable $exception) {
+
                 $hasFailure = true;
                 $rows[] = [$tenant->slug, 0, 0, 0, $exception->getMessage()];
                 $administration->audit($tenant, "scheduled_notifications", "failure", [
                     "error" => $exception->getMessage(),
                 ], "scheduler");
+
             } finally {
+
                 $connectionManager->disconnect();
+
             }
+
         }
 
         $this->table(

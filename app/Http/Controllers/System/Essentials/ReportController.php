@@ -4,33 +4,27 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\System\Essentials;
 
-use App\Exports\BranchExport;
-use App\Exports\CustomerExport;
-use App\Exports\ItemExport;
-use App\Exports\SaleExport;
-use App\Exports\UserExport;
-use App\Helpers\System\Utilities;
-use App\Http\Controllers\System\Base\BaseController;
+use App\Exports\{BranchExport, CustomerExport, ItemExport, SaleExport, UserExport};
+use App\Helpers\System\{Utilities};
+use App\Http\Controllers\System\Base\{BaseController};
 use App\Models\System\Catalogs\{Item};
 use App\Models\System\Customers\{Customer};
-use App\Models\System\Organizations\Branch;
-use App\Models\System\Organizations\Company;
+use App\Models\System\Organizations\{Branch, Company};
 use App\Models\System\Organizations\{User};
 use App\Models\System\Sales\{SaleHeader};
-use App\Services\System\Essentials\ReportConfigService;
-use App\Services\System\Finance\FinancialSettlementReportService;
-use App\Services\System\Organizations\AccessScopeService;
-use App\Services\System\Organizations\Companies\CompanySettingService;
-use Barryvdh\DomPDF\Facade\Pdf;
-use Carbon\Carbon;
-use Carbon\Exceptions\InvalidFormatException;
+use App\Services\System\Essentials\{ReportConfigService};
+use App\Services\System\Finance\{FinancialSettlementReportService};
+use App\Services\System\Organizations\Companies\{CompanySettingService};
+use App\Services\System\Organizations\{AccessScopeService};
+use Barryvdh\DomPDF\Facade\{Pdf};
+use Carbon\Exceptions\{InvalidFormatException};
+use Carbon\{Carbon};
 use Exception;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\URL;
-use Illuminate\Validation\ValidationException;
-use Maatwebsite\Excel\Facades\Excel;
+use Illuminate\Database\Eloquent\{Builder};
+use Illuminate\Http\{JsonResponse, Request};
+use Illuminate\Support\Facades\{URL};
+use Illuminate\Validation\{ValidationException};
+use Maatwebsite\Excel\Facades\{Excel};
 use stdClass;
 
 class ReportController extends BaseController {
@@ -54,7 +48,7 @@ class ReportController extends BaseController {
             25000
         ));
 
-        if ((clone $query)->limit($limit + 1)->count() > $limit) {
+        if((clone $query)->limit($limit + 1)->count() > $limit) {
 
             throw ValidationException::withMessages([
                 "filters" => "El reporte supera {$limit} registros. Reduce el rango o aplica más filtros.",
@@ -105,15 +99,15 @@ class ReportController extends BaseController {
 
         $saleHeader = SaleHeader::where("company_id", $this->getCompanyId())
             ->whereKey((int) $validated["document"])
-            ->when($allowedBranchIds !== null, function ($query) use ($allowedBranchIds) {
+            ->when($allowedBranchIds !== null, function($query) use ($allowedBranchIds) {
 
-                $query->whereHas("serie", fn ($serie) => $serie->whereIn("branch_id", $allowedBranchIds)
+                $query->whereHas("serie", fn($serie) => $serie->whereIn("branch_id", $allowedBranchIds)
                 );
 
             })
             ->first();
 
-        if (! Utilities::isDefined($saleHeader)) {
+        if(!Utilities::isDefined($saleHeader)) {
 
             return response()->json([
                 "bool" => false,
@@ -150,7 +144,7 @@ class ReportController extends BaseController {
 
     public function sharedSale(Request $request, int $company, int $sale, string $type) {
 
-        if (! in_array($type, ["a4", "mm80"], true)) {
+        if(!in_array($type, ["a4", "mm80"], true)) {
 
             return response()->view("errors.404", ["msg" => "Información no encontrada"], 404);
 
@@ -165,7 +159,7 @@ class ReportController extends BaseController {
         $message500 = "Por favor, no altere el enlace generado. Cualquier modificación podría invalidarlo. Si tiene algún problema, solicite uno nuevo";
         $message404 = "Información no encontrada";
 
-        if (Utilities::isDefined($request->document)) {
+        if(Utilities::isDefined($request->document)) {
 
             $document = base64_decode((string) $request->document, true);
             $printType = base64_decode((string) $request->type, true);
@@ -173,7 +167,7 @@ class ReportController extends BaseController {
             $expdt = $encodedExpiration === false ? "" : str_replace("T", " ", $encodedExpiration);
 
             // Validate params: INIT
-            if (! (intval($document) > 0) || ! in_array($printType, ["a4", "mm80"]) || ! Utilities::isDefined($expdt)) {
+            if(!(intval($document) > 0) || !in_array($printType, ["a4", "mm80"]) || !Utilities::isDefined($expdt)) {
 
                 return response()->view("errors.500", ["msg" => $message500], 500);
 
@@ -185,17 +179,17 @@ class ReportController extends BaseController {
                 $expirationDate = Carbon::parse($expdt)->startOfDay();
                 $currentDate = Carbon::now()->startOfDay();
 
-            } catch (InvalidFormatException $e) {
+            } catch(InvalidFormatException $e) {
 
                 return response()->view("errors.500", ["msg" => $message500." (expdt)"], 500);
 
-            } catch (Exception $e) {
+            } catch(Exception $e) {
 
                 return response()->view("errors.500", ["msg" => $message500]." (expdt)", 500);
 
             }
 
-            if ($expirationDate->greaterThanOrEqualTo($currentDate)) {
+            if($expirationDate->greaterThanOrEqualTo($currentDate)) {
 
                 return $this->renderSalePdf(
                     $this->getCompanyId(),
@@ -204,7 +198,7 @@ class ReportController extends BaseController {
                     $this->allowedBranchIds()
                 );
 
-            } else {
+            }else {
 
                 return response()->view("errors.500", ["msg" => "El enlace ha caducado. Por favor, solicita uno nuevo."], 500);
 
@@ -220,9 +214,9 @@ class ReportController extends BaseController {
 
         $saleHeader = SaleHeader::where("company_id", $companyId)
             ->whereKey($saleId)
-            ->when($allowedBranchIds !== null, function ($query) use ($allowedBranchIds) {
+            ->when($allowedBranchIds !== null, function($query) use ($allowedBranchIds) {
 
-                $query->whereHas("serie", fn ($serie) => $serie->whereIn("branch_id", $allowedBranchIds)
+                $query->whereHas("serie", fn($serie) => $serie->whereIn("branch_id", $allowedBranchIds)
                 );
 
             })
@@ -231,7 +225,7 @@ class ReportController extends BaseController {
 
         $company = Company::find($companyId);
 
-        if (! Utilities::isDefined($saleHeader) || ! Utilities::isDefined($company)) {
+        if(!Utilities::isDefined($saleHeader) || !Utilities::isDefined($company)) {
 
             return response()->view("errors.404", ["msg" => "Información no encontrada"], 404);
 
@@ -244,7 +238,7 @@ class ReportController extends BaseController {
                 ? "data:image/".pathinfo($logotypeRoute, PATHINFO_EXTENSION).";base64,".base64_encode(file_get_contents($logotypeRoute))
                 : null;
 
-        } catch (\Exception $e) {
+        } catch(\Exception $e) {
 
             $logotypeImg = null;
 
@@ -266,7 +260,7 @@ class ReportController extends BaseController {
                 "canceledImg" => $canceledImg,
             ];
 
-            if ($printType === "a4") {
+            if($printType === "a4") {
 
                 $pdf = Pdf::loadView("System.pdf.sales.a4", $data);
 
@@ -274,7 +268,7 @@ class ReportController extends BaseController {
 
             }
 
-            if ($printType === "mm80") {
+            if($printType === "mm80") {
 
                 $pdf = Pdf::loadView("System.pdf.sales.mm80", $data)->setPaper([0, 0, 80 * 2.83, 160 * 2.83]);
 
@@ -282,7 +276,7 @@ class ReportController extends BaseController {
 
             }
 
-        } catch (\Exception $e) {
+        } catch(\Exception $e) {
 
             return response()->view("errors.500", ["msg" => $e->getMessage()], 500);
 
@@ -295,14 +289,14 @@ class ReportController extends BaseController {
     public function customers(Request $request) {
 
         $query = Customer::where("company_id", $this->getCompanyId())
-            ->when(Utilities::isDefined($request->document_number), function ($query) use ($request) {
+            ->when(Utilities::isDefined($request->document_number), function($query) use ($request) {
 
                 $filter = "%".trim($request->document_number)."%";
 
                 $query->where("document_number", "like", $filter);
 
             })
-            ->when(Utilities::isDefined($request->name), function ($query) use ($request) {
+            ->when(Utilities::isDefined($request->name), function($query) use ($request) {
 
                 $filter = "%".trim($request->name)."%";
 
@@ -316,7 +310,7 @@ class ReportController extends BaseController {
 
         $data = collect([]);
 
-        foreach ($customers as $customer) {
+        foreach($customers as $customer) {
 
             $record = new stdClass;
             $record->documentType = $customer->identityDocumentType->name;
@@ -336,14 +330,14 @@ class ReportController extends BaseController {
     public function users(Request $request) {
 
         $query = User::where("company_id", $this->getCompanyId())
-            ->when(Utilities::isDefined($request->document_number), function ($query) use ($request) {
+            ->when(Utilities::isDefined($request->document_number), function($query) use ($request) {
 
                 $filter = "%".trim($request->document_number)."%";
 
                 $query->where("document_number", "like", $filter);
 
             })
-            ->when(Utilities::isDefined($request->name), function ($query) use ($request) {
+            ->when(Utilities::isDefined($request->name), function($query) use ($request) {
 
                 $filter = "%".trim($request->name)."%";
 
@@ -357,7 +351,7 @@ class ReportController extends BaseController {
 
         $data = collect([]);
 
-        foreach ($users as $user) {
+        foreach($users as $user) {
 
             $record = new stdClass;
             $record->documentType = $user->identityDocumentType->name;
@@ -377,7 +371,7 @@ class ReportController extends BaseController {
     public function items(Request $request) {
 
         $query = Item::where("company_id", $this->getCompanyId())
-            ->when(Utilities::isDefined($request->name), function ($query) use ($request) {
+            ->when(Utilities::isDefined($request->name), function($query) use ($request) {
 
                 $filter = "%".trim($request->name)."%";
 
@@ -391,7 +385,7 @@ class ReportController extends BaseController {
 
         $data = collect([]);
 
-        foreach ($items as $item) {
+        foreach($items as $item) {
 
             $record = new stdClass;
             $record->name = $item->name;
@@ -411,9 +405,9 @@ class ReportController extends BaseController {
     public function branches(Request $request) {
 
         $query = Branch::where("company_id", $this->getCompanyId())
-            ->when($this->allowedBranchIds() !== null, fn ($query) => $query->whereIn("id", $this->allowedBranchIds())
+            ->when($this->allowedBranchIds() !== null, fn($query) => $query->whereIn("id", $this->allowedBranchIds())
             )
-            ->when(Utilities::isDefined($request->name), function ($query) use ($request) {
+            ->when(Utilities::isDefined($request->name), function($query) use ($request) {
 
                 $filter = "%".trim($request->name)."%";
 
@@ -426,7 +420,7 @@ class ReportController extends BaseController {
 
         $data = collect([]);
 
-        foreach ($branches as $branch) {
+        foreach($branches as $branch) {
 
             $record = new stdClass;
             $record->name = $branch->name;
@@ -443,14 +437,14 @@ class ReportController extends BaseController {
     public function sales(Request $request) {
 
         $query = SaleHeader::where("company_id", $this->getCompanyId())
-            ->when($this->allowedBranchIds() !== null, fn ($query) => $query->whereHas("serie", fn ($serie) => $serie->whereIn("branch_id", $this->allowedBranchIds())
+            ->when($this->allowedBranchIds() !== null, fn($query) => $query->whereHas("serie", fn($serie) => $serie->whereIn("branch_id", $this->allowedBranchIds())
             )
             )
-            ->when(Utilities::isDefined($request->type), function ($query) use ($request) {
+            ->when(Utilities::isDefined($request->type), function($query) use ($request) {
 
-                if (in_array($request->type, ["by_month"])) {
+                if(in_array($request->type, ["by_month"])) {
 
-                    if (Utilities::isDefined($request->start_month)) {
+                    if(Utilities::isDefined($request->start_month)) {
 
                         [$year, $month] = explode("-", $request->start_month);
 
@@ -459,9 +453,9 @@ class ReportController extends BaseController {
 
                     }
 
-                } elseif (in_array($request->type, ["range_months"])) {
+                }elseif(in_array($request->type, ["range_months"])) {
 
-                    if (Utilities::isDefined($request->start_date) && Utilities::isDefined($request->end_date)) {
+                    if(Utilities::isDefined($request->start_date) && Utilities::isDefined($request->end_date)) {
 
                         $start = Carbon::createFromFormat("Y-m", $request->start_date)->startOfMonth();
                         $end = Carbon::createFromFormat("Y-m", $request->end_date)->endOfMonth();
@@ -469,17 +463,17 @@ class ReportController extends BaseController {
 
                     }
 
-                } elseif (in_array($request->type, ["by_date"])) {
+                }elseif(in_array($request->type, ["by_date"])) {
 
-                    if (Utilities::isDefined($request->start_date)) {
+                    if(Utilities::isDefined($request->start_date)) {
 
                         $query->where("issue_date", $request->start_date);
 
                     }
 
-                } elseif (in_array($request->type, ["range_dates"])) {
+                }elseif(in_array($request->type, ["range_dates"])) {
 
-                    if (Utilities::isDefined($request->start_date) && Utilities::isDefined($request->end_date)) {
+                    if(Utilities::isDefined($request->start_date) && Utilities::isDefined($request->end_date)) {
 
                         $query->where("issue_date", ">=", $request->start_date)
                             ->where("issue_date", "<=", $request->end_date);
@@ -496,7 +490,7 @@ class ReportController extends BaseController {
 
         $data = collect([]);
 
-        foreach ($salesHeader as $saleHeader) {
+        foreach($salesHeader as $saleHeader) {
 
             $record = new stdClass;
             $record->serie_sequential = $saleHeader->serie_sequential;

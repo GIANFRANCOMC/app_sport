@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace App\Services\System\Assets\Assets;
 
-use App\Models\System\Assets\Asset;
-use App\Models\System\Assets\AssetCategory;
-use App\Services\System\Base\BaseConfigService;
+use App\Models\System\Assets\{Asset, AssetCategory};
+use App\Services\System\Base\{BaseConfigService};
 use stdClass;
 
 final class AssetConfigService extends BaseConfigService {

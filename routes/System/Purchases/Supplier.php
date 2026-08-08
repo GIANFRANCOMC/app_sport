@@ -1,7 +1,7 @@
 <?php
 
-use App\Http\Controllers\System\Purchases\SupplierController;
-use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\System\Purchases\{SupplierController};
+use Illuminate\Support\Facades\{Route};
 
 $entity = "suppliers";
 

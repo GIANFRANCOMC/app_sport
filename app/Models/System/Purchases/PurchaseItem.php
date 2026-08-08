@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Models\System\Purchases;
 
-use App\Models\System\Catalogs\Item;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\System\Catalogs\{Item};
+use Illuminate\Database\Eloquent\{Model};
 
 final class PurchaseItem extends Model {
     protected $table = "purchase_items";

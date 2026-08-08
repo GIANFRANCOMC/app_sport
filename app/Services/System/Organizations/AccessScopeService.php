@@ -4,15 +4,13 @@ declare(strict_types=1);
 
 namespace App\Services\System\Organizations;
 
-use App\Models\System\Organizations\Role;
-use App\Models\System\Organizations\User;
-use App\Services\System\Finance\CashRegisterConfigService;
-use App\Services\System\Purchases\PurchaseConfigService;
-use App\Services\System\Sales\SaleConfigService;
-use App\Services\System\Warehouses\StockManagement\StockManagementConfigService;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\DB;
+use App\Models\System\Organizations\{Role, User};
+use App\Services\System\Finance\{CashRegisterConfigService};
+use App\Services\System\Purchases\{PurchaseConfigService};
+use App\Services\System\Sales\{SaleConfigService};
+use App\Services\System\Warehouses\StockManagement\{StockManagementConfigService};
+use Illuminate\Database\Eloquent\{Builder};
+use Illuminate\Support\Facades\{Cache, DB};
 use InvalidArgumentException;
 
 final class AccessScopeService {
@@ -31,7 +29,7 @@ final class AccessScopeService {
         $scopes = Cache::remember(
             self::cacheKey((int) $user->company_id, (int) $user->id),
             self::CACHE_TTL,
-            fn (): array => self::resolve($user)
+            fn(): array => self::resolve($user)
         );
 
         return $scopes[$type];
@@ -40,8 +38,10 @@ final class AccessScopeService {
 
     public static function canAccess(User $user, string $type, int $resourceId): bool {
 
-        if ($resourceId <= 0 || ! self::belongsToCompany($type, $resourceId, (int) $user->company_id)) {
+        if($resourceId <= 0 || !self::belongsToCompany($type, $resourceId, (int) $user->company_id)) {
+
             return false;
+
         }
 
         $allowedIds = self::allowedIds($user, $type);
@@ -64,13 +64,15 @@ final class AccessScopeService {
 
         Cache::forget(self::cacheKey($companyId, $userId));
 
-        foreach ([
+        foreach([
             SaleConfigService::class,
             PurchaseConfigService::class,
             CashRegisterConfigService::class,
             StockManagementConfigService::class,
         ] as $configService) {
+
             $configService::clearUserCache($companyId, $userId);
+
         }
 
     }
@@ -81,7 +83,7 @@ final class AccessScopeService {
             ->where("company_id", $companyId)
             ->where("role_id", $roleId)
             ->pluck("id")
-            ->each(fn ($userId) => self::clearUserCache($companyId, (int) $userId));
+            ->each(fn($userId) => self::clearUserCache($companyId, (int) $userId));
 
     }
 
@@ -92,12 +94,16 @@ final class AccessScopeService {
             ->where("status", "active")
             ->find($user->role_id);
 
-        if (! $role) {
+        if(!$role) {
+
             return self::deniedScopes();
+
         }
 
-        if ($role->is_full_access) {
+        if($role->is_full_access) {
+
             return self::unrestrictedScopes();
+
         }
 
         $branchIds = self::resolveType($user, $role, self::BRANCH);
@@ -134,8 +140,10 @@ final class AccessScopeService {
             : self::pivotIds($definition["role_table"], "role_id", (int) $role->id, $definition["resource_key"]);
 
         $userMode = (string) ($user->{$definition["user_mode"]} ?? "inherit");
-        if ($userMode !== "restricted") {
+        if($userMode !== "restricted") {
+
             return $roleIds;
+
         }
 
         $userIds = self::pivotIds($definition["user_table"], "user_id", (int) $user->id, $definition["resource_key"]);
@@ -153,12 +161,16 @@ final class AccessScopeService {
         int $companyId
     ): ?array {
 
-        if ($branchIds === null) {
+        if($branchIds === null) {
+
             return $resourceIds;
+
         }
 
-        if ($branchIds === []) {
+        if($branchIds === []) {
+
             return [];
+
         }
 
         $definition = self::definition($type);
@@ -166,11 +178,13 @@ final class AccessScopeService {
             ->where("company_id", $companyId)
             ->whereIn("branch_id", $branchIds);
 
-        if ($resourceIds !== null) {
+        if($resourceIds !== null) {
+
             $query->whereIn("id", $resourceIds);
+
         }
 
-        return $query->pluck("id")->map(fn ($id) => (int) $id)->values()->all();
+        return $query->pluck("id")->map(fn($id) => (int) $id)->values()->all();
 
     }
 
@@ -180,7 +194,7 @@ final class AccessScopeService {
             ->where($ownerKey, $ownerId)
             ->where("status", "active")
             ->pluck($resourceKey)
-            ->map(fn ($id) => (int) $id)
+            ->map(fn($id) => (int) $id)
             ->unique()
             ->values()
             ->all();

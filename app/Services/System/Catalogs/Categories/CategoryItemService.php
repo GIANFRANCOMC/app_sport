@@ -17,9 +17,9 @@ class CategoryItemService {
                 "updated_by" => $userId,
             ]);
 
-        foreach ($categories as $category) {
+        foreach($categories as $category) {
 
-            if (! isset($category["category_id"])) {
+            if(!isset($category["category_id"])) {
 
                 continue;
 

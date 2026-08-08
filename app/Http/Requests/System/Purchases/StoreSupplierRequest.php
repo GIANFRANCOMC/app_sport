@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\System\Purchases;
 
-use App\Http\Requests\System\Base\CompanyFormRequest;
-use Illuminate\Validation\Rule;
+use App\Http\Requests\System\Base\{CompanyFormRequest};
+use Illuminate\Validation\{Rule};
 
 final class StoreSupplierRequest extends CompanyFormRequest {
     public function authorize(): bool {

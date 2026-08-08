@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\System\Catalogs\Recipes;
 
-use App\Http\Requests\System\Base\CompanyFormRequest;
-use App\Rules\System\Defaults\BelongsToCompany;
+use App\Http\Requests\System\Base\{CompanyFormRequest};
+use App\Rules\System\Defaults\{BelongsToCompany};
 
 final class StoreRecipeWasteRequest extends CompanyFormRequest {
     public function rules(): array {

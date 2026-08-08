@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\System\Essentials\Home;
 
-use App\Models\System\Organizations\CompanySubSection;
-use Illuminate\Foundation\Http\FormRequest;
+use App\Models\System\Organizations\{CompanySubSection};
+use Illuminate\Foundation\Http\{FormRequest};
 
 class UpdateHomePreferenceRequest extends FormRequest {
     private const HIDDEN_HOME_DIRECTORY_SLUGS = ["sc_home", "sc_dashboard"];
@@ -15,13 +15,13 @@ class UpdateHomePreferenceRequest extends FormRequest {
         $user = $this->user();
         $subSectionId = (int) $this->route("id");
 
-        if (! $user) {
+        if(!$user) {
 
             return false;
 
         }
 
-        if ($subSectionId === 0) {
+        if($subSectionId === 0) {
 
             return true;
 
@@ -30,7 +30,7 @@ class UpdateHomePreferenceRequest extends FormRequest {
         return CompanySubSection::where("company_id", $user->company_id)
             ->where("sub_section_id", $subSectionId)
             ->where("status", "active")
-            ->whereHas("subSection", function ($query) {
+            ->whereHas("subSection", function($query) {
 
                 $query->where("status", "active")
                     ->whereNotIn("slug", self::HIDDEN_HOME_DIRECTORY_SLUGS);

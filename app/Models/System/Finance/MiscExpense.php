@@ -4,10 +4,9 @@ declare(strict_types=1);
 
 namespace App\Models\System\Finance;
 
-use App\Models\System\General\Currency;
-use App\Models\System\Organizations\Branch;
-use App\Models\System\Organizations\User;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\System\General\{Currency};
+use App\Models\System\Organizations\{Branch, User};
+use Illuminate\Database\Eloquent\{Model};
 
 final class MiscExpense extends Model {
     protected $table = "misc_expenses";
@@ -42,26 +41,38 @@ final class MiscExpense extends Model {
     ];
 
     public function branch() {
+
         return $this->belongsTo(Branch::class, "branch_id");
+
     }
 
     public function cashSession() {
+
         return $this->belongsTo(CashSession::class, "cash_session_id");
+
     }
 
     public function paymentMethod() {
+
         return $this->belongsTo(PaymentMethod::class, "payment_method_id");
+
     }
 
     public function currency() {
+
         return $this->belongsTo(Currency::class, "currency_id");
+
     }
 
     public function category() {
+
         return $this->belongsTo(MiscExpenseCategory::class, "misc_expense_category_id");
+
     }
 
     public function responsibleUser() {
+
         return $this->belongsTo(User::class, "responsible_user_id");
+
     }
 }

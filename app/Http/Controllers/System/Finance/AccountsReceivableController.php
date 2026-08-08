@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\System\Finance;
 
-use App\Helpers\System\Utilities;
-use App\Http\Controllers\System\Base\BaseController;
-use App\Services\System\Finance\AccountsReceivableService;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
+use App\Helpers\System\{Utilities};
+use App\Http\Controllers\System\Base\{BaseController};
+use App\Services\System\Finance\{AccountsReceivableService};
+use Illuminate\Http\{JsonResponse, Request};
 
 final class AccountsReceivableController extends BaseController {
     public function __construct(private readonly AccountsReceivableService $service) {
@@ -60,7 +59,7 @@ final class AccountsReceivableController extends BaseController {
             "status" => $request->input("status"),
             "date_from" => $request->input("date_from"),
             "date_to" => $request->input("date_to"),
-        ], fn ($value) => $value !== null && $value !== "");
+        ], fn($value) => $value !== null && $value !== "");
 
     }
 }

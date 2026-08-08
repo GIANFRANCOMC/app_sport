@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace App\Jobs\Middleware;
 
-use App\Models\System\Tenancy\TenantDatabase;
-use App\Services\System\Tenancy\TenantConnectionManager;
-use App\Services\System\Tenancy\TenantContext;
+use App\Models\System\Tenancy\{TenantDatabase};
+use App\Services\System\Tenancy\{TenantConnectionManager, TenantContext};
 use Closure;
 use RuntimeException;
 
@@ -20,20 +19,26 @@ final class UseTenantConnection {
             ->where("status", "active")
             ->find($this->tenantDatabaseId);
 
-        if (! $tenant) {
+        if(!$tenant) {
+
             throw new RuntimeException("El tenant del trabajo no existe o está inactivo.");
+
         }
 
         $manager = app(TenantConnectionManager::class);
         $context = app(TenantContext::class);
 
         try {
+
             $manager->connect($tenant);
             $context->set($tenant);
             $next($job);
+
         } finally {
+
             $context->set(null);
             $manager->disconnect();
+
         }
 
     }

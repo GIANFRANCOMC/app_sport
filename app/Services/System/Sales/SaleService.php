@@ -4,33 +4,23 @@ declare(strict_types=1);
 
 namespace App\Services\System\Sales;
 
-use App\Helpers\System\TranslationHelper;
-use App\Helpers\System\Utilities;
-use App\Models\System\Catalogs\Item;
-use App\Models\System\Customers\Subscription;
-use App\Models\System\Finance\CashMovement;
-use App\Models\System\Finance\CashSession;
-use App\Models\System\Organizations\Serie;
-use App\Models\System\Organizations\User;
-use App\Models\System\Sales\QuotationHeader;
-use App\Models\System\Sales\SaleBody;
-use App\Models\System\Sales\SaleDeliveryMethod;
-use App\Models\System\Sales\SaleHeader;
-use App\Models\System\Sales\SalePayment;
-use App\Models\System\Sales\SaleTax;
-use App\Models\System\Warehouses\InventoryMovement;
-use App\Models\System\Warehouses\Warehouse;
-use App\Services\System\Catalogs\Recipes\RecipeConsumptionService;
-use App\Services\System\Customers\Loyalty\CustomerLoyaltyPointService;
-use App\Services\System\Customers\Tracking\TrackingSubscriptionService;
-use App\Services\System\Finance\CommercialCreditAccountService;
-use App\Services\System\Finance\CommercialDocumentSettlementService;
-use App\Services\System\Operations\ServiceOperationService;
-use App\Services\System\Organizations\Companies\CompanySettingService;
+use App\Helpers\System\{TranslationHelper, Utilities};
+use App\Models\System\Catalogs\{Item};
+use App\Models\System\Customers\{Subscription};
+use App\Models\System\Finance\{CashMovement, CashSession};
+use App\Models\System\Organizations\{Serie, User};
+use App\Models\System\Sales\{QuotationHeader, SaleBody, SaleDeliveryMethod, SaleHeader, SalePayment, SaleTax};
+use App\Models\System\Warehouses\{InventoryMovement, Warehouse};
+use App\Services\System\Catalogs\Recipes\{RecipeConsumptionService};
+use App\Services\System\Customers\Loyalty\{CustomerLoyaltyPointService};
+use App\Services\System\Customers\Tracking\{TrackingSubscriptionService};
+use App\Services\System\Finance\{CommercialCreditAccountService, CommercialDocumentSettlementService};
+use App\Services\System\Operations\{ServiceOperationService};
+use App\Services\System\Organizations\Companies\{CompanySettingService};
 use App\Services\System\Organizations\{AccessScopeService};
-use App\Services\System\Warehouses\Inventory\InventoryMovementService;
+use App\Services\System\Warehouses\Inventory\{InventoryMovementService};
 use Exception;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\{DB};
 use stdClass;
 
 /**
@@ -70,7 +60,7 @@ class SaleService {
 
         $total = 0;
 
-        foreach ($details as $detail) {
+        foreach($details as $detail) {
 
             $total += Utilities::round(floatval($detail["quantity"]) * floatval($detail["price"]), null, $companyId);
 
@@ -90,7 +80,7 @@ class SaleService {
 
         $normalized = is_numeric($value) ? max(0, (float) $value) : 0.0;
 
-        if ($type === "percentage") {
+        if($type === "percentage") {
 
             return min($normalized, 100);
 
@@ -102,13 +92,13 @@ class SaleService {
 
     private static function calculateCommissionAmount(float $quantity, float $price, string $type, float $value, int $companyId): float {
 
-        if ($type === "percentage") {
+        if($type === "percentage") {
 
             return Utilities::round(($quantity * $price) * ($value / 100), null, $companyId);
 
         }
 
-        if ($type === "fixed") {
+        if($type === "fixed") {
 
             return Utilities::round($quantity * $value, null, $companyId);
 
@@ -128,9 +118,10 @@ class SaleService {
             ->whereKey($sellerId)
             ->exists();
 
-        if (! $exists) {
+        if(!$exists) {
 
             throw new Exception("El vendedor seleccionado no está disponible para esta empresa.");
+
         }
 
         return $sellerId;
@@ -145,13 +136,13 @@ class SaleService {
             ->get(["id", "commission_rate", "commission_type", "commission_value"])
             ->keyBy("id");
 
-        return array_map(function (array $detail) use ($items, $companyId) {
+        return array_map(function(array $detail) use ($items, $companyId) {
 
             $item = $items->get((int) ($detail["item_id"] ?? 0));
             $fallbackRate = (float) ($item?->commission_rate ?? 0);
             $type = self::normalizeCommissionType($detail["commission_type"] ?? $item?->commission_type ?? null);
 
-            if ($type === "none" && $fallbackRate > 0) {
+            if($type === "none" && $fallbackRate > 0) {
 
                 $type = "percentage";
 
@@ -183,7 +174,7 @@ class SaleService {
         $itemIds = collect($details)
             ->pluck("item_id")
             ->filter()
-            ->map(fn ($id) => (int) $id)
+            ->map(fn($id) => (int) $id)
             ->unique()
             ->values();
 
@@ -198,27 +189,30 @@ class SaleService {
 
     private static function validateSaleCatalogItems(array $details, $items): void {
 
-        foreach ($details as $detail) {
+        foreach($details as $detail) {
 
             $item = $items->get((int) ($detail["item_id"] ?? 0));
 
-            if (! $item) {
+            if(!$item) {
 
                 throw new Exception("Uno de los ítems seleccionados no pertenece a la empresa.");
+
             }
 
-            if (! $item->isAvailableForSale()) {
+            if(!$item->isAvailableForSale()) {
 
                 throw new Exception("{$item->name} no está disponible para la venta.");
+
             }
 
-            if ($item->hasCapacityControl()) {
+            if($item->hasCapacityControl()) {
 
                 $requiredCapacity = self::capacityQuantity($detail["quantity"] ?? 0);
 
-                if ($item->availableCapacity() < $requiredCapacity) {
+                if($item->availableCapacity() < $requiredCapacity) {
 
                     throw new Exception("{$item->name} no tiene cupos disponibles suficientes.");
+
                 }
 
             }
@@ -229,7 +223,7 @@ class SaleService {
 
     private static function normalizeTaxFlags(array $details, $items): array {
 
-        return array_map(function (array $detail) use ($items) {
+        return array_map(function(array $detail) use ($items) {
 
             $item = $items->get((int) ($detail["item_id"] ?? 0));
             $igvExempt = filter_var($item?->igv_exempt ?? false, FILTER_VALIDATE_BOOL);
@@ -253,9 +247,9 @@ class SaleService {
 
     private static function consumeItemCapacity(?Item $item, SaleBody $saleBody, int $userId): void {
 
-        if (! $item
-            || ! $item->hasCapacityControl()
-            || ! in_array($saleBody->type, ["service", "subscription"], true)) {
+        if(!$item
+            || !$item->hasCapacityControl()
+            || !in_array($saleBody->type, ["service", "subscription"], true)) {
 
             return;
 
@@ -270,9 +264,9 @@ class SaleService {
 
     private static function restoreItemCapacityForCanceledSale($positions, int $companyId, int $userId): void {
 
-        $capacityPositions = $positions->filter(fn ($position) => in_array($position->type, ["service", "subscription"], true));
+        $capacityPositions = $positions->filter(fn($position) => in_array($position->type, ["service", "subscription"], true));
 
-        if ($capacityPositions->isEmpty()) {
+        if($capacityPositions->isEmpty()) {
 
             return;
 
@@ -285,11 +279,11 @@ class SaleService {
             ->get()
             ->keyBy("id");
 
-        foreach ($capacityPositions as $position) {
+        foreach($capacityPositions as $position) {
 
             $item = $items->get((int) $position->item_id);
 
-            if (! $item || ! $item->hasCapacityControl()) {
+            if(!$item || !$item->hasCapacityControl()) {
 
                 continue;
 
@@ -313,7 +307,7 @@ class SaleService {
 
         $extras = (object) ($detail["extras"] ?? []);
 
-        if (isset($detail["extras"])) {
+        if(isset($detail["extras"])) {
 
             $extras->duration_type = $detail["extras"]["duration_type"] ?? null;
             $extras->duration_value = $detail["extras"]["duration_value"] ?? null;
@@ -340,7 +334,7 @@ class SaleService {
 
         $extras = new stdClass();
 
-        if (in_array($detail["type"], ["subscription"])) {
+        if(in_array($detail["type"], ["subscription"])) {
 
             $extras = self::prepareSubscriptionExtras($detail);
 
@@ -403,7 +397,7 @@ class SaleService {
             false
         );
 
-        if (RecipeConsumptionService::consume(
+        if(RecipeConsumptionService::consume(
             $warehouse,
             $saleBody,
             $detail,
@@ -416,7 +410,7 @@ class SaleService {
 
         }
 
-        if (! in_array($saleBody->type, ["product"])) {
+        if(!in_array($saleBody->type, ["product"])) {
 
             return null;
 
@@ -454,7 +448,7 @@ class SaleService {
      */
     private static function createSubscription(SaleHeader $saleHeader, SaleBody $saleBody, array $detail, int $companyId, int $branchId, int $userId): ?Subscription {
 
-        if (! in_array($saleBody->type, ["subscription"])) {
+        if(!in_array($saleBody->type, ["subscription"])) {
 
             return null;
 
@@ -496,7 +490,7 @@ class SaleService {
         $subscription->created_by = $userId;
         $subscription->save();
 
-        if ((bool) CompanySettingService::value(
+        if((bool) CompanySettingService::value(
             $companyId,
             CompanySettingService::SUBSCRIPTIONS,
             "send_welcome_email_on_sale",
@@ -527,16 +521,17 @@ class SaleService {
             ->whereKey($customerId)
             ->exists();
 
-        if (! $exists) {
+        if(!$exists) {
 
             throw new Exception("El cliente seleccionado para la membresía no está activo o no pertenece a la empresa.");
+
         }
 
     }
 
     private static function saleRequiresWarehouse(array $details): bool {
 
-        return collect($details)->contains(function ($detail) {
+        return collect($details)->contains(function($detail) {
 
             return in_array(strtolower((string) ($detail["type"] ?? "")), ["product"], true);
 
@@ -549,7 +544,7 @@ class SaleService {
         $warehouseQuery = Warehouse::query()
             ->with("branch")
             ->where("branch_id", $data["branch_id"])
-            ->whereHas("branch", function ($query) use ($companyId) {
+            ->whereHas("branch", function($query) use ($companyId) {
 
                 $query->where("company_id", $companyId)
                     ->where("status", "active");
@@ -557,15 +552,16 @@ class SaleService {
             })
             ->where("status", "active");
 
-        if (Utilities::isDefined($data["warehouse_id"] ?? null)) {
+        if(Utilities::isDefined($data["warehouse_id"] ?? null)) {
 
             $warehouse = (clone $warehouseQuery)
                 ->where("id", $data["warehouse_id"])
                 ->first();
 
-            if (! $warehouse) {
+            if(!$warehouse) {
 
                 throw new Exception("El almacén seleccionado no está activo o no pertenece a la sucursal de la venta.");
+
             }
 
             return $warehouse;
@@ -574,29 +570,35 @@ class SaleService {
 
         $warehouses = $warehouseQuery->get();
 
-        if ($warehouses->count() === 1) {
+        if($warehouses->count() === 1) {
 
             return $warehouses->first();
 
         }
 
-        if ($warehouses->isEmpty()) {
+        if($warehouses->isEmpty()) {
 
             throw new Exception("La sucursal no tiene un almacén activo. Crea o activa un almacén antes de registrar la venta.");
+
         }
 
         throw new Exception("Selecciona el almacén que será afectado por la venta.");
+
     }
 
     private static function resolveDeliveryMethodId(array $data, int $companyId, bool $requiresPhysicalDelivery): ?int {
 
-        if (! $requiresPhysicalDelivery) {
+        if(!$requiresPhysicalDelivery) {
+
             return null;
+
         }
 
         $methodId = (int) ($data["delivery_method_id"] ?? 0);
-        if ($methodId <= 0) {
+        if($methodId <= 0) {
+
             throw new \DomainException("Selecciona una modalidad de entrega activa.");
+
         }
 
         $method = SaleDeliveryMethod::query()
@@ -604,8 +606,10 @@ class SaleService {
             ->where("status", "active")
             ->find($methodId);
 
-        if (! $method) {
+        if(!$method) {
+
             throw new \DomainException("Selecciona una modalidad de entrega activa.");
+
         }
 
         return (int) $method->id;
@@ -626,11 +630,12 @@ class SaleService {
             false
         );
 
-        if ($cashSessionId <= 0) {
+        if($cashSessionId <= 0) {
 
-            if ($required) {
+            if($required) {
 
                 throw new Exception("Abre una caja de la sucursal antes de registrar la venta.");
+
             }
 
             return null;
@@ -644,14 +649,15 @@ class SaleService {
             ->where("status", "open")
             ->find($cashSessionId);
 
-        if (! $session
-            || ! AccessScopeService::canAccess(
+        if(!$session
+            || !AccessScopeService::canAccess(
                 User::query()->where("company_id", $companyId)->findOrFail($userId),
                 AccessScopeService::CASH_REGISTER,
                 (int) $session->cash_register_id
             )) {
 
             throw new Exception("La caja seleccionada no está abierta, no pertenece a la sucursal o no está autorizada para el usuario.");
+
         }
 
         return $session;
@@ -660,14 +666,14 @@ class SaleService {
 
     private static function createCashMovements(SaleHeader $saleHeader, $paymentLines, int $companyId, int $branchId, int $userId): void {
 
-        if (! Utilities::isDefined($saleHeader->cash_session_id) || $paymentLines->isEmpty()) {
+        if(!Utilities::isDefined($saleHeader->cash_session_id) || $paymentLines->isEmpty()) {
 
             return;
 
         }
 
         CashMovement::insert($paymentLines
-            ->map(function ($payment) use ($saleHeader, $companyId, $branchId, $userId) {
+            ->map(function($payment) use ($saleHeader, $companyId, $branchId, $userId) {
 
                 return [
                     "company_id" => $companyId,
@@ -700,19 +706,21 @@ class SaleService {
             ->where("status", "active")
             ->exists();
 
-        if (! $exists) {
+        if(!$exists) {
 
             $hasActiveSeries = Serie::query()
                 ->where("branch_id", $branchId)
                 ->where("status", "active")
                 ->exists();
 
-            if (! $hasActiveSeries) {
+            if(!$hasActiveSeries) {
 
                 throw new Exception("La sucursal no tiene una serie activa. Crea o activa una serie antes de registrar la venta.");
+
             }
 
             throw new Exception("El comprobante seleccionado no está activo o no pertenece a la sucursal de la venta.");
+
         }
 
     }
@@ -759,7 +767,7 @@ class SaleService {
 
         $saleHeader = null;
 
-        DB::transaction(function () use ($data, $companyId, $userId, &$saleHeader) {
+        DB::transaction(function() use ($data, $companyId, $userId, &$saleHeader) {
 
             $cashSession = self::resolveCashSession($data, (int) $companyId, (int) $userId);
             $sellerId = self::resolveSellerId($data, (int) $companyId, (int) $userId);
@@ -783,14 +791,15 @@ class SaleService {
             // Get new sequential number
             $newSequential = SaleHeader::getNewSequential($data["serie_id"]);
 
-            if ($newSequential <= 0) {
+            if($newSequential <= 0) {
 
                 throw new Exception("No se pudo generar el número secuencial.");
+
             }
 
             // Calculate totals
             $grossSubtotal = self::calculateTotal($data["details"], (int) $companyId);
-            $commissionTotal = Utilities::round(array_reduce($data["details"], function ($carry, $detail) {
+            $commissionTotal = Utilities::round(array_reduce($data["details"], function($carry, $detail) {
 
                 return $carry + (float) ($detail["commission_amount"] ?? 0);
 
@@ -798,13 +807,13 @@ class SaleService {
             $selectedTaxIds = collect($data["taxes"] ?? [])
                 ->pluck("tax_id")
                 ->filter()
-                ->map(fn ($id) => (int) $id)
+                ->map(fn($id) => (int) $id)
                 ->unique()
                 ->values()
                 ->all();
             $selectedTaxQuantities = collect($data["taxes"] ?? [])
-                ->filter(fn ($tax) => ! empty($tax["tax_id"]))
-                ->mapWithKeys(fn ($tax) => [(int) $tax["tax_id"] => (float) ($tax["quantity"] ?? 1)])
+                ->filter(fn($tax) => !empty($tax["tax_id"]))
+                ->mapWithKeys(fn($tax) => [(int) $tax["tax_id"] => (float) ($tax["quantity"] ?? 1)])
                 ->all();
             $taxLines = CommercialDocumentSettlementService::saleTaxes(
                 (int) $companyId,
@@ -841,9 +850,10 @@ class SaleService {
                 ? Utilities::round($baseTotal - $paidAmount, null, (int) $companyId)
                 : 0.0;
 
-            if ($paymentModality === CommercialCreditAccountService::INSTALLMENTS && $financedPrincipal <= 0) {
+            if($paymentModality === CommercialCreditAccountService::INSTALLMENTS && $financedPrincipal <= 0) {
 
                 throw new \DomainException("El crédito en cuotas requiere un saldo pendiente por financiar.");
+
             }
 
             $installmentExtraPercentage = $paymentModality === CommercialCreditAccountService::INSTALLMENTS && $financedPrincipal > 0
@@ -902,10 +912,10 @@ class SaleService {
                 (string) ($data["source_channel"] ?? "sale")
             );
 
-            if ($taxLines->isNotEmpty()) {
+            if($taxLines->isNotEmpty()) {
 
                 SaleTax::insert($taxLines
-                    ->map(function ($tax) use ($saleHeader) {
+                    ->map(function($tax) use ($saleHeader) {
 
                         unset($tax["_total_impact"]);
 
@@ -916,10 +926,10 @@ class SaleService {
 
             }
 
-            if ($paymentLines->isNotEmpty()) {
+            if($paymentLines->isNotEmpty()) {
 
                 SalePayment::insert($paymentLines
-                    ->map(fn ($payment) => ["sale_header_id" => $saleHeader->id] + $payment)
+                    ->map(fn($payment) => ["sale_header_id" => $saleHeader->id] + $payment)
                     ->all());
 
                 self::createCashMovements($saleHeader, $paymentLines, (int) $companyId, (int) $data["branch_id"], (int) $userId);
@@ -937,12 +947,12 @@ class SaleService {
             $saleBodies = collect();
 
             // Create sale bodies and process details
-            foreach ($data["details"] as $detail) {
+            foreach($data["details"] as $detail) {
 
                 $saleBody = self::createSaleBody($saleHeader, $detail, $userId);
                 $saleBodies->push($saleBody);
 
-                if ($warehouse && SaleDeliveryPolicy::shouldExitInventory($deliveryStatus, $requiresWarehouse)) {
+                if($warehouse && SaleDeliveryPolicy::shouldExitInventory($deliveryStatus, $requiresWarehouse)) {
 
                     self::applyInventoryExit($warehouse, $saleBody, $detail, $userId);
 
@@ -954,7 +964,7 @@ class SaleService {
 
             }
 
-            if ($warehouse && SaleDeliveryPolicy::shouldCreatePendingDelivery($deliveryStatus, $requiresWarehouse)) {
+            if($warehouse && SaleDeliveryPolicy::shouldCreatePendingDelivery($deliveryStatus, $requiresWarehouse)) {
 
                 SaleDeliveryService::createPendingForSale($saleHeader, $saleBodies, (int) $warehouse->id, (int) $userId);
 
@@ -967,7 +977,7 @@ class SaleService {
                 (int) $userId
             );
 
-            if (Utilities::isDefined($data["service_session_id"] ?? null)) {
+            if(Utilities::isDefined($data["service_session_id"] ?? null)) {
 
                 ServiceOperationService::attachSale(
                     (int) $companyId,
@@ -978,7 +988,7 @@ class SaleService {
 
             }
 
-            if (Utilities::isDefined($data["quotation_header_id"] ?? null)) {
+            if(Utilities::isDefined($data["quotation_header_id"] ?? null)) {
 
                 QuotationHeader::query()
                     ->where("company_id", $companyId)
@@ -1018,7 +1028,7 @@ class SaleService {
         $stockRestored = false;
         $restoreStockPolicyEnabled = false;
 
-        DB::transaction(function () use (
+        DB::transaction(function() use (
             $saleHeader,
             $companyId,
             $userId,
@@ -1033,9 +1043,10 @@ class SaleService {
                 false
             );
 
-            if (! in_array($saleHeader->status, ["active"])) {
+            if(!in_array($saleHeader->status, ["active"])) {
 
                 throw new Exception("La venta no puede ser anulada.");
+
             }
 
             $saleHeader->loadMissing(
@@ -1076,26 +1087,27 @@ class SaleService {
                     ->groupBy("origin_id")
                 : collect();
 
-            $inventoryPositions = $allPositions->filter(fn ($position) => $position->type === "product" || $saleMovements->has($position->id)
+            $inventoryPositions = $allPositions->filter(fn($position) => $position->type === "product" || $saleMovements->has($position->id)
             );
 
-            if ($restoreStockPolicyEnabled
+            if($restoreStockPolicyEnabled
                 && $productPositions->isNotEmpty()
-                && ! $fallbackWarehouse
-                && $productPositions->contains(fn ($position) => ! $saleMovements->has($position->id))) {
+                && !$fallbackWarehouse
+                && $productPositions->contains(fn($position) => !$saleMovements->has($position->id))) {
 
                 throw new Exception("No se encontró el almacén asociado a la venta.");
+
             }
 
-            if ($restoreStockPolicyEnabled && $inventoryPositions->isNotEmpty()) {
+            if($restoreStockPolicyEnabled && $inventoryPositions->isNotEmpty()) {
 
-                foreach ($inventoryPositions as $saleBody) {
+                foreach($inventoryPositions as $saleBody) {
 
                     $positionMovements = $saleMovements->get($saleBody->id, collect());
 
-                    if ($positionMovements->isEmpty()) {
+                    if($positionMovements->isEmpty()) {
 
-                        if ($saleBody->type !== "product") {
+                        if($saleBody->type !== "product") {
 
                             continue;
 
@@ -1111,11 +1123,12 @@ class SaleService {
 
                     }
 
-                    foreach ($positionMovements as $movement) {
+                    foreach($positionMovements as $movement) {
 
-                        if ((int) $movement->warehouse_id <= 0) {
+                        if((int) $movement->warehouse_id <= 0) {
 
                             throw new Exception("No se encontró el almacén original de uno de los productos.");
+
                         }
 
                         InventoryMovementService::apply([
@@ -1240,8 +1253,10 @@ class SaleService {
             ? null
             : \App\Services\System\Base\CompanyReferenceDataService::for($companyId, $userId)->allowedBranchIds();
 
-        if ($branchIds !== null) {
+        if($branchIds !== null) {
+
             $branchQuery->whereIn("id", $branchIds);
+
         }
 
         $branches = $branchQuery->get();
@@ -1268,49 +1283,49 @@ class SaleService {
      */
     private static function applyFilters($query, array $filters): void {
 
-        if (Utilities::isDefined($filters["serie_id"])) {
+        if(Utilities::isDefined($filters["serie_id"])) {
 
             $query->where("serie_id", $filters["serie_id"]);
 
         }
 
-        if (Utilities::isDefined($filters["sequential"])) {
+        if(Utilities::isDefined($filters["sequential"])) {
 
             $query->where("sequential", $filters["sequential"]);
 
         }
 
-        if (Utilities::isDefined($filters["issue_date"])) {
+        if(Utilities::isDefined($filters["issue_date"])) {
 
             $query->where("issue_date", $filters["issue_date"]);
 
         }
 
-        if (Utilities::isDefined($filters["start_date"])) {
+        if(Utilities::isDefined($filters["start_date"])) {
 
             $query->where("issue_date", ">=", Utilities::startOfDay($filters["start_date"]));
 
         }
 
-        if (Utilities::isDefined($filters["end_date"])) {
+        if(Utilities::isDefined($filters["end_date"])) {
 
             $query->where("issue_date", "<=", Utilities::endOfDay($filters["end_date"]));
 
         }
 
-        if (Utilities::isDefined($filters["branch_id"])) {
+        if(Utilities::isDefined($filters["branch_id"])) {
 
-            $query->whereHas("serie", fn ($serie) => $serie->where("branch_id", $filters["branch_id"]));
+            $query->whereHas("serie", fn($serie) => $serie->where("branch_id", $filters["branch_id"]));
 
         }
 
-        if (Utilities::isDefined($filters["holder_id"])) {
+        if(Utilities::isDefined($filters["holder_id"])) {
 
             $query->where("holder_id", $filters["holder_id"]);
 
         }
 
-        if (Utilities::isDefined($filters["status"])) {
+        if(Utilities::isDefined($filters["status"])) {
 
             $query->where("status", $filters["status"]);
 

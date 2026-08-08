@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Models\System\Catalogs;
 
-use App\Helpers\System\Utilities;
-use App\Models\System\Organizations\Company;
-use Illuminate\Database\Eloquent\Model;
+use App\Helpers\System\{Utilities};
+use App\Models\System\Organizations\{Company};
+use Illuminate\Database\Eloquent\{Model};
 
 class Brand extends Model {
     protected $table = "brands";

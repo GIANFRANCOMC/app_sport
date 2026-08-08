@@ -1,8 +1,8 @@
 <?php
 
-use App\Helpers\System\Utilities;
-use Illuminate\Support\Facades\Facade;
-use Illuminate\Support\ServiceProvider;
+use App\Helpers\System\{Utilities};
+use Illuminate\Support\Facades\{Facade};
+use Illuminate\Support\{ServiceProvider};
 
 return [
 

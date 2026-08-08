@@ -30,7 +30,7 @@
                 </p>
 
                 <div style="text-align: center; margin: 25px 0;">
-                    @foreach ($touchpoints as $touchpoint)
+                    @foreach($touchpoints as $touchpoint)
                         <a href="{{ $touchpoint->link }}" target="_blank" style="background-color: {{ $ownerApp->color_palette->secondary }}; color: white; padding: 14px 25px; text-decoration: none; border-radius: 6px; font-size: 16px; font-weight: bold; box-shadow: 0 3px 6px rgba(0,0,0,0.15);">
                             Renovar ahora
                         </a>
@@ -58,7 +58,7 @@
                     <li>Asesoría personalizada con instructores</li>
                     <li>Descuentos exclusivos en tienda</li>
                 </ul>
-                @if (!empty($whatsapp?->link))
+                @if(!empty($whatsapp?->link))
                     <p style="font-size: 14px; color: #555; margin-top: 20px;">
                         ¿Tienes dudas? <a href="{{ $whatsapp->link }}" target="_blank" style="color: #2899E5; text-decoration: none;">Escríbenos por WhatsApp</a>, responde este correo o visítanos.
                     </p>

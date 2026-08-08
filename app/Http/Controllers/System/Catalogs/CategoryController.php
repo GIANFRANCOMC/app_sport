@@ -5,14 +5,11 @@ declare(strict_types=1);
 namespace App\Http\Controllers\System\Catalogs;
 
 use App\Helpers\System\{Utilities};
-use App\Http\Controllers\System\Base\BaseController;
-use App\Http\Requests\System\Catalogs\Categories\StoreCategoryRequest;
-use App\Http\Requests\System\Catalogs\Categories\UpdateCategoryRequest;
+use App\Http\Controllers\System\Base\{BaseController};
+use App\Http\Requests\System\Catalogs\Categories\{StoreCategoryRequest, UpdateCategoryRequest};
 use App\Services\System\Base\{InitParamsCacheInvalidationService};
-use App\Services\System\Catalogs\Categories\CategoryConfigService;
-use App\Services\System\Catalogs\Categories\CategoryService;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
+use App\Services\System\Catalogs\Categories\{CategoryConfigService, CategoryService};
+use Illuminate\Http\{JsonResponse, Request};
 
 class CategoryController extends BaseController {
     /**
@@ -68,7 +65,7 @@ class CategoryController extends BaseController {
             $data = $this->prepareCategoryData($request);
             $category = CategoryService::create($data, $this->getCompanyId(), $this->getUserId());
 
-            if (! Utilities::isDefined($category)) {
+            if(!Utilities::isDefined($category)) {
 
                 return $this->errorResponse("create_failed");
 
@@ -81,7 +78,7 @@ class CategoryController extends BaseController {
 
             return $this->createdResponse($category, "created", "category");
 
-        } catch (\Exception $e) {
+        } catch(\Exception $e) {
 
             return $this->handleException($e, "create");
 
@@ -100,7 +97,7 @@ class CategoryController extends BaseController {
 
             $category = CategoryService::findByIdAndCompany($id, $this->getCompanyId(), null);
 
-            if (! Utilities::isDefined($category)) {
+            if(!Utilities::isDefined($category)) {
 
                 return $this->notFoundResponse();
 
@@ -109,7 +106,7 @@ class CategoryController extends BaseController {
             $data = $this->prepareCategoryData($request);
             $category = CategoryService::update($category, $data, $this->getUserId());
 
-            if (! Utilities::isDefined($category)) {
+            if(!Utilities::isDefined($category)) {
 
                 return $this->errorResponse("update_failed");
 
@@ -122,11 +119,11 @@ class CategoryController extends BaseController {
 
             return $this->updatedResponse($category, "updated", "category");
 
-        } catch (\DomainException $exception) {
+        } catch(\DomainException $exception) {
 
             return response()->json(["bool" => false, "msg" => $exception->getMessage()], 422);
 
-        } catch (\Exception $e) {
+        } catch(\Exception $e) {
 
             return $this->handleException($e, "update");
 
@@ -143,6 +140,7 @@ class CategoryController extends BaseController {
     public function destroy(int $id): JsonResponse {
 
         try {
+
             CategoryService::delete($this->getCompanyId(), $id);
             InitParamsCacheInvalidationService::invalidate(
                 InitParamsCacheInvalidationService::CATEGORIES,
@@ -150,8 +148,11 @@ class CategoryController extends BaseController {
             );
 
             return response()->json(["bool" => true, "msg" => "Categoría eliminada correctamente."]);
-        } catch (\DomainException $exception) {
+
+        } catch(\DomainException $exception) {
+
             return response()->json(["bool" => false, "msg" => $exception->getMessage()], 422);
+
         }
 
     }

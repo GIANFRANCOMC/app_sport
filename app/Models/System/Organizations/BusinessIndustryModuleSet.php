@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Models\System\Organizations;
 
-use App\Models\System\General\SubSection;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\System\General\{SubSection};
+use Illuminate\Database\Eloquent\{Model};
 
 final class BusinessIndustryModuleSet extends Model {
     protected $table = "business_industry_module_sets";

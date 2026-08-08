@@ -5,9 +5,8 @@ declare(strict_types=1);
 namespace App\Rules\System\Defaults;
 
 use Closure;
-use Illuminate\Contracts\Validation\ValidationRule;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Contracts\Validation\{ValidationRule};
+use Illuminate\Support\Facades\{Auth, DB};
 
 /**
  * Validation rule to verify that a record belongs to the company of the authenticated user
@@ -71,7 +70,7 @@ class BelongsToCompany implements ValidationRule {
 
         $user = Auth::user();
 
-        if (! $user || ! $user->company_id) {
+        if(!$user || !$user->company_id) {
 
             $message = $this->customMessage ?? "El registro seleccionado no pertenece a su empresa.";
             $fail($message);
@@ -82,11 +81,12 @@ class BelongsToCompany implements ValidationRule {
 
         $query = DB::table($this->table);
 
-        foreach ($this->joins as $join) {
+        foreach($this->joins as $join) {
 
-            if (count($join) !== 4) {
+            if(count($join) !== 4) {
 
                 throw new \InvalidArgumentException("Company ownership joins require table, first column, operator and second column.");
+
             }
 
             $query->join($join[0], $join[1], $join[2], $join[3]);
@@ -96,13 +96,13 @@ class BelongsToCompany implements ValidationRule {
         $query->where($this->keyColumn, $value)
             ->where($this->companyColumn, $user->company_id);
 
-        foreach ($this->extraWhere as $field => $extraValue) {
+        foreach($this->extraWhere as $field => $extraValue) {
 
             $query->where((string) $field, $extraValue);
 
         }
 
-        if (! $query->exists()) {
+        if(!$query->exists()) {
 
             $message = $this->customMessage ?? "El registro seleccionado no pertenece a su empresa.";
             $fail($message);

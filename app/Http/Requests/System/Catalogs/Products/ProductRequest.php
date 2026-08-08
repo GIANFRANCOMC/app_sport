@@ -4,14 +4,12 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\System\Catalogs\Products;
 
-use App\Http\Requests\System\Base\CompanyFormRequest;
-use App\Models\System\Catalogs\Brand;
-use App\Models\System\Catalogs\Item;
-use App\Rules\System\Catalogs\ValidEan13;
-use App\Rules\System\Defaults\BelongsToCompany;
-use App\Rules\System\Defaults\UniqueInCompany;
-use App\Services\System\Base\InternalCodeService;
-use Illuminate\Validation\Validator;
+use App\Http\Requests\System\Base\{CompanyFormRequest};
+use App\Models\System\Catalogs\{Brand, Item};
+use App\Rules\System\Catalogs\{ValidEan13};
+use App\Rules\System\Defaults\{BelongsToCompany, UniqueInCompany};
+use App\Services\System\Base\{InternalCodeService};
+use Illuminate\Validation\{Validator};
 
 abstract class ProductRequest extends CompanyFormRequest {
     public function rules(): array {
@@ -99,7 +97,7 @@ abstract class ProductRequest extends CompanyFormRequest {
     public function after(): array {
 
         return [
-            function (Validator $validator) {
+            function(Validator $validator) {
 
                 $this->validatePriceRange($validator);
                 $this->validateCommission($validator);
@@ -150,13 +148,13 @@ abstract class ProductRequest extends CompanyFormRequest {
 
     private function validateCapacity(Validator $validator): void {
 
-        if ($validator->errors()->has("capacity_limit") || ! $this->boolean("capacity_control_enabled")) {
+        if($validator->errors()->has("capacity_limit") || !$this->boolean("capacity_control_enabled")) {
 
             return;
 
         }
 
-        if (! $this->filled("capacity_limit")) {
+        if(!$this->filled("capacity_limit")) {
 
             $validator->errors()->add("capacity_limit", "Indica cuántos cupos estarán disponibles.");
 
@@ -170,7 +168,7 @@ abstract class ProductRequest extends CompanyFormRequest {
             ->where("type", "product")
             ->value("capacity_used");
 
-        if ($currentUsed !== null && (int) $this->input("capacity_limit") < (int) $currentUsed) {
+        if($currentUsed !== null && (int) $this->input("capacity_limit") < (int) $currentUsed) {
 
             $validator->errors()->add("capacity_limit", "No puede ser menor que los cupos ya consumidos.");
 
@@ -180,7 +178,7 @@ abstract class ProductRequest extends CompanyFormRequest {
 
     private function validateCommission(Validator $validator): void {
 
-        if ($validator->errors()->hasAny(["commission_type", "commission_value"])) {
+        if($validator->errors()->hasAny(["commission_type", "commission_value"])) {
 
             return;
 
@@ -189,13 +187,13 @@ abstract class ProductRequest extends CompanyFormRequest {
         $type = (string) $this->input("commission_type", "none");
         $value = (float) ($this->input("commission_value") ?? 0);
 
-        if ($type !== "none" && $value <= 0) {
+        if($type !== "none" && $value <= 0) {
 
             $validator->errors()->add("commission_value", "Debe ser mayor que 0 cuando el producto tiene comision.");
 
         }
 
-        if ($type === "percentage" && $value > 100) {
+        if($type === "percentage" && $value > 100) {
 
             $validator->errors()->add("commission_value", "No puede superar el 100%.");
 
@@ -205,7 +203,7 @@ abstract class ProductRequest extends CompanyFormRequest {
 
     private function validatePriceRange(Validator $validator): void {
 
-        if ($validator->errors()->hasAny(["price", "min_price", "max_price"])) {
+        if($validator->errors()->hasAny(["price", "min_price", "max_price"])) {
 
             return;
 
@@ -215,19 +213,19 @@ abstract class ProductRequest extends CompanyFormRequest {
         $minimum = $this->positiveNumberOrNull($this->input("min_price"));
         $maximum = $this->positiveNumberOrNull($this->input("max_price"));
 
-        if ($minimum !== null && $minimum > $price) {
+        if($minimum !== null && $minimum > $price) {
 
             $validator->errors()->add("min_price", "No puede ser mayor que el precio de venta.");
 
         }
 
-        if ($maximum !== null && $maximum < $price) {
+        if($maximum !== null && $maximum < $price) {
 
             $validator->errors()->add("max_price", "No puede ser menor que el precio de venta.");
 
         }
 
-        if ($minimum !== null && $maximum !== null && $minimum > $maximum) {
+        if($minimum !== null && $maximum !== null && $minimum > $maximum) {
 
             $validator->errors()->add("max_price", "No puede ser menor que el precio mínimo.");
 
@@ -237,7 +235,7 @@ abstract class ProductRequest extends CompanyFormRequest {
 
     private function validateBrandStatus(Validator $validator): void {
 
-        if ($validator->errors()->has("brand_id") || ! $this->filled("brand_id")) {
+        if($validator->errors()->has("brand_id") || !$this->filled("brand_id")) {
 
             return;
 
@@ -248,7 +246,7 @@ abstract class ProductRequest extends CompanyFormRequest {
             ->where("company_id", $this->user()?->company_id)
             ->first();
 
-        if (! $brand || $brand->status === "active") {
+        if(!$brand || $brand->status === "active") {
 
             return;
 
@@ -260,7 +258,7 @@ abstract class ProductRequest extends CompanyFormRequest {
             ->where("type", "product")
             ->value("brand_id");
 
-        if ((int) $currentBrandId !== (int) $brand->id) {
+        if((int) $currentBrandId !== (int) $brand->id) {
 
             $validator->errors()->add("brand_id", "La marca seleccionada está inactiva.");
 
@@ -270,7 +268,7 @@ abstract class ProductRequest extends CompanyFormRequest {
 
     private function normalizeOptionalNumber(mixed $value): mixed {
 
-        if ($value === null || $value === "") {
+        if($value === null || $value === "") {
 
             return null;
 
@@ -283,9 +281,9 @@ abstract class ProductRequest extends CompanyFormRequest {
     private function normalizeInventory(): array {
 
         return collect($this->input("inventory", []))
-            ->map(function ($inventory) {
+            ->map(function($inventory) {
 
-                if (! is_array($inventory)) {
+                if(!is_array($inventory)) {
 
                     return $inventory;
 

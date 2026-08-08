@@ -4,13 +4,11 @@ declare(strict_types=1);
 
 namespace App\Services\System\Assets;
 
-use App\Helpers\System\Utilities;
-use App\Models\System\Assets\AssetAssignment;
-use App\Models\System\Assets\AssetAssignmentLog;
-use App\Models\System\Assets\BranchAsset;
+use App\Helpers\System\{Utilities};
+use App\Models\System\Assets\{AssetAssignment, AssetAssignmentLog, BranchAsset};
 use App\Models\System\Organizations\{Branch};
-use Illuminate\Pagination\LengthAwarePaginator;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Pagination\{LengthAwarePaginator};
+use Illuminate\Support\Facades\{DB};
 
 /**
  * Service class for managing Asset Management operations
@@ -60,7 +58,7 @@ class AssetManagementService {
             ->with("company")
             ->first();
 
-        if (! $branch) {
+        if(!$branch) {
 
             return $information;
 
@@ -68,15 +66,15 @@ class AssetManagementService {
 
         $company = $branch->company;
 
-        DB::transaction(function () use ($branchId, $branchAssets, $company, $userId, &$information) {
+        DB::transaction(function() use ($branchId, $branchAssets, $company, $userId, &$information) {
 
-            foreach ($branchAssets as $record) {
+            foreach($branchAssets as $record) {
 
                 $branchAsset = BranchAsset::where("branch_id", $branchId)
                     ->where("asset_id", $record["asset_id"])
                     ->first();
 
-                if (! Utilities::isDefined($branchAsset)) {
+                if(!Utilities::isDefined($branchAsset)) {
 
                     $branchAsset = new BranchAsset();
                     $branchAsset->company_id = $company->id;
@@ -106,9 +104,9 @@ class AssetManagementService {
                     $information["success"]["counter"]++;
                     $information["success"]["data"][] = ["asset_id" => $record["asset_id"]];
 
-                } else {
+                }else {
 
-                    if (Utilities::isDefined($branchAsset) && in_array($branchAsset->status, ["retired"])) {
+                    if(Utilities::isDefined($branchAsset) && in_array($branchAsset->status, ["retired"])) {
 
                         $branchAsset->currency_id = $company->currency_id;
                         $branchAsset->quantity = $record["quantity"];
@@ -134,7 +132,7 @@ class AssetManagementService {
                         $information["success"]["counter"]++;
                         $information["success"]["data"][] = ["asset_id" => $record["asset_id"]];
 
-                    } else {
+                    }else {
 
                         $information["error"]["counter"]++;
                         $information["error"]["data"][] = ["asset_id" => $record["asset_id"]];
@@ -172,9 +170,9 @@ class AssetManagementService {
             ],
         ];
 
-        DB::transaction(function () use ($branchId, $branchAssets, $userId, &$information) {
+        DB::transaction(function() use ($branchId, $branchAssets, $userId, &$information) {
 
-            foreach ($branchAssets as $record) {
+            foreach($branchAssets as $record) {
 
                 $branchAsset = BranchAsset::where("id", $record["id"])
                     ->where("branch_id", $branchId)
@@ -182,7 +180,7 @@ class AssetManagementService {
                     ->whereIn("status", ["active", "maintenance"])
                     ->first();
 
-                if (Utilities::isDefined($branchAsset)) {
+                if(Utilities::isDefined($branchAsset)) {
 
                     $branchAsset->status = "retired";
                     $branchAsset->updated_at = now();
@@ -203,7 +201,7 @@ class AssetManagementService {
                     $information["success"]["counter"]++;
                     $information["success"]["data"][] = ["asset_id" => $record["asset_id"]];
 
-                } else {
+                }else {
 
                     $information["error"]["counter"]++;
                     $information["error"]["data"][] = ["asset_id" => $record["asset_id"]];
@@ -235,13 +233,13 @@ class AssetManagementService {
             ->whereIn("status", ["active", "maintenance"])
             ->first();
 
-        if (! Utilities::isDefined($branchAsset)) {
+        if(!Utilities::isDefined($branchAsset)) {
 
             return null;
 
         }
 
-        DB::transaction(function () use ($branchAsset, $data, $userId) {
+        DB::transaction(function() use ($branchAsset, $data, $userId) {
 
             $branchAsset->quantity = $data["quantity"] ?? 0;
             $branchAsset->acquisition_value = $data["acquisition_value"] ?? 0;
@@ -303,28 +301,28 @@ class AssetManagementService {
             ->whereIn("status", ["active", "maintenance"])
             ->first();
 
-        if (! Utilities::isDefined($branchAsset)) {
+        if(!Utilities::isDefined($branchAsset)) {
 
             return $information;
 
         }
 
         $assetQuantity = floatval($branchAsset->quantity);
-        $totalQuantity = array_reduce($assignments, function ($accumulator, $currentValue) {
+        $totalQuantity = array_reduce($assignments, function($accumulator, $currentValue) {
 
             return $accumulator + floatval($currentValue["quantity"] ?? 0);
 
         }, 0);
 
-        if ($totalQuantity > $assetQuantity) {
+        if($totalQuantity > $assetQuantity) {
 
             return $information;
 
         }
 
-        DB::transaction(function () use ($branchAsset, $assignments, $userId, &$information) {
+        DB::transaction(function() use ($branchAsset, $assignments, $userId, &$information) {
 
-            foreach ($assignments as $record) {
+            foreach($assignments as $record) {
 
                 $data = [
                     "company_id" => $branchAsset->company_id,
@@ -341,7 +339,7 @@ class AssetManagementService {
                     "updated_by" => $userId,
                 ];
 
-                if (is_numeric($record["id"] ?? null)) {
+                if(is_numeric($record["id"] ?? null)) {
 
                     $assetAssignment = AssetAssignment::query()
                         ->where("company_id", $branchAsset->company_id)
@@ -349,13 +347,13 @@ class AssetManagementService {
                         ->where("asset_id", $branchAsset->asset_id)
                         ->find((int) $record["id"]);
 
-                    if ($assetAssignment) {
+                    if($assetAssignment) {
 
                         $assetAssignment->fill($data)->save();
 
                     }
 
-                } else {
+                }else {
 
                     $data["created_at"] = now();
                     $data["created_by"] = $userId;
@@ -364,9 +362,9 @@ class AssetManagementService {
 
                 }
 
-                if (Utilities::isDefined($assetAssignment)) {
+                if(Utilities::isDefined($assetAssignment)) {
 
-                    if ($assetAssignment instanceof AssetAssignment) {
+                    if($assetAssignment instanceof AssetAssignment) {
 
                         self::recordLog([
                             "company_id" => $branchAsset->company_id,
@@ -386,7 +384,7 @@ class AssetManagementService {
                     $information["success"]["counter"]++;
                     $information["success"]["data"][] = ["asset_id" => $branchAsset->asset_id];
 
-                } else {
+                }else {
 
                     $information["error"]["counter"]++;
                     $information["error"]["data"][] = ["asset_id" => $branchAsset->asset_id];
@@ -430,15 +428,15 @@ class AssetManagementService {
             ->whereIn("status", ["active", "maintenance"])
             ->first();
 
-        if (! Utilities::isDefined($branchAsset)) {
+        if(!Utilities::isDefined($branchAsset)) {
 
             return $information;
 
         }
 
-        DB::transaction(function () use ($branchAsset, $assignments, $userId, &$information) {
+        DB::transaction(function() use ($branchAsset, $assignments, $userId, &$information) {
 
-            foreach ($assignments as $record) {
+            foreach($assignments as $record) {
 
                 $assetAssignment = AssetAssignment::where("company_id", $branchAsset->company_id)
                     ->where("id", $record["id"])
@@ -448,7 +446,7 @@ class AssetManagementService {
                     ->whereIn("status", ["active", "maintenance"])
                     ->first();
 
-                if (Utilities::isDefined($assetAssignment)) {
+                if(Utilities::isDefined($assetAssignment)) {
 
                     $assetAssignment->status = "retired";
                     $assetAssignment->updated_at = now();
@@ -471,7 +469,7 @@ class AssetManagementService {
                     $information["success"]["counter"]++;
                     $information["success"]["data"][] = ["asset_id" => $branchAsset->asset_id];
 
-                } else {
+                }else {
 
                     $information["error"]["counter"]++;
                     $information["error"]["data"][] = ["asset_id" => $branchAsset->asset_id];

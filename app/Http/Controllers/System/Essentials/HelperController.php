@@ -4,18 +4,13 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\System\Essentials;
 
-use App\Helpers\System\ApiResponse;
-use App\Helpers\System\Utilities;
-use App\Http\Controllers\System\Base\BaseController;
-use App\Mail\SaleMail;
-use App\Models\System\Sales\SaleHeader;
-use App\Services\System\Organizations\Companies\CompanySettingService;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\Facades\Validator;
+use App\Helpers\System\{ApiResponse, Utilities};
+use App\Http\Controllers\System\Base\{BaseController};
+use App\Mail\{SaleMail};
+use App\Models\System\Sales\{SaleHeader};
+use App\Services\System\Organizations\Companies\{CompanySettingService};
+use Illuminate\Http\{JsonResponse, Request};
+use Illuminate\Support\Facades\{DB, Mail, Schema, Validator};
 use stdClass;
 
 class HelperController extends BaseController {
@@ -41,7 +36,7 @@ class HelperController extends BaseController {
             "type.in" => "El tipo de documento debe ser DNI o RUC.",
         ]);
 
-        if ($validator->fails()) {
+        if($validator->fails()) {
 
             $this->logExternalApiRequest($request, $companyId, $user->id ?? null, "blocked");
 
@@ -52,7 +47,7 @@ class HelperController extends BaseController {
 
         }
 
-        if (empty($company->token_api_misc)) {
+        if(empty($company->token_api_misc)) {
 
             $this->logExternalApiRequest($request, $companyId, $user->id ?? null, "blocked");
 
@@ -73,7 +68,7 @@ class HelperController extends BaseController {
         $usage = $this->getExternalApiMonthlyUsage($companyId);
         $data["external_request_usage"] = $usage;
 
-        if ($usage["has_warning"]) {
+        if($usage["has_warning"]) {
 
             $message .= " Este mes registra {$usage["used"]} consultas externas; revisa el consumo mensual.";
 
@@ -99,7 +94,7 @@ class HelperController extends BaseController {
                 "message.max" => "El mensaje no debe superar 5000 caracteres.",
             ]);
 
-            if ($validator->fails()) {
+            if($validator->fails()) {
 
                 return ApiResponse::validationError(
                     $validator->errors()->toArray(),
@@ -133,7 +128,7 @@ class HelperController extends BaseController {
 
             return ApiResponse::success(null, "Correo enviado correctamente.");
 
-        } catch (\Throwable $e) {
+        } catch(\Throwable $e) {
 
             return $this->handleException($e, "send_email");
 
@@ -171,7 +166,7 @@ class HelperController extends BaseController {
         $errorApi = curl_error($curlApi);
         curl_close($curlApi);
 
-        if ($errorApi) {
+        if($errorApi) {
 
             return [false, $errorApi, []];
 
@@ -180,7 +175,7 @@ class HelperController extends BaseController {
         $dataApi = json_decode((string) $responseApi);
         $success = (bool) ($dataApi->success ?? false);
 
-        if (! $success) {
+        if(!$success) {
 
             return [false, $dataApi->message ?? "No se encontró información para el documento.", []];
 
@@ -196,13 +191,13 @@ class HelperController extends BaseController {
 
     private function formatDocumentLookupData(string $type, ?object $data): array {
 
-        if (! $data) {
+        if(!$data) {
 
             return [];
 
         }
 
-        if ($type === "dni") {
+        if($type === "dni") {
 
             return [
                 "document_number" => $data->numero ?? "",
@@ -230,7 +225,7 @@ class HelperController extends BaseController {
         string $result
     ): void {
 
-        if (! Schema::hasTable("external_api_request_logs")) {
+        if(!Schema::hasTable("external_api_request_logs")) {
 
             return;
 
@@ -259,7 +254,7 @@ class HelperController extends BaseController {
             80
         ));
 
-        if (! Schema::hasTable("external_api_request_logs")) {
+        if(!Schema::hasTable("external_api_request_logs")) {
 
             return [
                 "month" => now()->format("Y-m"),

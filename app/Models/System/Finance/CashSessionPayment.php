@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models\System\Finance;
 
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\{Model};
 
 final class CashSessionPayment extends Model {
     protected $table = "cash_session_payments";

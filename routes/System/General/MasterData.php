@@ -1,7 +1,7 @@
 <?php
 
-use App\Http\Controllers\System\General\MasterDataController;
-use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\System\General\{MasterDataController};
+use Illuminate\Support\Facades\{Route};
 
 Route::get("", [MasterDataController::class, "index"])->name("master_data.index");
 Route::get("/{resource}", [MasterDataController::class, "list"])->name("master_data.list");

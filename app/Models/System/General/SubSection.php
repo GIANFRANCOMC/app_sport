@@ -2,10 +2,9 @@
 
 namespace App\Models\System\General;
 
-use App\Helpers\System\Utilities;
-use App\Models\System\Organizations\CompanySubSection;
-use App\Models\System\Organizations\RoleSubSection;
-use Illuminate\Database\Eloquent\Model;
+use App\Helpers\System\{Utilities};
+use App\Models\System\Organizations\{CompanySubSection, RoleSubSection};
+use Illuminate\Database\Eloquent\{Model};
 
 class SubSection extends Model {
     protected $table = "sub_sections";

@@ -5,9 +5,8 @@ declare(strict_types=1);
 namespace App\Rules\System\Defaults;
 
 use Closure;
-use Illuminate\Contracts\Validation\ValidationRule;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Contracts\Validation\{ValidationRule};
+use Illuminate\Support\Facades\{Auth, DB};
 
 /**
  * Validation rule to verify that a field value is unique within a table for a specific company_id
@@ -66,7 +65,7 @@ class UniqueInCompany implements ValidationRule {
 
         $user = Auth::user();
 
-        if (! $user || ! $user->company_id) {
+        if(!$user || !$user->company_id) {
 
             $fail("No se pudo validar la unicidad del campo.");
 
@@ -78,19 +77,19 @@ class UniqueInCompany implements ValidationRule {
             ->where($this->field, $value)
             ->where("company_id", $user->company_id);
 
-        foreach ($this->extraWhere as $field => $extraValue) {
+        foreach($this->extraWhere as $field => $extraValue) {
 
             $query->where((string) $field, $extraValue);
 
         }
 
-        if ($this->excludeId !== null) {
+        if($this->excludeId !== null) {
 
             $query->where("id", "!=", $this->excludeId);
 
         }
 
-        if ($query->exists()) {
+        if($query->exists()) {
 
             $fieldName = $this->attributeName ?? $attribute;
             $fail("El campo {$fieldName} ya está en uso.");

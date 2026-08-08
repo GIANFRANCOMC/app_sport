@@ -4,23 +4,14 @@ declare(strict_types=1);
 
 namespace App\Exports\System\Warehouses;
 
-use App\Services\System\Warehouses\Inventory\InventoryGuideService;
-use App\Services\System\Warehouses\StockManagement\StockManagementService;
-use Illuminate\Support\Collection;
-use Maatwebsite\Excel\Concerns\FromCollection;
-use Maatwebsite\Excel\Concerns\ShouldAutoSize;
-use Maatwebsite\Excel\Concerns\WithCustomValueBinder;
-use Maatwebsite\Excel\Concerns\WithEvents;
-use Maatwebsite\Excel\Concerns\WithHeadings;
-use Maatwebsite\Excel\Concerns\WithMapping;
-use Maatwebsite\Excel\Concerns\WithStyles;
-use Maatwebsite\Excel\Events\AfterSheet;
-use PhpOffice\PhpSpreadsheet\Cell\Cell;
-use PhpOffice\PhpSpreadsheet\Cell\DataType;
-use PhpOffice\PhpSpreadsheet\Cell\DefaultValueBinder;
-use PhpOffice\PhpSpreadsheet\Style\Alignment;
-use PhpOffice\PhpSpreadsheet\Style\Fill;
-use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
+use App\Services\System\Warehouses\Inventory\{InventoryGuideService};
+use App\Services\System\Warehouses\StockManagement\{StockManagementService};
+use Illuminate\Support\{Collection};
+use Maatwebsite\Excel\Concerns\{FromCollection, ShouldAutoSize, WithCustomValueBinder, WithEvents, WithHeadings, WithMapping, WithStyles};
+use Maatwebsite\Excel\Events\{AfterSheet};
+use PhpOffice\PhpSpreadsheet\Cell\{Cell, DataType, DefaultValueBinder};
+use PhpOffice\PhpSpreadsheet\Style\{Alignment, Fill};
+use PhpOffice\PhpSpreadsheet\Worksheet\{Worksheet};
 
 final class InventoryReportExport extends DefaultValueBinder implements FromCollection, ShouldAutoSize, WithCustomValueBinder, WithEvents, WithHeadings, WithMapping, WithStyles {
     private int $currentRow = 1;
@@ -36,9 +27,9 @@ final class InventoryReportExport extends DefaultValueBinder implements FromColl
 
     public function collection(): Collection {
 
-        if ($this->view === "stock") {
+        if($this->view === "stock") {
 
-            if (($this->filters["warehouse_id"] ?? null) === "all") {
+            if(($this->filters["warehouse_id"] ?? null) === "all") {
 
                 return StockManagementService::getConsolidatedStock(
                     $this->companyId,
@@ -56,7 +47,7 @@ final class InventoryReportExport extends DefaultValueBinder implements FromColl
 
         }
 
-        if ($this->view === "guides") {
+        if($this->view === "guides") {
 
             return InventoryGuideService::query($this->companyId, $this->filters)->get();
 
@@ -64,7 +55,7 @@ final class InventoryReportExport extends DefaultValueBinder implements FromColl
 
         $filters = $this->filters;
 
-        if ($this->view === "transfers") {
+        if($this->view === "transfers") {
 
             $filters["origin_types"] = ["transfer_in", "transfer_out"];
 
@@ -76,7 +67,7 @@ final class InventoryReportExport extends DefaultValueBinder implements FromColl
 
     public function headings(): array {
 
-        if ($this->view === "stock") {
+        if($this->view === "stock") {
 
             return [
                 "Código interno",
@@ -91,7 +82,7 @@ final class InventoryReportExport extends DefaultValueBinder implements FromColl
 
         }
 
-        if ($this->view === "valued") {
+        if($this->view === "valued") {
 
             return [
                 "Fecha",
@@ -113,7 +104,7 @@ final class InventoryReportExport extends DefaultValueBinder implements FromColl
 
         }
 
-        if ($this->view === "guides") {
+        if($this->view === "guides") {
 
             return [
                 "Número",
@@ -152,7 +143,7 @@ final class InventoryReportExport extends DefaultValueBinder implements FromColl
 
         $this->currentRow++;
 
-        if ($this->view === "stock") {
+        if($this->view === "stock") {
 
             $stock = (float) ($record->stock_quantity ?? 0);
             $minimum = (float) ($record->minimum_stock ?? 0);
@@ -160,7 +151,7 @@ final class InventoryReportExport extends DefaultValueBinder implements FromColl
                 ? "Sin existencias"
                 : ($stock <= $minimum ? "Stock bajo" : "Stock saludable");
 
-            if ($stock <= $minimum) {
+            if($stock <= $minimum) {
 
                 $this->attentionRows[] = $this->currentRow;
 
@@ -179,7 +170,7 @@ final class InventoryReportExport extends DefaultValueBinder implements FromColl
 
         }
 
-        if ($this->view === "valued") {
+        if($this->view === "valued") {
 
             return [
                 optional($record->created_at)->format("d/m/Y H:i"),
@@ -201,7 +192,7 @@ final class InventoryReportExport extends DefaultValueBinder implements FromColl
 
         }
 
-        if ($this->view === "guides") {
+        if($this->view === "guides") {
 
             return [
                 $record->number,
@@ -209,7 +200,7 @@ final class InventoryReportExport extends DefaultValueBinder implements FromColl
                 $record->warehouse?->name,
                 $record->warehouse?->branch?->name,
                 $record->guide_type === "entry" ? "Entrada" : "Salida",
-                $record->items->map(fn ($item) => $item->item?->name." x ".(float) $item->quantity)->implode("; "),
+                $record->items->map(fn($item) => $item->item?->name." x ".(float) $item->quantity)->implode("; "),
                 $record->reference,
                 $record->reason,
                 $record->status === "confirmed" ? "Confirmada" : $record->status,
@@ -269,7 +260,7 @@ final class InventoryReportExport extends DefaultValueBinder implements FromColl
             default => ["A", "B", "C", "D", "E", "F", "G", "K", "L", "M"]
         };
 
-        if ($cell->getRow() > 1 && in_array($cell->getColumn(), $textColumns, true)) {
+        if($cell->getRow() > 1 && in_array($cell->getColumn(), $textColumns, true)) {
 
             $cell->setValueExplicit((string) ($value ?? ""), DataType::TYPE_STRING);
 
@@ -284,9 +275,9 @@ final class InventoryReportExport extends DefaultValueBinder implements FromColl
     public function registerEvents(): array {
 
         return [
-            AfterSheet::class => function (AfterSheet $event) {
+            AfterSheet::class => function(AfterSheet $event) {
 
-                foreach ($this->attentionRows as $row) {
+                foreach($this->attentionRows as $row) {
 
                     $event->sheet->getStyle("D{$row}:H{$row}")->applyFromArray([
                         "font" => ["color" => ["rgb" => "92400E"]],
@@ -335,12 +326,14 @@ final class InventoryReportExport extends DefaultValueBinder implements FromColl
     private function warehouseBreakdownText($breakdown): string {
 
         return collect($breakdown)
-            ->map(function ($warehouse) {
+            ->map(function($warehouse) {
+
                 $branchName = $warehouse["branch_name"] ?? "";
                 $warehouseName = $warehouse["warehouse_name"] ?? "Almacén";
                 $location = trim(($branchName !== "" ? $branchName." / " : "").$warehouseName);
 
                 return $location.": ".($warehouse["quantity"] ?? 0);
+
             })
             ->implode("; ");
 

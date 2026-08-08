@@ -2,9 +2,9 @@
 
 namespace App\Models\System\General;
 
-use App\Helpers\System\Utilities;
+use App\Helpers\System\{Utilities};
 use App\Models\System\Organizations\{Serie};
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\{Model};
 
 class DocumentType extends Model {
     protected $table = "document_types";
@@ -37,13 +37,13 @@ class DocumentType extends Model {
         $value = trim((string) ($name ?: $code));
         $normalized = strtoupper($value);
 
-        if (str_contains($normalized, "BOLETA") || $normalized === "BV") {
+        if(str_contains($normalized, "BOLETA") || $normalized === "BV") {
 
             return "BOLETA";
 
         }
 
-        if ($normalized === "FA") {
+        if($normalized === "FA") {
 
             return "FACTURA";
 

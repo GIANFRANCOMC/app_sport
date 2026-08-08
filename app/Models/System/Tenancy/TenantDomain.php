@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models\System\Tenancy;
 
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\{Model};
 
 final class TenantDomain extends Model {
     protected $connection = "landlord";

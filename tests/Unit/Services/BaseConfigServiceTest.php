@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Services;
 
-use App\Services\System\Base\BaseConfigService;
+use App\Services\System\Base\{BaseConfigService};
 use stdClass;
-use Tests\TestCase;
+use Tests\{TestCase};
 
 final class TestConfigService extends BaseConfigService {
     protected static function getCachePrefix(): string {

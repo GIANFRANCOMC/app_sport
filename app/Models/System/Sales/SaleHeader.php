@@ -2,16 +2,16 @@
 
 namespace App\Models\System\Sales;
 
-use App\Helpers\System\Utilities;
+use App\Helpers\System\{Utilities};
 use App\Models\System\Customers\{Customer};
 use App\Models\System\Finance\{CashSession};
 use App\Models\System\General\{Currency};
 use App\Models\System\Organizations\{Serie};
 use App\Models\System\Organizations\{User};
 use App\Models\System\Warehouses\{Warehouse};
-use Carbon\Carbon;
+use Carbon\{Carbon};
 use Exception;
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\{Model};
 
 class SaleHeader extends Model {
     protected $table = "sales_header";
@@ -90,7 +90,7 @@ class SaleHeader extends Model {
 
             $serie_sequential = $this->serie->legible_serie."-".str_pad($this->sequential, 8, "0", STR_PAD_LEFT);
 
-        } catch (Exception $e) {
+        } catch(Exception $e) {
 
             $serie_sequential = "Error";
 
@@ -112,8 +112,10 @@ class SaleHeader extends Model {
 
         $issueDate = $this->attributes["issue_date"] ?? null;
 
-        if (! $issueDate) {
+        if(!$issueDate) {
+
             return 0;
+
         }
 
         $issueDateCarbon = Carbon::parse($issueDate);
@@ -239,7 +241,7 @@ class SaleHeader extends Model {
                 ->lockForUpdate()
                 ->first(["id", "init"]);
 
-            if (! Utilities::isDefined($serie)) {
+            if(!Utilities::isDefined($serie)) {
 
                 return 0;
 
@@ -248,17 +250,17 @@ class SaleHeader extends Model {
             $maxSequential = SaleHeader::where("serie_id", $serie_id)
                 ->max("sequential");
 
-            if (Utilities::isDefined($maxSequential)) {
+            if(Utilities::isDefined($maxSequential)) {
 
                 $newSequential = intval($maxSequential) + 1;
 
-            } else {
+            }else {
 
                 $newSequential = intval($serie->init);
 
             }
 
-        } catch (Exception $e) {
+        } catch(Exception $e) {
 
             $newSequential = 0;
 

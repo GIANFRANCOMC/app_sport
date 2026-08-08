@@ -10,8 +10,10 @@ final class TenantStoragePath {
     public static function for(string $relativePath): string {
 
         $tenant = app(TenantContext::class)->get();
-        if (! $tenant) {
+        if(!$tenant) {
+
             throw new RuntimeException("No existe un contexto tenant activo para almacenar el archivo.");
+
         }
 
         $cleanPath = trim(str_replace("..", "", str_replace("\\", "/", $relativePath)), "/");

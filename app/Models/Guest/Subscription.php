@@ -2,8 +2,8 @@
 
 namespace App\Models\Guest;
 
-use App\Helpers\System\Utilities;
-use Illuminate\Database\Eloquent\Model;
+use App\Helpers\System\{Utilities};
+use Illuminate\Database\Eloquent\{Model};
 
 class Subscription extends Model {
     protected $table = "subscriptions";
@@ -50,7 +50,7 @@ class Subscription extends Model {
     // Appends
     public function getFormattedDurationAttribute() {
 
-        if (Utilities::isDefined($this->duration_type) && Utilities::isDefined($this->duration_value)) {
+        if(Utilities::isDefined($this->duration_type) && Utilities::isDefined($this->duration_value)) {
 
             $prop = $this->duration_value > 1 ? "plural" : "label";
             $durationType = self::getDurationTypes("first", $this->attributes["duration_type"] ?? "")[$prop] ?? "";

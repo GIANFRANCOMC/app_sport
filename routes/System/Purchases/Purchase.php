@@ -1,7 +1,7 @@
 <?php
 
-use App\Http\Controllers\System\Purchases\PurchaseController;
-use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\System\Purchases\{PurchaseController};
+use Illuminate\Support\Facades\{Route};
 
 $entity = "purchases";
 

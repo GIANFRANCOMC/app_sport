@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers\Guest;
 
-use App\Http\Controllers\Controller;
-use App\Http\Requests\Guest\PublicAttendanceRequest;
-use App\Models\Guest\Branch;
-use App\Services\System\Customers\Tracking\TrackingAttendanceBusinessService;
-use Illuminate\Http\Request;
+use App\Http\Controllers\{Controller};
+use App\Http\Requests\Guest\{PublicAttendanceRequest};
+use App\Models\Guest\{Branch};
+use App\Services\System\Customers\Tracking\{TrackingAttendanceBusinessService};
+use Illuminate\Http\{Request};
 use stdClass;
 
 class TrackingAttendanceController extends Controller {
@@ -70,7 +70,7 @@ class TrackingAttendanceController extends Controller {
 
         $attendances = collect();
 
-        foreach ($request->validated("customers") as $customerRequest) {
+        foreach($request->validated("customers") as $customerRequest) {
 
             $result = $attendanceService->validateAndCreateAttendance([
                 "company_id" => $company->id,

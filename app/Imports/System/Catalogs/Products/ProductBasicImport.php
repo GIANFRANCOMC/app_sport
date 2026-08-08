@@ -4,19 +4,14 @@ declare(strict_types=1);
 
 namespace App\Imports\System\Catalogs\Products;
 
-use App\Models\System\Catalogs\Item;
-use App\Rules\System\Catalogs\ValidEan13;
-use App\Services\System\Base\InternalCodeService;
-use App\Services\System\Catalogs\Products\ProductService;
-use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Str;
-use Illuminate\Validation\Rule;
-use Illuminate\Validation\ValidationException;
-use Maatwebsite\Excel\Concerns\SkipsEmptyRows;
-use Maatwebsite\Excel\Concerns\ToCollection;
-use Maatwebsite\Excel\Concerns\WithHeadingRow;
+use App\Models\System\Catalogs\{Item};
+use App\Rules\System\Catalogs\{ValidEan13};
+use App\Services\System\Base\{InternalCodeService};
+use App\Services\System\Catalogs\Products\{ProductService};
+use Illuminate\Support\Facades\{DB, Validator};
+use Illuminate\Support\{Collection, Str};
+use Illuminate\Validation\{Rule, ValidationException};
+use Maatwebsite\Excel\Concerns\{SkipsEmptyRows, ToCollection, WithHeadingRow};
 
 final class ProductBasicImport implements SkipsEmptyRows, ToCollection, WithHeadingRow {
     private int $importedCount = 0;
@@ -31,7 +26,7 @@ final class ProductBasicImport implements SkipsEmptyRows, ToCollection, WithHead
 
     public function collection(Collection $rows): void {
 
-        if ($rows->count() > 500) {
+        if($rows->count() > 500) {
 
             throw ValidationException::withMessages([
                 "file" => ["El archivo puede contener como máximo 500 productos."],
@@ -39,25 +34,26 @@ final class ProductBasicImport implements SkipsEmptyRows, ToCollection, WithHead
 
         }
 
-        DB::transaction(function () use ($rows) {
+        DB::transaction(function() use ($rows) {
 
-            foreach ($rows as $index => $row) {
+            foreach($rows as $index => $row) {
 
                 $rowNumber = $index + 2;
                 $data = $this->normalizeRow($row->toArray());
                 $validator = $this->validator($data);
 
-                if ($validator->fails()) {
+                if($validator->fails()) {
 
                     $errors = [];
 
-                    foreach ($validator->errors()->toArray() as $field => $messages) {
+                    foreach($validator->errors()->toArray() as $field => $messages) {
 
                         $errors["file"][] = "Fila {$rowNumber}, {$this->fieldLabel($field)}: {$messages[0]}";
 
                     }
 
                     throw ValidationException::withMessages($errors);
+
                 }
 
                 ProductService::create([
@@ -159,7 +155,7 @@ final class ProductBasicImport implements SkipsEmptyRows, ToCollection, WithHead
                 Str::upper(Str::random(7))
             );
 
-        } while (Item::where("company_id", $this->companyId)
+        } while(Item::where("company_id", $this->companyId)
             ->where("type", "product")
             ->where("internal_code", $code)
             ->exists());
@@ -175,7 +171,7 @@ final class ProductBasicImport implements SkipsEmptyRows, ToCollection, WithHead
             $base = "200".str_pad((string) random_int(0, 999999999), 9, "0", STR_PAD_LEFT);
             $barcode = $base.$this->ean13CheckDigit($base);
 
-        } while (Item::where("company_id", $this->companyId)
+        } while(Item::where("company_id", $this->companyId)
             ->where("barcode", $barcode)
             ->exists());
 
@@ -187,7 +183,7 @@ final class ProductBasicImport implements SkipsEmptyRows, ToCollection, WithHead
 
         $sum = 0;
 
-        foreach (str_split($base) as $index => $digit) {
+        foreach(str_split($base) as $index => $digit) {
 
             $sum += (int) $digit * ($index % 2 === 0 ? 1 : 3);
 

@@ -1,7 +1,7 @@
 <?php
 
 use App\Http\Controllers\System\Assets\{AssetManagementController};
-use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\{Route};
 
 $entity = "assets_management";
 

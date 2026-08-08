@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\System\Base;
 
-use App\Http\Controllers\Controller;
-use App\Http\Controllers\System\Concerns\HandlesApiResponses;
-use App\Http\Controllers\System\Concerns\HandlesExceptions;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use App\Http\Controllers\System\Concerns\{HandlesApiResponses, HandlesExceptions};
+use App\Http\Controllers\{Controller};
+use Illuminate\Http\{Request};
+use Illuminate\Support\Facades\{Auth};
 
 /**
  * Base Controller for System Controllers

@@ -4,23 +4,16 @@ declare(strict_types=1);
 
 namespace App\Services\System\Base;
 
-use App\Models\System\Assets\Asset;
-use App\Models\System\Catalogs\Brand;
-use App\Models\System\Catalogs\Category;
-use App\Models\System\Catalogs\Item;
-use App\Models\System\Customers\Customer;
-use App\Models\System\Devices\BiometricDevice;
-use App\Models\System\Finance\CashRegister;
-use App\Models\System\Finance\PaymentMethod;
-use App\Models\System\Finance\Tax;
-use App\Models\System\Organizations\Branch;
-use App\Models\System\Organizations\Role;
-use App\Models\System\Organizations\User;
-use App\Models\System\Sales\SaleDeliveryMethod;
-use App\Models\System\Warehouses\Warehouse;
-use App\Services\System\Organizations\AccessScopeService;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Collection;
+use App\Models\System\Assets\{Asset};
+use App\Models\System\Catalogs\{Brand, Category, Item};
+use App\Models\System\Customers\{Customer};
+use App\Models\System\Devices\{BiometricDevice};
+use App\Models\System\Finance\{CashRegister, PaymentMethod, Tax};
+use App\Models\System\Organizations\{Branch, Role, User};
+use App\Models\System\Sales\{SaleDeliveryMethod};
+use App\Models\System\Warehouses\{Warehouse};
+use App\Services\System\Organizations\{AccessScopeService};
+use Illuminate\Database\Eloquent\{Builder, Collection};
 use InvalidArgumentException;
 
 /**
@@ -39,9 +32,10 @@ final class CompanyReferenceDataService {
         private readonly ?int $userId = null
     ) {
 
-        if ($companyId <= 0) {
+        if($companyId <= 0) {
 
             throw new InvalidArgumentException("Company ID must be greater than zero.");
+
         }
 
     }
@@ -76,7 +70,7 @@ final class CompanyReferenceDataService {
 
         $query = Warehouse::query()
             ->with("branch")
-            ->whereHas("branch", function ($query) {
+            ->whereHas("branch", function($query) {
 
                 $query->where("company_id", $this->companyId);
 
@@ -84,7 +78,7 @@ final class CompanyReferenceDataService {
             ->where("status", "active");
 
         $warehouseIds = $this->allowedWarehouseIds();
-        if ($warehouseIds !== null) {
+        if($warehouseIds !== null) {
 
             $query->whereIn("id", $warehouseIds);
 
@@ -119,8 +113,10 @@ final class CompanyReferenceDataService {
             ->where("status", "active");
         $cashRegisterIds = $this->allowedCashRegisterIds();
 
-        if ($cashRegisterIds !== null) {
+        if($cashRegisterIds !== null) {
+
             $query->whereIn("id", $cashRegisterIds);
+
         }
 
         return $query->orderBy("name")->get();
@@ -194,7 +190,7 @@ final class CompanyReferenceDataService {
     public function paymentMethodsFor(string $scope): Collection {
 
         return PaymentMethod::query()
-            ->with(["variants" => fn ($query) => $query->orderBy("name")])
+            ->with(["variants" => fn($query) => $query->orderBy("name")])
             ->where("company_id", $this->companyId)
             ->whereIn("scope", [$scope, "both"])
             ->where("status", "active")
@@ -233,8 +229,10 @@ final class CompanyReferenceDataService {
             ->where("status", "active");
         $branchIds = $this->allowedBranchIds();
 
-        if ($branchIds !== null) {
+        if($branchIds !== null) {
+
             $query->whereIn("branch_id", $branchIds);
+
         }
 
         return $query->orderBy("name")->get();
@@ -258,7 +256,7 @@ final class CompanyReferenceDataService {
             ->where("company_id", $this->companyId);
 
         $branchIds = $this->allowedBranchIds();
-        if ($branchIds !== null) {
+        if($branchIds !== null) {
 
             $query->whereIn("id", $branchIds);
 
@@ -288,12 +286,16 @@ final class CompanyReferenceDataService {
 
     private function allowedIds(string $type): ?array {
 
-        if (array_key_exists($type, $this->allowedIdsCache)) {
+        if(array_key_exists($type, $this->allowedIdsCache)) {
+
             return $this->allowedIdsCache[$type];
+
         }
 
-        if (! $this->userId) {
+        if(!$this->userId) {
+
             return $this->allowedIdsCache[$type] = null;
+
         }
 
         $user = $this->user();
@@ -306,11 +308,13 @@ final class CompanyReferenceDataService {
 
     private function user(): ?User {
 
-        if (! $this->userResolved) {
+        if(!$this->userResolved) {
+
             $this->user = User::query()
                 ->where("company_id", $this->companyId)
                 ->find($this->userId);
             $this->userResolved = true;
+
         }
 
         return $this->user;

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\System\Catalogs\Recipes;
 
-use App\Http\Requests\System\Base\CompanyFormRequest;
-use App\Rules\System\Defaults\BelongsToCompany;
+use App\Http\Requests\System\Base\{CompanyFormRequest};
+use App\Rules\System\Defaults\{BelongsToCompany};
 
 class StoreRecipeRequest extends CompanyFormRequest {
     public function rules(): array {
@@ -13,7 +13,7 @@ class StoreRecipeRequest extends CompanyFormRequest {
         $round = $this->decimalPrecision();
         $maxValue = $this->numericMaxValue();
 
-        $productFromCompany = fn (string $message) => new BelongsToCompany(
+        $productFromCompany = fn(string $message) => new BelongsToCompany(
             "items",
             ["type" => "product"],
             $message

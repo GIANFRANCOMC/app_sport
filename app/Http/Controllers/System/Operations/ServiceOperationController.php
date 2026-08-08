@@ -4,21 +4,11 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\System\Operations;
 
-use App\Helpers\System\ApiResponse;
-use App\Http\Controllers\System\Base\BaseController;
-use App\Http\Requests\System\Operations\AddServiceSessionItemRequest;
-use App\Http\Requests\System\Operations\CancelServiceSessionRequest;
-use App\Http\Requests\System\Operations\OpenServiceSessionRequest;
-use App\Http\Requests\System\Operations\PauseServiceSessionRequest;
-use App\Http\Requests\System\Operations\ReassignServiceSessionRequest;
-use App\Http\Requests\System\Operations\StoreServiceFloorRequest;
-use App\Http\Requests\System\Operations\StoreServiceStationRequest;
-use App\Http\Requests\System\Operations\UpdatePreparationStatusRequest;
-use App\Http\Requests\System\Operations\UpdateServiceStationLayoutRequest;
-use App\Services\System\Operations\ServiceOperationConfigService;
-use App\Services\System\Operations\ServiceOperationService;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
+use App\Helpers\System\{ApiResponse};
+use App\Http\Controllers\System\Base\{BaseController};
+use App\Http\Requests\System\Operations\{AddServiceSessionItemRequest, CancelServiceSessionRequest, OpenServiceSessionRequest, PauseServiceSessionRequest, ReassignServiceSessionRequest, StoreServiceFloorRequest, StoreServiceStationRequest, UpdatePreparationStatusRequest, UpdateServiceStationLayoutRequest};
+use App\Services\System\Operations\{ServiceOperationConfigService, ServiceOperationService};
+use Illuminate\Http\{JsonResponse, Request};
 use Throwable;
 
 final class ServiceOperationController extends BaseController {
@@ -74,7 +64,7 @@ final class ServiceOperationController extends BaseController {
     public function storeFloor(StoreServiceFloorRequest $request): JsonResponse {
 
         return $this->execute(
-            fn () => ServiceOperationService::createFloor(
+            fn() => ServiceOperationService::createFloor(
                 $this->getCompanyId(),
                 $this->getUserId(),
                 $request->validated()
@@ -87,7 +77,7 @@ final class ServiceOperationController extends BaseController {
     public function updateFloor(StoreServiceFloorRequest $request, int $id): JsonResponse {
 
         return $this->execute(
-            fn () => ServiceOperationService::updateFloor(
+            fn() => ServiceOperationService::updateFloor(
                 $this->getCompanyId(),
                 $this->getUserId(),
                 $id,
@@ -143,7 +133,7 @@ final class ServiceOperationController extends BaseController {
     public function show(int $id): JsonResponse {
 
         return $this->execute(
-            fn () => ServiceOperationService::find($this->getCompanyId(), $id, $this->getUserId())
+            fn() => ServiceOperationService::find($this->getCompanyId(), $id, $this->getUserId())
         );
 
     }
@@ -151,7 +141,7 @@ final class ServiceOperationController extends BaseController {
     public function storeStation(StoreServiceStationRequest $request): JsonResponse {
 
         return $this->execute(
-            fn () => ServiceOperationService::createStation(
+            fn() => ServiceOperationService::createStation(
                 $this->getCompanyId(),
                 $this->getUserId(),
                 $request->validated()
@@ -164,7 +154,7 @@ final class ServiceOperationController extends BaseController {
     public function updateStation(StoreServiceStationRequest $request, int $id): JsonResponse {
 
         return $this->execute(
-            fn () => ServiceOperationService::updateStation(
+            fn() => ServiceOperationService::updateStation(
                 $this->getCompanyId(),
                 $this->getUserId(),
                 $id,
@@ -178,7 +168,7 @@ final class ServiceOperationController extends BaseController {
     public function updateStationLayout(UpdateServiceStationLayoutRequest $request, int $id): JsonResponse {
 
         return $this->execute(
-            fn () => ServiceOperationService::updateStationLayout(
+            fn() => ServiceOperationService::updateStationLayout(
                 $this->getCompanyId(),
                 $this->getUserId(),
                 $id,
@@ -192,7 +182,7 @@ final class ServiceOperationController extends BaseController {
     public function openSession(OpenServiceSessionRequest $request): JsonResponse {
 
         return $this->execute(
-            fn () => ServiceOperationService::open(
+            fn() => ServiceOperationService::open(
                 $this->getCompanyId(),
                 $this->getUserId(),
                 $request->validated()
@@ -205,7 +195,7 @@ final class ServiceOperationController extends BaseController {
     public function addItem(AddServiceSessionItemRequest $request, int $id): JsonResponse {
 
         return $this->execute(
-            fn () => ServiceOperationService::addItem(
+            fn() => ServiceOperationService::addItem(
                 $this->getCompanyId(),
                 $this->getUserId(),
                 $id,
@@ -219,7 +209,7 @@ final class ServiceOperationController extends BaseController {
     public function startSession(int $id): JsonResponse {
 
         return $this->execute(
-            fn () => ServiceOperationService::start($this->getCompanyId(), $this->getUserId(), $id),
+            fn() => ServiceOperationService::start($this->getCompanyId(), $this->getUserId(), $id),
             "Servicio iniciado."
         );
 
@@ -228,7 +218,7 @@ final class ServiceOperationController extends BaseController {
     public function completeSession(int $id): JsonResponse {
 
         return $this->execute(
-            fn () => ServiceOperationService::complete($this->getCompanyId(), $this->getUserId(), $id),
+            fn() => ServiceOperationService::complete($this->getCompanyId(), $this->getUserId(), $id),
             "Servicio finalizado correctamente."
         );
 
@@ -237,7 +227,7 @@ final class ServiceOperationController extends BaseController {
     public function startItem(int $id): JsonResponse {
 
         return $this->execute(
-            fn () => ServiceOperationService::startItem($this->getCompanyId(), $this->getUserId(), $id),
+            fn() => ServiceOperationService::startItem($this->getCompanyId(), $this->getUserId(), $id),
             "Detalle iniciado."
         );
 
@@ -246,7 +236,7 @@ final class ServiceOperationController extends BaseController {
     public function completeItem(int $id): JsonResponse {
 
         return $this->execute(
-            fn () => ServiceOperationService::completeItem($this->getCompanyId(), $this->getUserId(), $id),
+            fn() => ServiceOperationService::completeItem($this->getCompanyId(), $this->getUserId(), $id),
             "Detalle finalizado."
         );
 
@@ -255,7 +245,7 @@ final class ServiceOperationController extends BaseController {
     public function updatePreparationStatus(UpdatePreparationStatusRequest $request, int $id): JsonResponse {
 
         return $this->execute(
-            fn () => ServiceOperationService::updatePreparationStatus(
+            fn() => ServiceOperationService::updatePreparationStatus(
                 $this->getCompanyId(),
                 $this->getUserId(),
                 $id,
@@ -271,7 +261,7 @@ final class ServiceOperationController extends BaseController {
         $data = $request->validated();
 
         return $this->execute(
-            fn () => ServiceOperationService::reassign(
+            fn() => ServiceOperationService::reassign(
                 $this->getCompanyId(),
                 $this->getUserId(),
                 $id,
@@ -288,7 +278,7 @@ final class ServiceOperationController extends BaseController {
         $data = $request->validated();
 
         return $this->execute(
-            fn () => ServiceOperationService::pause(
+            fn() => ServiceOperationService::pause(
                 $this->getCompanyId(),
                 $this->getUserId(),
                 $id,
@@ -303,7 +293,7 @@ final class ServiceOperationController extends BaseController {
     public function resumeSession(int $id): JsonResponse {
 
         return $this->execute(
-            fn () => ServiceOperationService::resume($this->getCompanyId(), $this->getUserId(), $id),
+            fn() => ServiceOperationService::resume($this->getCompanyId(), $this->getUserId(), $id),
             "Atención reanudada correctamente."
         );
 
@@ -314,7 +304,7 @@ final class ServiceOperationController extends BaseController {
         $data = $request->validated();
 
         return $this->execute(
-            fn () => ServiceOperationService::cancel(
+            fn() => ServiceOperationService::cancel(
                 $this->getCompanyId(),
                 $this->getUserId(),
                 $id,
@@ -328,9 +318,13 @@ final class ServiceOperationController extends BaseController {
     private function execute(callable $callback, string $message = "Operación completada."): JsonResponse {
 
         try {
+
             return ApiResponse::success($callback(), $message);
-        } catch (Throwable $exception) {
+
+        } catch(Throwable $exception) {
+
             return ApiResponse::error($exception->getMessage(), 422);
+
         }
 
     }

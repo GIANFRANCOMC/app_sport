@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Services\System\Catalogs\Brands;
 
-use App\Models\System\Catalogs\Brand;
-use App\Services\System\Base\BaseConfigService;
+use App\Models\System\Catalogs\{Brand};
+use App\Services\System\Base\{BaseConfigService};
 use stdClass;
 
 final class BrandConfigService extends BaseConfigService {

@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
-use App\Http\Controllers\System\Operations\ServiceOperationController;
-use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\System\Operations\{ServiceOperationController};
+use Illuminate\Support\Facades\{Route};
 
 Route::get("/restaurant", [ServiceOperationController::class, "index"])->name("restaurant_pos.index");
 Route::get("/services", [ServiceOperationController::class, "index"])->name("service_sessions.index");

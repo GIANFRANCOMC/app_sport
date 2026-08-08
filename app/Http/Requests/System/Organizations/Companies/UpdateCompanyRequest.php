@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\System\Organizations\Companies;
 
-use App\Http\Requests\System\Base\CompanyFormRequest;
-use App\Rules\System\Defaults\BelongsToCompany;
-use App\Rules\System\Defaults\DocumentNumberLength;
+use App\Http\Requests\System\Base\{CompanyFormRequest};
+use App\Rules\System\Defaults\{BelongsToCompany, DocumentNumberLength};
 
 class UpdateCompanyRequest extends CompanyFormRequest {
     /**

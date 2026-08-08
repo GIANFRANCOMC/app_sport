@@ -46,7 +46,7 @@
                         <i class="fa fa-warning text-warning"></i>
                         <span class="ms-1">Page Not Found️</span>
                     </div>
-                    @if (isset($msg))
+                    @if(isset($msg))
                         <div class="card my-3">
                             <div class="card-body">
                                 <span class="badge bg-label-primary">Mensaje:</span>
@@ -61,7 +61,7 @@
                             </div>
                         </div>
                     @endif
-                    @if (url()->previous())
+                    @if(url()->previous())
                         <a href="{{ url()->previous() }}" class="btn btn-primary mb-10 waves-effect">
                             <i class="fa fa-arrow-left fa-beat"></i>
                             <span class="ms-1">Regresar</span>

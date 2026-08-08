@@ -4,15 +4,12 @@ declare(strict_types=1);
 
 namespace App\Http\Middleware;
 
-use App\Services\System\Tenancy\TenantAdministrationService;
-use App\Services\System\Tenancy\TenantConnectionManager;
-use App\Services\System\Tenancy\TenantContext;
-use App\Services\System\Tenancy\TenantResolver;
+use App\Services\System\Tenancy\{TenantAdministrationService, TenantConnectionManager, TenantContext, TenantResolver};
 use Closure;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Str;
-use Symfony\Component\HttpFoundation\Response;
+use Illuminate\Http\{Request};
+use Illuminate\Support\Facades\{Config};
+use Illuminate\Support\{Str};
+use Symfony\Component\HttpFoundation\{Response};
 
 final class ResolveTenant {
     public function __construct(
@@ -25,22 +22,26 @@ final class ResolveTenant {
 
     public function handle(Request $request, Closure $next): Response {
 
-        if ($this->isPlatformHost($request->getHost())) {
+        if($this->isPlatformHost($request->getHost())) {
+
             $this->context->set(null);
             $this->connectionManager->disconnect();
             Config::set("session.cookie", (string) config("tenancy.platform_session_cookie", "gympe_platform_session"));
             Config::set("session.domain", null);
 
             return $next($request);
+
         }
 
         $tenant = $this->resolver->resolveByHost($request->getHost());
 
-        if (! $tenant) {
+        if(!$tenant) {
+
             $this->context->set(null);
             $host = $this->resolver->normalizeHost($request->getHost());
             $deduplicationKey = "tenancy:unknown-host:".hash("sha256", $host."|".$request->ip());
-            if (cache()->add($deduplicationKey, true, now()->addMinutes(5))) {
+            if(cache()->add($deduplicationKey, true, now()->addMinutes(5))) {
+
                 $this->administration->audit(
                     null,
                     "unknown_host_rejected",
@@ -50,8 +51,10 @@ final class ResolveTenant {
                     $host,
                     $request->ip()
                 );
+
             }
             abort(404);
+
         }
 
         $this->connectionManager->connect($tenant);

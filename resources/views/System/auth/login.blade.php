@@ -53,7 +53,7 @@
                                     <option value="{{ $data->company->id }}" selected>{{ $data->company->commercial_name }}</option>
                                 </select>
                                 @if($errors->get("company_id"))
-                                    @foreach ((array) $errors->get("company_id") as $message)
+                                    @foreach((array) $errors->get("company_id") as $message)
                                         <small class="text-danger">{{ $message }}</small>
                                     @endforeach
                                 @endif

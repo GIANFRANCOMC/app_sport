@@ -1,7 +1,7 @@
 <?php
 
-use App\Http\Controllers\System\Organizations\BusinessProfileController;
-use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\System\Organizations\{BusinessProfileController};
+use Illuminate\Support\Facades\{Route};
 
 $entity = "business_profile";
 

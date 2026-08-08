@@ -4,16 +4,15 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\System\Auth;
 
-use App\Helpers\System\Utilities;
-use App\Http\Controllers\Controller;
-use App\Http\Requests\System\Auth\LoginRequest;
+use App\Helpers\System\{Utilities};
+use App\Http\Controllers\{Controller};
+use App\Http\Requests\System\Auth\{LoginRequest};
 use App\Models\System\Organizations\{Company};
-use App\Providers\RouteServiceProvider;
-use App\Services\System\Auth\AuthenticationAuditService;
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\View\View;
+use App\Providers\{RouteServiceProvider};
+use App\Services\System\Auth\{AuthenticationAuditService};
+use Illuminate\Http\{RedirectResponse, Request};
+use Illuminate\Support\Facades\{Auth};
+use Illuminate\View\{View};
 
 class AuthenticatedSessionController extends Controller {
     /**
@@ -26,22 +25,22 @@ class AuthenticatedSessionController extends Controller {
         $data->company = null;
         $data->companies = [];
 
-        if (Utilities::isDefined($data->env_company_id)) {
+        if(Utilities::isDefined($data->env_company_id)) {
 
             $data->company = Company::where("id", $data->env_company_id)
                 ->whereIn("status", ["active"])
                 ->with(["socialsMedia"])
                 ->first();
 
-        } else {
+        }else {
 
             $base64Company = $request->company;
 
-            if (Utilities::isDefined($base64Company)) {
+            if(Utilities::isDefined($base64Company)) {
 
                 $companyId = base64_decode($base64Company);
 
-                if (Utilities::isDefined($companyId)) {
+                if(Utilities::isDefined($companyId)) {
 
                     $data->company = Company::where("id", $companyId)
                         ->whereIn("status", ["active"])
@@ -50,7 +49,7 @@ class AuthenticatedSessionController extends Controller {
 
                 }
 
-            } else {
+            }else {
 
                 $data->companies = Company::whereIn("status", ["active", "inactive"])
                     ->with(["socialsMedia"])

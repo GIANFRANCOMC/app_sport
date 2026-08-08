@@ -4,10 +4,9 @@ declare(strict_types=1);
 
 namespace App\Models\System\Sales;
 
-use App\Models\System\Organizations\Company;
-use App\Models\System\Organizations\User;
-use App\Models\System\Warehouses\Warehouse;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\System\Organizations\{Company, User};
+use App\Models\System\Warehouses\{Warehouse};
+use Illuminate\Database\Eloquent\{Model};
 
 class SaleDeliveryEvent extends Model {
     protected $table = "sale_delivery_events";

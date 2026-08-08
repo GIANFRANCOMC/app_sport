@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\System\Organizations\Branches;
 
-use App\Http\Requests\System\Base\CompanyFormRequest;
-use App\Http\Requests\System\Concerns\AppliesInternalCodePrefix;
+use App\Http\Requests\System\Base\{CompanyFormRequest};
+use App\Http\Requests\System\Concerns\{AppliesInternalCodePrefix};
 use App\Rules\System\Defaults\{UniqueInCompany};
 
 class StoreBranchRequest extends CompanyFormRequest {

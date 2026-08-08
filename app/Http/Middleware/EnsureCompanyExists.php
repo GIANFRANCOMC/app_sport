@@ -2,10 +2,10 @@
 
 namespace App\Http\Middleware;
 
-use App\Helpers\System\Utilities;
-use App\Models\Guest\Company;
+use App\Helpers\System\{Utilities};
+use App\Models\Guest\{Company};
 use Closure;
-use Illuminate\Http\Request;
+use Illuminate\Http\{Request};
 
 class EnsureCompanyExists {
     /**
@@ -17,7 +17,7 @@ class EnsureCompanyExists {
 
         $slug = $request->route("company_slug");
 
-        if (! Utilities::isDefined($slug)) {
+        if(!Utilities::isDefined($slug)) {
 
             abort(404, "Invalid company");
 
@@ -27,7 +27,7 @@ class EnsureCompanyExists {
             ->where("status", "active")
             ->first();
 
-        if (! Utilities::isDefined($company)) {
+        if(!Utilities::isDefined($company)) {
 
             abort(404, "Company not found");
 

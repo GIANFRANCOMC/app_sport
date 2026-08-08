@@ -2,9 +2,9 @@
 
 namespace App\Models\System\Assets;
 
-use App\Helpers\System\Utilities;
+use App\Helpers\System\{Utilities};
 use App\Models\System\Organizations\{Company};
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\{Model};
 
 class Asset extends Model {
     protected $table = "assets";

@@ -4,22 +4,21 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Services;
 
-use App\Services\System\Assets\AssetManagementConfigService;
-use App\Services\System\Base\InitParamsCacheInvalidationService;
-use App\Services\System\Catalogs\Brands\BrandConfigService;
-use App\Services\System\Catalogs\Categories\CategoryConfigService;
-use App\Services\System\Catalogs\Products\ProductConfigService;
-use App\Services\System\Catalogs\Services\ServiceConfigService;
-use App\Services\System\Catalogs\Subscriptions\SubscriptionConfigService;
-use App\Services\System\Customers\Tracking\TrackingAttendanceConfigService;
-use App\Services\System\Customers\Tracking\TrackingSubscriptionConfigService;
-use App\Services\System\Devices\BiometricDevices\BiometricDeviceConfigService;
-use App\Services\System\Organizations\Branches\BranchConfigService;
-use App\Services\System\Sales\SaleConfigService;
-use App\Services\System\Warehouses\StockManagement\StockManagementConfigService;
-use Illuminate\Support\Facades\Cache;
+use App\Services\System\Assets\{AssetManagementConfigService};
+use App\Services\System\Base\{InitParamsCacheInvalidationService};
+use App\Services\System\Catalogs\Brands\{BrandConfigService};
+use App\Services\System\Catalogs\Categories\{CategoryConfigService};
+use App\Services\System\Catalogs\Products\{ProductConfigService};
+use App\Services\System\Catalogs\Services\{ServiceConfigService};
+use App\Services\System\Catalogs\Subscriptions\{SubscriptionConfigService};
+use App\Services\System\Customers\Tracking\{TrackingAttendanceConfigService, TrackingSubscriptionConfigService};
+use App\Services\System\Devices\BiometricDevices\{BiometricDeviceConfigService};
+use App\Services\System\Organizations\Branches\{BranchConfigService};
+use App\Services\System\Sales\{SaleConfigService};
+use App\Services\System\Warehouses\StockManagement\{StockManagementConfigService};
+use Illuminate\Support\Facades\{Cache};
 use InvalidArgumentException;
-use Tests\TestCase;
+use Tests\{TestCase};
 
 class InitParamsCacheInvalidationServiceTest extends TestCase {
     public function test_category_changes_clear_all_dependent_config_caches(): void {
@@ -133,7 +132,7 @@ class InitParamsCacheInvalidationServiceTest extends TestCase {
             InitParamsCacheInvalidationService::USERS,
         ];
 
-        foreach ($resources as $resource) {
+        foreach($resources as $resource) {
 
             InitParamsCacheInvalidationService::invalidate($resource, 94);
 
@@ -147,7 +146,7 @@ class InitParamsCacheInvalidationServiceTest extends TestCase {
 
         ProductConfigService::registerUserCacheScope($companyId, $this->userId($companyId));
 
-        foreach ($keys as $key) {
+        foreach($keys as $key) {
 
             Cache::put($key, "cached", 3600);
 
@@ -163,7 +162,7 @@ class InitParamsCacheInvalidationServiceTest extends TestCase {
 
     private function assertCacheKeysWereForgotten(array $keys): void {
 
-        foreach ($keys as $key) {
+        foreach($keys as $key) {
 
             $this->assertFalse(Cache::has($key), "Cache key {$key} was not invalidated.");
 

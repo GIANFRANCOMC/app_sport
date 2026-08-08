@@ -2,8 +2,8 @@
 
 namespace App\Models\Guest;
 
-use App\Helpers\System\Utilities;
-use Illuminate\Database\Eloquent\Model;
+use App\Helpers\System\{Utilities};
+use Illuminate\Database\Eloquent\{Model};
 
 class BookComplaint extends Model {
     protected $table = "book_complaints";

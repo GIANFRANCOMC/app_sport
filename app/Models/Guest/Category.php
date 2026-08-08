@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models\Guest;
 
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\{Model};
 
 final class Category extends Model {
     protected $table = "categories";

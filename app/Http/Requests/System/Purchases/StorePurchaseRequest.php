@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\System\Purchases;
 
-use App\Http\Requests\System\Base\CompanyFormRequest;
-use App\Rules\System\Defaults\BelongsToCompany;
+use App\Http\Requests\System\Base\{CompanyFormRequest};
+use App\Rules\System\Defaults\{BelongsToCompany};
 
 final class StorePurchaseRequest extends CompanyFormRequest {
     public function authorize(): bool {
@@ -151,7 +151,7 @@ final class StorePurchaseRequest extends CompanyFormRequest {
     private function normalizeItems(): array {
 
         return collect($this->input("items", []))
-            ->map(fn ($item) => [
+            ->map(fn($item) => [
                 "item_id" => $this->nullableIntegerFromArray($item, "item_id"),
                 "quantity" => $this->normalizeDecimalFromArray($item, "quantity"),
                 "unit_cost" => $this->normalizeDecimalFromArray($item, "unit_cost"),
@@ -164,7 +164,7 @@ final class StorePurchaseRequest extends CompanyFormRequest {
     private function normalizeTaxes(): array {
 
         return collect($this->input("taxes", []))
-            ->map(fn ($tax) => [
+            ->map(fn($tax) => [
                 "tax_id" => $this->nullableIntegerFromArray($tax, "tax_id"),
                 "rate" => $this->normalizeDecimalFromArray($tax, "rate"),
                 "calculation_type" => $tax["calculation_type"] ?? null,
@@ -181,7 +181,7 @@ final class StorePurchaseRequest extends CompanyFormRequest {
     private function normalizePayments(): array {
 
         return collect($this->input("payments", []))
-            ->map(fn ($payment) => [
+            ->map(fn($payment) => [
                 "payment_method_id" => $this->nullableIntegerFromArray($payment, "payment_method_id"),
                 "payment_method_variant_id" => $this->nullableIntegerFromArray($payment, "payment_method_variant_id"),
                 "amount" => $this->normalizeDecimalFromArray($payment, "amount"),
@@ -196,7 +196,7 @@ final class StorePurchaseRequest extends CompanyFormRequest {
     private function normalizeExpenses(): array {
 
         return collect($this->input("expenses", []))
-            ->map(fn ($expense) => [
+            ->map(fn($expense) => [
                 "expense_type" => $this->nullableStringFromArray($expense, "expense_type"),
                 "name" => $this->nullableStringFromArray($expense, "name"),
                 "amount" => $this->normalizeDecimalFromArray($expense, "amount"),

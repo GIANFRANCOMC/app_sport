@@ -4,20 +4,13 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\System\Catalogs;
 
-use App\Helpers\System\Utilities;
-use App\Http\Controllers\System\Base\BaseController;
-use App\Http\Requests\System\Catalogs\Recipes\RecipeWarehouseRequest;
-use App\Http\Requests\System\Catalogs\Recipes\StoreRecipeRequest;
-use App\Http\Requests\System\Catalogs\Recipes\StoreRecipeWasteRequest;
-use App\Http\Requests\System\Catalogs\Recipes\UpdateRecipeRequest;
-use App\Models\System\Catalogs\RecipeDish;
-use App\Services\System\Base\CompanyReferenceDataService;
-use App\Services\System\Base\InitParamsCacheInvalidationService;
-use App\Services\System\Catalogs\Recipes\RecipeConfigService;
-use App\Services\System\Catalogs\Recipes\RecipeService;
-use App\Services\System\Catalogs\Recipes\RecipeWasteService;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
+use App\Helpers\System\{Utilities};
+use App\Http\Controllers\System\Base\{BaseController};
+use App\Http\Requests\System\Catalogs\Recipes\{RecipeWarehouseRequest, StoreRecipeRequest, StoreRecipeWasteRequest, UpdateRecipeRequest};
+use App\Models\System\Catalogs\{RecipeDish};
+use App\Services\System\Base\{CompanyReferenceDataService, InitParamsCacheInvalidationService};
+use App\Services\System\Catalogs\Recipes\{RecipeConfigService, RecipeService, RecipeWasteService};
+use Illuminate\Http\{JsonResponse, Request};
 
 class RecipeController extends BaseController {
     private const TRANSLATION_NAMESPACE = "System.Catalogs.recipe";
@@ -67,7 +60,7 @@ class RecipeController extends BaseController {
                 "data" => $recipe,
             ], 201);
 
-        } catch (\Throwable $e) {
+        } catch(\Throwable $e) {
 
             return response()->json([
                 "bool" => false,
@@ -95,7 +88,7 @@ class RecipeController extends BaseController {
                 "data" => $recipe,
             ]);
 
-        } catch (\Throwable $e) {
+        } catch(\Throwable $e) {
 
             return response()->json([
                 "bool" => false,
@@ -139,7 +132,7 @@ class RecipeController extends BaseController {
                 ),
             ]);
 
-        } catch (\DomainException $exception) {
+        } catch(\DomainException $exception) {
 
             return response()->json([
                 "bool" => false,
@@ -184,7 +177,7 @@ class RecipeController extends BaseController {
                 ),
             ], 201);
 
-        } catch (\DomainException $exception) {
+        } catch(\DomainException $exception) {
 
             return response()->json(["bool" => false, "msg" => $exception->getMessage()], 422);
 
@@ -208,7 +201,7 @@ class RecipeController extends BaseController {
                 "msg" => "Receta o platillo eliminado correctamente.",
             ]);
 
-        } catch (\Throwable $e) {
+        } catch(\Throwable $e) {
 
             return response()->json([
                 "bool" => false,

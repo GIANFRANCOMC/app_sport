@@ -6,8 +6,8 @@ namespace App\Rules\System\Defaults;
 
 use App\Models\System\General\{IdentityDocumentType};
 use Closure;
-use Illuminate\Contracts\Validation\ValidationRule;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Contracts\Validation\{ValidationRule};
+use Illuminate\Support\Facades\{Auth};
 
 /**
  * Validation rule to verify that document_number length matches the min_length and max_length of the selected identity_document_type
@@ -43,7 +43,7 @@ class DocumentNumberLength implements ValidationRule {
 
         $identityDocumentTypeId = $this->identityDocumentTypeId;
 
-        if (! $identityDocumentTypeId) {
+        if(!$identityDocumentTypeId) {
 
             $fieldName = $this->attributeName ?? $attribute;
             $fail("El campo {$fieldName} requiere un tipo de documento válido.");
@@ -54,10 +54,10 @@ class DocumentNumberLength implements ValidationRule {
 
         $identityDocumentType = IdentityDocumentType::query()
             ->whereKey($identityDocumentTypeId)
-            ->when(Auth::user()?->company_id, fn ($query, $companyId) => $query->where("company_id", $companyId))
+            ->when(Auth::user()?->company_id, fn($query, $companyId) => $query->where("company_id", $companyId))
             ->first();
 
-        if (! $identityDocumentType) {
+        if(!$identityDocumentType) {
 
             $fieldName = $this->attributeName ?? $attribute;
             $fail("El tipo de documento seleccionado no es válido.");
@@ -69,7 +69,7 @@ class DocumentNumberLength implements ValidationRule {
         $documentNumber = (string) $value;
 
         // Validate that document_number contains only numbers
-        if (! ctype_digit($documentNumber)) {
+        if(!ctype_digit($documentNumber)) {
 
             $fieldName = $this->attributeName ?? $attribute;
             $fail("El campo {$fieldName} debe contener solo números.");
@@ -82,7 +82,7 @@ class DocumentNumberLength implements ValidationRule {
         $minLength = (int) ($identityDocumentType->min_length ?? 1);
         $maxLength = (int) ($identityDocumentType->max_length ?? 1);
 
-        if ($length < $minLength) {
+        if($length < $minLength) {
 
             $fieldName = $this->attributeName ?? $attribute;
             $fail("El campo {$fieldName} debe tener al menos {$minLength} caracteres.");
@@ -91,7 +91,7 @@ class DocumentNumberLength implements ValidationRule {
 
         }
 
-        if ($length > $maxLength) {
+        if($length > $maxLength) {
 
             $fieldName = $this->attributeName ?? $attribute;
             $fail("El campo {$fieldName} no debe exceder {$maxLength} caracteres.");

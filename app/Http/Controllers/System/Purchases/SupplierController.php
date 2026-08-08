@@ -4,13 +4,12 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\System\Purchases;
 
-use App\Helpers\System\Utilities;
-use App\Http\Controllers\System\Base\BaseController;
-use App\Http\Requests\System\Purchases\StoreSupplierRequest;
-use App\Services\System\Base\InitParamsCacheInvalidationService;
-use App\Services\System\Purchases\SupplierService;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
+use App\Helpers\System\{Utilities};
+use App\Http\Controllers\System\Base\{BaseController};
+use App\Http\Requests\System\Purchases\{StoreSupplierRequest};
+use App\Services\System\Base\{InitParamsCacheInvalidationService};
+use App\Services\System\Purchases\{SupplierService};
+use Illuminate\Http\{JsonResponse, Request};
 
 final class SupplierController extends BaseController {
     private const TRANSLATION_NAMESPACE = "System.Purchases.supplier";

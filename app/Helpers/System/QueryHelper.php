@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Helpers\System;
 
-use Illuminate\Contracts\Pagination\LengthAwarePaginator;
-use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Contracts\Pagination\{LengthAwarePaginator};
+use Illuminate\Database\Eloquent\{Builder};
 
 /**
  * Query Helper
@@ -38,7 +38,7 @@ class QueryHelper {
      */
     public static function applySearch(Builder $query, string $field, ?string $value): Builder {
 
-        if (! Utilities::isDefined($value)) {
+        if(!Utilities::isDefined($value)) {
 
             return $query;
 
@@ -58,7 +58,7 @@ class QueryHelper {
      */
     public static function applyMultiFieldSearch(Builder $query, array $fields, ?string $value): Builder {
 
-        if (! Utilities::isDefined($value) || empty($fields)) {
+        if(!Utilities::isDefined($value) || empty($fields)) {
 
             return $query;
 
@@ -66,9 +66,9 @@ class QueryHelper {
 
         $searchTerm = Utilities::getWordSearch($value);
 
-        return $query->where(function ($q) use ($fields, $searchTerm) {
+        return $query->where(function($q) use ($fields, $searchTerm) {
 
-            foreach ($fields as $field) {
+            foreach($fields as $field) {
 
                 $q->orWhere($field, "like", $searchTerm);
 
@@ -85,13 +85,13 @@ class QueryHelper {
      */
     public static function applyStatusFilter(Builder $query, $status): Builder {
 
-        if (! Utilities::isDefined($status)) {
+        if(!Utilities::isDefined($status)) {
 
             return $query;
 
         }
 
-        if (is_array($status)) {
+        if(is_array($status)) {
 
             return $query->whereIn("status", $status);
 
@@ -110,13 +110,13 @@ class QueryHelper {
      */
     public static function applyDateRangeFilter(Builder $query, string $field, ?string $startDate, ?string $endDate): Builder {
 
-        if (Utilities::isDefined($startDate)) {
+        if(Utilities::isDefined($startDate)) {
 
             $query->where($field, ">=", $startDate);
 
         }
 
-        if (Utilities::isDefined($endDate)) {
+        if(Utilities::isDefined($endDate)) {
 
             $query->where($field, "<=", $endDate);
 

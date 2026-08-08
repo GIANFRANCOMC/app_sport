@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace App\Models\System\Warehouses;
 
-use App\Models\System\Organizations\Company;
-use App\Models\System\Organizations\User;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\System\Organizations\{Company, User};
+use Illuminate\Database\Eloquent\{Model};
 
 final class InventoryGuide extends Model {
     protected $fillable = [
@@ -31,18 +30,26 @@ final class InventoryGuide extends Model {
     ];
 
     public function company() {
+
         return $this->belongsTo(Company::class);
+
     }
 
     public function warehouse() {
+
         return $this->belongsTo(Warehouse::class);
+
     }
 
     public function items() {
+
         return $this->hasMany(InventoryGuideItem::class);
+
     }
 
     public function confirmedBy() {
+
         return $this->belongsTo(User::class, "confirmed_by");
+
     }
 }

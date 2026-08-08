@@ -4,15 +4,13 @@ declare(strict_types=1);
 
 namespace App\Services\System\Catalogs\Products;
 
-use App\Helpers\System\TranslationHelper;
-use App\Helpers\System\Utilities;
-use App\Models\System\Catalogs\Brand;
-use App\Models\System\Catalogs\Item;
+use App\Helpers\System\{TranslationHelper, Utilities};
+use App\Models\System\Catalogs\{Brand, Item};
 use App\Services\System\Catalogs\Categories\{CategoryItemService};
 use App\Services\System\Warehouses\Warehouses\{WarehouseItemService};
-use Illuminate\Contracts\Pagination\LengthAwarePaginator;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Contracts\Pagination\{LengthAwarePaginator};
+use Illuminate\Database\Eloquent\{Builder};
+use Illuminate\Support\Facades\{DB};
 
 /**
  * Service class for managing module operations
@@ -68,7 +66,7 @@ class ProductService {
 
     private static function normalizeOptionalPrice(mixed $value): ?float {
 
-        if ($value === null || $value === "" || (is_numeric($value) && (float) $value <= 0)) {
+        if($value === null || $value === "" || (is_numeric($value) && (float) $value <= 0)) {
 
             return null;
 
@@ -107,34 +105,34 @@ class ProductService {
             "created_by" => $userId,
         ];
 
-        foreach (self::ALLOWED_FIELDS as $field) {
+        foreach(self::ALLOWED_FIELDS as $field) {
 
-            if (self::hasInputField($data, $field)) {
+            if(self::hasInputField($data, $field)) {
 
-                if (in_array($field, ["min_price", "max_price"])) {
+                if(in_array($field, ["min_price", "max_price"])) {
 
                     $itemData[$field] = self::normalizeOptionalPrice($data[$field]);
 
-                } elseif ($field === "capacity_control_enabled") {
+                }elseif($field === "capacity_control_enabled") {
 
                     $enabled = (bool) $data[$field];
                     $itemData["capacity_control_enabled"] = $enabled;
                     $itemData["capacity_limit"] = $enabled ? max(1, (int) ($data["capacity_limit"] ?? 1)) : null;
                     $itemData["capacity_used"] = $enabled ? (int) ($itemData["capacity_used"] ?? 0) : 0;
 
-                } elseif ($field === "capacity_limit") {
+                }elseif($field === "capacity_limit") {
 
-                    if (($itemData["capacity_control_enabled"] ?? false) === true) {
+                    if(($itemData["capacity_control_enabled"] ?? false) === true) {
 
                         $itemData[$field] = max(1, (int) $data[$field]);
 
                     }
 
-                } elseif ($field === "see_my_web_price") {
+                }elseif($field === "see_my_web_price") {
 
                     $itemData[$field] = ($data["see_my_web"] ?? false) ? ($data[$field] ?? false) : false;
 
-                } else {
+                }else {
 
                     $itemData[$field] = $data[$field];
 
@@ -144,7 +142,7 @@ class ProductService {
 
         }
 
-        if ((bool) ($itemData["igv_exempt"] ?? false)) {
+        if((bool) ($itemData["igv_exempt"] ?? false)) {
 
             $itemData["price_includes_tax"] = false;
 
@@ -164,48 +162,48 @@ class ProductService {
 
         $updateData = [];
 
-        foreach (self::ALLOWED_FIELDS as $field) {
+        foreach(self::ALLOWED_FIELDS as $field) {
 
-            if (self::hasInputField($data, $field)) {
+            if(self::hasInputField($data, $field)) {
 
-                if (in_array($field, ["min_price", "max_price"])) {
+                if(in_array($field, ["min_price", "max_price"])) {
 
                     $value = self::normalizeOptionalPrice($data[$field]);
 
-                    if ($value !== ($item->$field === null ? null : (float) $item->$field)) {
+                    if($value !== ($item->$field === null ? null : (float) $item->$field)) {
 
                         $updateData[$field] = $value;
 
                     }
 
-                } elseif ($field === "capacity_control_enabled") {
+                }elseif($field === "capacity_control_enabled") {
 
                     $enabled = (bool) $data[$field];
-                    if ($enabled !== (bool) $item->capacity_control_enabled) {
+                    if($enabled !== (bool) $item->capacity_control_enabled) {
 
                         $updateData["capacity_control_enabled"] = $enabled;
 
                     }
 
                     $limit = $enabled ? max(1, (int) ($data["capacity_limit"] ?? 1)) : null;
-                    if ($limit !== ($item->capacity_limit === null ? null : (int) $item->capacity_limit)) {
+                    if($limit !== ($item->capacity_limit === null ? null : (int) $item->capacity_limit)) {
 
                         $updateData["capacity_limit"] = $limit;
 
                     }
 
-                    if (! $enabled && (int) $item->capacity_used !== 0) {
+                    if(!$enabled && (int) $item->capacity_used !== 0) {
 
                         $updateData["capacity_used"] = 0;
 
                     }
 
-                } elseif ($field === "capacity_limit") {
+                }elseif($field === "capacity_limit") {
 
-                    if (($updateData["capacity_control_enabled"] ?? (bool) $item->capacity_control_enabled) === true) {
+                    if(($updateData["capacity_control_enabled"] ?? (bool) $item->capacity_control_enabled) === true) {
 
                         $value = max(1, (int) $data[$field]);
-                        if ($value !== (int) ($item->capacity_limit ?? 0)) {
+                        if($value !== (int) ($item->capacity_limit ?? 0)) {
 
                             $updateData[$field] = $value;
 
@@ -213,17 +211,17 @@ class ProductService {
 
                     }
 
-                } elseif ($field === "see_my_web_price") {
+                }elseif($field === "see_my_web_price") {
 
                     $value = ($data["see_my_web"] ?? $item->see_my_web) ? ($data[$field] ?? false) : false;
 
-                    if ($value !== $item->$field) {
+                    if($value !== $item->$field) {
 
                         $updateData[$field] = $value;
 
                     }
 
-                } elseif ($data[$field] !== $item->$field) {
+                }elseif($data[$field] !== $item->$field) {
 
                     $updateData[$field] = $data[$field];
 
@@ -233,7 +231,7 @@ class ProductService {
 
         }
 
-        if ((bool) ($updateData["igv_exempt"] ?? $item->igv_exempt ?? false)) {
+        if((bool) ($updateData["igv_exempt"] ?? $item->igv_exempt ?? false)) {
 
             $updateData["price_includes_tax"] = false;
 
@@ -257,7 +255,7 @@ class ProductService {
 
         $item = null;
 
-        DB::transaction(function () use ($data, $companyId, $userId, &$item) {
+        DB::transaction(function() use ($data, $companyId, $userId, &$item) {
 
             self::assertBrandCanBeAssigned($data["brand_id"] ?? null, $companyId);
 
@@ -277,7 +275,7 @@ class ProductService {
             );
 
             // Sync categories
-            if (isset($data["categories"]) && is_array($data["categories"])) {
+            if(isset($data["categories"]) && is_array($data["categories"])) {
 
                 CategoryItemService::sync($item->id, $data["categories"], $userId);
 
@@ -299,7 +297,7 @@ class ProductService {
      */
     public static function update(Item $item, array $data, int $userId): Item {
 
-        DB::transaction(function () use ($item, $data, $userId) {
+        DB::transaction(function() use ($item, $data, $userId) {
 
             self::assertBrandCanBeAssigned(
                 $data["brand_id"] ?? null,
@@ -311,7 +309,7 @@ class ProductService {
             $updateData = self::prepareProductDataForUpdate($item, $data);
 
             // Only update if there are changes
-            if (! empty($updateData)) {
+            if(!empty($updateData)) {
 
                 $updateData["updated_at"] = now();
                 $updateData["updated_by"] = $userId;
@@ -320,7 +318,7 @@ class ProductService {
             }
 
             // Sync categories
-            if (isset($data["categories"]) && is_array($data["categories"])) {
+            if(isset($data["categories"]) && is_array($data["categories"])) {
 
                 CategoryItemService::sync($item->id, $data["categories"], $userId);
 
@@ -354,13 +352,13 @@ class ProductService {
             ->where("company_id", $companyId)
             ->where("type", "product");
 
-        if ($statuses !== null && ! empty($statuses)) {
+        if($statuses !== null && !empty($statuses)) {
 
             $query->whereIn("status", $statuses);
 
         }
 
-        if ($relations !== null && ! empty($relations)) {
+        if($relations !== null && !empty($relations)) {
 
             $query->with($relations);
 
@@ -410,31 +408,31 @@ class ProductService {
         $filterBy = $filters["filter_by"] ?? null;
         $word = $filters["word"] ?? null;
 
-        if (Utilities::isDefined($word) && Utilities::isDefined($filterBy)) {
+        if(Utilities::isDefined($word) && Utilities::isDefined($filterBy)) {
 
             $searchTerm = Utilities::getWordSearch($word);
 
-            if ($filterBy === "all") {
+            if($filterBy === "all") {
 
                 // Search across all searchable fields
-                $query->where(function (Builder $q) use ($searchTerm) {
+                $query->where(function(Builder $q) use ($searchTerm) {
 
                     $searchableFields = self::SEARCHABLE_FIELDS;
                     $firstField = array_shift($searchableFields);
 
-                    if ($firstField) {
+                    if($firstField) {
 
                         $q->where($firstField, "like", $searchTerm);
 
                     }
 
-                    foreach ($searchableFields as $field) {
+                    foreach($searchableFields as $field) {
 
                         $q->orWhere($field, "like", $searchTerm);
 
                     }
 
-                    $q->orWhereHas("brand", function (Builder $brandQuery) use ($searchTerm) {
+                    $q->orWhereHas("brand", function(Builder $brandQuery) use ($searchTerm) {
 
                         $brandQuery->where("name", "like", $searchTerm);
 
@@ -442,15 +440,15 @@ class ProductService {
 
                 });
 
-            } elseif ($filterBy === "brand") {
+            }elseif($filterBy === "brand") {
 
-                $query->whereHas("brand", function (Builder $brandQuery) use ($searchTerm) {
+                $query->whereHas("brand", function(Builder $brandQuery) use ($searchTerm) {
 
                     $brandQuery->where("name", "like", $searchTerm);
 
                 });
 
-            } elseif (in_array($filterBy, self::SEARCHABLE_FIELDS, true)) {
+            }elseif(in_array($filterBy, self::SEARCHABLE_FIELDS, true)) {
 
                 // Search in specific field
                 $query->where($filterBy, "like", $searchTerm);
@@ -465,7 +463,7 @@ class ProductService {
 
     private static function assertBrandCanBeAssigned(?int $brandId, int $companyId, ?Item $currentItem = null): void {
 
-        if (! $brandId) {
+        if(!$brandId) {
 
             return;
 
@@ -480,9 +478,10 @@ class ProductService {
             && $brand->status === "inactive"
             && (int) ($currentItem?->brand_id ?? 0) === (int) $brand->id;
 
-        if (! $brand || ($brand->status !== "active" && ! $keepsCurrentInactiveBrand)) {
+        if(!$brand || ($brand->status !== "active" && !$keepsCurrentInactiveBrand)) {
 
             throw new \InvalidArgumentException("La marca seleccionada no está disponible para la empresa.");
+
         }
 
     }

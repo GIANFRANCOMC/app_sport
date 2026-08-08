@@ -2,10 +2,10 @@
 
 namespace App\Models\System\Assets;
 
-use App\Helpers\System\Utilities;
+use App\Helpers\System\{Utilities};
 use App\Models\System\General\{Currency};
 use App\Models\System\Organizations\{Branch};
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\{Model};
 
 class BranchAsset extends Model {
     protected $table = "branch_assets";

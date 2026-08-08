@@ -4,12 +4,10 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\System\Customers;
 
-use App\Http\Controllers\System\Base\BaseController;
-use App\Services\System\Customers\Tracking\TrackingCustomerBusinessService;
-use App\Services\System\Customers\Tracking\TrackingCustomerConfigService;
-use App\Services\System\Organizations\AccessScopeService;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
+use App\Http\Controllers\System\Base\{BaseController};
+use App\Services\System\Customers\Tracking\{TrackingCustomerBusinessService, TrackingCustomerConfigService};
+use App\Services\System\Organizations\{AccessScopeService};
+use Illuminate\Http\{JsonResponse, Request};
 
 class TrackingCustomerController extends BaseController {
     /**
@@ -63,7 +61,7 @@ class TrackingCustomerController extends BaseController {
                 "options" => $request->input("options"),
             ]);
 
-            if ($result["bool"]) {
+            if($result["bool"]) {
 
                 return $this->successResponse($result["tracking"], "retrieved");
 
@@ -71,7 +69,7 @@ class TrackingCustomerController extends BaseController {
 
             return $this->errorResponse($result["msg"] ?? "retrieve_failed", [], 422);
 
-        } catch (\Exception $e) {
+        } catch(\Exception $e) {
 
             return $this->handleException($e, "retrieve");
 

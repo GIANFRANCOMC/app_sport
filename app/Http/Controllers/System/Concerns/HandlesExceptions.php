@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Http\Controllers\System\Concerns;
 
 use Exception;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Http\{JsonResponse};
+use Illuminate\Support\Facades\{Log};
 
 /**
  * Trait for handling exceptions in controllers

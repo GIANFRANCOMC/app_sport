@@ -2,11 +2,10 @@
 
 namespace App\Models\System\Organizations;
 
-use App\Helpers\System\Utilities;
-use App\Models\System\Catalogs\Brand;
-use App\Models\System\General\Currency;
-use App\Models\System\General\IdentityDocumentType;
-use Illuminate\Database\Eloquent\Model;
+use App\Helpers\System\{Utilities};
+use App\Models\System\Catalogs\{Brand};
+use App\Models\System\General\{Currency, IdentityDocumentType};
+use Illuminate\Database\Eloquent\{Model};
 
 class Company extends Model {
     protected $table = "companies";

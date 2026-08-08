@@ -4,17 +4,14 @@ declare(strict_types=1);
 
 namespace App\Services\System\Customers\Tracking;
 
-use App\Helpers\System\TranslationHelper;
-use App\Helpers\System\Utilities;
-use App\Models\System\Catalogs\Item;
-use App\Models\System\Customers\Customer;
-use App\Models\System\Customers\Subscription;
-use App\Models\System\Customers\SubscriptionEmail;
-use App\Models\System\Organizations\Branch;
-use App\Services\System\Organizations\Companies\CompanySettingService;
+use App\Helpers\System\{TranslationHelper, Utilities};
+use App\Models\System\Catalogs\{Item};
+use App\Models\System\Customers\{Customer, Subscription, SubscriptionEmail};
+use App\Models\System\Organizations\{Branch};
+use App\Services\System\Organizations\Companies\{CompanySettingService};
 use DomainException;
-use Illuminate\Pagination\LengthAwarePaginator;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Pagination\{LengthAwarePaginator};
+use Illuminate\Support\Facades\{DB};
 
 /**
  * Service class for managing Tracking Subscription operations
@@ -51,7 +48,7 @@ class TrackingSubscriptionService {
             ->where("company_id", $companyId)
             ->first();
 
-        if (! Utilities::isDefined($branch)) {
+        if(!Utilities::isDefined($branch)) {
 
             return new LengthAwarePaginator([], 0, 1, 1, ["path" => ""]);
 
@@ -78,25 +75,25 @@ class TrackingSubscriptionService {
      */
     private static function applyFilters($query, array $filters): void {
 
-        if (Utilities::isDefined($filters["customer_id"])) {
+        if(Utilities::isDefined($filters["customer_id"])) {
 
             $query->where("customer_id", $filters["customer_id"]);
 
         }
 
-        if (Utilities::isDefined($filters["start_date"])) {
+        if(Utilities::isDefined($filters["start_date"])) {
 
             $query->where("start_date", ">=", $filters["start_date"]." 00:00:00");
 
         }
 
-        if (Utilities::isDefined($filters["end_date"])) {
+        if(Utilities::isDefined($filters["end_date"])) {
 
             $query->where("end_date", "<=", $filters["end_date"]." 23:59:59");
 
         }
 
-        if (Utilities::isDefined($filters["status"])) {
+        if(Utilities::isDefined($filters["status"])) {
 
             $query->where("status", $filters["status"]);
 
@@ -115,9 +112,10 @@ class TrackingSubscriptionService {
      */
     public static function cancel(Subscription $subscription, ?string $motive = null, ?int $userId = null): Subscription {
 
-        if (! in_array($subscription->status, ["active"])) {
+        if(!in_array($subscription->status, ["active"])) {
 
             throw new \Exception("La membresía no puede ser anulada.");
+
         }
 
         $subscription->motive = $motive ?? "N/A";
@@ -142,7 +140,7 @@ class TrackingSubscriptionService {
         ?int $ignoreId = null
     ): void {
 
-        if ($force) {
+        if($force) {
 
             return;
 
@@ -155,7 +153,7 @@ class TrackingSubscriptionService {
             "block"
         );
 
-        if ($policy === "allow") {
+        if($policy === "allow") {
 
             return;
 
@@ -166,21 +164,22 @@ class TrackingSubscriptionService {
             ->where("branch_id", $branchId)
             ->where("customer_id", $customerId)
             ->where("status", "active")
-            ->when($ignoreId, fn ($query) => $query->where("id", "!=", $ignoreId))
+            ->when($ignoreId, fn($query) => $query->where("id", "!=", $ignoreId))
             ->where("start_date", "<=", $endDate)
             ->where("end_date", ">=", $startDate)
             ->exists();
 
-        if ($overlap) {
+        if($overlap) {
 
             throw new DomainException("El cliente ya tiene una membresía vigente que se superpone en esta sucursal.");
+
         }
 
     }
 
     public static function renew(Subscription $source, array $data, ?int $userId = null): Subscription {
 
-        return DB::transaction(function () use ($source, $data, $userId) {
+        return DB::transaction(function() use ($source, $data, $userId) {
 
             self::assertDatesAvailable(
                 (int) $source->company_id,
@@ -219,7 +218,7 @@ class TrackingSubscriptionService {
 
     public static function createManual(int $companyId, array $data, ?int $userId = null): Subscription {
 
-        return DB::transaction(function () use ($companyId, $data, $userId) {
+        return DB::transaction(function() use ($companyId, $data, $userId) {
 
             $customer = Customer::query()
                 ->where("company_id", $companyId)
@@ -228,7 +227,7 @@ class TrackingSubscriptionService {
 
             $catalogSubscription = null;
 
-            if (! empty($data["item_id"])) {
+            if(!empty($data["item_id"])) {
 
                 $catalogSubscription = Item::query()
                     ->where("company_id", $companyId)
@@ -268,7 +267,7 @@ class TrackingSubscriptionService {
                 "created_by" => $userId,
             ]);
 
-            if ((bool) ($data["send_welcome_email"] ?? true)) {
+            if((bool) ($data["send_welcome_email"] ?? true)) {
 
                 self::queueWelcomeEmail($subscription, $customer, $catalogSubscription, $userId);
 
@@ -287,7 +286,7 @@ class TrackingSubscriptionService {
         ?int $userId = null
     ): void {
 
-        if (! Utilities::isDefined($customer->email)) {
+        if(!Utilities::isDefined($customer->email)) {
 
             return;
 

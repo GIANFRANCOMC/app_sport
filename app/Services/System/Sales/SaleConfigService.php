@@ -4,15 +4,12 @@ declare(strict_types=1);
 
 namespace App\Services\System\Sales;
 
-use App\Models\System\Catalogs\Item;
-use App\Models\System\Customers\Customer;
-use App\Models\System\Finance\CashSession;
-use App\Models\System\Sales\QuotationHeader;
-use App\Models\System\Sales\SaleHeader;
-use App\Services\System\Base\BaseConfigService;
-use App\Services\System\Base\CompanyReferenceDataService;
-use App\Services\System\Base\MasterReferenceDataService;
-use App\Services\System\Organizations\Companies\CompanySettingService;
+use App\Models\System\Catalogs\{Item};
+use App\Models\System\Customers\{Customer};
+use App\Models\System\Finance\{CashSession};
+use App\Models\System\Sales\{QuotationHeader, SaleHeader};
+use App\Services\System\Base\{BaseConfigService, CompanyReferenceDataService, MasterReferenceDataService};
+use App\Services\System\Organizations\Companies\{CompanySettingService};
 use stdClass;
 
 final class SaleConfigService extends BaseConfigService {
@@ -34,7 +31,7 @@ final class SaleConfigService extends BaseConfigService {
 
         $references = CompanyReferenceDataService::for($companyId, $userId);
 
-        if ($page === "list" || $page === "deliveries") {
+        if($page === "list" || $page === "deliveries") {
 
             return self::data([
                 "branches" => self::data([
@@ -62,7 +59,7 @@ final class SaleConfigService extends BaseConfigService {
             ->where("status", "open");
 
         $cashRegisterIds = $references->allowedCashRegisterIds();
-        if ($cashRegisterIds !== null) {
+        if($cashRegisterIds !== null) {
 
             $cashSessions->whereIn("cash_register_id", $cashRegisterIds);
 

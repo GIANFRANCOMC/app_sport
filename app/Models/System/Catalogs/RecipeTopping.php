@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Models\System\Catalogs;
 
-use App\Helpers\System\Utilities;
-use App\Models\System\General\Currency;
-use App\Models\System\Organizations\Company;
-use Illuminate\Database\Eloquent\Model;
+use App\Helpers\System\{Utilities};
+use App\Models\System\General\{Currency};
+use App\Models\System\Organizations\{Company};
+use Illuminate\Database\Eloquent\{Model};
 
 class RecipeTopping extends Model {
     protected $table = "recipe_toppings";

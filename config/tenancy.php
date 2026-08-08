@@ -10,7 +10,7 @@ return [
     "enforce_subdomains" => (bool) env("TENANCY_ENFORCE_SUBDOMAINS", true),
 
     "reserved_subdomains" => array_values(array_filter(array_map(
-        static fn (string $subdomain): string => strtolower(trim($subdomain)),
+        static fn(string $subdomain): string => strtolower(trim($subdomain)),
         explode(",", (string) env("TENANCY_RESERVED_SUBDOMAINS", "www,api,admin,app,mail,static,assets"))
     ))),
 

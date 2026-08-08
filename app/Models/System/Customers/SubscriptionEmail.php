@@ -2,9 +2,9 @@
 
 namespace App\Models\System\Customers;
 
-use App\Helpers\System\Utilities;
+use App\Helpers\System\{Utilities};
 use App\Models\System\Organizations\{Company};
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\{Model};
 
 class SubscriptionEmail extends Model {
     protected $table = "subscription_emails";

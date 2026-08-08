@@ -5,16 +5,12 @@ declare(strict_types=1);
 namespace App\Http\Controllers\System\Organizations;
 
 use App\Helpers\System\{Utilities};
-use App\Http\Controllers\System\Base\BaseController;
-use App\Http\Requests\System\Organizations\Branches\StoreBranchRequest;
-use App\Http\Requests\System\Organizations\Branches\UpdateBranchRequest;
+use App\Http\Controllers\System\Base\{BaseController};
+use App\Http\Requests\System\Organizations\Branches\{StoreBranchRequest, UpdateBranchRequest};
 use App\Services\System\Base\{InitParamsCacheInvalidationService};
-use App\Services\System\Organizations\Branches\BranchConfigService;
-use App\Services\System\Organizations\Branches\BranchService;
-use App\Services\System\Organizations\Branches\SerieService;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\URL;
+use App\Services\System\Organizations\Branches\{BranchConfigService, BranchService, SerieService};
+use Illuminate\Http\{JsonResponse, Request};
+use Illuminate\Support\Facades\{URL};
 
 class BranchController extends BaseController {
     /**
@@ -70,7 +66,7 @@ class BranchController extends BaseController {
             $data = $this->prepareBranchData($request);
             $branch = BranchService::create($data, $this->getCompanyId(), $this->getUserId());
 
-            if (! Utilities::isDefined($branch)) {
+            if(!Utilities::isDefined($branch)) {
 
                 return $this->errorResponse("create_failed");
 
@@ -83,7 +79,7 @@ class BranchController extends BaseController {
 
             return $this->createdResponse($branch, "created", "branch");
 
-        } catch (\Exception $e) {
+        } catch(\Exception $e) {
 
             return $this->handleException($e, "create");
 
@@ -102,7 +98,7 @@ class BranchController extends BaseController {
 
             $branch = BranchService::findByIdAndCompany($id, $this->getCompanyId(), null);
 
-            if (! Utilities::isDefined($branch)) {
+            if(!Utilities::isDefined($branch)) {
 
                 return $this->notFoundResponse();
 
@@ -111,7 +107,7 @@ class BranchController extends BaseController {
             $data = $this->prepareBranchData($request);
             $branch = BranchService::update($branch, $data, $this->getUserId());
 
-            if (! Utilities::isDefined($branch)) {
+            if(!Utilities::isDefined($branch)) {
 
                 return $this->errorResponse("update_failed");
 
@@ -124,7 +120,7 @@ class BranchController extends BaseController {
 
             return $this->updatedResponse($branch, "updated", "branch");
 
-        } catch (\Exception $e) {
+        } catch(\Exception $e) {
 
             return $this->handleException($e, "update");
 
@@ -156,13 +152,13 @@ class BranchController extends BaseController {
             "branch_id", "serie_id", "user_id", "source", "action", "date_from", "date_to",
         ]))->get();
 
-        return response()->streamDownload(function () use ($rows) {
+        return response()->streamDownload(function() use ($rows) {
 
             $output = fopen("php://output", "w");
             fwrite($output, "\xEF\xBB\xBF");
             fputcsv($output, ["Fecha", "Sucursal", "Serie", "Correlativo", "Acción", "Origen", "Responsable"], ";");
 
-            foreach ($rows as $row) {
+            foreach($rows as $row) {
 
                 fputcsv($output, [
                     $row->occurred_at,
@@ -187,8 +183,10 @@ class BranchController extends BaseController {
     public function publicAttendanceLink(Request $request, int $id): JsonResponse {
 
         $branch = BranchService::findByIdAndCompany($id, $this->getCompanyId(), ["active"]);
-        if (! $branch) {
+        if(!$branch) {
+
             return $this->notFoundResponse();
+
         }
 
         $minutes = max(5, min((int) $request->input("expires_in_minutes", 1440), 10080));

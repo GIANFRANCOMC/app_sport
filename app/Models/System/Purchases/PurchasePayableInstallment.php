@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Models\System\Purchases;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\{BelongsTo};
+use Illuminate\Database\Eloquent\{Model};
 
 final class PurchasePayableInstallment extends Model {
     protected $table = "purchase_payable_installments";

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\System\Organizations\BookComplaints;
 
-use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Foundation\Http\{FormRequest};
 
 class UpdateBookComplaintRequest extends FormRequest {
     /**

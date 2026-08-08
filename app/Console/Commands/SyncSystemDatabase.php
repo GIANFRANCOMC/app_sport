@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Services\System\Database\SystemCatalogSyncService;
-use Illuminate\Console\Command;
+use App\Services\System\Database\{SystemCatalogSyncService};
+use Illuminate\Console\{Command};
 
 final class SyncSystemDatabase extends Command {
     protected $signature = "system:sync {--company= : Limita la sincronización a una organización}";
@@ -13,6 +13,7 @@ final class SyncSystemDatabase extends Command {
     protected $description = "Proyecta el menú almacenado en la base de datos hacia organizaciones y permisos administrativos.";
 
     public function handle(SystemCatalogSyncService $service): int {
+
         $companyId = $this->option("company");
         $result = $service->sync($companyId !== null ? (int) $companyId : null);
         $this->components->info(sprintf(
@@ -21,5 +22,6 @@ final class SyncSystemDatabase extends Command {
         ));
 
         return self::SUCCESS;
+
     }
 }

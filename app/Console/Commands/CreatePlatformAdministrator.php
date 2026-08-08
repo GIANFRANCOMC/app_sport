@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Models\System\Tenancy\PlatformUser;
-use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Hash;
+use App\Models\System\Tenancy\{PlatformUser};
+use Illuminate\Console\{Command};
+use Illuminate\Support\Facades\{Hash};
 use InvalidArgumentException;
 
 final class CreatePlatformAdministrator extends Command {
@@ -19,12 +19,17 @@ final class CreatePlatformAdministrator extends Command {
     protected $description = "Crea o actualiza un administrador del panel central app.";
 
     public function handle(): int {
+
         $password = (string) ($this->option("password") ?: "");
-        if ($password === "" && $this->input->isInteractive()) {
+        if($password === "" && $this->input->isInteractive()) {
+
             $password = (string) $this->secret("Contraseña del administrador SaaS");
+
         }
-        if (strlen($password) < 8) {
+        if(strlen($password) < 8) {
+
             throw new InvalidArgumentException("La contraseña debe tener al menos 8 caracteres.");
+
         }
 
         $email = strtolower((string) $this->argument("email"));
@@ -39,5 +44,6 @@ final class CreatePlatformAdministrator extends Command {
         $this->components->info("Administrador del panel app guardado correctamente.");
 
         return self::SUCCESS;
+
     }
 }

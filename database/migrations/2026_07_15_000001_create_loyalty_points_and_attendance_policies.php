@@ -1,9 +1,8 @@
 <?php
 
-use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\Migrations\{Migration};
+use Illuminate\Database\Schema\{Blueprint};
+use Illuminate\Support\Facades\{DB, Schema};
 
 return new class extends Migration {
     /**
@@ -11,13 +10,14 @@ return new class extends Migration {
      */
     public function up(): void {
 
-        if (Schema::hasTable("attendances")) {
+        if(Schema::hasTable("attendances")) {
 
             DB::statement("ALTER TABLE attendances MODIFY status ENUM('active', 'canceled', 'inactive', 'finalized', 'absent') NOT NULL DEFAULT 'active'");
 
         }
 
-        Schema::create("loyalty_point_rules", function (Blueprint $table) {
+        Schema::create("loyalty_point_rules", function(Blueprint $table) {
+
             $table->id();
             $table->unsignedBigInteger("company_id");
             $table->string("name", 255);
@@ -37,9 +37,11 @@ return new class extends Migration {
             $table->integer("updated_by")->nullable();
 
             $table->foreign("company_id")->references("id")->on("companies")->onDelete("cascade");
+
         });
 
-        Schema::create("loyalty_point_rule_items", function (Blueprint $table) {
+        Schema::create("loyalty_point_rule_items", function(Blueprint $table) {
+
             $table->id();
             $table->unsignedBigInteger("company_id");
             $table->unsignedBigInteger("loyalty_point_rule_id");
@@ -50,9 +52,11 @@ return new class extends Migration {
             $table->foreign("company_id")->references("id")->on("companies")->onDelete("cascade");
             $table->foreign("loyalty_point_rule_id")->references("id")->on("loyalty_point_rules")->onDelete("cascade");
             $table->foreign("item_id")->references("id")->on("items")->onDelete("cascade");
+
         });
 
-        Schema::create("customer_point_balances", function (Blueprint $table) {
+        Schema::create("customer_point_balances", function(Blueprint $table) {
+
             $table->id();
             $table->unsignedBigInteger("company_id");
             $table->unsignedBigInteger("customer_id");
@@ -65,9 +69,11 @@ return new class extends Migration {
             $table->foreign("company_id")->references("id")->on("companies")->onDelete("cascade");
             $table->foreign("customer_id")->references("id")->on("customers")->onDelete("cascade");
             $table->unique(["company_id", "customer_id"]);
+
         });
 
-        Schema::create("customer_point_movements", function (Blueprint $table) {
+        Schema::create("customer_point_movements", function(Blueprint $table) {
+
             $table->id();
             $table->unsignedBigInteger("company_id");
             $table->unsignedBigInteger("customer_id");
@@ -91,6 +97,7 @@ return new class extends Migration {
             $table->foreign("loyalty_point_rule_id")->references("id")->on("loyalty_point_rules")->nullOnDelete();
             $table->foreign("sale_header_id")->references("id")->on("sales_header")->nullOnDelete();
             $table->foreign("sale_body_id")->references("id")->on("sales_body")->nullOnDelete();
+
         });
 
         $this->syncSettings();
@@ -107,17 +114,19 @@ return new class extends Migration {
         Schema::dropIfExists("loyalty_point_rule_items");
         Schema::dropIfExists("loyalty_point_rules");
 
-        if (Schema::hasTable("attendances")) {
+        if(Schema::hasTable("attendances")) {
 
             DB::statement("ALTER TABLE attendances MODIFY status ENUM('active', 'canceled', 'inactive', 'finalized') NOT NULL DEFAULT 'active'");
 
         }
 
-        if (Schema::hasTable("company_settings")) {
+        if(Schema::hasTable("company_settings")) {
 
             DB::table("company_settings")
-                ->where(function ($query) {
-                    $query->where(function ($query) {
+                ->where(function($query) {
+
+                    $query->where(function($query) {
+
                         $query->where("group", "customer_attendance")
                             ->whereIn("key", [
                                 "auto_close_stale_enabled",
@@ -125,16 +134,22 @@ return new class extends Migration {
                                 "auto_close_end_time",
                                 "retention_months",
                             ]);
-                    })->orWhere(function ($query) {
+
+                    })->orWhere(function($query) {
+
                         $query->where("group", "loyalty")
                             ->whereIn("key", [
                                 "enabled",
                                 "reverse_points_on_sale_cancellation",
                             ]);
-                    })->orWhere(function ($query) {
+
+                    })->orWhere(function($query) {
+
                         $query->where("group", "subscriptions")
                             ->where("key", "send_welcome_email_on_sale");
+
                     });
+
                 })
                 ->delete();
 
@@ -144,13 +159,13 @@ return new class extends Migration {
 
     private function syncSettings(): void {
 
-        if (! Schema::hasTable("companies") || ! Schema::hasTable("company_settings")) {
+        if(!Schema::hasTable("companies") || !Schema::hasTable("company_settings")) {
 
             return;
 
         }
 
-        foreach (DB::table("companies")->pluck("id") as $companyId) {
+        foreach(DB::table("companies")->pluck("id") as $companyId) {
 
             $settings = [
                 ["customer_attendance", "auto_close_stale_enabled", "true", "Activa el cierre técnico de asistencias de clientes que quedaron abiertas sin salida.", "boolean"],
@@ -162,7 +177,7 @@ return new class extends Migration {
                 ["loyalty", "reverse_points_on_sale_cancellation", "true", "Revierte puntos ganados cuando se anula la venta que los originó.", "boolean"],
             ];
 
-            foreach ($settings as [$group, $key, $value, $description, $valueType]) {
+            foreach($settings as [$group, $key, $value, $description, $valueType]) {
 
                 DB::table("company_settings")->updateOrInsert(
                     [

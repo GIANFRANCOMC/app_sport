@@ -4,13 +4,16 @@ declare(strict_types=1);
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Database\{Seeder};
+use Illuminate\Support\Facades\{DB};
 
 final class SystemNavigationSeeder extends Seeder {
     public function run(): void {
-        if (DB::table("sections")->exists() || DB::table("sub_sections")->exists()) {
+
+        if(DB::table("sections")->exists() || DB::table("sub_sections")->exists()) {
+
             return;
+
         }
 
         $catalog = [
@@ -110,8 +113,10 @@ final class SystemNavigationSeeder extends Seeder {
             ],
         ];
 
-        DB::transaction(function () use ($catalog): void {
-            foreach ($catalog["categories"] as $record) {
+        DB::transaction(function() use ($catalog): void {
+
+            foreach($catalog["categories"] as $record) {
+
                 DB::table("menu_categories")->insert([
                     "id" => $record["id"],
                     "slug" => $record["code"],
@@ -121,15 +126,19 @@ final class SystemNavigationSeeder extends Seeder {
                     "created_at" => now(),
                     "updated_at" => now(),
                 ]);
+
             }
-            foreach ($catalog["sections"] as $record) {
+            foreach($catalog["sections"] as $record) {
+
                 DB::table("sections")->insert($record + [
                     "status" => "active",
                     "created_at" => now(),
                     "updated_at" => now(),
                 ]);
+
             }
-            foreach ($catalog["groups"] as $record) {
+            foreach($catalog["groups"] as $record) {
+
                 DB::table("menu_groups")->insert([
                     "id" => $record["id"],
                     "section_id" => $record["section_id"],
@@ -140,15 +149,20 @@ final class SystemNavigationSeeder extends Seeder {
                     "created_at" => now(),
                     "updated_at" => now(),
                 ]);
+
             }
-            foreach ($catalog["items"] as $record) {
+            foreach($catalog["items"] as $record) {
+
                 DB::table("sub_sections")->insert($record + [
                     "dom_icon" => "",
                     "status" => "active",
                     "created_at" => now(),
                     "updated_at" => now(),
                 ]);
+
             }
+
         });
+
     }
 }

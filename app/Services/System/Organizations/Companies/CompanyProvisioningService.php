@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 namespace App\Services\System\Organizations\Companies;
 
-use App\Helpers\System\Utilities;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Schema;
+use App\Helpers\System\{Utilities};
+use Illuminate\Support\Facades\{DB, Hash, Schema};
 use RuntimeException;
 
 final class CompanyProvisioningService {
@@ -31,13 +29,17 @@ final class CompanyProvisioningService {
     }
 
     public function enable(int $companyId, bool $enableModules = true): void {
+
         $company = DB::table("companies")->where("id", $companyId)->first();
 
-        if (! $company) {
+        if(!$company) {
+
             throw new RuntimeException("No existe una organización con ID {$companyId}.");
+
         }
 
-        DB::transaction(function () use ($companyId, $enableModules): void {
+        DB::transaction(function() use ($companyId, $enableModules): void {
+
             $this->seedIdentityDocumentTypes($companyId);
             $this->seedDocumentTypes($companyId);
             $this->seedCurrencies($companyId);
@@ -48,9 +50,12 @@ final class CompanyProvisioningService {
             $this->seedSaleDeliveryMethods($companyId);
             $this->seedOperationalDefaults($companyId);
 
-            if ($enableModules) {
+            if($enableModules) {
+
                 $this->ensureAdminRole($companyId);
+
             }
+
         });
 
     }
@@ -59,8 +64,10 @@ final class CompanyProvisioningService {
 
         $roleId = DB::table("roles")->where("company_id", $companyId)->where("is_full_access", true)->value("id");
         $identityId = DB::table("identity_document_types")->where("company_id", $companyId)->where("code", "dni")->value("id");
-        if (! $roleId || ! $identityId) {
+        if(!$roleId || !$identityId) {
+
             throw new RuntimeException("La organización debe aprovisionarse antes de crear el administrador.");
+
         }
 
         DB::table("users")->updateOrInsert(
@@ -79,11 +86,13 @@ final class CompanyProvisioningService {
 
         $userId = (int) DB::table("users")->where("company_id", $companyId)->where("email", $email)->value("id");
         $branchId = DB::table("branches")->where("company_id", $companyId)->where("name", "Sede Principal")->value("id");
-        if ($branchId) {
+        if($branchId) {
+
             DB::table("user_branches")->updateOrInsert(
                 ["company_id" => $companyId, "user_id" => $userId, "branch_id" => $branchId],
                 ["status" => "active", "updated_at" => now()]
             );
+
         }
 
         return $userId;
@@ -100,25 +109,29 @@ final class CompanyProvisioningService {
             ["code" => "pasaporte", "name" => "Pasaporte", "is_searchable" => false, "min_length" => 8, "max_length" => 8],
         ];
 
-        foreach ($records as $record) {
+        foreach($records as $record) {
+
             DB::table("identity_document_types")->updateOrInsert(
                 ["company_id" => $companyId, "code" => $record["code"]],
                 $record + ["company_id" => $companyId, "status" => "active"]
             );
+
         }
 
     }
 
     private function seedDocumentTypes(int $companyId): void {
 
-        foreach ([
+        foreach([
             ["code" => "BV", "name" => "BOLETA"],
             ["code" => "FA", "name" => "FACTURA"],
         ] as $record) {
+
             DB::table("document_types")->updateOrInsert(
                 ["company_id" => $companyId, "code" => $record["code"]],
                 $record + ["company_id" => $companyId, "status" => "active"]
             );
+
         }
 
     }
@@ -176,11 +189,13 @@ final class CompanyProvisioningService {
             ["group" => "inventory", "key" => "valuation_method", "value" => "weighted_average", "description" => "Método usado para valorizar inventario y kardex. El valor inicial weighted_average calcula costo promedio ponderado sobre entradas y saldos.", "value_type" => "string"],
         ];
 
-        foreach ($settings as $setting) {
+        foreach($settings as $setting) {
+
             DB::table("company_settings")->updateOrInsert(
                 ["company_id" => $companyId, "group" => $setting["group"], "key" => $setting["key"]],
                 $setting + ["company_id" => $companyId]
             );
+
         }
 
         $attendanceSettings = [
@@ -205,11 +220,13 @@ final class CompanyProvisioningService {
             ["group" => "numeric_validation", "key" => "max_file_size_kb", "value" => "4096", "description" => "Tamanio maximo por defecto, en KB, para archivos validados desde formularios de la empresa.", "value_type" => "integer"],
         ];
 
-        foreach ($attendanceSettings as $setting) {
+        foreach($attendanceSettings as $setting) {
+
             DB::table("company_settings")->updateOrInsert(
                 ["company_id" => $companyId, "group" => $setting["group"], "key" => $setting["key"]],
                 $setting + ["company_id" => $companyId]
             );
+
         }
 
     }
@@ -223,11 +240,13 @@ final class CompanyProvisioningService {
             ["code" => "PURCHASE-ICBP", "name" => "ICBP", "description" => "Impuesto al Consumo de Bolsas Plásticas aplicado a compras cuando corresponde. Es opcional porque no todas las compras incluyen bolsa gravada.", "scope" => "purchase", "calculation_type" => "fixed", "rate" => 0.5, "min_apply_quantity" => 0, "max_apply_quantity" => null, "operation_type" => "addition", "is_required" => false, "is_default" => false],
         ];
 
-        foreach ($taxes as $tax) {
+        foreach($taxes as $tax) {
+
             DB::table("taxes")->updateOrInsert(
                 ["company_id" => $companyId, "code" => $tax["code"]],
                 $tax + ["company_id" => $companyId, "status" => "active"]
             );
+
         }
 
     }
@@ -248,11 +267,13 @@ final class CompanyProvisioningService {
             ["code" => "LETTER_OF_CREDIT", "category" => "bank", "sunat_code" => null, "name" => "Carta de crédito", "description" => "Carta de crédito usada principalmente en compras u operaciones empresariales.", "image_path" => "System/assets/img/payment-methods/letter-of-credit.svg", "scope" => "purchase", "requires_reference" => true, "supports_variants" => false, "allows_partial_payment" => true, "is_default" => false],
         ];
 
-        foreach ($methods as $method) {
+        foreach($methods as $method) {
+
             DB::table("payment_methods")->updateOrInsert(
                 ["company_id" => $companyId, "code" => $method["code"]],
                 $method + ["company_id" => $companyId, "status" => "active"]
             );
+
         }
 
         DB::table("payment_methods")
@@ -266,8 +287,10 @@ final class CompanyProvisioningService {
 
     private function seedSaleDeliveryMethods(int $companyId): void {
 
-        if (! Schema::hasTable("sale_delivery_methods")) {
+        if(!Schema::hasTable("sale_delivery_methods")) {
+
             return;
+
         }
 
         $methods = [
@@ -276,19 +299,23 @@ final class CompanyProvisioningService {
             ["code" => "shipping", "name" => "Envío", "description" => "Lo vendido se remite mediante transporte propio o un tercero.", "sort_order" => 30, "is_default" => false],
         ];
 
-        foreach ($methods as $method) {
+        foreach($methods as $method) {
+
             DB::table("sale_delivery_methods")->updateOrInsert(
                 ["company_id" => $companyId, "code" => $method["code"]],
                 $method + ["company_id" => $companyId, "status" => "active"]
             );
+
         }
 
     }
 
     private function seedPaymentMethodVariants(int $companyId): void {
 
-        if (! Schema::hasTable("payment_method_variants")) {
+        if(!Schema::hasTable("payment_method_variants")) {
+
             return;
+
         }
 
         $methods = DB::table("payment_methods")
@@ -316,13 +343,17 @@ final class CompanyProvisioningService {
             ],
         ];
 
-        foreach ($variantsByMethod as $methodCode => $variants) {
+        foreach($variantsByMethod as $methodCode => $variants) {
+
             $methodId = $methods[$methodCode] ?? null;
-            if (! $methodId) {
+            if(!$methodId) {
+
                 continue;
+
             }
 
-            foreach ($variants as $variant) {
+            foreach($variants as $variant) {
+
                 DB::table("payment_method_variants")->updateOrInsert(
                     ["company_id" => $companyId, "payment_method_id" => $methodId, "code" => $variant["code"]],
                     $variant + [
@@ -335,7 +366,9 @@ final class CompanyProvisioningService {
                         "updated_at" => now(),
                     ]
                 );
+
             }
+
         }
 
     }
@@ -365,11 +398,13 @@ final class CompanyProvisioningService {
         );
 
         $documentTypes = DB::table("document_types")->where("company_id", $companyId)->get();
-        foreach ($documentTypes as $documentType) {
+        foreach($documentTypes as $documentType) {
+
             DB::table("series")->updateOrInsert(
                 ["company_id" => $companyId, "branch_id" => $branchId, "document_type_id" => $documentType->id],
                 ["code" => $documentType->code, "number" => 1, "init" => 1, "status" => "active", "updated_at" => now()]
             );
+
         }
 
     }
@@ -381,7 +416,8 @@ final class CompanyProvisioningService {
             ->where("is_full_access", true)
             ->value("id");
 
-        if (! $existingRoleId) {
+        if(!$existingRoleId) {
+
             DB::table("roles")->insert([
                 "company_id" => $companyId,
                 "slug" => Utilities::generateCode(),
@@ -394,14 +430,17 @@ final class CompanyProvisioningService {
                 ->where("company_id", $companyId)
                 ->where("is_full_access", true)
                 ->value("id");
+
         }
 
         $subSectionIds = DB::table("sub_sections")->pluck("id");
-        foreach ($subSectionIds as $subSectionId) {
+        foreach($subSectionIds as $subSectionId) {
+
             DB::table("role_sub_sections")->updateOrInsert(
                 ["company_id" => $companyId, "role_id" => $existingRoleId, "sub_section_id" => $subSectionId],
                 ["company_id" => $companyId, "role_id" => $existingRoleId, "sub_section_id" => $subSectionId, "status" => "active"]
             );
+
         }
 
     }

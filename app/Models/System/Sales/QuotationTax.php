@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Models\System\Sales;
 
-use App\Models\System\Finance\Tax;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\System\Finance\{Tax};
+use Illuminate\Database\Eloquent\{Model};
 
 final class QuotationTax extends Model {
     protected $table = "quotation_taxes";
@@ -39,6 +39,8 @@ final class QuotationTax extends Model {
     ];
 
     public function tax() {
+
         return $this->belongsTo(Tax::class, "tax_id");
+
     }
 }

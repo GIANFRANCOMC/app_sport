@@ -4,18 +4,15 @@ declare(strict_types=1);
 
 namespace App\Services\System\Organizations\Users;
 
-use App\Helpers\System\TranslationHelper;
-use App\Helpers\System\Utilities;
-use App\Models\System\Organizations\Role;
-use App\Models\System\Organizations\User;
-use App\Services\System\Organizations\AccessScopeService;
-use App\Services\System\Organizations\BusinessAuditService;
-use App\Services\System\Organizations\Roles\RolePermissionService;
-use Illuminate\Auth\Access\AuthorizationException;
-use Illuminate\Contracts\Pagination\LengthAwarePaginator;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
+use App\Helpers\System\{TranslationHelper, Utilities};
+use App\Models\System\Organizations\{Role, User};
+use App\Services\System\Organizations\Roles\{RolePermissionService};
+use App\Services\System\Organizations\{AccessScopeService, BusinessAuditService};
+use Illuminate\Auth\Access\{AuthorizationException};
+use Illuminate\Contracts\Pagination\{LengthAwarePaginator};
+use Illuminate\Database\Eloquent\{Builder};
+use Illuminate\Support\Facades\{DB};
+use Illuminate\Support\{Str};
 
 /**
  * Service class for managing module operations
@@ -84,9 +81,9 @@ class UserService {
             "created_by" => $userId,
         ];
 
-        foreach (self::ALLOWED_FIELDS as $field) {
+        foreach(self::ALLOWED_FIELDS as $field) {
 
-            if (isset($data[$field])) {
+            if(isset($data[$field])) {
 
                 $userData[$field] = $field === "email" ? Str::lower($data[$field]) : $data[$field];
 
@@ -95,7 +92,7 @@ class UserService {
         }
 
         // Handle password separately (it's hashed automatically by Laravel)
-        if (isset($data["password"])) {
+        if(isset($data["password"])) {
 
             $userData["password"] = $data["password"];
 
@@ -115,17 +112,18 @@ class UserService {
 
         $updateData = [];
 
-        foreach (self::ALLOWED_FIELDS as $field) {
+        foreach(self::ALLOWED_FIELDS as $field) {
 
-            if (isset($data[$field])) {
+            if(isset($data[$field])) {
 
                 $value = $field === "email" ? Str::lower($data[$field]) : $data[$field];
 
-                if ($value !== $user->$field) {
+                if($value !== $user->$field) {
 
                     $updateData[$field] = $value;
 
                 }
+
             }
 
         }
@@ -145,7 +143,7 @@ class UserService {
 
         $user = null;
 
-        DB::transaction(function () use ($data, $companyId, $userId, &$user) {
+        DB::transaction(function() use ($data, $companyId, $userId, &$user) {
 
             self::assertRoleAssignable($companyId, (int) $userId, (int) ($data["role_id"] ?? 0));
 
@@ -173,7 +171,7 @@ class UserService {
      */
     public static function update(User $user, array $data, int $userId): User {
 
-        DB::transaction(function () use ($user, $data, $userId) {
+        DB::transaction(function() use ($user, $data, $userId) {
 
             self::assertRoleAssignable(
                 (int) $user->company_id,
@@ -187,22 +185,26 @@ class UserService {
             $updateData = self::prepareUserDataForUpdate($user, $data);
 
             // Only update if there are changes
-            if (! empty($updateData)) {
+            if(!empty($updateData)) {
 
                 $invalidateSessions = array_key_exists("status", $updateData)
                     && $updateData["status"] !== "active";
 
-                if ($invalidateSessions) {
+                if($invalidateSessions) {
+
                     $updateData["session_version"] = max(1, (int) ($user->session_version ?? 1)) + 1;
                     $updateData["remember_token"] = null;
+
                 }
 
                 $updateData["updated_at"] = now();
                 $updateData["updated_by"] = $userId;
                 $user->update($updateData);
 
-                if ($invalidateSessions) {
+                if($invalidateSessions) {
+
                     $user->tokens()->delete();
+
                 }
 
             }
@@ -226,7 +228,7 @@ class UserService {
 
     public static function changePassword(User $user, string $password, ?int $userId = null): User {
 
-        DB::transaction(function () use ($user, $password, $userId) {
+        DB::transaction(function() use ($user, $password, $userId) {
 
             $user->forceFill([
                 "password" => $password,
@@ -266,12 +268,12 @@ class UserService {
 
         $branchIds = collect($branchIds)
             ->filter()
-            ->map(fn ($branchId) => (int) $branchId)
+            ->map(fn($branchId) => (int) $branchId)
             ->unique()
             ->values()
             ->all();
 
-        if (empty($branchIds)) {
+        if(empty($branchIds)) {
 
             return;
 
@@ -281,10 +283,10 @@ class UserService {
             ->where("company_id", $companyId)
             ->whereIn("id", $branchIds)
             ->pluck("id")
-            ->map(fn ($branchId) => (int) $branchId)
+            ->map(fn($branchId) => (int) $branchId)
             ->all();
 
-        if (empty($validBranchIds)) {
+        if(empty($validBranchIds)) {
 
             return;
 
@@ -292,7 +294,7 @@ class UserService {
 
         $now = now();
 
-        DB::table("user_branches")->insert(array_map(fn ($branchId) => [
+        DB::table("user_branches")->insert(array_map(fn($branchId) => [
             "company_id" => $companyId,
             "user_id" => $user->id,
             "branch_id" => $branchId,
@@ -308,8 +310,10 @@ class UserService {
         $actor = User::query()->where("company_id", $companyId)->findOrFail($actorId);
         $role = Role::query()->where("company_id", $companyId)->findOrFail($roleId);
 
-        if (! RolePermissionService::canAssignRole($actor, $role)) {
+        if(!RolePermissionService::canAssignRole($actor, $role)) {
+
             throw new AuthorizationException("No puedes asignar un perfil con permisos superiores a los tuyos.");
+
         }
 
     }
@@ -325,28 +329,31 @@ class UserService {
             "cash_register" => ["table" => "user_cash_registers", "resource" => "cash_registers", "key" => "cash_register_id"],
             "warehouse" => ["table" => "user_warehouses", "resource" => "warehouses", "key" => "warehouse_id"],
         ];
-        $branchIds = collect($data["branch_ids"] ?? [])->map(fn ($id) => (int) $id)->filter()->all();
+        $branchIds = collect($data["branch_ids"] ?? [])->map(fn($id) => (int) $id)->filter()->all();
 
-        foreach ($definitions as $type => $definition) {
+        foreach($definitions as $type => $definition) {
+
             DB::table($definition["table"])
                 ->where("company_id", $companyId)
                 ->where("user_id", $user->id)
                 ->delete();
 
-            $ids = collect($data["{$type}_ids"] ?? [])->map(fn ($id) => (int) $id)->filter()->unique();
-            if ($ids->isEmpty()) {
+            $ids = collect($data["{$type}_ids"] ?? [])->map(fn($id) => (int) $id)->filter()->unique();
+            if($ids->isEmpty()) {
+
                 continue;
+
             }
 
             $validIds = DB::table($definition["resource"])
                 ->where("company_id", $companyId)
                 ->whereIn("id", $ids)
-                ->when(! empty($branchIds), fn ($query) => $query->whereIn("branch_id", $branchIds))
+                ->when(!empty($branchIds), fn($query) => $query->whereIn("branch_id", $branchIds))
                 ->pluck("id")
-                ->map(fn ($id) => (int) $id)
+                ->map(fn($id) => (int) $id)
                 ->all();
 
-            DB::table($definition["table"])->insert(array_map(fn ($id) => [
+            DB::table($definition["table"])->insert(array_map(fn($id) => [
                 "company_id" => $companyId,
                 "user_id" => $user->id,
                 $definition["key"] => $id,
@@ -354,6 +361,7 @@ class UserService {
                 "created_at" => now(),
                 "created_by" => $userId,
             ], $validIds));
+
         }
 
         AccessScopeService::clearUserCache($companyId, (int) $user->id);
@@ -384,8 +392,10 @@ class UserService {
         array $after
     ): void {
 
-        if ($before === $after) {
+        if($before === $after) {
+
             return;
+
         }
 
         BusinessAuditService::record(
@@ -416,13 +426,13 @@ class UserService {
         $query = User::where("id", $id)
             ->where("company_id", $companyId);
 
-        if ($statuses !== null && ! empty($statuses)) {
+        if($statuses !== null && !empty($statuses)) {
 
             $query->whereIn("status", $statuses);
 
         }
 
-        if ($relations !== null && ! empty($relations)) {
+        if($relations !== null && !empty($relations)) {
 
             $query->with($relations);
 
@@ -448,25 +458,25 @@ class UserService {
         $filterBy = $filters["filter_by"] ?? null;
         $word = $filters["word"] ?? null;
 
-        if (Utilities::isDefined($word) && Utilities::isDefined($filterBy)) {
+        if(Utilities::isDefined($word) && Utilities::isDefined($filterBy)) {
 
             $searchTerm = Utilities::getWordSearch($word);
 
-            if ($filterBy === "all") {
+            if($filterBy === "all") {
 
                 // Search across all searchable fields
-                $query->where(function (Builder $q) use ($searchTerm) {
+                $query->where(function(Builder $q) use ($searchTerm) {
 
                     $searchableFields = self::SEARCHABLE_FIELDS;
                     $firstField = array_shift($searchableFields);
 
-                    if ($firstField) {
+                    if($firstField) {
 
                         $q->where($firstField, "like", $searchTerm);
 
                     }
 
-                    foreach ($searchableFields as $field) {
+                    foreach($searchableFields as $field) {
 
                         $q->orWhere($field, "like", $searchTerm);
 
@@ -474,7 +484,7 @@ class UserService {
 
                 });
 
-            } elseif (in_array($filterBy, self::SEARCHABLE_FIELDS, true)) {
+            }elseif(in_array($filterBy, self::SEARCHABLE_FIELDS, true)) {
 
                 // Search in specific field
                 $query->where($filterBy, "like", $searchTerm);

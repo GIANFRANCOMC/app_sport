@@ -4,12 +4,10 @@ declare(strict_types=1);
 
 namespace App\Services\System\Customers\Tracking;
 
-use App\Helpers\System\Utilities;
-use App\Models\System\Customers\Attendance;
-use App\Models\System\Customers\Customer;
-use App\Models\System\Customers\Subscription;
+use App\Helpers\System\{Utilities};
+use App\Models\System\Customers\{Attendance, Customer, Subscription};
 use App\Models\System\Sales\{SaleHeader};
-use Carbon\Carbon;
+use Carbon\{Carbon};
 
 /**
  * Business Service for Customer Tracking Operations
@@ -28,7 +26,7 @@ class TrackingCustomerBusinessService {
         $query = Customer::where("company_id", $companyId)
             ->with(["identityDocumentType"]);
 
-        if ($type === "document_number") {
+        if($type === "document_number") {
 
             return $query->where("document_number", $code)->first();
 
@@ -48,21 +46,22 @@ class TrackingCustomerBusinessService {
 
         $now = Carbon::now();
 
-        if ($code === "custom" && $from && $to) {
+        if($code === "custom" && $from && $to) {
 
             $start = Carbon::parse($from)->startOfDay();
             $end = Carbon::parse($to)->endOfDay();
 
-            if ($start->greaterThan($end)) {
+            if($start->greaterThan($end)) {
 
                 throw new \InvalidArgumentException("La fecha inicial no puede ser posterior a la fecha final.");
+
             }
 
             return ["from" => $start, "to" => $end];
 
         }
 
-        if ($code === "this_year") {
+        if($code === "this_year") {
 
             return [
                 "from" => $now->copy()->startOfYear()->startOfDay(),
@@ -71,7 +70,7 @@ class TrackingCustomerBusinessService {
 
         }
 
-        if (preg_match("/^last_(\d+)_([a-z]+)$/", $code, $matches)) {
+        if(preg_match("/^last_(\d+)_([a-z]+)$/", $code, $matches)) {
 
             $amount = (int) $matches[1];
             $unit = $matches[2]; // "days", "months", "years"
@@ -101,14 +100,15 @@ class TrackingCustomerBusinessService {
      */
     public function getInformation(Customer $customer, array $range, string $type, ?array $allowedBranchIds = null) {
 
-        switch ($type) {
+        switch($type) {
+
             case "sales":
                 return SaleHeader::where("holder_id", $customer->id)
-                    ->whereHas("serie.branch", function ($query) use ($customer, $allowedBranchIds) {
+                    ->whereHas("serie.branch", function($query) use ($customer, $allowedBranchIds) {
 
                         $query->where("company_id", $customer->company_id);
 
-                        if ($allowedBranchIds !== null) {
+                        if($allowedBranchIds !== null) {
 
                             $query->whereIn("id", $allowedBranchIds);
 
@@ -122,7 +122,7 @@ class TrackingCustomerBusinessService {
             case "subscriptions":
                 return Subscription::where("company_id", $customer->company_id)
                     ->where("customer_id", $customer->id)
-                    ->when($allowedBranchIds !== null, fn ($query) => $query->whereIn("branch_id", $allowedBranchIds))
+                    ->when($allowedBranchIds !== null, fn($query) => $query->whereIn("branch_id", $allowedBranchIds))
                     ->whereBetween("created_at", [$range["from"], $range["to"]])
                     ->with(["branch"])
                     ->get();
@@ -130,13 +130,14 @@ class TrackingCustomerBusinessService {
             case "attendances":
                 return Attendance::where("company_id", $customer->company_id)
                     ->where("customer_id", $customer->id)
-                    ->when($allowedBranchIds !== null, fn ($query) => $query->whereIn("branch_id", $allowedBranchIds))
+                    ->when($allowedBranchIds !== null, fn($query) => $query->whereIn("branch_id", $allowedBranchIds))
                     ->whereBetween("created_at", [$range["from"], $range["to"]])
                     ->with(["branch"])
                     ->get();
 
             default:
                 return collect();
+
         }
 
     }
@@ -168,7 +169,7 @@ class TrackingCustomerBusinessService {
             $customerDocumentNumber ? "document_number" : ""
         );
 
-        if (! Utilities::isDefined($customer)) {
+        if(!Utilities::isDefined($customer)) {
 
             $response["msg"] = "No se ha encontrado el cliente solicitado.";
 
@@ -193,11 +194,11 @@ class TrackingCustomerBusinessService {
 
         $information = $options["information"] ?? [];
 
-        foreach ($information as $opt) {
+        foreach($information as $opt) {
 
             $response["tracking"][$opt] = $this->getInformation($customer, $range, $opt, $allowedBranchIds);
 
-            if (in_array($opt, ["sales", "subscriptions", "attendances"])) {
+            if(in_array($opt, ["sales", "subscriptions", "attendances"])) {
 
                 $response["tracking"]["functions"]["subscription_end_dates"] = $customer->subscriptionEndDates();
 

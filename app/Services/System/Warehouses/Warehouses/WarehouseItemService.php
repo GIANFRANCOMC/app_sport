@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace App\Services\System\Warehouses\Warehouses;
 
-use App\Helpers\System\Utilities;
+use App\Helpers\System\{Utilities};
 use App\Models\System\Catalogs\{Item};
-use App\Models\System\Warehouses\Warehouse;
-use App\Models\System\Warehouses\WarehouseItem;
-use App\Services\System\Warehouses\Inventory\InventoryMovementService;
+use App\Models\System\Warehouses\{Warehouse, WarehouseItem};
+use App\Services\System\Warehouses\Inventory\{InventoryMovementService};
 
 class WarehouseItemService {
     public static function syncProductInventory(
@@ -20,11 +19,11 @@ class WarehouseItemService {
     ): void {
 
         $inventoryByWarehouse = collect($inventory)->keyBy(
-            fn (array $record) => (int) ($record["warehouse_id"] ?? 0)
+            fn(array $record) => (int) ($record["warehouse_id"] ?? 0)
         );
 
         $warehouses = Warehouse::where("status", "active")
-            ->whereHas("branch", function ($query) use ($companyId) {
+            ->whereHas("branch", function($query) use ($companyId) {
 
                 $query->where("company_id", $companyId)
                     ->where("status", "active");
@@ -32,16 +31,16 @@ class WarehouseItemService {
             })
             ->get();
 
-        foreach ($warehouses as $warehouse) {
+        foreach($warehouses as $warehouse) {
 
             $inventoryRecord = $inventoryByWarehouse->get((int) $warehouse->id, []);
             $warehouseItem = WarehouseItem::firstOrNew([
                 "warehouse_id" => $warehouse->id,
                 "item_id" => $itemId,
             ]);
-            $isNew = ! $warehouseItem->exists;
+            $isNew = !$warehouseItem->exists;
 
-            if ($isNew) {
+            if($isNew) {
 
                 $warehouseItem->company_id = $companyId;
                 $warehouseItem->quantity = 0;
@@ -55,7 +54,7 @@ class WarehouseItemService {
             );
             $warehouseItem->status = "active";
 
-            if (! $isNew) {
+            if(!$isNew) {
 
                 $warehouseItem->updated_at = now();
                 $warehouseItem->updated_by = $userId;
@@ -66,7 +65,7 @@ class WarehouseItemService {
 
             $initialStock = Utilities::round((float) ($inventoryRecord["initial_stock"] ?? 0), null, $companyId);
 
-            if ($isNew && $setInitialStock && $initialStock > 0) {
+            if($isNew && $setInitialStock && $initialStock > 0) {
 
                 InventoryMovementService::apply([
                     "company_id" => $companyId,
@@ -92,7 +91,7 @@ class WarehouseItemService {
             ->where("type", "product")
             ->pluck("id");
 
-        foreach ($productIds as $itemId) {
+        foreach($productIds as $itemId) {
 
             WarehouseItem::firstOrCreate(
                 [

@@ -1,6 +1,15 @@
 {
     "preset": "laravel",
     "rules": {
+        "class_definition": false,
+        "control_structure_braces": false,
+        "control_structure_continuation_position": false,
+        "function_declaration": false,
+        "group_import": true,
+        "no_extra_blank_lines": false,
+        "not_operator_with_successor_space": false,
+        "single_import_per_statement": false,
+        "single_space_around_construct": false,
         "braces_position": {
             "control_structures_opening_brace": "same_line",
             "functions_opening_brace": "same_line",

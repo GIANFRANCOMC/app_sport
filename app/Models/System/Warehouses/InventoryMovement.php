@@ -4,10 +4,9 @@ declare(strict_types=1);
 
 namespace App\Models\System\Warehouses;
 
-use App\Models\System\Catalogs\Item;
-use App\Models\System\Organizations\Company;
-use App\Models\System\Organizations\User;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\System\Catalogs\{Item};
+use App\Models\System\Organizations\{Company, User};
+use Illuminate\Database\Eloquent\{Model};
 
 class InventoryMovement extends Model {
     protected $table = "inventory_movements";

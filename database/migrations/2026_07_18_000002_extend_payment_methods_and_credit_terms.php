@@ -1,9 +1,8 @@
 <?php
 
-use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\Migrations\{Migration};
+use Illuminate\Database\Schema\{Blueprint};
+use Illuminate\Support\Facades\{DB, Schema};
 
 return new class extends Migration {
     public function up(): void {
@@ -26,50 +25,82 @@ return new class extends Migration {
         Schema::dropIfExists("sale_receivable_installments");
         Schema::dropIfExists("sale_accounts_receivable");
 
-        if (Schema::hasTable("purchase_payments") && Schema::hasColumn("purchase_payments", "payment_method_variant_id")) {
-            Schema::table("purchase_payments", function (Blueprint $table) {
+        if(Schema::hasTable("purchase_payments") && Schema::hasColumn("purchase_payments", "payment_method_variant_id")) {
+
+            Schema::table("purchase_payments", function(Blueprint $table) {
+
                 $table->dropForeign(["payment_method_variant_id"]);
                 $table->dropColumn("payment_method_variant_id");
+
             });
+
         }
 
-        if (Schema::hasTable("sale_payments") && Schema::hasColumn("sale_payments", "payment_method_variant_id")) {
-            Schema::table("sale_payments", function (Blueprint $table) {
+        if(Schema::hasTable("sale_payments") && Schema::hasColumn("sale_payments", "payment_method_variant_id")) {
+
+            Schema::table("sale_payments", function(Blueprint $table) {
+
                 $table->dropForeign(["payment_method_variant_id"]);
                 $table->dropColumn("payment_method_variant_id");
+
             });
+
         }
 
-        if (Schema::hasTable("purchase_headers")) {
-            Schema::table("purchase_headers", function (Blueprint $table) {
-                foreach (["payment_modality", "installment_extra_percentage", "installment_extra_amount"] as $column) {
-                    if (Schema::hasColumn("purchase_headers", $column)) {
+        if(Schema::hasTable("purchase_headers")) {
+
+            Schema::table("purchase_headers", function(Blueprint $table) {
+
+                foreach(["payment_modality", "installment_extra_percentage", "installment_extra_amount"] as $column) {
+
+                    if(Schema::hasColumn("purchase_headers", $column)) {
+
                         $table->dropColumn($column);
+
                     }
+
                 }
+
             });
+
         }
 
-        if (Schema::hasTable("sales_header")) {
-            Schema::table("sales_header", function (Blueprint $table) {
-                foreach (["payment_modality", "installment_extra_percentage", "installment_extra_amount", "paid_amount", "balance_due", "payment_status"] as $column) {
-                    if (Schema::hasColumn("sales_header", $column)) {
+        if(Schema::hasTable("sales_header")) {
+
+            Schema::table("sales_header", function(Blueprint $table) {
+
+                foreach(["payment_modality", "installment_extra_percentage", "installment_extra_amount", "paid_amount", "balance_due", "payment_status"] as $column) {
+
+                    if(Schema::hasColumn("sales_header", $column)) {
+
                         $table->dropColumn($column);
+
                     }
+
                 }
+
             });
+
         }
 
         Schema::dropIfExists("payment_method_variants");
 
-        if (Schema::hasTable("payment_methods")) {
-            Schema::table("payment_methods", function (Blueprint $table) {
-                foreach (["category", "description", "supports_variants", "allows_partial_payment"] as $column) {
-                    if (Schema::hasColumn("payment_methods", $column)) {
+        if(Schema::hasTable("payment_methods")) {
+
+            Schema::table("payment_methods", function(Blueprint $table) {
+
+                foreach(["category", "description", "supports_variants", "allows_partial_payment"] as $column) {
+
+                    if(Schema::hasColumn("payment_methods", $column)) {
+
                         $table->dropColumn($column);
+
                     }
+
                 }
+
             });
+
         }
 
         DB::table("company_settings")
@@ -81,33 +112,46 @@ return new class extends Migration {
 
     private function extendPaymentMethods(): void {
 
-        Schema::table("payment_methods", function (Blueprint $table) {
-            if (! Schema::hasColumn("payment_methods", "category")) {
+        Schema::table("payment_methods", function(Blueprint $table) {
+
+            if(!Schema::hasColumn("payment_methods", "category")) {
+
                 $table->string("category", 40)->default("other")->after("name");
+
             }
 
-            if (! Schema::hasColumn("payment_methods", "description")) {
+            if(!Schema::hasColumn("payment_methods", "description")) {
+
                 $table->text("description")->nullable()->after("sunat_code");
+
             }
 
-            if (! Schema::hasColumn("payment_methods", "supports_variants")) {
+            if(!Schema::hasColumn("payment_methods", "supports_variants")) {
+
                 $table->boolean("supports_variants")->default(false)->after("requires_reference");
+
             }
 
-            if (! Schema::hasColumn("payment_methods", "allows_partial_payment")) {
+            if(!Schema::hasColumn("payment_methods", "allows_partial_payment")) {
+
                 $table->boolean("allows_partial_payment")->default(true)->after("supports_variants");
+
             }
+
         });
 
     }
 
     private function createPaymentMethodVariants(): void {
 
-        if (Schema::hasTable("payment_method_variants")) {
+        if(Schema::hasTable("payment_method_variants")) {
+
             return;
+
         }
 
-        Schema::create("payment_method_variants", function (Blueprint $table) {
+        Schema::create("payment_method_variants", function(Blueprint $table) {
+
             $table->id();
             $table->unsignedBigInteger("company_id");
             $table->unsignedBigInteger("payment_method_id");
@@ -126,72 +170,105 @@ return new class extends Migration {
 
             $table->foreign("company_id")->references("id")->on("companies")->onDelete("cascade");
             $table->foreign("payment_method_id")->references("id")->on("payment_methods")->onDelete("cascade");
+
         });
 
     }
 
     private function extendCommercialDocuments(): void {
 
-        Schema::table("sales_header", function (Blueprint $table) {
-            if (! Schema::hasColumn("sales_header", "payment_modality")) {
+        Schema::table("sales_header", function(Blueprint $table) {
+
+            if(!Schema::hasColumn("sales_header", "payment_modality")) {
+
                 $table->enum("payment_modality", ["paid_now", "cash_on_delivery", "installments"])->default("paid_now")->after("delivery_observation");
+
             }
 
-            if (! Schema::hasColumn("sales_header", "installment_extra_percentage")) {
+            if(!Schema::hasColumn("sales_header", "installment_extra_percentage")) {
+
                 $table->decimal("installment_extra_percentage", 15, 3)->default(0)->after("payment_modality");
+
             }
 
-            if (! Schema::hasColumn("sales_header", "installment_extra_amount")) {
+            if(!Schema::hasColumn("sales_header", "installment_extra_amount")) {
+
                 $table->decimal("installment_extra_amount", 15, 3)->default(0)->after("installment_extra_percentage");
+
             }
 
-            if (! Schema::hasColumn("sales_header", "paid_amount")) {
+            if(!Schema::hasColumn("sales_header", "paid_amount")) {
+
                 $table->decimal("paid_amount", 15, 3)->default(0)->after("total");
+
             }
 
-            if (! Schema::hasColumn("sales_header", "balance_due")) {
+            if(!Schema::hasColumn("sales_header", "balance_due")) {
+
                 $table->decimal("balance_due", 15, 3)->default(0)->after("paid_amount");
+
             }
 
-            if (! Schema::hasColumn("sales_header", "payment_status")) {
+            if(!Schema::hasColumn("sales_header", "payment_status")) {
+
                 $table->enum("payment_status", ["unpaid", "partial", "paid", "overpaid"])->default("paid")->after("balance_due");
+
             }
+
         });
 
-        Schema::table("purchase_headers", function (Blueprint $table) {
-            if (! Schema::hasColumn("purchase_headers", "payment_modality")) {
+        Schema::table("purchase_headers", function(Blueprint $table) {
+
+            if(!Schema::hasColumn("purchase_headers", "payment_modality")) {
+
                 $table->enum("payment_modality", ["paid_now", "cash_on_delivery", "installments"])->default("paid_now")->after("delivery_mode");
+
             }
 
-            if (! Schema::hasColumn("purchase_headers", "installment_extra_percentage")) {
+            if(!Schema::hasColumn("purchase_headers", "installment_extra_percentage")) {
+
                 $table->decimal("installment_extra_percentage", 15, 3)->default(0)->after("payment_modality");
+
             }
 
-            if (! Schema::hasColumn("purchase_headers", "installment_extra_amount")) {
+            if(!Schema::hasColumn("purchase_headers", "installment_extra_amount")) {
+
                 $table->decimal("installment_extra_amount", 15, 3)->default(0)->after("installment_extra_percentage");
+
             }
+
         });
 
-        Schema::table("sale_payments", function (Blueprint $table) {
-            if (! Schema::hasColumn("sale_payments", "payment_method_variant_id")) {
+        Schema::table("sale_payments", function(Blueprint $table) {
+
+            if(!Schema::hasColumn("sale_payments", "payment_method_variant_id")) {
+
                 $table->unsignedBigInteger("payment_method_variant_id")->nullable()->after("payment_method_id");
                 $table->foreign("payment_method_variant_id")->references("id")->on("payment_method_variants")->nullOnDelete();
+
             }
+
         });
 
-        Schema::table("purchase_payments", function (Blueprint $table) {
-            if (! Schema::hasColumn("purchase_payments", "payment_method_variant_id")) {
+        Schema::table("purchase_payments", function(Blueprint $table) {
+
+            if(!Schema::hasColumn("purchase_payments", "payment_method_variant_id")) {
+
                 $table->unsignedBigInteger("payment_method_variant_id")->nullable()->after("payment_method_id");
                 $table->foreign("payment_method_variant_id")->references("id")->on("payment_method_variants")->nullOnDelete();
+
             }
+
         });
 
     }
 
     private function createAccountsReceivable(): void {
 
-        if (! Schema::hasTable("sale_accounts_receivable")) {
-            Schema::create("sale_accounts_receivable", function (Blueprint $table) {
+        if(!Schema::hasTable("sale_accounts_receivable")) {
+
+            Schema::create("sale_accounts_receivable", function(Blueprint $table) {
+
                 $table->id();
                 $table->unsignedBigInteger("company_id");
                 $table->unsignedBigInteger("sale_header_id");
@@ -219,11 +296,15 @@ return new class extends Migration {
                 $table->foreign("sale_header_id")->references("id")->on("sales_header")->onDelete("cascade");
                 $table->foreign("customer_id")->references("id")->on("customers")->restrictOnDelete();
                 $table->foreign("currency_id")->references("id")->on("currencies")->restrictOnDelete();
+
             });
+
         }
 
-        if (! Schema::hasTable("sale_receivable_installments")) {
-            Schema::create("sale_receivable_installments", function (Blueprint $table) {
+        if(!Schema::hasTable("sale_receivable_installments")) {
+
+            Schema::create("sale_receivable_installments", function(Blueprint $table) {
+
                 $table->id();
                 $table->unsignedBigInteger("company_id");
                 $table->unsignedBigInteger("sale_account_receivable_id");
@@ -240,11 +321,15 @@ return new class extends Migration {
 
                 $table->foreign("company_id")->references("id")->on("companies")->onDelete("cascade");
                 $table->foreign("sale_account_receivable_id", "fk_sale_recv_inst_account")->references("id")->on("sale_accounts_receivable")->onDelete("cascade");
+
             });
+
         }
 
-        if (! Schema::hasTable("sale_receivable_payments")) {
-            Schema::create("sale_receivable_payments", function (Blueprint $table) {
+        if(!Schema::hasTable("sale_receivable_payments")) {
+
+            Schema::create("sale_receivable_payments", function(Blueprint $table) {
+
                 $table->id();
                 $table->unsignedBigInteger("company_id");
                 $table->unsignedBigInteger("sale_account_receivable_id");
@@ -264,15 +349,19 @@ return new class extends Migration {
                 $table->foreign("sale_account_receivable_id", "fk_sale_recv_pay_account")->references("id")->on("sale_accounts_receivable")->onDelete("cascade");
                 $table->foreign("payment_method_id")->references("id")->on("payment_methods")->nullOnDelete();
                 $table->foreign("payment_method_variant_id")->references("id")->on("payment_method_variants")->nullOnDelete();
+
             });
+
         }
 
     }
 
     private function createAccountsPayable(): void {
 
-        if (! Schema::hasTable("purchase_accounts_payable")) {
-            Schema::create("purchase_accounts_payable", function (Blueprint $table) {
+        if(!Schema::hasTable("purchase_accounts_payable")) {
+
+            Schema::create("purchase_accounts_payable", function(Blueprint $table) {
+
                 $table->id();
                 $table->unsignedBigInteger("company_id");
                 $table->unsignedBigInteger("purchase_header_id");
@@ -300,11 +389,15 @@ return new class extends Migration {
                 $table->foreign("purchase_header_id")->references("id")->on("purchase_headers")->onDelete("cascade");
                 $table->foreign("supplier_id")->references("id")->on("suppliers")->restrictOnDelete();
                 $table->foreign("currency_id")->references("id")->on("currencies")->restrictOnDelete();
+
             });
+
         }
 
-        if (! Schema::hasTable("purchase_payable_installments")) {
-            Schema::create("purchase_payable_installments", function (Blueprint $table) {
+        if(!Schema::hasTable("purchase_payable_installments")) {
+
+            Schema::create("purchase_payable_installments", function(Blueprint $table) {
+
                 $table->id();
                 $table->unsignedBigInteger("company_id");
                 $table->unsignedBigInteger("purchase_account_payable_id");
@@ -321,11 +414,15 @@ return new class extends Migration {
 
                 $table->foreign("company_id")->references("id")->on("companies")->onDelete("cascade");
                 $table->foreign("purchase_account_payable_id", "fk_purchase_pay_inst_account")->references("id")->on("purchase_accounts_payable")->onDelete("cascade");
+
             });
+
         }
 
-        if (! Schema::hasTable("purchase_payable_payments")) {
-            Schema::create("purchase_payable_payments", function (Blueprint $table) {
+        if(!Schema::hasTable("purchase_payable_payments")) {
+
+            Schema::create("purchase_payable_payments", function(Blueprint $table) {
+
                 $table->id();
                 $table->unsignedBigInteger("company_id");
                 $table->unsignedBigInteger("purchase_account_payable_id");
@@ -345,18 +442,22 @@ return new class extends Migration {
                 $table->foreign("purchase_account_payable_id", "fk_purchase_pay_pay_account")->references("id")->on("purchase_accounts_payable")->onDelete("cascade");
                 $table->foreign("payment_method_id")->references("id")->on("payment_methods")->nullOnDelete();
                 $table->foreign("payment_method_variant_id")->references("id")->on("payment_method_variants")->nullOnDelete();
+
             });
+
         }
 
     }
 
     private function syncReferenceData(): void {
 
-        foreach (DB::table("companies")->pluck("id") as $companyId) {
+        foreach(DB::table("companies")->pluck("id") as $companyId) {
+
             $companyId = (int) $companyId;
             $this->syncPaymentMethods($companyId);
             $this->syncPaymentMethodVariants($companyId);
             $this->syncPaymentSettings($companyId);
+
         }
 
     }
@@ -377,11 +478,13 @@ return new class extends Migration {
             ["code" => "LETTER_OF_CREDIT", "category" => "bank", "sunat_code" => null, "name" => "Carta de crédito", "description" => "Carta de crédito usada principalmente en compras u operaciones empresariales.", "image_path" => "System/assets/img/payment-methods/letter-of-credit.svg", "scope" => "purchase", "requires_reference" => true, "supports_variants" => false, "allows_partial_payment" => true, "is_default" => false],
         ];
 
-        foreach ($methods as $method) {
+        foreach($methods as $method) {
+
             DB::table("payment_methods")->updateOrInsert(
                 ["company_id" => $companyId, "code" => $method["code"]],
                 $method + ["company_id" => $companyId, "status" => "active"]
             );
+
         }
 
         DB::table("payment_methods")
@@ -418,13 +521,17 @@ return new class extends Migration {
             ],
         ];
 
-        foreach ($variantsByMethod as $methodCode => $variants) {
+        foreach($variantsByMethod as $methodCode => $variants) {
+
             $methodId = $methods[$methodCode] ?? null;
-            if (! $methodId) {
+            if(!$methodId) {
+
                 continue;
+
             }
 
-            foreach ($variants as $variant) {
+            foreach($variants as $variant) {
+
                 DB::table("payment_method_variants")->updateOrInsert(
                     ["company_id" => $companyId, "payment_method_id" => $methodId, "code" => $variant["code"]],
                     $variant + [
@@ -437,7 +544,9 @@ return new class extends Migration {
                         "updated_at" => now(),
                     ]
                 );
+
             }
+
         }
 
     }
@@ -475,11 +584,13 @@ return new class extends Migration {
             ],
         ];
 
-        foreach ($settings as $setting) {
+        foreach($settings as $setting) {
+
             DB::table("company_settings")->updateOrInsert(
                 ["company_id" => $companyId, "group" => $setting["group"], "key" => $setting["key"]],
                 $setting + ["company_id" => $companyId, "status" => "active"]
             );
+
         }
 
     }

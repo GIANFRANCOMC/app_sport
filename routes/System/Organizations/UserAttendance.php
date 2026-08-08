@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
-use App\Http\Controllers\System\Organizations\UserAttendanceController;
-use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\System\Organizations\{UserAttendanceController};
+use Illuminate\Support\Facades\{Route};
 
 Route::get("", [UserAttendanceController::class, "index"])->name("user_attendances.index");
 Route::get("/initParams", [UserAttendanceController::class, "initParams"])->name("user_attendances.initParams");

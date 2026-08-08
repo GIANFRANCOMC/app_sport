@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Models\System\Sales;
 
-use App\Models\System\Catalogs\Item;
-use App\Models\System\General\Currency;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\System\Catalogs\{Item};
+use App\Models\System\General\{Currency};
+use Illuminate\Database\Eloquent\{Model};
 
 final class QuotationItem extends Model {
     protected $table = "quotation_items";
@@ -40,10 +40,14 @@ final class QuotationItem extends Model {
     ];
 
     public function item() {
+
         return $this->belongsTo(Item::class, "item_id");
+
     }
 
     public function currency() {
+
         return $this->belongsTo(Currency::class, "currency_id");
+
     }
 }

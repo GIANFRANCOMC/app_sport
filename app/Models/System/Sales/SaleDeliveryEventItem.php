@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Models\System\Sales;
 
-use App\Models\System\Catalogs\Item;
-use App\Models\System\Warehouses\InventoryMovement;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\System\Catalogs\{Item};
+use App\Models\System\Warehouses\{InventoryMovement};
+use Illuminate\Database\Eloquent\{Model};
 
 class SaleDeliveryEventItem extends Model {
     protected $table = "sale_delivery_event_items";

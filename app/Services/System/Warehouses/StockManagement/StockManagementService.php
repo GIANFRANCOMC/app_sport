@@ -4,15 +4,13 @@ declare(strict_types=1);
 
 namespace App\Services\System\Warehouses\StockManagement;
 
-use App\Helpers\System\Utilities;
-use App\Models\System\Catalogs\Item;
-use App\Models\System\Warehouses\InventoryStockAlert;
-use App\Models\System\Warehouses\Warehouse;
-use App\Models\System\Warehouses\WarehouseItem;
-use App\Services\System\Warehouses\Inventory\InventoryMovementService;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\DB;
+use App\Helpers\System\{Utilities};
+use App\Models\System\Catalogs\{Item};
+use App\Models\System\Warehouses\{InventoryStockAlert, Warehouse, WarehouseItem};
+use App\Services\System\Warehouses\Inventory\{InventoryMovementService};
+use Illuminate\Database\Eloquent\{Builder};
+use Illuminate\Support\Facades\{DB};
+use Illuminate\Support\{Collection};
 
 /**
  * Service class for managing Stock Management operations
@@ -58,25 +56,35 @@ class StockManagementService {
             ->where("company_id", $companyId)
             ->where("type", "product")
             ->with([
-                "warehouseItems" => function ($query) use ($allowedWarehouseIds) {
+                "warehouseItems" => function($query) use ($allowedWarehouseIds) {
+
                     $query->with(["warehouse.branch:id,name"]);
 
-                    if ($allowedWarehouseIds !== null) {
+                    if($allowedWarehouseIds !== null) {
+
                         $query->whereIn("warehouse_id", $allowedWarehouseIds);
+
                     }
+
                 },
             ])
-            ->when(trim($search) !== "", function ($query) use ($search) {
-                $query->where(function ($query) use ($search) {
+            ->when(trim($search) !== "", function($query) use ($search) {
+
+                $query->where(function($query) use ($search) {
+
                     $query->where("name", "like", "%{$search}%")
                         ->orWhere("internal_code", "like", "%{$search}%")
                         ->orWhere("barcode", "like", "%{$search}%");
+
                 });
+
             })
             ->orderBy("name")
             ->get()
-            ->map(function (Item $item) {
-                $warehouses = $item->warehouseItems->map(function (WarehouseItem $warehouseItem) {
+            ->map(function(Item $item) {
+
+                $warehouses = $item->warehouseItems->map(function(WarehouseItem $warehouseItem) {
+
                     $quantity = (float) ($warehouseItem->quantity ?? 0);
                     $minimum = (float) ($warehouseItem->minimum_stock ?? 0);
 
@@ -88,6 +96,7 @@ class StockManagementService {
                         "minimum_stock" => $minimum,
                         "requires_attention" => $quantity <= $minimum,
                     ];
+
                 })->values();
 
                 $companyId = (int) $item->company_id;
@@ -97,6 +106,7 @@ class StockManagementService {
                 $item->setAttribute("alert_warehouses_count", $warehouses->where("requires_attention", true)->count());
 
                 return $item;
+
             });
 
     }
@@ -110,12 +120,12 @@ class StockManagementService {
         $query = Item::query()
             ->where("company_id", $companyId)
             ->where("type", "product")
-            ->withSum(["warehouseItems as stock_quantity" => function ($query) use ($warehouseId) {
+            ->withSum(["warehouseItems as stock_quantity" => function($query) use ($warehouseId) {
 
                 $query->where("warehouse_id", $warehouseId);
 
             }], "quantity")
-            ->withSum(["warehouseItems as minimum_stock" => function ($query) use ($warehouseId) {
+            ->withSum(["warehouseItems as minimum_stock" => function($query) use ($warehouseId) {
 
                 $query->where("warehouse_id", $warehouseId);
 
@@ -123,9 +133,9 @@ class StockManagementService {
 
         $search = trim($search);
 
-        if ($search !== "") {
+        if($search !== "") {
 
-            $query->where(function ($query) use ($search) {
+            $query->where(function($query) use ($search) {
 
                 $query->where("name", "like", "%{$search}%")
                     ->orWhere("internal_code", "like", "%{$search}%")
@@ -148,7 +158,7 @@ class StockManagementService {
     public static function validateWarehouse(int $warehouseId, int $companyId): ?Warehouse {
 
         return Warehouse::where("id", $warehouseId)
-            ->whereHas("branch", function ($query) use ($companyId) {
+            ->whereHas("branch", function($query) use ($companyId) {
 
                 $query->where("company_id", $companyId);
 
@@ -166,12 +176,12 @@ class StockManagementService {
      */
     public static function updateStock(int $warehouseId, array $items, ?int $userId = null): bool {
 
-        DB::transaction(function () use ($warehouseId, $items, $userId) {
+        DB::transaction(function() use ($warehouseId, $items, $userId) {
 
             $warehouse = Warehouse::with("branch:id,company_id")
                 ->findOrFail($warehouseId);
 
-            foreach ($items as $item) {
+            foreach($items as $item) {
 
                 $warehouseItem = WarehouseItem::where("warehouse_id", $warehouseId)
                     ->where("item_id", $item["id"])
@@ -180,7 +190,7 @@ class StockManagementService {
                 $currentQuantity = Utilities::round((float) ($warehouseItem?->quantity ?? 0), null, (int) $warehouse->branch->company_id);
                 $resultingBalance = Utilities::round((float) ($item["stock_quantity"] ?? 0), null, (int) $warehouse->branch->company_id);
 
-                if (abs($currentQuantity - $resultingBalance) < 0.00001) {
+                if(abs($currentQuantity - $resultingBalance) < 0.00001) {
 
                     continue;
 
@@ -243,7 +253,7 @@ class StockManagementService {
         ?int $userId = null
     ): array {
 
-        return DB::transaction(function () use (
+        return DB::transaction(function() use (
             $companyId,
             $warehouseId,
             $movementType,
@@ -255,7 +265,7 @@ class StockManagementService {
 
             $movements = [];
 
-            foreach ($items as $item) {
+            foreach($items as $item) {
 
                 $movements[] = self::createManualMovement(
                     $companyId,
@@ -315,10 +325,10 @@ class StockManagementService {
                 "warehouseItem.item:id,internal_code,barcode,name",
                 "resolvedBy:id,name",
             ])
-            ->when($filters["warehouse_id"] ?? null, fn ($query, $warehouseId) => $query->whereHas("warehouseItem", fn ($warehouseItem) => $warehouseItem->where("warehouse_id", $warehouseId)
+            ->when($filters["warehouse_id"] ?? null, fn($query, $warehouseId) => $query->whereHas("warehouseItem", fn($warehouseItem) => $warehouseItem->where("warehouse_id", $warehouseId)
             )
             )
-            ->when($filters["status"] ?? null, fn ($query, $status) => $query->where("status", $status))
+            ->when($filters["status"] ?? null, fn($query, $status) => $query->where("status", $status))
             ->orderByDesc("detected_at")
             ->paginate($perPage);
 

@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Guest;
 
-use App\Services\Security\TurnstileVerificationService;
-use App\Services\System\Organizations\Companies\CompanySettingService;
-use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
-use Illuminate\Validation\Validator;
+use App\Services\Security\{TurnstileVerificationService};
+use App\Services\System\Organizations\Companies\{CompanySettingService};
+use Illuminate\Foundation\Http\{FormRequest};
+use Illuminate\Validation\{Rule, Validator};
 
 final class StoreBookComplaintRequest extends FormRequest {
     public function authorize(): bool {
@@ -67,17 +66,23 @@ final class StoreBookComplaintRequest extends FormRequest {
 
     public function after(): array {
 
-        return [function (Validator $validator): void {
-            if ($validator->errors()->has("cf-turnstile-response")) {
+        return [function(Validator $validator): void {
+
+            if($validator->errors()->has("cf-turnstile-response")) {
+
                 return;
+
             }
 
-            if (! TurnstileVerificationService::verify(
+            if(!TurnstileVerificationService::verify(
                 $this->input("cf-turnstile-response"),
                 $this->ip()
             )) {
+
                 $validator->errors()->add("captcha", "No se pudo validar el control antiabuso.");
+
             }
+
         }];
 
     }

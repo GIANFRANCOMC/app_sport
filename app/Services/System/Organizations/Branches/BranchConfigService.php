@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Services\System\Organizations\Branches;
 
-use App\Models\System\Organizations\Branch;
-use App\Services\System\Base\BaseConfigService;
+use App\Models\System\Organizations\{Branch};
+use App\Services\System\Base\{BaseConfigService};
 use stdClass;
 
 final class BranchConfigService extends BaseConfigService {

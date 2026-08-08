@@ -1,15 +1,17 @@
 <?php
 
-use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\Migrations\{Migration};
+use Illuminate\Database\Schema\{Blueprint};
+use Illuminate\Support\Facades\{Schema};
 
 return new class extends Migration {
     /**
      * Run the migrations.
      */
     public function up(): void {
-        Schema::create("sales_header", function (Blueprint $table) {
+
+        Schema::create("sales_header", function(Blueprint $table) {
+
             $table->id();
             $table->unsignedBigInteger("company_id");
             $table->unsignedBigInteger("serie_id");
@@ -48,9 +50,11 @@ return new class extends Migration {
             $table->foreign("delivered_by")->references("id")->on("users")->nullOnDelete();
             $table->foreign("company_id")->references("id")->on("companies")->onDelete("cascade");
             $table->unique(["company_id", "serie_id", "sequential"]);
+
         });
 
-        Schema::create("series_correlative_movements", function (Blueprint $table) {
+        Schema::create("series_correlative_movements", function(Blueprint $table) {
+
             $table->id();
             $table->unsignedBigInteger("company_id");
             $table->unsignedBigInteger("serie_id");
@@ -72,8 +76,10 @@ return new class extends Migration {
                 ["company_id", "serie_id", "sequential", "action"],
                 "series_corr_company_serie_seq_action_uq"
             );
+
         });
-        Schema::create("sales_body", function (Blueprint $table) {
+        Schema::create("sales_body", function(Blueprint $table) {
+
             $table->id();
             $table->unsignedBigInteger("company_id");
             $table->unsignedBigInteger("sale_header_id");
@@ -105,9 +111,11 @@ return new class extends Migration {
             $table->foreign("currency_id")->references("id")->on("currencies")->onDelete("cascade");
             $table->foreign("customer_id")->references("id")->on("customers")->onDelete("cascade");
             $table->foreign("company_id")->references("id")->on("companies")->onDelete("cascade");
+
         });
 
-        Schema::create("sale_taxes", function (Blueprint $table) {
+        Schema::create("sale_taxes", function(Blueprint $table) {
+
             $table->id();
             $table->unsignedBigInteger("company_id");
             $table->unsignedBigInteger("sale_header_id");
@@ -131,9 +139,11 @@ return new class extends Migration {
             $table->foreign("sale_header_id")->references("id")->on("sales_header")->onDelete("cascade");
             $table->foreign("tax_id")->references("id")->on("taxes")->nullOnDelete();
             $table->foreign("company_id")->references("id")->on("companies")->onDelete("cascade");
+
         });
 
-        Schema::create("sale_payments", function (Blueprint $table) {
+        Schema::create("sale_payments", function(Blueprint $table) {
+
             $table->id();
             $table->unsignedBigInteger("company_id");
             $table->unsignedBigInteger("sale_header_id");
@@ -152,6 +162,7 @@ return new class extends Migration {
             $table->foreign("sale_header_id")->references("id")->on("sales_header")->onDelete("cascade");
             $table->foreign("payment_method_id")->references("id")->on("payment_methods")->nullOnDelete();
             $table->foreign("company_id")->references("id")->on("companies")->onDelete("cascade");
+
         });
 
     }

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\System\Catalogs\Categories;
 
-use App\Http\Requests\System\Base\CompanyFormRequest;
-use App\Rules\System\Defaults\UniqueInCompany;
-use App\Services\System\Base\InternalCodeService;
+use App\Http\Requests\System\Base\{CompanyFormRequest};
+use App\Rules\System\Defaults\{UniqueInCompany};
+use App\Services\System\Base\{InternalCodeService};
 
 abstract class CategoryRequest extends CompanyFormRequest {
     public function rules(): array {

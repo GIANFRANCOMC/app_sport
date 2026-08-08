@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace App\Services\System\Organizations\Companies;
 
-use App\Models\System\Organizations\Company;
-use App\Services\System\Base\BaseConfigService;
-use App\Services\System\Base\MasterReferenceDataService;
+use App\Models\System\Organizations\{Company};
+use App\Services\System\Base\{BaseConfigService, MasterReferenceDataService};
 use stdClass;
 
 final class CompanyConfigService extends BaseConfigService {
@@ -29,7 +28,7 @@ final class CompanyConfigService extends BaseConfigService {
             ->with("socialsMedia")
             ->find($companyId);
 
-        if (! $company) {
+        if(!$company) {
 
             return $config;
 

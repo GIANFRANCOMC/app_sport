@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Rules;
 
-use App\Rules\System\Defaults\BelongsToCompany;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
+use App\Rules\System\Defaults\{BelongsToCompany};
+use Illuminate\Support\Facades\{Auth, DB};
 use Mockery;
-use Tests\TestCase;
+use Tests\{TestCase};
 
 class BelongsToCompanyTest extends TestCase {
     protected function setUp(): void {
@@ -105,7 +104,7 @@ class BelongsToCompanyTest extends TestCase {
 
         $errors = [];
 
-        $rule->validate("record_id", $value, function (string $message) use (&$errors) {
+        $rule->validate("record_id", $value, function(string $message) use (&$errors) {
 
             $errors[] = $message;
 

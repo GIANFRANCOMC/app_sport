@@ -4,12 +4,11 @@ declare(strict_types=1);
 
 namespace App\Services\System\Assets\Assets;
 
-use App\Helpers\System\TranslationHelper;
-use App\Helpers\System\Utilities;
+use App\Helpers\System\{TranslationHelper, Utilities};
 use App\Models\System\Assets\{Asset};
-use Illuminate\Contracts\Pagination\LengthAwarePaginator;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Contracts\Pagination\{LengthAwarePaginator};
+use Illuminate\Database\Eloquent\{Builder};
+use Illuminate\Support\Facades\{DB};
 
 /**
  * Service class for managing module operations
@@ -74,9 +73,9 @@ class AssetService {
             "created_by" => $userId,
         ];
 
-        foreach (self::ALLOWED_FIELDS as $field) {
+        foreach(self::ALLOWED_FIELDS as $field) {
 
-            if (isset($data[$field])) {
+            if(isset($data[$field])) {
 
                 $assetData[$field] = $data[$field];
 
@@ -98,11 +97,11 @@ class AssetService {
 
         $updateData = [];
 
-        foreach (self::ALLOWED_FIELDS as $field) {
+        foreach(self::ALLOWED_FIELDS as $field) {
 
-            if (isset($data[$field])) {
+            if(isset($data[$field])) {
 
-                if ($data[$field] !== $asset->$field) {
+                if($data[$field] !== $asset->$field) {
 
                     $updateData[$field] = $data[$field];
 
@@ -129,7 +128,7 @@ class AssetService {
 
         $asset = null;
 
-        DB::transaction(function () use ($data, $companyId, $userId, &$asset) {
+        DB::transaction(function() use ($data, $companyId, $userId, &$asset) {
 
             // Prepare data with only allowed fields
             $assetData = self::prepareAssetDataForCreate($data, $companyId, $userId);
@@ -153,13 +152,13 @@ class AssetService {
      */
     public static function update(Asset $asset, array $data, int $userId): Asset {
 
-        DB::transaction(function () use ($asset, $data, $userId) {
+        DB::transaction(function() use ($asset, $data, $userId) {
 
             // Prepare update data with only changed fields
             $updateData = self::prepareAssetDataForUpdate($asset, $data);
 
             // Only update if there are changes
-            if (! empty($updateData)) {
+            if(!empty($updateData)) {
 
                 $updateData["updated_at"] = now();
                 $updateData["updated_by"] = $userId;
@@ -186,13 +185,13 @@ class AssetService {
         $query = Asset::where("id", $id)
             ->where("company_id", $companyId);
 
-        if ($statuses !== null && ! empty($statuses)) {
+        if($statuses !== null && !empty($statuses)) {
 
             $query->whereIn("status", $statuses);
 
         }
 
-        if ($relations !== null && ! empty($relations)) {
+        if($relations !== null && !empty($relations)) {
 
             $query->with($relations);
 
@@ -217,25 +216,25 @@ class AssetService {
         $filterBy = $filters["filter_by"] ?? null;
         $word = $filters["word"] ?? null;
 
-        if (Utilities::isDefined($word) && Utilities::isDefined($filterBy)) {
+        if(Utilities::isDefined($word) && Utilities::isDefined($filterBy)) {
 
             $searchTerm = Utilities::getWordSearch($word);
 
-            if ($filterBy === "all") {
+            if($filterBy === "all") {
 
                 // Search across all searchable fields
-                $query->where(function (Builder $q) use ($searchTerm) {
+                $query->where(function(Builder $q) use ($searchTerm) {
 
                     $searchableFields = self::SEARCHABLE_FIELDS;
                     $firstField = array_shift($searchableFields);
 
-                    if ($firstField) {
+                    if($firstField) {
 
                         $q->where($firstField, "like", $searchTerm);
 
                     }
 
-                    foreach ($searchableFields as $field) {
+                    foreach($searchableFields as $field) {
 
                         $q->orWhere($field, "like", $searchTerm);
 
@@ -243,7 +242,7 @@ class AssetService {
 
                 });
 
-            } elseif (in_array($filterBy, self::SEARCHABLE_FIELDS, true)) {
+            }elseif(in_array($filterBy, self::SEARCHABLE_FIELDS, true)) {
 
                 // Search in specific field
                 $query->where($filterBy, "like", $searchTerm);

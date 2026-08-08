@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 namespace App\Services\System\Assets;
 
-use App\Models\System\Assets\AssetAssignment;
-use App\Models\System\Assets\BranchAsset;
-use App\Services\System\Base\BaseConfigService;
-use App\Services\System\Base\CompanyReferenceDataService;
+use App\Models\System\Assets\{AssetAssignment, BranchAsset};
+use App\Services\System\Base\{BaseConfigService, CompanyReferenceDataService};
 use stdClass;
 
 final class AssetManagementConfigService extends BaseConfigService {

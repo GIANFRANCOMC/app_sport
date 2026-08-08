@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\System\Assets\AssetCategories;
 
-use App\Http\Requests\System\Base\CompanyFormRequest;
-use App\Rules\System\Defaults\UniqueInCompany;
+use App\Http\Requests\System\Base\{CompanyFormRequest};
+use App\Rules\System\Defaults\{UniqueInCompany};
 
 abstract class AssetCategoryRequest extends CompanyFormRequest {
     public function rules(): array {

@@ -4,29 +4,28 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Platform;
 
-use App\Http\Controllers\Controller;
-use App\Models\System\Tenancy\TenantAnnouncement;
-use App\Models\System\Tenancy\TenantDatabase;
-use App\Services\System\Tenancy\PlatformTenantService;
-use App\Services\System\Tenancy\TenantAdministrationService;
-use App\Services\System\Tenancy\TenantConnectionManager;
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Artisan;
-use Illuminate\Validation\Rule;
-use Illuminate\View\View;
+use App\Http\Controllers\{Controller};
+use App\Models\System\Tenancy\{TenantAnnouncement, TenantDatabase};
+use App\Services\System\Tenancy\{PlatformTenantService, TenantAdministrationService, TenantConnectionManager};
+use Illuminate\Http\{RedirectResponse, Request};
+use Illuminate\Support\Facades\{Artisan};
+use Illuminate\Validation\{Rule};
+use Illuminate\View\{View};
 
 final class TenantController extends Controller {
     public function index(TenantAdministrationService $administration): View {
+
         $tenants = $administration->list();
 
         return view("Platform.tenants.index", [
             "tenants" => $tenants,
             "counts" => $tenants->countBy("status"),
         ]);
+
     }
 
     public function store(Request $request, TenantConnectionManager $connections): RedirectResponse {
+
         $data = $request->validate([
             "slug" => ["required", "alpha_dash", "max:60"],
             "commercial_name" => ["required", "string", "max:180"],
@@ -38,6 +37,7 @@ final class TenantController extends Controller {
         ]);
 
         try {
+
             $exitCode = Artisan::call("tenant:create", [
                 "slug" => strtolower($data["slug"]),
                 "--commercial-name" => $data["commercial_name"],
@@ -48,20 +48,27 @@ final class TenantController extends Controller {
                 "--admin-password" => $data["admin_password"],
                 "--skip-cache-clear" => true,
             ]);
+
         } finally {
+
             $connections->disconnect();
+
         }
 
-        if ($exitCode !== 0) {
+        if($exitCode !== 0) {
+
             return back()
                 ->withErrors(["tenant" => trim(Artisan::output()) ?: "No se pudo crear el tenant."])
                 ->withInput($request->except(["admin_password", "admin_password_confirmation"]));
+
         }
 
         return redirect()->route("platform.tenants.index")->with("success", "Cliente tenant creado correctamente.");
+
     }
 
     public function show(TenantDatabase $tenant, PlatformTenantService $platformTenants): View {
+
         return view("Platform.tenants.show", [
             "tenant" => $tenant->load("domains"),
             "modules" => $platformTenants->modules($tenant),
@@ -70,6 +77,7 @@ final class TenantController extends Controller {
                 ->latest()
                 ->get(),
         ]);
+
     }
 
     public function status(
@@ -77,6 +85,7 @@ final class TenantController extends Controller {
         TenantDatabase $tenant,
         TenantAdministrationService $administration
     ): RedirectResponse {
+
         $data = $request->validate([
             "status" => ["required", Rule::in(["active", "inactive", "suspended"])],
         ]);
@@ -84,6 +93,7 @@ final class TenantController extends Controller {
         $administration->changeStatus($tenant->slug, $data["status"], $actor?->email);
 
         return back()->with("success", "Estado del cliente actualizado.");
+
     }
 
     public function modules(
@@ -92,15 +102,18 @@ final class TenantController extends Controller {
         PlatformTenantService $platformTenants,
         TenantAdministrationService $administration
     ): RedirectResponse {
+
         $data = $request->validate(["modules" => ["nullable", "array"], "modules.*" => ["integer"]]);
         $enabledCount = $platformTenants->updateModules($tenant, $data["modules"] ?? []);
         $actor = $request->attributes->get("platformUser");
         $administration->audit($tenant, "modules_updated", "success", ["enabled_count" => $enabledCount], $actor?->email);
 
         return back()->with("success", "Módulos actualizados: {$enabledCount} activos.");
+
     }
 
     public function announcement(Request $request, TenantDatabase $tenant): RedirectResponse {
+
         $data = $request->validate([
             "title" => ["required", "string", "max:180"],
             "message" => ["required", "string", "max:2000"],
@@ -120,6 +133,7 @@ final class TenantController extends Controller {
         ]);
 
         return back()->with("success", "Aviso publicado en el tenant.");
+
     }
 
     public function announcementStatus(
@@ -127,11 +141,13 @@ final class TenantController extends Controller {
         TenantDatabase $tenant,
         TenantAnnouncement $announcement
     ): RedirectResponse {
+
         abort_unless((int) $announcement->tenant_database_id === (int) $tenant->id, 404);
         $data = $request->validate(["status" => ["required", Rule::in(["active", "inactive"])]]);
         $user = $request->attributes->get("platformUser");
         $announcement->forceFill($data + ["updated_by" => $user->id])->save();
 
         return back()->with("success", "Estado del aviso actualizado.");
+
     }
 }

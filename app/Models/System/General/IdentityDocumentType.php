@@ -2,11 +2,11 @@
 
 namespace App\Models\System\General;
 
-use App\Helpers\System\Utilities;
+use App\Helpers\System\{Utilities};
 use App\Models\System\Customers\{Customer};
 use App\Models\System\Organizations\{Company};
 use App\Models\System\Organizations\{User};
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\{Model};
 
 class IdentityDocumentType extends Model {
     protected $table = "identity_document_types";

@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace App\Services\System\Organizations\BookComplaints;
 
-use App\Helpers\System\Utilities;
-use App\Models\System\Organizations\BookComplaint;
-use App\Models\System\Organizations\BookComplaintStatusHistory;
-use Illuminate\Contracts\Pagination\LengthAwarePaginator;
-use Illuminate\Support\Facades\DB;
+use App\Helpers\System\{Utilities};
+use App\Models\System\Organizations\{BookComplaint, BookComplaintStatusHistory};
+use Illuminate\Contracts\Pagination\{LengthAwarePaginator};
+use Illuminate\Support\Facades\{DB};
 
 /**
  * Service class for managing BookComplaint operations
@@ -36,19 +35,25 @@ class BookComplaintService {
         return BookComplaint::query()
             ->where("company_id", $companyId)
             ->with(["branch", "identityDocumentType", "attachments", "statusHistories.changedBy", "respondedBy"])
-            ->when(Utilities::isDefined($filters["status"] ?? null), function ($query) use ($filters) {
+            ->when(Utilities::isDefined($filters["status"] ?? null), function($query) use ($filters) {
+
                 $query->where("status", $filters["status"]);
+
             })
-            ->when(Utilities::isDefined($filters["type"] ?? null), function ($query) use ($filters) {
+            ->when(Utilities::isDefined($filters["type"] ?? null), function($query) use ($filters) {
+
                 $query->where("type", $filters["type"]);
+
             })
-            ->when(Utilities::isDefined($filters["branch_id"] ?? null), function ($query) use ($filters) {
+            ->when(Utilities::isDefined($filters["branch_id"] ?? null), function($query) use ($filters) {
+
                 $query->where("branch_id", $filters["branch_id"]);
+
             })
-            ->when(Utilities::isDefined($filters["word"] ?? null), function ($query) use ($filters) {
+            ->when(Utilities::isDefined($filters["word"] ?? null), function($query) use ($filters) {
 
                 $word = trim((string) $filters["word"]);
-                $query->where(function ($nested) use ($word) {
+                $query->where(function($nested) use ($word) {
 
                     $nested->where("tracking_code", "like", "%{$word}%")
                         ->orWhere("document_number", "like", "%{$word}%")
@@ -90,15 +95,15 @@ class BookComplaintService {
      */
     public static function update(BookComplaint $bookComplaint, array $data, ?int $userId = null): BookComplaint {
 
-        DB::transaction(function () use ($bookComplaint, $data, $userId) {
+        DB::transaction(function() use ($bookComplaint, $data, $userId) {
 
             $updateData = [];
             $previousStatus = (string) $bookComplaint->status;
 
             // Only allow updating specific fields
-            foreach (self::ALLOWED_UPDATE_FIELDS as $field) {
+            foreach(self::ALLOWED_UPDATE_FIELDS as $field) {
 
-                if (isset($data[$field])) {
+                if(isset($data[$field])) {
 
                     $updateData[$field] = $data[$field];
 
@@ -107,14 +112,14 @@ class BookComplaintService {
             }
 
             // Only update if there are changes
-            if (! empty($updateData)) {
+            if(!empty($updateData)) {
 
-                if (($updateData["status"] ?? $previousStatus) === "resolved") {
+                if(($updateData["status"] ?? $previousStatus) === "resolved") {
 
                     $updateData["responded_at"] = now();
                     $updateData["responded_by"] = $userId;
 
-                } elseif ($previousStatus === "resolved") {
+                }elseif($previousStatus === "resolved") {
 
                     $updateData["responded_at"] = null;
                     $updateData["responded_by"] = null;
@@ -127,7 +132,7 @@ class BookComplaintService {
                 $bookComplaint->update($updateData);
 
                 $newStatus = (string) $bookComplaint->status;
-                if ($newStatus !== $previousStatus) {
+                if($newStatus !== $previousStatus) {
 
                     BookComplaintStatusHistory::create([
                         "company_id" => $bookComplaint->company_id,

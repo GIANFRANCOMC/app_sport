@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\System\Concerns;
 
-use App\Services\System\Base\InternalCodeService;
+use App\Services\System\Base\{InternalCodeService};
 
 trait AppliesInternalCodePrefix {
     protected function prepareForValidation(): void {
 
         parent::prepareForValidation();
 
-        if (! $this->exists("internal_code")) {
+        if(!$this->exists("internal_code")) {
 
             return;
 

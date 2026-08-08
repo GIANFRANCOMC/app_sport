@@ -3,10 +3,9 @@
 namespace App\Events;
 
 use App\Models\System\Customers\{Subscription};
-use Illuminate\Broadcasting\InteractsWithSockets;
-use Illuminate\Broadcasting\PrivateChannel;
-use Illuminate\Foundation\Events\Dispatchable;
-use Illuminate\Queue\SerializesModels;
+use Illuminate\Broadcasting\{InteractsWithSockets, PrivateChannel};
+use Illuminate\Foundation\Events\{Dispatchable};
+use Illuminate\Queue\{SerializesModels};
 
 class SubscriptionExpired {
     use Dispatchable, InteractsWithSockets, SerializesModels;

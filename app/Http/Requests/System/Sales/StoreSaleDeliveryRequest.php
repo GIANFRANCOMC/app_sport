@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\System\Sales;
 
-use App\Http\Requests\System\Base\CompanyFormRequest;
+use App\Http\Requests\System\Base\{CompanyFormRequest};
 
 class StoreSaleDeliveryRequest extends CompanyFormRequest {
     protected function prepareForValidation(): void {
@@ -12,10 +12,12 @@ class StoreSaleDeliveryRequest extends CompanyFormRequest {
         $this->merge([
             "warehouse_id" => $this->nullableIntegerInput($this->input("warehouse_id")),
             "items" => collect($this->input("items", []))
-                ->map(function ($item) {
+                ->map(function($item) {
 
-                    if (! is_array($item)) {
+                    if(!is_array($item)) {
+
                         return $item;
+
                     }
 
                     $item["sale_delivery_item_id"] = $this->nullableIntegerFromArray($item, "sale_delivery_item_id");

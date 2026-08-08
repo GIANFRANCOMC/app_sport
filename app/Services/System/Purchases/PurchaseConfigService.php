@@ -4,12 +4,9 @@ declare(strict_types=1);
 
 namespace App\Services\System\Purchases;
 
-use App\Models\System\Catalogs\Item;
-use App\Models\System\Purchases\PurchaseHeader;
-use App\Models\System\Purchases\Supplier;
-use App\Services\System\Base\BaseConfigService;
-use App\Services\System\Base\CompanyReferenceDataService;
-use App\Services\System\Base\MasterReferenceDataService;
+use App\Models\System\Catalogs\{Item};
+use App\Models\System\Purchases\{PurchaseHeader, Supplier};
+use App\Services\System\Base\{BaseConfigService, CompanyReferenceDataService, MasterReferenceDataService};
 use stdClass;
 
 final class PurchaseConfigService extends BaseConfigService {

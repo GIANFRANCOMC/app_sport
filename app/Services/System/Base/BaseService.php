@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Services\System\Base;
 
-use App\Helpers\System\TranslationHelper;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\DB;
+use App\Helpers\System\{TranslationHelper};
+use Illuminate\Database\Eloquent\{Model};
+use Illuminate\Support\Facades\{DB};
 
 /**
  * Base Service Class
@@ -55,9 +55,9 @@ abstract class BaseService {
 
         $prepared = [];
 
-        foreach ($allowedFields as $field) {
+        foreach($allowedFields as $field) {
 
-            if (array_key_exists($field, $data)) {
+            if(array_key_exists($field, $data)) {
 
                 $prepared[$field] = $data[$field];
 
@@ -101,9 +101,9 @@ abstract class BaseService {
 
         $updateData = [];
 
-        foreach ($allowedFields as $field) {
+        foreach($allowedFields as $field) {
 
-            if (isset($data[$field]) && $data[$field] !== $model->$field) {
+            if(isset($data[$field]) && $data[$field] !== $model->$field) {
 
                 $updateData[$field] = $data[$field];
 
@@ -111,7 +111,7 @@ abstract class BaseService {
 
         }
 
-        if (! empty($updateData)) {
+        if(!empty($updateData)) {
 
             $updateData["updated_at"] = now();
             $updateData["updated_by"] = $userId;
@@ -130,7 +130,7 @@ abstract class BaseService {
      */
     protected static function validateModel(?Model $model, int $companyId): bool {
 
-        if ($model === null) {
+        if($model === null) {
 
             return false;
 

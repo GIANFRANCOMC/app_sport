@@ -4,16 +4,15 @@ declare(strict_types=1);
 
 namespace App\Services\System\Warehouses\Inventory;
 
-use App\Helpers\System\Utilities;
-use App\Models\System\Warehouses\InventoryGuide;
-use App\Models\System\Warehouses\InventoryGuideItem;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
+use App\Helpers\System\{Utilities};
+use App\Models\System\Warehouses\{InventoryGuide, InventoryGuideItem};
+use Illuminate\Support\Facades\{DB};
+use Illuminate\Support\{Str};
 
 final class InventoryGuideService {
     public static function create(int $companyId, int $userId, array $data): InventoryGuide {
 
-        return DB::transaction(function () use ($companyId, $userId, $data) {
+        return DB::transaction(function() use ($companyId, $userId, $data) {
 
             $number = self::nextNumber($companyId, (string) $data["guide_type"]);
             $guide = InventoryGuide::create([
@@ -29,7 +28,7 @@ final class InventoryGuideService {
                 "confirmed_by" => $userId,
             ]);
 
-            foreach ($data["items"] as $detail) {
+            foreach($data["items"] as $detail) {
 
                 $movement = InventoryMovementService::apply([
                     "company_id" => $companyId,
@@ -70,10 +69,10 @@ final class InventoryGuideService {
         return InventoryGuide::query()
             ->where("company_id", $companyId)
             ->with(["warehouse.branch", "items.item", "confirmedBy"])
-            ->when($filters["warehouse_id"] ?? null, fn ($query, $id) => $query->where("warehouse_id", $id))
-            ->when($filters["guide_type"] ?? null, fn ($query, $type) => $query->where("guide_type", $type))
-            ->when($filters["date_from"] ?? null, fn ($query, $date) => $query->where("issue_date", ">=", Utilities::startOfDay($date)))
-            ->when($filters["date_to"] ?? null, fn ($query, $date) => $query->where("issue_date", "<=", Utilities::endOfDay($date)))
+            ->when($filters["warehouse_id"] ?? null, fn($query, $id) => $query->where("warehouse_id", $id))
+            ->when($filters["guide_type"] ?? null, fn($query, $type) => $query->where("guide_type", $type))
+            ->when($filters["date_from"] ?? null, fn($query, $date) => $query->where("issue_date", ">=", Utilities::startOfDay($date)))
+            ->when($filters["date_to"] ?? null, fn($query, $date) => $query->where("issue_date", "<=", Utilities::endOfDay($date)))
             ->orderByDesc("id");
 
     }
@@ -86,7 +85,7 @@ final class InventoryGuideService {
 
             $number = $prefix."-".now()->format("Ymd")."-".strtoupper(Str::random(6));
 
-        } while (InventoryGuide::query()
+        } while(InventoryGuide::query()
             ->where("company_id", $companyId)
             ->where("number", $number)
             ->exists());

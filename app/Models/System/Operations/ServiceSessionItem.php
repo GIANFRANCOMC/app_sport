@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Models\System\Operations;
 
-use App\Models\System\Catalogs\Item;
-use App\Models\System\Organizations\User;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\System\Catalogs\{Item};
+use App\Models\System\Organizations\{User};
+use Illuminate\Database\Eloquent\{Model};
 
 final class ServiceSessionItem extends Model {
     protected $table = "service_session_items";

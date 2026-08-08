@@ -648,7 +648,7 @@
         </style>
     </head>
     <body>
-        @if (in_array($saleHeader->status, ["canceled"]))
+        @if(in_array($saleHeader->status, ["canceled"]))
             <div style="position: absolute; text-align: center; top:9%;">
                 <img src="{{ $canceledImg }}" style="opacity: 0.15;" width="60%">
             </div>
@@ -694,7 +694,7 @@
                 </tr>
             </thead>
             <tbody>
-                @foreach ($saleHeader->allPositions as $position)
+                @foreach($saleHeader->allPositions as $position)
                     <tr>
                         <td class="text-center">{{ $position->name }}</td>
                         <td class="text-center">{{ $position->quantity }}</td>
@@ -702,7 +702,7 @@
                         <td class="text-right">S/ {{ number_format(($position->price), 2) }}</td>
                         <td class="text-right">S/ {{ number_format(($position->total), 2) }}</td>
                     </tr>
-                    @if (in_array($position->type, ["subscription"]))
+                    @if(in_array($position->type, ["subscription"]))
                         <tr>
                             <td colspan="1"></td>
                             <td colspan="3" class="pb-1">

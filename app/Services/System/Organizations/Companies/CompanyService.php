@@ -4,15 +4,12 @@ declare(strict_types=1);
 
 namespace App\Services\System\Organizations\Companies;
 
-use App\Helpers\System\TranslationHelper;
-use App\Helpers\System\Utilities;
-use App\Models\System\Organizations\Company;
-use App\Models\System\Organizations\CompanySocialMedia;
-use App\Services\System\Tenancy\TenantStoragePath;
+use App\Helpers\System\{TranslationHelper, Utilities};
+use App\Models\System\Organizations\{Company, CompanySocialMedia};
+use App\Services\System\Tenancy\{TenantStoragePath};
 use Exception;
-use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Http\{UploadedFile};
+use Illuminate\Support\Facades\{DB, Storage};
 
 /**
  * Service class for managing module operations
@@ -80,7 +77,7 @@ class CompanyService {
      */
     private static function handleImageUpload(Company $company, string $fieldName, ?UploadedFile $file): ?string {
 
-        if (! $file || ! $file->isValid()) {
+        if(!$file || !$file->isValid()) {
 
             return null;
 
@@ -112,7 +109,7 @@ class CompanyService {
             ->where("type", $type)
             ->first();
 
-        if (Utilities::isDefined($socialMedia)) {
+        if(Utilities::isDefined($socialMedia)) {
 
             $socialMedia->link = $link ?? "";
             $socialMedia->status = "active";
@@ -120,7 +117,7 @@ class CompanyService {
             $socialMedia->updated_by = $userId;
             $socialMedia->save();
 
-        } else {
+        }else {
 
             $socialMedia = new CompanySocialMedia();
             $socialMedia->company_id = $company->id;
@@ -147,11 +144,11 @@ class CompanyService {
 
         $updateData = [];
 
-        foreach (self::ALLOWED_FIELDS as $field) {
+        foreach(self::ALLOWED_FIELDS as $field) {
 
-            if (isset($data[$field])) {
+            if(isset($data[$field])) {
 
-                if ($data[$field] !== $company->$field) {
+                if($data[$field] !== $company->$field) {
 
                     $updateData[$field] = $data[$field];
 
@@ -175,7 +172,7 @@ class CompanyService {
      */
     public static function findByIdAndCompany(int $id, int $companyId, ?array $statuses = ["active"], array $relations = ["identityDocumentType"]): ?Company {
 
-        if ($id !== $companyId) {
+        if($id !== $companyId) {
 
             return null;
 
@@ -183,13 +180,13 @@ class CompanyService {
 
         $query = Company::where("id", $id);
 
-        if ($statuses !== null && ! empty($statuses)) {
+        if($statuses !== null && !empty($statuses)) {
 
             $query->whereIn("status", $statuses);
 
         }
 
-        if ($relations !== null && ! empty($relations)) {
+        if($relations !== null && !empty($relations)) {
 
             $query->with($relations);
 
@@ -214,22 +211,22 @@ class CompanyService {
 
         $obsoleteFiles = [];
 
-        DB::transaction(function () use ($company, $data, $files, $userId, &$obsoleteFiles) {
+        DB::transaction(function() use ($company, $data, $files, $userId, &$obsoleteFiles) {
 
             // Prepare update data with only changed fields
             $updateData = self::prepareCompanyDataForUpdate($company, $data);
 
             // Handle image uploads
-            foreach (self::IMAGE_FIELDS as $field) {
+            foreach(self::IMAGE_FIELDS as $field) {
 
-                if (isset($files[$field]) && $files[$field] instanceof \Illuminate\Http\UploadedFile) {
+                if(isset($files[$field]) && $files[$field] instanceof \Illuminate\Http\UploadedFile) {
 
                     $filePath = self::handleImageUpload($company, $field, $files[$field]);
 
-                    if ($filePath) {
+                    if($filePath) {
 
                         $previousPath = $company->{$field};
-                        if ($previousPath && $previousPath !== $filePath) {
+                        if($previousPath && $previousPath !== $filePath) {
 
                             $obsoleteFiles[] = $previousPath;
 
@@ -244,7 +241,7 @@ class CompanyService {
             }
 
             // Update record
-            if (! empty($updateData)) {
+            if(!empty($updateData)) {
 
                 $updateData["updated_at"] = now();
                 $updateData["updated_by"] = $userId;
@@ -253,9 +250,9 @@ class CompanyService {
             }
 
             // Update or create social media links
-            foreach (self::SOCIAL_MEDIA_TYPES as $type) {
+            foreach(self::SOCIAL_MEDIA_TYPES as $type) {
 
-                if (isset($data[$type])) {
+                if(isset($data[$type])) {
 
                     self::updateOrCreateSocialMedia($company, $type, $data[$type], $userId);
 
@@ -265,7 +262,7 @@ class CompanyService {
 
         });
 
-        foreach (array_unique($obsoleteFiles) as $obsoleteFile) {
+        foreach(array_unique($obsoleteFiles) as $obsoleteFile) {
 
             Storage::disk("public")->delete($obsoleteFile);
 

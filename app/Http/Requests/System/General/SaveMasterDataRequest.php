@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\System\General;
 
-use App\Http\Requests\System\Base\CompanyFormRequest;
+use App\Http\Requests\System\Base\{CompanyFormRequest};
 
 final class SaveMasterDataRequest extends CompanyFormRequest {
     public function rules(): array {

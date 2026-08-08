@@ -1,7 +1,7 @@
 <?php
 
 use App\Http\Controllers\System\Organizations\{BookComplaintController};
-use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\{Route};
 
 $entity = "book_complaints";
 

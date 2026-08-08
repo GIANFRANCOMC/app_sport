@@ -2,13 +2,11 @@
 
 namespace App\Models\System\Customers;
 
-use App\Helpers\System\Utilities;
-use App\Models\System\Organizations\Branch;
-use App\Models\System\Organizations\Company;
-use App\Models\System\Sales\SaleBody;
-use App\Models\System\Sales\SaleHeader;
-use Carbon\Carbon;
-use Illuminate\Database\Eloquent\Model;
+use App\Helpers\System\{Utilities};
+use App\Models\System\Organizations\{Branch, Company};
+use App\Models\System\Sales\{SaleBody, SaleHeader};
+use Carbon\{Carbon};
+use Illuminate\Database\Eloquent\{Model};
 
 class Subscription extends Model {
     protected $table = "subscriptions";
@@ -57,7 +55,7 @@ class Subscription extends Model {
 
     public function getFormattedDurationAttribute(): string {
 
-        if (Utilities::isDefined($this->duration_type) && Utilities::isDefined($this->duration_value)) {
+        if(Utilities::isDefined($this->duration_type) && Utilities::isDefined($this->duration_value)) {
 
             $prop = $this->duration_value > 1 ? "plural" : "label";
             $durationType = self::getDurationTypes("first", $this->attributes["duration_type"] ?? "")[$prop] ?? "";
@@ -86,7 +84,7 @@ class Subscription extends Model {
 
         $endDate = $this->attributes["end_date"] ?? null;
 
-        if (! Utilities::isDefined($endDate)) {
+        if(!Utilities::isDefined($endDate)) {
 
             return null;
 
@@ -100,13 +98,13 @@ class Subscription extends Model {
 
         $remainingDays = $this->remaining_days;
 
-        if ($remainingDays === null) {
+        if($remainingDays === null) {
 
             return "";
 
         }
 
-        if ($remainingDays < 0) {
+        if($remainingDays < 0) {
 
             $days = abs($remainingDays);
 
@@ -114,7 +112,7 @@ class Subscription extends Model {
 
         }
 
-        if ($remainingDays === 0) {
+        if($remainingDays === 0) {
 
             return "Vence hoy";
 

@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
-use App\Http\Controllers\System\Organizations\RoleController;
-use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\System\Organizations\{RoleController};
+use Illuminate\Support\Facades\{Route};
 
 $entity = "roles";
 

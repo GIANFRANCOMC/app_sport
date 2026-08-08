@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers\Guest;
 
-use App\Helpers\System\Utilities;
-use App\Http\Controllers\Controller;
-use App\Models\Guest\Company;
-use App\Services\Guest\GuestCatalogService;
-use Illuminate\Http\Request;
+use App\Helpers\System\{Utilities};
+use App\Http\Controllers\{Controller};
+use App\Models\Guest\{Company};
+use App\Services\Guest\{GuestCatalogService};
+use Illuminate\Http\{Request};
 use stdClass;
 
 class HomeController extends Controller {
@@ -20,7 +20,7 @@ class HomeController extends Controller {
 
         $page = $request->page ?? "";
 
-        if (in_array($page, ["main"])) {
+        if(in_array($page, ["main"])) {
 
             $config->companies = new stdClass();
             $config->companies->statuses = Company::getStatuses();
@@ -38,9 +38,9 @@ class HomeController extends Controller {
             $config->categories = new stdClass();
             $config->categories->records = GuestCatalogService::publicCategories($company->id);
 
-            foreach ($config->items->records as $record) {
+            foreach($config->items->records as $record) {
 
-                if (! $record->see_my_web_price) {
+                if(!$record->see_my_web_price) {
 
                     unset($record->price);
                     unset($record->min_price);

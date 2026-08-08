@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace App\Helpers\System;
 
-use Illuminate\Contracts\Pagination\LengthAwarePaginator;
-use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Contracts\Pagination\{LengthAwarePaginator};
+use Illuminate\Database\Eloquent\{Collection, Model};
 use stdClass;
 
 /**
@@ -22,7 +21,7 @@ class DataTransformer {
      */
     public static function transformModel(?Model $model, array $fields): ?array {
 
-        if ($model === null) {
+        if($model === null) {
 
             return null;
 
@@ -30,9 +29,9 @@ class DataTransformer {
 
         $data = [];
 
-        foreach ($fields as $field) {
+        foreach($fields as $field) {
 
-            if (isset($model->$field)) {
+            if(isset($model->$field)) {
 
                 $data[$field] = $model->$field;
 
@@ -51,7 +50,7 @@ class DataTransformer {
      */
     public static function transformCollection(Collection $collection, ?callable $callback = null): array {
 
-        if ($callback === null) {
+        if($callback === null) {
 
             return $collection->toArray();
 
@@ -70,7 +69,7 @@ class DataTransformer {
 
         $items = $paginator->items();
 
-        if ($callback !== null) {
+        if($callback !== null) {
 
             $items = array_map($callback, $items);
 
@@ -101,7 +100,7 @@ class DataTransformer {
      */
     public static function addFormattedStatus(Model $model): Model {
 
-        if (isset($model->status)) {
+        if(isset($model->status)) {
 
             $status = $model->status;
             $model->formatted_status = ucfirst($status);
@@ -119,9 +118,9 @@ class DataTransformer {
      */
     public static function addFormattedDates(Model $model, array $dateFields = ["created_at", "updated_at"]): Model {
 
-        foreach ($dateFields as $field) {
+        foreach($dateFields as $field) {
 
-            if (isset($model->$field)) {
+            if(isset($model->$field)) {
 
                 $formattedField = "formatted_{$field}";
                 $model->$formattedField = $model->$field ? date("d/m/Y H:i", strtotime($model->$field)) : null;

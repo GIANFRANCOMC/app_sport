@@ -2,10 +2,10 @@
 
 namespace App\Observers\System\Organizations;
 
-use App\Models\System\Organizations\Role;
-use App\Services\System\Base\InitParamsCacheInvalidationService;
-use App\Services\System\Organizations\Companies\CompanySectionService;
-use App\Services\System\Organizations\Roles\RolePermissionService;
+use App\Models\System\Organizations\{Role};
+use App\Services\System\Base\{InitParamsCacheInvalidationService};
+use App\Services\System\Organizations\Companies\{CompanySectionService};
+use App\Services\System\Organizations\Roles\{RolePermissionService};
 
 class RoleObserver {
     public function saved(Role $role): void {

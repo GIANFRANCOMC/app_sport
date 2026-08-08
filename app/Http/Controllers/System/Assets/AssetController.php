@@ -5,14 +5,11 @@ declare(strict_types=1);
 namespace App\Http\Controllers\System\Assets;
 
 use App\Helpers\System\{Utilities};
-use App\Http\Controllers\System\Base\BaseController;
-use App\Http\Requests\System\Assets\Assets\StoreAssetRequest;
-use App\Http\Requests\System\Assets\Assets\UpdateAssetRequest;
-use App\Services\System\Assets\Assets\AssetConfigService;
-use App\Services\System\Assets\Assets\AssetService;
+use App\Http\Controllers\System\Base\{BaseController};
+use App\Http\Requests\System\Assets\Assets\{StoreAssetRequest, UpdateAssetRequest};
+use App\Services\System\Assets\Assets\{AssetConfigService, AssetService};
 use App\Services\System\Base\{InitParamsCacheInvalidationService};
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
+use Illuminate\Http\{JsonResponse, Request};
 
 class AssetController extends BaseController {
     /**
@@ -68,7 +65,7 @@ class AssetController extends BaseController {
             $data = $this->prepareAssetData($request);
             $asset = AssetService::create($data, $this->getCompanyId(), $this->getUserId());
 
-            if (! Utilities::isDefined($asset)) {
+            if(!Utilities::isDefined($asset)) {
 
                 return $this->errorResponse("create_failed");
 
@@ -81,7 +78,7 @@ class AssetController extends BaseController {
 
             return $this->createdResponse($asset, "created", "asset");
 
-        } catch (\Exception $e) {
+        } catch(\Exception $e) {
 
             return $this->handleException($e, "create");
 
@@ -100,7 +97,7 @@ class AssetController extends BaseController {
 
             $asset = AssetService::findByIdAndCompany($id, $this->getCompanyId(), null);
 
-            if (! Utilities::isDefined($asset)) {
+            if(!Utilities::isDefined($asset)) {
 
                 return $this->notFoundResponse();
 
@@ -109,7 +106,7 @@ class AssetController extends BaseController {
             $data = $this->prepareAssetData($request);
             $asset = AssetService::update($asset, $data, $this->getUserId());
 
-            if (! Utilities::isDefined($asset)) {
+            if(!Utilities::isDefined($asset)) {
 
                 return $this->errorResponse("update_failed");
 
@@ -122,7 +119,7 @@ class AssetController extends BaseController {
 
             return $this->updatedResponse($asset, "updated", "asset");
 
-        } catch (\Exception $e) {
+        } catch(\Exception $e) {
 
             return $this->handleException($e, "update");
 

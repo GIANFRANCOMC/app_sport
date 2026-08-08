@@ -1,7 +1,7 @@
 <?php
 
-use App\Http\Controllers\System\Finance\MiscExpenseController;
-use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\System\Finance\{MiscExpenseController};
+use Illuminate\Support\Facades\{Route};
 
 $entity = "misc_expenses";
 

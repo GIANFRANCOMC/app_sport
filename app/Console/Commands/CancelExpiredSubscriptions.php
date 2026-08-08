@@ -4,12 +4,11 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Events\SubscriptionExpired;
-use App\Models\System\Customers\Subscription;
-use App\Models\System\Tenancy\TenantDatabase;
-use App\Services\System\Tenancy\TenantAdministrationService;
-use App\Services\System\Tenancy\TenantConnectionManager;
-use Illuminate\Console\Command;
+use App\Events\{SubscriptionExpired};
+use App\Models\System\Customers\{Subscription};
+use App\Models\System\Tenancy\{TenantDatabase};
+use App\Services\System\Tenancy\{TenantAdministrationService, TenantConnectionManager};
+use Illuminate\Console\{Command};
 use Throwable;
 
 final class CancelExpiredSubscriptions extends Command {
@@ -29,11 +28,11 @@ final class CancelExpiredSubscriptions extends Command {
         $companyId = $this->option("company");
         $tenants = TenantDatabase::query()
             ->where("status", "active")
-            ->when($tenantSlug, fn ($query) => $query->where("slug", $tenantSlug))
+            ->when($tenantSlug, fn($query) => $query->where("slug", $tenantSlug))
             ->orderBy("id")
             ->get();
 
-        if ($tenants->isEmpty()) {
+        if($tenants->isEmpty()) {
 
             $this->error("No existen tenants activos para procesar.");
 
@@ -44,7 +43,7 @@ final class CancelExpiredSubscriptions extends Command {
         $rows = [];
         $hasFailure = false;
 
-        foreach ($tenants as $tenant) {
+        foreach($tenants as $tenant) {
 
             try {
 
@@ -56,7 +55,7 @@ final class CancelExpiredSubscriptions extends Command {
                 $rows[] = [$tenant->slug, $summary["processed"], $summary["expired"], "OK"];
                 $administration->audit($tenant, "cancel_expired_subscriptions", "success", $summary, "scheduler");
 
-            } catch (Throwable $exception) {
+            } catch(Throwable $exception) {
 
                 $hasFailure = true;
                 $rows[] = [$tenant->slug, 0, 0, $exception->getMessage()];
@@ -82,13 +81,13 @@ final class CancelExpiredSubscriptions extends Command {
 
         $subscriptions = Subscription::query()
             ->where("status", "active")
-            ->when($companyId, fn ($query) => $query->where("company_id", $companyId))
+            ->when($companyId, fn($query) => $query->where("company_id", $companyId))
             ->where("end_date", "<=", now())
             ->orderBy("end_date")
             ->limit($limit)
             ->get();
 
-        foreach ($subscriptions as $subscription) {
+        foreach($subscriptions as $subscription) {
 
             $subscription->update([
                 "motive" => "Membresía expirada.",

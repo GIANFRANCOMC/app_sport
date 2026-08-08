@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\System\Organizations\Users;
 
-use App\Services\System\Base\BaseConfigService;
-use App\Services\System\Base\CompanyReferenceDataService;
+use App\Services\System\Base\{BaseConfigService, CompanyReferenceDataService};
 use stdClass;
 
 final class UserAttendanceConfigService extends BaseConfigService {
@@ -24,7 +23,7 @@ final class UserAttendanceConfigService extends BaseConfigService {
         return self::data([
             "branches" => $references->activeBranches(),
             "users" => $references->users(),
-            "sourceTypes" => collect(UserAttendanceService::sourceTypes())->map(fn ($source) => [
+            "sourceTypes" => collect(UserAttendanceService::sourceTypes())->map(fn($source) => [
                 "code" => $source,
                 "label" => match ($source) {
                     "manual_form" => "Manual",

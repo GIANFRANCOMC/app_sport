@@ -2,10 +2,10 @@
 
 namespace App\Models\System\Assets;
 
-use App\Helpers\System\Utilities;
+use App\Helpers\System\{Utilities};
 use App\Models\System\Organizations\{Branch};
 use App\Models\System\Organizations\{User};
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\{Model};
 
 class AssetAssignmentLog extends Model {
     protected $table = "asset_assignment_logs";

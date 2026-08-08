@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace App\Services\System\Auth;
 
-use App\Models\System\Organizations\AuthenticationEvent;
-use App\Models\System\Organizations\User;
-use App\Services\System\Tenancy\TenantContext;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Schema;
+use App\Models\System\Organizations\{AuthenticationEvent, User};
+use App\Services\System\Tenancy\{TenantContext};
+use Illuminate\Http\{Request};
+use Illuminate\Support\Facades\{Schema};
 use Throwable;
 
 final class AuthenticationAuditService {
@@ -23,8 +22,11 @@ final class AuthenticationAuditService {
     ): void {
 
         try {
-            if (! Schema::hasTable("authentication_events")) {
+
+            if(!Schema::hasTable("authentication_events")) {
+
                 return;
+
             }
 
             $tenant = app(TenantContext::class)->get();
@@ -43,7 +45,8 @@ final class AuthenticationAuditService {
                 "reason" => $reason ? mb_substr($reason, 0, 500) : null,
                 "occurred_at" => now(),
             ]);
-        } catch (Throwable) {
+
+        } catch(Throwable) {
             // La auditoría no debe impedir el acceso ni revelar fallos internos al visitante.
         }
 

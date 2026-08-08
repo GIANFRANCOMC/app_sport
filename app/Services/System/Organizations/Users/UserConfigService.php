@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 namespace App\Services\System\Organizations\Users;
 
-use App\Models\System\Organizations\User;
-use App\Services\System\Base\BaseConfigService;
-use App\Services\System\Base\CompanyReferenceDataService;
-use App\Services\System\Base\MasterReferenceDataService;
+use App\Models\System\Organizations\{User};
+use App\Services\System\Base\{BaseConfigService, CompanyReferenceDataService, MasterReferenceDataService};
 use stdClass;
 
 final class UserConfigService extends BaseConfigService {

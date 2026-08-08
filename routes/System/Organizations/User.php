@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\System\Organizations\{UserController};
-use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\{Route};
 
 $entity = "users";
 

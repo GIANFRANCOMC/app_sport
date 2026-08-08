@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Models\System\Purchases;
 
-use App\Helpers\System\Utilities;
-use App\Models\System\General\Currency;
-use App\Models\System\Warehouses\Warehouse;
-use Illuminate\Database\Eloquent\Model;
+use App\Helpers\System\{Utilities};
+use App\Models\System\General\{Currency};
+use App\Models\System\Warehouses\{Warehouse};
+use Illuminate\Database\Eloquent\{Model};
 
 final class PurchaseHeader extends Model {
     protected $table = "purchase_headers";
@@ -158,8 +158,10 @@ final class PurchaseHeader extends Model {
 
     public function getReceiptProgressAttribute(): float {
 
-        if (! $this->relationLoaded("items")) {
+        if(!$this->relationLoaded("items")) {
+
             return 0;
+
         }
 
         $ordered = (float) $this->items->sum("quantity");

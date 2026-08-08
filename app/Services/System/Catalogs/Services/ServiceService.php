@@ -4,13 +4,12 @@ declare(strict_types=1);
 
 namespace App\Services\System\Catalogs\Services;
 
-use App\Helpers\System\TranslationHelper;
-use App\Helpers\System\Utilities;
+use App\Helpers\System\{TranslationHelper, Utilities};
 use App\Models\System\Catalogs\{Item};
 use App\Services\System\Catalogs\Categories\{CategoryItemService};
-use Illuminate\Contracts\Pagination\LengthAwarePaginator;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Contracts\Pagination\{LengthAwarePaginator};
+use Illuminate\Database\Eloquent\{Builder};
+use Illuminate\Support\Facades\{DB};
 
 /**
  * Service class for managing module operations
@@ -89,19 +88,19 @@ class ServiceService {
             "created_by" => $userId,
         ];
 
-        foreach (self::ALLOWED_FIELDS as $field) {
+        foreach(self::ALLOWED_FIELDS as $field) {
 
-            if (array_key_exists($field, $data)) {
+            if(array_key_exists($field, $data)) {
 
-                if (in_array($field, ["min_price", "max_price"])) {
+                if(in_array($field, ["min_price", "max_price"])) {
 
                     $itemData[$field] = floatval($data[$field]) <= 0 ? null : $data[$field];
 
-                } elseif ($field === "see_my_web_price") {
+                }elseif($field === "see_my_web_price") {
 
                     $itemData[$field] = ($data["see_my_web"] ?? false) ? ($data[$field] ?? false) : false;
 
-                } else {
+                }else {
 
                     $itemData[$field] = $data[$field];
 
@@ -111,7 +110,7 @@ class ServiceService {
 
         }
 
-        if ((bool) ($itemData["igv_exempt"] ?? false)) {
+        if((bool) ($itemData["igv_exempt"] ?? false)) {
 
             $itemData["price_includes_tax"] = false;
 
@@ -131,31 +130,31 @@ class ServiceService {
 
         $updateData = [];
 
-        foreach (self::ALLOWED_FIELDS as $field) {
+        foreach(self::ALLOWED_FIELDS as $field) {
 
-            if (array_key_exists($field, $data)) {
+            if(array_key_exists($field, $data)) {
 
-                if (in_array($field, ["min_price", "max_price"])) {
+                if(in_array($field, ["min_price", "max_price"])) {
 
                     $value = floatval($data[$field]) <= 0 ? null : $data[$field];
 
-                    if ($value !== $item->$field) {
+                    if($value !== $item->$field) {
 
                         $updateData[$field] = $value;
 
                     }
 
-                } elseif ($field === "see_my_web_price") {
+                }elseif($field === "see_my_web_price") {
 
                     $value = ($data["see_my_web"] ?? $item->see_my_web) ? ($data[$field] ?? false) : false;
 
-                    if ($value !== $item->$field) {
+                    if($value !== $item->$field) {
 
                         $updateData[$field] = $value;
 
                     }
 
-                } elseif ($data[$field] !== $item->$field) {
+                }elseif($data[$field] !== $item->$field) {
 
                     $updateData[$field] = $data[$field];
 
@@ -165,19 +164,19 @@ class ServiceService {
 
         }
 
-        if ($item->brand_id !== null) {
+        if($item->brand_id !== null) {
 
             $updateData["brand_id"] = null;
 
         }
 
-        if ($item->barcode !== null) {
+        if($item->barcode !== null) {
 
             $updateData["barcode"] = null;
 
         }
 
-        if ((bool) ($updateData["igv_exempt"] ?? $item->igv_exempt ?? false)) {
+        if((bool) ($updateData["igv_exempt"] ?? $item->igv_exempt ?? false)) {
 
             $updateData["price_includes_tax"] = false;
 
@@ -192,9 +191,10 @@ class ServiceService {
             ? (int) ($updateData["capacity_limit"] ?? 0)
             : (int) ($item->capacity_limit ?? 0);
 
-        if ($capacityEnabled && $capacityLimit < (int) $item->capacity_used) {
+        if($capacityEnabled && $capacityLimit < (int) $item->capacity_used) {
 
             throw new \InvalidArgumentException("El límite de cupos no puede ser menor que los cupos ya vendidos.");
+
         }
 
         return self::syncLegacyCommissionRate($updateData);
@@ -203,7 +203,7 @@ class ServiceService {
 
     private static function normalizeCapacity(array $itemData): array {
 
-        if (! array_key_exists("capacity_control_enabled", $itemData)) {
+        if(!array_key_exists("capacity_control_enabled", $itemData)) {
 
             return $itemData;
 
@@ -212,7 +212,7 @@ class ServiceService {
         $enabled = (bool) $itemData["capacity_control_enabled"];
         $itemData["capacity_control_enabled"] = $enabled;
 
-        if (! $enabled) {
+        if(!$enabled) {
 
             $itemData["capacity_limit"] = null;
             $itemData["capacity_used"] = 0;
@@ -229,11 +229,11 @@ class ServiceService {
 
     private static function syncLegacyCommissionRate(array $itemData): array {
 
-        if (($itemData["commission_type"] ?? null) === "percentage") {
+        if(($itemData["commission_type"] ?? null) === "percentage") {
 
             $itemData["commission_rate"] = $itemData["commission_value"] ?? 0;
 
-        } elseif (array_key_exists("commission_type", $itemData)) {
+        }elseif(array_key_exists("commission_type", $itemData)) {
 
             $itemData["commission_rate"] = null;
 
@@ -256,7 +256,7 @@ class ServiceService {
 
         $item = null;
 
-        DB::transaction(function () use ($data, $companyId, $userId, &$item) {
+        DB::transaction(function() use ($data, $companyId, $userId, &$item) {
 
             // Prepare data with only allowed fields
             $itemData = self::prepareServiceDataForCreate($data, $companyId, $userId);
@@ -265,7 +265,7 @@ class ServiceService {
             $item = Item::create($itemData);
 
             // Sync categories
-            if (isset($data["categories"]) && is_array($data["categories"])) {
+            if(isset($data["categories"]) && is_array($data["categories"])) {
 
                 CategoryItemService::sync($item->id, $data["categories"], $userId);
 
@@ -287,13 +287,13 @@ class ServiceService {
      */
     public static function update(Item $item, array $data, int $userId): Item {
 
-        DB::transaction(function () use ($item, $data, $userId) {
+        DB::transaction(function() use ($item, $data, $userId) {
 
             // Prepare update data with only changed fields
             $updateData = self::prepareServiceDataForUpdate($item, $data);
 
             // Only update if there are changes
-            if (! empty($updateData)) {
+            if(!empty($updateData)) {
 
                 $updateData["updated_at"] = now();
                 $updateData["updated_by"] = $userId;
@@ -302,7 +302,7 @@ class ServiceService {
             }
 
             // Sync categories
-            if (isset($data["categories"]) && is_array($data["categories"])) {
+            if(isset($data["categories"]) && is_array($data["categories"])) {
 
                 CategoryItemService::sync($item->id, $data["categories"], $userId);
 
@@ -328,13 +328,13 @@ class ServiceService {
             ->where("company_id", $companyId)
             ->where("type", "service");
 
-        if ($statuses !== null && ! empty($statuses)) {
+        if($statuses !== null && !empty($statuses)) {
 
             $query->whereIn("status", $statuses);
 
         }
 
-        if ($relations !== null && ! empty($relations)) {
+        if($relations !== null && !empty($relations)) {
 
             $query->with($relations);
 
@@ -363,25 +363,25 @@ class ServiceService {
         $filterBy = $filters["filter_by"] ?? null;
         $word = $filters["word"] ?? null;
 
-        if (Utilities::isDefined($word) && Utilities::isDefined($filterBy)) {
+        if(Utilities::isDefined($word) && Utilities::isDefined($filterBy)) {
 
             $searchTerm = Utilities::getWordSearch($word);
 
-            if ($filterBy === "all") {
+            if($filterBy === "all") {
 
                 // Search across all searchable fields
-                $query->where(function (Builder $q) use ($searchTerm) {
+                $query->where(function(Builder $q) use ($searchTerm) {
 
                     $searchableFields = self::SEARCHABLE_FIELDS;
                     $firstField = array_shift($searchableFields);
 
-                    if ($firstField) {
+                    if($firstField) {
 
                         $q->where($firstField, "like", $searchTerm);
 
                     }
 
-                    foreach ($searchableFields as $field) {
+                    foreach($searchableFields as $field) {
 
                         $q->orWhere($field, "like", $searchTerm);
 
@@ -389,7 +389,7 @@ class ServiceService {
 
                 });
 
-            } elseif (in_array($filterBy, self::SEARCHABLE_FIELDS, true)) {
+            }elseif(in_array($filterBy, self::SEARCHABLE_FIELDS, true)) {
 
                 // Search in specific field
                 $query->where($filterBy, "like", $searchTerm);

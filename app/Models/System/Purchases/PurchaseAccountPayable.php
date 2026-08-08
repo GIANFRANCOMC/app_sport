@@ -4,10 +4,9 @@ declare(strict_types=1);
 
 namespace App\Models\System\Purchases;
 
-use App\Models\System\General\Currency;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Models\System\General\{Currency};
+use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
+use Illuminate\Database\Eloquent\{Model};
 
 final class PurchaseAccountPayable extends Model {
     protected $table = "purchase_accounts_payable";

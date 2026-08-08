@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models\System\Catalogs;
 
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\{Model};
 
 class RecipeToppingComponent extends Model {
     protected $table = "recipe_topping_components";

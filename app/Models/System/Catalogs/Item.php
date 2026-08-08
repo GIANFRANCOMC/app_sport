@@ -2,13 +2,12 @@
 
 namespace App\Models\System\Catalogs;
 
-use App\Helpers\System\Utilities;
+use App\Helpers\System\{Utilities};
 use App\Models\System\General\{Currency};
 use App\Models\System\Organizations\{Company};
 use App\Models\System\Sales\{SaleBody};
-use App\Models\System\Warehouses\InventoryMovement;
-use App\Models\System\Warehouses\WarehouseItem;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\System\Warehouses\{InventoryMovement, WarehouseItem};
+use Illuminate\Database\Eloquent\{Model};
 
 class Item extends Model {
     protected $table = "items";
@@ -94,7 +93,7 @@ class Item extends Model {
         $durationType = $this->attributes["duration_type"] ?? null;
         $durationValue = $this->attributes["duration_value"] ?? null;
 
-        if (Utilities::isDefined($durationType) && Utilities::isDefined($durationValue)) {
+        if(Utilities::isDefined($durationType) && Utilities::isDefined($durationValue)) {
 
             $prop = $durationValue > 1 ? "plural" : "label";
             $durationLabel = self::getDurationTypes("first", $durationType)[$prop] ?? "";
@@ -117,7 +116,7 @@ class Item extends Model {
 
     public function getAvailableCapacityAttribute(): ?int {
 
-        if (! $this->hasCapacityControl()) {
+        if(!$this->hasCapacityControl()) {
 
             return null;
 
@@ -185,7 +184,7 @@ class Item extends Model {
 
     public function availableCapacity(): int {
 
-        if (! $this->hasCapacityControl()) {
+        if(!$this->hasCapacityControl()) {
 
             return 0;
 
@@ -208,13 +207,13 @@ class Item extends Model {
 
     public function isAvailableForSale(): bool {
 
-        if (($this->attributes["status"] ?? null) !== "active" || $this->isExpired()) {
+        if(($this->attributes["status"] ?? null) !== "active" || $this->isExpired()) {
 
             return false;
 
         }
 
-        return ! $this->hasCapacityControl() || $this->availableCapacity() > 0;
+        return !$this->hasCapacityControl() || $this->availableCapacity() > 0;
 
     }
 
@@ -235,16 +234,16 @@ class Item extends Model {
     public function scopeAvailableForSale($query) {
 
         return $query->where("status", "active")
-            ->where(function ($subQuery) {
+            ->where(function($subQuery) {
 
                 $subQuery->whereNull("expires_at")
                     ->orWhere("expires_at", ">", now());
 
             })
-            ->where(function ($subQuery) {
+            ->where(function($subQuery) {
 
                 $subQuery->where("capacity_control_enabled", false)
-                    ->orWhere(function ($capacityQuery) {
+                    ->orWhere(function($capacityQuery) {
 
                         $capacityQuery->where("capacity_control_enabled", true)
                             ->whereNotNull("capacity_limit")

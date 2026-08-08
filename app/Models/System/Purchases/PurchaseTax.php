@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Models\System\Purchases;
 
-use App\Models\System\Finance\Tax;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\System\Finance\{Tax};
+use Illuminate\Database\Eloquent\{Model};
 
 final class PurchaseTax extends Model {
     protected $table = "purchase_taxes";

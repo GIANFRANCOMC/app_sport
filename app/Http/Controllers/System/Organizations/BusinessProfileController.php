@@ -4,10 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\System\Organizations;
 
-use App\Http\Controllers\System\Base\BaseController;
-use App\Services\System\Organizations\BusinessProfileService;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
+use App\Http\Controllers\System\Base\{BaseController};
+use App\Services\System\Organizations\{BusinessProfileService};
+use Illuminate\Http\{JsonResponse, Request};
 
 final class BusinessProfileController extends BaseController {
     private const TRANSLATION_NAMESPACE = "System.Organizations.business_profile";

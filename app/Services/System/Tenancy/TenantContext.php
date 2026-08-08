@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\System\Tenancy;
 
-use App\Models\System\Tenancy\TenantDatabase;
+use App\Models\System\Tenancy\{TenantDatabase};
 
 final class TenantContext {
     private ?TenantDatabase $tenant = null;

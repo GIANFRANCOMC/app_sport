@@ -2,9 +2,9 @@
 
 namespace App\Models\System\Catalogs;
 
-use App\Helpers\System\Utilities;
+use App\Helpers\System\{Utilities};
 use App\Models\System\Catalogs\{Category};
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\{Model};
 
 class CategoryItem extends Model {
     protected $table = "category_items";

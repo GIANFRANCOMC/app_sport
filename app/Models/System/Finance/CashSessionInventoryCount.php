@@ -4,12 +4,10 @@ declare(strict_types=1);
 
 namespace App\Models\System\Finance;
 
-use App\Models\System\Catalogs\Item;
-use App\Models\System\Organizations\Branch;
-use App\Models\System\Organizations\Company;
-use App\Models\System\Warehouses\InventoryMovement;
-use App\Models\System\Warehouses\Warehouse;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\System\Catalogs\{Item};
+use App\Models\System\Organizations\{Branch, Company};
+use App\Models\System\Warehouses\{InventoryMovement, Warehouse};
+use Illuminate\Database\Eloquent\{Model};
 
 class CashSessionInventoryCount extends Model {
     protected $table = "cash_session_inventory_counts";
@@ -39,26 +37,38 @@ class CashSessionInventoryCount extends Model {
     ];
 
     public function company() {
+
         return $this->belongsTo(Company::class, "company_id", "id");
+
     }
 
     public function branch() {
+
         return $this->belongsTo(Branch::class, "branch_id", "id");
+
     }
 
     public function cashSession() {
+
         return $this->belongsTo(CashSession::class, "cash_session_id", "id");
+
     }
 
     public function warehouse() {
+
         return $this->belongsTo(Warehouse::class, "warehouse_id", "id");
+
     }
 
     public function item() {
+
         return $this->belongsTo(Item::class, "item_id", "id");
+
     }
 
     public function inventoryMovement() {
+
         return $this->belongsTo(InventoryMovement::class, "inventory_movement_id", "id");
+
     }
 }

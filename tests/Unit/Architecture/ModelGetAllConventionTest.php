@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Architecture;
 
-use Illuminate\Support\Facades\File;
-use Tests\TestCase;
+use Illuminate\Support\Facades\{File};
+use Tests\{TestCase};
 
 class ModelGetAllConventionTest extends TestCase {
     public function test_models_do_not_define_ambiguous_get_all_methods(): void {
 
         $violations = collect(File::allFiles(app_path("Models")))
-            ->filter(function ($file) {
+            ->filter(function($file) {
 
                 return preg_match(
                     "/function\s+getAll\s*\(/",
@@ -19,7 +19,7 @@ class ModelGetAllConventionTest extends TestCase {
                 ) === 1;
 
             })
-            ->map(fn ($file) => $file->getRelativePathname())
+            ->map(fn($file) => $file->getRelativePathname())
             ->values()
             ->all();
 
@@ -39,13 +39,13 @@ class ModelGetAllConventionTest extends TestCase {
         ];
 
         $violations = collect($directories)
-            ->flatMap(fn (string $directory) => File::allFiles($directory))
-            ->filter(function ($file) {
+            ->flatMap(fn(string $directory) => File::allFiles($directory))
+            ->filter(function($file) {
 
                 return str_contains(File::get($file->getPathname()), "::getAll(");
 
             })
-            ->map(fn ($file) => $file->getRelativePathname())
+            ->map(fn($file) => $file->getRelativePathname())
             ->values()
             ->all();
 
@@ -60,17 +60,17 @@ class ModelGetAllConventionTest extends TestCase {
     public function test_all_module_config_services_use_the_shared_cache_contract(): void {
 
         $violations = collect(File::allFiles(app_path("Services/System")))
-            ->filter(fn ($file) => str_ends_with($file->getFilename(), "ConfigService.php"))
-            ->reject(fn ($file) => $file->getFilename() === "BaseConfigService.php")
-            ->filter(function ($file) {
+            ->filter(fn($file) => str_ends_with($file->getFilename(), "ConfigService.php"))
+            ->reject(fn($file) => $file->getFilename() === "BaseConfigService.php")
+            ->filter(function($file) {
 
-                return ! str_contains(
+                return !str_contains(
                     File::get($file->getPathname()),
                     "extends BaseConfigService"
                 );
 
             })
-            ->map(fn ($file) => $file->getRelativePathname())
+            ->map(fn($file) => $file->getRelativePathname())
             ->values()
             ->all();
 
@@ -89,7 +89,7 @@ class ModelGetAllConventionTest extends TestCase {
             app_path("Http/Requests/System/Catalogs/Products/ProductRequest.php"),
         ];
 
-        foreach ($requestFiles as $requestFile) {
+        foreach($requestFiles as $requestFile) {
 
             $this->assertStringContainsString(
                 "extends CompanyFormRequest",

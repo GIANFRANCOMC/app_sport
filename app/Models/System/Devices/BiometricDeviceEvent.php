@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models\System\Devices;
 
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\{Model};
 
 final class BiometricDeviceEvent extends Model {
     protected $table = "biometric_device_events";

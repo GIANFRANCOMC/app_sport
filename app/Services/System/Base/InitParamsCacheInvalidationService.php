@@ -13,20 +13,16 @@ use App\Services\System\Catalogs\Recipes\{RecipeConfigService};
 use App\Services\System\Catalogs\Services\{ServiceConfigService};
 use App\Services\System\Catalogs\Subscriptions\{SubscriptionConfigService};
 use App\Services\System\Customers\Customers\{CustomerConfigService};
-use App\Services\System\Customers\Tracking\TrackingAttendanceConfigService;
-use App\Services\System\Customers\Tracking\TrackingCustomerConfigService;
-use App\Services\System\Customers\Tracking\TrackingSubscriptionConfigService;
+use App\Services\System\Customers\Tracking\{TrackingAttendanceConfigService, TrackingCustomerConfigService, TrackingSubscriptionConfigService};
 use App\Services\System\Devices\BiometricDevices\{BiometricDeviceConfigService};
-use App\Services\System\Essentials\DashboardConfigService;
-use App\Services\System\Essentials\ReportConfigService;
+use App\Services\System\Essentials\{DashboardConfigService, ReportConfigService};
 use App\Services\System\Finance\{CashRegisterConfigService};
-use App\Services\System\Operations\ServiceOperationConfigService;
-use App\Services\System\Organizations\BookComplaints\BookComplaintConfigService;
+use App\Services\System\Operations\{ServiceOperationConfigService};
+use App\Services\System\Organizations\BookComplaints\{BookComplaintConfigService};
 use App\Services\System\Organizations\Branches\{BranchConfigService};
-use App\Services\System\Organizations\Companies\CompanyConfigService;
+use App\Services\System\Organizations\Companies\{CompanyConfigService};
 use App\Services\System\Organizations\Roles\{RoleConfigService};
-use App\Services\System\Organizations\Users\UserAttendanceConfigService;
-use App\Services\System\Organizations\Users\UserConfigService;
+use App\Services\System\Organizations\Users\{UserAttendanceConfigService, UserConfigService};
 use App\Services\System\Purchases\{PurchaseConfigService};
 use App\Services\System\Sales\{SaleConfigService};
 use App\Services\System\Warehouses\StockManagement\{StockManagementConfigService};
@@ -201,12 +197,13 @@ final class InitParamsCacheInvalidationService {
 
         $services = self::DEPENDENCIES[$resource] ?? null;
 
-        if ($services === null) {
+        if($services === null) {
 
             throw new InvalidArgumentException("Unknown initParams cache resource: {$resource}");
+
         }
 
-        foreach (array_unique($services) as $service) {
+        foreach(array_unique($services) as $service) {
 
             $service::clearAllCache($companyId);
 

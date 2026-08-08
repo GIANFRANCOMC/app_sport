@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace App\Helpers\System;
 
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Response;
+use Illuminate\Http\{JsonResponse, Response};
 
 /**
  * API Response Helper
@@ -26,7 +25,7 @@ class ApiResponse {
             "msg" => $message,
         ];
 
-        if ($data !== null) {
+        if($data !== null) {
 
             $response["data"] = $data;
 
@@ -50,13 +49,14 @@ class ApiResponse {
             "msg" => $message,
         ];
 
-        if (! empty($errors)) {
+        if(!empty($errors)) {
 
             $response["errors"] = $errors;
 
         }
 
         return response()->json($response, $statusCode);
+
     }
 
     /**
@@ -96,13 +96,14 @@ class ApiResponse {
             "msg" => $message,
         ];
 
-        if ($resource !== null) {
+        if($resource !== null) {
 
             $response[$resourceKey] = $resource;
 
         }
 
         return response()->json($response, Response::HTTP_OK);
+
     }
 
     /**
@@ -119,7 +120,7 @@ class ApiResponse {
             "msg" => $message,
         ];
 
-        if ($resource !== null) {
+        if($resource !== null) {
 
             $response[$resourceKey] = $resource;
 

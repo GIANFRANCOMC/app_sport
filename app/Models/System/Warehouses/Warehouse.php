@@ -2,9 +2,9 @@
 
 namespace App\Models\System\Warehouses;
 
-use App\Helpers\System\Utilities;
+use App\Helpers\System\{Utilities};
 use App\Models\System\Organizations\{Branch};
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\{Model};
 
 class Warehouse extends Model {
     protected $table = "warehouses";
@@ -36,7 +36,7 @@ class Warehouse extends Model {
 
         $name = trim((string) $name);
 
-        if ($name === "") {
+        if($name === "") {
 
             return "";
 

@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace App\Models\System\Operations;
 
-use App\Models\System\Organizations\Branch;
-use App\Models\System\Organizations\Company;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\System\Organizations\{Branch, Company};
+use Illuminate\Database\Eloquent\{Model};
 
 final class ServiceFloor extends Model {
     protected $table = "service_floors";

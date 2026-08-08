@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Models\System\Sales;
 
-use App\Models\System\Finance\Tax;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\System\Finance\{Tax};
+use Illuminate\Database\Eloquent\{Model};
 
 final class SaleTax extends Model {
     protected $table = "sale_taxes";

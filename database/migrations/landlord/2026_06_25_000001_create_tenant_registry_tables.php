@@ -2,16 +2,17 @@
 
 declare(strict_types=1);
 
-use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\Migrations\{Migration};
+use Illuminate\Database\Schema\{Blueprint};
+use Illuminate\Support\Facades\{Schema};
 
 return new class extends Migration {
     protected $connection = "landlord";
 
     public function up(): void {
 
-        Schema::connection($this->connection)->create("platform_users", function (Blueprint $table): void {
+        Schema::connection($this->connection)->create("platform_users", function(Blueprint $table): void {
+
             $table->id();
             $table->string("name", 150);
             $table->string("email", 190)->unique();
@@ -22,9 +23,11 @@ return new class extends Migration {
             $table->string("last_login_ip", 45)->nullable();
             $table->timestamp("created_at")->useCurrent()->nullable();
             $table->timestamp("updated_at")->nullable();
+
         });
 
-        Schema::connection($this->connection)->create("tenant_databases", function (Blueprint $table): void {
+        Schema::connection($this->connection)->create("tenant_databases", function(Blueprint $table): void {
+
             $table->id();
             $table->string("slug", 120)->unique();
             $table->unsignedBigInteger("company_id")->nullable();
@@ -35,9 +38,11 @@ return new class extends Migration {
             $table->integer("created_by")->nullable();
             $table->timestamp("updated_at")->nullable();
             $table->integer("updated_by")->nullable();
+
         });
 
-        Schema::connection($this->connection)->create("tenant_domains", function (Blueprint $table): void {
+        Schema::connection($this->connection)->create("tenant_domains", function(Blueprint $table): void {
+
             $table->id();
             $table->unsignedBigInteger("tenant_database_id");
             $table->string("domain", 255)->unique();
@@ -50,9 +55,11 @@ return new class extends Migration {
             $table->integer("updated_by")->nullable();
 
             $table->foreign("tenant_database_id")->references("id")->on("tenant_databases")->onDelete("cascade");
+
         });
 
-        Schema::connection($this->connection)->create("tenant_audit_logs", function (Blueprint $table): void {
+        Schema::connection($this->connection)->create("tenant_audit_logs", function(Blueprint $table): void {
+
             $table->id();
             $table->unsignedBigInteger("tenant_database_id")->nullable();
             $table->unsignedBigInteger("company_id")->nullable();
@@ -65,9 +72,11 @@ return new class extends Migration {
             $table->timestamp("occurred_at")->useCurrent();
 
             $table->foreign("tenant_database_id")->references("id")->on("tenant_databases")->nullOnDelete();
+
         });
 
-        Schema::connection($this->connection)->create("tenant_announcements", function (Blueprint $table): void {
+        Schema::connection($this->connection)->create("tenant_announcements", function(Blueprint $table): void {
+
             $table->id();
             $table->unsignedBigInteger("tenant_database_id")->nullable();
             $table->string("title", 180);
@@ -86,6 +95,7 @@ return new class extends Migration {
             $table->foreign("created_by")->references("id")->on("platform_users")->nullOnDelete();
             $table->foreign("updated_by")->references("id")->on("platform_users")->nullOnDelete();
             $table->index(["tenant_database_id", "status", "starts_at", "ends_at"], "tenant_announcements_visibility_index");
+
         });
 
     }

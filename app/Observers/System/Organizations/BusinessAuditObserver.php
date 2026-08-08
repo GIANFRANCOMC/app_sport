@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Observers\System\Organizations;
 
-use App\Services\System\Organizations\BusinessAuditService;
-use Illuminate\Database\Eloquent\Model;
+use App\Services\System\Organizations\{BusinessAuditService};
+use Illuminate\Database\Eloquent\{Model};
 
 final class BusinessAuditObserver {
     public function created(Model $model): void {
@@ -16,8 +16,10 @@ final class BusinessAuditObserver {
 
     public function updated(Model $model): void {
 
-        if ($model->wasChanged()) {
+        if($model->wasChanged()) {
+
             BusinessAuditService::recordModelChange($model, "updated");
+
         }
 
     }

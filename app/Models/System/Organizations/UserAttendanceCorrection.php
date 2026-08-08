@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models\System\Organizations;
 
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\{Model};
 
 final class UserAttendanceCorrection extends Model {
     protected $table = "user_attendance_corrections";

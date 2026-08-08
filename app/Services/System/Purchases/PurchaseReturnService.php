@@ -4,30 +4,32 @@ declare(strict_types=1);
 
 namespace App\Services\System\Purchases;
 
-use App\Helpers\System\Utilities;
-use App\Models\System\Purchases\PurchaseHeader;
-use App\Models\System\Purchases\PurchaseItem;
-use App\Models\System\Purchases\PurchaseReturn;
-use App\Models\System\Purchases\PurchaseReturnItem;
-use App\Services\System\Warehouses\Inventory\InventoryMovementService;
+use App\Helpers\System\{Utilities};
+use App\Models\System\Purchases\{PurchaseHeader, PurchaseItem, PurchaseReturn, PurchaseReturnItem};
+use App\Services\System\Warehouses\Inventory\{InventoryMovementService};
 use DomainException;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\{DB};
 
 final class PurchaseReturnService {
     public static function create(int $companyId, int $purchaseId, int $userId, array $data): PurchaseReturn {
 
-        return DB::transaction(function () use ($companyId, $purchaseId, $userId, $data) {
+        return DB::transaction(function() use ($companyId, $purchaseId, $userId, $data) {
+
             $purchase = PurchaseHeader::query()
                 ->where("company_id", $companyId)
                 ->whereIn("status", ["partial", "received"])
                 ->lockForUpdate()
                 ->find($purchaseId);
-            if (! $purchase) {
+            if(!$purchase) {
+
                 throw new DomainException("La compra no tiene mercadería recibida disponible para devolución.");
+
             }
 
-            if ((int) $purchase->warehouse_id !== (int) $data["warehouse_id"]) {
+            if((int) $purchase->warehouse_id !== (int) $data["warehouse_id"]) {
+
                 throw new DomainException("La devolución debe salir del almacén receptor de la compra.");
+
             }
 
             $return = PurchaseReturn::create([
@@ -43,14 +45,17 @@ final class PurchaseReturnService {
                 "created_by" => $userId,
             ]);
 
-            foreach ($data["items"] as $line) {
+            foreach($data["items"] as $line) {
+
                 $purchaseItem = PurchaseItem::query()
                     ->where("company_id", $companyId)
                     ->where("purchase_header_id", $purchaseId)
                     ->lockForUpdate()
                     ->find((int) $line["purchase_item_id"]);
-                if (! $purchaseItem) {
+                if(!$purchaseItem) {
+
                     throw new DomainException("Uno de los productos no pertenece a la compra.");
+
                 }
 
                 $previouslyReturned = (float) PurchaseReturnItem::query()
@@ -61,8 +66,10 @@ final class PurchaseReturnService {
                     ->sum("purchase_return_items.quantity");
                 $quantity = Utilities::round((float) $line["quantity"], null, $companyId);
                 $available = Utilities::round((float) $purchaseItem->received_quantity - $previouslyReturned, null, $companyId);
-                if ($quantity > $available) {
+                if($quantity > $available) {
+
                     throw new DomainException("La devolución supera la cantidad recibida disponible.");
+
                 }
 
                 $movement = InventoryMovementService::apply([
@@ -90,9 +97,11 @@ final class PurchaseReturnService {
                     "total_cost" => Utilities::round($quantity * (float) $purchaseItem->unit_cost, null, $companyId),
                     "created_at" => now(),
                 ]);
+
             }
 
             return $return->load(["purchase.supplier", "warehouse", "items.item", "items.movement"]);
+
         });
 
     }

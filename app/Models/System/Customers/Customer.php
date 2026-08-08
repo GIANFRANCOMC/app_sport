@@ -2,14 +2,13 @@
 
 namespace App\Models\System\Customers;
 
-use App\Helpers\System\Utilities;
+use App\Helpers\System\{Utilities};
 use App\Models\System\Devices\Biometric\{CustomerBiometricFingerprint};
 use App\Models\System\General\{IdentityDocumentType};
-use App\Models\System\Organizations\Branch;
-use App\Models\System\Organizations\Company;
+use App\Models\System\Organizations\{Branch, Company};
 use App\Models\System\Sales\{SaleHeader};
-use Carbon\Carbon;
-use Illuminate\Database\Eloquent\Model;
+use Carbon\{Carbon};
+use Illuminate\Database\Eloquent\{Model};
 use Illuminate\Support\Facades\{DB};
 
 class Customer extends Model {
@@ -99,12 +98,12 @@ class Customer extends Model {
 
         $branchesCurrent = [];
 
-        foreach ($currentSubscriptions as $branchId => $maxEndDate) {
+        foreach($currentSubscriptions as $branchId => $maxEndDate) {
 
             $branch = Branch::where("id", $branchId)
                 ->first();
 
-            if (Utilities::isDefined($branch)) {
+            if(Utilities::isDefined($branch)) {
 
                 $branchesCurrent[] = [
                     "branch" => [

@@ -4,11 +4,9 @@ declare(strict_types=1);
 
 namespace App\Services\System\Organizations\Roles;
 
-use App\Models\System\Organizations\Role;
-use App\Models\System\Organizations\User;
-use App\Services\System\Base\BaseConfigService;
-use App\Services\System\Base\CompanyReferenceDataService;
-use App\Services\System\Organizations\Companies\CompanySectionService;
+use App\Models\System\Organizations\{Role, User};
+use App\Services\System\Base\{BaseConfigService, CompanyReferenceDataService};
+use App\Services\System\Organizations\Companies\{CompanySectionService};
 use stdClass;
 
 final class RoleConfigService extends BaseConfigService {
@@ -29,13 +27,17 @@ final class RoleConfigService extends BaseConfigService {
         $delegableActions = $user ? RolePermissionService::allowedActionsBySubSection($user) : [];
         $references = CompanyReferenceDataService::for($companyId, $userId);
 
-        $sections->each(function ($section) use ($delegableActions): void {
-            $section->subSections->each(function ($subSection) use ($delegableActions): void {
+        $sections->each(function($section) use ($delegableActions): void {
+
+            $section->subSections->each(function($subSection) use ($delegableActions): void {
+
                 $subSection->setAttribute(
                     "delegable_actions",
                     $delegableActions[(int) $subSection->id] ?? null
                 );
+
             });
+
         });
 
         return self::data([

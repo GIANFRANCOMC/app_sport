@@ -2,10 +2,9 @@
 
 namespace App\Listeners;
 
-use App\Events\SubscriptionExpired;
-use App\Helpers\System\Utilities;
-use App\Models\System\Customers\Subscription;
-use App\Models\System\Customers\SubscriptionEmail;
+use App\Events\{SubscriptionExpired};
+use App\Helpers\System\{Utilities};
+use App\Models\System\Customers\{Subscription, SubscriptionEmail};
 
 class LogSubscriptionEmail {
     /**
@@ -34,7 +33,7 @@ class LogSubscriptionEmail {
 
         $whatsapp = $socialsMedia->where("type", "whatsapp");
 
-        if (count($whatsapp) === 1) {
+        if(count($whatsapp) === 1) {
 
             $touchpoints->push($whatsapp->first());
 

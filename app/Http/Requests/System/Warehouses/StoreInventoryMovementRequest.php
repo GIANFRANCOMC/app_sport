@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\System\Warehouses;
 
-use App\Http\Requests\System\Base\CompanyFormRequest;
-use Illuminate\Validation\Validator;
+use App\Http\Requests\System\Base\{CompanyFormRequest};
+use Illuminate\Validation\{Validator};
 
 final class StoreInventoryMovementRequest extends CompanyFormRequest {
     public function rules(): array {
@@ -27,14 +27,18 @@ final class StoreInventoryMovementRequest extends CompanyFormRequest {
 
     public function after(): array {
 
-        return [function (Validator $validator): void {
+        return [function(Validator $validator): void {
+
             $requiredField = $this->input("movement_type") === "correction"
                 ? "resulting_balance"
                 : "quantity";
 
-            if (! $this->filled($requiredField)) {
+            if(!$this->filled($requiredField)) {
+
                 $validator->errors()->add($requiredField, "Campo obligatorio.");
+
             }
+
         }];
 
     }

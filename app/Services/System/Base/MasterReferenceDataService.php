@@ -4,10 +4,9 @@ declare(strict_types=1);
 
 namespace App\Services\System\Base;
 
-use App\Models\System\General\Currency;
-use App\Models\System\General\IdentityDocumentType;
-use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Support\Facades\Cache;
+use App\Models\System\General\{Currency, IdentityDocumentType};
+use Illuminate\Database\Eloquent\{Collection};
+use Illuminate\Support\Facades\{Cache};
 
 /**
  * Provides active company-scoped master data used by module initParams.
@@ -36,7 +35,7 @@ final class MasterReferenceDataService {
         return Cache::remember(
             self::cacheKey($companyId, "currencies"),
             self::CACHE_TTL,
-            fn () => Currency::query()
+            fn() => Currency::query()
                 ->where("company_id", $companyId)
                 ->where("status", "active")
                 ->orderBy("code")
@@ -83,7 +82,7 @@ final class MasterReferenceDataService {
         return Cache::remember(
             self::cacheKey($companyId, "identity_documents"),
             self::CACHE_TTL,
-            fn () => IdentityDocumentType::query()
+            fn() => IdentityDocumentType::query()
                 ->where("company_id", $companyId)
                 ->where("status", "active")
                 ->orderBy("name")

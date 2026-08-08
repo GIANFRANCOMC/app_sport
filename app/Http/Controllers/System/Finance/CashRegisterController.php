@@ -4,16 +4,10 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\System\Finance;
 
-use App\Http\Controllers\System\Base\BaseController;
-use App\Http\Requests\System\Finance\CloseCashSessionRequest;
-use App\Http\Requests\System\Finance\OpenCashSessionRequest;
-use App\Http\Requests\System\Finance\StoreCashMovementRequest;
-use App\Http\Requests\System\Finance\StoreCashRegisterRequest;
-use App\Services\System\Finance\CashRegisterConfigService;
-use App\Services\System\Finance\CashRegisterService;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
-use Illuminate\Http\Response;
+use App\Http\Controllers\System\Base\{BaseController};
+use App\Http\Requests\System\Finance\{CloseCashSessionRequest, OpenCashSessionRequest, StoreCashMovementRequest, StoreCashRegisterRequest};
+use App\Services\System\Finance\{CashRegisterConfigService, CashRegisterService};
+use Illuminate\Http\{JsonResponse, Request, Response};
 use RuntimeException;
 
 final class CashRegisterController extends BaseController {
@@ -70,7 +64,7 @@ final class CashRegisterController extends BaseController {
                 "data" => $register,
             ]);
 
-        } catch (\Throwable $exception) {
+        } catch(\Throwable $exception) {
 
             return response()->json([
                 "bool" => false,
@@ -138,7 +132,7 @@ final class CashRegisterController extends BaseController {
             "Importe",
         ], ";");
 
-        foreach ($rows as $row) {
+        foreach($rows as $row) {
 
             fputcsv($handle, [
                 $row->occurred_at,
@@ -180,7 +174,7 @@ final class CashRegisterController extends BaseController {
                 "data" => $session,
             ]);
 
-        } catch (\Throwable $exception) {
+        } catch(\Throwable $exception) {
 
             return response()->json([
                 "bool" => false,
@@ -207,7 +201,7 @@ final class CashRegisterController extends BaseController {
                 "data" => $session,
             ]);
 
-        } catch (RuntimeException $exception) {
+        } catch(RuntimeException $exception) {
 
             return response()->json([
                 "bool" => false,
@@ -234,7 +228,7 @@ final class CashRegisterController extends BaseController {
                 "data" => $movement,
             ]);
 
-        } catch (RuntimeException $exception) {
+        } catch(RuntimeException $exception) {
 
             return response()->json([
                 "bool" => false,
@@ -247,7 +241,7 @@ final class CashRegisterController extends BaseController {
 
     private function cashFilters(Request $request): array {
 
-        return array_filter($request->input("filter", []), fn ($value) => $value !== null && $value !== "");
+        return array_filter($request->input("filter", []), fn($value) => $value !== null && $value !== "");
 
     }
 }

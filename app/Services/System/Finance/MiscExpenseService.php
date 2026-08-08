@@ -4,14 +4,12 @@ declare(strict_types=1);
 
 namespace App\Services\System\Finance;
 
-use App\Helpers\System\Utilities;
-use App\Models\System\Finance\CashMovement;
-use App\Models\System\Finance\CashSession;
-use App\Models\System\Finance\MiscExpense;
-use App\Services\System\Organizations\AccessScopeService;
+use App\Helpers\System\{Utilities};
+use App\Models\System\Finance\{CashMovement, CashSession, MiscExpense};
+use App\Services\System\Organizations\{AccessScopeService};
 use DomainException;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Database\Eloquent\{Builder};
+use Illuminate\Support\Facades\{DB};
 
 final class MiscExpenseService {
     public static function query(int $companyId, array $filters = [], ?int $userId = null): Builder {
@@ -27,31 +25,45 @@ final class MiscExpenseService {
                 "responsibleUser:id,name",
             ]);
 
-        if ($userId !== null) {
+        if($userId !== null) {
+
             $branchIds = \App\Services\System\Base\CompanyReferenceDataService::for($companyId, $userId)->allowedBranchIds();
-            if ($branchIds !== null) {
-                $query->where(function ($query) use ($branchIds) {
+            if($branchIds !== null) {
+
+                $query->where(function($query) use ($branchIds) {
+
                     $query->whereNull("branch_id")->orWhereIn("branch_id", $branchIds);
+
                 });
+
             }
+
         }
 
         $word = trim((string) ($filters["word"] ?? ""));
-        if ($word !== "") {
-            $query->where(function ($query) use ($word) {
+        if($word !== "") {
+
+            $query->where(function($query) use ($word) {
+
                 $query->where("concept", "like", "%{$word}%")
                     ->orWhere("reference", "like", "%{$word}%")
                     ->orWhere("description", "like", "%{$word}%")
                     ->orWhere("observation", "like", "%{$word}%");
+
             });
+
         }
 
-        if (! empty($filters["status"])) {
+        if(!empty($filters["status"])) {
+
             $query->where("status", $filters["status"]);
+
         }
 
-        if (! empty($filters["branch_id"])) {
+        if(!empty($filters["branch_id"])) {
+
             $query->where("branch_id", (int) $filters["branch_id"]);
+
         }
 
         return $query->orderByDesc("expense_date")->orderByDesc("id");
@@ -60,26 +72,32 @@ final class MiscExpenseService {
 
     public static function create(int $companyId, int $userId, array $data): MiscExpense {
 
-        return DB::transaction(function () use ($companyId, $userId, $data) {
+        return DB::transaction(function() use ($companyId, $userId, $data) {
 
             $branchId = isset($data["branch_id"]) ? (int) $data["branch_id"] : null;
-            if ($branchId && ! AccessScopeService::canAccess(auth()->user(), AccessScopeService::BRANCH, $branchId)) {
+            if($branchId && !AccessScopeService::canAccess(auth()->user(), AccessScopeService::BRANCH, $branchId)) {
+
                 throw new DomainException("No tienes acceso a la sucursal seleccionada.");
+
             }
 
             $cashSessionId = isset($data["cash_session_id"]) ? (int) $data["cash_session_id"] : null;
             $cashSession = null;
 
-            if ($cashSessionId) {
+            if($cashSessionId) {
+
                 $cashSession = CashSession::query()
                     ->where("company_id", $companyId)
                     ->where("status", "open")
                     ->findOrFail($cashSessionId);
+
             }
 
             $amount = Utilities::round($data["amount"]);
-            if ($amount <= 0) {
+            if($amount <= 0) {
+
                 throw new DomainException("El gasto debe tener un importe mayor que cero.");
+
             }
 
             $expense = MiscExpense::create([
@@ -101,7 +119,8 @@ final class MiscExpenseService {
                 "created_by" => $userId,
             ]);
 
-            if ($cashSession) {
+            if($cashSession) {
+
                 CashMovement::create([
                     "company_id" => $companyId,
                     "branch_id" => $expense->branch_id,
@@ -118,6 +137,7 @@ final class MiscExpenseService {
                     "status" => "active",
                     "created_by" => $userId,
                 ]);
+
             }
 
             return $expense->load(["branch", "paymentMethod", "currency", "category", "responsibleUser"]);
@@ -128,7 +148,7 @@ final class MiscExpenseService {
 
     public static function cancel(int $companyId, int $expenseId, int $userId): MiscExpense {
 
-        return DB::transaction(function () use ($companyId, $expenseId, $userId) {
+        return DB::transaction(function() use ($companyId, $expenseId, $userId) {
 
             $expense = MiscExpense::query()
                 ->where("company_id", $companyId)
@@ -136,8 +156,10 @@ final class MiscExpenseService {
                 ->lockForUpdate()
                 ->firstOrFail();
 
-            if ($expense->status !== "active") {
+            if($expense->status !== "active") {
+
                 throw new DomainException("El gasto ya fue anulado.");
+
             }
 
             $expense->update([

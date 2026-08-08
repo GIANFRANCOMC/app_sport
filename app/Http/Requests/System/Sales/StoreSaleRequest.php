@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\System\Sales;
 
-use App\Helpers\System\ApiResponse;
-use App\Http\Requests\System\Base\CompanyFormRequest;
-use App\Rules\System\Defaults\BelongsToCompany;
-use Illuminate\Contracts\Validation\Validator;
-use Illuminate\Http\Exceptions\HttpResponseException;
+use App\Helpers\System\{ApiResponse};
+use App\Http\Requests\System\Base\{CompanyFormRequest};
+use App\Rules\System\Defaults\{BelongsToCompany};
+use Illuminate\Contracts\Validation\{Validator};
+use Illuminate\Http\Exceptions\{HttpResponseException};
 
 class StoreSaleRequest extends CompanyFormRequest {
     /**
@@ -157,7 +157,7 @@ class StoreSaleRequest extends CompanyFormRequest {
 
         $renamedErrors = [];
 
-        foreach ($errors as $key => $value) {
+        foreach($errors as $key => $value) {
 
             $newKey = $fieldMappings[$key] ?? $key;
             $renamedErrors[$newKey] = $value;
@@ -174,9 +174,9 @@ class StoreSaleRequest extends CompanyFormRequest {
     private function normalizeDetails(): array {
 
         return collect($this->input("details", []))
-            ->map(function ($detail) {
+            ->map(function($detail) {
 
-                if (! is_array($detail)) {
+                if(!is_array($detail)) {
 
                     return $detail;
 
@@ -192,8 +192,10 @@ class StoreSaleRequest extends CompanyFormRequest {
                 $detail["commission_amount"] = $this->normalizeDecimalFromArray($detail, "commission_amount");
                 $detail["igv_exempt"] = filter_var($detail["igv_exempt"] ?? false, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? false;
                 $detail["price_includes_tax"] = filter_var($detail["price_includes_tax"] ?? false, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? false;
-                if ($detail["igv_exempt"]) {
+                if($detail["igv_exempt"]) {
+
                     $detail["price_includes_tax"] = false;
+
                 }
 
                 return $detail;
@@ -207,9 +209,9 @@ class StoreSaleRequest extends CompanyFormRequest {
     private function normalizeTaxes(): array {
 
         return collect($this->input("taxes", []))
-            ->map(function ($tax) {
+            ->map(function($tax) {
 
-                if (! is_array($tax)) {
+                if(!is_array($tax)) {
 
                     return $tax;
 
@@ -232,9 +234,9 @@ class StoreSaleRequest extends CompanyFormRequest {
     private function normalizePayments(): array {
 
         return collect($this->input("payments", []))
-            ->map(function ($payment) {
+            ->map(function($payment) {
 
-                if (! is_array($payment)) {
+                if(!is_array($payment)) {
 
                     return $payment;
 

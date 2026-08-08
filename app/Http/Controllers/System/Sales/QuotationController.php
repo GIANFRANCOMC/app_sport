@@ -4,13 +4,11 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\System\Sales;
 
-use App\Helpers\System\Utilities;
-use App\Http\Controllers\System\Base\BaseController;
-use App\Services\System\Sales\QuotationService;
-use App\Services\System\Sales\SaleConfigService;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
+use App\Helpers\System\{Utilities};
+use App\Http\Controllers\System\Base\{BaseController};
+use App\Services\System\Sales\{QuotationService, SaleConfigService};
+use Illuminate\Http\{JsonResponse, Request};
+use Illuminate\Support\Facades\{Validator};
 
 final class QuotationController extends BaseController {
     private const TRANSLATION_NAMESPACE = "System.Sales.quotations";
@@ -54,12 +52,16 @@ final class QuotationController extends BaseController {
     public function saleDraft(int $id): JsonResponse {
 
         try {
+
             return response()->json([
                 "bool" => true,
                 "data" => QuotationService::saleDraft($this->getCompanyId(), $id),
             ]);
-        } catch (\Throwable $exception) {
+
+        } catch(\Throwable $exception) {
+
             return response()->json(["bool" => false, "msg" => $exception->getMessage()], 422);
+
         }
 
     }
@@ -95,18 +97,24 @@ final class QuotationController extends BaseController {
             "after_or_equal" => "No puede ser anterior a la fecha de emisión.",
         ]);
 
-        if ($validator->fails()) {
+        if($validator->fails()) {
+
             return response()->json(["bool" => false, "errors" => $validator->errors()], 422);
+
         }
 
         try {
+
             return response()->json([
                 "bool" => true,
                 "msg" => "Cotización registrada correctamente.",
                 "data" => QuotationService::create($this->getCompanyId(), $this->getUserId(), $validator->validated()),
             ], 201);
-        } catch (\Throwable $exception) {
+
+        } catch(\Throwable $exception) {
+
             return response()->json(["bool" => false, "msg" => $exception->getMessage()], 422);
+
         }
 
     }
@@ -114,13 +122,17 @@ final class QuotationController extends BaseController {
     public function cancel(int $id): JsonResponse {
 
         try {
+
             return response()->json([
                 "bool" => true,
                 "msg" => "Cotización anulada correctamente.",
                 "data" => QuotationService::cancel($this->getCompanyId(), $id, $this->getUserId()),
             ]);
-        } catch (\Throwable $exception) {
+
+        } catch(\Throwable $exception) {
+
             return response()->json(["bool" => false, "msg" => $exception->getMessage()], 422);
+
         }
 
     }

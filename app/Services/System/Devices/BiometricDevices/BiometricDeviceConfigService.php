@@ -4,11 +4,8 @@ declare(strict_types=1);
 
 namespace App\Services\System\Devices\BiometricDevices;
 
-use App\Models\System\Devices\BiometricDevice;
-use App\Models\System\Devices\BiometricDeviceBrand;
-use App\Models\System\Devices\BiometricDeviceModel;
-use App\Services\System\Base\BaseConfigService;
-use App\Services\System\Base\CompanyReferenceDataService;
+use App\Models\System\Devices\{BiometricDevice, BiometricDeviceBrand, BiometricDeviceModel};
+use App\Services\System\Base\{BaseConfigService, CompanyReferenceDataService};
 use stdClass;
 
 final class BiometricDeviceConfigService extends BaseConfigService {

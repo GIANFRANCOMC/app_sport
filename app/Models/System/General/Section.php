@@ -2,8 +2,8 @@
 
 namespace App\Models\System\General;
 
-use App\Helpers\System\Utilities;
-use Illuminate\Database\Eloquent\Model;
+use App\Helpers\System\{Utilities};
+use Illuminate\Database\Eloquent\{Model};
 
 class Section extends Model {
     protected $table = "sections";

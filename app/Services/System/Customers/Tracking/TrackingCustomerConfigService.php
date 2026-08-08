@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\System\Customers\Tracking;
 
-use App\Services\System\Base\BaseConfigService;
-use App\Services\System\Base\CompanyReferenceDataService;
+use App\Services\System\Base\{BaseConfigService, CompanyReferenceDataService};
 use stdClass;
 
 final class TrackingCustomerConfigService extends BaseConfigService {

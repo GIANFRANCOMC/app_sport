@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\System\Devices\BiometricDevices;
 
-use App\Rules\System\Defaults\BelongsToCompany;
-use Illuminate\Foundation\Http\FormRequest;
+use App\Rules\System\Defaults\{BelongsToCompany};
+use Illuminate\Foundation\Http\{FormRequest};
 
 class UpdateBiometricDeviceRequest extends FormRequest {
     public function authorize(): bool {

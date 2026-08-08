@@ -4,25 +4,15 @@ declare(strict_types=1);
 
 namespace App\Exports\System\Catalogs\Products;
 
-use App\Helpers\System\Utilities;
-use App\Models\System\Catalogs\Item;
-use App\Services\System\Catalogs\Products\ProductService;
-use Illuminate\Database\Eloquent\Builder;
-use Maatwebsite\Excel\Concerns\FromQuery;
-use Maatwebsite\Excel\Concerns\WithColumnWidths;
-use Maatwebsite\Excel\Concerns\WithCustomValueBinder;
-use Maatwebsite\Excel\Concerns\WithEvents;
-use Maatwebsite\Excel\Concerns\WithHeadings;
-use Maatwebsite\Excel\Concerns\WithMapping;
-use Maatwebsite\Excel\Concerns\WithStyles;
-use Maatwebsite\Excel\Events\AfterSheet;
-use PhpOffice\PhpSpreadsheet\Cell\Cell;
-use PhpOffice\PhpSpreadsheet\Cell\DataType;
-use PhpOffice\PhpSpreadsheet\Cell\DefaultValueBinder;
-use PhpOffice\PhpSpreadsheet\Style\Alignment;
-use PhpOffice\PhpSpreadsheet\Style\Border;
-use PhpOffice\PhpSpreadsheet\Style\Fill;
-use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
+use App\Helpers\System\{Utilities};
+use App\Models\System\Catalogs\{Item};
+use App\Services\System\Catalogs\Products\{ProductService};
+use Illuminate\Database\Eloquent\{Builder};
+use Maatwebsite\Excel\Concerns\{FromQuery, WithColumnWidths, WithCustomValueBinder, WithEvents, WithHeadings, WithMapping, WithStyles};
+use Maatwebsite\Excel\Events\{AfterSheet};
+use PhpOffice\PhpSpreadsheet\Cell\{Cell, DataType, DefaultValueBinder};
+use PhpOffice\PhpSpreadsheet\Style\{Alignment, Border, Fill};
+use PhpOffice\PhpSpreadsheet\Worksheet\{Worksheet};
 
 final class ProductListExport extends DefaultValueBinder implements FromQuery, WithColumnWidths, WithCustomValueBinder, WithEvents, WithHeadings, WithMapping, WithStyles {
     private const LAST_COLUMN = "R";
@@ -77,16 +67,16 @@ final class ProductListExport extends DefaultValueBinder implements FromQuery, W
 
         $warehouseItems = $item->warehouseItems;
         $alertCount = $warehouseItems
-            ->filter(fn ($warehouseItem) => (float) ($warehouseItem->quantity ?? 0) <= (float) ($warehouseItem->minimum_stock ?? 0)
+            ->filter(fn($warehouseItem) => (float) ($warehouseItem->quantity ?? 0) <= (float) ($warehouseItem->minimum_stock ?? 0)
             )
             ->count();
         $requiresAttention = $warehouseItems->isEmpty() || $alertCount > 0;
 
-        if ($requiresAttention) {
+        if($requiresAttention) {
 
             $this->alertRows[] = $this->currentRow;
 
-        } else {
+        }else {
 
             $this->healthyRows[] = $this->currentRow;
 
@@ -100,7 +90,7 @@ final class ProductListExport extends DefaultValueBinder implements FromQuery, W
             ->implode(", ");
 
         $inventoryDetail = $warehouseItems
-            ->map(function ($warehouseItem) {
+            ->map(function($warehouseItem) {
 
                 $branchName = $warehouseItem->warehouse?->branch?->name;
                 $warehouseName = $warehouseItem->warehouse?->name ?? "Almacén";
@@ -167,7 +157,7 @@ final class ProductListExport extends DefaultValueBinder implements FromQuery, W
 
         $textColumns = ["A", "B", "C", "D", "E", "F", "G", "N", "O", "P", "Q", "R"];
 
-        if (in_array($cell->getColumn(), $textColumns, true) && $cell->getRow() > 1) {
+        if(in_array($cell->getColumn(), $textColumns, true) && $cell->getRow() > 1) {
 
             $cell->setValueExplicit((string) ($value ?? ""), DataType::TYPE_STRING);
 
@@ -217,9 +207,9 @@ final class ProductListExport extends DefaultValueBinder implements FromQuery, W
     public function registerEvents(): array {
 
         return [
-            AfterSheet::class => function (AfterSheet $event) {
+            AfterSheet::class => function(AfterSheet $event) {
 
-                foreach ($this->alertRows as $row) {
+                foreach($this->alertRows as $row) {
 
                     $event->sheet->getStyle("M{$row}:N{$row}")->applyFromArray([
                         "font" => ["bold" => true, "color" => ["rgb" => "991B1B"]],
@@ -231,7 +221,7 @@ final class ProductListExport extends DefaultValueBinder implements FromQuery, W
 
                 }
 
-                foreach ($this->healthyRows as $row) {
+                foreach($this->healthyRows as $row) {
 
                     $event->sheet->getStyle("N{$row}")->applyFromArray([
                         "font" => ["color" => ["rgb" => "047857"]],

@@ -4,15 +4,13 @@ declare(strict_types=1);
 
 namespace App\Services\System\Customers\Tracking;
 
-use App\Helpers\System\TranslationHelper;
-use App\Helpers\System\Utilities;
-use App\Models\System\Customers\Attendance;
-use App\Models\System\Customers\AttendanceCorrection;
-use App\Models\System\Organizations\Branch;
+use App\Helpers\System\{TranslationHelper, Utilities};
+use App\Models\System\Customers\{Attendance, AttendanceCorrection};
+use App\Models\System\Organizations\{Branch};
 use DomainException;
-use Illuminate\Pagination\LengthAwarePaginator;
-use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Pagination\{LengthAwarePaginator};
+use Illuminate\Support\Facades\{DB};
+use Illuminate\Support\{Collection};
 
 /**
  * Service class for managing Tracking Attendance operations
@@ -53,7 +51,7 @@ class TrackingAttendanceService {
     ): LengthAwarePaginator {
 
         $query = self::query($companyId, $filters, $allowedBranchIds);
-        if ($query === null) {
+        if($query === null) {
 
             return new LengthAwarePaginator([], 0, 1, 1, ["path" => ""]);
 
@@ -70,13 +68,17 @@ class TrackingAttendanceService {
     ): Collection {
 
         $query = self::query($companyId, $filters, $allowedBranchIds);
-        if ($query === null) {
+        if($query === null) {
+
             return collect();
+
         }
 
         $records = $query->limit(self::MAX_EXPORT_ROWS + 1)->get();
-        if ($records->count() > self::MAX_EXPORT_ROWS) {
+        if($records->count() > self::MAX_EXPORT_ROWS) {
+
             throw new DomainException("La exportación supera 10 000 registros. Reduce el rango de fechas.");
+
         }
 
         return $records;
@@ -90,20 +92,22 @@ class TrackingAttendanceService {
             ->where("company_id", $companyId)
             ->first();
 
-        if (! $branch || ($allowedBranchIds !== null && ! in_array((int) $branch->id, $allowedBranchIds, true))) {
+        if(!$branch || ($allowedBranchIds !== null && !in_array((int) $branch->id, $allowedBranchIds, true))) {
+
             return null;
+
         }
 
         $query = Attendance::query()
             ->where("company_id", $companyId)
             ->where("branch_id", $branch->id)
-            ->when($allowedBranchIds !== null, fn ($query) => $query->whereIn("branch_id", $allowedBranchIds));
+            ->when($allowedBranchIds !== null, fn($query) => $query->whereIn("branch_id", $allowedBranchIds));
 
-        if (Utilities::isDefined($filters["start_date"] ?? null)) {
+        if(Utilities::isDefined($filters["start_date"] ?? null)) {
 
             $query->where("start_date", ">=", Utilities::startOfDay($filters["start_date"]));
 
-        } else {
+        }else {
 
             $query->whereBetween("start_date", [
                 Utilities::startOfDay(date("Y-m-d")),
@@ -112,7 +116,7 @@ class TrackingAttendanceService {
 
         }
 
-        if (Utilities::isDefined($filters["end_date"] ?? null)) {
+        if(Utilities::isDefined($filters["end_date"] ?? null)) {
 
             $query->where("start_date", "<=", Utilities::endOfDay($filters["end_date"]));
 
@@ -133,13 +137,13 @@ class TrackingAttendanceService {
      */
     private static function applyFilters($query, array $filters): void {
 
-        if (Utilities::isDefined($filters["customer_id"])) {
+        if(Utilities::isDefined($filters["customer_id"])) {
 
             $query->where("customer_id", $filters["customer_id"]);
 
         }
 
-        if (Utilities::isDefined($filters["status"])) {
+        if(Utilities::isDefined($filters["status"])) {
 
             $query->where("status", $filters["status"]);
 
@@ -158,9 +162,10 @@ class TrackingAttendanceService {
      */
     public static function cancel(Attendance $attendance, ?string $motive = null, ?int $userId = null): Attendance {
 
-        if (! in_array($attendance->status, ["active", "finalized"])) {
+        if(!in_array($attendance->status, ["active", "finalized"])) {
 
             throw new \Exception("La asistencia no puede ser anulada.");
+
         }
 
         $attendance->motive = $motive ?? "N/A";
@@ -177,12 +182,13 @@ class TrackingAttendanceService {
 
     public static function requestCorrection(Attendance $attendance, array $data, ?int $userId): AttendanceCorrection {
 
-        if (AttendanceCorrection::query()
+        if(AttendanceCorrection::query()
             ->where("attendance_id", $attendance->id)
             ->where("status", "pending")
             ->exists()) {
 
             throw new DomainException("La asistencia ya tiene una corrección pendiente de revisión.");
+
         }
 
         return AttendanceCorrection::create([
@@ -206,16 +212,17 @@ class TrackingAttendanceService {
         ?int $userId
     ): AttendanceCorrection {
 
-        if ($correction->status !== "pending") {
+        if($correction->status !== "pending") {
 
             throw new DomainException("La corrección ya fue revisada.");
+
         }
 
-        return DB::transaction(function () use ($correction, $decision, $note, $userId) {
+        return DB::transaction(function() use ($correction, $decision, $note, $userId) {
 
             $correction->loadMissing("attendance");
 
-            if ($decision === "approved") {
+            if($decision === "approved") {
 
                 $correction->attendance->forceFill([
                     "start_date" => $correction->requested_start_date,

@@ -1,7 +1,7 @@
 <?php
 
-use App\Http\Controllers\System\Finance\AccountsReceivableController;
-use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\System\Finance\{AccountsReceivableController};
+use Illuminate\Support\Facades\{Route};
 
 $entity = "accounts_receivable";
 

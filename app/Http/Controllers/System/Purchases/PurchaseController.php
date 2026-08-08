@@ -4,19 +4,14 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\System\Purchases;
 
-use App\Exports\System\Purchases\PurchaseListExport;
-use App\Helpers\System\Utilities;
-use App\Http\Controllers\System\Base\BaseController;
-use App\Http\Requests\System\Purchases\ReceivePurchaseRequest;
-use App\Http\Requests\System\Purchases\StorePurchaseRequest;
-use App\Http\Requests\System\Purchases\StorePurchaseReturnRequest;
-use App\Services\System\Purchases\PurchaseConfigService;
-use App\Services\System\Purchases\PurchaseReturnService;
-use App\Services\System\Purchases\PurchaseService;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
-use Maatwebsite\Excel\Facades\Excel;
-use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use App\Exports\System\Purchases\{PurchaseListExport};
+use App\Helpers\System\{Utilities};
+use App\Http\Controllers\System\Base\{BaseController};
+use App\Http\Requests\System\Purchases\{ReceivePurchaseRequest, StorePurchaseRequest, StorePurchaseReturnRequest};
+use App\Services\System\Purchases\{PurchaseConfigService, PurchaseReturnService, PurchaseService};
+use Illuminate\Http\{JsonResponse, Request};
+use Maatwebsite\Excel\Facades\{Excel};
+use Symfony\Component\HttpFoundation\{BinaryFileResponse};
 
 final class PurchaseController extends BaseController {
     private const TRANSLATION_NAMESPACE = "System.Purchases.purchase";
@@ -79,7 +74,7 @@ final class PurchaseController extends BaseController {
                 "data" => $purchase,
             ], 201);
 
-        } catch (\Throwable $exception) {
+        } catch(\Throwable $exception) {
 
             return response()->json([
                 "bool" => false,
@@ -113,7 +108,7 @@ final class PurchaseController extends BaseController {
                 "data" => $receipt,
             ]);
 
-        } catch (\Throwable $exception) {
+        } catch(\Throwable $exception) {
 
             return response()->json([
                 "bool" => false,
@@ -146,7 +141,7 @@ final class PurchaseController extends BaseController {
                 "data" => $purchase,
             ]);
 
-        } catch (\Throwable $exception) {
+        } catch(\Throwable $exception) {
 
             return response()->json([
                 "bool" => false,
@@ -160,6 +155,7 @@ final class PurchaseController extends BaseController {
     public function returnToSupplier(StorePurchaseReturnRequest $request, int $id): JsonResponse {
 
         try {
+
             $return = PurchaseReturnService::create(
                 $this->getCompanyId(),
                 $id,
@@ -172,8 +168,11 @@ final class PurchaseController extends BaseController {
                 "msg" => "Devolución registrada y existencias actualizadas.",
                 "data" => $return,
             ], 201);
-        } catch (\Throwable $exception) {
+
+        } catch(\Throwable $exception) {
+
             return response()->json(["bool" => false, "msg" => $exception->getMessage()], 422);
+
         }
 
     }
@@ -181,13 +180,17 @@ final class PurchaseController extends BaseController {
     public function approve(int $id): JsonResponse {
 
         try {
+
             return response()->json([
                 "bool" => true,
                 "msg" => "Orden aprobada correctamente.",
                 "data" => PurchaseService::approve($this->getCompanyId(), $id, $this->getUserId()),
             ]);
-        } catch (\Throwable $exception) {
+
+        } catch(\Throwable $exception) {
+
             return response()->json(["bool" => false, "msg" => $exception->getMessage()], 422);
+
         }
 
     }

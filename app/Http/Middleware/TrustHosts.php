@@ -2,7 +2,7 @@
 
 namespace App\Http\Middleware;
 
-use Illuminate\Http\Middleware\TrustHosts as Middleware;
+use Illuminate\Http\Middleware\{TrustHosts as Middleware};
 
 class TrustHosts extends Middleware {
     /**
@@ -11,18 +11,24 @@ class TrustHosts extends Middleware {
      * @return array<int, string|null>
      */
     public function hosts(): array {
+
         $baseDomain = strtolower(trim((string) config("tenancy.base_domain")));
 
-        if ($baseDomain === "") {
+        if($baseDomain === "") {
+
             return [];
+
         }
 
         return [
             "^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\\.".preg_quote($baseDomain, "/")."\$",
         ];
+
     }
 
     protected function shouldSpecifyTrustedHosts(): bool {
+
         return (bool) config("tenancy.enforce_subdomains", true);
+
     }
 }

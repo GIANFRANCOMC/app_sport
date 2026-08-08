@@ -1,8 +1,8 @@
 <?php
 
-use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\Migrations\{Migration};
+use Illuminate\Database\Schema\{Blueprint};
+use Illuminate\Support\Facades\{Schema};
 
 return new class extends Migration {
     /**
@@ -10,7 +10,8 @@ return new class extends Migration {
      */
     public function up(): void {
 
-        Schema::create("identity_document_types", function (Blueprint $table) {
+        Schema::create("identity_document_types", function(Blueprint $table) {
+
             $table->id();
             $table->unsignedBigInteger("company_id");
             $table->string("code", 255);
@@ -27,8 +28,10 @@ return new class extends Migration {
             $table->integer("updated_by")->nullable();
 
             $table->unique(["company_id", "code"]);
+
         });
-        Schema::create("document_types", function (Blueprint $table) {
+        Schema::create("document_types", function(Blueprint $table) {
+
             $table->id();
             $table->unsignedBigInteger("company_id");
             $table->string("code", 255);
@@ -41,8 +44,10 @@ return new class extends Migration {
             $table->integer("updated_by")->nullable();
 
             $table->unique(["company_id", "code"]);
+
         });
-        Schema::create("currencies", function (Blueprint $table) {
+        Schema::create("currencies", function(Blueprint $table) {
+
             $table->id();
             $table->unsignedBigInteger("company_id");
             $table->string("code", 255);
@@ -57,8 +62,10 @@ return new class extends Migration {
             $table->integer("updated_by")->nullable();
 
             $table->unique(["company_id", "code"]);
+
         });
-        Schema::create("companies", function (Blueprint $table) {
+        Schema::create("companies", function(Blueprint $table) {
+
             $table->id();
             $table->string("slug", 255)->unique();
             $table->string("internal_code", 255);
@@ -86,25 +93,35 @@ return new class extends Migration {
 
             $table->foreign("identity_document_type_id")->references("id")->on("identity_document_types")->restrictOnDelete();
             $table->foreign("currency_id")->references("id")->on("currencies")->restrictOnDelete();
+
         });
-        Schema::table("identity_document_types", function (Blueprint $table) {
+        Schema::table("identity_document_types", function(Blueprint $table) {
+
             $table->foreign("company_id")->references("id")->on("companies")->onDelete("cascade");
+
         });
-        Schema::table("document_types", function (Blueprint $table) {
+        Schema::table("document_types", function(Blueprint $table) {
+
             $table->foreign("company_id")->references("id")->on("companies")->onDelete("cascade");
+
         });
-        Schema::table("currencies", function (Blueprint $table) {
+        Schema::table("currencies", function(Blueprint $table) {
+
             $table->foreign("company_id")->references("id")->on("companies")->onDelete("cascade");
+
         });
-        Schema::create("menu_categories", function (Blueprint $table) {
+        Schema::create("menu_categories", function(Blueprint $table) {
+
             $table->id();
             $table->string("slug", 100)->unique();
             $table->string("name", 100);
             $table->integer("order")->default(0);
             $table->enum("status", ["active", "inactive"])->default("active");
             $table->timestamps();
+
         });
-        Schema::create("sections", function (Blueprint $table) {
+        Schema::create("sections", function(Blueprint $table) {
+
             $table->id();
             $table->unsignedBigInteger("menu_category_id")->nullable();
             $table->string("slug", 255);
@@ -122,8 +139,10 @@ return new class extends Migration {
             $table->integer("updated_by")->nullable();
 
             $table->foreign("menu_category_id")->references("id")->on("menu_categories")->nullOnDelete();
+
         });
-        Schema::create("menu_groups", function (Blueprint $table) {
+        Schema::create("menu_groups", function(Blueprint $table) {
+
             $table->id();
             $table->unsignedBigInteger("section_id");
             $table->string("slug", 100);
@@ -134,8 +153,10 @@ return new class extends Migration {
 
             $table->foreign("section_id")->references("id")->on("sections")->cascadeOnDelete();
             $table->unique(["section_id", "slug"]);
+
         });
-        Schema::create("sub_sections", function (Blueprint $table) {
+        Schema::create("sub_sections", function(Blueprint $table) {
+
             $table->id();
             $table->unsignedBigInteger("section_id");
             $table->unsignedBigInteger("menu_group_id")->nullable();
@@ -156,8 +177,10 @@ return new class extends Migration {
 
             $table->foreign("section_id")->references("id")->on("sections")->onDelete("cascade");
             $table->foreign("menu_group_id")->references("id")->on("menu_groups")->nullOnDelete();
+
         });
-        Schema::create("companies_sub_sections", function (Blueprint $table) {
+        Schema::create("companies_sub_sections", function(Blueprint $table) {
+
             $table->id();
             $table->unsignedBigInteger("company_id");
             $table->unsignedBigInteger("sub_section_id");
@@ -172,8 +195,10 @@ return new class extends Migration {
 
             $table->foreign("company_id")->references("id")->on("companies")->onDelete("cascade");
             $table->foreign("sub_section_id")->references("id")->on("sub_sections")->onDelete("cascade");
+
         });
-        Schema::create("roles", function (Blueprint $table) {
+        Schema::create("roles", function(Blueprint $table) {
+
             $table->id();
             $table->unsignedBigInteger("company_id");
             $table->string("slug", 255);
@@ -187,8 +212,10 @@ return new class extends Migration {
             $table->integer("updated_by")->nullable();
 
             $table->foreign("company_id")->references("id")->on("companies")->onDelete("cascade");
+
         });
-        Schema::create("role_sub_sections", function (Blueprint $table) {
+        Schema::create("role_sub_sections", function(Blueprint $table) {
+
             $table->id();
             $table->unsignedBigInteger("company_id");
             $table->unsignedBigInteger("role_id");
@@ -204,8 +231,10 @@ return new class extends Migration {
             $table->foreign("role_id")->references("id")->on("roles")->onDelete("cascade");
             $table->foreign("sub_section_id")->references("id")->on("sub_sections")->onDelete("cascade");
             $table->unique(["company_id", "role_id", "sub_section_id"]);
+
         });
-        Schema::create("users", function (Blueprint $table) {
+        Schema::create("users", function(Blueprint $table) {
+
             $table->id();
             $table->unsignedBigInteger("company_id");
             $table->unsignedBigInteger("role_id")->nullable();
@@ -231,8 +260,10 @@ return new class extends Migration {
             $table->foreign("role_id")->references("id")->on("roles")->onDelete("cascade");
             $table->foreign("identity_document_type_id")->references("id")->on("identity_document_types")->restrictOnDelete();
             $table->unique(["email", "company_id"]);
+
         });
-        Schema::create("authentication_events", function (Blueprint $table) {
+        Schema::create("authentication_events", function(Blueprint $table) {
+
             $table->id();
             $table->unsignedBigInteger("company_id");
             $table->unsignedBigInteger("user_id")->nullable();
@@ -248,8 +279,10 @@ return new class extends Migration {
 
             $table->foreign("company_id")->references("id")->on("companies")->onDelete("cascade");
             $table->foreign("user_id")->references("id")->on("users")->nullOnDelete();
+
         });
-        Schema::create("user_preferences", function (Blueprint $table) {
+        Schema::create("user_preferences", function(Blueprint $table) {
+
             $table->id();
             $table->unsignedBigInteger("company_id");
             $table->unsignedBigInteger("user_id");
@@ -264,6 +297,7 @@ return new class extends Migration {
 
             $table->foreign("company_id")->references("id")->on("companies")->onDelete("cascade");
             $table->foreign("user_id")->references("id")->on("users")->onDelete("cascade");
+
         });
         // Los datos se aprovisionan después del esquema mediante system:install.
 

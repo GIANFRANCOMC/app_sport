@@ -5,16 +5,12 @@ declare(strict_types=1);
 namespace App\Http\Controllers\System\Customers;
 
 use App\Helpers\System\{Utilities};
-use App\Http\Controllers\System\Base\BaseController;
-use App\Http\Requests\System\Customers\TrackingSubscriptions\CancelTrackingSubscriptionRequest;
-use App\Http\Requests\System\Customers\TrackingSubscriptions\RenewTrackingSubscriptionRequest;
-use App\Http\Requests\System\Customers\TrackingSubscriptions\StoreManualTrackingSubscriptionRequest;
-use App\Models\System\Customers\Subscription;
-use App\Services\System\Customers\Tracking\TrackingSubscriptionConfigService;
-use App\Services\System\Customers\Tracking\TrackingSubscriptionService;
-use App\Services\System\Organizations\AccessScopeService;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
+use App\Http\Controllers\System\Base\{BaseController};
+use App\Http\Requests\System\Customers\TrackingSubscriptions\{CancelTrackingSubscriptionRequest, RenewTrackingSubscriptionRequest, StoreManualTrackingSubscriptionRequest};
+use App\Models\System\Customers\{Subscription};
+use App\Services\System\Customers\Tracking\{TrackingSubscriptionConfigService, TrackingSubscriptionService};
+use App\Services\System\Organizations\{AccessScopeService};
+use Illuminate\Http\{JsonResponse, Request};
 
 class TrackingSubscriptionController extends BaseController {
     /**
@@ -72,7 +68,7 @@ class TrackingSubscriptionController extends BaseController {
 
             $validated = $request->validated();
 
-            if (! AccessScopeService::canAccess($this->getAuthUser(), AccessScopeService::BRANCH, (int) $validated["branch_id"])) {
+            if(!AccessScopeService::canAccess($this->getAuthUser(), AccessScopeService::BRANCH, (int) $validated["branch_id"])) {
 
                 return $this->notFoundResponse();
 
@@ -86,7 +82,7 @@ class TrackingSubscriptionController extends BaseController {
 
             return $this->createdResponse($subscription, "created", "subscription");
 
-        } catch (\Exception $e) {
+        } catch(\Exception $e) {
 
             return $this->handleException($e, "create");
 
@@ -107,8 +103,8 @@ class TrackingSubscriptionController extends BaseController {
                 ->where("company_id", $this->getCompanyId())
                 ->find($id);
 
-            if (! $subscription
-                || ! AccessScopeService::canAccess($this->getAuthUser(), AccessScopeService::BRANCH, (int) $subscription->branch_id)) {
+            if(!$subscription
+                || !AccessScopeService::canAccess($this->getAuthUser(), AccessScopeService::BRANCH, (int) $subscription->branch_id)) {
 
                 return $this->notFoundResponse();
 
@@ -118,7 +114,7 @@ class TrackingSubscriptionController extends BaseController {
 
             return $this->updatedResponse($subscription, "canceled", "subscription");
 
-        } catch (\Exception $e) {
+        } catch(\Exception $e) {
 
             return $this->handleException($e, "cancel");
 
@@ -134,8 +130,8 @@ class TrackingSubscriptionController extends BaseController {
                 ->where("company_id", $this->getCompanyId())
                 ->find($id);
 
-            if (! $subscription
-                || ! AccessScopeService::canAccess($this->getAuthUser(), AccessScopeService::BRANCH, (int) $subscription->branch_id)) {
+            if(!$subscription
+                || !AccessScopeService::canAccess($this->getAuthUser(), AccessScopeService::BRANCH, (int) $subscription->branch_id)) {
 
                 return $this->notFoundResponse();
 
@@ -149,7 +145,7 @@ class TrackingSubscriptionController extends BaseController {
 
             return $this->createdResponse($renewal, "created", "subscription");
 
-        } catch (\Exception $e) {
+        } catch(\Exception $e) {
 
             return $this->handleException($e, "create");
 

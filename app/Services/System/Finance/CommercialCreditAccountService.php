@@ -4,17 +4,11 @@ declare(strict_types=1);
 
 namespace App\Services\System\Finance;
 
-use App\Helpers\System\Utilities;
-use App\Models\System\Purchases\PurchaseAccountPayable;
-use App\Models\System\Purchases\PurchaseHeader;
-use App\Models\System\Purchases\PurchasePayableInstallment;
-use App\Models\System\Purchases\PurchasePayablePayment;
-use App\Models\System\Sales\SaleAccountReceivable;
-use App\Models\System\Sales\SaleHeader;
-use App\Models\System\Sales\SaleReceivableInstallment;
-use App\Models\System\Sales\SaleReceivablePayment;
-use Carbon\Carbon;
-use Illuminate\Support\Collection;
+use App\Helpers\System\{Utilities};
+use App\Models\System\Purchases\{PurchaseAccountPayable, PurchaseHeader, PurchasePayableInstallment, PurchasePayablePayment};
+use App\Models\System\Sales\{SaleAccountReceivable, SaleHeader, SaleReceivableInstallment, SaleReceivablePayment};
+use Carbon\{Carbon};
+use Illuminate\Support\{Collection};
 
 final class CommercialCreditAccountService {
     public const PAID_NOW = "paid_now";
@@ -54,7 +48,7 @@ final class CommercialCreditAccountService {
         int $userId
     ): ?SaleAccountReceivable {
 
-        if ($sale->payment_modality === self::PAID_NOW || Utilities::round((float) $sale->balance_due, null, (int) $sale->company_id) <= 0) {
+        if($sale->payment_modality === self::PAID_NOW || Utilities::round((float) $sale->balance_due, null, (int) $sale->company_id) <= 0) {
 
             return null;
 
@@ -87,7 +81,7 @@ final class CommercialCreditAccountService {
         ]);
 
         self::createSaleInstallments($account, max(1, $installmentCount), $firstDueDate, $userId);
-        if (! $isInstallmentCredit) {
+        if(!$isInstallmentCredit) {
 
             self::createSalePaymentTrace($account, $paymentLines, $userId);
 
@@ -105,7 +99,7 @@ final class CommercialCreditAccountService {
         int $userId
     ): ?PurchaseAccountPayable {
 
-        if ($purchase->payment_modality === self::PAID_NOW || Utilities::round((float) $purchase->balance_due, null, (int) $purchase->company_id) <= 0) {
+        if($purchase->payment_modality === self::PAID_NOW || Utilities::round((float) $purchase->balance_due, null, (int) $purchase->company_id) <= 0) {
 
             return null;
 
@@ -142,7 +136,8 @@ final class CommercialCreditAccountService {
         $amount = Utilities::round((float) $account->pending_amount / $count, null, (int) $account->company_id);
         $rows = [];
 
-        for ($number = 1; $number <= $count; $number++) {
+        for($number = 1; $number <= $count; $number++) {
+
             $lineAmount = $number === $count
                 ? Utilities::round((float) $account->pending_amount - ($amount * ($count - 1)), null, (int) $account->company_id)
                 : $amount;
@@ -159,6 +154,7 @@ final class CommercialCreditAccountService {
                 "created_at" => now(),
                 "created_by" => $userId,
             ];
+
         }
 
         SaleReceivableInstallment::insert($rows);
@@ -170,7 +166,8 @@ final class CommercialCreditAccountService {
         $amount = Utilities::round((float) $account->pending_amount / $count, null, (int) $account->company_id);
         $rows = [];
 
-        for ($number = 1; $number <= $count; $number++) {
+        for($number = 1; $number <= $count; $number++) {
+
             $lineAmount = $number === $count
                 ? Utilities::round((float) $account->pending_amount - ($amount * ($count - 1)), null, (int) $account->company_id)
                 : $amount;
@@ -187,6 +184,7 @@ final class CommercialCreditAccountService {
                 "created_at" => now(),
                 "created_by" => $userId,
             ];
+
         }
 
         PurchasePayableInstallment::insert($rows);
@@ -195,12 +193,14 @@ final class CommercialCreditAccountService {
 
     private static function createSalePaymentTrace(SaleAccountReceivable $account, Collection $paymentLines, int $userId): void {
 
-        if ($paymentLines->isEmpty()) {
+        if($paymentLines->isEmpty()) {
+
             return;
+
         }
 
         SaleReceivablePayment::insert($paymentLines
-            ->map(fn ($payment) => [
+            ->map(fn($payment) => [
                 "company_id" => $account->company_id,
                 "sale_account_receivable_id" => $account->id,
                 "payment_method_id" => $payment["payment_method_id"] ?? null,
@@ -219,12 +219,14 @@ final class CommercialCreditAccountService {
 
     private static function createPurchasePaymentTrace(PurchaseAccountPayable $account, Collection $paymentLines, int $userId): void {
 
-        if ($paymentLines->isEmpty()) {
+        if($paymentLines->isEmpty()) {
+
             return;
+
         }
 
         PurchasePayablePayment::insert($paymentLines
-            ->map(fn ($payment) => [
+            ->map(fn($payment) => [
                 "company_id" => $account->company_id,
                 "purchase_account_payable_id" => $account->id,
                 "payment_method_id" => $payment["payment_method_id"] ?? null,

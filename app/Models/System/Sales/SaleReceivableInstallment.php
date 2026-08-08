@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Models\System\Sales;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\{BelongsTo};
+use Illuminate\Database\Eloquent\{Model};
 
 final class SaleReceivableInstallment extends Model {
     protected $table = "sale_receivable_installments";

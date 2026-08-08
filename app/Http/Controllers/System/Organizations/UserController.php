@@ -5,19 +5,14 @@ declare(strict_types=1);
 namespace App\Http\Controllers\System\Organizations;
 
 use App\Helpers\System\{Utilities};
-use App\Http\Controllers\System\Base\BaseController;
-use App\Http\Requests\System\Organizations\Users\ChangeUserPasswordRequest;
-use App\Http\Requests\System\Organizations\Users\RegisterUserFingerprintRequest;
-use App\Http\Requests\System\Organizations\Users\StoreUserRequest;
-use App\Http\Requests\System\Organizations\Users\UpdateUserRequest;
-use App\Models\System\Organizations\AuthenticationEvent;
-use App\Services\System\Auth\AuthenticationAuditService;
+use App\Http\Controllers\System\Base\{BaseController};
+use App\Http\Requests\System\Organizations\Users\{ChangeUserPasswordRequest, RegisterUserFingerprintRequest, StoreUserRequest, UpdateUserRequest};
+use App\Models\System\Organizations\{AuthenticationEvent};
+use App\Services\System\Auth\{AuthenticationAuditService};
 use App\Services\System\Base\{InitParamsCacheInvalidationService};
-use App\Services\System\Devices\BiometricDevices\BiometricDeviceService;
-use App\Services\System\Organizations\Users\UserConfigService;
-use App\Services\System\Organizations\Users\UserService;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
+use App\Services\System\Devices\BiometricDevices\{BiometricDeviceService};
+use App\Services\System\Organizations\Users\{UserConfigService, UserService};
+use Illuminate\Http\{JsonResponse, Request};
 
 class UserController extends BaseController {
     /**
@@ -73,7 +68,7 @@ class UserController extends BaseController {
             $data = $this->prepareUserData($request);
             $user = UserService::create($data, $this->getCompanyId(), $this->getUserId());
 
-            if (! Utilities::isDefined($user)) {
+            if(!Utilities::isDefined($user)) {
 
                 return $this->errorResponse("create_failed");
 
@@ -86,7 +81,7 @@ class UserController extends BaseController {
 
             return $this->createdResponse($user, "created", "user");
 
-        } catch (\Exception $e) {
+        } catch(\Exception $e) {
 
             return $this->handleException($e, "create");
 
@@ -105,7 +100,7 @@ class UserController extends BaseController {
 
             $user = UserService::findByIdAndCompany($id, $this->getCompanyId(), null);
 
-            if (! Utilities::isDefined($user)) {
+            if(!Utilities::isDefined($user)) {
 
                 return $this->notFoundResponse();
 
@@ -114,7 +109,7 @@ class UserController extends BaseController {
             $data = $this->prepareUserData($request);
             $user = UserService::update($user, $data, $this->getUserId());
 
-            if (! Utilities::isDefined($user)) {
+            if(!Utilities::isDefined($user)) {
 
                 return $this->errorResponse("update_failed");
 
@@ -127,7 +122,7 @@ class UserController extends BaseController {
 
             return $this->updatedResponse($user, "updated", "user");
 
-        } catch (\Exception $e) {
+        } catch(\Exception $e) {
 
             return $this->handleException($e, "update");
 
@@ -138,17 +133,19 @@ class UserController extends BaseController {
     public function authenticationEvents(Request $request, int $id): JsonResponse {
 
         $user = UserService::findByIdAndCompany($id, $this->getCompanyId(), null, []);
-        if (! $user) {
+        if(!$user) {
+
             return $this->notFoundResponse();
+
         }
 
         $events = AuthenticationEvent::query()
             ->where("company_id", $this->getCompanyId())
             ->where("user_id", $user->id)
-            ->when($request->input("event_type"), fn ($query, $eventType) => $query->where("event_type", $eventType))
-            ->when($request->input("result"), fn ($query, $result) => $query->where("result", $result))
-            ->when($request->input("date_from"), fn ($query, $date) => $query->where("occurred_at", ">=", Utilities::startOfDay($date)))
-            ->when($request->input("date_to"), fn ($query, $date) => $query->where("occurred_at", "<=", Utilities::endOfDay($date)))
+            ->when($request->input("event_type"), fn($query, $eventType) => $query->where("event_type", $eventType))
+            ->when($request->input("result"), fn($query, $result) => $query->where("result", $result))
+            ->when($request->input("date_from"), fn($query, $date) => $query->where("occurred_at", ">=", Utilities::startOfDay($date)))
+            ->when($request->input("date_to"), fn($query, $date) => $query->where("occurred_at", "<=", Utilities::endOfDay($date)))
             ->latest("occurred_at")
             ->paginate($this->getPerPage($request));
 
@@ -165,7 +162,7 @@ class UserController extends BaseController {
 
             $user = UserService::findByIdAndCompany($id, $this->getCompanyId(), null, []);
 
-            if (! $user) {
+            if(!$user) {
 
                 return $this->notFoundResponse();
 
@@ -189,7 +186,7 @@ class UserController extends BaseController {
 
             return $this->updatedResponse($user, "updated", "user");
 
-        } catch (\Exception $e) {
+        } catch(\Exception $e) {
 
             return $this->handleException($e, "update");
 
@@ -204,14 +201,18 @@ class UserController extends BaseController {
         try {
 
             $user = UserService::findByIdAndCompany($id, $this->getCompanyId(), ["active"]);
-            if (! $user) {
+            if(!$user) {
+
                 return $this->notFoundResponse();
+
             }
 
             $deviceId = (int) $data["biometric_device_id"];
             $device = BiometricDeviceService::findByIdAndCompany($deviceId, $this->getCompanyId(), ["active"]);
-            if (! $device) {
+            if(!$device) {
+
                 return $this->errorResponse("not_found", ["msg" => "El dispositivo biométrico no está disponible."], 404);
+
             }
 
             $deviceUserId = isset($data["device_user_id"])
@@ -229,11 +230,11 @@ class UserController extends BaseController {
 
             return $this->createdResponse($fingerprint, "fingerprint_registered", "biometric_fingerprint");
 
-        } catch (\DomainException $exception) {
+        } catch(\DomainException $exception) {
 
             return response()->json(["bool" => false, "msg" => $exception->getMessage()], 422);
 
-        } catch (\Throwable $exception) {
+        } catch(\Throwable $exception) {
 
             return $this->handleException($exception, "register_fingerprint");
 
@@ -261,23 +262,25 @@ class UserController extends BaseController {
             "status" => $request->input("status"),
             "branch_ids" => collect($request->input("branch_ids", []))
                 ->filter()
-                ->map(fn ($branchId) => (int) $branchId)
+                ->map(fn($branchId) => (int) $branchId)
                 ->values()
                 ->all(),
             "cash_register_ids" => collect($request->input("cash_register_ids", []))
                 ->filter()
-                ->map(fn ($cashRegisterId) => (int) $cashRegisterId)
+                ->map(fn($cashRegisterId) => (int) $cashRegisterId)
                 ->values()
                 ->all(),
             "warehouse_ids" => collect($request->input("warehouse_ids", []))
                 ->filter()
-                ->map(fn ($warehouseId) => (int) $warehouseId)
+                ->map(fn($warehouseId) => (int) $warehouseId)
                 ->values()
                 ->all(),
         ];
 
-        if ($request instanceof StoreUserRequest) {
+        if($request instanceof StoreUserRequest) {
+
             $data["password"] = $request->input("password");
+
         }
 
         $data["branch_scope_mode"] = empty($data["branch_ids"]) ? "inherit" : "restricted";

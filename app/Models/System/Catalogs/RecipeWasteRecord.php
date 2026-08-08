@@ -4,11 +4,9 @@ declare(strict_types=1);
 
 namespace App\Models\System\Catalogs;
 
-use App\Models\System\Organizations\Company;
-use App\Models\System\Organizations\User;
-use App\Models\System\Warehouses\InventoryMovement;
-use App\Models\System\Warehouses\Warehouse;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\System\Organizations\{Company, User};
+use App\Models\System\Warehouses\{InventoryMovement, Warehouse};
+use Illuminate\Database\Eloquent\{Model};
 
 final class RecipeWasteRecord extends Model {
     protected $table = "recipe_waste_records";
@@ -39,26 +37,38 @@ final class RecipeWasteRecord extends Model {
     ];
 
     public function company() {
+
         return $this->belongsTo(Company::class, "company_id");
+
     }
 
     public function recipe() {
+
         return $this->belongsTo(RecipeDish::class, "recipe_dish_id");
+
     }
 
     public function warehouse() {
+
         return $this->belongsTo(Warehouse::class, "warehouse_id");
+
     }
 
     public function item() {
+
         return $this->belongsTo(Item::class, "item_id");
+
     }
 
     public function inventoryMovement() {
+
         return $this->belongsTo(InventoryMovement::class, "inventory_movement_id");
+
     }
 
     public function createdBy() {
+
         return $this->belongsTo(User::class, "created_by");
+
     }
 }

@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace App\Services\Guest;
 
-use App\Models\Guest\Category;
-use App\Models\Guest\Item;
-use Illuminate\Database\Eloquent\Collection;
+use App\Models\Guest\{Category, Item};
+use Illuminate\Database\Eloquent\{Collection};
 use InvalidArgumentException;
 
 /**
@@ -15,9 +14,10 @@ use InvalidArgumentException;
 final class GuestCatalogService {
     public static function publicItems(int $companyId): Collection {
 
-        if ($companyId <= 0) {
+        if($companyId <= 0) {
 
             throw new InvalidArgumentException("Company ID must be greater than zero.");
+
         }
 
         return Item::query()
@@ -47,8 +47,10 @@ final class GuestCatalogService {
 
     public static function publicCategories(int $companyId): Collection {
 
-        if ($companyId <= 0) {
+        if($companyId <= 0) {
+
             throw new InvalidArgumentException("Company ID must be greater than zero.");
+
         }
 
         return Category::query()

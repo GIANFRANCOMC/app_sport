@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models\System\Organizations;
 
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\{Model};
 
 final class AuthenticationEvent extends Model {
     protected $table = "authentication_events";
@@ -28,10 +28,14 @@ final class AuthenticationEvent extends Model {
     protected $casts = ["occurred_at" => "datetime"];
 
     public function company() {
+
         return $this->belongsTo(Company::class, "company_id");
+
     }
 
     public function user() {
+
         return $this->belongsTo(User::class, "user_id");
+
     }
 }

@@ -5,12 +5,10 @@ declare(strict_types=1);
 namespace App\Http\Controllers\System\Organizations;
 
 use App\Helpers\System\{Utilities};
-use App\Http\Controllers\System\Base\BaseController;
-use App\Http\Requests\System\Organizations\Companies\UpdateCompanyRequest;
-use App\Services\System\Organizations\Companies\CompanyConfigService;
-use App\Services\System\Organizations\Companies\CompanyService;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
+use App\Http\Controllers\System\Base\{BaseController};
+use App\Http\Requests\System\Organizations\Companies\{UpdateCompanyRequest};
+use App\Services\System\Organizations\Companies\{CompanyConfigService, CompanyService};
+use Illuminate\Http\{JsonResponse, Request};
 
 class CompanyController extends BaseController {
     /**
@@ -53,7 +51,7 @@ class CompanyController extends BaseController {
 
             $company = CompanyService::findByIdAndCompany($id, $this->getCompanyId(), null);
 
-            if (! Utilities::isDefined($company)) {
+            if(!Utilities::isDefined($company)) {
 
                 return $this->notFoundResponse();
 
@@ -63,7 +61,7 @@ class CompanyController extends BaseController {
             $files = $this->prepareCompanyFiles($request);
             $company = CompanyService::update($company, $data, $files, $this->getUserId());
 
-            if (! Utilities::isDefined($company)) {
+            if(!Utilities::isDefined($company)) {
 
                 return $this->errorResponse("update_failed");
 
@@ -73,7 +71,7 @@ class CompanyController extends BaseController {
 
             return $this->updatedResponse($company, "updated", "company");
 
-        } catch (\Exception $e) {
+        } catch(\Exception $e) {
 
             return $this->handleException($e, "update");
 
@@ -112,9 +110,9 @@ class CompanyController extends BaseController {
 
         $imageFields = ["logotype", "combinationmark", "logomark", "login_image"];
 
-        foreach ($imageFields as $field) {
+        foreach($imageFields as $field) {
 
-            if ($request->hasFile($field) && $request->file($field)) {
+            if($request->hasFile($field) && $request->file($field)) {
 
                 $files[$field] = $request->file($field);
 

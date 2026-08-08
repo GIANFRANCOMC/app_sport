@@ -5,11 +5,9 @@ declare(strict_types=1);
 namespace App\Http\Controllers\System\Customers;
 
 use App\Helpers\System\{Utilities};
-use App\Http\Controllers\System\Base\BaseController;
-use App\Services\System\Customers\Tracking\TrackingNotificationConfigService;
-use App\Services\System\Customers\Tracking\TrackingNotificationService;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
+use App\Http\Controllers\System\Base\{BaseController};
+use App\Services\System\Customers\Tracking\{TrackingNotificationConfigService, TrackingNotificationService};
+use Illuminate\Http\{JsonResponse, Request};
 
 class TrackingNotificationController extends BaseController {
     /**
@@ -58,6 +56,7 @@ class TrackingNotificationController extends BaseController {
     public function retry(int $id): JsonResponse {
 
         try {
+
             $notification = TrackingNotificationService::retry(
                 $this->getCompanyId(),
                 $this->getUserId(),
@@ -69,8 +68,11 @@ class TrackingNotificationController extends BaseController {
                 "msg" => "Notificación preparada para reintento.",
                 "data" => $notification,
             ]);
-        } catch (\Throwable $exception) {
+
+        } catch(\Throwable $exception) {
+
             return $this->handleException($exception, "update");
+
         }
 
     }

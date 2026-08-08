@@ -4,12 +4,11 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\System\Finance;
 
-use App\Helpers\System\Utilities;
-use App\Http\Controllers\System\Base\BaseController;
-use App\Services\System\Finance\MiscExpenseService;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
+use App\Helpers\System\{Utilities};
+use App\Http\Controllers\System\Base\{BaseController};
+use App\Services\System\Finance\{MiscExpenseService};
+use Illuminate\Http\{JsonResponse, Request};
+use Illuminate\Support\Facades\{Validator};
 
 final class MiscExpenseController extends BaseController {
     private const TRANSLATION_NAMESPACE = "System.Finance.misc_expenses";
@@ -57,18 +56,24 @@ final class MiscExpenseController extends BaseController {
             "max" => "Supera la longitud permitida.",
         ]);
 
-        if ($validator->fails()) {
+        if($validator->fails()) {
+
             return response()->json(["bool" => false, "errors" => $validator->errors()], 422);
+
         }
 
         try {
+
             return response()->json([
                 "bool" => true,
                 "msg" => "Gasto registrado correctamente.",
                 "data" => MiscExpenseService::create($this->getCompanyId(), $this->getUserId(), $validator->validated()),
             ], 201);
-        } catch (\Throwable $exception) {
+
+        } catch(\Throwable $exception) {
+
             return response()->json(["bool" => false, "msg" => $exception->getMessage()], 422);
+
         }
 
     }
@@ -76,13 +81,17 @@ final class MiscExpenseController extends BaseController {
     public function cancel(int $id): JsonResponse {
 
         try {
+
             return response()->json([
                 "bool" => true,
                 "msg" => "Gasto anulado correctamente.",
                 "data" => MiscExpenseService::cancel($this->getCompanyId(), $id, $this->getUserId()),
             ]);
-        } catch (\Throwable $exception) {
+
+        } catch(\Throwable $exception) {
+
             return response()->json(["bool" => false, "msg" => $exception->getMessage()], 422);
+
         }
 
     }

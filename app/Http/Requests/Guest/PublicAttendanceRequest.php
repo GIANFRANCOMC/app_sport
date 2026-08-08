@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Guest;
 
-use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
+use Illuminate\Foundation\Http\{FormRequest};
+use Illuminate\Validation\{Rule};
 
 final class PublicAttendanceRequest extends FormRequest {
     public function authorize(): bool {

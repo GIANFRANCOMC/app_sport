@@ -5,14 +5,11 @@ declare(strict_types=1);
 namespace App\Http\Controllers\System\Catalogs;
 
 use App\Helpers\System\{Utilities};
-use App\Http\Controllers\System\Base\BaseController;
-use App\Http\Requests\System\Catalogs\Services\StoreServiceRequest;
-use App\Http\Requests\System\Catalogs\Services\UpdateServiceRequest;
+use App\Http\Controllers\System\Base\{BaseController};
+use App\Http\Requests\System\Catalogs\Services\{StoreServiceRequest, UpdateServiceRequest};
 use App\Services\System\Base\{InitParamsCacheInvalidationService};
-use App\Services\System\Catalogs\Services\ServiceConfigService;
-use App\Services\System\Catalogs\Services\ServiceService;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
+use App\Services\System\Catalogs\Services\{ServiceConfigService, ServiceService};
+use Illuminate\Http\{JsonResponse, Request};
 
 class ServiceController extends BaseController {
     /**
@@ -68,7 +65,7 @@ class ServiceController extends BaseController {
             $data = $this->prepareServiceData($request);
             $item = ServiceService::create($data, $this->getCompanyId(), $this->getUserId());
 
-            if (! Utilities::isDefined($item)) {
+            if(!Utilities::isDefined($item)) {
 
                 return $this->errorResponse("create_failed");
 
@@ -81,7 +78,7 @@ class ServiceController extends BaseController {
 
             return $this->createdResponse($item, "created", "item");
 
-        } catch (\Exception $e) {
+        } catch(\Exception $e) {
 
             return $this->handleException($e, "create");
 
@@ -100,7 +97,7 @@ class ServiceController extends BaseController {
 
             $item = ServiceService::findByIdAndCompany($id, $this->getCompanyId(), null);
 
-            if (! Utilities::isDefined($item)) {
+            if(!Utilities::isDefined($item)) {
 
                 return $this->notFoundResponse();
 
@@ -109,7 +106,7 @@ class ServiceController extends BaseController {
             $data = $this->prepareServiceData($request);
             $item = ServiceService::update($item, $data, $this->getUserId());
 
-            if (! Utilities::isDefined($item)) {
+            if(!Utilities::isDefined($item)) {
 
                 return $this->errorResponse("update_failed");
 
@@ -122,7 +119,7 @@ class ServiceController extends BaseController {
 
             return $this->updatedResponse($item, "updated", "item");
 
-        } catch (\Exception $e) {
+        } catch(\Exception $e) {
 
             return $this->handleException($e, "update");
 

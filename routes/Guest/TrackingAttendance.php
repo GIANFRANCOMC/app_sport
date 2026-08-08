@@ -1,7 +1,7 @@
 <?php
 
 use App\Http\Controllers\Guest\{TrackingAttendanceController};
-use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\{Route};
 
 $entity = "guest.tracking_attendances";
 

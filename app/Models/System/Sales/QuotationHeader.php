@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace App\Models\System\Sales;
 
-use App\Models\System\Customers\Customer;
-use App\Models\System\General\Currency;
-use App\Models\System\Organizations\Branch;
-use App\Models\System\Organizations\User;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\System\Customers\{Customer};
+use App\Models\System\General\{Currency};
+use App\Models\System\Organizations\{Branch, User};
+use Illuminate\Database\Eloquent\{Model};
 
 final class QuotationHeader extends Model {
     protected $table = "quotation_headers";
@@ -49,27 +48,39 @@ final class QuotationHeader extends Model {
     ];
 
     public function holder() {
+
         return $this->belongsTo(Customer::class, "holder_id");
+
     }
 
     public function seller() {
+
         return $this->belongsTo(User::class, "seller_id");
+
     }
 
     public function branch() {
+
         return $this->belongsTo(Branch::class, "branch_id");
+
     }
 
     public function currency() {
+
         return $this->belongsTo(Currency::class, "currency_id");
+
     }
 
     public function items() {
+
         return $this->hasMany(QuotationItem::class, "quotation_header_id");
+
     }
 
     public function taxes() {
+
         return $this->hasMany(QuotationTax::class, "quotation_header_id")
             ->where("status", "active");
+
     }
 }

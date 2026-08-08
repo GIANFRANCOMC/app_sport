@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\System\Concerns;
 
-use App\Helpers\System\ApiResponse;
-use App\Helpers\System\TranslationHelper;
-use Illuminate\Http\JsonResponse;
+use App\Helpers\System\{ApiResponse, TranslationHelper};
+use Illuminate\Http\{JsonResponse};
 
 /**
  * Trait for handling API responses with translations

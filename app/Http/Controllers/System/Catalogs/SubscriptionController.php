@@ -5,14 +5,11 @@ declare(strict_types=1);
 namespace App\Http\Controllers\System\Catalogs;
 
 use App\Helpers\System\{Utilities};
-use App\Http\Controllers\System\Base\BaseController;
-use App\Http\Requests\System\Catalogs\Subscriptions\StoreSubscriptionRequest;
-use App\Http\Requests\System\Catalogs\Subscriptions\UpdateSubscriptionRequest;
+use App\Http\Controllers\System\Base\{BaseController};
+use App\Http\Requests\System\Catalogs\Subscriptions\{StoreSubscriptionRequest, UpdateSubscriptionRequest};
 use App\Services\System\Base\{InitParamsCacheInvalidationService};
-use App\Services\System\Catalogs\Subscriptions\SubscriptionConfigService;
-use App\Services\System\Catalogs\Subscriptions\SubscriptionService;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
+use App\Services\System\Catalogs\Subscriptions\{SubscriptionConfigService, SubscriptionService};
+use Illuminate\Http\{JsonResponse, Request};
 
 class SubscriptionController extends BaseController {
     /**
@@ -68,7 +65,7 @@ class SubscriptionController extends BaseController {
             $data = $this->prepareSubscriptionData($request);
             $item = SubscriptionService::create($data, $this->getCompanyId(), $this->getUserId());
 
-            if (! Utilities::isDefined($item)) {
+            if(!Utilities::isDefined($item)) {
 
                 return $this->errorResponse("create_failed");
 
@@ -81,7 +78,7 @@ class SubscriptionController extends BaseController {
 
             return $this->createdResponse($item, "created", "item");
 
-        } catch (\Exception $e) {
+        } catch(\Exception $e) {
 
             return $this->handleException($e, "create");
 
@@ -100,7 +97,7 @@ class SubscriptionController extends BaseController {
 
             $item = SubscriptionService::findByIdAndCompany($id, $this->getCompanyId(), null);
 
-            if (! Utilities::isDefined($item)) {
+            if(!Utilities::isDefined($item)) {
 
                 return $this->notFoundResponse();
 
@@ -109,7 +106,7 @@ class SubscriptionController extends BaseController {
             $data = $this->prepareSubscriptionData($request);
             $item = SubscriptionService::update($item, $data, $this->getUserId());
 
-            if (! Utilities::isDefined($item)) {
+            if(!Utilities::isDefined($item)) {
 
                 return $this->errorResponse("update_failed");
 
@@ -122,7 +119,7 @@ class SubscriptionController extends BaseController {
 
             return $this->updatedResponse($item, "updated", "item");
 
-        } catch (\Exception $e) {
+        } catch(\Exception $e) {
 
             return $this->handleException($e, "update");
 

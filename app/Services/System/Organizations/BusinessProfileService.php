@@ -4,10 +4,9 @@ declare(strict_types=1);
 
 namespace App\Services\System\Organizations;
 
-use App\Models\System\Organizations\BusinessIndustry;
-use App\Models\System\Organizations\BusinessIndustryModuleSet;
-use App\Services\System\Organizations\Companies\CompanySectionService;
-use Illuminate\Support\Facades\DB;
+use App\Models\System\Organizations\{BusinessIndustry, BusinessIndustryModuleSet};
+use App\Services\System\Organizations\Companies\{CompanySectionService};
+use Illuminate\Support\Facades\{DB};
 
 final class BusinessProfileService {
     public static function industries(int $companyId) {
@@ -23,7 +22,7 @@ final class BusinessProfileService {
 
     public static function applyIndustry(int $companyId, int $industryId, int $userId): void {
 
-        DB::transaction(function () use ($companyId, $industryId, $userId) {
+        DB::transaction(function() use ($companyId, $industryId, $userId) {
 
             $industry = BusinessIndustry::query()
                 ->where("company_id", $companyId)
@@ -36,7 +35,8 @@ final class BusinessProfileService {
                 ->where("status", "active")
                 ->get();
 
-            foreach ($sets as $set) {
+            foreach($sets as $set) {
+
                 DB::table("companies_sub_sections")->updateOrInsert(
                     ["company_id" => $companyId, "sub_section_id" => $set->sub_section_id],
                     [
@@ -45,6 +45,7 @@ final class BusinessProfileService {
                         "updated_by" => $userId,
                     ]
                 );
+
             }
 
             DB::table("companies")

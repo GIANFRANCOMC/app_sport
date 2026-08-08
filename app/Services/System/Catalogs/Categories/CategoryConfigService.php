@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Services\System\Catalogs\Categories;
 
-use App\Models\System\Catalogs\Category;
-use App\Services\System\Base\BaseConfigService;
+use App\Models\System\Catalogs\{Category};
+use App\Services\System\Base\{BaseConfigService};
 use stdClass;
 
 final class CategoryConfigService extends BaseConfigService {

@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\System\Essentials;
 
-use App\Http\Controllers\System\Base\BaseController;
+use App\Http\Controllers\System\Base\{BaseController};
 use App\Http\Requests\System\Essentials\Home\{UpdateHomePreferenceRequest};
 use App\Models\System\Organizations\{UserPreference};
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
+use Illuminate\Http\{JsonResponse, Request};
 use stdClass;
 
 class HomeController extends BaseController {
@@ -28,7 +27,7 @@ class HomeController extends BaseController {
         $config = new stdClass();
         $page = $this->getPage($request);
 
-        if (in_array($page, ["main"])) {
+        if(in_array($page, ["main"])) {
 
             //
 
@@ -69,13 +68,13 @@ class HomeController extends BaseController {
                 "records" => [],
             ];
 
-            if ($id > 0) {
+            if($id > 0) {
 
                 $record = ["sub_section_id" => $id];
 
-                foreach (["is_favorite"] as $field) {
+                foreach(["is_favorite"] as $field) {
 
-                    if (array_key_exists($field, $validated)) {
+                    if(array_key_exists($field, $validated)) {
 
                         $record[$field] = $validated[$field];
 
@@ -89,7 +88,7 @@ class HomeController extends BaseController {
 
             $updateItems = UserPreference::updateItems($user->id, "config_companies_sub_sections", $data);
 
-            if ($updateItems["bool"]) {
+            if($updateItems["bool"]) {
 
                 $user->unsetRelation("preferences");
 
@@ -99,7 +98,7 @@ class HomeController extends BaseController {
 
             return $this->errorResponse("update_failed");
 
-        } catch (\Exception $e) {
+        } catch(\Exception $e) {
 
             return $this->handleException($e, "update");
 

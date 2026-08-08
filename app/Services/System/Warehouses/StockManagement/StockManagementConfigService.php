@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace App\Services\System\Warehouses\StockManagement;
 
-use App\Models\System\Catalogs\Item;
-use App\Services\System\Base\BaseConfigService;
-use App\Services\System\Base\CompanyReferenceDataService;
+use App\Models\System\Catalogs\{Item};
+use App\Services\System\Base\{BaseConfigService, CompanyReferenceDataService};
 use stdClass;
 
 final class StockManagementConfigService extends BaseConfigService {

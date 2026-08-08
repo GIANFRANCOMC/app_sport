@@ -2,8 +2,8 @@
 
 namespace App\Helpers\System;
 
-use App\Services\System\Organizations\Companies\CompanySettingService;
-use Carbon\Carbon;
+use App\Services\System\Organizations\Companies\{CompanySettingService};
+use Carbon\{Carbon};
 use DateTime;
 use Exception;
 use stdClass;
@@ -71,7 +71,7 @@ class Utilities {
 
     public static function isDefined($valor) {
 
-        return isset($valor) && ! empty($valor);
+        return isset($valor) && !empty($valor);
 
     }
 
@@ -79,13 +79,17 @@ class Utilities {
 
         $result = null;
 
-        if (in_array($type, ["all"])) {
+        if(in_array($type, ["all"])) {
 
             $result = $array;
 
-        } elseif (in_array($type, ["first"])) {
+        }elseif(in_array($type, ["first"])) {
 
-            $filter = array_filter($array, function ($e) use ($code) { return $e["code"] === $code; });
+            $filter = array_filter($array, function($e) use ($code) {
+
+                return $e["code"] === $code;
+
+            });
             $result = count($filter) > 0 ? reset($filter) : null;
 
         }
@@ -98,7 +102,7 @@ class Utilities {
 
         $companyId ??= (int) config("app.company_id");
 
-        if ($companyId !== null && $companyId > 0) {
+        if($companyId !== null && $companyId > 0) {
 
             return max(0, min(8, (int) CompanySettingService::value(
                 $companyId,
@@ -160,32 +164,42 @@ class Utilities {
                 800 => "OCHOCIENTOS", 900 => "NOVECIENTOS",
             ];
 
-            if ($number < 0) {
+            if($number < 0) {
+
                 return "MENOS ".self::convertNumberToWords(-$number);
+
             }
-            if ($number == 0) {
+            if($number == 0) {
+
                 return $units[0];
+
             }
 
             $whole = floor($number);
             $cents = round(($number - $whole) * 100);
             $result = "";
 
-            if ($whole >= 100) {
+            if($whole >= 100) {
+
                 $result .= $units[100 * floor($whole / 100)]." ";
                 $whole %= 100;
+
             }
-            if ($whole >= 20) {
+            if($whole >= 20) {
+
                 $result .= $units[10 * floor($whole / 10)]." ";
                 $whole %= 10;
+
             }
-            if ($whole > 0) {
+            if($whole > 0) {
+
                 $result .= $units[$whole]." ";
+
             }
 
             $phrase = trim($result).($cents > 0 ? " CON ".str_pad($cents, 2, "0", STR_PAD_LEFT)."/100 SOLES" : " SOLES");
 
-        } catch (Exception $e) {
+        } catch(Exception $e) {
 
             $phrase = "";
 
@@ -206,7 +220,7 @@ class Utilities {
         $characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
         $randomString = "";
 
-        for ($i = 0; $i < $length; $i++) {
+        for($i = 0; $i < $length; $i++) {
 
             $randomIndex = rand(0, strlen($characters) - 1);
             $randomString .= $characters[$randomIndex];

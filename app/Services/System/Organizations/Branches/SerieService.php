@@ -4,12 +4,11 @@ declare(strict_types=1);
 
 namespace App\Services\System\Organizations\Branches;
 
-use App\Helpers\System\Utilities;
+use App\Helpers\System\{Utilities};
 use App\Models\System\General\{DocumentType};
-use App\Models\System\Organizations\Branch;
-use App\Models\System\Organizations\Serie;
+use App\Models\System\Organizations\{Branch, Serie};
 use Exception;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\{DB};
 
 /**
  * Service class for managing Serie operations
@@ -33,7 +32,7 @@ class SerieService {
 
             $newSequential = intval($maxSequential) + 1;
 
-        } catch (Exception $e) {
+        } catch(Exception $e) {
 
             $newSequential = 0;
 
@@ -63,7 +62,7 @@ class SerieService {
             ->select("id", "code")
             ->get();
 
-        if ($documentTypes->isEmpty()) {
+        if($documentTypes->isEmpty()) {
 
             return [];
 
@@ -72,7 +71,7 @@ class SerieService {
         // Prepare bulk insert data
         $now = now();
 
-        $seriesData = $documentTypes->map(function ($documentType) use ($companyId, $branchId, $newSequential, $userId, $now) {
+        $seriesData = $documentTypes->map(function($documentType) use ($companyId, $branchId, $newSequential, $userId, $now) {
 
             return [
                 "company_id" => $companyId,
@@ -103,13 +102,13 @@ class SerieService {
             ->join("branches", "branches.id", "=", "series.branch_id")
             ->leftJoin("users", "users.id", "=", "movement.user_id")
             ->where("movement.company_id", $companyId)
-            ->when($filters["branch_id"] ?? null, fn ($query, $id) => $query->where("series.branch_id", $id))
-            ->when($filters["serie_id"] ?? null, fn ($query, $id) => $query->where("movement.serie_id", $id))
-            ->when($filters["user_id"] ?? null, fn ($query, $id) => $query->where("movement.user_id", $id))
-            ->when($filters["source"] ?? null, fn ($query, $source) => $query->where("movement.source", $source))
-            ->when($filters["action"] ?? null, fn ($query, $action) => $query->where("movement.action", $action))
-            ->when($filters["date_from"] ?? null, fn ($query, $date) => $query->where("movement.occurred_at", ">=", Utilities::startOfDay($date)))
-            ->when($filters["date_to"] ?? null, fn ($query, $date) => $query->where("movement.occurred_at", "<=", Utilities::endOfDay($date)))
+            ->when($filters["branch_id"] ?? null, fn($query, $id) => $query->where("series.branch_id", $id))
+            ->when($filters["serie_id"] ?? null, fn($query, $id) => $query->where("movement.serie_id", $id))
+            ->when($filters["user_id"] ?? null, fn($query, $id) => $query->where("movement.user_id", $id))
+            ->when($filters["source"] ?? null, fn($query, $source) => $query->where("movement.source", $source))
+            ->when($filters["action"] ?? null, fn($query, $action) => $query->where("movement.action", $action))
+            ->when($filters["date_from"] ?? null, fn($query, $date) => $query->where("movement.occurred_at", ">=", Utilities::startOfDay($date)))
+            ->when($filters["date_to"] ?? null, fn($query, $date) => $query->where("movement.occurred_at", "<=", Utilities::endOfDay($date)))
             ->select([
                 "movement.id",
                 "movement.sequential",
@@ -132,9 +131,9 @@ class SerieService {
 
         return Serie::query()
             ->where("company_id", $companyId)
-            ->when($branchId, fn ($query) => $query->where("branch_id", $branchId))
+            ->when($branchId, fn($query) => $query->where("branch_id", $branchId))
             ->get()
-            ->map(function (Serie $serie) use ($companyId) {
+            ->map(function(Serie $serie) use ($companyId) {
 
                 $issued = DB::table("series_correlative_movements")
                     ->where("company_id", $companyId)
@@ -142,10 +141,10 @@ class SerieService {
                     ->where("action", "issued")
                     ->orderBy("sequential")
                     ->pluck("sequential")
-                    ->map(fn ($value) => (int) $value)
+                    ->map(fn($value) => (int) $value)
                     ->all();
 
-                if (count($issued) < 2) {
+                if(count($issued) < 2) {
 
                     return null;
 

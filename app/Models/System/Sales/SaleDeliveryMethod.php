@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Models\System\Sales;
 
-use App\Models\System\Organizations\Company;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\System\Organizations\{Company};
+use Illuminate\Database\Eloquent\{Model};
 
 final class SaleDeliveryMethod extends Model {
     protected $table = "sale_delivery_methods";

@@ -2,9 +2,9 @@
 
 namespace App\Models\System\Warehouses;
 
-use App\Helpers\System\Utilities;
+use App\Helpers\System\{Utilities};
 use App\Models\System\Catalogs\{Item};
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\{Model};
 
 class WarehouseItem extends Model {
     protected $table = "warehouse_items";

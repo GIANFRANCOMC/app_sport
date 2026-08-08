@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\System\Assets\AssetManagements;
 
-use App\Http\Requests\System\Base\CompanyFormRequest;
+use App\Http\Requests\System\Base\{CompanyFormRequest};
 
 final class UpdateAssetInBranchRequest extends CompanyFormRequest {
     public function rules(): array {

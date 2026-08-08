@@ -1,7 +1,7 @@
 <?php
 
 use App\Http\Controllers\System\Essentials\{ReportController};
-use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\{Route};
 
 $entity = "reports";
 

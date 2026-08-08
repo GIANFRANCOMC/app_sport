@@ -5,17 +5,11 @@ declare(strict_types=1);
 namespace App\Http\Controllers\System\Assets;
 
 use App\Helpers\System\{Utilities};
-use App\Http\Controllers\System\Base\BaseController;
-use App\Http\Requests\System\Assets\AssetManagements\AssignAssetToBranchRequest;
-use App\Http\Requests\System\Assets\AssetManagements\AssignAssetToUserRequest;
-use App\Http\Requests\System\Assets\AssetManagements\UnassignAssetFromBranchRequest;
-use App\Http\Requests\System\Assets\AssetManagements\UnassignAssetFromUserRequest;
-use App\Http\Requests\System\Assets\AssetManagements\UpdateAssetInBranchRequest;
-use App\Services\System\Assets\AssetManagementConfigService;
-use App\Services\System\Assets\AssetManagementService;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
-use Illuminate\Pagination\LengthAwarePaginator;
+use App\Http\Controllers\System\Base\{BaseController};
+use App\Http\Requests\System\Assets\AssetManagements\{AssignAssetToBranchRequest, AssignAssetToUserRequest, UnassignAssetFromBranchRequest, UnassignAssetFromUserRequest, UpdateAssetInBranchRequest};
+use App\Services\System\Assets\{AssetManagementConfigService, AssetManagementService};
+use Illuminate\Http\{JsonResponse, Request};
+use Illuminate\Pagination\{LengthAwarePaginator};
 
 class AssetManagementController extends BaseController {
     /**
@@ -45,7 +39,7 @@ class AssetManagementController extends BaseController {
 
         $branch = AssetManagementService::validateBranch($branchId, $this->getCompanyId());
 
-        if (! Utilities::isDefined($branch)) {
+        if(!Utilities::isDefined($branch)) {
 
             return new LengthAwarePaginator([], 0, 1, 1, ["path" => ""]);
 
@@ -80,7 +74,7 @@ class AssetManagementController extends BaseController {
 
             $branch = AssetManagementService::validateBranch($branchId, $this->getCompanyId());
 
-            if (! Utilities::isDefined($branch)) {
+            if(!Utilities::isDefined($branch)) {
 
                 return $this->errorResponse("branch_not_found");
 
@@ -95,7 +89,7 @@ class AssetManagementController extends BaseController {
 
             $bool = $information["success"]["counter"] > 0;
 
-            if (! $bool) {
+            if(!$bool) {
 
                 return $this->errorResponse("assign_failed");
 
@@ -103,7 +97,7 @@ class AssetManagementController extends BaseController {
 
             return $this->successResponse($information, "assigned_successfully");
 
-        } catch (\Exception $e) {
+        } catch(\Exception $e) {
 
             return $this->handleException($e, "assign");
 
@@ -123,7 +117,7 @@ class AssetManagementController extends BaseController {
 
             $branch = AssetManagementService::validateBranch($branchId, $this->getCompanyId());
 
-            if (! Utilities::isDefined($branch)) {
+            if(!Utilities::isDefined($branch)) {
 
                 return $this->errorResponse("branch_not_found");
 
@@ -137,7 +131,7 @@ class AssetManagementController extends BaseController {
 
             $bool = $information["success"]["counter"] > 0;
 
-            if (! $bool) {
+            if(!$bool) {
 
                 return $this->errorResponse("unassign_failed");
 
@@ -145,7 +139,7 @@ class AssetManagementController extends BaseController {
 
             return $this->successResponse($information, "unassigned_successfully");
 
-        } catch (\Exception $e) {
+        } catch(\Exception $e) {
 
             return $this->handleException($e, "unassign");
 
@@ -167,7 +161,7 @@ class AssetManagementController extends BaseController {
 
             $branch = AssetManagementService::validateBranch($branchId, $this->getCompanyId());
 
-            if (! Utilities::isDefined($branch)) {
+            if(!Utilities::isDefined($branch)) {
 
                 return $this->errorResponse("branch_not_found");
 
@@ -191,7 +185,7 @@ class AssetManagementController extends BaseController {
                 $this->getUserId()
             );
 
-            if (! Utilities::isDefined($branchAsset)) {
+            if(!Utilities::isDefined($branchAsset)) {
 
                 return $this->errorResponse("asset_not_found");
 
@@ -199,7 +193,7 @@ class AssetManagementController extends BaseController {
 
             return $this->successResponse($branchAsset, "updated_successfully");
 
-        } catch (\Exception $e) {
+        } catch(\Exception $e) {
 
             return $this->handleException($e, "update");
 
@@ -218,7 +212,7 @@ class AssetManagementController extends BaseController {
 
             $branch = AssetManagementService::validateBranch($branchId, $this->getCompanyId());
 
-            if (! Utilities::isDefined($branch)) {
+            if(!Utilities::isDefined($branch)) {
 
                 return $this->errorResponse("branch_not_found");
 
@@ -230,7 +224,7 @@ class AssetManagementController extends BaseController {
 
             return $this->successResponse($assignments, "assignments_found");
 
-        } catch (\Exception $e) {
+        } catch(\Exception $e) {
 
             return $this->handleException($e, "get_assignments");
 
@@ -252,7 +246,7 @@ class AssetManagementController extends BaseController {
 
             $branch = AssetManagementService::validateBranch($branchId, $this->getCompanyId());
 
-            if (! Utilities::isDefined($branch)) {
+            if(!Utilities::isDefined($branch)) {
 
                 return $this->errorResponse("branch_not_found");
 
@@ -263,20 +257,20 @@ class AssetManagementController extends BaseController {
 
             $branchAsset = AssetManagementService::validateBranchAsset($branch->id, $branchAssetId, $assetId);
 
-            if (! Utilities::isDefined($branchAsset)) {
+            if(!Utilities::isDefined($branchAsset)) {
 
                 return $this->errorResponse("asset_not_found");
 
             }
 
             $assetQuantity = floatval($branchAsset->quantity);
-            $totalQuantity = array_reduce($data["assignments"], function ($accumulator, $currentValue) {
+            $totalQuantity = array_reduce($data["assignments"], function($accumulator, $currentValue) {
 
                 return $accumulator + floatval($currentValue["quantity"] ?? 0);
 
             }, 0);
 
-            if ($totalQuantity > $assetQuantity) {
+            if($totalQuantity > $assetQuantity) {
 
                 return $this->errorResponse("quantity_exceeds_limit");
 
@@ -292,7 +286,7 @@ class AssetManagementController extends BaseController {
 
             $bool = $information["success"]["counter"] > 0;
 
-            if (! $bool) {
+            if(!$bool) {
 
                 return $this->errorResponse("assign_failed");
 
@@ -300,7 +294,7 @@ class AssetManagementController extends BaseController {
 
             return $this->successResponse($information, "assigned_to_users_successfully");
 
-        } catch (\Exception $e) {
+        } catch(\Exception $e) {
 
             return $this->handleException($e, "assign_to_users");
 
@@ -322,7 +316,7 @@ class AssetManagementController extends BaseController {
 
             $branch = AssetManagementService::validateBranch($branchId, $this->getCompanyId());
 
-            if (! Utilities::isDefined($branch)) {
+            if(!Utilities::isDefined($branch)) {
 
                 return $this->errorResponse("branch_not_found");
 
@@ -333,7 +327,7 @@ class AssetManagementController extends BaseController {
 
             $branchAsset = AssetManagementService::validateBranchAsset($branch->id, $branchAssetId, $assetId);
 
-            if (! Utilities::isDefined($branchAsset)) {
+            if(!Utilities::isDefined($branchAsset)) {
 
                 return $this->errorResponse("asset_not_found");
 
@@ -349,7 +343,7 @@ class AssetManagementController extends BaseController {
 
             $bool = $information["success"]["counter"] > 0;
 
-            if (! $bool) {
+            if(!$bool) {
 
                 return $this->errorResponse("unassign_failed");
 
@@ -357,7 +351,7 @@ class AssetManagementController extends BaseController {
 
             return $this->successResponse($information, "unassigned_from_users_successfully");
 
-        } catch (\Exception $e) {
+        } catch(\Exception $e) {
 
             return $this->handleException($e, "unassign_from_users");
 

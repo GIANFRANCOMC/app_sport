@@ -2,16 +2,20 @@
 
 namespace App\Models\System\General;
 
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\{Model};
 
 final class MenuGroup extends Model {
     protected $fillable = ["section_id", "slug", "name", "order", "status"];
 
     public function section() {
+
         return $this->belongsTo(Section::class);
+
     }
 
     public function subSections() {
+
         return $this->hasMany(SubSection::class)->where("status", "active");
+
     }
 }

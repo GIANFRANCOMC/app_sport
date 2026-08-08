@@ -4,16 +4,15 @@ declare(strict_types=1);
 
 namespace App\Services\System\Organizations\Branches;
 
-use App\Helpers\System\TranslationHelper;
-use App\Helpers\System\Utilities;
-use App\Models\System\Assets\AssetAssignment;
+use App\Helpers\System\{TranslationHelper, Utilities};
+use App\Models\System\Assets\{AssetAssignment};
 use App\Models\System\Organizations\{Branch};
 use App\Services\System\Organizations\Branches\{SerieService};
 use App\Services\System\Warehouses\Warehouses\{WarehouseService};
 use Exception;
-use Illuminate\Contracts\Pagination\LengthAwarePaginator;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Contracts\Pagination\{LengthAwarePaginator};
+use Illuminate\Database\Eloquent\{Builder};
+use Illuminate\Support\Facades\{DB};
 
 /**
  * Service class for managing module operations
@@ -80,9 +79,9 @@ class BranchService {
             "created_by" => $userId,
         ];
 
-        foreach (self::ALLOWED_FIELDS as $field) {
+        foreach(self::ALLOWED_FIELDS as $field) {
 
-            if (isset($data[$field])) {
+            if(isset($data[$field])) {
 
                 $branchData[$field] = $data[$field];
 
@@ -104,11 +103,11 @@ class BranchService {
 
         $updateData = [];
 
-        foreach (self::ALLOWED_FIELDS as $field) {
+        foreach(self::ALLOWED_FIELDS as $field) {
 
-            if (isset($data[$field])) {
+            if(isset($data[$field])) {
 
-                if ($data[$field] !== $branch->$field) {
+                if($data[$field] !== $branch->$field) {
 
                     $updateData[$field] = $data[$field];
 
@@ -136,7 +135,7 @@ class BranchService {
 
         $branch = null;
 
-        DB::transaction(function () use ($data, $companyId, $userId, &$branch) {
+        DB::transaction(function() use ($data, $companyId, $userId, &$branch) {
 
             // Prepare data with only allowed fields
             $branchData = self::prepareBranchDataForCreate($data, $companyId, $userId);
@@ -166,13 +165,13 @@ class BranchService {
      */
     public static function update(Branch $branch, array $data, int $userId): Branch {
 
-        DB::transaction(function () use ($branch, $data, $userId) {
+        DB::transaction(function() use ($branch, $data, $userId) {
 
             // Prepare update data with only changed fields
             $updateData = self::prepareBranchDataForUpdate($branch, $data);
             $nameChanged = isset($updateData["name"]);
 
-            if (($updateData["status"] ?? null) === "inactive"
+            if(($updateData["status"] ?? null) === "inactive"
                 && AssetAssignment::query()
                     ->where("company_id", $branch->company_id)
                     ->where("branch_id", $branch->id)
@@ -180,17 +179,18 @@ class BranchService {
                     ->exists()) {
 
                 throw new Exception("No se puede inactivar la sucursal mientras tenga activos asignados a colaboradores.");
+
             }
 
             // Only update if there are changes
-            if (! empty($updateData)) {
+            if(!empty($updateData)) {
 
                 $updateData["updated_at"] = now();
                 $updateData["updated_by"] = $userId;
                 $branch->update($updateData);
 
                 // Update related warehouses names if branch name changed
-                if ($nameChanged) {
+                if($nameChanged) {
 
                     WarehouseService::updateNamesForBranch($branch->fresh(["warehousesAll"]), $userId);
 
@@ -217,13 +217,13 @@ class BranchService {
         $query = Branch::where("id", $id)
             ->where("company_id", $companyId);
 
-        if ($statuses !== null && ! empty($statuses)) {
+        if($statuses !== null && !empty($statuses)) {
 
             $query->whereIn("status", $statuses);
 
         }
 
-        if ($relations !== null && ! empty($relations)) {
+        if($relations !== null && !empty($relations)) {
 
             $query->with($relations);
 
@@ -249,25 +249,25 @@ class BranchService {
         $filterBy = $filters["filter_by"] ?? null;
         $word = $filters["word"] ?? null;
 
-        if (Utilities::isDefined($word) && Utilities::isDefined($filterBy)) {
+        if(Utilities::isDefined($word) && Utilities::isDefined($filterBy)) {
 
             $searchTerm = Utilities::getWordSearch($word);
 
-            if ($filterBy === "all") {
+            if($filterBy === "all") {
 
                 // Search across all searchable fields
-                $query->where(function (Builder $q) use ($searchTerm) {
+                $query->where(function(Builder $q) use ($searchTerm) {
 
                     $searchableFields = self::SEARCHABLE_FIELDS;
                     $firstField = array_shift($searchableFields);
 
-                    if ($firstField) {
+                    if($firstField) {
 
                         $q->where($firstField, "like", $searchTerm);
 
                     }
 
-                    foreach ($searchableFields as $field) {
+                    foreach($searchableFields as $field) {
 
                         $q->orWhere($field, "like", $searchTerm);
 
@@ -275,7 +275,7 @@ class BranchService {
 
                 });
 
-            } elseif (in_array($filterBy, self::SEARCHABLE_FIELDS, true)) {
+            }elseif(in_array($filterBy, self::SEARCHABLE_FIELDS, true)) {
 
                 // Search in specific field
                 $query->where($filterBy, "like", $searchTerm);

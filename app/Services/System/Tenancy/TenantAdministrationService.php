@@ -4,12 +4,9 @@ declare(strict_types=1);
 
 namespace App\Services\System\Tenancy;
 
-use App\Models\System\Tenancy\TenantAuditLog;
-use App\Models\System\Tenancy\TenantDatabase;
-use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
+use App\Models\System\Tenancy\{TenantAuditLog, TenantDatabase};
+use Illuminate\Support\Facades\{Cache, DB, Schema};
+use Illuminate\Support\{Collection};
 use RuntimeException;
 use Throwable;
 
@@ -21,7 +18,7 @@ final class TenantAdministrationService {
 
         return TenantDatabase::query()
             ->with("domains")
-            ->when($status, fn ($query) => $query->where("status", $status))
+            ->when($status, fn($query) => $query->where("status", $status))
             ->orderBy("slug")
             ->get();
 
@@ -32,6 +29,7 @@ final class TenantAdministrationService {
         $startedAt = microtime(true);
 
         try {
+
             $this->connectionManager->connect($tenant);
             DB::connection((string) config("tenancy.tenant_connection", "tenant"))->selectOne("SELECT 1");
             $hasCompanies = Schema::connection((string) config("tenancy.tenant_connection", "tenant"))
@@ -49,7 +47,9 @@ final class TenantAdministrationService {
             $this->audit($tenant, "health_check", $hasCompanies ? "success" : "failure", $result);
 
             return $result;
-        } catch (Throwable $exception) {
+
+        } catch(Throwable $exception) {
+
             $result = [
                 "healthy" => false,
                 "database" => $tenant->database_name,
@@ -59,21 +59,28 @@ final class TenantAdministrationService {
             $this->audit($tenant, "health_check", "failure", $result);
 
             return $result;
+
         } finally {
+
             $this->connectionManager->disconnect();
+
         }
 
     }
 
     public function changeStatus(string $slug, string $status, ?string $actor = null): TenantDatabase {
 
-        if (! in_array($status, ["active", "inactive", "suspended"], true)) {
+        if(!in_array($status, ["active", "inactive", "suspended"], true)) {
+
             throw new RuntimeException("El estado solicitado no es válido para un tenant.");
+
         }
 
         $tenant = TenantDatabase::query()->where("slug", $slug)->first();
-        if (! $tenant) {
+        if(!$tenant) {
+
             throw new RuntimeException("El tenant solicitado no existe.");
+
         }
 
         $previousStatus = $tenant->status;
@@ -93,15 +100,21 @@ final class TenantAdministrationService {
         $tenants = $tenant ? collect([$tenant->loadMissing("domains")]) : $this->list();
         $cleared = 0;
 
-        foreach ($tenants as $currentTenant) {
-            foreach ($currentTenant->domains as $domain) {
-                if (Cache::forget(TenantResolver::cacheKey((string) $domain->domain))) {
+        foreach($tenants as $currentTenant) {
+
+            foreach($currentTenant->domains as $domain) {
+
+                if(Cache::forget(TenantResolver::cacheKey((string) $domain->domain))) {
+
                     $cleared++;
+
                 }
+
             }
             $this->audit($currentTenant, "resolver_cache_cleared", "success", [
                 "domains" => $currentTenant->domains->pluck("domain")->values()->all(),
             ], $actor);
+
         }
 
         return $cleared;
@@ -119,8 +132,11 @@ final class TenantAdministrationService {
     ): void {
 
         try {
-            if (! Schema::connection((string) config("tenancy.landlord_connection", "landlord"))->hasTable("tenant_audit_logs")) {
+
+            if(!Schema::connection((string) config("tenancy.landlord_connection", "landlord"))->hasTable("tenant_audit_logs")) {
+
                 return;
+
             }
 
             TenantAuditLog::query()->create([
@@ -134,7 +150,8 @@ final class TenantAdministrationService {
                 "context" => $context === [] ? null : $context,
                 "occurred_at" => now(),
             ]);
-        } catch (Throwable) {
+
+        } catch(Throwable) {
             // La auditoría no debe convertir un rechazo seguro o un comando operativo en un error 500.
         }
 

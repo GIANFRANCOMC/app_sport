@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Services;
 
-use App\Services\System\Organizations\Companies\CompanySectionService;
-use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Support\Facades\Cache;
+use App\Services\System\Organizations\Companies\{CompanySectionService};
+use Illuminate\Database\Eloquent\{Collection};
+use Illuminate\Support\Facades\{Cache};
 use InvalidArgumentException;
-use Tests\TestCase;
+use Tests\{TestCase};
 
 class CompanySectionServiceTest extends TestCase {
     public function test_it_returns_cached_sections_without_requerying(): void {

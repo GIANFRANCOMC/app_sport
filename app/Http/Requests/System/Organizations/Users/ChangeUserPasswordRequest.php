@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\System\Organizations\Users;
 
-use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rules\Password;
+use Illuminate\Foundation\Http\{FormRequest};
+use Illuminate\Validation\Rules\{Password};
 
 final class ChangeUserPasswordRequest extends FormRequest {
     public function authorize(): bool {

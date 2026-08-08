@@ -2,16 +2,11 @@
 
 namespace Database\Seeders;
 
-use App\Helpers\System\Utilities;
-use App\Models\System\Catalogs\Brand;
-use App\Models\System\Catalogs\Category;
-use App\Models\System\Catalogs\CategoryItem;
-use App\Models\System\Catalogs\Item;
-use App\Models\System\Warehouses\InventoryMovement;
-use App\Models\System\Warehouses\Warehouse;
-use App\Models\System\Warehouses\WarehouseItem;
-use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
+use App\Helpers\System\{Utilities};
+use App\Models\System\Catalogs\{Brand, Category, CategoryItem, Item};
+use App\Models\System\Warehouses\{InventoryMovement, Warehouse, WarehouseItem};
+use Illuminate\Database\{Seeder};
+use Illuminate\Support\Facades\{DB};
 
 class CommercialCatalogSeeder extends Seeder {
     private const COMPANY_ID = 1;
@@ -22,17 +17,17 @@ class CommercialCatalogSeeder extends Seeder {
 
     public function run(): void {
 
-        DB::transaction(function () {
+        DB::transaction(function() {
 
             $brands = $this->seedBrands();
             $categories = $this->seedCategories();
 
-            foreach ($this->items($brands) as $payload) {
+            foreach($this->items($brands) as $payload) {
 
                 $item = $this->upsertItem($payload);
                 $this->syncCategories($item, $payload["categories"], $categories);
 
-                if ($payload["type"] === "product") {
+                if($payload["type"] === "product") {
 
                     $this->syncInventory($item, $payload["inventory"]);
 
@@ -53,7 +48,7 @@ class CommercialCatalogSeeder extends Seeder {
         ];
 
         return collect($records)
-            ->mapWithKeys(function (array $record) {
+            ->mapWithKeys(function(array $record) {
 
                 $brand = Brand::updateOrCreate(
                     [
@@ -87,7 +82,7 @@ class CommercialCatalogSeeder extends Seeder {
         ];
 
         return collect($records)
-            ->mapWithKeys(function (array $record) {
+            ->mapWithKeys(function(array $record) {
 
                 $category = Category::updateOrCreate(
                     [
@@ -173,7 +168,7 @@ class CommercialCatalogSeeder extends Seeder {
 
         $records = [];
 
-        foreach ($products as $index => $product) {
+        foreach($products as $index => $product) {
 
             $records[] = [
                 "internal_code" => "PRO-".$product["code"],
@@ -191,7 +186,7 @@ class CommercialCatalogSeeder extends Seeder {
 
         }
 
-        foreach ($services as $service) {
+        foreach($services as $service) {
 
             $records[] = [
                 "internal_code" => "SER-".$service["code"],
@@ -209,7 +204,7 @@ class CommercialCatalogSeeder extends Seeder {
 
         }
 
-        foreach ($subscriptions as $subscription) {
+        foreach($subscriptions as $subscription) {
 
             $records[] = [
                 "internal_code" => "MEM-".$subscription["code"],
@@ -265,12 +260,14 @@ class CommercialCatalogSeeder extends Seeder {
 
     private function syncCategories(Item $item, array $categoryNames, array $categories): void {
 
-        foreach ($categoryNames as $categoryName) {
+        foreach($categoryNames as $categoryName) {
 
             $category = $categories[$categoryName] ?? null;
 
-            if (! $category) {
+            if(!$category) {
+
                 continue;
+
             }
 
             CategoryItem::updateOrCreate(
@@ -293,10 +290,10 @@ class CommercialCatalogSeeder extends Seeder {
 
         $warehouses = Warehouse::query()
             ->where("status", "active")
-            ->whereHas("branch", fn ($query) => $query->where("company_id", self::COMPANY_ID))
+            ->whereHas("branch", fn($query) => $query->where("company_id", self::COMPANY_ID))
             ->get();
 
-        foreach ($warehouses as $warehouse) {
+        foreach($warehouses as $warehouse) {
 
             $quantity = (float) ($inventory["quantity"] ?? 0);
             $minimumStock = (float) ($inventory["minimum_stock"] ?? 0);

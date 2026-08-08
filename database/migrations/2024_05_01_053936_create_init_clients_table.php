@@ -1,15 +1,17 @@
 <?php
 
-use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\Migrations\{Migration};
+use Illuminate\Database\Schema\{Blueprint};
+use Illuminate\Support\Facades\{Schema};
 
 return new class extends Migration {
     /**
      * Run the migrations.
      */
     public function up(): void {
-        Schema::create("book_complaints", function (Blueprint $table) {
+
+        Schema::create("book_complaints", function(Blueprint $table) {
+
             $table->id();
             $table->unsignedBigInteger("company_id");
             $table->unsignedBigInteger("branch_id");
@@ -45,9 +47,11 @@ return new class extends Migration {
             $table->foreign("identity_document_type_id")->references("id")->on("identity_document_types")->onDelete("cascade");
             $table->foreign("responded_by")->references("id")->on("users")->nullOnDelete();
             $table->unique(["company_id", "tracking_code"]);
+
         });
 
-        Schema::create("book_complaint_attachments", function (Blueprint $table) {
+        Schema::create("book_complaint_attachments", function(Blueprint $table) {
+
             $table->id();
             $table->unsignedBigInteger("company_id");
             $table->unsignedBigInteger("book_complaint_id");
@@ -59,9 +63,11 @@ return new class extends Migration {
 
             $table->foreign("company_id")->references("id")->on("companies")->onDelete("cascade");
             $table->foreign("book_complaint_id")->references("id")->on("book_complaints")->onDelete("cascade");
+
         });
 
-        Schema::create("book_complaint_status_histories", function (Blueprint $table) {
+        Schema::create("book_complaint_status_histories", function(Blueprint $table) {
+
             $table->id();
             $table->unsignedBigInteger("company_id");
             $table->unsignedBigInteger("book_complaint_id");
@@ -74,6 +80,7 @@ return new class extends Migration {
             $table->foreign("company_id")->references("id")->on("companies")->onDelete("cascade");
             $table->foreign("book_complaint_id")->references("id")->on("book_complaints")->onDelete("cascade");
             $table->foreign("changed_by")->references("id")->on("users")->nullOnDelete();
+
         });
 
     }

@@ -1,9 +1,9 @@
 <?php
 
-use App\Http\Controllers\System\Auth\AuthenticatedSessionController;
-use App\Http\Controllers\System\Essentials\ReportController;
-use App\Http\Controllers\System\Notifications\NotificationController;
-use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\System\Auth\{AuthenticatedSessionController};
+use App\Http\Controllers\System\Essentials\{ReportController};
+use App\Http\Controllers\System\Notifications\{NotificationController};
+use Illuminate\Support\Facades\{Route};
 
 /*
 |--------------------------------------------------------------------------
@@ -29,7 +29,7 @@ Route::get("/shared/reports/sale/{company}/{sale}/{type}", [ReportController::cl
     ->middleware(["signed", "throttle:guest-status"])
     ->name("reports.sale.shared");
 
-Route::middleware("guest")->group(function () {
+Route::middleware("guest")->group(function() {
 
     Route::get("/", [AuthenticatedSessionController::class, "create"]);
     Route::get("login", [AuthenticatedSessionController::class, "create"])->name("login");
@@ -37,7 +37,7 @@ Route::middleware("guest")->group(function () {
 
 });
 
-Route::middleware(["auth", "verified", "module.permission", "resource.scope"])->group(function () use ($systemRoute) {
+Route::middleware(["auth", "verified", "module.permission", "resource.scope"])->group(function() use ($systemRoute) {
 
     Route::post("/send-subscription-emails", [NotificationController::class, "sendSubscriptionEmails"])
         ->middleware("throttle:6,1")

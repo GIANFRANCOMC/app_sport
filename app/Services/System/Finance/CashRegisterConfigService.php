@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace App\Services\System\Finance;
 
-use App\Models\System\Warehouses\WarehouseItem;
-use App\Services\System\Base\BaseConfigService;
-use App\Services\System\Base\CompanyReferenceDataService;
+use App\Models\System\Warehouses\{WarehouseItem};
+use App\Services\System\Base\{BaseConfigService, CompanyReferenceDataService};
 use stdClass;
 
 final class CashRegisterConfigService extends BaseConfigService {
@@ -52,14 +51,14 @@ final class CashRegisterConfigService extends BaseConfigService {
             ->with(["warehouse.branch", "item.brand"])
             ->where("company_id", $companyId)
             ->where("status", "active")
-            ->whereHas("warehouse", function ($query) use ($companyId, $branchIds) {
+            ->whereHas("warehouse", function($query) use ($companyId, $branchIds) {
 
                 $query->where("company_id", $companyId)
                     ->where("status", "active")
                     ->whereIn("branch_id", $branchIds);
 
             })
-            ->whereHas("item", function ($query) use ($companyId) {
+            ->whereHas("item", function($query) use ($companyId) {
 
                 $query->where("company_id", $companyId)
                     ->where("type", "product")
@@ -68,7 +67,7 @@ final class CashRegisterConfigService extends BaseConfigService {
             })
             ->orderBy("warehouse_id")
             ->get()
-            ->map(function (WarehouseItem $warehouseItem) {
+            ->map(function(WarehouseItem $warehouseItem) {
 
                 return [
                     "warehouse_id" => $warehouseItem->warehouse_id,

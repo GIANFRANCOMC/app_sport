@@ -4,24 +4,19 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\System\Catalogs;
 
-use App\Exports\System\Catalogs\Products\ProductImportTemplateExport;
-use App\Exports\System\Catalogs\Products\ProductListExport;
+use App\Exports\System\Catalogs\Products\{ProductImportTemplateExport, ProductListExport};
 use App\Helpers\System\{Utilities};
-use App\Http\Controllers\System\Base\BaseController;
-use App\Http\Requests\System\Catalogs\Products\ImportProductsRequest;
-use App\Http\Requests\System\Catalogs\Products\StoreProductRequest;
-use App\Http\Requests\System\Catalogs\Products\UpdateProductRequest;
-use App\Imports\System\Catalogs\Products\ProductBasicImport;
-use App\Models\System\Organizations\Company;
+use App\Http\Controllers\System\Base\{BaseController};
+use App\Http\Requests\System\Catalogs\Products\{ImportProductsRequest, StoreProductRequest, UpdateProductRequest};
+use App\Imports\System\Catalogs\Products\{ProductBasicImport};
+use App\Models\System\Organizations\{Company};
 use App\Services\System\Base\{InitParamsCacheInvalidationService};
-use App\Services\System\Catalogs\Products\ProductConfigService;
-use App\Services\System\Catalogs\Products\ProductService;
-use App\Services\System\Warehouses\StockManagement\StockManagementService;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
-use Illuminate\Validation\ValidationException;
-use Maatwebsite\Excel\Facades\Excel;
-use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use App\Services\System\Catalogs\Products\{ProductConfigService, ProductService};
+use App\Services\System\Warehouses\StockManagement\{StockManagementService};
+use Illuminate\Http\{JsonResponse, Request};
+use Illuminate\Validation\{ValidationException};
+use Maatwebsite\Excel\Facades\{Excel};
+use Symfony\Component\HttpFoundation\{BinaryFileResponse};
 
 class ProductController extends BaseController {
     /**
@@ -88,7 +83,7 @@ class ProductController extends BaseController {
                 $this->getCompanyId()
             );
 
-            if (! $warehouse) {
+            if(!$warehouse) {
 
                 return response()->json([
                     "bool" => false,
@@ -118,10 +113,11 @@ class ProductController extends BaseController {
                 "data" => ["imported" => $import->importedCount()],
             ]);
 
-        } catch (ValidationException $e) {
+        } catch(ValidationException $e) {
 
             throw $e;
-        } catch (\Throwable $e) {
+
+        } catch(\Throwable $e) {
 
             return response()->json([
                 "bool" => false,
@@ -153,7 +149,7 @@ class ProductController extends BaseController {
             $data = $this->prepareProductData($request);
             $item = ProductService::create($data, $this->getCompanyId(), $this->getUserId());
 
-            if (! Utilities::isDefined($item)) {
+            if(!Utilities::isDefined($item)) {
 
                 return $this->errorResponse("create_failed");
 
@@ -166,7 +162,7 @@ class ProductController extends BaseController {
 
             return $this->createdResponse($item, "created", "item");
 
-        } catch (\Exception $e) {
+        } catch(\Exception $e) {
 
             return $this->handleException($e, "create");
 
@@ -185,7 +181,7 @@ class ProductController extends BaseController {
 
             $item = ProductService::findByIdAndCompany($id, $this->getCompanyId(), null);
 
-            if (! Utilities::isDefined($item)) {
+            if(!Utilities::isDefined($item)) {
 
                 return $this->notFoundResponse();
 
@@ -194,7 +190,7 @@ class ProductController extends BaseController {
             $data = $this->prepareProductData($request);
             $item = ProductService::update($item, $data, $this->getUserId());
 
-            if (! Utilities::isDefined($item)) {
+            if(!Utilities::isDefined($item)) {
 
                 return $this->errorResponse("update_failed");
 
@@ -207,7 +203,7 @@ class ProductController extends BaseController {
 
             return $this->updatedResponse($item, "updated", "item");
 
-        } catch (\Exception $e) {
+        } catch(\Exception $e) {
 
             return $this->handleException($e, "update");
 

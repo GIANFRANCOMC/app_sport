@@ -5,16 +5,13 @@ declare(strict_types=1);
 namespace App\Http\Controllers\System\Devices;
 
 use App\Helpers\System\{Utilities};
-use App\Http\Controllers\System\Base\BaseController;
-use App\Http\Requests\System\Devices\BiometricDevices\StoreBiometricDeviceRequest;
-use App\Http\Requests\System\Devices\BiometricDevices\UpdateBiometricDeviceRequest;
-use App\Models\System\Devices\BiometricDeviceModel;
+use App\Http\Controllers\System\Base\{BaseController};
+use App\Http\Requests\System\Devices\BiometricDevices\{StoreBiometricDeviceRequest, UpdateBiometricDeviceRequest};
+use App\Models\System\Devices\{BiometricDeviceModel};
 use App\Services\System\Base\{InitParamsCacheInvalidationService};
 use App\Services\System\Customers\Tracking\{TrackingAttendanceBusinessService};
-use App\Services\System\Devices\BiometricDevices\BiometricDeviceConfigService;
-use App\Services\System\Devices\BiometricDevices\BiometricDeviceService;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
+use App\Services\System\Devices\BiometricDevices\{BiometricDeviceConfigService, BiometricDeviceService};
+use Illuminate\Http\{JsonResponse, Request};
 
 class BiometricDeviceController extends BaseController {
     /**
@@ -70,7 +67,7 @@ class BiometricDeviceController extends BaseController {
             $data = $this->prepareBiometricDeviceData($request);
             $device = BiometricDeviceService::create($data, $this->getCompanyId(), $this->getUserId());
 
-            if (! Utilities::isDefined($device)) {
+            if(!Utilities::isDefined($device)) {
 
                 return $this->errorResponse("create_failed");
 
@@ -83,7 +80,7 @@ class BiometricDeviceController extends BaseController {
 
             return $this->createdResponse($device, "created", "biometric_device");
 
-        } catch (\Exception $e) {
+        } catch(\Exception $e) {
 
             return $this->handleException($e, "create");
 
@@ -102,7 +99,7 @@ class BiometricDeviceController extends BaseController {
 
             $device = BiometricDeviceService::findByIdAndCompany($id, $this->getCompanyId(), null);
 
-            if (! Utilities::isDefined($device)) {
+            if(!Utilities::isDefined($device)) {
 
                 return $this->notFoundResponse();
 
@@ -111,7 +108,7 @@ class BiometricDeviceController extends BaseController {
             $data = $this->prepareBiometricDeviceData($request);
             $device = BiometricDeviceService::update($device, $data, $this->getUserId());
 
-            if (! Utilities::isDefined($device)) {
+            if(!Utilities::isDefined($device)) {
 
                 return $this->errorResponse("update_failed");
 
@@ -124,7 +121,7 @@ class BiometricDeviceController extends BaseController {
 
             return $this->updatedResponse($device, "updated", "biometric_device");
 
-        } catch (\Exception $e) {
+        } catch(\Exception $e) {
 
             return $this->handleException($e, "update");
 
@@ -135,9 +132,12 @@ class BiometricDeviceController extends BaseController {
     public function rotateCredentials(int $id): JsonResponse {
 
         try {
+
             $device = BiometricDeviceService::findByIdAndCompany($id, $this->getCompanyId(), null);
-            if (! $device) {
+            if(!$device) {
+
                 return $this->notFoundResponse();
+
             }
 
             return response()->json([
@@ -145,8 +145,11 @@ class BiometricDeviceController extends BaseController {
                 "msg" => "Credenciales rotadas correctamente. Guarda el secreto porque no volverá a mostrarse.",
                 "data" => BiometricDeviceService::rotateCredentials($device, $this->getUserId()),
             ]);
-        } catch (\Throwable $exception) {
+
+        } catch(\Throwable $exception) {
+
             return $this->handleException($exception, "update");
+
         }
 
     }
@@ -178,7 +181,7 @@ class BiometricDeviceController extends BaseController {
 
         $modelId = $request->input("biometric_device_model_id");
 
-        if (Utilities::isDefined($modelId)) {
+        if(Utilities::isDefined($modelId)) {
 
             return (int) $modelId;
 
@@ -186,7 +189,7 @@ class BiometricDeviceController extends BaseController {
 
         $modelName = $request->input("model");
 
-        if (! Utilities::isDefined($modelName)) {
+        if(!Utilities::isDefined($modelName)) {
 
             return null;
 
@@ -197,9 +200,9 @@ class BiometricDeviceController extends BaseController {
             ->where("status", "active")
             ->where("name", $modelName);
 
-        if (Utilities::isDefined($request->input("brand"))) {
+        if(Utilities::isDefined($request->input("brand"))) {
 
-            $query->whereHas("brand", fn ($brandQuery) => $brandQuery->where("name", $request->input("brand")));
+            $query->whereHas("brand", fn($brandQuery) => $brandQuery->where("name", $request->input("brand")));
 
         }
 

@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace App\Models\System\Devices;
 
-use App\Models\System\Organizations\Branch;
-use App\Models\System\Organizations\Company;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\System\Organizations\{Branch, Company};
+use Illuminate\Database\Eloquent\{Model};
 
 class BiometricDevice extends Model {
     protected $table = "biometric_devices";

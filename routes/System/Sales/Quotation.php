@@ -1,7 +1,7 @@
 <?php
 
-use App\Http\Controllers\System\Sales\QuotationController;
-use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\System\Sales\{QuotationController};
+use Illuminate\Support\Facades\{Route};
 
 $entity = "quotations";
 

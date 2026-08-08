@@ -2,9 +2,9 @@
 
 namespace App\Observers\System\Organizations;
 
-use App\Models\System\Organizations\RoleSubSection;
-use App\Services\System\Organizations\Companies\CompanySectionService;
-use App\Services\System\Organizations\Roles\RolePermissionService;
+use App\Models\System\Organizations\{RoleSubSection};
+use App\Services\System\Organizations\Companies\{CompanySectionService};
+use App\Services\System\Organizations\Roles\{RolePermissionService};
 
 class RoleSubSectionObserver {
     public function saved(RoleSubSection $permission): void {
@@ -23,8 +23,10 @@ class RoleSubSectionObserver {
 
         $role = $permission->role;
 
-        if (! $role) {
+        if(!$role) {
+
             return;
+
         }
 
         RolePermissionService::clearRoleCache((int) $role->company_id, (int) $role->id);
