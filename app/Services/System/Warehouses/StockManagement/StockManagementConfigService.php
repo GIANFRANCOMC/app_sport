@@ -4,16 +4,12 @@ declare(strict_types=1);
 
 namespace App\Services\System\Warehouses\StockManagement;
 
-use stdClass;
 use App\Models\System\Catalogs\Item;
-
-use App\Services\System\Base\{
-    BaseConfigService,
-    CompanyReferenceDataService
-};
+use App\Services\System\Base\BaseConfigService;
+use App\Services\System\Base\CompanyReferenceDataService;
+use stdClass;
 
 final class StockManagementConfigService extends BaseConfigService {
-
     protected const USER_SCOPED_CACHE = true;
 
     protected static function getCachePrefix(): string {
@@ -26,7 +22,7 @@ final class StockManagementConfigService extends BaseConfigService {
 
         return self::data([
             "warehouses" => self::data([
-                "records" => CompanyReferenceDataService::for($companyId, $userId)->stockWarehouses()
+                "records" => CompanyReferenceDataService::for($companyId, $userId)->stockWarehouses(),
             ]),
             "products" => self::data([
                 "records" => Item::query()
@@ -35,10 +31,9 @@ final class StockManagementConfigService extends BaseConfigService {
                     ->where("status", "active")
                     ->select(["id", "internal_code", "barcode", "name"])
                     ->orderBy("name")
-                    ->get()
-            ])
+                    ->get(),
+            ]),
         ]);
 
     }
-
 }

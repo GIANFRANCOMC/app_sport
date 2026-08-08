@@ -11,7 +11,6 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
 final class AttendanceMaintenanceService {
-
     public static function closeStaleCustomerAttendances(
         ?int $companyId = null,
         int $limit = 500,
@@ -21,28 +20,30 @@ final class AttendanceMaintenanceService {
         $summary = [
             "companies" => 0,
             "closed" => 0,
-            "skipped" => 0
+            "skipped" => 0,
         ];
 
         $companies = Company::query()
-            ->when($companyId, fn($query) => $query->whereKey($companyId))
+            ->when($companyId, fn ($query) => $query->whereKey($companyId))
             ->where("status", "active")
             ->get(["id"]);
 
-        foreach($companies as $company) {
+        foreach ($companies as $company) {
 
             $summary["companies"]++;
 
-            if(!self::isAutoCloseEnabled((int) $company->id) && !$force) {
+            if (! self::isAutoCloseEnabled((int) $company->id) && ! $force) {
 
                 $summary["skipped"]++;
+
                 continue;
 
             }
 
-            if(!self::canRunAutoCloseNow((int) $company->id) && !$force) {
+            if (! self::canRunAutoCloseNow((int) $company->id) && ! $force) {
 
                 $summary["skipped"]++;
+
                 continue;
 
             }
@@ -66,15 +67,15 @@ final class AttendanceMaintenanceService {
             "companies" => 0,
             "eligible" => 0,
             "deleted" => 0,
-            "dry_run" => $dryRun
+            "dry_run" => $dryRun,
         ];
 
         $companies = Company::query()
-            ->when($companyId, fn($query) => $query->whereKey($companyId))
+            ->when($companyId, fn ($query) => $query->whereKey($companyId))
             ->where("status", "active")
             ->get(["id"]);
 
-        foreach($companies as $company) {
+        foreach ($companies as $company) {
 
             $summary["companies"]++;
             $retentionMonths = max(4, (int) ($months ?? CompanySettingService::value(
@@ -88,9 +89,9 @@ final class AttendanceMaintenanceService {
             $query = Attendance::query()
                 ->where("company_id", (int) $company->id)
                 ->whereIn("status", ["finalized", "canceled", "inactive", "absent"])
-                ->where(function($query) use($cutoff) {
+                ->where(function ($query) use ($cutoff) {
                     $query->where("end_date", "<", $cutoff)
-                        ->orWhere(function($query) use($cutoff) {
+                        ->orWhere(function ($query) use ($cutoff) {
                             $query->whereNull("end_date")
                                 ->where("created_at", "<", $cutoff);
                         });
@@ -100,7 +101,7 @@ final class AttendanceMaintenanceService {
             $ids = $query->pluck("id");
             $summary["eligible"] += $ids->count();
 
-            if(!$dryRun && $ids->isNotEmpty()) {
+            if (! $dryRun && $ids->isNotEmpty()) {
 
                 $summary["deleted"] += Attendance::query()
                     ->whereIn("id", $ids)
@@ -116,7 +117,7 @@ final class AttendanceMaintenanceService {
 
     private static function closeCompanyAttendances(int $companyId, int $limit): int {
 
-        return DB::transaction(function() use($companyId, $limit) {
+        return DB::transaction(function () use ($companyId, $limit) {
 
             $maxActiveHours = max(1, (int) CompanySettingService::value(
                 $companyId,
@@ -130,7 +131,7 @@ final class AttendanceMaintenanceService {
             $attendances = Attendance::query()
                 ->where("company_id", $companyId)
                 ->where("status", "active")
-                ->where(function($query) use($todayStart, $expiredAt) {
+                ->where(function ($query) use ($todayStart, $expiredAt) {
                     $query->where("start_date", "<", $todayStart)
                         ->orWhere("start_date", "<=", $expiredAt);
                 })
@@ -139,11 +140,11 @@ final class AttendanceMaintenanceService {
                 ->limit($limit)
                 ->get();
 
-            foreach($attendances as $attendance) {
+            foreach ($attendances as $attendance) {
 
                 $closeAt = self::technicalCloseDate((string) $attendance->start_date, $companyId);
 
-                if($closeAt->greaterThan(now())) {
+                if ($closeAt->greaterThan(now())) {
 
                     $closeAt = now();
 
@@ -207,5 +208,4 @@ final class AttendanceMaintenanceService {
         return $closeAt->greaterThan($start) ? $closeAt : $start->copy()->addHours(20);
 
     }
-
 }

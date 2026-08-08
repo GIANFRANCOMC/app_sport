@@ -6,7 +6,9 @@ namespace App\Http\Controllers\Guest;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Guest\StoreBookComplaintRequest;
-use App\Models\Guest\{BookComplaint, Branch, IdentityDocumentType};
+use App\Models\Guest\BookComplaint;
+use App\Models\Guest\Branch;
+use App\Models\Guest\IdentityDocumentType;
 use App\Services\System\Tenancy\TenantStoragePath;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -17,29 +19,28 @@ use Jenssegers\Agent\Agent;
 use stdClass;
 
 final class BookComplaintController extends Controller {
-
     public function initParams(Request $request) {
 
         $initParams = new stdClass();
         $config = new stdClass();
 
-        if(in_array((string) $request->input("page"), ["main"], true)) {
+        if (in_array((string) $request->input("page"), ["main"], true)) {
             $config->bookComplaints = (object) [
                 "types" => BookComplaint::getTypes(),
-                "statuses" => BookComplaint::getStatuses()
+                "statuses" => BookComplaint::getStatuses(),
             ];
             $config->identityDocumentTypes = (object) [
                 "records" => IdentityDocumentType::query()
                     ->where("company_id", $request->get("company")->id)
                     ->whereIn("id", [1, 2, 4])
-                    ->get()
+                    ->get(),
             ];
             $config->branches = (object) [
                 "records" => Branch::query()
                     ->where("company_id", $request->get("company")->id)
                     ->where("status", "active")
                     ->orderBy("name")
-                    ->get(["id", "name", "address"])
+                    ->get(["id", "name", "address"]),
             ];
         }
 
@@ -59,8 +60,8 @@ final class BookComplaintController extends Controller {
             "meta" => [
                 "title" => "Libro de reclamaciones | {$company->commercial_name}",
                 "description" => "Registra o consulta una queja, reclamo o sugerencia enviada a {$company->commercial_name}.",
-                "image" => $company->combinationmark ?: $company->logotype ?: $company->logomark
-            ]
+                "image" => $company->combinationmark ?: $company->logotype ?: $company->logomark,
+            ],
         ]);
 
     }
@@ -75,17 +76,17 @@ final class BookComplaintController extends Controller {
             ->whereBetween("created_at", [Carbon::today()->startOfDay(), Carbon::today()->endOfDay()])
             ->count();
 
-        if($todaySubmissions >= (int) config('public_access.complaints.per_day')) {
+        if ($todaySubmissions >= (int) config("public_access.complaints.per_day")) {
             return response()->json([
                 "bool" => false,
-                "msg" => "Alcanzaste el límite diario de solicitudes desde este dispositivo."
+                "msg" => "Alcanzaste el límite diario de solicitudes desde este dispositivo.",
             ], 429);
         }
 
         $storedPaths = [];
 
         try {
-            $bookComplaint = DB::transaction(function() use($request, $company, $agent, &$storedPaths) {
+            $bookComplaint = DB::transaction(function () use ($request, $company, $agent, &$storedPaths) {
                 $payload = collect($request->validated())
                     ->except(["attachments", "cf-turnstile-response", "website"])
                     ->all();
@@ -101,7 +102,7 @@ final class BookComplaintController extends Controller {
                     "submitted_browser" => $agent->browser(),
                     "status" => "pending",
                     "created_at" => now(),
-                    "created_by" => null
+                    "created_by" => null,
                 ]);
 
                 DB::table("book_complaint_status_histories")->insert([
@@ -111,10 +112,10 @@ final class BookComplaintController extends Controller {
                     "previous_status" => null,
                     "new_status" => "pending",
                     "note" => "Solicitud recibida desde el canal público.",
-                    "changed_at" => now()
+                    "changed_at" => now(),
                 ]);
 
-                foreach($request->file("attachments", []) as $file) {
+                foreach ($request->file("attachments", []) as $file) {
                     $storedName = Str::uuid()->toString().".".$file->guessExtension();
                     $path = $file->storeAs(
                         TenantStoragePath::for("complaints/{$record->id}"),
@@ -130,13 +131,13 @@ final class BookComplaintController extends Controller {
                         "file_path" => $path,
                         "mime_type" => mb_substr((string) $file->getMimeType(), 0, 100),
                         "file_size" => (int) $file->getSize(),
-                        "created_at" => now()
+                        "created_at" => now(),
                     ]);
                 }
 
                 return $record;
             });
-        }catch(\Throwable $exception) {
+        } catch (\Throwable $exception) {
             Storage::disk("local")->delete($storedPaths);
 
             throw $exception;
@@ -145,7 +146,7 @@ final class BookComplaintController extends Controller {
         return response()->json([
             "bool" => true,
             "msg" => "Tu solicitud fue registrada correctamente.",
-            "tracking_code" => $bookComplaint->tracking_code
+            "tracking_code" => $bookComplaint->tracking_code,
         ], 201);
 
     }
@@ -158,10 +159,10 @@ final class BookComplaintController extends Controller {
             ->where("tracking_code", Str::upper($trackingCode))
             ->first();
 
-        if(!$complaint) {
+        if (! $complaint) {
             return response()->json([
                 "bool" => false,
-                "msg" => "No encontramos una solicitud con ese código. Revisa que lo hayas escrito correctamente."
+                "msg" => "No encontramos una solicitud con ese código. Revisa que lo hayas escrito correctamente.",
             ], 404);
         }
 
@@ -174,8 +175,8 @@ final class BookComplaintController extends Controller {
                 "status" => $complaint->formatted_status,
                 "public_response" => $complaint->public_response,
                 "responded_at" => $complaint->responded_at,
-                "created_at" => $complaint->created_at
-            ]
+                "created_at" => $complaint->created_at,
+            ],
         ]);
 
     }
@@ -184,7 +185,7 @@ final class BookComplaintController extends Controller {
 
         do {
             $code = Str::upper(Str::random(12));
-        }while(BookComplaint::query()
+        } while (BookComplaint::query()
             ->where("company_id", $companyId)
             ->where("tracking_code", $code)
             ->exists());
@@ -192,5 +193,4 @@ final class BookComplaintController extends Controller {
         return $code;
 
     }
-
 }

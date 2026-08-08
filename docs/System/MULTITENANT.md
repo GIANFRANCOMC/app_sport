@@ -82,9 +82,18 @@ PLATFORM_SESSION_COOKIE=gympe_platform_session
 Preparar landlord:
 
 ```bash
-php artisan migrate --database=landlord --path=database/migrations/landlord --force
-php artisan platform:admin admin@mi-saas.test --name="Administrador SaaS"
+php artisan platform:install
 ```
+
+En desarrollo, si no se sobrescriben las variables `PLATFORM_ADMIN_*`, el acceso inicial es:
+
+```text
+URL: http://app.gympe.test/login
+Usuario: admin@app.gympe.test
+Contraseña: Admin12345!
+```
+
+En producción `PLATFORM_ADMIN_PASSWORD` es obligatoria y no puede conservar la clave local predeterminada. `platform:install` se detiene si detecta esa credencial insegura. Para rotar la contraseña y revocar sesiones existentes, usar `platform:admin`.
 
 Crear un tenant local:
 
@@ -116,6 +125,10 @@ php artisan tenant:create cliente \
 ## Operación
 
 El panel `app.<TENANCY_BASE_DOMAIN>` permite crear clientes, activar, inactivar o suspender tenants, administrar sus módulos y publicar avisos. La activación de módulos actualiza `companies_sub_sections` dentro de la base aislada del cliente e invalida su caché de navegación.
+
+Las rutas del panel son exclusivamente inglesas y están aisladas por dominio: `/login`, `/tenants`, `/tenants/{tenant}/status`, `/tenants/{tenant}/modules` y `/tenants/{tenant}/announcements`. El fallback del dominio `app` impide que una URL del panel termine resolviendo una ruta tenant.
+
+La autenticación usa `platform_users`, cookie propia, regeneración de sesión, versión revocable, limitación por correo e IP y auditoría de accesos correctos y fallidos. No consulta ni comparte usuarios de ninguna base tenant.
 
 ```bash
 php artisan tenant:list

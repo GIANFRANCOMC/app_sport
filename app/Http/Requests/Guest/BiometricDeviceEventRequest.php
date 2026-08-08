@@ -8,7 +8,6 @@ use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
 final class BiometricDeviceEventRequest extends FormRequest {
-
     public function authorize(): bool {
 
         return true;
@@ -23,9 +22,8 @@ final class BiometricDeviceEventRequest extends FormRequest {
             "subject_type" => ["required", Rule::in(["customer", "user"])],
             "device_user_id" => ["required", "integer", "min:1"],
             "occurred_at" => ["required", "date"],
-            "payload" => ["nullable", "array"]
+            "payload" => ["nullable", "array"],
         ];
 
     }
-
 }

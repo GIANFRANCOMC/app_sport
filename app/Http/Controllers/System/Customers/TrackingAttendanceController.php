@@ -4,26 +4,27 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\System\Customers;
 
-use App\Http\Controllers\System\Base\BaseController;
 use App\Helpers\System\{Utilities};
-use Illuminate\Http\{JsonResponse, Request, Response};
+use App\Http\Controllers\System\Base\BaseController;
+use App\Http\Requests\System\Customers\TrackingAttendances\CancelTrackingAttendanceRequest;
+use App\Http\Requests\System\Customers\TrackingAttendances\CheckoutTrackingAttendanceRequest;
+use App\Http\Requests\System\Customers\TrackingAttendances\ProcessTrackingAttendanceBatchRequest;
+use App\Http\Requests\System\Customers\TrackingAttendances\ReviewAttendanceCorrectionRequest;
+use App\Http\Requests\System\Customers\TrackingAttendances\StoreAttendanceCorrectionRequest;
+use App\Http\Requests\System\Customers\TrackingAttendances\StoreTrackingAttendanceRequest;
+use App\Models\System\Customers\Attendance;
+use App\Models\System\Customers\AttendanceCorrection;
+use App\Services\System\Customers\Tracking\TrackingAttendanceBusinessService;
+use App\Services\System\Customers\Tracking\TrackingAttendanceConfigService;
+use App\Services\System\Customers\Tracking\TrackingAttendanceService;
+use App\Services\System\Organizations\AccessScopeService;
 use Carbon\Carbon;
 use DomainException;
-
-use App\Http\Requests\System\Customers\TrackingAttendances\{
-    CancelTrackingAttendanceRequest,
-    CheckoutTrackingAttendanceRequest,
-    ProcessTrackingAttendanceBatchRequest,
-    ReviewAttendanceCorrectionRequest,
-    StoreAttendanceCorrectionRequest,
-    StoreTrackingAttendanceRequest
-};
-use App\Services\System\Customers\Tracking\{TrackingAttendanceConfigService, TrackingAttendanceService, TrackingAttendanceBusinessService};
-use App\Models\System\Customers\{Attendance, AttendanceCorrection};
-use App\Services\System\Organizations\AccessScopeService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 
 class TrackingAttendanceController extends BaseController {
-
     /**
      * Translation namespace for tracking attendance module
      */
@@ -32,12 +33,12 @@ class TrackingAttendanceController extends BaseController {
     /**
      * Get initialization parameters for the module
      *
-     * @param Request $request
      * @return \stdClass
      */
     public function initParams(Request $request) {
 
         $page = $this->getPage($request);
+
         return TrackingAttendanceConfigService::getInitParams($this->getCompanyId(), $page, $this->getUserId());
 
     }
@@ -45,7 +46,6 @@ class TrackingAttendanceController extends BaseController {
     /**
      * Get paginated list of attendances with filters
      *
-     * @param Request $request
      * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator
      */
     public function list(Request $request) {
@@ -69,10 +69,10 @@ class TrackingAttendanceController extends BaseController {
                 $this->filters($request),
                 AccessScopeService::allowedIds($this->getAuthUser(), AccessScopeService::BRANCH)
             );
-        }catch(DomainException $exception) {
+        } catch (DomainException $exception) {
             return response()->json([
                 "bool" => false,
-                "msg" => $exception->getMessage()
+                "msg" => $exception->getMessage(),
             ], 422);
         }
         $handle = fopen("php://temp", "r+");
@@ -85,10 +85,10 @@ class TrackingAttendanceController extends BaseController {
             "Estado",
             "Origen",
             "Dispositivo biométrico",
-            "Observación"
+            "Observación",
         ], ";");
 
-        foreach($records as $record) {
+        foreach ($records as $record) {
             fputcsv($handle, [
                 $record->start_date,
                 $record->end_date,
@@ -97,7 +97,7 @@ class TrackingAttendanceController extends BaseController {
                 $record->formatted_status,
                 $record->type,
                 $record->biometricDevice?->name,
-                $record->observation
+                $record->observation,
             ], ";");
         }
 
@@ -107,7 +107,7 @@ class TrackingAttendanceController extends BaseController {
 
         return response("\xEF\xBB\xBF".$csv, 200, [
             "Content-Type" => "text/csv; charset=UTF-8",
-            "Content-Disposition" => "attachment; filename=asistencias-clientes-".now()->format("Ymd-His").".csv"
+            "Content-Disposition" => "attachment; filename=asistencias-clientes-".now()->format("Ymd-His").".csv",
         ]);
 
     }
@@ -123,14 +123,13 @@ class TrackingAttendanceController extends BaseController {
 
     }
 
-
     public function store(StoreTrackingAttendanceRequest $request, TrackingAttendanceBusinessService $businessService): JsonResponse {
 
         try {
 
             $data = $request->validated();
 
-            if(!AccessScopeService::canAccess(
+            if (! AccessScopeService::canAccess(
                 $this->getAuthUser(),
                 AccessScopeService::BRANCH,
                 (int) $data["branch_id"]
@@ -148,18 +147,18 @@ class TrackingAttendanceController extends BaseController {
                 : now();
 
             $result = $businessService->validateAndCreateAttendance([
-                "company_id"  => $this->getCompanyId(),
-                "branch_id"   => (int) $data["branch_id"],
+                "company_id" => $this->getCompanyId(),
+                "branch_id" => (int) $data["branch_id"],
                 "customer_id" => (int) $data["customer_id"],
-                "start_date"  => $startDate,
-                "end_date"    => $endDate,
+                "start_date" => $startDate,
+                "end_date" => $endDate,
                 "observation" => $data["observation"] ?? null,
-                "user_id"     => $this->getUserId(),
-                "type"        => "manual_form",
-                "action"      => "automatic"
+                "user_id" => $this->getUserId(),
+                "type" => "manual_form",
+                "action" => "automatic",
             ]);
 
-            if($result["bool"]) {
+            if ($result["bool"]) {
 
                 return $this->successResponse(
                     ["attendances" => [$result]],
@@ -171,18 +170,16 @@ class TrackingAttendanceController extends BaseController {
             return response()->json([
                 "bool" => false,
                 "msg" => $result["msg"] ?? "No fue posible registrar la asistencia.",
-                "attendances" => [$result]
+                "attendances" => [$result],
             ], 422);
 
-        }catch(\Exception $e) {
+        } catch (\Exception $e) {
 
             return $this->handleException($e, "create");
 
         }
 
     }
-
-
 
     public function update(CheckoutTrackingAttendanceRequest $request, int $id, TrackingAttendanceBusinessService $businessService): JsonResponse {
 
@@ -193,8 +190,8 @@ class TrackingAttendanceController extends BaseController {
                 ->where("status", "active")
                 ->find($id);
 
-            if(!$attendance
-                || !AccessScopeService::canAccess(
+            if (! $attendance
+                || ! AccessScopeService::canAccess(
                     $this->getAuthUser(),
                     AccessScopeService::BRANCH,
                     (int) $attendance->branch_id
@@ -211,18 +208,18 @@ class TrackingAttendanceController extends BaseController {
                 : now();
 
             $result = $businessService->validateAndCreateAttendance([
-                "company_id"  => $this->getCompanyId(),
+                "company_id" => $this->getCompanyId(),
                 "attendance_id" => (int) $attendance->id,
-                "branch_id"   => (int) $attendance->branch_id,
+                "branch_id" => (int) $attendance->branch_id,
                 "customer_id" => (int) $attendance->customer_id,
-                "start_date"  => null,
-                "end_date"    => $endDate,
+                "start_date" => null,
+                "end_date" => $endDate,
                 "observation" => null,
-                "user_id"     => $this->getUserId(),
-                "action"      => "checkout"
+                "user_id" => $this->getUserId(),
+                "action" => "checkout",
             ]);
 
-            if($result["bool"]) {
+            if ($result["bool"]) {
 
                 return $this->successResponse(
                     ["attendances" => [$result]],
@@ -234,10 +231,10 @@ class TrackingAttendanceController extends BaseController {
             return response()->json([
                 "bool" => false,
                 "msg" => $result["msg"] ?? "No fue posible registrar la salida.",
-                "attendances" => [$result]
+                "attendances" => [$result],
             ], 422);
 
-        }catch(\Exception $e) {
+        } catch (\Exception $e) {
 
             return $this->handleException($e, "update");
 
@@ -248,9 +245,7 @@ class TrackingAttendanceController extends BaseController {
     /**
      * Cancel the specified attendance
      *
-     * @param CancelTrackingAttendanceRequest $request
-     * @param int $id Attendance ID
-     * @return JsonResponse
+     * @param  int  $id Attendance ID
      */
     public function cancel(CancelTrackingAttendanceRequest $request, int $id): JsonResponse {
 
@@ -260,8 +255,8 @@ class TrackingAttendanceController extends BaseController {
                 ->where("company_id", $this->getCompanyId())
                 ->find($id);
 
-            if(!$attendance
-                || !AccessScopeService::canAccess(
+            if (! $attendance
+                || ! AccessScopeService::canAccess(
                     $this->getAuthUser(),
                     AccessScopeService::BRANCH,
                     (int) $attendance->branch_id
@@ -275,7 +270,7 @@ class TrackingAttendanceController extends BaseController {
 
             return $this->updatedResponse($attendance, "canceled", "attendance");
 
-        }catch(\Exception $e) {
+        } catch (\Exception $e) {
 
             return $this->handleException($e, "cancel");
 
@@ -285,15 +280,12 @@ class TrackingAttendanceController extends BaseController {
 
     /**
      * Get translation namespace for tracking attendance module
-     *
-     * @return string
      */
     protected function getTranslationNamespace(): string {
 
         return self::TRANSLATION_NAMESPACE;
 
     }
-
 
     public function requestCorrection(StoreAttendanceCorrectionRequest $request, int $id): JsonResponse {
 
@@ -303,8 +295,8 @@ class TrackingAttendanceController extends BaseController {
                 ->where("company_id", $this->getCompanyId())
                 ->find($id);
 
-            if(!$attendance
-                || !AccessScopeService::canAccess($this->getAuthUser(), AccessScopeService::BRANCH, (int) $attendance->branch_id)) {
+            if (! $attendance
+                || ! AccessScopeService::canAccess($this->getAuthUser(), AccessScopeService::BRANCH, (int) $attendance->branch_id)) {
 
                 return $this->notFoundResponse();
 
@@ -318,7 +310,7 @@ class TrackingAttendanceController extends BaseController {
 
             return $this->createdResponse($correction, "created", "attendanceCorrection");
 
-        }catch(\Exception $e) {
+        } catch (\Exception $e) {
 
             return $this->handleException($e, "create");
 
@@ -335,9 +327,9 @@ class TrackingAttendanceController extends BaseController {
                 ->with("attendance")
                 ->find($id);
 
-            if(!$correction
-                || !$correction->attendance
-                || !AccessScopeService::canAccess($this->getAuthUser(), AccessScopeService::BRANCH, (int) $correction->attendance->branch_id)) {
+            if (! $correction
+                || ! $correction->attendance
+                || ! AccessScopeService::canAccess($this->getAuthUser(), AccessScopeService::BRANCH, (int) $correction->attendance->branch_id)) {
 
                 return $this->notFoundResponse();
 
@@ -352,7 +344,7 @@ class TrackingAttendanceController extends BaseController {
 
             return $this->updatedResponse($correction, "updated", "attendanceCorrection");
 
-        }catch(\Exception $e) {
+        } catch (\Exception $e) {
 
             return $this->handleException($e, "update");
 
@@ -366,7 +358,7 @@ class TrackingAttendanceController extends BaseController {
 
             return $this->processBatch($request->validated(), "qr_camera", $businessService);
 
-        }catch(\Exception $e) {
+        } catch (\Exception $e) {
 
             return $this->handleException($e, "create");
 
@@ -380,7 +372,7 @@ class TrackingAttendanceController extends BaseController {
 
             return $this->processBatch($request->validated(), "qr_scanner", $businessService);
 
-        }catch(\Exception $e) {
+        } catch (\Exception $e) {
 
             return $this->handleException($e, "create");
 
@@ -396,7 +388,7 @@ class TrackingAttendanceController extends BaseController {
 
         $branchId = (int) $data["branch_id"];
 
-        if(!AccessScopeService::canAccess($this->getAuthUser(), AccessScopeService::BRANCH, $branchId)) {
+        if (! AccessScopeService::canAccess($this->getAuthUser(), AccessScopeService::BRANCH, $branchId)) {
 
             return $this->errorResponse("unauthorized", [], 403);
 
@@ -409,7 +401,7 @@ class TrackingAttendanceController extends BaseController {
             ? Carbon::parse(str_replace("T", " ", $data["end_date"]))
             : now();
 
-        $attendances = collect($data["customers"])->map(function(array $customer) use(
+        $attendances = collect($data["customers"])->map(function (array $customer) use (
             $businessService,
             $branchId,
             $startDate,
@@ -429,12 +421,12 @@ class TrackingAttendanceController extends BaseController {
                 "observation" => $data["observation"] ?? null,
                 "user_id" => $this->getUserId(),
                 "type" => $type,
-                "action" => "automatic"
+                "action" => "automatic",
             ]);
 
         });
 
-        if($attendances->contains("bool", true)) {
+        if ($attendances->contains("bool", true)) {
 
             return $this->successResponse(["attendances" => $attendances->all()], "created");
 
@@ -449,5 +441,4 @@ class TrackingAttendanceController extends BaseController {
         return $request->only(["branch_id", "customer_id", "status", "start_date", "end_date"]);
 
     }
-
 }

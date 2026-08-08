@@ -5,14 +5,13 @@ declare(strict_types=1);
 namespace App\Http\Controllers\System\Essentials;
 
 use App\Http\Controllers\System\Base\BaseController;
-use Illuminate\Http\{JsonResponse, Request};
-use stdClass;
-
 use App\Http\Requests\System\Essentials\Home\{UpdateHomePreferenceRequest};
 use App\Models\System\Organizations\{UserPreference};
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use stdClass;
 
 class HomeController extends BaseController {
-
     /**
      * Translation namespace for home module
      */
@@ -21,23 +20,22 @@ class HomeController extends BaseController {
     /**
      * Get initialization parameters for the module
      *
-     * @param Request $request
      * @return \stdClass
      */
     public function initParams(Request $request) {
 
         $initParams = new stdClass();
-        $config     = new stdClass();
-        $page       = $this->getPage($request);
+        $config = new stdClass();
+        $page = $this->getPage($request);
 
-        if(in_array($page, ["main"])) {
+        if (in_array($page, ["main"])) {
 
             //
 
         }
 
         $initParams->config = $config;
-        $initParams->bool   = true;
+        $initParams->bool = true;
 
         return $initParams;
 
@@ -56,10 +54,6 @@ class HomeController extends BaseController {
 
     /**
      * Update user preferences
-     *
-     * @param UpdateHomePreferenceRequest $request
-     * @param int $id
-     * @return JsonResponse
      */
     public function update(UpdateHomePreferenceRequest $request, int $id): JsonResponse {
 
@@ -69,19 +63,19 @@ class HomeController extends BaseController {
             $validated = $request->validated();
 
             $data = [
-                "show_actions"        => $validated["show_actions"],
+                "show_actions" => $validated["show_actions"],
                 "show_only_favorites" => $validated["show_only_favorites"],
-                "show_descriptions"   => $validated["show_descriptions"],
-                "records"             => []
+                "show_descriptions" => $validated["show_descriptions"],
+                "records" => [],
             ];
 
-            if($id > 0) {
+            if ($id > 0) {
 
                 $record = ["sub_section_id" => $id];
 
-                foreach(["is_favorite"] as $field) {
+                foreach (["is_favorite"] as $field) {
 
-                    if(array_key_exists($field, $validated)) {
+                    if (array_key_exists($field, $validated)) {
 
                         $record[$field] = $validated[$field];
 
@@ -95,7 +89,7 @@ class HomeController extends BaseController {
 
             $updateItems = UserPreference::updateItems($user->id, "config_companies_sub_sections", $data);
 
-            if($updateItems["bool"]) {
+            if ($updateItems["bool"]) {
 
                 $user->unsetRelation("preferences");
 
@@ -105,7 +99,7 @@ class HomeController extends BaseController {
 
             return $this->errorResponse("update_failed");
 
-        }catch(\Exception $e) {
+        } catch (\Exception $e) {
 
             return $this->handleException($e, "update");
 
@@ -115,13 +109,10 @@ class HomeController extends BaseController {
 
     /**
      * Get translation namespace for home module
-     *
-     * @return string
      */
     protected function getTranslationNamespace(): string {
 
         return self::TRANSLATION_NAMESPACE;
 
     }
-
 }

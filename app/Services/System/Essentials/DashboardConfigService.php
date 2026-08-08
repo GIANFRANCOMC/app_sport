@@ -4,12 +4,10 @@ declare(strict_types=1);
 
 namespace App\Services\System\Essentials;
 
+use App\Services\System\Base\BaseConfigService;
 use stdClass;
 
-use App\Services\System\Base\BaseConfigService;
-
 final class DashboardConfigService extends BaseConfigService {
-
     protected static function getCachePrefix(): string {
 
         return "dashboard";
@@ -21,5 +19,4 @@ final class DashboardConfigService extends BaseConfigService {
         return self::data();
 
     }
-
 }

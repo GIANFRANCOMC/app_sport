@@ -8,7 +8,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 final class PurchasePayableInstallment extends Model {
-
     protected $table = "purchase_payable_installments";
 
     protected $fillable = [
@@ -23,14 +22,14 @@ final class PurchasePayableInstallment extends Model {
         "created_at",
         "created_by",
         "updated_at",
-        "updated_by"
+        "updated_by",
     ];
 
     protected $casts = [
         "due_date" => "date:Y-m-d",
         "amount" => "App\\Casts\\System\\ConfigurableDecimal",
         "paid_amount" => "App\\Casts\\System\\ConfigurableDecimal",
-        "pending_amount" => "App\\Casts\\System\\ConfigurableDecimal"
+        "pending_amount" => "App\\Casts\\System\\ConfigurableDecimal",
     ];
 
     public function accountPayable(): BelongsTo {
@@ -38,5 +37,4 @@ final class PurchasePayableInstallment extends Model {
         return $this->belongsTo(PurchaseAccountPayable::class, "purchase_account_payable_id");
 
     }
-
 }

@@ -43,4 +43,3 @@ return [
     "exception_retrieve" => "Error al obtener el cliente: :message",
     "exception_list" => "Error al obtener la lista de clientes: :message",
 ];
-

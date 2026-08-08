@@ -3,15 +3,13 @@
 namespace App\Http\Controllers\Guest;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Http\Requests\Guest\PublicAttendanceRequest;
-use stdClass;
-
 use App\Models\Guest\Branch;
 use App\Services\System\Customers\Tracking\TrackingAttendanceBusinessService;
+use Illuminate\Http\Request;
+use stdClass;
 
 class TrackingAttendanceController extends Controller {
-
     public function initParams(Request $request) {
 
         $initParams = new stdClass();
@@ -38,10 +36,10 @@ class TrackingAttendanceController extends Controller {
 
         abort_unless($record, 404, "La sucursal no está disponible.");
 
-        $request->session()->put('_public_attendance_access', [
-            'company_id' => (int) $company->id,
-            'branch_id' => (int) $record->id,
-            'expires_at' => (int) $request->query('expires', now()->addMinutes(15)->timestamp)
+        $request->session()->put("_public_attendance_access", [
+            "company_id" => (int) $company->id,
+            "branch_id" => (int) $record->id,
+            "expires_at" => (int) $request->query("expires", now()->addMinutes(15)->timestamp),
         ]);
 
         return view("Guest/general/tracking_attendances/main", [
@@ -52,13 +50,13 @@ class TrackingAttendanceController extends Controller {
                 "branch_id" => (int) $record->id,
                 "branch_name" => $record->name,
                 "branch_address" => $record->address,
-                "expires_at" => (int) $request->query('expires', now()->addMinutes(15)->timestamp)
+                "expires_at" => (int) $request->query("expires", now()->addMinutes(15)->timestamp),
             ],
             "meta" => [
                 "title" => "Asistencia pública | {$company->commercial_name}",
                 "description" => "Registro público de asistencia para la sucursal {$record->name}.",
-                "image" => $company->combinationmark ?: $company->logotype ?: $company->logomark
-            ]
+                "image" => $company->combinationmark ?: $company->logotype ?: $company->logomark,
+            ],
         ]);
 
     }
@@ -68,22 +66,22 @@ class TrackingAttendanceController extends Controller {
         $company = $request->get("company");
 
         $startDate = now();
-        $endDate   = now();
+        $endDate = now();
 
         $attendances = collect();
 
-        foreach($request->validated("customers") as $customerRequest) {
+        foreach ($request->validated("customers") as $customerRequest) {
 
             $result = $attendanceService->validateAndCreateAttendance([
-                "company_id"  => $company->id,
-                "branch_id"   => $request->branch_id,
+                "company_id" => $company->id,
+                "branch_id" => $request->branch_id,
                 "customer_id" => $customerRequest["customer_id"],
-                "start_date"  => $startDate,
-                "end_date"    => $endDate,
+                "start_date" => $startDate,
+                "end_date" => $endDate,
                 "observation" => null,
-                "user_id"     => null,
-                "type"        => "qr_public",
-                "action"      => "automatic"
+                "user_id" => null,
+                "type" => "qr_public",
+                "action" => "automatic",
             ]);
 
             $attendances->push($result);
@@ -91,10 +89,9 @@ class TrackingAttendanceController extends Controller {
         }
 
         $bool = count($attendances->where("bool", true)) > 0;
-        $msg  = $bool ? "Asistencias creadas correctamente." : "No se han podido crear las asistencias.";
+        $msg = $bool ? "Asistencias creadas correctamente." : "No se han podido crear las asistencias.";
 
         return response()->json(["bool" => $bool, "msg" => $msg, "attendances" => $attendances], 200);
 
     }
-
 }

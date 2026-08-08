@@ -3,22 +3,24 @@
 namespace App\Models\System\Assets;
 
 use App\Helpers\System\Utilities;
-use Illuminate\Database\Eloquent\Model;
-
-use App\Models\System\Organizations\{User};
 use App\Models\System\General\{Currency};
 use App\Models\System\Organizations\{Branch};
+use App\Models\System\Organizations\{User};
+use Illuminate\Database\Eloquent\Model;
 
 class AssetAssignment extends Model {
+    protected $table = "asset_assignments";
 
-    protected $table               = "asset_assignments";
-    protected $primaryKey          = "id";
-    public $incrementing           = true;
-    public $timestamps             = true;
+    protected $primaryKey = "id";
+
+    public $incrementing = true;
+
+    public $timestamps = true;
+
     public static $snakeAttributes = true;
 
     protected $appends = [
-        "formatted_status"
+        "formatted_status",
     ];
 
     protected $fillable = [
@@ -35,7 +37,7 @@ class AssetAssignment extends Model {
         "created_at",
         "created_by",
         "updated_at",
-        "updated_by"
+        "updated_by",
     ];
 
     // Appends
@@ -51,7 +53,7 @@ class AssetAssignment extends Model {
         $statuses = [
             ["code" => "active", "label" => "Disponible"],
             ["code" => "maintenance", "label" => "En mantenimiento"],
-            ["code" => "retired", "label" => "Retirado"]
+            ["code" => "retired", "label" => "Retirado"],
         ];
 
         return Utilities::getValues($statuses, $type, $code);
@@ -82,5 +84,4 @@ class AssetAssignment extends Model {
         return $this->belongsTo(Currency::class, "currency_id", "id");
 
     }
-
 }

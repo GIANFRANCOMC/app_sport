@@ -4,49 +4,46 @@ declare(strict_types=1);
 
 namespace App\Services\System\Purchases;
 
+use App\Helpers\System\Utilities;
+use App\Models\System\Catalogs\Item;
+use App\Models\System\Purchases\PurchaseHeader;
+use App\Models\System\Purchases\PurchaseItem;
+use App\Models\System\Purchases\PurchasePayment;
+use App\Models\System\Purchases\PurchaseReceipt;
+use App\Models\System\Purchases\PurchaseReceiptItem;
+use App\Models\System\Purchases\PurchaseTax;
+use App\Models\System\Purchases\Supplier;
+use App\Services\System\Finance\CommercialCreditAccountService;
+use App\Services\System\Finance\CommercialDocumentSettlementService;
+use App\Services\System\Organizations\Companies\CompanySettingService;
+use App\Services\System\Warehouses\Inventory\InventoryMovementService;
+use App\Services\System\Warehouses\StockManagement\StockManagementService;
 use DomainException;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 
-use App\Helpers\System\Utilities;
-use App\Models\System\Catalogs\Item;
-use App\Models\System\Purchases\{
-    PurchaseHeader,
-    PurchaseItem,
-    PurchasePayment,
-    PurchaseReceipt,
-    PurchaseReceiptItem,
-    PurchaseTax,
-    Supplier
-};
-use App\Services\System\Finance\{CommercialCreditAccountService, CommercialDocumentSettlementService};
-use App\Services\System\Warehouses\Inventory\InventoryMovementService;
-use App\Services\System\Organizations\Companies\CompanySettingService;
-use App\Services\System\Warehouses\StockManagement\StockManagementService;
-
 final class PurchaseService {
-
     private static function allocateExpenses(array $details, array $expenses, int $companyId): array {
 
         $allocations = collect($details)
-            ->mapWithKeys(fn($detail) => [(int) $detail["item_id"] => 0.0])
+            ->mapWithKeys(fn ($detail) => [(int) $detail["item_id"] => 0.0])
             ->all();
 
-        foreach($expenses as $expense) {
+        foreach ($expenses as $expense) {
 
             $amount = Utilities::round((float) ($expense["amount"] ?? 0), null, $companyId);
-            if($amount <= 0) {
+            if ($amount <= 0) {
 
                 continue;
 
             }
 
             $method = (string) ($expense["allocation_method"] ?? "value");
-            $weights = collect($details)->mapWithKeys(function($detail) use($method) {
+            $weights = collect($details)->mapWithKeys(function ($detail) use ($method) {
 
-                $weight = match($method) {
+                $weight = match ($method) {
                     "quantity" => (float) $detail["quantity"],
                     "equal" => 1.0,
                     default => (float) $detail["quantity"] * (float) $detail["unit_cost"]
@@ -57,15 +54,14 @@ final class PurchaseService {
             });
             $denominator = (float) $weights->sum();
 
-            if($denominator <= 0) {
+            if ($denominator <= 0) {
 
                 throw new DomainException("No se pudo distribuir uno de los gastos de compra.");
-
             }
 
             $distributed = 0.0;
             $lastItemId = (int) $weights->keys()->last();
-            foreach($weights as $itemId => $weight) {
+            foreach ($weights as $itemId => $weight) {
 
                 $allocated = (int) $itemId === $lastItemId
                     ? Utilities::round($amount - $distributed, null, $companyId)
@@ -85,9 +81,9 @@ final class PurchaseService {
 
         do {
 
-            $reference = "COM-" . strtoupper(Str::random(10));
+            $reference = "COM-".strtoupper(Str::random(10));
 
-        }while(PurchaseHeader::query()
+        } while (PurchaseHeader::query()
             ->where("company_id", $companyId)
             ->where("reference", $reference)
             ->exists());
@@ -106,36 +102,34 @@ final class PurchaseService {
                 "currency:id,code,sign",
                 "items.item:id,internal_code,barcode,name",
                 "taxes",
-                "payments"
+                "payments",
             ]);
 
         $warehouseIds = $userId === null
             ? null
             : \App\Services\System\Base\CompanyReferenceDataService::for($companyId, $userId)->allowedWarehouseIds();
 
-        if($warehouseIds !== null) {
+        if ($warehouseIds !== null) {
             $query->whereIn("warehouse_id", $warehouseIds);
         }
 
         $word = trim((string) ($filters["word"] ?? ""));
         $hasDocumentSeriesColumn = Schema::hasColumn("purchase_headers", "document_series");
 
-        if($word !== "") {
+        if ($word !== "") {
 
-            $query->where(function($query) use($word, $hasDocumentSeriesColumn) {
+            $query->where(function ($query) use ($word, $hasDocumentSeriesColumn) {
 
                 $query->where("document_number", "like", "%{$word}%")
-                    ->orWhereHas("supplier", fn($query) =>
-                        $query->where("name", "like", "%{$word}%")
-                            ->orWhere("document_number", "like", "%{$word}%")
+                    ->orWhereHas("supplier", fn ($query) => $query->where("name", "like", "%{$word}%")
+                        ->orWhere("document_number", "like", "%{$word}%")
                     )
-                    ->orWhereHas("items.item", fn($query) =>
-                        $query->where("name", "like", "%{$word}%")
-                            ->orWhere("internal_code", "like", "%{$word}%")
-                            ->orWhere("barcode", "like", "%{$word}%")
+                    ->orWhereHas("items.item", fn ($query) => $query->where("name", "like", "%{$word}%")
+                        ->orWhere("internal_code", "like", "%{$word}%")
+                        ->orWhere("barcode", "like", "%{$word}%")
                     );
 
-                if($hasDocumentSeriesColumn) {
+                if ($hasDocumentSeriesColumn) {
 
                     $query->orWhere("document_series", "like", "%{$word}%");
 
@@ -145,7 +139,7 @@ final class PurchaseService {
 
         }
 
-        if(!empty($filters["status"])) {
+        if (! empty($filters["status"])) {
 
             $query->where("status", $filters["status"]);
 
@@ -161,7 +155,7 @@ final class PurchaseService {
         array $data
     ): PurchaseHeader {
 
-        return DB::transaction(function() use($companyId, $userId, $data) {
+        return DB::transaction(function () use ($companyId, $userId, $data) {
 
             $supplier = Supplier::query()
                 ->where("company_id", $companyId)
@@ -172,17 +166,16 @@ final class PurchaseService {
                 $companyId
             );
 
-            if(!$warehouse || $supplier->status !== "active") {
+            if (! $warehouse || $supplier->status !== "active") {
 
                 throw new DomainException("El proveedor o el almacén no está disponible.");
-
             }
 
             $documentNumber = trim((string) ($data["document_number"] ?? ""));
             $documentSeries = trim((string) ($data["document_series"] ?? ""));
             $hasDocumentSeriesColumn = Schema::hasColumn("purchase_headers", "document_series");
 
-            if($documentNumber !== "") {
+            if ($documentNumber !== "") {
 
                 $documentQuery = PurchaseHeader::query()
                     ->where("company_id", $companyId)
@@ -191,13 +184,13 @@ final class PurchaseService {
                     ->where("document_number", $documentNumber)
                     ->where("status", "!=", "canceled");
 
-                if($hasDocumentSeriesColumn) {
+                if ($hasDocumentSeriesColumn) {
 
                     $documentQuery->where("document_series", $documentSeries ?: null);
 
                 }
 
-                if($documentQuery->exists()) {
+                if ($documentQuery->exists()) {
 
                     throw new DomainException(
                         "Ya existe un documento de compra activo con esa serie y número para el proveedor."
@@ -207,7 +200,7 @@ final class PurchaseService {
 
             }
 
-            $itemIds = collect($data["items"])->pluck("item_id")->map(fn($id) => (int) $id);
+            $itemIds = collect($data["items"])->pluck("item_id")->map(fn ($id) => (int) $id);
             $items = Item::query()
                 ->where("company_id", $companyId)
                 ->where("type", "product")
@@ -215,25 +208,23 @@ final class PurchaseService {
                 ->get()
                 ->keyBy("id");
 
-            if($items->count() !== $itemIds->unique()->count()) {
+            if ($items->count() !== $itemIds->unique()->count()) {
 
                 throw new DomainException("Uno de los productos no pertenece a la empresa.");
-
             }
 
-            $subtotal = collect($data["items"])->sum(fn($item) =>
-                Utilities::round((float) $item["quantity"] * (float) $item["unit_cost"], null, $companyId)
+            $subtotal = collect($data["items"])->sum(fn ($item) => Utilities::round((float) $item["quantity"] * (float) $item["unit_cost"], null, $companyId)
             );
             $selectedTaxIds = collect($data["taxes"] ?? [])
                 ->pluck("tax_id")
                 ->filter()
-                ->map(fn($id) => (int) $id)
+                ->map(fn ($id) => (int) $id)
                 ->unique()
                 ->values()
                 ->all();
             $selectedTaxQuantities = collect($data["taxes"] ?? [])
-                ->filter(fn($tax) => !empty($tax["tax_id"]))
-                ->mapWithKeys(fn($tax) => [(int) $tax["tax_id"] => (float) ($tax["quantity"] ?? 1)])
+                ->filter(fn ($tax) => ! empty($tax["tax_id"]))
+                ->mapWithKeys(fn ($tax) => [(int) $tax["tax_id"] => (float) ($tax["quantity"] ?? 1)])
                 ->all();
             $taxLines = CommercialDocumentSettlementService::taxes(
                 $companyId,
@@ -308,10 +299,10 @@ final class PurchaseService {
                 "observation" => $data["observation"] ?? null,
                 "status" => "confirmed",
                 "created_at" => now(),
-                "created_by" => $userId
+                "created_by" => $userId,
             ];
 
-            if($hasDocumentSeriesColumn) {
+            if ($hasDocumentSeriesColumn) {
 
                 $purchaseData["document_series"] = $documentSeries ?: null;
 
@@ -319,18 +310,18 @@ final class PurchaseService {
 
             $purchase = PurchaseHeader::create($purchaseData);
 
-            if($taxLines->isNotEmpty()) {
+            if ($taxLines->isNotEmpty()) {
 
                 PurchaseTax::insert($taxLines
-                    ->map(fn($tax) => ["purchase_header_id" => $purchase->id] + $tax)
+                    ->map(fn ($tax) => ["purchase_header_id" => $purchase->id] + $tax)
                     ->all());
 
             }
 
-            if($paymentLines->isNotEmpty()) {
+            if ($paymentLines->isNotEmpty()) {
 
                 PurchasePayment::insert($paymentLines
-                    ->map(fn($payment) => ["purchase_header_id" => $purchase->id] + $payment)
+                    ->map(fn ($payment) => ["purchase_header_id" => $purchase->id] + $payment)
                     ->all());
 
             }
@@ -343,9 +334,9 @@ final class PurchaseService {
                 $userId
             );
 
-            if(!empty($expenses)) {
+            if (! empty($expenses)) {
                 \App\Models\System\Purchases\PurchaseExpense::insert(collect($expenses)
-                    ->map(fn($expense) => [
+                    ->map(fn ($expense) => [
                         "company_id" => $companyId,
                         "purchase_header_id" => $purchase->id,
                         "expense_type" => $expense["expense_type"],
@@ -354,11 +345,11 @@ final class PurchaseService {
                         "allocation_method" => $expense["allocation_method"] ?? "value",
                         "note" => $expense["note"] ?? null,
                         "created_at" => now(),
-                        "updated_at" => now()
+                        "updated_at" => now(),
                     ])->all());
             }
 
-            foreach($data["items"] as $detail) {
+            foreach ($data["items"] as $detail) {
 
                 $item = $items->get((int) $detail["item_id"]);
                 $quantity = Utilities::round((float) $detail["quantity"], null, $companyId);
@@ -381,12 +372,12 @@ final class PurchaseService {
                     "subtotal" => Utilities::round($quantity * $unitCost, null, $companyId),
                     "status" => "pending",
                     "created_at" => now(),
-                    "created_by" => $userId
+                    "created_by" => $userId,
                 ]);
 
             }
 
-            if(($data["delivery_mode"] ?? "immediate") === "immediate"
+            if (($data["delivery_mode"] ?? "immediate") === "immediate"
                 && ($data["approval_status"] ?? "approved") === "approved") {
 
                 $purchase->load("items");
@@ -395,11 +386,11 @@ final class PurchaseService {
                     "received_at" => now()->toDateTimeString(),
                     "observation" => "Entrega inmediata registrada al crear la compra.",
                     "items" => $purchase->items
-                        ->map(fn($item) => [
+                        ->map(fn ($item) => [
                             "purchase_item_id" => (int) $item->id,
-                            "quantity" => (float) $item->quantity
+                            "quantity" => (float) $item->quantity,
                         ])
-                        ->all()
+                        ->all(),
                 ]);
 
             }
@@ -417,7 +408,7 @@ final class PurchaseService {
         array $data
     ): PurchaseReceipt {
 
-        return DB::transaction(function() use($companyId, $purchaseId, $userId, $data) {
+        return DB::transaction(function () use ($companyId, $purchaseId, $userId, $data) {
 
             $purchase = PurchaseHeader::query()
                 ->where("company_id", $companyId)
@@ -425,13 +416,12 @@ final class PurchaseService {
                 ->lockForUpdate()
                 ->firstOrFail();
 
-            if(!in_array($purchase->status, ["confirmed", "partial"], true)) {
+            if (! in_array($purchase->status, ["confirmed", "partial"], true)) {
 
                 throw new DomainException("La compra no admite nuevas recepciones.");
-
             }
 
-            if($purchase->approval_status !== "approved") {
+            if ($purchase->approval_status !== "approved") {
                 throw new DomainException("La orden debe aprobarse antes de registrar una recepción.");
             }
 
@@ -440,29 +430,28 @@ final class PurchaseService {
                 "company_id" => $companyId,
                 "purchase_header_id" => $purchase->id,
                 "warehouse_id" => $purchase->warehouse_id,
-                "reference" => "REC-" . strtoupper(Str::random(10)),
+                "reference" => "REC-".strtoupper(Str::random(10)),
                 "received_at" => $data["received_at"],
                 "observation" => $data["observation"] ?? null,
                 "status" => "received",
                 "created_at" => now(),
-                "created_by" => $userId
+                "created_by" => $userId,
             ]);
 
-            foreach($data["items"] as $receivedItem) {
+            foreach ($data["items"] as $receivedItem) {
 
                 $purchaseItem = $purchase->items
                     ->firstWhere("id", (int) $receivedItem["purchase_item_id"]);
 
-                if(!$purchaseItem) {
+                if (! $purchaseItem) {
 
                     throw new DomainException("Uno de los productos no pertenece a la compra.");
-
                 }
 
                 $quantity = Utilities::round((float) $receivedItem["quantity"], null, $companyId);
                 $remaining = Utilities::round((float) $purchaseItem->quantity - (float) $purchaseItem->received_quantity, null, $companyId);
 
-                if($quantity <= 0 || $quantity > $remaining) {
+                if ($quantity <= 0 || $quantity > $remaining) {
 
                     throw new DomainException(
                         "La cantidad recibida de {$purchaseItem->name} supera el saldo pendiente."
@@ -484,8 +473,8 @@ final class PurchaseService {
                     "reference" => $receipt->reference,
                     "metadata" => [
                         "purchase_header_id" => (int) $purchase->id,
-                        "purchase_item_id" => (int) $purchaseItem->id
-                    ]
+                        "purchase_item_id" => (int) $purchaseItem->id,
+                    ],
                 ]);
 
                 PurchaseReceiptItem::create([
@@ -498,7 +487,7 @@ final class PurchaseService {
                     "unit_cost" => $purchaseItem->inventory_unit_cost,
                     "total_cost" => Utilities::round($quantity * (float) $purchaseItem->inventory_unit_cost, null, $companyId),
                     "created_at" => now(),
-                    "created_by" => $userId
+                    "created_by" => $userId,
                 ]);
 
                 $receivedQuantity = Utilities::round((float) $purchaseItem->received_quantity + $quantity, null, $companyId);
@@ -508,19 +497,18 @@ final class PurchaseService {
                         ? "received"
                         : "partial",
                     "updated_at" => now(),
-                    "updated_by" => $userId
+                    "updated_by" => $userId,
                 ]);
 
             }
 
             $purchase->load("items");
-            $allReceived = $purchase->items->every(fn($item) =>
-                (float) $item->received_quantity >= (float) $item->quantity
+            $allReceived = $purchase->items->every(fn ($item) => (float) $item->received_quantity >= (float) $item->quantity
             );
             $purchase->update([
                 "status" => $allReceived ? "received" : "partial",
                 "updated_at" => now(),
-                "updated_by" => $userId
+                "updated_by" => $userId,
             ]);
 
             return $receipt->load("items.item");
@@ -531,7 +519,7 @@ final class PurchaseService {
 
     public static function cancel(int $companyId, int $purchaseId, int $userId): PurchaseHeader {
 
-        return DB::transaction(function() use($companyId, $purchaseId, $userId) {
+        return DB::transaction(function () use ($companyId, $purchaseId, $userId) {
 
             $restoreStockPolicyEnabled = (bool) CompanySettingService::value(
                 $companyId,
@@ -547,14 +535,13 @@ final class PurchaseService {
                 ->lockForUpdate()
                 ->firstOrFail();
 
-            if($purchase->status === "canceled") {
+            if ($purchase->status === "canceled") {
 
                 throw new DomainException("La compra ya está anulada.");
-
             }
 
-            if($purchase->items->contains(fn($item) => (float) $item->received_quantity > 0)
-                && !$restoreStockPolicyEnabled) {
+            if ($purchase->items->contains(fn ($item) => (float) $item->received_quantity > 0)
+                && ! $restoreStockPolicyEnabled) {
 
                 throw new DomainException(
                     "La compra tiene mercadería recibida. Registra una devolución a proveedor desde Inventario o activa la política de reversa automática al anular compras."
@@ -562,19 +549,19 @@ final class PurchaseService {
 
             }
 
-            $hadReceipts = $purchase->items->contains(fn($item) => (float) $item->received_quantity > 0);
+            $hadReceipts = $purchase->items->contains(fn ($item) => (float) $item->received_quantity > 0);
 
-            if($restoreStockPolicyEnabled) {
+            if ($restoreStockPolicyEnabled) {
 
-                foreach($purchase->receipts as $receipt) {
+                foreach ($purchase->receipts as $receipt) {
 
-                    if($receipt->status !== "received") {
+                    if ($receipt->status !== "received") {
 
                         continue;
 
                     }
 
-                    foreach($receipt->items as $receiptItem) {
+                    foreach ($receipt->items as $receiptItem) {
 
                         InventoryMovementService::apply([
                             "company_id" => $companyId,
@@ -591,8 +578,8 @@ final class PurchaseService {
                             "metadata" => [
                                 "purchase_header_id" => (int) $purchase->id,
                                 "purchase_receipt_id" => (int) $receipt->id,
-                                "purchase_receipt_item_id" => (int) $receiptItem->id
-                            ]
+                                "purchase_receipt_item_id" => (int) $receiptItem->id,
+                            ],
                         ]);
 
                     }
@@ -600,7 +587,7 @@ final class PurchaseService {
                     $receipt->update([
                         "status" => "canceled",
                         "canceled_at" => now(),
-                        "canceled_by" => $userId
+                        "canceled_by" => $userId,
                     ]);
 
                 }
@@ -612,13 +599,13 @@ final class PurchaseService {
                 "updated_at" => now(),
                 "updated_by" => $userId,
                 "canceled_at" => now(),
-                "canceled_by" => $userId
+                "canceled_by" => $userId,
             ]);
             PurchaseItem::where("purchase_header_id", $purchase->id)->update([
                 "status" => "canceled",
                 "received_quantity" => $restoreStockPolicyEnabled ? 0 : DB::raw("received_quantity"),
                 "updated_at" => now(),
-                "updated_by" => $userId
+                "updated_by" => $userId,
             ]);
 
             $result = self::find($companyId, $purchase->id);
@@ -633,20 +620,20 @@ final class PurchaseService {
 
     public static function approve(int $companyId, int $purchaseId, int $userId): PurchaseHeader {
 
-        return DB::transaction(function() use($companyId, $purchaseId, $userId) {
+        return DB::transaction(function () use ($companyId, $purchaseId, $userId) {
             $purchase = PurchaseHeader::query()
                 ->where("company_id", $companyId)
                 ->where("status", "confirmed")
                 ->lockForUpdate()
                 ->findOrFail($purchaseId);
 
-            if($purchase->approval_status !== "approved") {
+            if ($purchase->approval_status !== "approved") {
                 $purchase->update([
                     "approval_status" => "approved",
                     "approved_by" => $userId,
                     "approved_at" => now(),
                     "updated_by" => $userId,
-                    "updated_at" => now()
+                    "updated_at" => now(),
                 ]);
             }
 
@@ -668,10 +655,9 @@ final class PurchaseService {
                 "payments",
                 "expenses",
                 "receipts.items.item",
-                "returns.items.item"
+                "returns.items.item",
             ])
             ->findOrFail($purchaseId);
 
     }
-
 }

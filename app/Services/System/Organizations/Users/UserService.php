@@ -4,24 +4,24 @@ declare(strict_types=1);
 
 namespace App\Services\System\Organizations\Users;
 
-use App\Helpers\System\{TranslationHelper, Utilities};
-use Illuminate\Support\Facades\DB;
-use Illuminate\Contracts\Pagination\LengthAwarePaginator;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Str;
-use Illuminate\Auth\Access\AuthorizationException;
-
-use App\Models\System\Organizations\{Role, User};
+use App\Helpers\System\TranslationHelper;
+use App\Helpers\System\Utilities;
+use App\Models\System\Organizations\Role;
+use App\Models\System\Organizations\User;
 use App\Services\System\Organizations\AccessScopeService;
 use App\Services\System\Organizations\BusinessAuditService;
 use App\Services\System\Organizations\Roles\RolePermissionService;
+use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 /**
  * Service class for managing module operations
  * Handles business logic for creating and updating records
  */
 class UserService {
-
     /**
      * Translation namespace for module
      */
@@ -42,7 +42,7 @@ class UserService {
         "phone_number",
         "gender",
         "birthdate",
-        "status"
+        "status",
     ];
 
     /**
@@ -52,15 +52,14 @@ class UserService {
         "document_number",
         "name",
         "email",
-        "phone_number"
+        "phone_number",
     ];
 
     /**
      * Get translation with fallback
      *
-     * @param string $key Translation key
-     * @param array $replace Replacements
-     * @return string
+     * @param  string  $key Translation key
+     * @param  array  $replace Replacements
      */
     private static function trans(string $key, array $replace = []): string {
 
@@ -71,24 +70,23 @@ class UserService {
     /**
      * Prepare data for creation
      *
-     * @param array $data Input data
-     * @param int $companyId Company
-     * @param int $userId User
-     * @return array
+     * @param  array  $data Input data
+     * @param  int  $companyId Company
+     * @param  int  $userId User
      */
     private static function prepareUserDataForCreate(array $data, int $companyId, int $userId): array {
 
         $userData = [
             "company_id" => $companyId,
-            "gender"     => $data["gender"] ?? "other",
-            "status"     => $data["status"] ?? "active",
+            "gender" => $data["gender"] ?? "other",
+            "status" => $data["status"] ?? "active",
             "created_at" => now(),
-            "created_by" => $userId
+            "created_by" => $userId,
         ];
 
-        foreach(self::ALLOWED_FIELDS as $field) {
+        foreach (self::ALLOWED_FIELDS as $field) {
 
-            if(isset($data[$field])) {
+            if (isset($data[$field])) {
 
                 $userData[$field] = $field === "email" ? Str::lower($data[$field]) : $data[$field];
 
@@ -97,7 +95,7 @@ class UserService {
         }
 
         // Handle password separately (it's hashed automatically by Laravel)
-        if(isset($data["password"])) {
+        if (isset($data["password"])) {
 
             $userData["password"] = $data["password"];
 
@@ -110,21 +108,20 @@ class UserService {
     /**
      * Prepare data for update (only changed fields)
      *
-     * @param User $user Record instance
-     * @param array $data Input data
-     * @return array
+     * @param  User  $user Record instance
+     * @param  array  $data Input data
      */
     private static function prepareUserDataForUpdate(User $user, array $data): array {
 
         $updateData = [];
 
-        foreach(self::ALLOWED_FIELDS as $field) {
+        foreach (self::ALLOWED_FIELDS as $field) {
 
-            if(isset($data[$field])) {
+            if (isset($data[$field])) {
 
                 $value = $field === "email" ? Str::lower($data[$field]) : $data[$field];
 
-                if($value !== $user->$field) {
+                if ($value !== $user->$field) {
 
                     $updateData[$field] = $value;
 
@@ -140,15 +137,15 @@ class UserService {
     /**
      * Create a new record
      *
-     * @param array $data Input data
-     * @param int|null $userId User creating the record
+     * @param  array  $data Input data
+     * @param  int|null  $userId User creating the record
      * @return User|null Created record instance or null on failure
      */
     public static function create(array $data, int $companyId, int $userId): ?User {
 
         $user = null;
 
-        DB::transaction(function() use($data, $companyId, $userId, &$user) {
+        DB::transaction(function () use ($data, $companyId, $userId, &$user) {
 
             self::assertRoleAssignable($companyId, (int) $userId, (int) ($data["role_id"] ?? 0));
 
@@ -169,14 +166,14 @@ class UserService {
     /**
      * Update an existing record
      *
-     * @param User $user Record instance to update
-     * @param array $data Input data
-     * @param int|null $userId User updating the record
+     * @param  User  $user Record instance to update
+     * @param  array  $data Input data
+     * @param  int|null  $userId User updating the record
      * @return User Updated record instance
      */
     public static function update(User $user, array $data, int $userId): User {
 
-        DB::transaction(function() use($user, $data, $userId) {
+        DB::transaction(function () use ($user, $data, $userId) {
 
             self::assertRoleAssignable(
                 (int) $user->company_id,
@@ -190,21 +187,21 @@ class UserService {
             $updateData = self::prepareUserDataForUpdate($user, $data);
 
             // Only update if there are changes
-            if(!empty($updateData)) {
+            if (! empty($updateData)) {
 
-                $invalidateSessions = array_key_exists('status', $updateData)
-                    && $updateData['status'] !== 'active';
+                $invalidateSessions = array_key_exists("status", $updateData)
+                    && $updateData["status"] !== "active";
 
-                if($invalidateSessions) {
-                    $updateData['session_version'] = max(1, (int) ($user->session_version ?? 1)) + 1;
-                    $updateData['remember_token'] = null;
+                if ($invalidateSessions) {
+                    $updateData["session_version"] = max(1, (int) ($user->session_version ?? 1)) + 1;
+                    $updateData["remember_token"] = null;
                 }
 
                 $updateData["updated_at"] = now();
                 $updateData["updated_by"] = $userId;
                 $user->update($updateData);
 
-                if($invalidateSessions) {
+                if ($invalidateSessions) {
                     $user->tokens()->delete();
                 }
 
@@ -229,14 +226,14 @@ class UserService {
 
     public static function changePassword(User $user, string $password, ?int $userId = null): User {
 
-        DB::transaction(function() use($user, $password, $userId) {
+        DB::transaction(function () use ($user, $password, $userId) {
 
             $user->forceFill([
                 "password" => $password,
                 "remember_token" => null,
                 "session_version" => max(1, (int) ($user->session_version ?? 1)) + 1,
                 "updated_at" => now(),
-                "updated_by" => $userId
+                "updated_by" => $userId,
             ])->save();
 
             $user->tokens()->delete();
@@ -263,31 +260,31 @@ class UserService {
     private static function syncBranches(User $user, array $branchIds, int $companyId, ?int $userId = null): void {
 
         DB::table("user_branches")
-          ->where("company_id", $companyId)
-          ->where("user_id", $user->id)
-          ->delete();
+            ->where("company_id", $companyId)
+            ->where("user_id", $user->id)
+            ->delete();
 
         $branchIds = collect($branchIds)
             ->filter()
-            ->map(fn($branchId) => (int) $branchId)
+            ->map(fn ($branchId) => (int) $branchId)
             ->unique()
             ->values()
             ->all();
 
-        if(empty($branchIds)) {
+        if (empty($branchIds)) {
 
             return;
 
         }
 
         $validBranchIds = DB::table("branches")
-                            ->where("company_id", $companyId)
-                            ->whereIn("id", $branchIds)
-                            ->pluck("id")
-                            ->map(fn($branchId) => (int) $branchId)
-                            ->all();
+            ->where("company_id", $companyId)
+            ->whereIn("id", $branchIds)
+            ->pluck("id")
+            ->map(fn ($branchId) => (int) $branchId)
+            ->all();
 
-        if(empty($validBranchIds)) {
+        if (empty($validBranchIds)) {
 
             return;
 
@@ -295,13 +292,13 @@ class UserService {
 
         $now = now();
 
-        DB::table("user_branches")->insert(array_map(fn($branchId) => [
-            "company_id"  => $companyId,
-            "user_id"     => $user->id,
-            "branch_id"   => $branchId,
-            "status"      => "active",
-            "created_at"  => $now,
-            "created_by"  => $userId
+        DB::table("user_branches")->insert(array_map(fn ($branchId) => [
+            "company_id" => $companyId,
+            "user_id" => $user->id,
+            "branch_id" => $branchId,
+            "status" => "active",
+            "created_at" => $now,
+            "created_by" => $userId,
         ], $validBranchIds));
 
     }
@@ -311,7 +308,7 @@ class UserService {
         $actor = User::query()->where("company_id", $companyId)->findOrFail($actorId);
         $role = Role::query()->where("company_id", $companyId)->findOrFail($roleId);
 
-        if(!RolePermissionService::canAssignRole($actor, $role)) {
+        if (! RolePermissionService::canAssignRole($actor, $role)) {
             throw new AuthorizationException("No puedes asignar un perfil con permisos superiores a los tuyos.");
         }
 
@@ -326,36 +323,36 @@ class UserService {
 
         $definitions = [
             "cash_register" => ["table" => "user_cash_registers", "resource" => "cash_registers", "key" => "cash_register_id"],
-            "warehouse" => ["table" => "user_warehouses", "resource" => "warehouses", "key" => "warehouse_id"]
+            "warehouse" => ["table" => "user_warehouses", "resource" => "warehouses", "key" => "warehouse_id"],
         ];
-        $branchIds = collect($data["branch_ids"] ?? [])->map(fn($id) => (int) $id)->filter()->all();
+        $branchIds = collect($data["branch_ids"] ?? [])->map(fn ($id) => (int) $id)->filter()->all();
 
-        foreach($definitions as $type => $definition) {
+        foreach ($definitions as $type => $definition) {
             DB::table($definition["table"])
                 ->where("company_id", $companyId)
                 ->where("user_id", $user->id)
                 ->delete();
 
-            $ids = collect($data["{$type}_ids"] ?? [])->map(fn($id) => (int) $id)->filter()->unique();
-            if($ids->isEmpty()) {
+            $ids = collect($data["{$type}_ids"] ?? [])->map(fn ($id) => (int) $id)->filter()->unique();
+            if ($ids->isEmpty()) {
                 continue;
             }
 
             $validIds = DB::table($definition["resource"])
                 ->where("company_id", $companyId)
                 ->whereIn("id", $ids)
-                ->when(!empty($branchIds), fn($query) => $query->whereIn("branch_id", $branchIds))
+                ->when(! empty($branchIds), fn ($query) => $query->whereIn("branch_id", $branchIds))
                 ->pluck("id")
-                ->map(fn($id) => (int) $id)
+                ->map(fn ($id) => (int) $id)
                 ->all();
 
-            DB::table($definition["table"])->insert(array_map(fn($id) => [
+            DB::table($definition["table"])->insert(array_map(fn ($id) => [
                 "company_id" => $companyId,
                 "user_id" => $user->id,
                 $definition["key"] => $id,
                 "status" => "active",
                 "created_at" => now(),
-                "created_by" => $userId
+                "created_by" => $userId,
             ], $validIds));
         }
 
@@ -374,7 +371,7 @@ class UserService {
             "session_version" => $user->session_version,
             "branch_ids" => $user->relationLoaded("branches") ? $user->branches->pluck("id")->sort()->values()->all() : [],
             "cash_register_ids" => $user->relationLoaded("cashRegisters") ? $user->cashRegisters->pluck("id")->sort()->values()->all() : [],
-            "warehouse_ids" => $user->relationLoaded("warehouses") ? $user->warehouses->pluck("id")->sort()->values()->all() : []
+            "warehouse_ids" => $user->relationLoaded("warehouses") ? $user->warehouses->pluck("id")->sort()->values()->all() : [],
         ];
 
     }
@@ -387,7 +384,7 @@ class UserService {
         array $after
     ): void {
 
-        if($before === $after) {
+        if ($before === $after) {
             return;
         }
 
@@ -409,24 +406,23 @@ class UserService {
     /**
      * Find record by ID and company ID
      *
-     * @param int $id Record
-     * @param int $companyId Company
-     * @param array|null $statuses Filter by statuses (e.g. ["active"], ["active", "inactive"])
-     * @param array $relations Relations to eager load
-     * @return User|null
+     * @param  int  $id Record
+     * @param  int  $companyId Company
+     * @param  array|null  $statuses Filter by statuses (e.g. ["active"], ["active", "inactive"])
+     * @param  array  $relations Relations to eager load
      */
     public static function findByIdAndCompany(int $id, int $companyId, ?array $statuses = ["active"], array $relations = ["identityDocumentType", "role", "branches", "cashRegisters", "warehouses"]): ?User {
 
         $query = User::where("id", $id)
-                     ->where("company_id", $companyId);
+            ->where("company_id", $companyId);
 
-        if($statuses !== null && !empty($statuses)) {
+        if ($statuses !== null && ! empty($statuses)) {
 
             $query->whereIn("status", $statuses);
 
         }
 
-        if($relations !== null && !empty($relations)) {
+        if ($relations !== null && ! empty($relations)) {
 
             $query->with($relations);
 
@@ -439,39 +435,38 @@ class UserService {
     /**
      * Get paginated list of records with filters
      *
-     * @param int $companyId Company
-     * @param array $filters Filter parameters (filter_by, word)
-     * @param int $perPage Items per page
-     * @return LengthAwarePaginator
+     * @param  int  $companyId Company
+     * @param  array  $filters Filter parameters (filter_by, word)
+     * @param  int  $perPage Items per page
      */
     public static function getPaginatedList(int $companyId, array $filters = [], int $perPage = 15): LengthAwarePaginator {
 
         $query = User::where("company_id", $companyId)
-                     ->with(["identityDocumentType", "role", "branches", "cashRegisters", "warehouses"]);
+            ->with(["identityDocumentType", "role", "branches", "cashRegisters", "warehouses"]);
 
         // Apply filters
         $filterBy = $filters["filter_by"] ?? null;
-        $word     = $filters["word"] ?? null;
+        $word = $filters["word"] ?? null;
 
-        if(Utilities::isDefined($word) && Utilities::isDefined($filterBy)) {
+        if (Utilities::isDefined($word) && Utilities::isDefined($filterBy)) {
 
             $searchTerm = Utilities::getWordSearch($word);
 
-            if($filterBy === "all") {
+            if ($filterBy === "all") {
 
                 // Search across all searchable fields
-                $query->where(function(Builder $q) use($searchTerm) {
+                $query->where(function (Builder $q) use ($searchTerm) {
 
                     $searchableFields = self::SEARCHABLE_FIELDS;
-                    $firstField       = array_shift($searchableFields);
+                    $firstField = array_shift($searchableFields);
 
-                    if($firstField) {
+                    if ($firstField) {
 
                         $q->where($firstField, "like", $searchTerm);
 
                     }
 
-                    foreach($searchableFields as $field) {
+                    foreach ($searchableFields as $field) {
 
                         $q->orWhere($field, "like", $searchTerm);
 
@@ -479,7 +474,7 @@ class UserService {
 
                 });
 
-            }elseif(in_array($filterBy, self::SEARCHABLE_FIELDS, true)) {
+            } elseif (in_array($filterBy, self::SEARCHABLE_FIELDS, true)) {
 
                 // Search in specific field
                 $query->where($filterBy, "like", $searchTerm);
@@ -489,8 +484,7 @@ class UserService {
         }
 
         return $query->orderBy("name", "ASC")
-                     ->paginate($perPage);
+            ->paginate($perPage);
 
     }
-
 }

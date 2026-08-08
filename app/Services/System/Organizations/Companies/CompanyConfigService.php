@@ -4,16 +4,12 @@ declare(strict_types=1);
 
 namespace App\Services\System\Organizations\Companies;
 
+use App\Models\System\Organizations\Company;
+use App\Services\System\Base\BaseConfigService;
+use App\Services\System\Base\MasterReferenceDataService;
 use stdClass;
 
-use App\Models\System\Organizations\Company;
-use App\Services\System\Base\{
-    BaseConfigService,
-    MasterReferenceDataService
-};
-
 final class CompanyConfigService extends BaseConfigService {
-
     protected static function getCachePrefix(): string {
 
         return "company";
@@ -25,15 +21,15 @@ final class CompanyConfigService extends BaseConfigService {
         $config = self::data([
             "statuses" => Company::getStatuses(),
             "identityDocumentTypes" => self::data([
-                "records" => MasterReferenceDataService::companyIdentityDocuments($companyId)
-            ])
+                "records" => MasterReferenceDataService::companyIdentityDocuments($companyId),
+            ]),
         ]);
 
         $company = Company::query()
-                          ->with("socialsMedia")
-                          ->find($companyId);
+            ->with("socialsMedia")
+            ->find($companyId);
 
-        if(!$company) {
+        if (! $company) {
 
             return $config;
 
@@ -41,16 +37,15 @@ final class CompanyConfigService extends BaseConfigService {
 
         $socialsMedia = $company->socialsMedia->keyBy("type");
 
-        $company->facebook  = $socialsMedia->get("facebook")?->link;
+        $company->facebook = $socialsMedia->get("facebook")?->link;
         $company->instagram = $socialsMedia->get("instagram")?->link;
-        $company->whatsapp  = $socialsMedia->get("whatsapp")?->link;
+        $company->whatsapp = $socialsMedia->get("whatsapp")?->link;
 
         $config->company = self::data([
-            "records" => [$company]
+            "records" => [$company],
         ]);
 
         return $config;
 
     }
-
 }

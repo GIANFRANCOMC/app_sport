@@ -14,7 +14,6 @@ use Illuminate\Support\Facades\Mail;
  * Handles business logic for sending subscription emails
  */
 class NotificationService {
-
     /**
      * Send pending subscription emails
      *
@@ -27,36 +26,36 @@ class NotificationService {
         $records = SubscriptionEmail::query()
             ->whereIn("status", ["pending", "failed"])
             ->whereColumn("attempts", "<", "max_attempts")
-            ->where(function($query) {
+            ->where(function ($query) {
 
                 $query->whereNull("next_attempt_at")
-                      ->orWhere("next_attempt_at", "<=", now());
+                    ->orWhere("next_attempt_at", "<=", now());
 
             })
-            ->when($companyId, fn($query) => $query->where("company_id", $companyId))
+            ->when($companyId, fn ($query) => $query->where("company_id", $companyId))
             ->orderBy("id")
             ->limit(max(1, min($limit, 500)))
             ->get();
 
-        foreach($records as $record) {
+        foreach ($records as $record) {
 
             $summary["processed"]++;
             $record->increment("attempts");
 
             try {
 
-                if(Utilities::isDefined($record->to)) {
+                if (Utilities::isDefined($record->to)) {
 
-                    Mail::html($record->body, function($message) use($record) {
+                    Mail::html($record->body, function ($message) use ($record) {
 
                         $message->to($record->to)
-                                ->subject($record->subject);
+                            ->subject($record->subject);
 
                     });
 
-                    $record->status     = "sent";
-                    $record->sent_at    = now();
-                    $record->failed_at  = null;
+                    $record->status = "sent";
+                    $record->sent_at = now();
+                    $record->failed_at = null;
                     $record->last_error = null;
                     $record->next_attempt_at = null;
                     $record->updated_at = now();
@@ -64,16 +63,15 @@ class NotificationService {
                     $record->save();
                     $summary["sent"]++;
 
-                }else {
+                } else {
 
                     throw new Exception("La notificación no tiene un destinatario válido.");
-
                 }
 
-            }catch(Exception $e) {
+            } catch (Exception $e) {
 
-                $record->status     = "failed";
-                $record->failed_at  = now();
+                $record->status = "failed";
+                $record->failed_at = now();
                 $record->last_error = mb_substr($e->getMessage(), 0, 500);
                 $record->next_attempt_at = (int) $record->attempts < (int) $record->max_attempts
                     ? now()->addMinutes(min(60, 2 ** (int) $record->attempts))
@@ -90,6 +88,4 @@ class NotificationService {
         return $summary;
 
     }
-
 }
-

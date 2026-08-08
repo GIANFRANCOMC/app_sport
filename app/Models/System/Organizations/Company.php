@@ -3,21 +3,24 @@
 namespace App\Models\System\Organizations;
 
 use App\Helpers\System\Utilities;
+use App\Models\System\Catalogs\Brand;
+use App\Models\System\General\Currency;
+use App\Models\System\General\IdentityDocumentType;
 use Illuminate\Database\Eloquent\Model;
 
-use App\Models\System\Catalogs\Brand;
-use App\Models\System\General\{Currency, IdentityDocumentType};
-
 class Company extends Model {
+    protected $table = "companies";
 
-    protected $table               = "companies";
-    protected $primaryKey          = "id";
-    public $incrementing           = true;
-    public $timestamps             = true;
+    protected $primaryKey = "id";
+
+    public $incrementing = true;
+
+    public $timestamps = true;
+
     public static $snakeAttributes = true;
 
     protected $appends = [
-        "formatted_status"
+        "formatted_status",
     ];
 
     protected $fillable = [
@@ -42,7 +45,7 @@ class Company extends Model {
         "created_at",
         "created_by",
         "updated_at",
-        "updated_by"
+        "updated_by",
     ];
 
     // Appends
@@ -57,7 +60,7 @@ class Company extends Model {
 
         $statuses = [
             ["code" => "active", "label" => "Activo"],
-            ["code" => "inactive", "label" => "Inactivo"]
+            ["code" => "inactive", "label" => "Inactivo"],
         ];
 
         return Utilities::getValues($statuses, $type, $code);
@@ -80,7 +83,7 @@ class Company extends Model {
     public function branches() {
 
         return $this->hasMany(Branch::class, "company_id", "id")
-                    ->whereIn("status", ["active"]);
+            ->whereIn("status", ["active"]);
 
     }
 
@@ -99,15 +102,14 @@ class Company extends Model {
     public function companySubSections() {
 
         return $this->hasMany(CompanySubSection::class, "company_id", "id")
-                    ->whereIn("status", ["active"]);
+            ->whereIn("status", ["active"]);
 
     }
 
     public function socialsMedia() {
 
         return $this->hasMany(CompanySocialMedia::class, "company_id", "id")
-                    ->whereIn("status", ["active"]);
+            ->whereIn("status", ["active"]);
 
     }
-
 }

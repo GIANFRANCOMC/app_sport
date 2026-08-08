@@ -49,6 +49,17 @@
         ],
         "post-create-project-cmd": [
             "@php artisan key:generate --ansi"
+        ],
+        "format:php": [
+            "@php scripts/format-php-double-quotes.php",
+            "@php vendor/bin/pint"
+        ],
+        "format:php-check": [
+            "@php scripts/format-php-double-quotes.php --check",
+            "@php vendor/bin/pint --test"
+        ],
+        "check:php-syntax": [
+            "@php scripts/check-php-syntax.php"
         ]
     },
     "extra": {

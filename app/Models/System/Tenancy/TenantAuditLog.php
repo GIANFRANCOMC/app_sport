@@ -7,31 +7,31 @@ namespace App\Models\System\Tenancy;
 use Illuminate\Database\Eloquent\Model;
 
 final class TenantAuditLog extends Model {
+    protected $connection = "landlord";
 
-    protected $connection = 'landlord';
-    protected $table = 'tenant_audit_logs';
+    protected $table = "tenant_audit_logs";
+
     public $timestamps = false;
 
     protected $fillable = [
-        'tenant_database_id',
-        'company_id',
-        'action',
-        'result',
-        'host',
-        'ip_address',
-        'actor',
-        'context',
-        'occurred_at'
+        "tenant_database_id",
+        "company_id",
+        "action",
+        "result",
+        "host",
+        "ip_address",
+        "actor",
+        "context",
+        "occurred_at",
     ];
 
     protected $casts = [
-        'company_id' => 'integer',
-        'context' => 'array',
-        'occurred_at' => 'datetime'
+        "company_id" => "integer",
+        "context" => "array",
+        "occurred_at" => "datetime",
     ];
 
     public function tenantDatabase() {
-        return $this->belongsTo(TenantDatabase::class, 'tenant_database_id');
+        return $this->belongsTo(TenantDatabase::class, "tenant_database_id");
     }
-
 }

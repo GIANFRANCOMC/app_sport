@@ -6,10 +6,9 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration {
-
     public function up(): void {
 
-        Schema::create("business_industries", function(Blueprint $table) {
+        Schema::create("business_industries", function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger("company_id");
             $table->string("slug", 120);
@@ -26,12 +25,12 @@ return new class extends Migration {
             $table->unique(["company_id", "slug"]);
         });
 
-        Schema::table("companies", function(Blueprint $table) {
+        Schema::table("companies", function (Blueprint $table) {
             $table->unsignedBigInteger("business_industry_id")->nullable()->after("currency_id");
             $table->foreign("business_industry_id")->references("id")->on("business_industries")->nullOnDelete();
         });
 
-        Schema::create("business_industry_module_sets", function(Blueprint $table) {
+        Schema::create("business_industry_module_sets", function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger("company_id");
             $table->unsignedBigInteger("business_industry_id");
@@ -51,7 +50,7 @@ return new class extends Migration {
             $table->unique(["company_id", "business_industry_id", "sub_section_id"], "business_industry_module_set_unique");
         });
 
-        Schema::create("misc_expense_categories", function(Blueprint $table) {
+        Schema::create("misc_expense_categories", function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger("company_id");
             $table->string("name", 150);
@@ -66,7 +65,7 @@ return new class extends Migration {
             $table->foreign("company_id")->references("id")->on("companies")->onDelete("cascade");
         });
 
-        Schema::create("misc_expenses", function(Blueprint $table) {
+        Schema::create("misc_expenses", function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger("company_id");
             $table->unsignedBigInteger("branch_id")->nullable();
@@ -99,7 +98,7 @@ return new class extends Migration {
             $table->foreign("responsible_user_id")->references("id")->on("users")->nullOnDelete();
         });
 
-        Schema::create("quotation_headers", function(Blueprint $table) {
+        Schema::create("quotation_headers", function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger("company_id");
             $table->unsignedBigInteger("branch_id")->nullable();
@@ -134,7 +133,7 @@ return new class extends Migration {
             $table->unique(["company_id", "reference"]);
         });
 
-        Schema::create("quotation_items", function(Blueprint $table) {
+        Schema::create("quotation_items", function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger("company_id");
             $table->unsignedBigInteger("quotation_header_id");
@@ -160,7 +159,7 @@ return new class extends Migration {
             $table->foreign("currency_id")->references("id")->on("currencies")->restrictOnDelete();
         });
 
-        Schema::create("quotation_taxes", function(Blueprint $table) {
+        Schema::create("quotation_taxes", function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger("company_id");
             $table->unsignedBigInteger("quotation_header_id");
@@ -186,7 +185,7 @@ return new class extends Migration {
             $table->foreign("tax_id")->references("id")->on("taxes")->nullOnDelete();
         });
 
-        Schema::table("sales_header", function(Blueprint $table) {
+        Schema::table("sales_header", function (Blueprint $table) {
             $table->unsignedBigInteger("quotation_header_id")->nullable()->after("cash_session_id");
             $table->foreign("quotation_header_id")->references("id")->on("quotation_headers")->nullOnDelete();
         });
@@ -198,7 +197,7 @@ return new class extends Migration {
 
     public function down(): void {
 
-        Schema::table("sales_header", function(Blueprint $table) {
+        Schema::table("sales_header", function (Blueprint $table) {
             $table->dropForeign(["quotation_header_id"]);
             $table->dropColumn("quotation_header_id");
         });
@@ -210,34 +209,35 @@ return new class extends Migration {
         Schema::dropIfExists("misc_expense_categories");
         Schema::dropIfExists("business_industry_module_sets");
 
-        Schema::table("companies", function(Blueprint $table) {
+        Schema::table("companies", function (Blueprint $table) {
             $table->dropForeign(["business_industry_id"]);
             $table->dropColumn("business_industry_id");
         });
 
         Schema::dropIfExists("business_industries");
     }
+
     private function registerBusinessProfiles(): void {
 
         $profiles = [
             "gym" => [
                 "name" => "Gimnasio y membresías",
-                "description" => "Base para gimnasios, estudios deportivos y negocios con membresías, asistencias y servicios recurrentes."
+                "description" => "Base para gimnasios, estudios deportivos y negocios con membresías, asistencias y servicios recurrentes.",
             ],
             "restaurant" => [
                 "name" => "Restaurante y comida",
-                "description" => "Base para restaurantes, cafeterías y negocios de comida con POS, mesas, recetas y cocina."
+                "description" => "Base para restaurantes, cafeterías y negocios de comida con POS, mesas, recetas y cocina.",
             ],
             "retail" => [
                 "name" => "Comercio y retail",
-                "description" => "Base para tiendas con productos, inventario, compras, caja y ventas rápidas."
-            ]
+                "description" => "Base para tiendas con productos, inventario, compras, caja y ventas rápidas.",
+            ],
         ];
 
-        $enabledModules = DB::table("sub_sections")->pluck("id")->map(fn($id) => (int) $id)->all();
+        $enabledModules = DB::table("sub_sections")->pluck("id")->map(fn ($id) => (int) $id)->all();
 
-        DB::table("companies")->pluck("id")->each(function($companyId) use($profiles, $enabledModules) {
-            foreach($profiles as $slug => $profile) {
+        DB::table("companies")->pluck("id")->each(function ($companyId) use ($profiles, $enabledModules) {
+            foreach ($profiles as $slug => $profile) {
                 DB::table("business_industries")->updateOrInsert(
                     ["company_id" => $companyId, "slug" => $slug],
                     [
@@ -245,7 +245,7 @@ return new class extends Migration {
                         "description" => $profile["description"],
                         "status" => "active",
                         "created_at" => now(),
-                        "updated_at" => now()
+                        "updated_at" => now(),
                     ]
                 );
 
@@ -254,19 +254,19 @@ return new class extends Migration {
                     ->where("slug", $slug)
                     ->value("id");
 
-                foreach($enabledModules as $subSectionId) {
+                foreach ($enabledModules as $subSectionId) {
                     DB::table("business_industry_module_sets")->updateOrInsert(
                         [
                             "company_id" => $companyId,
                             "business_industry_id" => $industryId,
-                            "sub_section_id" => $subSectionId
+                            "sub_section_id" => $subSectionId,
                         ],
                         [
                             "is_enabled_by_default" => true,
                             "reason" => "Módulo disponible para el rubro {$profile["name"]}.",
                             "status" => "active",
                             "created_at" => now(),
-                            "updated_at" => now()
+                            "updated_at" => now(),
                         ]
                     );
                 }
@@ -277,7 +277,7 @@ return new class extends Migration {
                 ->where("slug", "gym")
                 ->value("id");
 
-            if($defaultIndustryId > 0) {
+            if ($defaultIndustryId > 0) {
                 DB::table("companies")
                     ->where("id", $companyId)
                     ->whereNull("business_industry_id")
@@ -294,23 +294,22 @@ return new class extends Migration {
             ["name" => "Reparación", "description" => "Gastos por arreglo de equipos, mobiliario, infraestructura o herramientas."],
             ["name" => "Servicios básicos", "description" => "Pagos de luz, agua, internet, telefonía u otros servicios de operación."],
             ["name" => "Suministros menores", "description" => "Compras pequeñas que no ingresan como inventario comercial."],
-            ["name" => "Otros gastos", "description" => "Gastos operativos que no encajan en una categoría específica."]
+            ["name" => "Otros gastos", "description" => "Gastos operativos que no encajan en una categoría específica."],
         ];
 
-        DB::table("companies")->pluck("id")->each(function($companyId) use($categories) {
-            foreach($categories as $category) {
+        DB::table("companies")->pluck("id")->each(function ($companyId) use ($categories) {
+            foreach ($categories as $category) {
                 DB::table("misc_expense_categories")->updateOrInsert(
                     ["company_id" => $companyId, "name" => $category["name"]],
                     [
                         "description" => $category["description"],
                         "status" => "active",
                         "created_at" => now(),
-                        "updated_at" => now()
+                        "updated_at" => now(),
                     ]
                 );
             }
         });
 
     }
-
 };

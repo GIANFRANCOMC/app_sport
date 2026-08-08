@@ -16,93 +16,93 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-$systemRoute = __DIR__.'/System';
-$guestRoute = __DIR__.'/Guest';
+$systemRoute = __DIR__."/System";
+$guestRoute = __DIR__."/Guest";
 
 // Guest Routes (Public)
-Route::prefix('{company_slug}/book_complaints')->middleware('company.exists')->group($guestRoute.'/BookComplaint.php');
-Route::prefix('{company_slug}/home')->middleware('company.exists')->group($guestRoute.'/Home.php');
-Route::prefix('{company_slug}/tracking_attendances')->middleware('company.exists')->group($guestRoute.'/TrackingAttendance.php');
-Route::prefix('{company_slug}/biometric_devices')->middleware('company.exists')->group($guestRoute.'/BiometricDevice.php');
+Route::prefix("{company_slug}/book_complaints")->middleware("company.exists")->group($guestRoute."/BookComplaint.php");
+Route::prefix("{company_slug}/home")->middleware("company.exists")->group($guestRoute."/Home.php");
+Route::prefix("{company_slug}/tracking_attendances")->middleware("company.exists")->group($guestRoute."/TrackingAttendance.php");
+Route::prefix("{company_slug}/biometric_devices")->middleware("company.exists")->group($guestRoute."/BiometricDevice.php");
 
-Route::get('/shared/reports/sale/{company}/{sale}/{type}', [ReportController::class, 'sharedSale'])
-    ->middleware(['signed', 'throttle:guest-status'])
-    ->name('reports.sale.shared');
+Route::get("/shared/reports/sale/{company}/{sale}/{type}", [ReportController::class, "sharedSale"])
+    ->middleware(["signed", "throttle:guest-status"])
+    ->name("reports.sale.shared");
 
-Route::middleware('guest')->group(function() {
+Route::middleware("guest")->group(function () {
 
-    Route::get('/', [AuthenticatedSessionController::class, 'create']);
-    Route::get('login', [AuthenticatedSessionController::class, 'create'])->name('login');
-    Route::post('login', [AuthenticatedSessionController::class, 'store']);
+    Route::get("/", [AuthenticatedSessionController::class, "create"]);
+    Route::get("login", [AuthenticatedSessionController::class, "create"])->name("login");
+    Route::post("login", [AuthenticatedSessionController::class, "store"]);
 
 });
 
-Route::middleware(['auth', 'verified', 'module.permission', 'resource.scope'])->group(function() use($systemRoute) {
+Route::middleware(["auth", "verified", "module.permission", "resource.scope"])->group(function () use ($systemRoute) {
 
-    Route::post('/send-subscription-emails', [NotificationController::class, 'sendSubscriptionEmails'])
-        ->middleware('throttle:6,1')
-        ->name('send-subscription-emails');
+    Route::post("/send-subscription-emails", [NotificationController::class, "sendSubscriptionEmails"])
+        ->middleware("throttle:6,1")
+        ->name("send-subscription-emails");
 
     // Assets
-    Route::prefix('/assets')->group($systemRoute.'/Assets/Asset.php');
-    Route::prefix('/assets_management')->group($systemRoute.'/Assets/AssetManagement.php');
+    Route::prefix("/assets")->group($systemRoute."/Assets/Asset.php");
+    Route::prefix("/assets_management")->group($systemRoute."/Assets/AssetManagement.php");
 
     // Catalogs
-    Route::prefix('/brands')->group($systemRoute.'/Catalogs/Brand.php');
-    Route::prefix('/categories')->group($systemRoute.'/Catalogs/Category.php');
-    Route::prefix('/products')->group($systemRoute.'/Catalogs/Product.php');
-    Route::prefix('/recipes')->group($systemRoute.'/Catalogs/Recipe.php');
-    Route::prefix('/services')->group($systemRoute.'/Catalogs/Service.php');
-    Route::prefix('/subscriptions')->group($systemRoute.'/Catalogs/Subscription.php');
+    Route::prefix("/brands")->group($systemRoute."/Catalogs/Brand.php");
+    Route::prefix("/categories")->group($systemRoute."/Catalogs/Category.php");
+    Route::prefix("/products")->group($systemRoute."/Catalogs/Product.php");
+    Route::prefix("/recipes")->group($systemRoute."/Catalogs/Recipe.php");
+    Route::prefix("/services")->group($systemRoute."/Catalogs/Service.php");
+    Route::prefix("/subscriptions")->group($systemRoute."/Catalogs/Subscription.php");
 
     // Customers
-    Route::prefix('/customers')->group($systemRoute.'/Customers/Customer.php');
-    Route::prefix('/tracking_attendances')->group($systemRoute.'/Customers/TrackingAttendance.php');
-    Route::prefix('/tracking_customers')->group($systemRoute.'/Customers/TrackingCustomer.php');
-    Route::prefix('/tracking_subscriptions')->group($systemRoute.'/Customers/TrackingSubscription.php');
+    Route::prefix("/customers")->group($systemRoute."/Customers/Customer.php");
+    Route::prefix("/tracking_attendances")->group($systemRoute."/Customers/TrackingAttendance.php");
+    Route::prefix("/tracking_customers")->group($systemRoute."/Customers/TrackingCustomer.php");
+    Route::prefix("/tracking_subscriptions")->group($systemRoute."/Customers/TrackingSubscription.php");
 
     // Devices
-    Route::prefix('/biometric_devices')->group($systemRoute.'/Devices/BiometricDevice.php');
+    Route::prefix("/biometric_devices")->group($systemRoute."/Devices/BiometricDevice.php");
 
     // Essentials
-    Route::prefix('/dashboard')->group($systemRoute.'/Essentials/Dashboard.php');
-    Route::prefix('/helpers')->group($systemRoute.'/Essentials/Helper.php');
-    Route::prefix('/master-data')->group($systemRoute.'/General/MasterData.php');
-    Route::prefix('/home')->group($systemRoute.'/Essentials/Home.php');
-    Route::prefix('/reports')->group($systemRoute.'/Essentials/Report.php');
+    Route::prefix("/dashboard")->group($systemRoute."/Essentials/Dashboard.php");
+    Route::prefix("/helpers")->group($systemRoute."/Essentials/Helper.php");
+    Route::prefix("/master-data")->group($systemRoute."/General/MasterData.php");
+    Route::prefix("/home")->group($systemRoute."/Essentials/Home.php");
+    Route::prefix("/reports")->group($systemRoute."/Essentials/Report.php");
 
     // Customers (Tracking Notifications)
-    Route::prefix('/tracking_notifications')->group($systemRoute.'/Customers/TrackingNotification.php');
+    Route::prefix("/tracking_notifications")->group($systemRoute."/Customers/TrackingNotification.php");
 
     // Organizations
-    Route::prefix('/book_complaints')->group($systemRoute.'/Organizations/BookComplaint.php');
-    Route::prefix('/branches')->group($systemRoute.'/Organizations/Branch.php');
-    Route::prefix('/companies')->group($systemRoute.'/Organizations/Company.php');
-    Route::prefix('/roles')->group($systemRoute.'/Organizations/Role.php');
-    Route::prefix('/business_profile')->group($systemRoute.'/Organizations/BusinessProfile.php');
-    Route::prefix('/users')->group($systemRoute.'/Organizations/User.php');
-    Route::prefix('/user_attendances')->group($systemRoute.'/Organizations/UserAttendance.php');
+    Route::prefix("/book_complaints")->group($systemRoute."/Organizations/BookComplaint.php");
+    Route::prefix("/branches")->group($systemRoute."/Organizations/Branch.php");
+    Route::prefix("/companies")->group($systemRoute."/Organizations/Company.php");
+    Route::prefix("/roles")->group($systemRoute."/Organizations/Role.php");
+    Route::prefix("/business_profile")->group($systemRoute."/Organizations/BusinessProfile.php");
+    Route::prefix("/users")->group($systemRoute."/Organizations/User.php");
+    Route::prefix("/user_attendances")->group($systemRoute."/Organizations/UserAttendance.php");
 
     // Operations
-    Route::prefix('/service_operations')->group($systemRoute.'/Operations/ServiceOperation.php');
+    Route::prefix("/service_operations")->group($systemRoute."/Operations/ServiceOperation.php");
 
     // Sales
-    Route::prefix('/sales')->group($systemRoute.'/Sales/Sale.php');
-    Route::prefix('/quotations')->group($systemRoute.'/Sales/Quotation.php');
+    Route::prefix("/sales")->group($systemRoute."/Sales/Sale.php");
+    Route::prefix("/quotations")->group($systemRoute."/Sales/Quotation.php");
 
     // Finance
-    Route::prefix('/cash_registers')->group($systemRoute.'/Finance/CashRegister.php');
-    Route::prefix('/accounts_receivable')->group($systemRoute.'/Finance/AccountsReceivable.php');
-    Route::prefix('/misc_expenses')->group($systemRoute.'/Finance/MiscExpense.php');
+    Route::prefix("/cash_registers")->group($systemRoute."/Finance/CashRegister.php");
+    Route::prefix("/accounts_receivable")->group($systemRoute."/Finance/AccountsReceivable.php");
+    Route::prefix("/misc_expenses")->group($systemRoute."/Finance/MiscExpense.php");
 
     // Purchases
-    Route::prefix('/purchases')->group($systemRoute.'/Purchases/Purchase.php');
-    Route::prefix('/suppliers')->group($systemRoute.'/Purchases/Supplier.php');
+    Route::prefix("/purchases")->group($systemRoute."/Purchases/Purchase.php");
+    Route::prefix("/suppliers")->group($systemRoute."/Purchases/Supplier.php");
 
     // Warehouses
-    Route::prefix('/stocks_management')->group($systemRoute.'/Warehouses/StockManagement.php');
+    Route::prefix("/stocks_management")->group($systemRoute."/Warehouses/StockManagement.php");
 
     // Sessions
-    Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
+    Route::post("/logout", [AuthenticatedSessionController::class, "destroy"])->name("logout");
 
 });

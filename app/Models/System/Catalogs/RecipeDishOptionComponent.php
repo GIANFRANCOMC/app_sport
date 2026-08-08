@@ -7,7 +7,6 @@ namespace App\Models\System\Catalogs;
 use Illuminate\Database\Eloquent\Model;
 
 class RecipeDishOptionComponent extends Model {
-
     protected $table = "recipe_dish_option_components";
 
     protected $fillable = [
@@ -21,12 +20,12 @@ class RecipeDishOptionComponent extends Model {
         "created_at",
         "created_by",
         "updated_at",
-        "updated_by"
+        "updated_by",
     ];
 
     protected $casts = [
         "quantity" => "App\\Casts\\System\\ConfigurableDecimal",
-        "waste_percentage" => "App\\Casts\\System\\ConfigurableDecimal"
+        "waste_percentage" => "App\\Casts\\System\\ConfigurableDecimal",
     ];
 
     public function option() {
@@ -40,5 +39,4 @@ class RecipeDishOptionComponent extends Model {
         return $this->belongsTo(Item::class, "item_id", "id");
 
     }
-
 }

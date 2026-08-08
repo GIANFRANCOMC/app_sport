@@ -4,26 +4,31 @@ declare(strict_types=1);
 
 namespace App\Services\System\Base;
 
-use Illuminate\Database\Eloquent\{Builder, Collection};
-use InvalidArgumentException;
-
 use App\Models\System\Assets\Asset;
-use App\Models\System\Catalogs\{Brand, Category, Item};
+use App\Models\System\Catalogs\Brand;
+use App\Models\System\Catalogs\Category;
+use App\Models\System\Catalogs\Item;
 use App\Models\System\Customers\Customer;
 use App\Models\System\Devices\BiometricDevice;
-use App\Models\System\Finance\{PaymentMethod, Tax};
 use App\Models\System\Finance\CashRegister;
-use App\Models\System\Organizations\{Branch, Role, User};
+use App\Models\System\Finance\PaymentMethod;
+use App\Models\System\Finance\Tax;
+use App\Models\System\Organizations\Branch;
+use App\Models\System\Organizations\Role;
+use App\Models\System\Organizations\User;
 use App\Models\System\Sales\SaleDeliveryMethod;
 use App\Models\System\Warehouses\Warehouse;
 use App\Services\System\Organizations\AccessScopeService;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
+use InvalidArgumentException;
 
 /**
  * Provides reusable, company-scoped records used by module initParams.
  */
 final class CompanyReferenceDataService {
-
     private bool $userResolved = false;
+
     private ?User $user = null;
 
     /** @var array<string, array<int, int>|null> */
@@ -34,10 +39,9 @@ final class CompanyReferenceDataService {
         private readonly ?int $userId = null
     ) {
 
-        if($companyId <= 0) {
+        if ($companyId <= 0) {
 
             throw new InvalidArgumentException("Company ID must be greater than zero.");
-
         }
 
     }
@@ -51,36 +55,36 @@ final class CompanyReferenceDataService {
     public function categories(): Collection {
 
         return Category::query()
-                       ->where("company_id", $this->companyId)
-                       ->where("status", "active")
-                       ->orderBy("name")
-                       ->get();
+            ->where("company_id", $this->companyId)
+            ->where("status", "active")
+            ->orderBy("name")
+            ->get();
 
     }
 
     public function brands(): Collection {
 
         return Brand::query()
-                    ->where("company_id", $this->companyId)
-                    ->where("status", "active")
-                    ->orderBy("name")
-                    ->get();
+            ->where("company_id", $this->companyId)
+            ->where("status", "active")
+            ->orderBy("name")
+            ->get();
 
     }
 
     public function stockWarehouses(): Collection {
 
         $query = Warehouse::query()
-                          ->with("branch")
-                          ->whereHas("branch", function($query) {
+            ->with("branch")
+            ->whereHas("branch", function ($query) {
 
-                            $query->where("company_id", $this->companyId);
+                $query->where("company_id", $this->companyId);
 
-                          })
-                          ->where("status", "active");
+            })
+            ->where("status", "active");
 
         $warehouseIds = $this->allowedWarehouseIds();
-        if($warehouseIds !== null) {
+        if ($warehouseIds !== null) {
 
             $query->whereIn("id", $warehouseIds);
 
@@ -93,17 +97,17 @@ final class CompanyReferenceDataService {
     public function activeBranches(): Collection {
 
         return $this->branchQuery()
-                    ->where("status", "active")
-                    ->get();
+            ->where("status", "active")
+            ->get();
 
     }
 
     public function branchesWithSeries(): Collection {
 
         return $this->branchQuery()
-                    ->where("status", "active")
-                    ->with("series.documentType")
-                    ->get();
+            ->where("status", "active")
+            ->with("series.documentType")
+            ->get();
 
     }
 
@@ -115,7 +119,7 @@ final class CompanyReferenceDataService {
             ->where("status", "active");
         $cashRegisterIds = $this->allowedCashRegisterIds();
 
-        if($cashRegisterIds !== null) {
+        if ($cashRegisterIds !== null) {
             $query->whereIn("id", $cashRegisterIds);
         }
 
@@ -132,8 +136,8 @@ final class CompanyReferenceDataService {
     public function activeCustomers(): Collection {
 
         return $this->customerQuery()
-                    ->where("status", "active")
-                    ->get();
+            ->where("status", "active")
+            ->get();
 
     }
 
@@ -142,12 +146,12 @@ final class CompanyReferenceDataService {
         Item::expireActiveItems($this->companyId);
 
         return Item::query()
-                   ->where("company_id", $this->companyId)
-                   ->availableForSale()
-                   ->with(["currency", "brand", "categoryItems.category", "warehouseItems.warehouse"])
-                   ->orderBy("type")
-                   ->orderBy("name")
-                   ->get();
+            ->where("company_id", $this->companyId)
+            ->availableForSale()
+            ->with(["currency", "brand", "categoryItems.category", "warehouseItems.warehouse"])
+            ->orderBy("type")
+            ->orderBy("name")
+            ->get();
 
     }
 
@@ -156,69 +160,69 @@ final class CompanyReferenceDataService {
         Item::expireActiveItems($this->companyId);
 
         return Item::query()
-                   ->where("company_id", $this->companyId)
-                   ->where("type", "subscription")
-                   ->availableForSale()
-                   ->with("currency")
-                   ->orderBy("name")
-                   ->get();
+            ->where("company_id", $this->companyId)
+            ->where("type", "subscription")
+            ->availableForSale()
+            ->with("currency")
+            ->orderBy("name")
+            ->get();
 
     }
 
     public function roles(): Collection {
 
         return Role::query()
-                   ->where("company_id", $this->companyId)
-                   ->where("status", "active")
-                   ->orderBy("name")
-                   ->get();
+            ->where("company_id", $this->companyId)
+            ->where("status", "active")
+            ->orderBy("name")
+            ->get();
 
     }
 
     public function taxesFor(string $scope): Collection {
 
         return Tax::query()
-                  ->where("company_id", $this->companyId)
-                  ->whereIn("scope", [$scope, "both"])
-                  ->where("status", "active")
-                  ->orderByDesc("is_default")
-                  ->orderBy("name")
-                  ->get();
+            ->where("company_id", $this->companyId)
+            ->whereIn("scope", [$scope, "both"])
+            ->where("status", "active")
+            ->orderByDesc("is_default")
+            ->orderBy("name")
+            ->get();
 
     }
 
     public function paymentMethodsFor(string $scope): Collection {
 
         return PaymentMethod::query()
-                            ->with(["variants" => fn($query) => $query->orderBy("name")])
-                            ->where("company_id", $this->companyId)
-                            ->whereIn("scope", [$scope, "both"])
-                            ->where("status", "active")
-                            ->orderByDesc("is_default")
-                            ->orderBy("name")
-                            ->get();
+            ->with(["variants" => fn ($query) => $query->orderBy("name")])
+            ->where("company_id", $this->companyId)
+            ->whereIn("scope", [$scope, "both"])
+            ->where("status", "active")
+            ->orderByDesc("is_default")
+            ->orderBy("name")
+            ->get();
 
     }
 
     public function saleDeliveryMethods(): Collection {
 
         return SaleDeliveryMethod::query()
-                                 ->where("company_id", $this->companyId)
-                                 ->where("status", "active")
-                                 ->orderByDesc("is_default")
-                                 ->orderBy("sort_order")
-                                 ->orderBy("name")
-                                 ->get();
+            ->where("company_id", $this->companyId)
+            ->where("status", "active")
+            ->orderByDesc("is_default")
+            ->orderBy("sort_order")
+            ->orderBy("name")
+            ->get();
 
     }
 
     public function assets(): Collection {
 
         return Asset::query()
-                    ->where("company_id", $this->companyId)
-                    ->where("status", "active")
-                    ->orderBy("name")
-                    ->get();
+            ->where("company_id", $this->companyId)
+            ->where("status", "active")
+            ->orderBy("name")
+            ->get();
 
     }
 
@@ -229,7 +233,7 @@ final class CompanyReferenceDataService {
             ->where("status", "active");
         $branchIds = $this->allowedBranchIds();
 
-        if($branchIds !== null) {
+        if ($branchIds !== null) {
             $query->whereIn("branch_id", $branchIds);
         }
 
@@ -240,21 +244,21 @@ final class CompanyReferenceDataService {
     public function users(): Collection {
 
         return User::query()
-                   ->where("company_id", $this->companyId)
-                   ->where("status", "active")
-                   ->with("identityDocumentType")
-                   ->orderBy("name")
-                   ->get();
+            ->where("company_id", $this->companyId)
+            ->where("status", "active")
+            ->with("identityDocumentType")
+            ->orderBy("name")
+            ->get();
 
     }
 
     private function branchQuery(): Builder {
 
         $query = Branch::query()
-                       ->where("company_id", $this->companyId);
+            ->where("company_id", $this->companyId);
 
         $branchIds = $this->allowedBranchIds();
-        if($branchIds !== null) {
+        if ($branchIds !== null) {
 
             $query->whereIn("id", $branchIds);
 
@@ -284,11 +288,11 @@ final class CompanyReferenceDataService {
 
     private function allowedIds(string $type): ?array {
 
-        if(array_key_exists($type, $this->allowedIdsCache)) {
+        if (array_key_exists($type, $this->allowedIdsCache)) {
             return $this->allowedIdsCache[$type];
         }
 
-        if(!$this->userId) {
+        if (! $this->userId) {
             return $this->allowedIdsCache[$type] = null;
         }
 
@@ -302,7 +306,7 @@ final class CompanyReferenceDataService {
 
     private function user(): ?User {
 
-        if(!$this->userResolved) {
+        if (! $this->userResolved) {
             $this->user = User::query()
                 ->where("company_id", $this->companyId)
                 ->find($this->userId);
@@ -316,9 +320,8 @@ final class CompanyReferenceDataService {
     private function customerQuery(): Builder {
 
         return Customer::query()
-                       ->where("company_id", $this->companyId)
-                       ->orderBy("name");
+            ->where("company_id", $this->companyId)
+            ->orderBy("name");
 
     }
-
 }

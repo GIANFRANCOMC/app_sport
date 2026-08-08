@@ -7,7 +7,6 @@ namespace App\Models\System\Finance;
 use Illuminate\Database\Eloquent\Model;
 
 final class CashSessionPayment extends Model {
-
     protected $table = "cash_session_payments";
 
     protected $fillable = [
@@ -23,7 +22,7 @@ final class CashSessionPayment extends Model {
         "created_at",
         "created_by",
         "updated_at",
-        "updated_by"
+        "updated_by",
     ];
 
     public function cashSession() {
@@ -37,5 +36,4 @@ final class CashSessionPayment extends Model {
         return $this->belongsTo(PaymentMethod::class, "payment_method_id", "id");
 
     }
-
 }

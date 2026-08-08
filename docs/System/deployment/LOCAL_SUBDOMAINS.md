@@ -89,8 +89,7 @@ Reiniciar Apache y crear las entradas `hosts` indicadas arriba.
 ## Preparación
 
 ```bash
-php artisan migrate --database=landlord --path=database/migrations/landlord
-php artisan platform:admin admin@gympe.test --name="Administrador SaaS"
+php artisan platform:install
 php artisan tenant:create demo --commercial-name="Demo Gym" --legal-name="Demo Gym S.A.C." --document-number=20600000001 --admin-email=admin@demo.test --admin-password="UnaClaveSegura123"
 php artisan optimize:clear
 ```
@@ -98,6 +97,8 @@ php artisan optimize:clear
 Después del alta, ejecutar `php artisan system:doctor` sobre la conexión tenant activa cuando se necesite verificar catálogo y referencias. Consulta [Instalación y aprovisionamiento](../DATABASE_INSTALLATION.md).
 
 Abrir `http://app.gympe.test` para la administración SaaS y `http://demo.gympe.test` para el tenant. `http://gympe.test`, `http://localhost` y subdominios no registrados deben ser rechazados por este código.
+
+Credenciales locales iniciales: `admin@app.gympe.test` / `Admin12345!`. Cambiarlas con `php artisan platform:admin admin@app.gympe.test` cuando la base deje de ser descartable.
 
 ## Diagnóstico
 

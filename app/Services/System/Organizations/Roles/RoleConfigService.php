@@ -4,15 +4,14 @@ declare(strict_types=1);
 
 namespace App\Services\System\Organizations\Roles;
 
+use App\Models\System\Organizations\Role;
+use App\Models\System\Organizations\User;
 use App\Services\System\Base\BaseConfigService;
 use App\Services\System\Base\CompanyReferenceDataService;
 use App\Services\System\Organizations\Companies\CompanySectionService;
-use App\Models\System\Organizations\Role;
-use App\Models\System\Organizations\User;
 use stdClass;
 
 final class RoleConfigService extends BaseConfigService {
-
     protected const USER_SCOPED_CACHE = true;
 
     protected static function getCachePrefix(): string {
@@ -30,8 +29,8 @@ final class RoleConfigService extends BaseConfigService {
         $delegableActions = $user ? RolePermissionService::allowedActionsBySubSection($user) : [];
         $references = CompanyReferenceDataService::for($companyId, $userId);
 
-        $sections->each(function($section) use($delegableActions): void {
-            $section->subSections->each(function($subSection) use($delegableActions): void {
+        $sections->each(function ($section) use ($delegableActions): void {
+            $section->subSections->each(function ($subSection) use ($delegableActions): void {
                 $subSection->setAttribute(
                     "delegable_actions",
                     $delegableActions[(int) $subSection->id] ?? null
@@ -41,15 +40,14 @@ final class RoleConfigService extends BaseConfigService {
 
         return self::data([
             "sections" => self::data([
-                "records" => $sections
+                "records" => $sections,
             ]),
             "permissionActions" => config("permissions.actions", []),
             "branches" => $references->activeBranches(),
             "cashRegisters" => $references->cashRegisters(),
             "warehouses" => $references->stockWarehouses(),
-            "statuses" => Role::getStatuses()
+            "statuses" => Role::getStatuses(),
         ]);
 
     }
-
 }

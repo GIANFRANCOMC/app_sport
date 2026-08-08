@@ -2,12 +2,10 @@
 
 namespace App\Models\System\Organizations;
 
+use App\Models\System\General\SubSection;
 use Illuminate\Database\Eloquent\Model;
 
-use App\Models\System\General\SubSection;
-
 class RoleSubSection extends Model {
-
     protected $table = "role_sub_sections";
 
     protected $fillable = [
@@ -19,11 +17,11 @@ class RoleSubSection extends Model {
         "created_at",
         "created_by",
         "updated_at",
-        "updated_by"
+        "updated_by",
     ];
 
     protected $casts = [
-        "actions" => "array"
+        "actions" => "array",
     ];
 
     public function role() {
@@ -37,5 +35,4 @@ class RoleSubSection extends Model {
         return $this->belongsTo(SubSection::class, "sub_section_id", "id");
 
     }
-
 }

@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 namespace App\Exports\System\Catalogs\Products;
 
-use Maatwebsite\Excel\Concerns\{FromArray, ShouldAutoSize, WithHeadings, WithStyles};
-use PhpOffice\PhpSpreadsheet\Style\{Alignment, Fill};
+use Maatwebsite\Excel\Concerns\FromArray;
+use Maatwebsite\Excel\Concerns\ShouldAutoSize;
+use Maatwebsite\Excel\Concerns\WithHeadings;
+use Maatwebsite\Excel\Concerns\WithStyles;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
 final class ProductImportTemplateExport implements FromArray, ShouldAutoSize, WithHeadings, WithStyles {
-
     public function array(): array {
 
         return [];
@@ -25,7 +28,7 @@ final class ProductImportTemplateExport implements FromArray, ShouldAutoSize, Wi
             "Código de barras",
             "Descripción",
             "Stock inicial",
-            "Stock mínimo"
+            "Stock mínimo",
         ];
 
     }
@@ -35,20 +38,19 @@ final class ProductImportTemplateExport implements FromArray, ShouldAutoSize, Wi
         $sheet->freezePane("A2");
         $sheet->getStyle("A1:G1")->applyFromArray([
             "font" => [
-                "bold"  => true,
-                "color" => ["rgb" => "FFFFFF"]
+                "bold" => true,
+                "color" => ["rgb" => "FFFFFF"],
             ],
             "fill" => [
-                "fillType"   => Fill::FILL_SOLID,
-                "startColor" => ["rgb" => "1A1A35"]
+                "fillType" => Fill::FILL_SOLID,
+                "startColor" => ["rgb" => "1A1A35"],
             ],
             "alignment" => [
-                "horizontal" => Alignment::HORIZONTAL_CENTER
-            ]
+                "horizontal" => Alignment::HORIZONTAL_CENTER,
+            ],
         ]);
 
         return [];
 
     }
-
 }

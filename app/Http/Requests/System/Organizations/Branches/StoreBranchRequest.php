@@ -9,7 +9,6 @@ use App\Http\Requests\System\Concerns\AppliesInternalCodePrefix;
 use App\Rules\System\Defaults\{UniqueInCompany};
 
 class StoreBranchRequest extends CompanyFormRequest {
-
     use AppliesInternalCodePrefix;
 
     protected function internalCodeEntity(): string {
@@ -27,7 +26,7 @@ class StoreBranchRequest extends CompanyFormRequest {
             "reference",
             "telephone",
             "email",
-            "map_url"
+            "map_url",
         ];
 
     }
@@ -41,18 +40,17 @@ class StoreBranchRequest extends CompanyFormRequest {
 
         $validations = [
             "internal_code" => ["required", "string", "max:50", new UniqueInCompany("branches", "internal_code", null, [], "código interno")],
-            "name"          => "required|string|max:50",
-            "address"       => "nullable|string|max:100",
-            "reference"     => "nullable|string|max:100",
-            "telephone"     => "nullable|string|max:15",
-            "email"         => "nullable|email|max:100",
-            "capacity"      => "nullable|integer|min:0",
-            "map_url"       => "nullable|url|max:500",
-            "status"        => "required|in:active,inactive"
+            "name" => "required|string|max:50",
+            "address" => "nullable|string|max:100",
+            "reference" => "nullable|string|max:100",
+            "telephone" => "nullable|string|max:15",
+            "email" => "nullable|email|max:100",
+            "capacity" => "nullable|integer|min:0",
+            "map_url" => "nullable|url|max:500",
+            "status" => "required|in:active,inactive",
         ];
 
         return $validations;
 
     }
-
 }

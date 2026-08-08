@@ -5,71 +5,72 @@ declare(strict_types=1);
 namespace App\Services\System\Finance;
 
 use App\Helpers\System\Utilities;
+use App\Models\System\Finance\CashMovement;
+use App\Models\System\Finance\CashRegister;
+use App\Models\System\Finance\CashSession;
+use App\Models\System\Finance\CashSessionInventoryCount;
+use App\Models\System\Finance\CashSessionPayment;
+use App\Models\System\Finance\PaymentMethod;
+use App\Models\System\Organizations\Branch;
+use App\Models\System\Warehouses\WarehouseItem;
+use App\Services\System\Base\CompanyReferenceDataService;
+use App\Services\System\Sales\SaleConfigService;
+use App\Services\System\Warehouses\Inventory\InventoryMovementService;
 use Carbon\Carbon;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
 
-use App\Models\System\Finance\{CashMovement, CashRegister, CashSession, CashSessionInventoryCount, CashSessionPayment, PaymentMethod};
-use App\Models\System\Organizations\Branch;
-use App\Models\System\Warehouses\WarehouseItem;
-use App\Services\System\Base\CompanyReferenceDataService;
-use App\Services\System\Sales\SaleConfigService;
-use App\Services\System\Warehouses\Inventory\InventoryMovementService;
-
 final class CashRegisterService {
-
     public function listRegisters(int $companyId, ?int $userId = null) {
 
         $query = CashRegister::query()
-                             ->with(["branch", "openSession.paymentSummary.paymentMethod"])
-                             ->where("company_id", $companyId);
+            ->with(["branch", "openSession.paymentSummary.paymentMethod"])
+            ->where("company_id", $companyId);
 
         $cashRegisterIds = $userId !== null
             ? CompanyReferenceDataService::for($companyId, $userId)->allowedCashRegisterIds()
             : null;
 
-        if($cashRegisterIds !== null) {
+        if ($cashRegisterIds !== null) {
 
             $query->whereIn("id", $cashRegisterIds);
 
         }
 
         return $query->orderBy("name")
-                     ->get()
-                     ->map(fn(CashRegister $register) => $this->formatRegister($register));
+            ->get()
+            ->map(fn (CashRegister $register) => $this->formatRegister($register));
 
     }
 
     public function createRegister(int $companyId, int $userId, array $data): CashRegister {
 
-        return DB::transaction(function() use($companyId, $userId, $data) {
+        return DB::transaction(function () use ($companyId, $userId, $data) {
 
             $branch = Branch::query()
-                            ->where("company_id", $companyId)
-                            ->where("status", "active")
-                            ->find((int) $data["branch_id"]);
+                ->where("company_id", $companyId)
+                ->where("status", "active")
+                ->find((int) $data["branch_id"]);
 
-            if(!$branch) {
+            if (! $branch) {
 
                 throw new RuntimeException("Seleccione una sucursal activa para registrar la caja.");
-
             }
 
             $allowedBranchIds = CompanyReferenceDataService::for($companyId, $userId)->allowedBranchIds();
-            if($allowedBranchIds !== null && !in_array((int) $branch->id, $allowedBranchIds, true)) {
+            if ($allowedBranchIds !== null && ! in_array((int) $branch->id, $allowedBranchIds, true)) {
 
                 throw new RuntimeException("No tienes acceso a la sucursal seleccionada.");
-
             }
 
-            if((bool) ($data["is_main"] ?? false)) {
+            if ((bool) ($data["is_main"] ?? false)) {
 
                 CashRegister::query()
-                            ->where("company_id", $companyId)
-                            ->where("branch_id", $branch->id)
-                            ->update(["is_main" => false]);
+                    ->where("company_id", $companyId)
+                    ->where("branch_id", $branch->id)
+                    ->update(["is_main" => false]);
 
             }
 
@@ -80,7 +81,7 @@ final class CashRegisterService {
                 "name" => $data["name"],
                 "is_main" => (bool) ($data["is_main"] ?? false),
                 "status" => $data["status"] ?? "active",
-                "created_by" => $userId
+                "created_by" => $userId,
             ]);
 
             $this->clearOperationalCaches($companyId);
@@ -94,51 +95,51 @@ final class CashRegisterService {
     public function listSessions(int $companyId, array $filters, int $perPage, ?int $userId = null): LengthAwarePaginator {
 
         return $this->sessionsQuery($companyId, $filters, $userId)
-                    ->latest("opened_at")
-                    ->paginate($perPage);
+            ->latest("opened_at")
+            ->paginate($perPage);
 
     }
 
     public function listMovements(int $companyId, array $filters, int $perPage, ?int $userId = null): LengthAwarePaginator {
 
         $query = CashMovement::query()
-                           ->with(["branch", "cashSession.register", "paymentMethod", "user"])
-                           ->where("company_id", $companyId)
-                           ->when($filters["branch_id"] ?? null, fn($query, $branchId) => $query->where("branch_id", $branchId))
-                           ->when($filters["cash_session_id"] ?? null, fn($query, $sessionId) => $query->where("cash_session_id", $sessionId))
-                           ->when($filters["payment_method_id"] ?? null, fn($query, $paymentMethodId) => $query->where("payment_method_id", $paymentMethodId))
-                           ->when($filters["user_id"] ?? null, fn($query, $responsibleId) => $query->where("user_id", $responsibleId))
-                           ->when($filters["movement_type"] ?? null, fn($query, $type) => $query->where("movement_type", $type))
-                           ->when($filters["cash_register_id"] ?? null, function($query, $registerId) {
+            ->with(["branch", "cashSession.register", "paymentMethod", "user"])
+            ->where("company_id", $companyId)
+            ->when($filters["branch_id"] ?? null, fn ($query, $branchId) => $query->where("branch_id", $branchId))
+            ->when($filters["cash_session_id"] ?? null, fn ($query, $sessionId) => $query->where("cash_session_id", $sessionId))
+            ->when($filters["payment_method_id"] ?? null, fn ($query, $paymentMethodId) => $query->where("payment_method_id", $paymentMethodId))
+            ->when($filters["user_id"] ?? null, fn ($query, $responsibleId) => $query->where("user_id", $responsibleId))
+            ->when($filters["movement_type"] ?? null, fn ($query, $type) => $query->where("movement_type", $type))
+            ->when($filters["cash_register_id"] ?? null, function ($query, $registerId) {
 
-                               $query->whereHas("cashSession", fn($sessionQuery) => $sessionQuery->where("cash_register_id", $registerId));
+                $query->whereHas("cashSession", fn ($sessionQuery) => $sessionQuery->where("cash_register_id", $registerId));
 
-                           })
-                           ->when($filters["search"] ?? null, function($query, $search) {
+            })
+            ->when($filters["search"] ?? null, function ($query, $search) {
 
-                               $query->where(function($subQuery) use($search) {
+                $query->where(function ($subQuery) use ($search) {
 
-                                   $subQuery->where("reference", "like", "%{$search}%")
-                                            ->orWhere("note", "like", "%{$search}%")
-                                            ->orWhereHas("cashSession.register", function($registerQuery) use($search) {
+                    $subQuery->where("reference", "like", "%{$search}%")
+                        ->orWhere("note", "like", "%{$search}%")
+                        ->orWhereHas("cashSession.register", function ($registerQuery) use ($search) {
 
-                                                $registerQuery->where("name", "like", "%{$search}%")
-                                                              ->orWhere("code", "like", "%{$search}%");
+                            $registerQuery->where("name", "like", "%{$search}%")
+                                ->orWhere("code", "like", "%{$search}%");
 
-                                            })
-                                            ->orWhereHas("user", fn($userQuery) => $userQuery->where("name", "like", "%{$search}%"));
+                        })
+                        ->orWhereHas("user", fn ($userQuery) => $userQuery->where("name", "like", "%{$search}%"));
 
-                               });
+                });
 
-                           })
-                           ->when($filters["date_from"] ?? null, fn($query, $date) => $query->where("occurred_at", ">=", Utilities::startOfDay($date)))
-                           ->when($filters["date_to"] ?? null, fn($query, $date) => $query->where("occurred_at", "<=", Utilities::endOfDay($date)))
-                           ->where("status", "active")
-                           ->latest("occurred_at");
+            })
+            ->when($filters["date_from"] ?? null, fn ($query, $date) => $query->where("occurred_at", ">=", Utilities::startOfDay($date)))
+            ->when($filters["date_to"] ?? null, fn ($query, $date) => $query->where("occurred_at", "<=", Utilities::endOfDay($date)))
+            ->where("status", "active")
+            ->latest("occurred_at");
 
         $cashRegisterIds = $this->allowedCashRegisterIds($companyId, $userId);
-        if($cashRegisterIds !== null) {
-            $query->whereHas("cashSession", fn($sessionQuery) => $sessionQuery->whereIn("cash_register_id", $cashRegisterIds));
+        if ($cashRegisterIds !== null) {
+            $query->whereHas("cashSession", fn ($sessionQuery) => $sessionQuery->whereIn("cash_register_id", $cashRegisterIds));
         }
 
         return $query->paginate($perPage);
@@ -150,38 +151,38 @@ final class CashRegisterService {
         $sessions = $this->sessionsQuery($companyId, $filters, $userId)->get();
         $sessionIds = $sessions->pluck("id")->all();
 
-        if(empty($sessionIds)) {
+        if (empty($sessionIds)) {
 
             return [
                 "sessions" => [],
                 "payments" => [],
-                "totals" => $this->emptyTotals()
+                "totals" => $this->emptyTotals(),
             ];
 
         }
 
         $payments = CashMovement::query()
-                               ->select([
-                                   "payment_method_id",
-                                   DB::raw("SUM(amount) as amount")
-                               ])
-                               ->with("paymentMethod")
-                               ->where("company_id", $companyId)
-                               ->whereIn("cash_session_id", $sessionIds)
-                               ->where("status", "active")
-                               ->when($filters["payment_method_id"] ?? null, fn($query, $paymentMethodId) => $query->where("payment_method_id", $paymentMethodId))
-                               ->groupBy("payment_method_id")
-                               ->get()
-                               ->map(function($row) use($companyId) {
+            ->select([
+                "payment_method_id",
+                DB::raw("SUM(amount) as amount"),
+            ])
+            ->with("paymentMethod")
+            ->where("company_id", $companyId)
+            ->whereIn("cash_session_id", $sessionIds)
+            ->where("status", "active")
+            ->when($filters["payment_method_id"] ?? null, fn ($query, $paymentMethodId) => $query->where("payment_method_id", $paymentMethodId))
+            ->groupBy("payment_method_id")
+            ->get()
+            ->map(function ($row) use ($companyId) {
 
-                                   return [
-                                       "payment_method_id" => $row->payment_method_id,
-                                       "payment_method" => $row->paymentMethod,
-                                       "amount" => Utilities::round((float) $row->amount, null, $companyId)
-                                   ];
+                return [
+                    "payment_method_id" => $row->payment_method_id,
+                    "payment_method" => $row->paymentMethod,
+                    "amount" => Utilities::round((float) $row->amount, null, $companyId),
+                ];
 
-                               })
-                               ->values();
+            })
+            ->values();
 
         $paymentMethodId = $filters["payment_method_id"] ?? null;
         $expected = $paymentMethodId
@@ -207,34 +208,33 @@ final class CashRegisterService {
                 "opening" => $paymentMethodId ? 0 : Utilities::round((float) $sessions->sum("opening_amount"), null, $companyId),
                 "expected" => $expected,
                 "counted" => $counted,
-                "difference" => Utilities::round($counted - $expected, null, $companyId)
-            ]
+                "difference" => Utilities::round($counted - $expected, null, $companyId),
+            ],
         ];
 
     }
 
     public function openSession(int $companyId, int $userId, array $data): CashSession {
 
-        return DB::transaction(function() use($companyId, $userId, $data) {
+        return DB::transaction(function () use ($companyId, $userId, $data) {
 
             $register = CashRegister::query()
-                                    ->with("branch")
-                                    ->where("company_id", $companyId)
-                                    ->where("status", "active")
-                                    ->findOrFail((int) $data["cash_register_id"]);
+                ->with("branch")
+                ->where("company_id", $companyId)
+                ->where("status", "active")
+                ->findOrFail((int) $data["cash_register_id"]);
 
             $this->assertRegisterAccess($companyId, $userId, (int) $register->id);
 
             $hasOpenSession = CashSession::query()
-                                         ->where("company_id", $companyId)
-                                         ->where("cash_register_id", $register->id)
-                                         ->where("status", "open")
-                                         ->exists();
+                ->where("company_id", $companyId)
+                ->where("cash_register_id", $register->id)
+                ->where("status", "open")
+                ->exists();
 
-            if($hasOpenSession) {
+            if ($hasOpenSession) {
 
                 throw new RuntimeException("Esta caja ya tiene una apertura activa.");
-
             }
 
             $openingAmount = Utilities::round((float) ($data["opening_amount"] ?? 0), null, $companyId);
@@ -251,7 +251,7 @@ final class CashRegisterService {
                 "difference_amount" => 0,
                 "observation" => $data["observation"] ?? null,
                 "status" => "open",
-                "created_by" => $userId
+                "created_by" => $userId,
             ]);
 
             CashMovement::create([
@@ -267,7 +267,7 @@ final class CashRegisterService {
                 "note" => $data["observation"] ?? null,
                 "occurred_at" => Carbon::now(),
                 "status" => "active",
-                "created_by" => $userId
+                "created_by" => $userId,
             ]);
 
             $this->clearOperationalCaches($companyId);
@@ -280,57 +280,55 @@ final class CashRegisterService {
 
     public function closeSession(int $companyId, int $userId, array $data): CashSession {
 
-        return DB::transaction(function() use($companyId, $userId, $data) {
+        return DB::transaction(function () use ($companyId, $userId, $data) {
 
             $session = CashSession::query()
-                                  ->with(["register", "branch"])
-                                  ->where("company_id", $companyId)
-                                  ->where("status", "open")
-                                  ->findOrFail((int) $data["cash_session_id"]);
+                ->with(["register", "branch"])
+                ->where("company_id", $companyId)
+                ->where("status", "open")
+                ->findOrFail((int) $data["cash_session_id"]);
 
             $this->assertRegisterAccess($companyId, $userId, (int) $session->cash_register_id);
 
             $inventoryCounts = is_array($data["inventory_counts"] ?? null) ? $data["inventory_counts"] : [];
 
-            if($session->register?->is_main) {
+            if ($session->register?->is_main) {
 
                 $hasOpenSecondarySessions = CashSession::query()
-                                                       ->where("company_id", $companyId)
-                                                       ->where("branch_id", $session->branch_id)
-                                                       ->where("status", "open")
-                                                       ->where("id", "!=", $session->id)
-                                                       ->whereHas("register", fn($query) => $query->where("is_main", false))
-                                                       ->exists();
+                    ->where("company_id", $companyId)
+                    ->where("branch_id", $session->branch_id)
+                    ->where("status", "open")
+                    ->where("id", "!=", $session->id)
+                    ->whereHas("register", fn ($query) => $query->where("is_main", false))
+                    ->exists();
 
-                if($hasOpenSecondarySessions) {
+                if ($hasOpenSecondarySessions) {
 
                     throw new RuntimeException("Primero cierra las cajas secundarias de la sucursal antes de cerrar la caja principal.");
-
                 }
 
-                if(empty($inventoryCounts) && $this->branchHasCountableInventory($companyId, (int) $session->branch_id)) {
+                if (empty($inventoryCounts) && $this->branchHasCountableInventory($companyId, (int) $session->branch_id)) {
 
                     throw new RuntimeException("Completa el conteo físico de inventario antes de cerrar la caja principal.");
-
                 }
 
             }
 
             $expectedAmount = Utilities::round((float) CashMovement::query()
-                                                        ->where("company_id", $companyId)
-                                                        ->where("cash_session_id", $session->id)
-                                                        ->where("status", "active")
-                                                        ->sum("amount"), null, $companyId);
+                ->where("company_id", $companyId)
+                ->where("cash_session_id", $session->id)
+                ->where("status", "active")
+                ->sum("amount"), null, $companyId);
 
             $countedPayments = collect($data["payments"] ?? [])
-                               ->map(function($payment) use($companyId) {
+                ->map(function ($payment) use ($companyId) {
 
-                                   return [
-                                       "payment_method_id" => $payment["payment_method_id"] ?? null,
-                                        "counted_amount" => Utilities::round((float) ($payment["counted_amount"] ?? 0), null, $companyId)
-                                   ];
+                    return [
+                        "payment_method_id" => $payment["payment_method_id"] ?? null,
+                        "counted_amount" => Utilities::round((float) ($payment["counted_amount"] ?? 0), null, $companyId),
+                    ];
 
-                               });
+                });
 
             $countedAmount = $countedPayments->isNotEmpty()
                 ? Utilities::round((float) $countedPayments->sum("counted_amount"), null, $companyId)
@@ -344,12 +342,12 @@ final class CashRegisterService {
                 "difference_amount" => Utilities::round($countedAmount - $expectedAmount, null, $companyId),
                 "observation" => $data["observation"] ?? $session->observation,
                 "status" => "closed",
-                "updated_by" => $userId
+                "updated_by" => $userId,
             ]);
 
             CashSessionPayment::query()->where("cash_session_id", $session->id)->delete();
 
-            foreach($countedPayments as $payment) {
+            foreach ($countedPayments as $payment) {
 
                 $expectedByMethod = $this->expectedByPaymentMethod($companyId, $session->id, $payment["payment_method_id"]);
                 $paymentMethod = $payment["payment_method_id"]
@@ -364,7 +362,7 @@ final class CashRegisterService {
                     "expected_amount" => $expectedByMethod,
                     "counted_amount" => $payment["counted_amount"],
                     "difference_amount" => Utilities::round($payment["counted_amount"] - $expectedByMethod, null, $companyId),
-                    "created_by" => $userId
+                    "created_by" => $userId,
                 ]);
 
             }
@@ -389,7 +387,7 @@ final class CashRegisterService {
                 "note" => $data["observation"] ?? null,
                 "occurred_at" => Carbon::now(),
                 "status" => "active",
-                "created_by" => $userId
+                "created_by" => $userId,
             ]);
 
             $this->clearOperationalCaches($companyId);
@@ -402,24 +400,24 @@ final class CashRegisterService {
 
     public function registerMovement(int $companyId, int $userId, array $data): CashMovement {
 
-        return DB::transaction(function() use($companyId, $userId, $data) {
+        return DB::transaction(function () use ($companyId, $userId, $data) {
 
             $session = CashSession::query()
-                                  ->with("register")
-                                  ->where("company_id", $companyId)
-                                  ->where("status", "open")
-                                  ->findOrFail((int) $data["cash_session_id"]);
+                ->with("register")
+                ->where("company_id", $companyId)
+                ->where("status", "open")
+                ->findOrFail((int) $data["cash_session_id"]);
 
             $this->assertRegisterAccess($companyId, $userId, (int) $session->cash_register_id);
 
             $movementType = (string) $data["movement_type"];
             $amount = Utilities::round((float) $data["amount"], null, $companyId);
 
-            if(in_array($movementType, ["expense"], true)) {
+            if (in_array($movementType, ["expense"], true)) {
 
                 $amount = abs($amount) * -1;
 
-            }else {
+            } else {
 
                 $amount = abs($amount);
 
@@ -439,7 +437,7 @@ final class CashRegisterService {
                 "note" => $data["note"] ?? null,
                 "occurred_at" => Carbon::now(),
                 "status" => "active",
-                "created_by" => $userId
+                "created_by" => $userId,
             ])->load(["branch", "cashSession.register", "paymentMethod", "user"]);
 
         });
@@ -449,24 +447,24 @@ final class CashRegisterService {
     public function movementsForExport(int $companyId, array $filters, ?int $userId = null) {
 
         $query = CashMovement::query()
-                           ->with(["branch", "cashSession.register", "paymentMethod", "user"])
-                           ->where("company_id", $companyId)
-                           ->when($filters["branch_id"] ?? null, fn($query, $branchId) => $query->where("branch_id", $branchId))
-                           ->when($filters["cash_register_id"] ?? null, function($query, $registerId) {
+            ->with(["branch", "cashSession.register", "paymentMethod", "user"])
+            ->where("company_id", $companyId)
+            ->when($filters["branch_id"] ?? null, fn ($query, $branchId) => $query->where("branch_id", $branchId))
+            ->when($filters["cash_register_id"] ?? null, function ($query, $registerId) {
 
-                               $query->whereHas("cashSession", fn($sessionQuery) => $sessionQuery->where("cash_register_id", $registerId));
+                $query->whereHas("cashSession", fn ($sessionQuery) => $sessionQuery->where("cash_register_id", $registerId));
 
-                           })
-                           ->when($filters["payment_method_id"] ?? null, fn($query, $paymentMethodId) => $query->where("payment_method_id", $paymentMethodId))
-                           ->when($filters["user_id"] ?? null, fn($query, $responsibleId) => $query->where("user_id", $responsibleId))
-                           ->when($filters["date_from"] ?? null, fn($query, $date) => $query->where("occurred_at", ">=", Utilities::startOfDay($date)))
-                           ->when($filters["date_to"] ?? null, fn($query, $date) => $query->where("occurred_at", "<=", Utilities::endOfDay($date)))
-                           ->where("status", "active")
-                           ->latest("occurred_at");
+            })
+            ->when($filters["payment_method_id"] ?? null, fn ($query, $paymentMethodId) => $query->where("payment_method_id", $paymentMethodId))
+            ->when($filters["user_id"] ?? null, fn ($query, $responsibleId) => $query->where("user_id", $responsibleId))
+            ->when($filters["date_from"] ?? null, fn ($query, $date) => $query->where("occurred_at", ">=", Utilities::startOfDay($date)))
+            ->when($filters["date_to"] ?? null, fn ($query, $date) => $query->where("occurred_at", "<=", Utilities::endOfDay($date)))
+            ->where("status", "active")
+            ->latest("occurred_at");
 
         $cashRegisterIds = $this->allowedCashRegisterIds($companyId, $userId);
-        if($cashRegisterIds !== null) {
-            $query->whereHas("cashSession", fn($sessionQuery) => $sessionQuery->whereIn("cash_register_id", $cashRegisterIds));
+        if ($cashRegisterIds !== null) {
+            $query->whereHas("cashSession", fn ($sessionQuery) => $sessionQuery->whereIn("cash_register_id", $cashRegisterIds));
         }
 
         return $query->get();
@@ -476,52 +474,52 @@ final class CashRegisterService {
     private function sessionsQuery(int $companyId, array $filters, ?int $userId = null): Builder {
 
         $query = CashSession::query()
-                          ->with(["register", "branch", "openedBy", "closedBy", "paymentSummary.paymentMethod"])
-                          ->where("company_id", $companyId)
-                          ->when($filters["branch_id"] ?? null, fn($query, $branchId) => $query->where("branch_id", $branchId))
-                          ->when($filters["cash_register_id"] ?? null, fn($query, $registerId) => $query->where("cash_register_id", $registerId))
-                          ->when($filters["user_id"] ?? null, function($query, $responsibleId) {
+            ->with(["register", "branch", "openedBy", "closedBy", "paymentSummary.paymentMethod"])
+            ->where("company_id", $companyId)
+            ->when($filters["branch_id"] ?? null, fn ($query, $branchId) => $query->where("branch_id", $branchId))
+            ->when($filters["cash_register_id"] ?? null, fn ($query, $registerId) => $query->where("cash_register_id", $registerId))
+            ->when($filters["user_id"] ?? null, function ($query, $responsibleId) {
 
-                              $query->where(function($userQuery) use($responsibleId) {
-                                  $userQuery->where("opened_by", $responsibleId)
-                                      ->orWhere("closed_by", $responsibleId);
-                              });
+                $query->where(function ($userQuery) use ($responsibleId) {
+                    $userQuery->where("opened_by", $responsibleId)
+                        ->orWhere("closed_by", $responsibleId);
+                });
 
-                          })
-                          ->when($filters["payment_method_id"] ?? null, function($query, $paymentMethodId) {
+            })
+            ->when($filters["payment_method_id"] ?? null, function ($query, $paymentMethodId) {
 
-                              $query->where(function($paymentQuery) use($paymentMethodId) {
-                                  $paymentQuery->whereHas("paymentSummary", fn($summaryQuery) => $summaryQuery
-                                      ->where("payment_method_id", $paymentMethodId))
-                                      ->orWhereHas("movements", fn($movementQuery) => $movementQuery
-                                          ->where("payment_method_id", $paymentMethodId)
-                                          ->where("status", "active"));
-                              });
+                $query->where(function ($paymentQuery) use ($paymentMethodId) {
+                    $paymentQuery->whereHas("paymentSummary", fn ($summaryQuery) => $summaryQuery
+                        ->where("payment_method_id", $paymentMethodId))
+                        ->orWhereHas("movements", fn ($movementQuery) => $movementQuery
+                            ->where("payment_method_id", $paymentMethodId)
+                            ->where("status", "active"));
+                });
 
-                          })
-                          ->when($filters["status"] ?? null, fn($query, $status) => $query->where("status", $status))
-                          ->when($filters["search"] ?? null, function($query, $search) {
+            })
+            ->when($filters["status"] ?? null, fn ($query, $status) => $query->where("status", $status))
+            ->when($filters["search"] ?? null, function ($query, $search) {
 
-                              $query->where(function($subQuery) use($search) {
+                $query->where(function ($subQuery) use ($search) {
 
-                                  $subQuery->where("observation", "like", "%{$search}%")
-                                           ->orWhereHas("register", function($registerQuery) use($search) {
+                    $subQuery->where("observation", "like", "%{$search}%")
+                        ->orWhereHas("register", function ($registerQuery) use ($search) {
 
-                                               $registerQuery->where("name", "like", "%{$search}%")
-                                                             ->orWhere("code", "like", "%{$search}%");
+                            $registerQuery->where("name", "like", "%{$search}%")
+                                ->orWhere("code", "like", "%{$search}%");
 
-                                           })
-                                           ->orWhereHas("openedBy", fn($userQuery) => $userQuery->where("name", "like", "%{$search}%"))
-                                           ->orWhereHas("closedBy", fn($userQuery) => $userQuery->where("name", "like", "%{$search}%"));
+                        })
+                        ->orWhereHas("openedBy", fn ($userQuery) => $userQuery->where("name", "like", "%{$search}%"))
+                        ->orWhereHas("closedBy", fn ($userQuery) => $userQuery->where("name", "like", "%{$search}%"));
 
-                              });
+                });
 
-                          })
-                          ->when($filters["date_from"] ?? null, fn($query, $date) => $query->where("opened_at", ">=", Utilities::startOfDay($date)))
-                          ->when($filters["date_to"] ?? null, fn($query, $date) => $query->where("opened_at", "<=", Utilities::endOfDay($date)));
+            })
+            ->when($filters["date_from"] ?? null, fn ($query, $date) => $query->where("opened_at", ">=", Utilities::startOfDay($date)))
+            ->when($filters["date_to"] ?? null, fn ($query, $date) => $query->where("opened_at", "<=", Utilities::endOfDay($date)));
 
         $cashRegisterIds = $this->allowedCashRegisterIds($companyId, $userId);
-        if($cashRegisterIds !== null) {
+        if ($cashRegisterIds !== null) {
             $query->whereIn("cash_register_id", $cashRegisterIds);
         }
 
@@ -550,7 +548,7 @@ final class CashRegisterService {
             "branch" => $register->branch,
             "open_session" => $openSession,
             "is_open" => $openSession !== null,
-            "current_amount" => $openSession ? Utilities::round((float) $openSession->expected_amount, null, (int) $register->company_id) : 0
+            "current_amount" => $openSession ? Utilities::round((float) $openSession->expected_amount, null, (int) $register->company_id) : 0,
         ];
 
     }
@@ -558,18 +556,18 @@ final class CashRegisterService {
     private function expectedByPaymentMethod(int $companyId, int $sessionId, ?int $paymentMethodId): float {
 
         return Utilities::round((float) CashMovement::query()
-                                         ->where("company_id", $companyId)
-                                         ->where("cash_session_id", $sessionId)
-                                         ->where("status", "active")
-                                         ->when($paymentMethodId === null, fn($query) => $query->whereNull("payment_method_id"))
-                                         ->when($paymentMethodId !== null, fn($query) => $query->where("payment_method_id", $paymentMethodId))
-                                         ->sum("amount"), null, $companyId);
+            ->where("company_id", $companyId)
+            ->where("cash_session_id", $sessionId)
+            ->where("status", "active")
+            ->when($paymentMethodId === null, fn ($query) => $query->whereNull("payment_method_id"))
+            ->when($paymentMethodId !== null, fn ($query) => $query->where("payment_method_id", $paymentMethodId))
+            ->sum("amount"), null, $companyId);
 
     }
 
     private function syncInventoryCounts(int $companyId, int $userId, CashSession $session, array $counts): void {
 
-        if(!$session->register?->is_main || empty($counts)) {
+        if (! $session->register?->is_main || empty($counts)) {
 
             return;
 
@@ -579,25 +577,25 @@ final class CashRegisterService {
             ->where("cash_session_id", $session->id)
             ->delete();
 
-        foreach($counts as $count) {
+        foreach ($counts as $count) {
 
             $warehouseId = (int) ($count["warehouse_id"] ?? 0);
             $itemId = (int) ($count["item_id"] ?? 0);
 
-            if($warehouseId <= 0 || $itemId <= 0) {
+            if ($warehouseId <= 0 || $itemId <= 0) {
 
                 continue;
 
             }
 
             $warehouseItem = WarehouseItem::query()
-                ->whereHas("warehouse", function($query) use($companyId, $session) {
+                ->whereHas("warehouse", function ($query) use ($companyId, $session) {
 
                     $query->where("company_id", $companyId)
-                          ->where("branch_id", $session->branch_id);
+                        ->where("branch_id", $session->branch_id);
 
                 })
-                ->whereHas("item", fn($query) => $query->where("company_id", $companyId))
+                ->whereHas("item", fn ($query) => $query->where("company_id", $companyId))
                 ->where("warehouse_id", $warehouseId)
                 ->where("item_id", $itemId)
                 ->first();
@@ -607,7 +605,7 @@ final class CashRegisterService {
             $difference = Utilities::round($countedQuantity - $systemQuantity, null, $companyId);
             $movement = null;
 
-            if(abs($difference) >= 0.00001) {
+            if (abs($difference) >= 0.00001) {
 
                 $movement = InventoryMovementService::apply([
                     "company_id" => $companyId,
@@ -622,9 +620,9 @@ final class CashRegisterService {
                     "metadata" => [
                         "cash_session_id" => $session->id,
                         "cash_register_id" => $session->cash_register_id,
-                        "observation" => $count["observation"] ?? null
+                        "observation" => $count["observation"] ?? null,
                     ],
-                    "allow_negative" => false
+                    "allow_negative" => false,
                 ]);
 
             }
@@ -641,7 +639,7 @@ final class CashRegisterService {
                 "difference_quantity" => $difference,
                 "observation" => $count["observation"] ?? null,
                 "status" => $movement ? "adjusted" : "ignored",
-                "created_by" => $userId
+                "created_by" => $userId,
             ]);
 
         }
@@ -651,23 +649,23 @@ final class CashRegisterService {
     private function branchHasCountableInventory(int $companyId, int $branchId): bool {
 
         return WarehouseItem::query()
-                            ->where("company_id", $companyId)
-                            ->where("status", "active")
-                            ->whereHas("warehouse", function($query) use($companyId, $branchId) {
+            ->where("company_id", $companyId)
+            ->where("status", "active")
+            ->whereHas("warehouse", function ($query) use ($companyId, $branchId) {
 
-                                $query->where("company_id", $companyId)
-                                      ->where("branch_id", $branchId)
-                                      ->where("status", "active");
+                $query->where("company_id", $companyId)
+                    ->where("branch_id", $branchId)
+                    ->where("status", "active");
 
-                            })
-                            ->whereHas("item", function($query) use($companyId) {
+            })
+            ->whereHas("item", function ($query) use ($companyId) {
 
-                                $query->where("company_id", $companyId)
-                                      ->where("type", "product")
-                                      ->where("status", "active");
+                $query->where("company_id", $companyId)
+                    ->where("type", "product")
+                    ->where("status", "active");
 
-                            })
-                            ->exists();
+            })
+            ->exists();
 
     }
 
@@ -677,14 +675,14 @@ final class CashRegisterService {
             "opening" => 0,
             "expected" => 0,
             "counted" => 0,
-            "difference" => 0
+            "difference" => 0,
         ];
 
     }
 
     private function manualMovementLabel(string $movementType): string {
 
-        return match($movementType) {
+        return match ($movementType) {
             "income" => "Ingreso manual de caja",
             "expense" => "Salida manual de caja",
             "adjustment" => "Ajuste manual de caja",
@@ -697,9 +695,9 @@ final class CashRegisterService {
 
         do {
 
-            $code = "CAJ-" . strtoupper(substr(bin2hex(random_bytes(4)), 0, 6));
+            $code = "CAJ-".strtoupper(substr(bin2hex(random_bytes(4)), 0, 6));
 
-        }while(CashRegister::query()->where("company_id", $companyId)->where("code", $code)->exists());
+        } while (CashRegister::query()->where("company_id", $companyId)->where("code", $code)->exists());
 
         return $code;
 
@@ -709,10 +707,9 @@ final class CashRegisterService {
 
         $allowedIds = $this->allowedCashRegisterIds($companyId, $userId);
 
-        if($allowedIds !== null && !in_array($cashRegisterId, $allowedIds, true)) {
+        if ($allowedIds !== null && ! in_array($cashRegisterId, $allowedIds, true)) {
 
             throw new RuntimeException("No tienes acceso a la caja seleccionada.");
-
         }
 
     }
@@ -723,5 +720,4 @@ final class CashRegisterService {
         SaleConfigService::clearAllCache($companyId);
 
     }
-
 }

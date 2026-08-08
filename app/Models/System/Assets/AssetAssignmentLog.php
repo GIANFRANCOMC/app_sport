@@ -3,21 +3,23 @@
 namespace App\Models\System\Assets;
 
 use App\Helpers\System\Utilities;
+use App\Models\System\Organizations\{Branch};
+use App\Models\System\Organizations\{User};
 use Illuminate\Database\Eloquent\Model;
 
-use App\Models\System\Organizations\{User};
-use App\Models\System\Organizations\{Branch};
-
 class AssetAssignmentLog extends Model {
+    protected $table = "asset_assignment_logs";
 
-    protected $table               = "asset_assignment_logs";
-    protected $primaryKey          = "id";
-    public $incrementing           = true;
-    public $timestamps             = true;
+    protected $primaryKey = "id";
+
+    public $incrementing = true;
+
+    public $timestamps = true;
+
     public static $snakeAttributes = true;
 
     protected $appends = [
-        "formatted_action_type"
+        "formatted_action_type",
     ];
 
     protected $fillable = [
@@ -37,7 +39,7 @@ class AssetAssignmentLog extends Model {
         "created_at",
         "created_by",
         "updated_at",
-        "updated_by"
+        "updated_by",
     ];
 
     // Appends
@@ -54,7 +56,7 @@ class AssetAssignmentLog extends Model {
             ["code" => "assigned", "label" => "Asignado"],
             ["code" => "transferred", "label" => "Transferencia"],
             ["code" => "returned", "label" => "Devuelto"],
-            ["code" => "retired", "label" => "Retirado"]
+            ["code" => "retired", "label" => "Retirado"],
         ];
 
         return Utilities::getValues($actionTypes, $type, $code);
@@ -109,5 +111,4 @@ class AssetAssignmentLog extends Model {
         return $this->belongsTo(Branch::class, "to_branch_id", "id");
 
     }
-
 }

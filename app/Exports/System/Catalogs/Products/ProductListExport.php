@@ -4,30 +4,33 @@ declare(strict_types=1);
 
 namespace App\Exports\System\Catalogs\Products;
 
-use App\Models\System\Catalogs\Item;
 use App\Helpers\System\Utilities;
+use App\Models\System\Catalogs\Item;
 use App\Services\System\Catalogs\Products\ProductService;
 use Illuminate\Database\Eloquent\Builder;
-use Maatwebsite\Excel\Concerns\{
-    FromQuery,
-    WithColumnWidths,
-    WithCustomValueBinder,
-    WithEvents,
-    WithHeadings,
-    WithMapping,
-    WithStyles
-};
+use Maatwebsite\Excel\Concerns\FromQuery;
+use Maatwebsite\Excel\Concerns\WithColumnWidths;
+use Maatwebsite\Excel\Concerns\WithCustomValueBinder;
+use Maatwebsite\Excel\Concerns\WithEvents;
+use Maatwebsite\Excel\Concerns\WithHeadings;
+use Maatwebsite\Excel\Concerns\WithMapping;
+use Maatwebsite\Excel\Concerns\WithStyles;
 use Maatwebsite\Excel\Events\AfterSheet;
-use PhpOffice\PhpSpreadsheet\Cell\{Cell, DataType, DefaultValueBinder};
-use PhpOffice\PhpSpreadsheet\Style\{Alignment, Border, Fill};
+use PhpOffice\PhpSpreadsheet\Cell\Cell;
+use PhpOffice\PhpSpreadsheet\Cell\DataType;
+use PhpOffice\PhpSpreadsheet\Cell\DefaultValueBinder;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\Border;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
 final class ProductListExport extends DefaultValueBinder implements FromQuery, WithColumnWidths, WithCustomValueBinder, WithEvents, WithHeadings, WithMapping, WithStyles {
-
     private const LAST_COLUMN = "R";
 
     private array $alertRows = [];
+
     private array $healthyRows = [];
+
     private int $currentRow = 1;
 
     public function __construct(
@@ -62,7 +65,7 @@ final class ProductListExport extends DefaultValueBinder implements FromQuery, W
             "Detalle por almacén",
             "Visible para clientes",
             "Precio visible",
-            "Estado"
+            "Estado",
         ];
 
     }
@@ -74,17 +77,16 @@ final class ProductListExport extends DefaultValueBinder implements FromQuery, W
 
         $warehouseItems = $item->warehouseItems;
         $alertCount = $warehouseItems
-            ->filter(fn($warehouseItem) =>
-                (float) ($warehouseItem->quantity ?? 0) <= (float) ($warehouseItem->minimum_stock ?? 0)
+            ->filter(fn ($warehouseItem) => (float) ($warehouseItem->quantity ?? 0) <= (float) ($warehouseItem->minimum_stock ?? 0)
             )
             ->count();
         $requiresAttention = $warehouseItems->isEmpty() || $alertCount > 0;
 
-        if($requiresAttention) {
+        if ($requiresAttention) {
 
             $this->alertRows[] = $this->currentRow;
 
-        }else {
+        } else {
 
             $this->healthyRows[] = $this->currentRow;
 
@@ -98,7 +100,7 @@ final class ProductListExport extends DefaultValueBinder implements FromQuery, W
             ->implode(", ");
 
         $inventoryDetail = $warehouseItems
-            ->map(function($warehouseItem) {
+            ->map(function ($warehouseItem) {
 
                 $branchName = $warehouseItem->warehouse?->branch?->name;
                 $warehouseName = $warehouseItem->warehouse?->name ?? "Almacén";
@@ -131,7 +133,7 @@ final class ProductListExport extends DefaultValueBinder implements FromQuery, W
             $inventoryDetail,
             $item->see_my_web ? "Sí" : "No",
             $item->see_my_web && $item->see_my_web_price ? "Sí" : "No",
-            $item->formatted_status
+            $item->formatted_status,
         ];
 
     }
@@ -156,7 +158,7 @@ final class ProductListExport extends DefaultValueBinder implements FromQuery, W
             "O" => 55,
             "P" => 20,
             "Q" => 17,
-            "R" => 14
+            "R" => 14,
         ];
 
     }
@@ -165,7 +167,7 @@ final class ProductListExport extends DefaultValueBinder implements FromQuery, W
 
         $textColumns = ["A", "B", "C", "D", "E", "F", "G", "N", "O", "P", "Q", "R"];
 
-        if(in_array($cell->getColumn(), $textColumns, true) && $cell->getRow() > 1) {
+        if (in_array($cell->getColumn(), $textColumns, true) && $cell->getRow() > 1) {
 
             $cell->setValueExplicit((string) ($value ?? ""), DataType::TYPE_STRING);
 
@@ -180,31 +182,31 @@ final class ProductListExport extends DefaultValueBinder implements FromQuery, W
     public function styles(Worksheet $sheet): array {
 
         $sheet->freezePane("A2");
-        $sheet->setAutoFilter("A1:" . self::LAST_COLUMN . "1");
-        $sheet->getStyle("A1:" . self::LAST_COLUMN . "1")->applyFromArray([
+        $sheet->setAutoFilter("A1:".self::LAST_COLUMN."1");
+        $sheet->getStyle("A1:".self::LAST_COLUMN."1")->applyFromArray([
             "font" => [
                 "bold" => true,
-                "color" => ["rgb" => "FFFFFF"]
+                "color" => ["rgb" => "FFFFFF"],
             ],
             "fill" => [
                 "fillType" => Fill::FILL_SOLID,
-                "startColor" => ["rgb" => "1A1A35"]
+                "startColor" => ["rgb" => "1A1A35"],
             ],
             "alignment" => [
                 "horizontal" => Alignment::HORIZONTAL_CENTER,
-                "vertical" => Alignment::VERTICAL_CENTER
+                "vertical" => Alignment::VERTICAL_CENTER,
             ],
             "borders" => [
                 "bottom" => [
                     "borderStyle" => Border::BORDER_MEDIUM,
-                    "color" => ["rgb" => "2899E5"]
-                ]
-            ]
+                    "color" => ["rgb" => "2899E5"],
+                ],
+            ],
         ]);
         $sheet->getRowDimension(1)->setRowHeight(24);
-        $sheet->getStyle("H:J")->getNumberFormat()->setFormatCode('#,##0.00');
-        $sheet->getStyle("K:K")->getNumberFormat()->setFormatCode('#,##0.00');
-        $sheet->getStyle("A:" . self::LAST_COLUMN)->getAlignment()->setVertical(Alignment::VERTICAL_CENTER);
+        $sheet->getStyle("H:J")->getNumberFormat()->setFormatCode("#,##0.00");
+        $sheet->getStyle("K:K")->getNumberFormat()->setFormatCode("#,##0.00");
+        $sheet->getStyle("A:".self::LAST_COLUMN)->getAlignment()->setVertical(Alignment::VERTICAL_CENTER);
         $sheet->getStyle("E:F")->getAlignment()->setWrapText(true);
         $sheet->getStyle("O:O")->getAlignment()->setWrapText(true);
 
@@ -215,33 +217,33 @@ final class ProductListExport extends DefaultValueBinder implements FromQuery, W
     public function registerEvents(): array {
 
         return [
-            AfterSheet::class => function(AfterSheet $event) {
+            AfterSheet::class => function (AfterSheet $event) {
 
-                foreach($this->alertRows as $row) {
+                foreach ($this->alertRows as $row) {
 
                     $event->sheet->getStyle("M{$row}:N{$row}")->applyFromArray([
                         "font" => ["bold" => true, "color" => ["rgb" => "991B1B"]],
                         "fill" => [
                             "fillType" => Fill::FILL_SOLID,
-                            "startColor" => ["rgb" => "FEE2E2"]
-                        ]
+                            "startColor" => ["rgb" => "FEE2E2"],
+                        ],
                     ]);
 
                 }
 
-                foreach($this->healthyRows as $row) {
+                foreach ($this->healthyRows as $row) {
 
                     $event->sheet->getStyle("N{$row}")->applyFromArray([
                         "font" => ["color" => ["rgb" => "047857"]],
                         "fill" => [
                             "fillType" => Fill::FILL_SOLID,
-                            "startColor" => ["rgb" => "D1FAE5"]
-                        ]
+                            "startColor" => ["rgb" => "D1FAE5"],
+                        ],
                     ]);
 
                 }
 
-            }
+            },
         ];
 
     }
@@ -251,5 +253,4 @@ final class ProductListExport extends DefaultValueBinder implements FromQuery, W
         return Utilities::formatDecimal($value, $this->companyId);
 
     }
-
 }

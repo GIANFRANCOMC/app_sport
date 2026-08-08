@@ -7,8 +7,8 @@ namespace App\Models\System\Organizations;
 use Illuminate\Database\Eloquent\Model;
 
 final class BookComplaintAttachment extends Model {
-
     protected $table = "book_complaint_attachments";
+
     public $timestamps = false;
 
     protected $fillable = [
@@ -18,7 +18,7 @@ final class BookComplaintAttachment extends Model {
         "file_path",
         "mime_type",
         "file_size",
-        "created_at"
+        "created_at",
     ];
 
     protected $casts = ["file_size" => "integer", "created_at" => "datetime"];
@@ -28,5 +28,4 @@ final class BookComplaintAttachment extends Model {
         return $this->belongsTo(BookComplaint::class, "book_complaint_id");
 
     }
-
 }

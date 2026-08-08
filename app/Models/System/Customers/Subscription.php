@@ -3,18 +3,22 @@
 namespace App\Models\System\Customers;
 
 use App\Helpers\System\Utilities;
+use App\Models\System\Organizations\Branch;
+use App\Models\System\Organizations\Company;
+use App\Models\System\Sales\SaleBody;
+use App\Models\System\Sales\SaleHeader;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 
-use App\Models\System\Organizations\{Branch, Company};
-use App\Models\System\Sales\{SaleBody, SaleHeader};
-
 class Subscription extends Model {
+    protected $table = "subscriptions";
 
-    protected $table               = "subscriptions";
-    protected $primaryKey          = "id";
-    public $incrementing           = true;
-    public $timestamps             = true;
+    protected $primaryKey = "id";
+
+    public $incrementing = true;
+
+    public $timestamps = true;
+
     public static $snakeAttributes = true;
 
     protected $appends = [
@@ -22,7 +26,7 @@ class Subscription extends Model {
         "formatted_type",
         "formatted_status",
         "remaining_days",
-        "remaining_time_label"
+        "remaining_time_label",
     ];
 
     protected $fillable = [
@@ -48,12 +52,12 @@ class Subscription extends Model {
         "updated_at",
         "updated_by",
         "canceled_at",
-        "canceled_by"
+        "canceled_by",
     ];
 
     public function getFormattedDurationAttribute(): string {
 
-        if(Utilities::isDefined($this->duration_type) && Utilities::isDefined($this->duration_value)) {
+        if (Utilities::isDefined($this->duration_type) && Utilities::isDefined($this->duration_value)) {
 
             $prop = $this->duration_value > 1 ? "plural" : "label";
             $durationType = self::getDurationTypes("first", $this->attributes["duration_type"] ?? "")[$prop] ?? "";
@@ -82,7 +86,7 @@ class Subscription extends Model {
 
         $endDate = $this->attributes["end_date"] ?? null;
 
-        if(!Utilities::isDefined($endDate)) {
+        if (! Utilities::isDefined($endDate)) {
 
             return null;
 
@@ -96,13 +100,13 @@ class Subscription extends Model {
 
         $remainingDays = $this->remaining_days;
 
-        if($remainingDays === null) {
+        if ($remainingDays === null) {
 
             return "";
 
         }
 
-        if($remainingDays < 0) {
+        if ($remainingDays < 0) {
 
             $days = abs($remainingDays);
 
@@ -110,7 +114,7 @@ class Subscription extends Model {
 
         }
 
-        if($remainingDays === 0) {
+        if ($remainingDays === 0) {
 
             return "Vence hoy";
 
@@ -127,7 +131,7 @@ class Subscription extends Model {
             ["code" => "day", "label" => "Día", "plural" => "Días"],
             ["code" => "today", "label" => "Rutina", "plural" => "Rutinas"],
             ["code" => "month", "label" => "Mes", "plural" => "Meses"],
-            ["code" => "year", "label" => "Año", "plural" => "Años"]
+            ["code" => "year", "label" => "Año", "plural" => "Años"],
         ];
 
         return Utilities::getValues($types, $type, $code);
@@ -138,7 +142,7 @@ class Subscription extends Model {
 
         $types = [
             ["code" => "sale", "label" => "Venta"],
-            ["code" => "manual", "label" => "Manual"]
+            ["code" => "manual", "label" => "Manual"],
         ];
 
         return Utilities::getValues($types, $type, $code);
@@ -150,7 +154,7 @@ class Subscription extends Model {
         $statuses = [
             ["code" => "active", "label" => "Vigente"],
             ["code" => "inactive", "label" => "Vencida"],
-            ["code" => "canceled", "label" => "Anulada"]
+            ["code" => "canceled", "label" => "Anulada"],
         ];
 
         return Utilities::getValues($statuses, $type, $code);
@@ -198,5 +202,4 @@ class Subscription extends Model {
         return $this->hasMany(self::class, "renewed_from_id", "id");
 
     }
-
 }

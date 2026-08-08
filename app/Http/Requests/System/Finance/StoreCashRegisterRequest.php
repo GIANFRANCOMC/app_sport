@@ -7,7 +7,6 @@ namespace App\Http\Requests\System\Finance;
 use App\Http\Requests\System\Base\CompanyFormRequest;
 
 final class StoreCashRegisterRequest extends CompanyFormRequest {
-
     public function rules(): array {
 
         return [
@@ -15,7 +14,7 @@ final class StoreCashRegisterRequest extends CompanyFormRequest {
             "code" => ["nullable", "string", "max:30"],
             "name" => ["required", "string", "max:100"],
             "is_main" => ["nullable", "boolean"],
-            "status" => ["required", "in:active,inactive"]
+            "status" => ["required", "in:active,inactive"],
         ];
 
     }
@@ -25,5 +24,4 @@ final class StoreCashRegisterRequest extends CompanyFormRequest {
         return ["code", "name", "status"];
 
     }
-
 }

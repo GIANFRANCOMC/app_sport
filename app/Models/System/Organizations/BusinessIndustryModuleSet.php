@@ -4,12 +4,10 @@ declare(strict_types=1);
 
 namespace App\Models\System\Organizations;
 
+use App\Models\System\General\SubSection;
 use Illuminate\Database\Eloquent\Model;
 
-use App\Models\System\General\SubSection;
-
 final class BusinessIndustryModuleSet extends Model {
-
     protected $table = "business_industry_module_sets";
 
     protected $fillable = [
@@ -22,11 +20,11 @@ final class BusinessIndustryModuleSet extends Model {
         "created_at",
         "created_by",
         "updated_at",
-        "updated_by"
+        "updated_by",
     ];
 
     protected $casts = [
-        "is_enabled_by_default" => "boolean"
+        "is_enabled_by_default" => "boolean",
     ];
 
     public function subSection() {
@@ -34,5 +32,4 @@ final class BusinessIndustryModuleSet extends Model {
         return $this->belongsTo(SubSection::class, "sub_section_id");
 
     }
-
 }

@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace App\Models\System\Finance;
 
-use Illuminate\Database\Eloquent\Model;
 use App\Models\System\Organizations\Branch;
+use Illuminate\Database\Eloquent\Model;
 
 final class CashRegister extends Model {
-
     protected $table = "cash_registers";
 
     protected $fillable = [
@@ -21,11 +20,11 @@ final class CashRegister extends Model {
         "created_at",
         "created_by",
         "updated_at",
-        "updated_by"
+        "updated_by",
     ];
 
     protected $casts = [
-        "is_main" => "boolean"
+        "is_main" => "boolean",
     ];
 
     public function branch() {
@@ -43,9 +42,8 @@ final class CashRegister extends Model {
     public function openSession() {
 
         return $this->hasOne(CashSession::class, "cash_register_id", "id")
-                    ->where("status", "open")
-                    ->latest("opened_at");
+            ->where("status", "open")
+            ->latest("opened_at");
 
     }
-
 }

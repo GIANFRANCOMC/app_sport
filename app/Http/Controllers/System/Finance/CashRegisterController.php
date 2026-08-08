@@ -4,22 +4,19 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\System\Finance;
 
+use App\Http\Controllers\System\Base\BaseController;
+use App\Http\Requests\System\Finance\CloseCashSessionRequest;
+use App\Http\Requests\System\Finance\OpenCashSessionRequest;
+use App\Http\Requests\System\Finance\StoreCashMovementRequest;
+use App\Http\Requests\System\Finance\StoreCashRegisterRequest;
+use App\Services\System\Finance\CashRegisterConfigService;
+use App\Services\System\Finance\CashRegisterService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use RuntimeException;
 
-use App\Http\Controllers\System\Base\BaseController;
-use App\Http\Requests\System\Finance\{
-    CloseCashSessionRequest,
-    OpenCashSessionRequest,
-    StoreCashMovementRequest,
-    StoreCashRegisterRequest
-};
-use App\Services\System\Finance\{CashRegisterConfigService, CashRegisterService};
-
 final class CashRegisterController extends BaseController {
-
     public function __construct(private readonly CashRegisterService $service) {
 
     }
@@ -52,7 +49,7 @@ final class CashRegisterController extends BaseController {
 
         return response()->json([
             "bool" => true,
-            "data" => $this->service->listRegisters($this->getCompanyId(), $this->getUserId())
+            "data" => $this->service->listRegisters($this->getCompanyId(), $this->getUserId()),
         ]);
 
     }
@@ -70,14 +67,14 @@ final class CashRegisterController extends BaseController {
             return response()->json([
                 "bool" => true,
                 "msg" => "Caja registrada correctamente.",
-                "data" => $register
+                "data" => $register,
             ]);
 
-        }catch(\Throwable $exception) {
+        } catch (\Throwable $exception) {
 
             return response()->json([
                 "bool" => false,
-                "msg" => $exception->getMessage()
+                "msg" => $exception->getMessage(),
             ], 422);
 
         }
@@ -93,7 +90,7 @@ final class CashRegisterController extends BaseController {
                 $this->cashFilters($request),
                 $this->getPerPage($request),
                 $this->getUserId()
-            )
+            ),
         ]);
 
     }
@@ -107,7 +104,7 @@ final class CashRegisterController extends BaseController {
                 $this->cashFilters($request),
                 $this->getPerPage($request),
                 $this->getUserId()
-            )
+            ),
         ]);
 
     }
@@ -116,7 +113,7 @@ final class CashRegisterController extends BaseController {
 
         return response()->json([
             "bool" => true,
-            "data" => $this->service->summary($this->getCompanyId(), $this->cashFilters($request), $this->getUserId())
+            "data" => $this->service->summary($this->getCompanyId(), $this->cashFilters($request), $this->getUserId()),
         ]);
 
     }
@@ -138,10 +135,10 @@ final class CashRegisterController extends BaseController {
             "Método de pago",
             "Referencia",
             "Responsable",
-            "Importe"
+            "Importe",
         ], ";");
 
-        foreach($rows as $row) {
+        foreach ($rows as $row) {
 
             fputcsv($handle, [
                 $row->occurred_at,
@@ -151,7 +148,7 @@ final class CashRegisterController extends BaseController {
                 $row->paymentMethod?->name ?? "Efectivo / caja",
                 $row->reference,
                 $row->user?->name,
-                number_format((float) $row->amount, 2, ".", "")
+                number_format((float) $row->amount, 2, ".", ""),
             ], ";");
 
         }
@@ -162,7 +159,7 @@ final class CashRegisterController extends BaseController {
 
         return response("\xEF\xBB\xBF".$csv, 200, [
             "Content-Type" => "text/csv; charset=UTF-8",
-            "Content-Disposition" => "attachment; filename=gympe-caja-movimientos-".now()->format("Ymd-His").".csv"
+            "Content-Disposition" => "attachment; filename=gympe-caja-movimientos-".now()->format("Ymd-His").".csv",
         ]);
 
     }
@@ -180,14 +177,14 @@ final class CashRegisterController extends BaseController {
             return response()->json([
                 "bool" => true,
                 "msg" => "Caja aperturada correctamente.",
-                "data" => $session
+                "data" => $session,
             ]);
 
-        }catch(\Throwable $exception) {
+        } catch (\Throwable $exception) {
 
             return response()->json([
                 "bool" => false,
-                "msg" => $exception->getMessage()
+                "msg" => $exception->getMessage(),
             ], 422);
 
         }
@@ -207,14 +204,14 @@ final class CashRegisterController extends BaseController {
             return response()->json([
                 "bool" => true,
                 "msg" => "Caja cerrada correctamente. Revisa el arqueo para confirmar diferencias.",
-                "data" => $session
+                "data" => $session,
             ]);
 
-        }catch(RuntimeException $exception) {
+        } catch (RuntimeException $exception) {
 
             return response()->json([
                 "bool" => false,
-                "msg" => $exception->getMessage()
+                "msg" => $exception->getMessage(),
             ], 422);
 
         }
@@ -234,14 +231,14 @@ final class CashRegisterController extends BaseController {
             return response()->json([
                 "bool" => true,
                 "msg" => "Movimiento registrado correctamente.",
-                "data" => $movement
+                "data" => $movement,
             ]);
 
-        }catch(RuntimeException $exception) {
+        } catch (RuntimeException $exception) {
 
             return response()->json([
                 "bool" => false,
-                "msg" => $exception->getMessage()
+                "msg" => $exception->getMessage(),
             ], 422);
 
         }
@@ -250,8 +247,7 @@ final class CashRegisterController extends BaseController {
 
     private function cashFilters(Request $request): array {
 
-        return array_filter($request->input("filter", []), fn($value) => $value !== null && $value !== "");
+        return array_filter($request->input("filter", []), fn ($value) => $value !== null && $value !== "");
 
     }
-
 }

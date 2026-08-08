@@ -8,11 +8,10 @@ use App\Models\System\Catalogs\Item;
 use Illuminate\Database\Eloquent\Model;
 
 class SaleDeliveryItem extends Model {
-
     protected $table = "sale_delivery_items";
 
     protected $appends = [
-        "formatted_status"
+        "formatted_status",
     ];
 
     protected $fillable = [
@@ -27,13 +26,13 @@ class SaleDeliveryItem extends Model {
         "created_at",
         "created_by",
         "updated_at",
-        "updated_by"
+        "updated_by",
     ];
 
     protected $casts = [
-        "quantity_ordered"   => "App\\Casts\\System\\ConfigurableDecimal",
+        "quantity_ordered" => "App\\Casts\\System\\ConfigurableDecimal",
         "quantity_delivered" => "App\\Casts\\System\\ConfigurableDecimal",
-        "quantity_pending"   => "App\\Casts\\System\\ConfigurableDecimal"
+        "quantity_pending" => "App\\Casts\\System\\ConfigurableDecimal",
     ];
 
     public function getFormattedStatusAttribute(): string {
@@ -59,5 +58,4 @@ class SaleDeliveryItem extends Model {
         return $this->belongsTo(Item::class, "item_id", "id");
 
     }
-
 }

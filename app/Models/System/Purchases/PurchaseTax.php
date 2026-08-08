@@ -8,7 +8,6 @@ use App\Models\System\Finance\Tax;
 use Illuminate\Database\Eloquent\Model;
 
 final class PurchaseTax extends Model {
-
     protected $table = "purchase_taxes";
 
     protected $fillable = [
@@ -28,7 +27,7 @@ final class PurchaseTax extends Model {
         "created_at",
         "created_by",
         "updated_at",
-        "updated_by"
+        "updated_by",
     ];
 
     protected $casts = [
@@ -36,7 +35,7 @@ final class PurchaseTax extends Model {
         "is_required" => "boolean",
         "quantity" => "integer",
         "base_amount" => "App\\Casts\\System\\ConfigurableDecimal",
-        "amount" => "App\\Casts\\System\\ConfigurableDecimal"
+        "amount" => "App\\Casts\\System\\ConfigurableDecimal",
     ];
 
     public function tax() {
@@ -44,5 +43,4 @@ final class PurchaseTax extends Model {
         return $this->belongsTo(Tax::class, "tax_id");
 
     }
-
 }

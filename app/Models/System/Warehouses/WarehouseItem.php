@@ -3,20 +3,22 @@
 namespace App\Models\System\Warehouses;
 
 use App\Helpers\System\Utilities;
+use App\Models\System\Catalogs\{Item};
 use Illuminate\Database\Eloquent\Model;
 
-use App\Models\System\Catalogs\{Item};
-
 class WarehouseItem extends Model {
+    protected $table = "warehouse_items";
 
-    protected $table               = "warehouse_items";
-    protected $primaryKey          = "id";
-    public $incrementing           = true;
-    public $timestamps             = true;
+    protected $primaryKey = "id";
+
+    public $incrementing = true;
+
+    public $timestamps = true;
+
     public static $snakeAttributes = true;
 
     protected $appends = [
-        "formatted_status"
+        "formatted_status",
     ];
 
     protected $fillable = [
@@ -31,14 +33,14 @@ class WarehouseItem extends Model {
         "created_at",
         "created_by",
         "updated_at",
-        "updated_by"
+        "updated_by",
     ];
 
     protected $casts = [
         "quantity" => "App\\Casts\\System\\ConfigurableDecimal",
         "minimum_stock" => "App\\Casts\\System\\ConfigurableDecimal",
         "average_cost" => "App\\Casts\\System\\ConfigurableDecimal",
-        "inventory_value" => "App\\Casts\\System\\ConfigurableDecimal"
+        "inventory_value" => "App\\Casts\\System\\ConfigurableDecimal",
     ];
 
     // Appends
@@ -53,7 +55,7 @@ class WarehouseItem extends Model {
 
         $statuses = [
             ["code" => "active", "label" => "Activo"],
-            ["code" => "inactive", "label" => "Inactivo"]
+            ["code" => "inactive", "label" => "Inactivo"],
         ];
 
         return Utilities::getValues($statuses, $type, $code);
@@ -78,5 +80,4 @@ class WarehouseItem extends Model {
         return $this->hasMany(InventoryStockAlert::class, "warehouse_item_id");
 
     }
-
 }

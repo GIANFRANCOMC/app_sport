@@ -2,32 +2,37 @@
 
 namespace Database\Seeders;
 
+use App\Helpers\System\Utilities;
+use App\Models\System\Catalogs\Brand;
+use App\Models\System\Catalogs\Category;
+use App\Models\System\Catalogs\CategoryItem;
+use App\Models\System\Catalogs\Item;
+use App\Models\System\Warehouses\InventoryMovement;
+use App\Models\System\Warehouses\Warehouse;
+use App\Models\System\Warehouses\WarehouseItem;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
-use App\Helpers\System\Utilities;
-use App\Models\System\Catalogs\{Brand, Category, CategoryItem, Item};
-use App\Models\System\Warehouses\{InventoryMovement, Warehouse, WarehouseItem};
-
 class CommercialCatalogSeeder extends Seeder {
-
     private const COMPANY_ID = 1;
+
     private const USER_ID = 1;
+
     private const CURRENCY_ID = 1;
 
     public function run(): void {
 
-        DB::transaction(function() {
+        DB::transaction(function () {
 
             $brands = $this->seedBrands();
             $categories = $this->seedCategories();
 
-            foreach($this->items($brands) as $payload) {
+            foreach ($this->items($brands) as $payload) {
 
                 $item = $this->upsertItem($payload);
                 $this->syncCategories($item, $payload["categories"], $categories);
 
-                if($payload["type"] === "product") {
+                if ($payload["type"] === "product") {
 
                     $this->syncInventory($item, $payload["inventory"]);
 
@@ -44,23 +49,23 @@ class CommercialCatalogSeeder extends Seeder {
         $records = [
             ["internal_code" => "MAR-HOLA", "name" => "Hola", "description" => "Marca demo para bebidas y productos de consumo."],
             ["internal_code" => "MAR-GYMPE", "name" => "Gympe", "description" => "Marca propia para productos deportivos."],
-            ["internal_code" => "MAR-WELL", "name" => "Wellness", "description" => "Marca demo para bienestar y cuidado personal."]
+            ["internal_code" => "MAR-WELL", "name" => "Wellness", "description" => "Marca demo para bienestar y cuidado personal."],
         ];
 
         return collect($records)
-            ->mapWithKeys(function(array $record) {
+            ->mapWithKeys(function (array $record) {
 
                 $brand = Brand::updateOrCreate(
                     [
                         "company_id" => self::COMPANY_ID,
-                        "internal_code" => $record["internal_code"]
+                        "internal_code" => $record["internal_code"],
                     ],
                     [
                         "name" => $record["name"],
                         "description" => $record["description"],
                         "status" => "active",
                         "created_by" => self::USER_ID,
-                        "updated_by" => self::USER_ID
+                        "updated_by" => self::USER_ID,
                     ]
                 );
 
@@ -78,23 +83,23 @@ class CommercialCatalogSeeder extends Seeder {
             ["internal_code" => "CAT-SUP", "name" => "Suplementos", "description" => "Proteínas, barras y complementos deportivos."],
             ["internal_code" => "CAT-ACC", "name" => "Accesorios", "description" => "Implementos y artículos de entrenamiento."],
             ["internal_code" => "CAT-SER", "name" => "Servicios", "description" => "Servicios presenciales o personalizados."],
-            ["internal_code" => "CAT-MEM", "name" => "Membresias", "description" => "Planes comerciales con vigencia."]
+            ["internal_code" => "CAT-MEM", "name" => "Membresias", "description" => "Planes comerciales con vigencia."],
         ];
 
         return collect($records)
-            ->mapWithKeys(function(array $record) {
+            ->mapWithKeys(function (array $record) {
 
                 $category = Category::updateOrCreate(
                     [
                         "company_id" => self::COMPANY_ID,
-                        "internal_code" => $record["internal_code"]
+                        "internal_code" => $record["internal_code"],
                     ],
                     [
                         "name" => $record["name"],
                         "description" => $record["description"],
                         "status" => "active",
                         "created_by" => self::USER_ID,
-                        "updated_by" => self::USER_ID
+                        "updated_by" => self::USER_ID,
                     ]
                 );
 
@@ -137,7 +142,7 @@ class CommercialCatalogSeeder extends Seeder {
             ["code" => "PRE300", "name" => "Pre entreno 300 g", "description" => "Suplemento previo al entrenamiento.", "price" => 110.00, "min" => 98.00, "max" => 140.00, "brand" => "Gympe", "categories" => ["Suplementos"], "quantity" => 7, "minimum" => 3, "cost" => 72.00],
             ["code" => "OMEGA", "name" => "Omega 3 100 caps", "description" => "Complemento de bienestar general.", "price" => 65.00, "min" => 58.00, "max" => 85.00, "brand" => "Wellness", "categories" => ["Suplementos"], "quantity" => 11, "minimum" => 4, "cost" => 39.00],
             ["code" => "MULTIV", "name" => "Multivitaminico", "description" => "Complemento diario de vitaminas y minerales.", "price" => 59.00, "min" => 52.00, "max" => 78.00, "brand" => "Wellness", "categories" => ["Suplementos"], "quantity" => 10, "minimum" => 4, "cost" => 35.00],
-            ["code" => "CAFPRO", "name" => "Cafe proteico", "description" => "Bebida proteica lista para consumo.", "price" => 9.50, "min" => 8.00, "max" => 12.50, "brand" => "Hola", "categories" => ["Bebidas", "Suplementos"], "quantity" => 21, "minimum" => 6, "cost" => 5.40]
+            ["code" => "CAFPRO", "name" => "Cafe proteico", "description" => "Bebida proteica lista para consumo.", "price" => 9.50, "min" => 8.00, "max" => 12.50, "brand" => "Hola", "categories" => ["Bebidas", "Suplementos"], "quantity" => 21, "minimum" => 6, "cost" => 5.40],
         ];
 
         $services = [
@@ -150,7 +155,7 @@ class CommercialCatalogSeeder extends Seeder {
             ["code" => "FUNC", "name" => "Clase funcional", "description" => "Clase grupal de entrenamiento funcional.", "price" => 18.00, "min" => 15.00, "max" => 28.00],
             ["code" => "SPIN", "name" => "Clase spinning", "description" => "Clase grupal de bicicleta indoor.", "price" => 20.00, "min" => 16.00, "max" => 30.00],
             ["code" => "MOVIL", "name" => "Recuperacion movilidad", "description" => "Sesion guiada de movilidad y descarga.", "price" => 55.00, "min" => 48.00, "max" => 75.00],
-            ["code" => "PRUEBA", "name" => "Sesion prueba guiada", "description" => "Sesion de bienvenida para nuevos clientes.", "price" => 15.00, "min" => 10.00, "max" => 25.00]
+            ["code" => "PRUEBA", "name" => "Sesion prueba guiada", "description" => "Sesion de bienvenida para nuevos clientes.", "price" => 15.00, "min" => 10.00, "max" => 25.00],
         ];
 
         $subscriptions = [
@@ -163,12 +168,12 @@ class CommercialCatalogSeeder extends Seeder {
             ["code" => "SEMEST", "name" => "Membresia semestral", "description" => "Acceso por seis meses.", "price" => 600.00, "min" => 540.00, "max" => 720.00, "duration_type" => "month", "duration_value" => 6],
             ["code" => "ANUAL", "name" => "Membresia anual", "description" => "Acceso por doce meses.", "price" => 1050.00, "min" => 950.00, "max" => 1250.00, "duration_type" => "year", "duration_value" => 1],
             ["code" => "PREMM", "name" => "Membresia premium mensual", "description" => "Plan mensual con beneficios adicionales.", "price" => 180.00, "min" => 160.00, "max" => 230.00, "duration_type" => "month", "duration_value" => 1],
-            ["code" => "FAMIL", "name" => "Membresia familiar mensual", "description" => "Plan mensual para grupo familiar.", "price" => 300.00, "min" => 270.00, "max" => 380.00, "duration_type" => "month", "duration_value" => 1]
+            ["code" => "FAMIL", "name" => "Membresia familiar mensual", "description" => "Plan mensual para grupo familiar.", "price" => 300.00, "min" => 270.00, "max" => 380.00, "duration_type" => "month", "duration_value" => 1],
         ];
 
         $records = [];
 
-        foreach($products as $index => $product) {
+        foreach ($products as $index => $product) {
 
             $records[] = [
                 "internal_code" => "PRO-".$product["code"],
@@ -181,12 +186,12 @@ class CommercialCatalogSeeder extends Seeder {
                 "brand_id" => $brands[$product["brand"]]->id ?? null,
                 "type" => "product",
                 "categories" => $product["categories"],
-                "inventory" => ["quantity" => $product["quantity"], "minimum_stock" => $product["minimum"], "average_cost" => $product["cost"]]
+                "inventory" => ["quantity" => $product["quantity"], "minimum_stock" => $product["minimum"], "average_cost" => $product["cost"]],
             ];
 
         }
 
-        foreach($services as $service) {
+        foreach ($services as $service) {
 
             $records[] = [
                 "internal_code" => "SER-".$service["code"],
@@ -199,12 +204,12 @@ class CommercialCatalogSeeder extends Seeder {
                 "brand_id" => null,
                 "type" => "service",
                 "categories" => ["Servicios"],
-                "inventory" => []
+                "inventory" => [],
             ];
 
         }
 
-        foreach($subscriptions as $subscription) {
+        foreach ($subscriptions as $subscription) {
 
             $records[] = [
                 "internal_code" => "MEM-".$subscription["code"],
@@ -219,7 +224,7 @@ class CommercialCatalogSeeder extends Seeder {
                 "duration_type" => $subscription["duration_type"],
                 "duration_value" => $subscription["duration_value"],
                 "categories" => ["Membresias"],
-                "inventory" => []
+                "inventory" => [],
             ];
 
         }
@@ -233,7 +238,7 @@ class CommercialCatalogSeeder extends Seeder {
         return Item::updateOrCreate(
             [
                 "company_id" => self::COMPANY_ID,
-                "internal_code" => $payload["internal_code"]
+                "internal_code" => $payload["internal_code"],
             ],
             [
                 "brand_id" => $payload["brand_id"] ?? null,
@@ -252,7 +257,7 @@ class CommercialCatalogSeeder extends Seeder {
                 "see_my_web_price" => true,
                 "status" => "active",
                 "created_by" => self::USER_ID,
-                "updated_by" => self::USER_ID
+                "updated_by" => self::USER_ID,
             ]
         );
 
@@ -260,21 +265,23 @@ class CommercialCatalogSeeder extends Seeder {
 
     private function syncCategories(Item $item, array $categoryNames, array $categories): void {
 
-        foreach($categoryNames as $categoryName) {
+        foreach ($categoryNames as $categoryName) {
 
             $category = $categories[$categoryName] ?? null;
 
-            if(!$category) continue;
+            if (! $category) {
+                continue;
+            }
 
             CategoryItem::updateOrCreate(
                 [
                     "category_id" => $category->id,
-                    "item_id" => $item->id
+                    "item_id" => $item->id,
                 ],
                 [
                     "status" => "active",
                     "created_by" => self::USER_ID,
-                    "updated_by" => self::USER_ID
+                    "updated_by" => self::USER_ID,
                 ]
             );
 
@@ -285,11 +292,11 @@ class CommercialCatalogSeeder extends Seeder {
     private function syncInventory(Item $item, array $inventory): void {
 
         $warehouses = Warehouse::query()
-                               ->where("status", "active")
-                               ->whereHas("branch", fn($query) => $query->where("company_id", self::COMPANY_ID))
-                               ->get();
+            ->where("status", "active")
+            ->whereHas("branch", fn ($query) => $query->where("company_id", self::COMPANY_ID))
+            ->get();
 
-        foreach($warehouses as $warehouse) {
+        foreach ($warehouses as $warehouse) {
 
             $quantity = (float) ($inventory["quantity"] ?? 0);
             $minimumStock = (float) ($inventory["minimum_stock"] ?? 0);
@@ -299,7 +306,7 @@ class CommercialCatalogSeeder extends Seeder {
             WarehouseItem::updateOrCreate(
                 [
                     "warehouse_id" => $warehouse->id,
-                    "item_id" => $item->id
+                    "item_id" => $item->id,
                 ],
                 [
                     "quantity" => $quantity,
@@ -308,7 +315,7 @@ class CommercialCatalogSeeder extends Seeder {
                     "inventory_value" => $inventoryValue,
                     "status" => "active",
                     "created_by" => self::USER_ID,
-                    "updated_by" => self::USER_ID
+                    "updated_by" => self::USER_ID,
                 ]
             );
 
@@ -317,7 +324,7 @@ class CommercialCatalogSeeder extends Seeder {
                     "warehouse_id" => $warehouse->id,
                     "item_id" => $item->id,
                     "origin_type" => "commercial_catalog_seeder",
-                    "origin_id" => $item->id
+                    "origin_id" => $item->id,
                 ],
                 [
                     "company_id" => self::COMPANY_ID,
@@ -333,14 +340,13 @@ class CommercialCatalogSeeder extends Seeder {
                     "reason" => "Stock inicial generado por seeder comercial.",
                     "metadata" => [
                         "reference" => "SEED-CATALOG-{$item->internal_code}",
-                        "source" => "CommercialCatalogSeeder"
+                        "source" => "CommercialCatalogSeeder",
                     ],
-                    "created_at" => now()
+                    "created_at" => now(),
                 ]
             );
 
         }
 
     }
-
 }

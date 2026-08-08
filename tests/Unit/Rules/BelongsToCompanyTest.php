@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace Tests\Unit\Rules;
 
 use App\Rules\System\Defaults\BelongsToCompany;
-use Illuminate\Support\Facades\{Auth, DB};
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Mockery;
 use Tests\TestCase;
 
 class BelongsToCompanyTest extends TestCase {
-
     protected function setUp(): void {
 
         parent::setUp();
@@ -66,9 +66,9 @@ class BelongsToCompanyTest extends TestCase {
             ->andReturn($query);
 
         $query->shouldReceive("join")
-              ->once()
-              ->with("branches", "warehouses.branch_id", "=", "branches.id")
-              ->andReturnSelf();
+            ->once()
+            ->with("branches", "warehouses.branch_id", "=", "branches.id")
+            ->andReturnSelf();
         $query->shouldReceive("where")->once()->with("warehouses.id", 20)->andReturnSelf();
         $query->shouldReceive("where")->once()->with("branches.company_id", 7)->andReturnSelf();
         $query->shouldReceive("where")->once()->with("warehouses.status", "active")->andReturnSelf();
@@ -78,11 +78,11 @@ class BelongsToCompanyTest extends TestCase {
             "warehouses",
             [
                 "warehouses.status" => "active",
-                "branches.status" => "active"
+                "branches.status" => "active",
             ],
             null,
             [
-                ["branches", "warehouses.branch_id", "=", "branches.id"]
+                ["branches", "warehouses.branch_id", "=", "branches.id"],
             ],
             "branches.company_id",
             "warehouses.id"
@@ -105,7 +105,7 @@ class BelongsToCompanyTest extends TestCase {
 
         $errors = [];
 
-        $rule->validate("record_id", $value, function(string $message) use(&$errors) {
+        $rule->validate("record_id", $value, function (string $message) use (&$errors) {
 
             $errors[] = $message;
 
@@ -114,5 +114,4 @@ class BelongsToCompanyTest extends TestCase {
         return $errors;
 
     }
-
 }

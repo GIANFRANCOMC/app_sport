@@ -8,7 +8,6 @@ use App\Http\Requests\System\Base\CompanyFormRequest;
 use Illuminate\Validation\Rule;
 
 final class StoreSupplierRequest extends CompanyFormRequest {
-
     public function authorize(): bool {
 
         return parent::authorize();
@@ -29,7 +28,7 @@ final class StoreSupplierRequest extends CompanyFormRequest {
                 "max:30",
                 Rule::unique("suppliers", "document_number")
                     ->where("company_id", $companyId)
-                    ->ignore((int) $this->route("id"))
+                    ->ignore((int) $this->route("id")),
             ],
             "name" => ["required", "string", "max:255"],
             "contact_name" => ["nullable", "string", "max:255"],
@@ -50,7 +49,7 @@ final class StoreSupplierRequest extends CompanyFormRequest {
             "bank_accounts.*.account_number" => ["required", "string", "max:100"],
             "bank_accounts.*.interbank_code" => ["nullable", "string", "max:100"],
             "bank_accounts.*.is_primary" => ["nullable", "boolean"],
-            "status" => ["required", "in:active,inactive"]
+            "status" => ["required", "in:active,inactive"],
         ];
 
     }
@@ -62,9 +61,8 @@ final class StoreSupplierRequest extends CompanyFormRequest {
             "unique" => "Ya existe un proveedor con este número de documento.",
             "email" => "Ingresa un correo válido.",
             "in" => "Selecciona una opción válida.",
-            "max" => "Supera la longitud permitida."
+            "max" => "Supera la longitud permitida.",
         ];
 
     }
-
 }

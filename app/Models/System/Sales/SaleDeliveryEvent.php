@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Models\System\Sales;
 
-use App\Models\System\Organizations\{Company, User};
+use App\Models\System\Organizations\Company;
+use App\Models\System\Organizations\User;
 use App\Models\System\Warehouses\Warehouse;
 use Illuminate\Database\Eloquent\Model;
 
 class SaleDeliveryEvent extends Model {
-
     protected $table = "sale_delivery_events";
 
     public $timestamps = false;
@@ -24,13 +24,13 @@ class SaleDeliveryEvent extends Model {
         "observation",
         "status",
         "created_at",
-        "created_by"
+        "created_by",
     ];
 
     protected $casts = [
         "total_quantity" => "App\\Casts\\System\\ConfigurableDecimal",
-        "delivered_at"   => "datetime",
-        "created_at"     => "datetime"
+        "delivered_at" => "datetime",
+        "created_at" => "datetime",
     ];
 
     public function company() {
@@ -62,5 +62,4 @@ class SaleDeliveryEvent extends Model {
         return $this->hasMany(SaleDeliveryEventItem::class, "sale_delivery_event_id", "id");
 
     }
-
 }

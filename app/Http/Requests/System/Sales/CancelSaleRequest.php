@@ -4,11 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\System\Sales;
 
-use App\Helpers\System\Utilities;
 use Illuminate\Foundation\Http\FormRequest;
 
 class CancelSaleRequest extends FormRequest {
-
     /**
      * Determine if the user is authorized to make this request.
      */
@@ -26,9 +24,8 @@ class CancelSaleRequest extends FormRequest {
     public function rules(): array {
 
         return [
-            "motive" => "nullable|string|max:300"
+            "motive" => "nullable|string|max:300",
         ];
 
     }
-
 }

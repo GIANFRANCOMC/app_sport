@@ -4,18 +4,19 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\System\Devices;
 
-use App\Http\Controllers\System\Base\BaseController;
 use App\Helpers\System\{Utilities};
-use Illuminate\Http\{JsonResponse, Request};
-
-use App\Http\Requests\System\Devices\BiometricDevices\{StoreBiometricDeviceRequest, UpdateBiometricDeviceRequest};
-use App\Services\System\Base\{InitParamsCacheInvalidationService};
-use App\Services\System\Devices\BiometricDevices\{BiometricDeviceConfigService, BiometricDeviceService};
-use App\Services\System\Customers\Tracking\{TrackingAttendanceBusinessService};
+use App\Http\Controllers\System\Base\BaseController;
+use App\Http\Requests\System\Devices\BiometricDevices\StoreBiometricDeviceRequest;
+use App\Http\Requests\System\Devices\BiometricDevices\UpdateBiometricDeviceRequest;
 use App\Models\System\Devices\BiometricDeviceModel;
+use App\Services\System\Base\{InitParamsCacheInvalidationService};
+use App\Services\System\Customers\Tracking\{TrackingAttendanceBusinessService};
+use App\Services\System\Devices\BiometricDevices\BiometricDeviceConfigService;
+use App\Services\System\Devices\BiometricDevices\BiometricDeviceService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class BiometricDeviceController extends BaseController {
-
     /**
      * Translation namespace for module
      */
@@ -24,7 +25,6 @@ class BiometricDeviceController extends BaseController {
     /**
      * Get initialization parameters for the module
      *
-     * @param Request $request
      * @return \stdClass
      */
     public function initParams(Request $request) {
@@ -38,7 +38,6 @@ class BiometricDeviceController extends BaseController {
     /**
      * Get paginated list with filters
      *
-     * @param Request $request
      * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator
      */
     public function list(Request $request) {
@@ -61,21 +60,17 @@ class BiometricDeviceController extends BaseController {
 
     }
 
-
     /**
      * Store a newly created record
-     *
-     * @param StoreBiometricDeviceRequest $request
-     * @return JsonResponse
      */
     public function store(StoreBiometricDeviceRequest $request): JsonResponse {
 
         try {
 
-            $data   = $this->prepareBiometricDeviceData($request);
+            $data = $this->prepareBiometricDeviceData($request);
             $device = BiometricDeviceService::create($data, $this->getCompanyId(), $this->getUserId());
 
-            if(!Utilities::isDefined($device)) {
+            if (! Utilities::isDefined($device)) {
 
                 return $this->errorResponse("create_failed");
 
@@ -88,7 +83,7 @@ class BiometricDeviceController extends BaseController {
 
             return $this->createdResponse($device, "created", "biometric_device");
 
-        }catch(\Exception $e) {
+        } catch (\Exception $e) {
 
             return $this->handleException($e, "create");
 
@@ -96,14 +91,10 @@ class BiometricDeviceController extends BaseController {
 
     }
 
-
-
     /**
      * Update the specified record
      *
-     * @param UpdateBiometricDeviceRequest $request
-     * @param int $id Biometric Device
-     * @return JsonResponse
+     * @param  int  $id Biometric Device
      */
     public function update(UpdateBiometricDeviceRequest $request, int $id): JsonResponse {
 
@@ -111,16 +102,16 @@ class BiometricDeviceController extends BaseController {
 
             $device = BiometricDeviceService::findByIdAndCompany($id, $this->getCompanyId(), null);
 
-            if(!Utilities::isDefined($device)) {
+            if (! Utilities::isDefined($device)) {
 
                 return $this->notFoundResponse();
 
             }
 
-            $data   = $this->prepareBiometricDeviceData($request);
+            $data = $this->prepareBiometricDeviceData($request);
             $device = BiometricDeviceService::update($device, $data, $this->getUserId());
 
-            if(!Utilities::isDefined($device)) {
+            if (! Utilities::isDefined($device)) {
 
                 return $this->errorResponse("update_failed");
 
@@ -133,7 +124,7 @@ class BiometricDeviceController extends BaseController {
 
             return $this->updatedResponse($device, "updated", "biometric_device");
 
-        }catch(\Exception $e) {
+        } catch (\Exception $e) {
 
             return $this->handleException($e, "update");
 
@@ -145,16 +136,16 @@ class BiometricDeviceController extends BaseController {
 
         try {
             $device = BiometricDeviceService::findByIdAndCompany($id, $this->getCompanyId(), null);
-            if(!$device) {
+            if (! $device) {
                 return $this->notFoundResponse();
             }
 
             return response()->json([
                 "bool" => true,
                 "msg" => "Credenciales rotadas correctamente. Guarda el secreto porque no volverá a mostrarse.",
-                "data" => BiometricDeviceService::rotateCredentials($device, $this->getUserId())
+                "data" => BiometricDeviceService::rotateCredentials($device, $this->getUserId()),
             ]);
-        }catch(\Throwable $exception) {
+        } catch (\Throwable $exception) {
             return $this->handleException($exception, "update");
         }
 
@@ -169,47 +160,46 @@ class BiometricDeviceController extends BaseController {
                 $id,
                 [
                     "processing_status" => $request->input("processing_status"),
-                    "event_type" => $request->input("event_type")
+                    "event_type" => $request->input("event_type"),
                 ],
                 $this->getPerPage($request, Utilities::$per_page_default)
-            )
+            ),
         ]);
 
     }
 
-
     /**
      * Prepare record data from request
      *
-     * @param StoreBiometricDeviceRequest|UpdateBiometricDeviceRequest $request
+     * @param  StoreBiometricDeviceRequest|UpdateBiometricDeviceRequest  $request
      * @return array
      */
     private function resolveBiometricDeviceModelId($request): ?int {
 
         $modelId = $request->input("biometric_device_model_id");
 
-        if(Utilities::isDefined($modelId)) {
+        if (Utilities::isDefined($modelId)) {
 
-            return (int)$modelId;
+            return (int) $modelId;
 
         }
 
         $modelName = $request->input("model");
 
-        if(!Utilities::isDefined($modelName)) {
+        if (! Utilities::isDefined($modelName)) {
 
             return null;
 
         }
 
         $query = BiometricDeviceModel::query()
-                                     ->where("company_id", $this->getCompanyId())
-                                     ->where("status", "active")
-                                     ->where("name", $modelName);
+            ->where("company_id", $this->getCompanyId())
+            ->where("status", "active")
+            ->where("name", $modelName);
 
-        if(Utilities::isDefined($request->input("brand"))) {
+        if (Utilities::isDefined($request->input("brand"))) {
 
-            $query->whereHas("brand", fn($brandQuery) => $brandQuery->where("name", $request->input("brand")));
+            $query->whereHas("brand", fn ($brandQuery) => $brandQuery->where("name", $request->input("brand")));
 
         }
 
@@ -220,29 +210,26 @@ class BiometricDeviceController extends BaseController {
     private function prepareBiometricDeviceData($request): array {
 
         return [
-            "company_id"    => $this->getCompanyId(),
-            "branch_id"                 => $request->input("branch_id"),
+            "company_id" => $this->getCompanyId(),
+            "branch_id" => $request->input("branch_id"),
             "biometric_device_model_id" => $this->resolveBiometricDeviceModelId($request),
-            "name"                      => $request->input("name"),
+            "name" => $request->input("name"),
             "serial_number" => $request->input("serial_number"),
-            "ip_address"    => $request->input("ip_address"),
-            "port"          => $request->input("port"),
-            "device_id"     => $request->input("device_id"),
-            "description"   => $request->input("description"),
-            "status"        => $request->input("status", "active")
+            "ip_address" => $request->input("ip_address"),
+            "port" => $request->input("port"),
+            "device_id" => $request->input("device_id"),
+            "description" => $request->input("description"),
+            "status" => $request->input("status", "active"),
         ];
 
     }
 
     /**
      * Get translation namespace for module
-     *
-     * @return string
      */
     protected function getTranslationNamespace(): string {
 
         return self::TRANSLATION_NAMESPACE;
 
     }
-
 }

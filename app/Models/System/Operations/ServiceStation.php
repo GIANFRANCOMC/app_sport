@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Models\System\Operations;
 
-use App\Models\System\Organizations\{Branch, Company};
+use App\Models\System\Organizations\Branch;
+use App\Models\System\Organizations\Company;
 use Illuminate\Database\Eloquent\Model;
 
 final class ServiceStation extends Model {
-
     protected $table = "service_stations";
 
     protected $fillable = [
@@ -28,13 +28,13 @@ final class ServiceStation extends Model {
         "created_at",
         "created_by",
         "updated_at",
-        "updated_by"
+        "updated_by",
     ];
 
     protected $casts = [
         "capacity" => "integer",
         "position_x" => "App\\Casts\\System\\ConfigurableDecimal",
-        "position_y" => "App\\Casts\\System\\ConfigurableDecimal"
+        "position_y" => "App\\Casts\\System\\ConfigurableDecimal",
     ];
 
     public function company() {
@@ -68,5 +68,4 @@ final class ServiceStation extends Model {
             ->latestOfMany();
 
     }
-
 }

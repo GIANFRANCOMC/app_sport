@@ -5,27 +5,22 @@ declare(strict_types=1);
 namespace App\Http\Controllers\System\Warehouses;
 
 use App\Exports\System\Warehouses\InventoryReportExport;
-use App\Http\Controllers\System\Base\BaseController;
 use App\Helpers\System\{Utilities};
-use Illuminate\Http\{JsonResponse, Request};
+use App\Http\Controllers\System\Base\BaseController;
+use App\Http\Requests\System\Warehouses\StoreInventoryGuideRequest;
+use App\Http\Requests\System\Warehouses\StoreInventoryMovementRequest;
+use App\Http\Requests\System\Warehouses\StoreInventoryOperationRequest;
+use App\Http\Requests\System\Warehouses\StoreInventoryTransferRequest;
+use App\Services\System\Organizations\AccessScopeService;
+use App\Services\System\Warehouses\Inventory\InventoryGuideService;
+use App\Services\System\Warehouses\StockManagement\StockManagementConfigService;
+use App\Services\System\Warehouses\StockManagement\StockManagementService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
-use App\Services\System\Warehouses\StockManagement\{
-    StockManagementConfigService,
-    StockManagementService
-};
-use App\Http\Requests\System\Warehouses\{
-    StoreInventoryGuideRequest,
-    StoreInventoryMovementRequest,
-    StoreInventoryOperationRequest,
-    StoreInventoryTransferRequest
-};
-use App\Services\System\Warehouses\Inventory\InventoryGuideService;
-use App\Services\System\Organizations\AccessScopeService;
-
 class StockManagementController extends BaseController {
-
     /**
      * Translation namespace for stock management module
      */
@@ -34,12 +29,12 @@ class StockManagementController extends BaseController {
     /**
      * Get initialization parameters for the module
      *
-     * @param Request $request
      * @return \stdClass
      */
     public function initParams(Request $request) {
 
         $page = $this->getPage($request);
+
         return StockManagementConfigService::getInitParams($this->getCompanyId(), $page, $this->getUserId());
 
     }
@@ -47,22 +42,21 @@ class StockManagementController extends BaseController {
     /**
      * Get paginated list of items with stock information
      *
-     * @param Request $request
      * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator
      */
     public function list(Request $request) {
 
         $warehouseId = intval($request->input("warehouse_id"));
-        $perPage     = $this->getPerPage($request, Utilities::$per_page_max);
+        $perPage = $this->getPerPage($request, Utilities::$per_page_max);
 
-        if(
-            !StockManagementService::validateWarehouse($warehouseId, $this->getCompanyId())
-            || !AccessScopeService::canAccess($this->getAuthUser(), AccessScopeService::WAREHOUSE, $warehouseId)
+        if (
+            ! StockManagementService::validateWarehouse($warehouseId, $this->getCompanyId())
+            || ! AccessScopeService::canAccess($this->getAuthUser(), AccessScopeService::WAREHOUSE, $warehouseId)
         ) {
 
             return response()->json([
                 "data" => [],
-                "total" => 0
+                "total" => 0,
             ]);
 
         }
@@ -89,7 +83,7 @@ class StockManagementController extends BaseController {
                 $this->getCompanyId(),
                 (string) $request->input("product_search", ""),
                 $allowedWarehouseIds
-            )
+            ),
         ]);
 
     }
@@ -105,8 +99,6 @@ class StockManagementController extends BaseController {
 
     }
 
-
-
     public function movements(Request $request) {
 
         $perPage = $this->getPerPage($request, Utilities::$per_page_max);
@@ -117,11 +109,11 @@ class StockManagementController extends BaseController {
             "origin_types",
             "product_search",
             "date_from",
-            "date_to"
+            "date_to",
         ]);
         $warehouseId = (int) ($filters["warehouse_id"] ?? 0);
 
-        if($warehouseId > 0 && !AccessScopeService::canAccess($this->getAuthUser(), AccessScopeService::WAREHOUSE, $warehouseId)) {
+        if ($warehouseId > 0 && ! AccessScopeService::canAccess($this->getAuthUser(), AccessScopeService::WAREHOUSE, $warehouseId)) {
             return response()->json(["data" => [], "total" => 0]);
         }
 
@@ -137,7 +129,7 @@ class StockManagementController extends BaseController {
 
         $warehouseId = (int) $request->input("warehouse_id");
 
-        if($warehouseId > 0 && !AccessScopeService::canAccess($this->getAuthUser(), AccessScopeService::WAREHOUSE, $warehouseId)) {
+        if ($warehouseId > 0 && ! AccessScopeService::canAccess($this->getAuthUser(), AccessScopeService::WAREHOUSE, $warehouseId)) {
             return response()->json(["data" => [], "total" => 0]);
         }
 
@@ -162,7 +154,7 @@ class StockManagementController extends BaseController {
         )
             ->when(
                 $allowedWarehouseIds !== null,
-                fn($query) => $query->whereIn("warehouse_id", $allowedWarehouseIds)
+                fn ($query) => $query->whereIn("warehouse_id", $allowedWarehouseIds)
             )
             ->paginate($this->getPerPage($request, Utilities::$per_page_max));
 
@@ -173,7 +165,7 @@ class StockManagementController extends BaseController {
         try {
 
             $warehouseId = (int) $request->warehouse_id;
-            if(!AccessScopeService::canAccess($this->getAuthUser(), AccessScopeService::WAREHOUSE, $warehouseId)) {
+            if (! AccessScopeService::canAccess($this->getAuthUser(), AccessScopeService::WAREHOUSE, $warehouseId)) {
 
                 return $this->errorResponse("warehouse_not_available", [], 403);
 
@@ -187,7 +179,7 @@ class StockManagementController extends BaseController {
 
             return $this->createdResponse($guide, "created", "inventoryGuide");
 
-        }catch(\Throwable $e) {
+        } catch (\Throwable $e) {
 
             return $this->handleException($e, "create");
 
@@ -206,7 +198,7 @@ class StockManagementController extends BaseController {
                 $this->getCompanyId()
             );
 
-            if(!$warehouse || !AccessScopeService::canAccess($this->getAuthUser(), AccessScopeService::WAREHOUSE, (int) $warehouse->id)) {
+            if (! $warehouse || ! AccessScopeService::canAccess($this->getAuthUser(), AccessScopeService::WAREHOUSE, (int) $warehouse->id)) {
 
                 return $this->errorResponse("warehouse_not_available");
 
@@ -227,14 +219,14 @@ class StockManagementController extends BaseController {
                 "msg" => count($movements) === 1
                     ? "Operación registrada correctamente."
                     : "Operación registrada para todos los productos.",
-                "data" => $movements
+                "data" => $movements,
             ]);
 
-        }catch(\Throwable $e) {
+        } catch (\Throwable $e) {
 
             return response()->json([
                 "bool" => false,
-                "msg" => $e->getMessage()
+                "msg" => $e->getMessage(),
             ], 422);
 
         }
@@ -254,23 +246,23 @@ class StockManagementController extends BaseController {
             "product_search",
             "guide_type",
             "date_from",
-            "date_to"
+            "date_to",
         ]);
 
-        if(($filters["warehouse_id"] ?? null) !== "all") {
+        if (($filters["warehouse_id"] ?? null) !== "all") {
             $warehouseId = (int) ($filters["warehouse_id"] ?? 0);
             $warehouse = StockManagementService::validateWarehouse($warehouseId, $this->getCompanyId());
 
-            if(!$warehouse || !AccessScopeService::canAccess($this->getAuthUser(), AccessScopeService::WAREHOUSE, $warehouseId)) {
+            if (! $warehouse || ! AccessScopeService::canAccess($this->getAuthUser(), AccessScopeService::WAREHOUSE, $warehouseId)) {
                 abort(404, "El almacén seleccionado no está disponible.");
             }
-        }else {
+        } else {
             $filters["allowed_warehouse_ids"] = AccessScopeService::allowedIds(
                 $this->getAuthUser(),
                 AccessScopeService::WAREHOUSE
             );
         }
-        $fileName = "inventario_{$view}_" . now()->format("Y-m-d_His") . ".xlsx";
+        $fileName = "inventario_{$view}_".now()->format("Y-m-d_His").".xlsx";
 
         return Excel::download(
             new InventoryReportExport($this->getCompanyId(), $view, $filters),
@@ -290,7 +282,7 @@ class StockManagementController extends BaseController {
                 $this->getCompanyId()
             );
 
-            if(!$warehouse || !AccessScopeService::canAccess($this->getAuthUser(), AccessScopeService::WAREHOUSE, (int) $warehouse->id)) {
+            if (! $warehouse || ! AccessScopeService::canAccess($this->getAuthUser(), AccessScopeService::WAREHOUSE, (int) $warehouse->id)) {
 
                 return $this->errorResponse("warehouse_not_available");
 
@@ -310,15 +302,15 @@ class StockManagementController extends BaseController {
 
             return response()->json([
                 "bool" => true,
-                "msg"  => "Movimiento registrado correctamente.",
-                "data" => $movement
+                "msg" => "Movimiento registrado correctamente.",
+                "data" => $movement,
             ]);
 
-        }catch(\Throwable $e) {
+        } catch (\Throwable $e) {
 
             return response()->json([
                 "bool" => false,
-                "msg"  => $e->getMessage()
+                "msg" => $e->getMessage(),
             ], 422);
 
         }
@@ -331,54 +323,47 @@ class StockManagementController extends BaseController {
 
         try {
 
-            if(
-                !AccessScopeService::canAccess($this->getAuthUser(), AccessScopeService::WAREHOUSE, (int) $data["source_warehouse_id"])
-                || !AccessScopeService::canAccess($this->getAuthUser(), AccessScopeService::WAREHOUSE, (int) $data["destination_warehouse_id"])
+            if (
+                ! AccessScopeService::canAccess($this->getAuthUser(), AccessScopeService::WAREHOUSE, (int) $data["source_warehouse_id"])
+                || ! AccessScopeService::canAccess($this->getAuthUser(), AccessScopeService::WAREHOUSE, (int) $data["destination_warehouse_id"])
             ) {
                 return $this->errorResponse("warehouse_not_available", [], 403);
             }
 
             $transfer = StockManagementService::transfer([
-                "company_id"              => $this->getCompanyId(),
-                "source_warehouse_id"     => (int) $data["source_warehouse_id"],
+                "company_id" => $this->getCompanyId(),
+                "source_warehouse_id" => (int) $data["source_warehouse_id"],
                 "destination_warehouse_id" => (int) $data["destination_warehouse_id"],
-                "items"                   => $data["items"],
-                "reason"                  => (string) $data["reason"],
-                "user_id"                 => $this->getUserId()
+                "items" => $data["items"],
+                "reason" => (string) $data["reason"],
+                "user_id" => $this->getUserId(),
             ]);
 
             return response()->json([
                 "bool" => true,
-                "msg"  => count($data["items"]) === 1
+                "msg" => count($data["items"]) === 1
                     ? "Traslado registrado correctamente."
                     : "Productos trasladados correctamente.",
-                "data" => $transfer
+                "data" => $transfer,
             ]);
 
-        }catch(\Throwable $e) {
+        } catch (\Throwable $e) {
 
             return response()->json([
                 "bool" => false,
-                "msg"  => $e->getMessage()
+                "msg" => $e->getMessage(),
             ], 422);
 
         }
 
     }
 
-
-
-
-
     /**
      * Get translation namespace for stock management module
-     *
-     * @return string
      */
     protected function getTranslationNamespace(): string {
 
         return self::TRANSLATION_NAMESPACE;
 
     }
-
 }

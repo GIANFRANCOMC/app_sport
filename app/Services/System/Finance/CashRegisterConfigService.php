@@ -4,13 +4,12 @@ declare(strict_types=1);
 
 namespace App\Services\System\Finance;
 
+use App\Models\System\Warehouses\WarehouseItem;
+use App\Services\System\Base\BaseConfigService;
+use App\Services\System\Base\CompanyReferenceDataService;
 use stdClass;
 
-use App\Models\System\Warehouses\WarehouseItem;
-use App\Services\System\Base\{BaseConfigService, CompanyReferenceDataService};
-
 final class CashRegisterConfigService extends BaseConfigService {
-
     protected const USER_SCOPED_CACHE = true;
 
     protected static function getCachePrefix(): string {
@@ -31,7 +30,7 @@ final class CashRegisterConfigService extends BaseConfigService {
             "statuses" => [
                 ["id" => "open", "label" => "Abierta"],
                 ["id" => "closed", "label" => "Cerrada"],
-                ["id" => "cancelled", "label" => "Anulada"]
+                ["id" => "cancelled", "label" => "Anulada"],
             ],
             "movementTypes" => [
                 ["id" => "opening", "label" => "Apertura"],
@@ -39,8 +38,8 @@ final class CashRegisterConfigService extends BaseConfigService {
                 ["id" => "income", "label" => "Ingreso"],
                 ["id" => "expense", "label" => "Salida"],
                 ["id" => "adjustment", "label" => "Ajuste"],
-                ["id" => "closing", "label" => "Cierre"]
-            ]
+                ["id" => "closing", "label" => "Cierre"],
+            ],
         ]);
 
     }
@@ -53,23 +52,23 @@ final class CashRegisterConfigService extends BaseConfigService {
             ->with(["warehouse.branch", "item.brand"])
             ->where("company_id", $companyId)
             ->where("status", "active")
-            ->whereHas("warehouse", function($query) use($companyId, $branchIds) {
+            ->whereHas("warehouse", function ($query) use ($companyId, $branchIds) {
 
                 $query->where("company_id", $companyId)
-                      ->where("status", "active")
-                      ->whereIn("branch_id", $branchIds);
+                    ->where("status", "active")
+                    ->whereIn("branch_id", $branchIds);
 
             })
-            ->whereHas("item", function($query) use($companyId) {
+            ->whereHas("item", function ($query) use ($companyId) {
 
                 $query->where("company_id", $companyId)
-                      ->where("type", "product")
-                      ->where("status", "active");
+                    ->where("type", "product")
+                    ->where("status", "active");
 
             })
             ->orderBy("warehouse_id")
             ->get()
-            ->map(function(WarehouseItem $warehouseItem) {
+            ->map(function (WarehouseItem $warehouseItem) {
 
                 return [
                     "warehouse_id" => $warehouseItem->warehouse_id,
@@ -80,12 +79,11 @@ final class CashRegisterConfigService extends BaseConfigService {
                     "item_name" => $warehouseItem->item?->name,
                     "item_internal_code" => $warehouseItem->item?->internal_code,
                     "brand_name" => $warehouseItem->item?->brand?->name,
-                    "system_quantity" => (float) $warehouseItem->quantity
+                    "system_quantity" => (float) $warehouseItem->quantity,
                 ];
 
             })
             ->values();
 
     }
-
 }

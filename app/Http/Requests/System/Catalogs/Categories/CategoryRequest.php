@@ -9,7 +9,6 @@ use App\Rules\System\Defaults\UniqueInCompany;
 use App\Services\System\Base\InternalCodeService;
 
 abstract class CategoryRequest extends CompanyFormRequest {
-
     public function rules(): array {
 
         $categoryId = $this->route("id") ? (int) $this->route("id") : null;
@@ -19,18 +18,18 @@ abstract class CategoryRequest extends CompanyFormRequest {
                 "required",
                 "string",
                 "max:50",
-                new UniqueInCompany("categories", "internal_code", $categoryId, [], "código interno")
+                new UniqueInCompany("categories", "internal_code", $categoryId, [], "código interno"),
             ],
             "name" => [
                 "required",
                 "string",
                 "max:50",
-                new UniqueInCompany("categories", "name", $categoryId, [], "nombre")
+                new UniqueInCompany("categories", "name", $categoryId, [], "nombre"),
             ],
             "description" => ["nullable", "string", "max:100"],
             "sort_order" => ["nullable", "integer", "min:1", "max:9999"],
             "is_public" => ["nullable", "boolean"],
-            "status" => ["required", "in:active,inactive"]
+            "status" => ["required", "in:active,inactive"],
         ];
 
     }
@@ -41,7 +40,7 @@ abstract class CategoryRequest extends CompanyFormRequest {
             "internal_code" => "código interno",
             "name" => "nombre",
             "description" => "descripción",
-            "status" => "estado"
+            "status" => "estado",
         ];
 
     }
@@ -51,7 +50,7 @@ abstract class CategoryRequest extends CompanyFormRequest {
         return [
             "internal_code",
             "name",
-            "description"
+            "description",
         ];
 
     }
@@ -65,9 +64,8 @@ abstract class CategoryRequest extends CompanyFormRequest {
                 (int) $this->user()?->company_id,
                 "category",
                 $this->input("internal_code")
-            )
+            ),
         ]);
 
     }
-
 }

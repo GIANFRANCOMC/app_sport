@@ -6,11 +6,11 @@ namespace App\Services\System\Warehouses\Warehouses;
 
 use App\Helpers\System\Utilities;
 use App\Models\System\Catalogs\{Item};
-use App\Models\System\Warehouses\{Warehouse, WarehouseItem};
+use App\Models\System\Warehouses\Warehouse;
+use App\Models\System\Warehouses\WarehouseItem;
 use App\Services\System\Warehouses\Inventory\InventoryMovementService;
 
 class WarehouseItemService {
-
     public static function syncProductInventory(
         int $itemId,
         int $companyId,
@@ -20,31 +20,31 @@ class WarehouseItemService {
     ): void {
 
         $inventoryByWarehouse = collect($inventory)->keyBy(
-            fn(array $record) => (int) ($record["warehouse_id"] ?? 0)
+            fn (array $record) => (int) ($record["warehouse_id"] ?? 0)
         );
 
         $warehouses = Warehouse::where("status", "active")
-            ->whereHas("branch", function($query) use($companyId) {
+            ->whereHas("branch", function ($query) use ($companyId) {
 
                 $query->where("company_id", $companyId)
-                      ->where("status", "active");
+                    ->where("status", "active");
 
             })
             ->get();
 
-        foreach($warehouses as $warehouse) {
+        foreach ($warehouses as $warehouse) {
 
             $inventoryRecord = $inventoryByWarehouse->get((int) $warehouse->id, []);
             $warehouseItem = WarehouseItem::firstOrNew([
                 "warehouse_id" => $warehouse->id,
-                "item_id"      => $itemId
+                "item_id" => $itemId,
             ]);
-            $isNew = !$warehouseItem->exists;
+            $isNew = ! $warehouseItem->exists;
 
-            if($isNew) {
+            if ($isNew) {
 
                 $warehouseItem->company_id = $companyId;
-                $warehouseItem->quantity   = 0;
+                $warehouseItem->quantity = 0;
                 $warehouseItem->created_at = now();
                 $warehouseItem->created_by = $userId;
 
@@ -55,7 +55,7 @@ class WarehouseItemService {
             );
             $warehouseItem->status = "active";
 
-            if(!$isNew) {
+            if (! $isNew) {
 
                 $warehouseItem->updated_at = now();
                 $warehouseItem->updated_by = $userId;
@@ -66,18 +66,18 @@ class WarehouseItemService {
 
             $initialStock = Utilities::round((float) ($inventoryRecord["initial_stock"] ?? 0), null, $companyId);
 
-            if($isNew && $setInitialStock && $initialStock > 0) {
+            if ($isNew && $setInitialStock && $initialStock > 0) {
 
                 InventoryMovementService::apply([
-                    "company_id"    => $companyId,
-                    "warehouse_id"  => (int) $warehouse->id,
-                    "item_id"       => $itemId,
-                    "user_id"       => $userId,
+                    "company_id" => $companyId,
+                    "warehouse_id" => (int) $warehouse->id,
+                    "item_id" => $itemId,
+                    "user_id" => $userId,
                     "movement_type" => InventoryMovementService::TYPE_ENTRY,
-                    "origin_type"   => InventoryMovementService::ORIGIN_PRODUCT_OPENING,
-                    "origin_id"     => $itemId,
-                    "quantity"      => $initialStock,
-                    "reason"        => "Stock inicial registrado al crear el producto."
+                    "origin_type" => InventoryMovementService::ORIGIN_PRODUCT_OPENING,
+                    "origin_id" => $itemId,
+                    "quantity" => $initialStock,
+                    "reason" => "Stock inicial registrado al crear el producto.",
                 ]);
 
             }
@@ -92,25 +92,24 @@ class WarehouseItemService {
             ->where("type", "product")
             ->pluck("id");
 
-        foreach($productIds as $itemId) {
+        foreach ($productIds as $itemId) {
 
             WarehouseItem::firstOrCreate(
                 [
                     "warehouse_id" => $warehouseId,
-                    "item_id"      => $itemId
+                    "item_id" => $itemId,
                 ],
                 [
-                    "company_id"    => $companyId,
-                    "quantity"      => 0,
+                    "company_id" => $companyId,
+                    "quantity" => 0,
                     "minimum_stock" => 0,
-                    "status"        => "active",
-                    "created_at"    => now(),
-                    "created_by"    => $userId
+                    "status" => "active",
+                    "created_at" => now(),
+                    "created_by" => $userId,
                 ]
             );
 
         }
 
     }
-
 }

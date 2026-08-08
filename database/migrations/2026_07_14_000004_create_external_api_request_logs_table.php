@@ -5,13 +5,12 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration {
-
     /**
      * Run the migrations.
      */
     public function up(): void {
 
-        Schema::create("external_api_request_logs", function(Blueprint $table) {
+        Schema::create("external_api_request_logs", function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger("company_id");
             $table->unsignedBigInteger("user_id")->nullable();
@@ -37,5 +36,4 @@ return new class extends Migration {
         Schema::dropIfExists("external_api_request_logs");
 
     }
-
 };

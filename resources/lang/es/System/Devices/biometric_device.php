@@ -52,4 +52,3 @@ return [
     "event_processing_error" => "Error al procesar el evento biométrico.",
     "biometric_record_observation" => "Registro biométrico - :device_name",
 ];
-

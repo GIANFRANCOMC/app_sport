@@ -4,14 +4,13 @@ declare(strict_types=1);
 
 namespace App\Models\System\Sales;
 
-use Illuminate\Database\Eloquent\Model;
-
 use App\Models\System\Customers\Customer;
 use App\Models\System\General\Currency;
-use App\Models\System\Organizations\{Branch, User};
+use App\Models\System\Organizations\Branch;
+use App\Models\System\Organizations\User;
+use Illuminate\Database\Eloquent\Model;
 
 final class QuotationHeader extends Model {
-
     protected $table = "quotation_headers";
 
     protected $fillable = [
@@ -36,7 +35,7 @@ final class QuotationHeader extends Model {
         "converted_at",
         "converted_by",
         "canceled_at",
-        "canceled_by"
+        "canceled_by",
     ];
 
     protected $casts = [
@@ -46,7 +45,7 @@ final class QuotationHeader extends Model {
         "tax" => "App\\Casts\\System\\ConfigurableDecimal",
         "total" => "App\\Casts\\System\\ConfigurableDecimal",
         "converted_at" => "datetime",
-        "canceled_at" => "datetime"
+        "canceled_at" => "datetime",
     ];
 
     public function holder() {
@@ -73,5 +72,4 @@ final class QuotationHeader extends Model {
         return $this->hasMany(QuotationTax::class, "quotation_header_id")
             ->where("status", "active");
     }
-
 }

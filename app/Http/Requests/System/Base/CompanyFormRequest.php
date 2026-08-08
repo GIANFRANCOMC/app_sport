@@ -14,7 +14,6 @@ use Illuminate\Http\Exceptions\HttpResponseException;
  * Shared request contract for company-scoped System modules.
  */
 abstract class CompanyFormRequest extends FormRequest {
-
     public function authorize(): bool {
 
         return (int) ($this->user()?->company_id ?? 0) > 0;
@@ -25,9 +24,9 @@ abstract class CompanyFormRequest extends FormRequest {
 
         $normalized = [];
 
-        foreach($this->normalizedStringFields() as $field) {
+        foreach ($this->normalizedStringFields() as $field) {
 
-            if(!$this->exists($field)) {
+            if (! $this->exists($field)) {
 
                 continue;
 
@@ -35,7 +34,7 @@ abstract class CompanyFormRequest extends FormRequest {
 
             $value = $this->input($field);
 
-            if(!is_string($value)) {
+            if (! is_string($value)) {
 
                 continue;
 
@@ -46,7 +45,7 @@ abstract class CompanyFormRequest extends FormRequest {
 
         }
 
-        if($normalized !== []) {
+        if ($normalized !== []) {
 
             $this->merge($normalized);
 
@@ -116,7 +115,7 @@ abstract class CompanyFormRequest extends FormRequest {
 
         $rules = [$required ? "required" : "nullable", "numeric", $this->minValueRule($min), $this->maxValueRule($max)];
 
-        if($decimal) {
+        if ($decimal) {
 
             $rules[] = $this->decimalRule();
 
@@ -138,7 +137,7 @@ abstract class CompanyFormRequest extends FormRequest {
 
     protected function normalizeDecimalInput(mixed $value): ?float {
 
-        if($value === null || $value === "") {
+        if ($value === null || $value === "") {
 
             return null;
 
@@ -223,7 +222,7 @@ abstract class CompanyFormRequest extends FormRequest {
             "min.array" => "Selecciona al menos :min opción.",
             "max.array" => "Selecciona como máximo :max opciones.",
             "max.string" => "Debe tener como máximo :max caracteres.",
-            "decimal" => "Usa hasta :decimal decimales."
+            "decimal" => "Usa hasta :decimal decimales.",
         ];
 
     }
@@ -238,5 +237,4 @@ abstract class CompanyFormRequest extends FormRequest {
         );
 
     }
-
 }

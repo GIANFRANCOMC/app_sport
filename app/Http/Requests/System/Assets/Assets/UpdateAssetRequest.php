@@ -6,12 +6,16 @@ namespace App\Http\Requests\System\Assets\Assets;
 
 use App\Http\Requests\System\Base\CompanyFormRequest;
 use App\Http\Requests\System\Concerns\AppliesInternalCodePrefix;
-use App\Rules\System\Defaults\{BelongsToCompany, UniqueInCompany};
+use App\Rules\System\Defaults\BelongsToCompany;
+use App\Rules\System\Defaults\UniqueInCompany;
 
 final class UpdateAssetRequest extends CompanyFormRequest {
     use AppliesInternalCodePrefix;
 
-    protected function internalCodeEntity(): string { return "asset"; }
+    protected function internalCodeEntity(): string {
+        return "asset";
+    }
+
     protected function normalizedStringFields(): array {
         return ["internal_code", "patrimonial_code", "serial_number", "name", "description"];
     }
@@ -26,7 +30,7 @@ final class UpdateAssetRequest extends CompanyFormRequest {
             "serial_number" => ["nullable", "string", "max:150", new UniqueInCompany("assets", "serial_number", $assetId)],
             "name" => ["required", "string", "max:50"],
             "description" => ["nullable", "string", "max:500"],
-            "status" => ["required", "in:active,inactive"]
+            "status" => ["required", "in:active,inactive"],
         ];
     }
 }

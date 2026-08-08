@@ -8,7 +8,6 @@ use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
 
 final class DashboardService {
-
     public static function getDashboardData(int $companyId, string $date, ?int $branchId = null): array {
 
         $timezone = (string) (DB::table("company_settings")
@@ -30,7 +29,7 @@ final class DashboardService {
         $salesBase = DB::table("sales_header")
             ->join("series", "series.id", "=", "sales_header.serie_id")
             ->where("sales_header.company_id", $companyId)
-            ->when($branchId, fn($query) => $query->where("series.branch_id", $branchId));
+            ->when($branchId, fn ($query) => $query->where("series.branch_id", $branchId));
         $netSales = (clone $salesBase)
             ->where("sales_header.status", "active")
             ->whereBetween("sales_header.issue_date", [$dayStart, $dayEnd])
@@ -44,17 +43,17 @@ final class DashboardService {
 
         $attendances = DB::table("attendances")
             ->where("company_id", $companyId)
-            ->when($branchId, fn($query) => $query->where("branch_id", $branchId))
+            ->when($branchId, fn ($query) => $query->where("branch_id", $branchId))
             ->whereIn("status", ["active", "finalized"])
             ->whereBetween("start_date", [$dayStart, $dayEnd])
             ->count();
         $expiringSubscriptions = DB::table("subscriptions")
             ->where("company_id", $companyId)
-            ->when($branchId, fn($query) => $query->where("branch_id", $branchId))
+            ->when($branchId, fn ($query) => $query->where("branch_id", $branchId))
             ->where("status", "active")
             ->whereBetween("end_date", [
                 $dayStart->toDateString(),
-                $dayStart->addDays($expirationWindow - 1)->toDateString()
+                $dayStart->addDays($expirationWindow - 1)->toDateString(),
             ])
             ->count();
 
@@ -64,27 +63,26 @@ final class DashboardService {
             "branch_id" => $branchId,
             "sales" => [
                 "net" => ["count" => (int) $netSales->count, "total" => (float) $netSales->total],
-                "canceled" => ["count" => (int) $canceledSales->count, "total" => (float) $canceledSales->total]
+                "canceled" => ["count" => (int) $canceledSales->count, "total" => (float) $canceledSales->total],
             ],
             "attendances" => ["count" => $attendances],
             "expiring_subscriptions" => [
                 "count" => $expiringSubscriptions,
-                "window_days" => $expirationWindow
+                "window_days" => $expirationWindow,
             ],
             "branches" => [
                 "active_count" => DB::table("branches")
                     ->where("company_id", $companyId)
                     ->where("status", "active")
-                    ->count()
+                    ->count(),
             ],
             "users" => [
                 "active_count" => DB::table("users")
                     ->where("company_id", $companyId)
                     ->where("status", "active")
-                    ->count()
-            ]
+                    ->count(),
+            ],
         ];
 
     }
-
 }

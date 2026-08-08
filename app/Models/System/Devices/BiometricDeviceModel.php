@@ -1,14 +1,13 @@
-﻿<?php
+<?php
 
 declare(strict_types=1);
 
 namespace App\Models\System\Devices;
 
-use Illuminate\Database\Eloquent\Model;
 use App\Models\System\Organizations\Company;
+use Illuminate\Database\Eloquent\Model;
 
 final class BiometricDeviceModel extends Model {
-
     protected $table = "biometric_device_models";
 
     protected $fillable = [
@@ -21,7 +20,7 @@ final class BiometricDeviceModel extends Model {
         "created_at",
         "created_by",
         "updated_at",
-        "updated_by"
+        "updated_by",
     ];
 
     public function company() {
@@ -41,5 +40,4 @@ final class BiometricDeviceModel extends Model {
         return $this->hasMany(BiometricDevice::class, "biometric_device_model_id", "id");
 
     }
-
 }

@@ -8,7 +8,6 @@ use App\Rules\System\Defaults\BelongsToCompany;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreBiometricDeviceRequest extends FormRequest {
-
     public function authorize(): bool {
 
         return true;
@@ -18,19 +17,18 @@ class StoreBiometricDeviceRequest extends FormRequest {
     public function rules(): array {
 
         return [
-            "branch_id"                 => ["required", "integer", new BelongsToCompany("branches", [], null)],
+            "branch_id" => ["required", "integer", new BelongsToCompany("branches", [], null)],
             "biometric_device_model_id" => ["required_without:model", "nullable", "integer", new BelongsToCompany("biometric_device_models", [], null)],
-            "model"                     => "required_without:biometric_device_model_id|nullable|string|max:255",
-            "brand"                     => "nullable|string|max:255",
-            "name"                      => "required|string|max:50",
-            "description"               => "nullable|string|max:100",
-            "serial_number"             => "nullable|string|max:50",
-            "ip_address"                => "required|ip",
-            "port"                      => "nullable|integer|min:1|max:65535",
-            "device_id"                 => "nullable|string|max:50",
-            "status"                    => "nullable|in:active,inactive"
+            "model" => "required_without:biometric_device_model_id|nullable|string|max:255",
+            "brand" => "nullable|string|max:255",
+            "name" => "required|string|max:50",
+            "description" => "nullable|string|max:100",
+            "serial_number" => "nullable|string|max:50",
+            "ip_address" => "required|ip",
+            "port" => "nullable|integer|min:1|max:65535",
+            "device_id" => "nullable|string|max:50",
+            "status" => "nullable|in:active,inactive",
         ];
 
     }
-
 }

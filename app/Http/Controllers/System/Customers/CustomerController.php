@@ -4,22 +4,20 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\System\Customers;
 
-use App\Http\Controllers\System\Base\BaseController;
 use App\Helpers\System\{Utilities};
-use Illuminate\Http\{JsonResponse, Request};
-
-use App\Http\Requests\System\Customers\Customers\{
-    RegisterCustomerFingerprintRequest,
-    StoreCustomerRequest,
-    UpdateCustomerRequest
-};
-use App\Services\System\Base\{InitParamsCacheInvalidationService};
-use App\Services\System\Customers\Customers\{CustomerConfigService, CustomerService};
-use App\Services\System\Devices\BiometricDevices\{BiometricDeviceService};
+use App\Http\Controllers\System\Base\BaseController;
+use App\Http\Requests\System\Customers\Customers\RegisterCustomerFingerprintRequest;
+use App\Http\Requests\System\Customers\Customers\StoreCustomerRequest;
+use App\Http\Requests\System\Customers\Customers\UpdateCustomerRequest;
 use App\Models\System\Customers\Subscription;
+use App\Services\System\Base\{InitParamsCacheInvalidationService};
+use App\Services\System\Customers\Customers\CustomerConfigService;
+use App\Services\System\Customers\Customers\CustomerService;
+use App\Services\System\Devices\BiometricDevices\{BiometricDeviceService};
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class CustomerController extends BaseController {
-
     /**
      * Translation namespace for module
      */
@@ -28,7 +26,7 @@ class CustomerController extends BaseController {
     /**
      * Get initialization parameters for the module
      *
-     * @param RegisterCustomerFingerprintRequest $request
+     * @param  RegisterCustomerFingerprintRequest  $request
      * @return \stdClass
      */
     public function initParams(Request $request) {
@@ -42,7 +40,6 @@ class CustomerController extends BaseController {
     /**
      * Get paginated list with filters
      *
-     * @param Request $request
      * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator
      */
     public function list(Request $request) {
@@ -65,21 +62,17 @@ class CustomerController extends BaseController {
 
     }
 
-
     /**
      * Store a newly created record
-     *
-     * @param StoreCustomerRequest $request
-     * @return JsonResponse
      */
     public function store(StoreCustomerRequest $request): JsonResponse {
 
         try {
 
-            $data     = $this->prepareCustomerData($request);
+            $data = $this->prepareCustomerData($request);
             $customer = CustomerService::create($data, $this->getCompanyId(), $this->getUserId());
 
-            if(!Utilities::isDefined($customer)) {
+            if (! Utilities::isDefined($customer)) {
 
                 return $this->errorResponse("create_failed");
 
@@ -92,7 +85,7 @@ class CustomerController extends BaseController {
 
             return $this->createdResponse($customer, "created", "customer");
 
-        }catch(\Exception $e) {
+        } catch (\Exception $e) {
 
             return $this->handleException($e, "create");
 
@@ -100,14 +93,10 @@ class CustomerController extends BaseController {
 
     }
 
-
-
     /**
      * Update the specified record
      *
-     * @param UpdateCustomerRequest $request
-     * @param int $id Customer ID
-     * @return JsonResponse
+     * @param  int  $id Customer ID
      */
     public function update(UpdateCustomerRequest $request, int $id): JsonResponse {
 
@@ -116,16 +105,16 @@ class CustomerController extends BaseController {
             $data = $request->validated();
             $customer = CustomerService::findByIdAndCompany($id, $this->getCompanyId(), null);
 
-            if(!Utilities::isDefined($customer)) {
+            if (! Utilities::isDefined($customer)) {
 
                 return $this->notFoundResponse();
 
             }
 
-            $data     = $this->prepareCustomerData($request);
+            $data = $this->prepareCustomerData($request);
             $customer = CustomerService::update($customer, $data, $this->getUserId());
 
-            if(!Utilities::isDefined($customer)) {
+            if (! Utilities::isDefined($customer)) {
 
                 return $this->errorResponse("update_failed");
 
@@ -138,7 +127,7 @@ class CustomerController extends BaseController {
 
             return $this->updatedResponse($customer, "updated", "customer");
 
-        }catch(\Exception $e) {
+        } catch (\Exception $e) {
 
             return $this->handleException($e, "update");
 
@@ -146,36 +135,32 @@ class CustomerController extends BaseController {
 
     }
 
-
     /**
      * Prepare record data from request
      *
-     * @param StoreCustomerRequest|UpdateCustomerRequest $request
-     * @return array
+     * @param  StoreCustomerRequest|UpdateCustomerRequest  $request
      */
     private function prepareCustomerData($request): array {
 
         return [
-            "company_id"                => $this->getCompanyId(),
+            "company_id" => $this->getCompanyId(),
             "identity_document_type_id" => $request->identity_document_type_id,
-            "document_number"           => $request->document_number,
-            "name"                      => $request->name,
-            "email"                     => $request->email,
-            "phone_number"              => $request->phone_number,
-            "emergency_contact_name"    => $request->emergency_contact_name,
-            "emergency_contact_phone"   => $request->emergency_contact_phone,
-            "medical_notes"             => $request->medical_notes,
-            "gender"                    => $request->gender ?? "other",
-            "birthdate"                 => $request->birthdate,
-            "status"                    => $request->status
+            "document_number" => $request->document_number,
+            "name" => $request->name,
+            "email" => $request->email,
+            "phone_number" => $request->phone_number,
+            "emergency_contact_name" => $request->emergency_contact_name,
+            "emergency_contact_phone" => $request->emergency_contact_phone,
+            "medical_notes" => $request->medical_notes,
+            "gender" => $request->gender ?? "other",
+            "birthdate" => $request->birthdate,
+            "status" => $request->status,
         ];
 
     }
 
     /**
      * Get translation namespace for module
-     *
-     * @return string
      */
     protected function getTranslationNamespace(): string {
 
@@ -186,8 +171,7 @@ class CustomerController extends BaseController {
     /**
      * Get subscriptions for a customer
      *
-     * @param int $id Customer ID
-     * @return JsonResponse
+     * @param  int  $id Customer ID
      */
     public function getSubscriptions(int $id): JsonResponse {
 
@@ -195,20 +179,20 @@ class CustomerController extends BaseController {
 
             $customer = CustomerService::findByIdAndCompany($id, $this->getCompanyId(), null);
 
-            if(!Utilities::isDefined($customer)) {
+            if (! Utilities::isDefined($customer)) {
 
                 return $this->errorResponse("not_found", [], 404);
 
             }
 
             $subscriptions = Subscription::where("company_id", $this->getCompanyId())
-                                         ->where("customer_id", $customer->id)
-                                         ->whereIn("status", ["active"])
-                                         ->get();
+                ->where("customer_id", $customer->id)
+                ->whereIn("status", ["active"])
+                ->get();
 
             return $this->successResponse(["subscriptions" => $subscriptions], "retrieved");
 
-        }catch(\Exception $e) {
+        } catch (\Exception $e) {
 
             return $this->handleException($e, "retrieve");
 
@@ -219,9 +203,8 @@ class CustomerController extends BaseController {
     /**
      * Register biometric fingerprint for customer
      *
-     * @param Request $request
-     * @param int $id Customer ID
-     * @return JsonResponse
+     * @param  Request  $request
+     * @param  int  $id Customer ID
      */
     public function registerBiometricFingerprint(RegisterCustomerFingerprintRequest $request, int $id): JsonResponse {
 
@@ -229,7 +212,7 @@ class CustomerController extends BaseController {
 
             $customer = CustomerService::findByIdAndCompany($id, $this->getCompanyId(), null);
 
-            if(!Utilities::isDefined($customer)) {
+            if (! Utilities::isDefined($customer)) {
 
                 return $this->notFoundResponse();
 
@@ -239,13 +222,13 @@ class CustomerController extends BaseController {
             $deviceUserId = $data["device_user_id"] ?? null;
             $fingerIndex = (int) ($data["finger_index"] ?? 0);
 
-            if(!Utilities::isDefined($deviceUserId)) {
+            if (! Utilities::isDefined($deviceUserId)) {
 
                 $deviceUserId = BiometricDeviceService::getNextDeviceUserId($biometricDeviceId);
 
-            }else {
+            } else {
 
-                if(BiometricDeviceService::deviceUserIdExists($biometricDeviceId, (int) $deviceUserId, $fingerIndex)) {
+                if (BiometricDeviceService::deviceUserIdExists($biometricDeviceId, (int) $deviceUserId, $fingerIndex)) {
 
                     return $this->errorResponse("validation_error", ["msg" => "Ya existe una huella registrada para este usuario y dedo en el dispositivo."], 422);
 
@@ -264,16 +247,15 @@ class CustomerController extends BaseController {
 
             return $this->createdResponse($fingerprint, "fingerprint_registered", "biometric_fingerprint");
 
-        }catch(\DomainException $e) {
+        } catch (\DomainException $e) {
 
             return response()->json(["bool" => false, "msg" => $e->getMessage()], 422);
 
-        }catch(\Exception $e) {
+        } catch (\Exception $e) {
 
             return $this->handleException($e, "register_fingerprint");
 
         }
 
     }
-
 }

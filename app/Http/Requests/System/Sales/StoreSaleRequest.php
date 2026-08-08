@@ -11,7 +11,6 @@ use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Http\Exceptions\HttpResponseException;
 
 class StoreSaleRequest extends CompanyFormRequest {
-
     /**
      * Determine if the user is authorized to make this request.
      */
@@ -30,7 +29,7 @@ class StoreSaleRequest extends CompanyFormRequest {
             "payment_modality" => $this->input("payment_modality") ?: "paid_now",
             "taxes" => $this->normalizeTaxes(),
             "payments" => $this->normalizePayments(),
-            "details" => $this->normalizeDetails()
+            "details" => $this->normalizeDetails(),
         ]);
 
     }
@@ -42,22 +41,22 @@ class StoreSaleRequest extends CompanyFormRequest {
      */
     public function rules(): array {
 
-        $round    = $this->decimalPrecision();
+        $round = $this->decimalPrecision();
         $maxValue = $this->numericMaxValue();
 
         return [
             // Header
-            "branch_id"   => "required|integer",
-            "serie_id"    => "required|integer",
-            "holder_id"   => "required|integer",
-            "seller_id"   => ["nullable", "integer", new BelongsToCompany("users", ["status" => "active"], "El vendedor seleccionado no pertenece a la empresa.")],
+            "branch_id" => "required|integer",
+            "serie_id" => "required|integer",
+            "holder_id" => "required|integer",
+            "seller_id" => ["nullable", "integer", new BelongsToCompany("users", ["status" => "active"], "El vendedor seleccionado no pertenece a la empresa.")],
             "currency_id" => ["required", "integer", new BelongsToCompany("currencies", ["status" => "active"], "La moneda seleccionada no pertenece a la empresa.")],
             "warehouse_id" => "nullable|integer",
             "cash_session_id" => "nullable|integer",
             "quotation_header_id" => "nullable|integer",
             "service_session_id" => "nullable|integer",
             "source_channel" => "nullable|in:sale,pos",
-            "issue_date"  => "required|date",
+            "issue_date" => "required|date",
             "delivery_mode" => "nullable|in:immediate,pending",
             "delivery_method_id" => ["nullable", "integer", new BelongsToCompany("sale_delivery_methods", ["status" => "active"], "La modalidad de entrega no pertenece a la empresa.")],
             "delivery_status" => "required|in:pending,delivered",
@@ -109,7 +108,7 @@ class StoreSaleRequest extends CompanyFormRequest {
             "details.*.extras.recipe_options.*.portions" => "nullable|integer|min:1|max:100",
             "details.*.extras.recipe_toppings" => "nullable|array|max:50",
             "details.*.extras.recipe_toppings.*.recipe_dish_topping_id" => "required_with:details.*.extras.recipe_toppings|integer",
-            "details.*.extras.recipe_toppings.*.quantity" => "required_with:details.*.extras.recipe_toppings|integer|min:0|max:100"
+            "details.*.extras.recipe_toppings.*.quantity" => "required_with:details.*.extras.recipe_toppings|integer|min:0|max:100",
         ];
 
     }
@@ -136,7 +135,7 @@ class StoreSaleRequest extends CompanyFormRequest {
             "taxes.*.amount.max" => "El importe del tributo supera el máximo permitido.",
             "taxes.*.quantity.integer" => "La cantidad del tributo debe ser un número entero.",
             "taxes.*.quantity.min" => "La cantidad del tributo debe ser al menos 1.",
-            "taxes.*.quantity.max" => "La cantidad del tributo supera el máximo permitido."
+            "taxes.*.quantity.max" => "La cantidad del tributo supera el máximo permitido.",
         ];
 
     }
@@ -147,18 +146,18 @@ class StoreSaleRequest extends CompanyFormRequest {
 
         // Props rename for frontend compatibility
         $fieldMappings = [
-            "branch_id"   => "branch",
-            "serie_id"    => "serie",
+            "branch_id" => "branch",
+            "serie_id" => "serie",
             "warehouse_id" => "warehouse",
             "delivery_method_id" => "delivery_method",
-            "holder_id"   => "holder",
-            "seller_id"   => "seller",
-            "currency_id" => "currency"
+            "holder_id" => "holder",
+            "seller_id" => "seller",
+            "currency_id" => "currency",
         ];
 
         $renamedErrors = [];
 
-        foreach($errors as $key => $value) {
+        foreach ($errors as $key => $value) {
 
             $newKey = $fieldMappings[$key] ?? $key;
             $renamedErrors[$newKey] = $value;
@@ -175,9 +174,9 @@ class StoreSaleRequest extends CompanyFormRequest {
     private function normalizeDetails(): array {
 
         return collect($this->input("details", []))
-            ->map(function($detail) {
+            ->map(function ($detail) {
 
-                if(!is_array($detail)) {
+                if (! is_array($detail)) {
 
                     return $detail;
 
@@ -193,7 +192,9 @@ class StoreSaleRequest extends CompanyFormRequest {
                 $detail["commission_amount"] = $this->normalizeDecimalFromArray($detail, "commission_amount");
                 $detail["igv_exempt"] = filter_var($detail["igv_exempt"] ?? false, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? false;
                 $detail["price_includes_tax"] = filter_var($detail["price_includes_tax"] ?? false, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? false;
-                if($detail["igv_exempt"]) $detail["price_includes_tax"] = false;
+                if ($detail["igv_exempt"]) {
+                    $detail["price_includes_tax"] = false;
+                }
 
                 return $detail;
 
@@ -206,9 +207,9 @@ class StoreSaleRequest extends CompanyFormRequest {
     private function normalizeTaxes(): array {
 
         return collect($this->input("taxes", []))
-            ->map(function($tax) {
+            ->map(function ($tax) {
 
-                if(!is_array($tax)) {
+                if (! is_array($tax)) {
 
                     return $tax;
 
@@ -231,9 +232,9 @@ class StoreSaleRequest extends CompanyFormRequest {
     private function normalizePayments(): array {
 
         return collect($this->input("payments", []))
-            ->map(function($payment) {
+            ->map(function ($payment) {
 
-                if(!is_array($payment)) {
+                if (! is_array($payment)) {
 
                     return $payment;
 
@@ -250,5 +251,4 @@ class StoreSaleRequest extends CompanyFormRequest {
             ->all();
 
     }
-
 }

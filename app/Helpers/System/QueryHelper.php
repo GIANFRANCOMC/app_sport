@@ -4,22 +4,19 @@ declare(strict_types=1);
 
 namespace App\Helpers\System;
 
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
 
 /**
  * Query Helper
  * Provides common query operations
  */
 class QueryHelper {
-
     /**
      * Apply pagination to query
      *
-     * @param Builder $query
-     * @param int $perPage Items per page
-     * @param int $maxPerPage Maximum items per page
-     * @return LengthAwarePaginator
+     * @param  int  $perPage Items per page
+     * @param  int  $maxPerPage Maximum items per page
      */
     public static function paginate(Builder $query, int $perPage = 15, int $maxPerPage = 1000): LengthAwarePaginator {
 
@@ -36,14 +33,12 @@ class QueryHelper {
     /**
      * Apply search filter to query
      *
-     * @param Builder $query
-     * @param string $field Field name
-     * @param string|null $value Search value
-     * @return Builder
+     * @param  string  $field Field name
+     * @param  string|null  $value Search value
      */
     public static function applySearch(Builder $query, string $field, ?string $value): Builder {
 
-        if(!Utilities::isDefined($value)) {
+        if (! Utilities::isDefined($value)) {
 
             return $query;
 
@@ -58,14 +53,12 @@ class QueryHelper {
     /**
      * Apply multiple field search (OR condition)
      *
-     * @param Builder $query
-     * @param array $fields Field names
-     * @param string|null $value Search value
-     * @return Builder
+     * @param  array  $fields Field names
+     * @param  string|null  $value Search value
      */
     public static function applyMultiFieldSearch(Builder $query, array $fields, ?string $value): Builder {
 
-        if(!Utilities::isDefined($value) || empty($fields)) {
+        if (! Utilities::isDefined($value) || empty($fields)) {
 
             return $query;
 
@@ -73,9 +66,9 @@ class QueryHelper {
 
         $searchTerm = Utilities::getWordSearch($value);
 
-        return $query->where(function($q) use($fields, $searchTerm) {
+        return $query->where(function ($q) use ($fields, $searchTerm) {
 
-            foreach($fields as $field) {
+            foreach ($fields as $field) {
 
                 $q->orWhere($field, "like", $searchTerm);
 
@@ -88,19 +81,17 @@ class QueryHelper {
     /**
      * Apply status filter
      *
-     * @param Builder $query
-     * @param string|array|null $status Status value(s)
-     * @return Builder
+     * @param  string|array|null  $status Status value(s)
      */
     public static function applyStatusFilter(Builder $query, $status): Builder {
 
-        if(!Utilities::isDefined($status)) {
+        if (! Utilities::isDefined($status)) {
 
             return $query;
 
         }
 
-        if(is_array($status)) {
+        if (is_array($status)) {
 
             return $query->whereIn("status", $status);
 
@@ -113,21 +104,19 @@ class QueryHelper {
     /**
      * Apply date range filter
      *
-     * @param Builder $query
-     * @param string $field Date field name
-     * @param string|null $startDate Start date
-     * @param string|null $endDate End date
-     * @return Builder
+     * @param  string  $field Date field name
+     * @param  string|null  $startDate Start date
+     * @param  string|null  $endDate End date
      */
     public static function applyDateRangeFilter(Builder $query, string $field, ?string $startDate, ?string $endDate): Builder {
 
-        if(Utilities::isDefined($startDate)) {
+        if (Utilities::isDefined($startDate)) {
 
             $query->where($field, ">=", $startDate);
 
         }
 
-        if(Utilities::isDefined($endDate)) {
+        if (Utilities::isDefined($endDate)) {
 
             $query->where($field, "<=", $endDate);
 
@@ -140,10 +129,8 @@ class QueryHelper {
     /**
      * Apply ordering
      *
-     * @param Builder $query
-     * @param string $orderBy Order by field
-     * @param string $orderDirection Order direction (ASC/DESC)
-     * @return Builder
+     * @param  string  $orderBy Order by field
+     * @param  string  $orderDirection Order direction (ASC/DESC)
      */
     public static function applyOrdering(Builder $query, string $orderBy = "id", string $orderDirection = "DESC"): Builder {
 
@@ -154,15 +141,11 @@ class QueryHelper {
     /**
      * Apply company filter
      *
-     * @param Builder $query
-     * @param int $companyId Company ID
-     * @return Builder
+     * @param  int  $companyId Company ID
      */
     public static function applyCompanyFilter(Builder $query, int $companyId): Builder {
 
         return $query->where("company_id", $companyId);
 
     }
-
 }
-

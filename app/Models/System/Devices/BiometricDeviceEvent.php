@@ -7,7 +7,6 @@ namespace App\Models\System\Devices;
 use Illuminate\Database\Eloquent\Model;
 
 final class BiometricDeviceEvent extends Model {
-
     protected $table = "biometric_device_events";
 
     protected $fillable = [
@@ -22,13 +21,12 @@ final class BiometricDeviceEvent extends Model {
         "processing_status",
         "attempts",
         "last_error",
-        "processed_at"
+        "processed_at",
     ];
 
     protected $casts = [
         "occurred_at" => "datetime",
         "processed_at" => "datetime",
-        "payload" => "array"
+        "payload" => "array",
     ];
-
 }

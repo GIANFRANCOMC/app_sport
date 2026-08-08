@@ -2,21 +2,22 @@
 
 namespace App\Http\Requests\System\Auth;
 
+use App\Helpers\System\Utilities;
+use App\Models\System\Organizations\Company;
+use App\Models\System\Organizations\User;
+use App\Services\Security\TurnstileVerificationService;
+use App\Services\System\Auth\AuthenticationAuditService;
+use App\Services\System\Tenancy\TenantContext;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
-use Illuminate\Support\Facades\{Auth, Hash, RateLimiter};
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
-use App\Helpers\System\Utilities;
-use App\Models\System\Organizations\{Company, User};
-use App\Services\System\Tenancy\TenantContext;
-use App\Services\System\Auth\AuthenticationAuditService;
-use App\Services\Security\TurnstileVerificationService;
-
 class LoginRequest extends FormRequest {
-
     /**
      * Determine if the user is authorized to make this request.
      */
@@ -36,7 +37,7 @@ class LoginRequest extends FormRequest {
         return [
             "email" => ["required", "string", "email"],
             "password" => ["required", "string"],
-            "company_id" => ["required", "integer"]
+            "company_id" => ["required", "integer"],
         ];
 
     }
@@ -59,22 +60,22 @@ class LoginRequest extends FormRequest {
         $this->ensureIsNotRateLimited();
 
         $credentials = $this->only("email", "password");
-        $companyId   = $this->input("company_id");
+        $companyId = $this->input("company_id");
 
         $company = Company::where("id", $companyId)
-                          ->first();
+            ->first();
 
         // Check if the company is active
-        if(!Utilities::isDefined($company) || $company->status !== "active") {
+        if (! Utilities::isDefined($company) || $company->status !== "active") {
 
             AuthenticationAuditService::record(
                 $this,
-                'login',
-                'blocked',
+                "login",
+                "blocked",
                 null,
                 (int) $companyId,
-                (string) ($credentials['email'] ?? ''),
-                'Empresa inexistente o inactiva.'
+                (string) ($credentials["email"] ?? ""),
+                "Empresa inexistente o inactiva."
             );
 
             throw new HttpResponseException(
@@ -84,48 +85,48 @@ class LoginRequest extends FormRequest {
         }
 
         $user = User::where("email", $credentials["email"])
-                    ->where("company_id", $companyId)
-                    ->whereIn("status", ["active"])
-                    ->with(["company"])
-                    ->first();
+            ->where("company_id", $companyId)
+            ->whereIn("status", ["active"])
+            ->with(["company"])
+            ->first();
 
         // Attempt to authenticate the user
-        if(!Utilities::isDefined($user) || !Hash::check($credentials["password"], $user->password)) {
+        if (! Utilities::isDefined($user) || ! Hash::check($credentials["password"], $user->password)) {
 
             RateLimiter::hit($this->throttleKey());
             AuthenticationAuditService::record(
                 $this,
-                'login',
-                'failure',
+                "login",
+                "failure",
                 $user,
                 (int) $companyId,
-                (string) ($credentials['email'] ?? ''),
-                'Credenciales inválidas.'
+                (string) ($credentials["email"] ?? ""),
+                "Credenciales inválidas."
             );
 
             throw ValidationException::withMessages([
-                "email" => trans("auth.failed")
+                "email" => trans("auth.failed"),
             ]);
 
         }
 
-        if(!TurnstileVerificationService::verify(
+        if (! TurnstileVerificationService::verify(
             $this->input("cf-turnstile-response"),
             $this->ip()
         )) {
 
             AuthenticationAuditService::record(
                 $this,
-                'login',
-                'blocked',
+                "login",
+                "blocked",
                 $user,
                 (int) $companyId,
-                (string) $credentials['email'],
-                'Desafío antiabuso rechazado.'
+                (string) $credentials["email"],
+                "Desafío antiabuso rechazado."
             );
 
             throw ValidationException::withMessages([
-                "captcha" => trans("auth.captcha")
+                "captcha" => trans("auth.captcha"),
             ]);
 
         }
@@ -143,7 +144,7 @@ class LoginRequest extends FormRequest {
      */
     public function ensureIsNotRateLimited(): void {
 
-        if(!RateLimiter::tooManyAttempts($this->throttleKey(), 5)) {
+        if (! RateLimiter::tooManyAttempts($this->throttleKey(), 5)) {
             return;
         }
 
@@ -151,12 +152,12 @@ class LoginRequest extends FormRequest {
 
         AuthenticationAuditService::record(
             $this,
-            'lockout',
-            'blocked',
+            "lockout",
+            "blocked",
             null,
-            (int) $this->input('company_id'),
-            (string) $this->input('email'),
-            'Límite de intentos de inicio de sesión alcanzado.'
+            (int) $this->input("company_id"),
+            (string) $this->input("email"),
+            "Límite de intentos de inicio de sesión alcanzado."
         );
 
         $seconds = RateLimiter::availableIn($this->throttleKey());
@@ -182,5 +183,4 @@ class LoginRequest extends FormRequest {
         );
 
     }
-
 }

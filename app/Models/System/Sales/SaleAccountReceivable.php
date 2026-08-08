@@ -11,7 +11,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 final class SaleAccountReceivable extends Model {
-
     protected $table = "sale_accounts_receivable";
 
     protected $fillable = [
@@ -35,7 +34,7 @@ final class SaleAccountReceivable extends Model {
         "updated_at",
         "updated_by",
         "canceled_at",
-        "canceled_by"
+        "canceled_by",
     ];
 
     protected $casts = [
@@ -47,7 +46,7 @@ final class SaleAccountReceivable extends Model {
         "total_amount" => "App\\Casts\\System\\ConfigurableDecimal",
         "paid_amount" => "App\\Casts\\System\\ConfigurableDecimal",
         "pending_amount" => "App\\Casts\\System\\ConfigurableDecimal",
-        "canceled_at" => "datetime"
+        "canceled_at" => "datetime",
     ];
 
     public function sale(): BelongsTo {
@@ -77,8 +76,7 @@ final class SaleAccountReceivable extends Model {
     public function payments(): HasMany {
 
         return $this->hasMany(SaleReceivablePayment::class, "sale_account_receivable_id")
-                    ->where("status", "active");
+            ->where("status", "active");
 
     }
-
 }

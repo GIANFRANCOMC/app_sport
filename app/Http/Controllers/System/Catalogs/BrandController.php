@@ -15,7 +15,6 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 final class BrandController extends BaseController {
-
     private const TRANSLATION_NAMESPACE = "System.Catalogs.brand";
 
     public function initParams(Request $request) {
@@ -44,7 +43,6 @@ final class BrandController extends BaseController {
 
     }
 
-
     public function store(StoreBrandRequest $request): JsonResponse {
 
         try {
@@ -62,7 +60,7 @@ final class BrandController extends BaseController {
 
             return $this->createdResponse($brand, "created", "brand");
 
-        }catch(\Exception $exception) {
+        } catch (\Exception $exception) {
 
             return $this->handleException($exception, "create");
 
@@ -70,15 +68,13 @@ final class BrandController extends BaseController {
 
     }
 
-
-
     public function update(UpdateBrandRequest $request, int $id): JsonResponse {
 
         try {
 
             $brand = BrandService::findByIdAndCompany($id, $this->getCompanyId(), null);
 
-            if(!$brand) {
+            if (! $brand) {
 
                 return $this->notFoundResponse();
 
@@ -98,7 +94,7 @@ final class BrandController extends BaseController {
 
             return $this->updatedResponse($brand, "updated", "brand");
 
-        }catch(\Exception $exception) {
+        } catch (\Exception $exception) {
 
             return $this->handleException($exception, "update");
 
@@ -106,11 +102,9 @@ final class BrandController extends BaseController {
 
     }
 
-
     protected function getTranslationNamespace(): string {
 
         return self::TRANSLATION_NAMESPACE;
 
     }
-
 }

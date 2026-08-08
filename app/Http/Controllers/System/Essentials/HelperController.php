@@ -4,19 +4,25 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\System\Essentials;
 
-use App\Helpers\System\{ApiResponse, Utilities};
+use App\Helpers\System\ApiResponse;
+use App\Helpers\System\Utilities;
 use App\Http\Controllers\System\Base\BaseController;
 use App\Mail\SaleMail;
 use App\Models\System\Sales\SaleHeader;
 use App\Services\System\Organizations\Companies\CompanySettingService;
-use Illuminate\Http\{JsonResponse, Request};
-use Illuminate\Support\Facades\{DB, Mail, Schema, Validator};
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Validator;
 use stdClass;
 
 class HelperController extends BaseController {
-
     private const TRANSLATION_NAMESPACE = "System.Essentials.helper";
+
     private const DOCUMENT_LOOKUP_SERVICE = "apiperu";
+
     private const DOCUMENT_LOOKUP_ACTION = "document_lookup";
 
     public function searchDocumentNumber(Request $request): JsonResponse {
@@ -27,15 +33,15 @@ class HelperController extends BaseController {
 
         $validator = Validator::make($request->all(), [
             "document_number" => ["required", "regex:/^\d{8,11}$/"],
-            "type" => ["required", "in:dni,ruc"]
+            "type" => ["required", "in:dni,ruc"],
         ], [
             "document_number.required" => "Ingresa el número de documento.",
             "document_number.regex" => "El número de documento debe tener entre 8 y 11 dígitos.",
             "type.required" => "Selecciona el tipo de documento.",
-            "type.in" => "El tipo de documento debe ser DNI o RUC."
+            "type.in" => "El tipo de documento debe ser DNI o RUC.",
         ]);
 
-        if($validator->fails()) {
+        if ($validator->fails()) {
 
             $this->logExternalApiRequest($request, $companyId, $user->id ?? null, "blocked");
 
@@ -46,12 +52,12 @@ class HelperController extends BaseController {
 
         }
 
-        if(empty($company->token_api_misc)) {
+        if (empty($company->token_api_misc)) {
 
             $this->logExternalApiRequest($request, $companyId, $user->id ?? null, "blocked");
 
             return ApiResponse::success([
-                "external_request_usage" => $this->getExternalApiMonthlyUsage($companyId)
+                "external_request_usage" => $this->getExternalApiMonthlyUsage($companyId),
             ], "Debe ingresar el Token API - Misc.");
 
         }
@@ -67,7 +73,7 @@ class HelperController extends BaseController {
         $usage = $this->getExternalApiMonthlyUsage($companyId);
         $data["external_request_usage"] = $usage;
 
-        if($usage["has_warning"]) {
+        if ($usage["has_warning"]) {
 
             $message .= " Este mes registra {$usage["used"]} consultas externas; revisa el consumo mensual.";
 
@@ -85,15 +91,15 @@ class HelperController extends BaseController {
                 "email" => ["required", "email:rfc", "max:255"],
                 "message" => ["required", "string", "max:5000"],
                 "serie_sequential" => ["nullable", "string", "max:100"],
-                "id" => ["nullable", "integer", "min:1"]
+                "id" => ["nullable", "integer", "min:1"],
             ], [
                 "email.required" => "Ingresa el correo destino.",
                 "email.email" => "Ingresa un correo válido.",
                 "message.required" => "Ingresa el mensaje del correo.",
-                "message.max" => "El mensaje no debe superar 5000 caracteres."
+                "message.max" => "El mensaje no debe superar 5000 caracteres.",
             ]);
 
-            if($validator->fails()) {
+            if ($validator->fails()) {
 
                 return ApiResponse::validationError(
                     $validator->errors()->toArray(),
@@ -127,7 +133,7 @@ class HelperController extends BaseController {
 
             return ApiResponse::success(null, "Correo enviado correctamente.");
 
-        }catch(\Throwable $e) {
+        } catch (\Throwable $e) {
 
             return $this->handleException($e, "send_email");
 
@@ -157,15 +163,15 @@ class HelperController extends BaseController {
             CURLOPT_HTTPHEADER => [
                 "Accept: application/json",
                 "Content-Type: application/json",
-                "Authorization: Bearer ".$token
-            ]
+                "Authorization: Bearer ".$token,
+            ],
         ]);
 
         $responseApi = curl_exec($curlApi);
         $errorApi = curl_error($curlApi);
         curl_close($curlApi);
 
-        if($errorApi) {
+        if ($errorApi) {
 
             return [false, $errorApi, []];
 
@@ -174,7 +180,7 @@ class HelperController extends BaseController {
         $dataApi = json_decode((string) $responseApi);
         $success = (bool) ($dataApi->success ?? false);
 
-        if(!$success) {
+        if (! $success) {
 
             return [false, $dataApi->message ?? "No se encontró información para el documento.", []];
 
@@ -183,27 +189,27 @@ class HelperController extends BaseController {
         return [
             true,
             "La búsqueda se ha efectuado correctamente.",
-            $this->formatDocumentLookupData($type, $dataApi->data ?? null)
+            $this->formatDocumentLookupData($type, $dataApi->data ?? null),
         ];
 
     }
 
     private function formatDocumentLookupData(string $type, ?object $data): array {
 
-        if(!$data) {
+        if (! $data) {
 
             return [];
 
         }
 
-        if($type === "dni") {
+        if ($type === "dni") {
 
             return [
                 "document_number" => $data->numero ?? "",
                 "first_name" => $data->nombres ?? "",
                 "last_name" => $data->apellido_paterno ?? "",
                 "second_last_name" => $data->apellido_materno ?? "",
-                "verification_code" => $data->codigo_verificacion ?? ""
+                "verification_code" => $data->codigo_verificacion ?? "",
             ];
 
         }
@@ -212,7 +218,7 @@ class HelperController extends BaseController {
             "document_number" => $data->ruc ?? "",
             "legal_name" => $data->nombre_o_razon_social ?? "",
             "commercial_name" => $data->nombre_o_razon_social ?? "",
-            "address" => $data->direccion_completa ?? ""
+            "address" => $data->direccion_completa ?? "",
         ];
 
     }
@@ -224,7 +230,7 @@ class HelperController extends BaseController {
         string $result
     ): void {
 
-        if(!Schema::hasTable("external_api_request_logs")) {
+        if (! Schema::hasTable("external_api_request_logs")) {
 
             return;
 
@@ -239,7 +245,7 @@ class HelperController extends BaseController {
             "document_number" => $request->document_number,
             "result" => $result,
             "ip_address" => $request->ip(),
-            "requested_at" => now()
+            "requested_at" => now(),
         ]);
 
     }
@@ -253,13 +259,13 @@ class HelperController extends BaseController {
             80
         ));
 
-        if(!Schema::hasTable("external_api_request_logs")) {
+        if (! Schema::hasTable("external_api_request_logs")) {
 
             return [
                 "month" => now()->format("Y-m"),
                 "used" => 0,
                 "warning_threshold" => $threshold,
-                "has_warning" => false
+                "has_warning" => false,
             ];
 
         }
@@ -276,9 +282,8 @@ class HelperController extends BaseController {
             "month" => now()->format("Y-m"),
             "used" => $used,
             "warning_threshold" => $threshold,
-            "has_warning" => $used >= $threshold
+            "has_warning" => $used >= $threshold,
         ];
 
     }
-
 }

@@ -7,16 +7,15 @@ namespace App\Http\Controllers\System\Auth;
 use App\Helpers\System\Utilities;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\System\Auth\LoginRequest;
+use App\Models\System\Organizations\{Company};
 use App\Providers\RouteServiceProvider;
-use Illuminate\Http\{Request, RedirectResponse};
+use App\Services\System\Auth\AuthenticationAuditService;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
-use App\Models\System\Organizations\{Company};
-use App\Services\System\Auth\AuthenticationAuditService;
-
 class AuthenticatedSessionController extends Controller {
-
     /**
      * Display the login view.
      */
@@ -24,39 +23,39 @@ class AuthenticatedSessionController extends Controller {
 
         $data = Utilities::getDefaultData();
 
-        $data->company   = null;
+        $data->company = null;
         $data->companies = [];
 
-        if(Utilities::isDefined($data->env_company_id)) {
+        if (Utilities::isDefined($data->env_company_id)) {
 
             $data->company = Company::where("id", $data->env_company_id)
-                                    ->whereIn("status", ["active"])
-                                    ->with(["socialsMedia"])
-                                    ->first();
+                ->whereIn("status", ["active"])
+                ->with(["socialsMedia"])
+                ->first();
 
-        }else {
+        } else {
 
             $base64Company = $request->company;
 
-            if(Utilities::isDefined($base64Company)) {
+            if (Utilities::isDefined($base64Company)) {
 
                 $companyId = base64_decode($base64Company);
 
-                if(Utilities::isDefined($companyId)) {
+                if (Utilities::isDefined($companyId)) {
 
                     $data->company = Company::where("id", $companyId)
-                                            ->whereIn("status", ["active"])
-                                            ->with(["socialsMedia"])
-                                            ->first();
+                        ->whereIn("status", ["active"])
+                        ->with(["socialsMedia"])
+                        ->first();
 
                 }
 
-            }else {
+            } else {
 
                 $data->companies = Company::whereIn("status", ["active", "inactive"])
-                                          ->with(["socialsMedia"])
-                                          ->orderBy("commercial_name", "ASC")
-                                          ->get();
+                    ->with(["socialsMedia"])
+                    ->orderBy("commercial_name", "ASC")
+                    ->get();
 
             }
 
@@ -74,8 +73,8 @@ class AuthenticatedSessionController extends Controller {
         $request->authenticate();
 
         $request->session()->regenerate();
-        $request->session()->put('_user_session_version', max(1, (int) (Auth::user()->session_version ?? 1)));
-        AuthenticationAuditService::record($request, 'login', 'success', Auth::user());
+        $request->session()->put("_user_session_version", max(1, (int) (Auth::user()->session_version ?? 1)));
+        AuthenticationAuditService::record($request, "login", "success", Auth::user());
 
         return redirect()->intended(RouteServiceProvider::HOME);
 
@@ -86,10 +85,10 @@ class AuthenticatedSessionController extends Controller {
      */
     public function destroy(Request $request): RedirectResponse {
 
-        $user    = Auth::user();
+        $user = Auth::user();
         $company = $user->company;
 
-        AuthenticationAuditService::record($request, 'logout', 'success', $user);
+        AuthenticationAuditService::record($request, "logout", "success", $user);
 
         Auth::guard("web")->logout();
 
@@ -99,5 +98,4 @@ class AuthenticatedSessionController extends Controller {
         return redirect("/".Utilities::companyLoginQuery($company->id));
 
     }
-
 }

@@ -3,22 +3,24 @@
 namespace App\Models\System\Customers;
 
 use App\Helpers\System\Utilities;
+use App\Models\System\Organizations\{Company};
 use Illuminate\Database\Eloquent\Model;
 
-use App\Models\System\Organizations\{Company};
-
 class SubscriptionEmail extends Model {
+    protected $table = "subscription_emails";
 
-    protected $table               = "subscription_emails";
-    protected $primaryKey          = "id";
-    public $incrementing           = true;
-    public $timestamps             = true;
+    protected $primaryKey = "id";
+
+    public $incrementing = true;
+
+    public $timestamps = true;
+
     public static $snakeAttributes = true;
 
     protected $appends = [
         "formatted_extras_json",
         "formatted_type",
-        "formatted_status"
+        "formatted_status",
     ];
 
     protected $fillable = [
@@ -40,7 +42,7 @@ class SubscriptionEmail extends Model {
         "created_at",
         "created_by",
         "updated_at",
-        "updated_by"
+        "updated_by",
     ];
 
     protected $casts = [
@@ -48,7 +50,7 @@ class SubscriptionEmail extends Model {
         "max_attempts" => "integer",
         "next_attempt_at" => "datetime",
         "sent_at" => "datetime",
-        "failed_at" => "datetime"
+        "failed_at" => "datetime",
     ];
 
     // Appends
@@ -75,7 +77,7 @@ class SubscriptionEmail extends Model {
 
         $types = [
             ["code" => "SubscriptionExpired", "label" => "Membresía vencida"],
-            ["code" => "SubscriptionWelcome", "label" => "Agradecimiento por suscripción"]
+            ["code" => "SubscriptionWelcome", "label" => "Agradecimiento por suscripción"],
         ];
 
         return Utilities::getValues($types, $type, $code);
@@ -87,7 +89,7 @@ class SubscriptionEmail extends Model {
         $statuses = [
             ["code" => "pending", "label" => "Pendiente"],
             ["code" => "sent", "label" => "Enviado"],
-            ["code" => "failed", "label" => "Fallido"]
+            ["code" => "failed", "label" => "Fallido"],
         ];
 
         return Utilities::getValues($statuses, $type, $code);
@@ -100,5 +102,4 @@ class SubscriptionEmail extends Model {
         return $this->belongsTo(Company::class, "company_id", "id");
 
     }
-
 }

@@ -14,4 +14,3 @@ return [
     "exception_create" => "Error al actualizar el stock: :message",
     "exception_update" => "Error al actualizar el stock: :message",
 ];
-

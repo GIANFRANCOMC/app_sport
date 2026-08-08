@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Models\System\Devices;
 
-use App\Models\System\Organizations\{Company, User};
+use App\Models\System\Organizations\Company;
+use App\Models\System\Organizations\User;
 use Illuminate\Database\Eloquent\Model;
 
 final class UserBiometricFingerprint extends Model {
-
     protected $table = "user_biometric_fingerprints";
 
     protected $fillable = [
@@ -23,11 +23,11 @@ final class UserBiometricFingerprint extends Model {
         "created_at",
         "created_by",
         "updated_at",
-        "updated_by"
+        "updated_by",
     ];
 
     protected $hidden = [
-        "fingerprint_template"
+        "fingerprint_template",
     ];
 
     public function company() {
@@ -47,5 +47,4 @@ final class UserBiometricFingerprint extends Model {
         return $this->belongsTo(BiometricDevice::class, "biometric_device_id", "id");
 
     }
-
 }

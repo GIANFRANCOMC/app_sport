@@ -8,4 +8,3 @@ return [
     "not_found" => "Recurso no encontrado",
     "not_implemented" => "Funcionalidad no implementada",
 ];
-

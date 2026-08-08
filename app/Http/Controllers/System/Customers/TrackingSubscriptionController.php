@@ -4,21 +4,19 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\System\Customers;
 
-use App\Http\Controllers\System\Base\BaseController;
 use App\Helpers\System\{Utilities};
-use Illuminate\Http\{JsonResponse, Request};
-
-use App\Http\Requests\System\Customers\TrackingSubscriptions\{
-    CancelTrackingSubscriptionRequest,
-    RenewTrackingSubscriptionRequest,
-    StoreManualTrackingSubscriptionRequest
-};
-use App\Services\System\Organizations\AccessScopeService;
-use App\Services\System\Customers\Tracking\{TrackingSubscriptionConfigService, TrackingSubscriptionService};
+use App\Http\Controllers\System\Base\BaseController;
+use App\Http\Requests\System\Customers\TrackingSubscriptions\CancelTrackingSubscriptionRequest;
+use App\Http\Requests\System\Customers\TrackingSubscriptions\RenewTrackingSubscriptionRequest;
+use App\Http\Requests\System\Customers\TrackingSubscriptions\StoreManualTrackingSubscriptionRequest;
 use App\Models\System\Customers\Subscription;
+use App\Services\System\Customers\Tracking\TrackingSubscriptionConfigService;
+use App\Services\System\Customers\Tracking\TrackingSubscriptionService;
+use App\Services\System\Organizations\AccessScopeService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class TrackingSubscriptionController extends BaseController {
-
     /**
      * Translation namespace for tracking subscription module
      */
@@ -27,12 +25,12 @@ class TrackingSubscriptionController extends BaseController {
     /**
      * Get initialization parameters for the module
      *
-     * @param Request $request
      * @return \stdClass
      */
     public function initParams(Request $request) {
 
         $page = $this->getPage($request);
+
         return TrackingSubscriptionConfigService::getInitParams($this->getCompanyId(), $page, $this->getUserId());
 
     }
@@ -40,17 +38,16 @@ class TrackingSubscriptionController extends BaseController {
     /**
      * Get paginated list of subscriptions with filters
      *
-     * @param Request $request
      * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator
      */
     public function list(Request $request) {
 
         $filters = [
-            "branch_id"   => $request->input("branch_id"),
+            "branch_id" => $request->input("branch_id"),
             "customer_id" => $request->input("customer_id"),
-            "start_date"  => $request->input("start_date"),
-            "end_date"    => $request->input("end_date"),
-            "status"      => $request->input("status")
+            "start_date" => $request->input("start_date"),
+            "end_date" => $request->input("end_date"),
+            "status" => $request->input("status"),
         ];
         $perPage = $this->getPerPage($request, Utilities::$per_page_default);
 
@@ -69,18 +66,13 @@ class TrackingSubscriptionController extends BaseController {
 
     }
 
-
-
-
-
-
     public function storeManual(StoreManualTrackingSubscriptionRequest $request): JsonResponse {
 
         try {
 
             $validated = $request->validated();
 
-            if(!AccessScopeService::canAccess($this->getAuthUser(), AccessScopeService::BRANCH, (int) $validated["branch_id"])) {
+            if (! AccessScopeService::canAccess($this->getAuthUser(), AccessScopeService::BRANCH, (int) $validated["branch_id"])) {
 
                 return $this->notFoundResponse();
 
@@ -94,7 +86,7 @@ class TrackingSubscriptionController extends BaseController {
 
             return $this->createdResponse($subscription, "created", "subscription");
 
-        }catch(\Exception $e) {
+        } catch (\Exception $e) {
 
             return $this->handleException($e, "create");
 
@@ -102,15 +94,10 @@ class TrackingSubscriptionController extends BaseController {
 
     }
 
-
-
-
     /**
      * Cancel the specified subscription
      *
-     * @param CancelTrackingSubscriptionRequest $request
-     * @param int $id Subscription ID
-     * @return JsonResponse
+     * @param  int  $id Subscription ID
      */
     public function cancel(CancelTrackingSubscriptionRequest $request, int $id): JsonResponse {
 
@@ -120,8 +107,8 @@ class TrackingSubscriptionController extends BaseController {
                 ->where("company_id", $this->getCompanyId())
                 ->find($id);
 
-            if(!$subscription
-                || !AccessScopeService::canAccess($this->getAuthUser(), AccessScopeService::BRANCH, (int) $subscription->branch_id)) {
+            if (! $subscription
+                || ! AccessScopeService::canAccess($this->getAuthUser(), AccessScopeService::BRANCH, (int) $subscription->branch_id)) {
 
                 return $this->notFoundResponse();
 
@@ -131,7 +118,7 @@ class TrackingSubscriptionController extends BaseController {
 
             return $this->updatedResponse($subscription, "canceled", "subscription");
 
-        }catch(\Exception $e) {
+        } catch (\Exception $e) {
 
             return $this->handleException($e, "cancel");
 
@@ -147,8 +134,8 @@ class TrackingSubscriptionController extends BaseController {
                 ->where("company_id", $this->getCompanyId())
                 ->find($id);
 
-            if(!$subscription
-                || !AccessScopeService::canAccess($this->getAuthUser(), AccessScopeService::BRANCH, (int) $subscription->branch_id)) {
+            if (! $subscription
+                || ! AccessScopeService::canAccess($this->getAuthUser(), AccessScopeService::BRANCH, (int) $subscription->branch_id)) {
 
                 return $this->notFoundResponse();
 
@@ -162,7 +149,7 @@ class TrackingSubscriptionController extends BaseController {
 
             return $this->createdResponse($renewal, "created", "subscription");
 
-        }catch(\Exception $e) {
+        } catch (\Exception $e) {
 
             return $this->handleException($e, "create");
 
@@ -172,14 +159,10 @@ class TrackingSubscriptionController extends BaseController {
 
     /**
      * Get translation namespace for tracking subscription module
-     *
-     * @return string
      */
     protected function getTranslationNamespace(): string {
 
         return self::TRANSLATION_NAMESPACE;
 
     }
-
-
 }

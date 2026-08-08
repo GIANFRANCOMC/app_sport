@@ -13,9 +13,9 @@ return [
     |
     */
 
-    'failed' => 'These credentials do not match our records.',
-    'password' => 'The provided password is incorrect.',
-    'throttle' => 'Too many login attempts. Please try again in :seconds seconds.',
-    'captcha' => 'Captcha verification failed. Please try again.',
-    'company_inactive' => 'The company is inactive. Please contact the administrator.',
+    "failed" => "These credentials do not match our records.",
+    "password" => "The provided password is incorrect.",
+    "throttle" => "Too many login attempts. Please try again in :seconds seconds.",
+    "captcha" => "Captcha verification failed. Please try again.",
+    "company_inactive" => "The company is inactive. Please contact the administrator.",
 ];

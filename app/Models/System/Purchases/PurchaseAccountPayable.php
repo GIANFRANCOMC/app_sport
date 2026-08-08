@@ -10,7 +10,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 final class PurchaseAccountPayable extends Model {
-
     protected $table = "purchase_accounts_payable";
 
     protected $fillable = [
@@ -34,7 +33,7 @@ final class PurchaseAccountPayable extends Model {
         "updated_at",
         "updated_by",
         "canceled_at",
-        "canceled_by"
+        "canceled_by",
     ];
 
     protected $casts = [
@@ -46,7 +45,7 @@ final class PurchaseAccountPayable extends Model {
         "total_amount" => "App\\Casts\\System\\ConfigurableDecimal",
         "paid_amount" => "App\\Casts\\System\\ConfigurableDecimal",
         "pending_amount" => "App\\Casts\\System\\ConfigurableDecimal",
-        "canceled_at" => "datetime"
+        "canceled_at" => "datetime",
     ];
 
     public function purchase(): BelongsTo {
@@ -76,8 +75,7 @@ final class PurchaseAccountPayable extends Model {
     public function payments(): HasMany {
 
         return $this->hasMany(PurchasePayablePayment::class, "purchase_account_payable_id")
-                    ->where("status", "active");
+            ->where("status", "active");
 
     }
-
 }

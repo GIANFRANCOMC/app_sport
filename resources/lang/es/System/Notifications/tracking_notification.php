@@ -14,4 +14,3 @@ return [
     "exception_create" => "Error al crear la notificación: :message",
     "exception_update" => "Error al actualizar la notificación: :message",
 ];
-

@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\System\Concerns;
 
-use App\Helpers\System\{ApiResponse, TranslationHelper};
+use App\Helpers\System\ApiResponse;
+use App\Helpers\System\TranslationHelper;
 use Illuminate\Http\JsonResponse;
 
 /**
@@ -12,21 +13,17 @@ use Illuminate\Http\JsonResponse;
  * Provides reusable methods for controllers
  */
 trait HandlesApiResponses {
-
     /**
      * Get translation namespace for the module
      * Must be defined in the controller using this trait
-     *
-     * @return string
      */
     abstract protected function getTranslationNamespace(): string;
 
     /**
      * Get translation for the module
      *
-     * @param string $key Translation key
-     * @param array $replace Replacements
-     * @return string
+     * @param  string  $key Translation key
+     * @param  array  $replace Replacements
      */
     protected function trans(string $key, array $replace = []): string {
 
@@ -37,10 +34,9 @@ trait HandlesApiResponses {
     /**
      * Return error response with translation
      *
-     * @param string $key Translation key
-     * @param array $replace Replacements
-     * @param int $statusCode HTTP status code
-     * @return JsonResponse
+     * @param  string  $key Translation key
+     * @param  array  $replace Replacements
+     * @param  int  $statusCode HTTP status code
      */
     protected function errorResponse(string $key, array $replace = [], int $statusCode = 500): JsonResponse {
 
@@ -50,8 +46,6 @@ trait HandlesApiResponses {
 
     /**
      * Return not found response with translation
-     *
-     * @return JsonResponse
      */
     protected function notFoundResponse(): JsonResponse {
 
@@ -62,11 +56,10 @@ trait HandlesApiResponses {
     /**
      * Return success response with translation
      *
-     * @param mixed $data Response data
-     * @param string $key Translation key
-     * @param array $replace Replacements
-     * @param int $statusCode HTTP status code
-     * @return JsonResponse
+     * @param  mixed  $data Response data
+     * @param  string  $key Translation key
+     * @param  array  $replace Replacements
+     * @param  int  $statusCode HTTP status code
      */
     protected function successResponse($data = null, string $key = "", array $replace = [], int $statusCode = 200): JsonResponse {
 
@@ -79,11 +72,10 @@ trait HandlesApiResponses {
     /**
      * Return created response with translation
      *
-     * @param mixed $resource Created resource data
-     * @param string $key Translation key
-     * @param string $resourceKey Resource key name
-     * @param array $replace Replacements
-     * @return JsonResponse
+     * @param  mixed  $resource Created resource data
+     * @param  string  $key Translation key
+     * @param  string  $resourceKey Resource key name
+     * @param  array  $replace Replacements
      */
     protected function createdResponse($resource = null, string $key = "created", string $resourceKey = "data", array $replace = []): JsonResponse {
 
@@ -94,17 +86,14 @@ trait HandlesApiResponses {
     /**
      * Return updated response with translation
      *
-     * @param mixed $resource Updated resource data
-     * @param string $key Translation key
-     * @param string $resourceKey Resource key name
-     * @param array $replace Replacements
-     * @return JsonResponse
+     * @param  mixed  $resource Updated resource data
+     * @param  string  $key Translation key
+     * @param  string  $resourceKey Resource key name
+     * @param  array  $replace Replacements
      */
     protected function updatedResponse($resource = null, string $key = "updated", string $resourceKey = "data", array $replace = []): JsonResponse {
 
         return ApiResponse::updated($resource, $this->trans($key, $replace), $resourceKey);
 
     }
-
 }
-

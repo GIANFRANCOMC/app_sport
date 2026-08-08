@@ -3,25 +3,27 @@
 namespace App\Models\System\Sales;
 
 use App\Helpers\System\Utilities;
-use Illuminate\Database\Eloquent\Model;
-use Exception;
-
 use App\Models\System\Catalogs\{Item};
 use App\Models\System\Customers\{Customer};
 use App\Models\System\General\{Currency};
+use Exception;
+use Illuminate\Database\Eloquent\Model;
 
 class SaleBody extends Model {
+    protected $table = "sales_body";
 
-    protected $table               = "sales_body";
-    protected $primaryKey          = "id";
-    public $incrementing           = true;
-    public $timestamps             = true;
+    protected $primaryKey = "id";
+
+    public $incrementing = true;
+
+    public $timestamps = true;
+
     public static $snakeAttributes = true;
 
     protected $appends = [
         "formatted_type",
         "formatted_extras",
-        "formatted_status"
+        "formatted_status",
     ];
 
     protected $fillable = [
@@ -48,7 +50,7 @@ class SaleBody extends Model {
         "updated_at",
         "updated_by",
         "canceled_at",
-        "canceled_by"
+        "canceled_by",
     ];
 
     // Appends
@@ -64,7 +66,7 @@ class SaleBody extends Model {
 
             return json_decode($this->extras);
 
-        }catch(Exception $e) {
+        } catch (Exception $e) {
 
             return "";
 
@@ -86,7 +88,7 @@ class SaleBody extends Model {
             ["code" => "day", "label" => "Día", "plural" => "Días"],
             ["code" => "today", "label" => "Rutina", "plural" => "Rutinas"],
             ["code" => "month", "label" => "Mes", "plural" => "Meses"],
-            ["code" => "year", "label" => "Año", "plural" => "Años"]
+            ["code" => "year", "label" => "Año", "plural" => "Años"],
         ];
 
         return Utilities::getValues($types, $type, $code);
@@ -97,7 +99,7 @@ class SaleBody extends Model {
 
         $types = [
             ["code" => "sale", "label" => "Venta"],
-            ["code" => "manual", "label" => "Manual"]
+            ["code" => "manual", "label" => "Manual"],
         ];
 
         return Utilities::getValues($types, $type, $code);
@@ -109,7 +111,7 @@ class SaleBody extends Model {
         $statuses = [
             ["code" => "active", "label" => "Activo"],
             ["code" => "inactive", "label" => "Inactivo"],
-            ["code" => "canceled", "label" => "Anulado"]
+            ["code" => "canceled", "label" => "Anulado"],
         ];
 
         return Utilities::getValues($statuses, $type, $code);
@@ -140,5 +142,4 @@ class SaleBody extends Model {
         return $this->belongsTo(Customer::class, "customer_id", "id");
 
     }
-
 }

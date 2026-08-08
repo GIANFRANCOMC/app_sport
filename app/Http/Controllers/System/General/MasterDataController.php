@@ -10,7 +10,6 @@ use App\Services\System\General\MasterDataService;
 use Illuminate\Http\JsonResponse;
 
 final class MasterDataController extends BaseController {
-
     public function index() {
 
         return view("System/general/General/master_data/main");
@@ -23,10 +22,10 @@ final class MasterDataController extends BaseController {
 
             return response()->json([
                 "bool" => true,
-                "data" => MasterDataService::list($this->getCompanyId(), $resource)
+                "data" => MasterDataService::list($this->getCompanyId(), $resource),
             ]);
 
-        }catch(\Throwable $e) {
+        } catch (\Throwable $e) {
 
             return $this->handleException($e, "retrieve");
 
@@ -68,12 +67,11 @@ final class MasterDataController extends BaseController {
                 ? $this->updatedResponse($record, "updated", "masterData")
                 : $this->createdResponse($record, "created", "masterData");
 
-        }catch(\Throwable $e) {
+        } catch (\Throwable $e) {
 
             return $this->handleException($e, $id ? "update" : "create");
 
         }
 
     }
-
 }

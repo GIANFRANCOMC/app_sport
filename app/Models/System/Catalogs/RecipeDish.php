@@ -9,14 +9,13 @@ use App\Models\System\Organizations\Company;
 use Illuminate\Database\Eloquent\Model;
 
 class RecipeDish extends Model {
-
     protected $table = "recipe_dishes";
 
     protected $appends = [
         "formatted_status",
         "components_count",
         "toppings_count",
-        "options_count"
+        "options_count",
     ];
 
     protected $fillable = [
@@ -29,12 +28,12 @@ class RecipeDish extends Model {
         "created_at",
         "created_by",
         "updated_at",
-        "updated_by"
+        "updated_by",
     ];
 
     protected $casts = [
         "yield_quantity" => "App\\Casts\\System\\ConfigurableDecimal",
-        "waste_percentage" => "App\\Casts\\System\\ConfigurableDecimal"
+        "waste_percentage" => "App\\Casts\\System\\ConfigurableDecimal",
     ];
 
     public function getFormattedStatusAttribute(): string {
@@ -71,7 +70,7 @@ class RecipeDish extends Model {
 
         $statuses = [
             ["code" => "active", "label" => "Activo"],
-            ["code" => "inactive", "label" => "Inactivo"]
+            ["code" => "inactive", "label" => "Inactivo"],
         ];
 
         return Utilities::getValues($statuses, $type, $code);
@@ -93,22 +92,21 @@ class RecipeDish extends Model {
     public function components() {
 
         return $this->hasMany(RecipeDishComponent::class, "recipe_dish_id", "id")
-                    ->where("status", "active");
+            ->where("status", "active");
 
     }
 
     public function dishToppings() {
 
         return $this->hasMany(RecipeDishTopping::class, "recipe_dish_id", "id")
-                    ->where("status", "active");
+            ->where("status", "active");
 
     }
 
     public function options() {
 
         return $this->hasMany(RecipeDishOption::class, "recipe_dish_id", "id")
-                    ->where("status", "active");
+            ->where("status", "active");
 
     }
-
 }

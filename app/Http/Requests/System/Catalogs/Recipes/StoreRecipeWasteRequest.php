@@ -8,7 +8,6 @@ use App\Http\Requests\System\Base\CompanyFormRequest;
 use App\Rules\System\Defaults\BelongsToCompany;
 
 final class StoreRecipeWasteRequest extends CompanyFormRequest {
-
     public function rules(): array {
 
         $round = $this->decimalPrecision();
@@ -19,18 +18,18 @@ final class StoreRecipeWasteRequest extends CompanyFormRequest {
                 "bail",
                 "required",
                 "integer",
-                new BelongsToCompany("warehouses", ["status" => "active"], "El almacen seleccionado no esta disponible.")
+                new BelongsToCompany("warehouses", ["status" => "active"], "El almacen seleccionado no esta disponible."),
             ],
             "item_id" => [
                 "bail",
                 "required",
                 "integer",
-                new BelongsToCompany("items", ["type" => "product", "status" => "active"], "El insumo seleccionado no esta disponible.")
+                new BelongsToCompany("items", ["type" => "product", "status" => "active"], "El insumo seleccionado no esta disponible."),
             ],
             "quantity" => ["required", "numeric", "gt:0", "max:{$maxValue}", "decimal:0,{$round}"],
             "reason" => ["required", "string", "max:500"],
             "occurred_at" => ["nullable", "date"],
-            "allow_negative" => ["nullable", "boolean"]
+            "allow_negative" => ["nullable", "boolean"],
         ];
 
     }
@@ -40,5 +39,4 @@ final class StoreRecipeWasteRequest extends CompanyFormRequest {
         return ["reason", "occurred_at"];
 
     }
-
 }

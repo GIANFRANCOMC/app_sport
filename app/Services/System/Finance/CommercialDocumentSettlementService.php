@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Services\System\Finance;
 
+use App\Helpers\System\Utilities;
+use App\Models\System\Finance\PaymentMethod;
+use App\Models\System\Finance\PaymentMethodVariant;
+use App\Models\System\Finance\Tax;
 use DomainException;
 use Illuminate\Support\Collection;
 
-use App\Helpers\System\Utilities;
-use App\Models\System\Finance\{PaymentMethod, PaymentMethodVariant, Tax};
-
 final class CommercialDocumentSettlementService {
-
     public static function taxes(
         int $companyId,
         string $scope,
@@ -22,7 +22,7 @@ final class CommercialDocumentSettlementService {
     ): Collection {
 
         return self::activeTaxCatalog($companyId, $scope, $selectedTaxIds)
-            ->map(fn(Tax $tax) => self::taxLine($tax, $baseAmount, $userId, self::taxQuantity($tax, $selectedTaxQuantities)))
+            ->map(fn (Tax $tax) => self::taxLine($tax, $baseAmount, $userId, self::taxQuantity($tax, $selectedTaxQuantities)))
             ->values();
 
     }
@@ -36,7 +36,7 @@ final class CommercialDocumentSettlementService {
     ): Collection {
 
         return self::activeTaxCatalog($companyId, "sale", $selectedTaxIds)
-            ->map(fn(Tax $tax) => self::saleTaxLine($tax, $details, $userId, self::taxQuantity($tax, $selectedTaxQuantities)))
+            ->map(fn (Tax $tax) => self::saleTaxLine($tax, $details, $userId, self::taxQuantity($tax, $selectedTaxQuantities)))
             ->values();
 
     }
@@ -50,9 +50,11 @@ final class CommercialDocumentSettlementService {
         bool $requireExactTotal = true
     ): Collection {
 
-        if(empty($selectedPayments)) {
+        if (empty($selectedPayments)) {
 
-            if(!$requireExactTotal) return collect();
+            if (! $requireExactTotal) {
+                return collect();
+            }
 
             $defaultMethod = PaymentMethod::query()
                 ->where("company_id", $companyId)
@@ -62,14 +64,16 @@ final class CommercialDocumentSettlementService {
                 ->orderBy("name")
                 ->first();
 
-            if(!$defaultMethod) return collect();
+            if (! $defaultMethod) {
+                return collect();
+            }
 
             $selectedPayments = [[
                 "payment_method_id" => $defaultMethod->id,
                 "payment_method_variant_id" => null,
                 "amount" => $total,
                 "reference" => null,
-                "note" => null
+                "note" => null,
             ]];
 
         }
@@ -80,7 +84,7 @@ final class CommercialDocumentSettlementService {
             ->keyBy("id");
 
         $payments = collect($selectedPayments)
-            ->map(fn($paymentData) => self::paymentLine($methods, $variants, $paymentData, $userId, $companyId))
+            ->map(fn ($paymentData) => self::paymentLine($methods, $variants, $paymentData, $userId, $companyId))
             ->filter()
             ->values();
 
@@ -88,16 +92,14 @@ final class CommercialDocumentSettlementService {
         $documentTotal = Utilities::round($total, null, $companyId);
         $tolerance = self::decimalTolerance($companyId);
 
-        if($requireExactTotal && abs($paid - $documentTotal) > $tolerance) {
+        if ($requireExactTotal && abs($paid - $documentTotal) > $tolerance) {
 
             throw new DomainException("El total de los métodos de pago debe coincidir con el total del documento.");
-
         }
 
-        if(!$requireExactTotal && $paid - $documentTotal > $tolerance) {
+        if (! $requireExactTotal && $paid - $documentTotal > $tolerance) {
 
             throw new DomainException("El total pagado no puede superar el total del documento.");
-
         }
 
         return $payments;
@@ -108,7 +110,7 @@ final class CommercialDocumentSettlementService {
 
         $selectedTaxIds = collect($selectedTaxIds)
             ->filter()
-            ->map(fn($id) => (int) $id)
+            ->map(fn ($id) => (int) $id)
             ->unique()
             ->values()
             ->all();
@@ -117,11 +119,11 @@ final class CommercialDocumentSettlementService {
             ->where("company_id", $companyId)
             ->whereIn("scope", [$scope, "both"])
             ->where("status", "active")
-            ->where(function($query) use($selectedTaxIds) {
+            ->where(function ($query) use ($selectedTaxIds) {
 
                 $query->where("is_required", true);
 
-                if(!empty($selectedTaxIds)) {
+                if (! empty($selectedTaxIds)) {
 
                     $query->orWhereIn("id", $selectedTaxIds);
 
@@ -139,11 +141,13 @@ final class CommercialDocumentSettlementService {
         $ids = collect($selectedPayments)
             ->pluck("payment_method_id")
             ->filter()
-            ->map(fn($id) => (int) $id)
+            ->map(fn ($id) => (int) $id)
             ->unique()
             ->values();
 
-        if($ids->isEmpty()) return collect();
+        if ($ids->isEmpty()) {
+            return collect();
+        }
 
         $methods = PaymentMethod::query()
             ->where("company_id", $companyId)
@@ -152,10 +156,9 @@ final class CommercialDocumentSettlementService {
             ->whereIn("id", $ids)
             ->get();
 
-        if($methods->count() !== $ids->count()) {
+        if ($methods->count() !== $ids->count()) {
 
             throw new DomainException("Uno de los métodos de pago no está disponible para este documento.");
-
         }
 
         return $methods;
@@ -167,11 +170,13 @@ final class CommercialDocumentSettlementService {
         $ids = collect($selectedPayments)
             ->pluck("payment_method_variant_id")
             ->filter()
-            ->map(fn($id) => (int) $id)
+            ->map(fn ($id) => (int) $id)
             ->unique()
             ->values();
 
-        if($ids->isEmpty()) return collect();
+        if ($ids->isEmpty()) {
+            return collect();
+        }
 
         $variants = PaymentMethodVariant::query()
             ->with("paymentMethod")
@@ -180,10 +185,9 @@ final class CommercialDocumentSettlementService {
             ->whereIn("id", $ids)
             ->get();
 
-        if($variants->count() !== $ids->count()) {
+        if ($variants->count() !== $ids->count()) {
 
             throw new DomainException("Una variante del método de pago no está disponible para este documento.");
-
         }
 
         return $variants;
@@ -217,7 +221,7 @@ final class CommercialDocumentSettlementService {
             "amount" => $amount,
             "status" => "active",
             "created_at" => now(),
-            "created_by" => $userId
+            "created_by" => $userId,
         ];
 
     }
@@ -237,19 +241,21 @@ final class CommercialDocumentSettlementService {
         $amount = 0.0;
         $totalImpact = 0.0;
 
-        if($calculationType === "fixed") {
+        if ($calculationType === "fixed") {
 
             $amount = self::taxAmount(0, $rate, $calculationType, $operationType, $quantity, $companyId);
             $totalImpact = $amount;
 
-        }else {
+        } else {
 
-            foreach($details as $detail) {
+            foreach ($details as $detail) {
 
                 $lineTotal = Utilities::round((float) ($detail["quantity"] ?? 0) * (float) ($detail["price"] ?? 0), null, $companyId);
-                if($lineTotal <= 0) continue;
+                if ($lineTotal <= 0) {
+                    continue;
+                }
 
-                if($isIgvTax && filter_var($detail["igv_exempt"] ?? false, FILTER_VALIDATE_BOOL)) {
+                if ($isIgvTax && filter_var($detail["igv_exempt"] ?? false, FILTER_VALIDATE_BOOL)) {
 
                     continue;
 
@@ -258,12 +264,13 @@ final class CommercialDocumentSettlementService {
                 $priceIncludesTax = filter_var($detail["price_includes_tax"] ?? true, FILTER_VALIDATE_BOOL);
                 $taxIsIncluded = $priceIncludesTax && $operationType === "addition" && $rate > 0;
 
-                if($taxIsIncluded) {
+                if ($taxIsIncluded) {
 
                     $lineBase = Utilities::round($lineTotal / (1 + ($rate / 100)), null, $companyId);
                     $lineAmount = Utilities::round($lineTotal - $lineBase, null, $companyId);
                     $base += $lineBase;
                     $amount += $lineAmount;
+
                     continue;
 
                 }
@@ -292,7 +299,7 @@ final class CommercialDocumentSettlementService {
             "_total_impact" => Utilities::round($totalImpact, null, $companyId),
             "status" => "active",
             "created_at" => now(),
-            "created_by" => $userId
+            "created_by" => $userId,
         ];
 
     }
@@ -301,12 +308,12 @@ final class CommercialDocumentSettlementService {
 
         $quantity = max(1, $quantity);
 
-        $amount = match($calculationType) {
+        $amount = match ($calculationType) {
             "fixed" => Utilities::round($rate * $quantity, null, $companyId),
             default => Utilities::round($base * ($rate / 100), null, $companyId)
         };
 
-        if($operationType === "subtraction") {
+        if ($operationType === "subtraction") {
 
             $amount *= -1;
 
@@ -327,7 +334,9 @@ final class CommercialDocumentSettlementService {
 
     private static function taxQuantity(Tax $tax, array $selectedTaxQuantities): int {
 
-        if($tax->calculation_type !== "fixed") return 1;
+        if ($tax->calculation_type !== "fixed") {
+            return 1;
+        }
 
         $minimum = max(0, (int) ($tax->min_apply_quantity ?? 0));
         $maximum = $tax->max_apply_quantity !== null ? max($minimum, (int) $tax->max_apply_quantity) : null;
@@ -340,31 +349,30 @@ final class CommercialDocumentSettlementService {
     private static function paymentLine(Collection $methods, Collection $variants, array $paymentData, int $userId, int $companyId): ?array {
 
         $methodId = (int) ($paymentData["payment_method_id"] ?? 0);
-        if($methodId <= 0) return null;
+        if ($methodId <= 0) {
+            return null;
+        }
 
         $method = $methods->get($methodId);
         $variantId = (int) ($paymentData["payment_method_variant_id"] ?? 0);
         $variant = $variantId > 0 ? $variants->get($variantId) : null;
         $amount = Utilities::round((float) ($paymentData["amount"] ?? 0), null, $companyId);
 
-        if($amount <= 0) {
+        if ($amount <= 0) {
 
             throw new DomainException("Cada método de pago debe tener un importe mayor que cero.");
-
         }
 
-        if($variant && (int) $variant->payment_method_id !== (int) $method?->id) {
+        if ($variant && (int) $variant->payment_method_id !== (int) $method?->id) {
 
             throw new DomainException("La variante seleccionada no pertenece al método de pago indicado.");
-
         }
 
         $requiresReference = (bool) ($variant?->requires_reference ?? $method?->requires_reference);
 
-        if($requiresReference && trim((string) ($paymentData["reference"] ?? "")) === "") {
+        if ($requiresReference && trim((string) ($paymentData["reference"] ?? "")) === "") {
 
             throw new DomainException("El método de pago {$method->name} requiere referencia.");
-
         }
 
         return [
@@ -377,7 +385,7 @@ final class CommercialDocumentSettlementService {
             "note" => $paymentData["note"] ?? null,
             "status" => "active",
             "created_at" => now(),
-            "created_by" => $userId
+            "created_by" => $userId,
         ];
 
     }
@@ -387,5 +395,4 @@ final class CommercialDocumentSettlementService {
         return 1 / (10 ** max(1, Utilities::decimalPrecision($companyId)));
 
     }
-
 }

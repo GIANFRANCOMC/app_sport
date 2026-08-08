@@ -8,7 +8,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 final class SaleReceivableInstallment extends Model {
-
     protected $table = "sale_receivable_installments";
 
     protected $fillable = [
@@ -23,14 +22,14 @@ final class SaleReceivableInstallment extends Model {
         "created_at",
         "created_by",
         "updated_at",
-        "updated_by"
+        "updated_by",
     ];
 
     protected $casts = [
         "due_date" => "date:Y-m-d",
         "amount" => "App\\Casts\\System\\ConfigurableDecimal",
         "paid_amount" => "App\\Casts\\System\\ConfigurableDecimal",
-        "pending_amount" => "App\\Casts\\System\\ConfigurableDecimal"
+        "pending_amount" => "App\\Casts\\System\\ConfigurableDecimal",
     ];
 
     public function accountReceivable(): BelongsTo {
@@ -38,5 +37,4 @@ final class SaleReceivableInstallment extends Model {
         return $this->belongsTo(SaleAccountReceivable::class, "sale_account_receivable_id");
 
     }
-
 }

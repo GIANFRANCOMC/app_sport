@@ -4,13 +4,12 @@ declare(strict_types=1);
 
 namespace App\Services\System\Assets\Assets;
 
+use App\Models\System\Assets\Asset;
+use App\Models\System\Assets\AssetCategory;
+use App\Services\System\Base\BaseConfigService;
 use stdClass;
 
-use App\Models\System\Assets\{Asset, AssetCategory};
-use App\Services\System\Base\BaseConfigService;
-
 final class AssetConfigService extends BaseConfigService {
-
     protected static function getCachePrefix(): string {
 
         return "asset";
@@ -26,9 +25,8 @@ final class AssetConfigService extends BaseConfigService {
                 ->where("status", "active")
                 ->orderBy("name")
                 ->get(["id", "name"]),
-            "statuses" => Asset::getStatuses()
+            "statuses" => Asset::getStatuses(),
         ]);
 
     }
-
 }

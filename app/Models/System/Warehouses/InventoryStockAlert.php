@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Models\System\Warehouses;
 
-use App\Models\System\Organizations\{Company, User};
+use App\Models\System\Organizations\Company;
+use App\Models\System\Organizations\User;
 use Illuminate\Database\Eloquent\Model;
 
 final class InventoryStockAlert extends Model {
-
     protected $table = "inventory_stock_alerts";
 
     protected $fillable = [
@@ -19,14 +19,14 @@ final class InventoryStockAlert extends Model {
         "status",
         "detected_at",
         "resolved_at",
-        "resolved_by"
+        "resolved_by",
     ];
 
     protected $casts = [
         "quantity" => "App\\Casts\\System\\ConfigurableDecimal",
         "minimum_stock" => "App\\Casts\\System\\ConfigurableDecimal",
         "detected_at" => "datetime",
-        "resolved_at" => "datetime"
+        "resolved_at" => "datetime",
     ];
 
     public function company() {
@@ -46,5 +46,4 @@ final class InventoryStockAlert extends Model {
         return $this->belongsTo(User::class, "resolved_by");
 
     }
-
 }

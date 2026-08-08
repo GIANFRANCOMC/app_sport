@@ -4,13 +4,12 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\System\Organizations;
 
-use Illuminate\Http\{JsonResponse, Request};
-
 use App\Http\Controllers\System\Base\BaseController;
 use App\Services\System\Organizations\BusinessProfileService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 final class BusinessProfileController extends BaseController {
-
     private const TRANSLATION_NAMESPACE = "System.Organizations.business_profile";
 
     public function index() {
@@ -22,7 +21,7 @@ final class BusinessProfileController extends BaseController {
     public function initParams(): JsonResponse {
 
         return response()->json([
-            "industries" => BusinessProfileService::industries($this->getCompanyId())
+            "industries" => BusinessProfileService::industries($this->getCompanyId()),
         ]);
 
     }
@@ -30,7 +29,7 @@ final class BusinessProfileController extends BaseController {
     public function apply(Request $request): JsonResponse {
 
         $request->validate([
-            "business_industry_id" => ["required", "integer"]
+            "business_industry_id" => ["required", "integer"],
         ]);
 
         BusinessProfileService::applyIndustry(
@@ -41,7 +40,7 @@ final class BusinessProfileController extends BaseController {
 
         return response()->json([
             "bool" => true,
-            "msg" => "Rubro aplicado. Los módulos disponibles fueron actualizados para esta empresa."
+            "msg" => "Rubro aplicado. Los módulos disponibles fueron actualizados para esta empresa.",
         ]);
 
     }
@@ -51,5 +50,4 @@ final class BusinessProfileController extends BaseController {
         return self::TRANSLATION_NAMESPACE;
 
     }
-
 }

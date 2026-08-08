@@ -16,4 +16,3 @@ return [
     "exception_update" => "Error al actualizar la asistencia: :message",
     "exception_cancel" => "Error al cancelar la asistencia: :message",
 ];
-

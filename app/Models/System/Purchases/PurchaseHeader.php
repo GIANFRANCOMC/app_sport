@@ -4,14 +4,12 @@ declare(strict_types=1);
 
 namespace App\Models\System\Purchases;
 
-use Illuminate\Database\Eloquent\Model;
-
 use App\Helpers\System\Utilities;
 use App\Models\System\General\Currency;
 use App\Models\System\Warehouses\Warehouse;
+use Illuminate\Database\Eloquent\Model;
 
 final class PurchaseHeader extends Model {
-
     protected $table = "purchase_headers";
 
     protected $fillable = [
@@ -47,7 +45,7 @@ final class PurchaseHeader extends Model {
         "updated_at",
         "updated_by",
         "canceled_at",
-        "canceled_by"
+        "canceled_by",
     ];
 
     protected $casts = [
@@ -63,7 +61,7 @@ final class PurchaseHeader extends Model {
         "total" => "App\\Casts\\System\\ConfigurableDecimal",
         "paid_amount" => "App\\Casts\\System\\ConfigurableDecimal",
         "balance_due" => "App\\Casts\\System\\ConfigurableDecimal",
-        "canceled_at" => "datetime"
+        "canceled_at" => "datetime",
     ];
 
     protected $appends = ["formatted_status", "formatted_document_type", "formatted_delivery_mode", "formatted_payment_modality", "formatted_payment_status", "receipt_progress"];
@@ -79,7 +77,6 @@ final class PurchaseHeader extends Model {
         return self::getDocumentTypes("first", $this->attributes["document_type"] ?? "")["label"] ?? "";
 
     }
-
 
     public function getFormattedDeliveryModeAttribute(): string {
 
@@ -105,7 +102,7 @@ final class PurchaseHeader extends Model {
             ["code" => "confirmed", "label" => "Pendiente de recepción"],
             ["code" => "partial", "label" => "Recepción parcial"],
             ["code" => "received", "label" => "Recibida"],
-            ["code" => "canceled", "label" => "Anulada"]
+            ["code" => "canceled", "label" => "Anulada"],
         ];
 
         return Utilities::getValues($statuses, $type, $code);
@@ -116,7 +113,7 @@ final class PurchaseHeader extends Model {
 
         $types = [
             ["code" => "order", "label" => "BOLETA"],
-            ["code" => "invoice", "label" => "FACTURA"]
+            ["code" => "invoice", "label" => "FACTURA"],
         ];
 
         return Utilities::getValues($types, $type, $code);
@@ -127,7 +124,7 @@ final class PurchaseHeader extends Model {
 
         $modes = [
             ["code" => "immediate", "label" => "Recepción inmediata"],
-            ["code" => "pending", "label" => "Recepción pendiente"]
+            ["code" => "pending", "label" => "Recepción pendiente"],
         ];
 
         return Utilities::getValues($modes, $type, $code);
@@ -139,7 +136,7 @@ final class PurchaseHeader extends Model {
         $modalities = [
             ["code" => "paid_now", "label" => "Pago al momento"],
             ["code" => "cash_on_delivery", "label" => "Pago contra entrega"],
-            ["code" => "installments", "label" => "Pago en cuotas"]
+            ["code" => "installments", "label" => "Pago en cuotas"],
         ];
 
         return Utilities::getValues($modalities, $type, $code);
@@ -152,15 +149,18 @@ final class PurchaseHeader extends Model {
             ["code" => "unpaid", "label" => "Pendiente"],
             ["code" => "partial", "label" => "Parcial"],
             ["code" => "paid", "label" => "Pagado"],
-            ["code" => "overpaid", "label" => "Sobrepagado"]
+            ["code" => "overpaid", "label" => "Sobrepagado"],
         ];
 
         return Utilities::getValues($statuses, $type, $code);
 
     }
+
     public function getReceiptProgressAttribute(): float {
 
-        if(!$this->relationLoaded("items")) return 0;
+        if (! $this->relationLoaded("items")) {
+            return 0;
+        }
 
         $ordered = (float) $this->items->sum("quantity");
         $received = (float) $this->items->sum("received_quantity");
@@ -204,14 +204,14 @@ final class PurchaseHeader extends Model {
     public function taxes() {
 
         return $this->hasMany(PurchaseTax::class, "purchase_header_id")
-                    ->whereIn("status", ["active"]);
+            ->whereIn("status", ["active"]);
 
     }
 
     public function payments() {
 
         return $this->hasMany(PurchasePayment::class, "purchase_header_id")
-                    ->whereIn("status", ["active"]);
+            ->whereIn("status", ["active"]);
 
     }
 
@@ -232,5 +232,4 @@ final class PurchaseHeader extends Model {
         return $this->hasMany(PurchaseReturn::class, "purchase_header_id");
 
     }
-
 }

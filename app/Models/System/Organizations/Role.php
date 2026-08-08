@@ -3,20 +3,22 @@
 namespace App\Models\System\Organizations;
 
 use App\Helpers\System\Utilities;
+use App\Models\System\Organizations\{Company};
 use Illuminate\Database\Eloquent\Model;
 
-use App\Models\System\Organizations\{Company};
-
 class Role extends Model {
+    protected $table = "roles";
 
-    protected $table               = "roles";
-    protected $primaryKey          = "id";
-    public $incrementing           = true;
-    public $timestamps             = true;
+    protected $primaryKey = "id";
+
+    public $incrementing = true;
+
+    public $timestamps = true;
+
     public static $snakeAttributes = true;
 
     protected $appends = [
-        "formatted_status"
+        "formatted_status",
     ];
 
     protected $fillable = [
@@ -31,7 +33,7 @@ class Role extends Model {
         "created_at",
         "created_by",
         "updated_at",
-        "updated_by"
+        "updated_by",
     ];
 
     // Appends
@@ -48,7 +50,7 @@ class Role extends Model {
 
         $statuses = [
             ["code" => "active", "label" => "Activo"],
-            ["code" => "inactive", "label" => "Inactivo"]
+            ["code" => "inactive", "label" => "Inactivo"],
         ];
 
         return Utilities::getValues($statuses, $type, $code);
@@ -65,14 +67,14 @@ class Role extends Model {
     public function users() {
 
         return $this->hasMany(User::class, "role_id", "id")
-                    ->whereIn("status", ["active"]);
+            ->whereIn("status", ["active"]);
 
     }
 
     public function roleSubSections() {
 
         return $this->hasMany(RoleSubSection::class, "role_id", "id")
-                    ->whereIn("status", ["active"]);
+            ->whereIn("status", ["active"]);
 
     }
 
@@ -90,7 +92,7 @@ class Role extends Model {
     public function branches() {
 
         return $this->belongsToMany(Branch::class, "role_branches", "role_id", "branch_id")
-                    ->wherePivot("status", "active");
+            ->wherePivot("status", "active");
 
     }
 
@@ -115,5 +117,4 @@ class Role extends Model {
         )->wherePivot("status", "active");
 
     }
-
 }

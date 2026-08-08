@@ -10,7 +10,6 @@ use App\Models\System\Organizations\Company;
 use Illuminate\Database\Eloquent\Model;
 
 class RecipeTopping extends Model {
-
     protected $table = "recipe_toppings";
 
     protected $appends = ["formatted_status"];
@@ -27,11 +26,11 @@ class RecipeTopping extends Model {
         "created_at",
         "created_by",
         "updated_at",
-        "updated_by"
+        "updated_by",
     ];
 
     protected $casts = [
-        "price" => "App\\Casts\\System\\ConfigurableDecimal"
+        "price" => "App\\Casts\\System\\ConfigurableDecimal",
     ];
 
     public function getFormattedStatusAttribute(): string {
@@ -44,7 +43,7 @@ class RecipeTopping extends Model {
 
         return Utilities::getValues([
             ["code" => "active", "label" => "Activo"],
-            ["code" => "inactive", "label" => "Inactivo"]
+            ["code" => "inactive", "label" => "Inactivo"],
         ], $type, $code);
 
     }
@@ -70,8 +69,7 @@ class RecipeTopping extends Model {
     public function components() {
 
         return $this->hasMany(RecipeToppingComponent::class, "recipe_topping_id", "id")
-                    ->where("status", "active");
+            ->where("status", "active");
 
     }
-
 }

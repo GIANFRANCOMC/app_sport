@@ -8,7 +8,6 @@ use App\Http\Requests\System\Base\CompanyFormRequest;
 use App\Rules\System\Defaults\BelongsToCompany;
 
 final class StoreTrackingAttendanceRequest extends CompanyFormRequest {
-
     public function rules(): array {
 
         return [
@@ -16,17 +15,17 @@ final class StoreTrackingAttendanceRequest extends CompanyFormRequest {
                 "bail",
                 "required",
                 "integer",
-                new BelongsToCompany("branches", ["status" => "active"], "La sucursal seleccionada no esta disponible.")
+                new BelongsToCompany("branches", ["status" => "active"], "La sucursal seleccionada no esta disponible."),
             ],
             "customer_id" => [
                 "bail",
                 "required",
                 "integer",
-                new BelongsToCompany("customers", ["status" => "active"], "El cliente seleccionado no esta disponible.")
+                new BelongsToCompany("customers", ["status" => "active"], "El cliente seleccionado no esta disponible."),
             ],
             "start_date" => ["nullable", "date"],
             "end_date" => ["nullable", "date", "after:start_date"],
-            "observation" => ["nullable", "string", "max:500"]
+            "observation" => ["nullable", "string", "max:500"],
         ];
 
     }
@@ -36,5 +35,4 @@ final class StoreTrackingAttendanceRequest extends CompanyFormRequest {
         return ["start_date", "end_date", "observation"];
 
     }
-
 }

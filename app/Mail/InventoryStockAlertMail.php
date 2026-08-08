@@ -7,16 +7,17 @@ namespace App\Mail;
 use App\Models\System\Warehouses\InventoryStockAlert;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
-use Illuminate\Mail\Mailables\{Content, Envelope};
+use Illuminate\Mail\Mailables\Content;
+use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
 final class InventoryStockAlertMail extends Mailable {
-
     use Queueable, SerializesModels;
 
     public function __construct(
         public readonly InventoryStockAlert $alert
-    ) {}
+    ) {
+    }
 
     public function envelope(): Envelope {
 
@@ -33,7 +34,7 @@ final class InventoryStockAlertMail extends Mailable {
         return new Content(
             view: "emails.inventory.stock_alert",
             with: [
-                "alert" => $this->alert
+                "alert" => $this->alert,
             ]
         );
 
@@ -44,5 +45,4 @@ final class InventoryStockAlertMail extends Mailable {
         return [];
 
     }
-
 }

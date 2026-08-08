@@ -1,0 +1,18 @@
+{
+    "preset": "laravel",
+    "rules": {
+        "braces_position": {
+            "control_structures_opening_brace": "same_line",
+            "functions_opening_brace": "same_line",
+            "anonymous_functions_opening_brace": "same_line",
+            "classes_opening_brace": "same_line",
+            "anonymous_classes_opening_brace": "same_line"
+        },
+        "single_quote": false
+    },
+    "exclude": [
+        "bootstrap/cache",
+        "storage",
+        "vendor"
+    ]
+}

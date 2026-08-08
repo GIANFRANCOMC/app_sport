@@ -2,15 +2,14 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\{DB, Hash, Schema};
+use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration {
-
     /**
      * Run the migrations.
      */
     public function up(): void {
-        Schema::create("subscriptions", function(Blueprint $table) {
+        Schema::create("subscriptions", function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger("company_id");
             $table->unsignedBigInteger("branch_id");
@@ -44,7 +43,7 @@ return new class extends Migration {
             $table->foreign("renewed_from_id")->references("id")->on("subscriptions")->nullOnDelete();
             $table->foreign("customer_id")->references("id")->on("customers")->onDelete("cascade");
         });
-        Schema::create("attendances", function(Blueprint $table) {
+        Schema::create("attendances", function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger("company_id");
             $table->unsignedBigInteger("branch_id");
@@ -69,7 +68,7 @@ return new class extends Migration {
             $table->foreign("branch_id")->references("id")->on("branches")->onDelete("cascade");
             $table->foreign("customer_id")->references("id")->on("customers")->onDelete("cascade");
         });
-        Schema::create("attendance_corrections", function(Blueprint $table) {
+        Schema::create("attendance_corrections", function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger("company_id");
             $table->unsignedBigInteger("attendance_id");
@@ -129,5 +128,4 @@ return new class extends Migration {
         Schema::dropIfExists("subscriptions");
 
     }
-
 };

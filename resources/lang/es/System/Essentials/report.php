@@ -10,4 +10,3 @@ return [
     "generate_failed" => "No se pudo generar el reporte",
     "exception_generate" => "Error al generar el reporte: :message",
 ];
-

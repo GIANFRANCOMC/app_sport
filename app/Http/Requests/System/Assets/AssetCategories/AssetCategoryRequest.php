@@ -8,7 +8,6 @@ use App\Http\Requests\System\Base\CompanyFormRequest;
 use App\Rules\System\Defaults\UniqueInCompany;
 
 abstract class AssetCategoryRequest extends CompanyFormRequest {
-
     public function rules(): array {
 
         $categoryId = $this->route("id") ? (int) $this->route("id") : null;
@@ -16,7 +15,7 @@ abstract class AssetCategoryRequest extends CompanyFormRequest {
         return [
             "name" => ["required", "string", "max:150", new UniqueInCompany("asset_categories", "name", $categoryId)],
             "description" => ["nullable", "string", "max:500"],
-            "status" => [$this->isMethod("PATCH") ? "required" : "nullable", "in:active,inactive"]
+            "status" => [$this->isMethod("PATCH") ? "required" : "nullable", "in:active,inactive"],
         ];
 
     }
@@ -26,5 +25,4 @@ abstract class AssetCategoryRequest extends CompanyFormRequest {
         return ["name", "description", "status"];
 
     }
-
 }

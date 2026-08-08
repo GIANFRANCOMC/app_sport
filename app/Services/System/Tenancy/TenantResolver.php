@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Services\System\Tenancy;
 
-use App\Models\System\Tenancy\{TenantDatabase, TenantDomain};
+use App\Models\System\Tenancy\TenantDatabase;
+use App\Models\System\Tenancy\TenantDomain;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 
 final class TenantResolver {
-
     public static function cacheKey(string $host): string {
-        return 'tenancy:resolver:' . hash('sha256', strtolower(trim($host)));
+        return "tenancy:resolver:".hash("sha256", strtolower(trim($host)));
     }
 
     public function resolveByHost(string $host): ?TenantDatabase {
@@ -19,7 +19,7 @@ final class TenantResolver {
         $host = $this->normalizeHost($host);
         $subdomain = $this->extractSubdomain($host);
 
-        if($subdomain === null) {
+        if ($subdomain === null) {
             return null;
         }
 
@@ -30,25 +30,26 @@ final class TenantResolver {
     public function normalizeHost(string $host): string {
 
         $host = strtolower(trim($host));
-        return Str::before($host, ':');
+
+        return Str::before($host, ":");
 
     }
 
     private function extractSubdomain(string $host): ?string {
 
-        $baseDomain = strtolower(trim((string) config('tenancy.base_domain')));
+        $baseDomain = strtolower(trim((string) config("tenancy.base_domain")));
         $suffix = ".{$baseDomain}";
 
-        if($host === '' || $baseDomain === '' || !Str::endsWith($host, $suffix)) {
+        if ($host === "" || $baseDomain === "" || ! Str::endsWith($host, $suffix)) {
             return null;
         }
 
         $subdomain = Str::beforeLast($host, $suffix);
-        if(!preg_match('/^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/', $subdomain)) {
+        if (! preg_match("/^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\$/", $subdomain)) {
             return null;
         }
 
-        if(in_array($subdomain, config('tenancy.reserved_subdomains', []), true)) {
+        if (in_array($subdomain, config("tenancy.reserved_subdomains", []), true)) {
             return null;
         }
 
@@ -58,32 +59,32 @@ final class TenantResolver {
 
     private function resolveRegisteredSubdomain(string $host, string $subdomain): ?TenantDatabase {
 
-        $loadTenant = static function() use($host, $subdomain): ?TenantDatabase {
+        $loadTenant = static function () use ($host, $subdomain): ?TenantDatabase {
             $domain = TenantDomain::query()
-                ->where('domain', $host)
-                ->where('type', 'subdomain')
-                ->where('status', 'active')
-                ->with('tenantDatabase')
+                ->where("domain", $host)
+                ->where("type", "subdomain")
+                ->where("status", "active")
+                ->with("tenantDatabase")
                 ->first();
 
-            if(!$domain || !$domain->tenantDatabase) {
+            if (! $domain || ! $domain->tenantDatabase) {
                 return null;
             }
 
             $tenant = $domain->tenantDatabase;
-            if($tenant->status !== 'active' || $tenant->slug !== $subdomain) {
+            if ($tenant->status !== "active" || $tenant->slug !== $subdomain) {
                 return null;
             }
 
-            if(!$tenant->last_resolved_at || $tenant->last_resolved_at->lt(now()->subMinutes(15))) {
-                $tenant->forceFill(['last_resolved_at' => now()])->save();
+            if (! $tenant->last_resolved_at || $tenant->last_resolved_at->lt(now()->subMinutes(15))) {
+                $tenant->forceFill(["last_resolved_at" => now()])->save();
             }
 
             return $tenant;
         };
 
-        $cacheSeconds = (int) config('tenancy.resolver_cache_seconds', 60);
-        if($cacheSeconds <= 0) {
+        $cacheSeconds = (int) config("tenancy.resolver_cache_seconds", 60);
+        if ($cacheSeconds <= 0) {
             return $loadTenant();
         }
 
@@ -94,5 +95,4 @@ final class TenantResolver {
         );
 
     }
-
 }

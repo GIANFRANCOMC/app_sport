@@ -4,20 +4,23 @@ declare(strict_types=1);
 
 namespace App\Services\System\Organizations;
 
-use App\Models\System\Organizations\{Role, User};
+use App\Models\System\Organizations\Role;
+use App\Models\System\Organizations\User;
 use App\Services\System\Finance\CashRegisterConfigService;
 use App\Services\System\Purchases\PurchaseConfigService;
 use App\Services\System\Sales\SaleConfigService;
 use App\Services\System\Warehouses\StockManagement\StockManagementConfigService;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Facades\{Cache, DB};
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 
 final class AccessScopeService {
+    public const BRANCH = "branch";
 
-    public const BRANCH = 'branch';
-    public const CASH_REGISTER = 'cash_register';
-    public const WAREHOUSE = 'warehouse';
+    public const CASH_REGISTER = "cash_register";
+
+    public const WAREHOUSE = "warehouse";
 
     private const CACHE_TTL = 1800;
 
@@ -28,7 +31,7 @@ final class AccessScopeService {
         $scopes = Cache::remember(
             self::cacheKey((int) $user->company_id, (int) $user->id),
             self::CACHE_TTL,
-            fn(): array => self::resolve($user)
+            fn (): array => self::resolve($user)
         );
 
         return $scopes[$type];
@@ -37,7 +40,7 @@ final class AccessScopeService {
 
     public static function canAccess(User $user, string $type, int $resourceId): bool {
 
-        if($resourceId <= 0 || !self::belongsToCompany($type, $resourceId, (int) $user->company_id)) {
+        if ($resourceId <= 0 || ! self::belongsToCompany($type, $resourceId, (int) $user->company_id)) {
             return false;
         }
 
@@ -47,7 +50,7 @@ final class AccessScopeService {
 
     }
 
-    public static function applyToQuery(Builder $query, User $user, string $type, string $column = 'id'): Builder {
+    public static function applyToQuery(Builder $query, User $user, string $type, string $column = "id"): Builder {
 
         $allowedIds = self::allowedIds($user, $type);
 
@@ -61,11 +64,11 @@ final class AccessScopeService {
 
         Cache::forget(self::cacheKey($companyId, $userId));
 
-        foreach([
+        foreach ([
             SaleConfigService::class,
             PurchaseConfigService::class,
             CashRegisterConfigService::class,
-            StockManagementConfigService::class
+            StockManagementConfigService::class,
         ] as $configService) {
             $configService::clearUserCache($companyId, $userId);
         }
@@ -75,25 +78,25 @@ final class AccessScopeService {
     public static function clearRoleCache(int $companyId, int $roleId): void {
 
         User::query()
-            ->where('company_id', $companyId)
-            ->where('role_id', $roleId)
-            ->pluck('id')
-            ->each(fn($userId) => self::clearUserCache($companyId, (int) $userId));
+            ->where("company_id", $companyId)
+            ->where("role_id", $roleId)
+            ->pluck("id")
+            ->each(fn ($userId) => self::clearUserCache($companyId, (int) $userId));
 
     }
 
     private static function resolve(User $user): array {
 
         $role = Role::query()
-            ->where('company_id', $user->company_id)
-            ->where('status', 'active')
+            ->where("company_id", $user->company_id)
+            ->where("status", "active")
             ->find($user->role_id);
 
-        if(!$role) {
+        if (! $role) {
             return self::deniedScopes();
         }
 
-        if($role->is_full_access) {
+        if ($role->is_full_access) {
             return self::unrestrictedScopes();
         }
 
@@ -117,7 +120,7 @@ final class AccessScopeService {
         return [
             self::BRANCH => $branchIds,
             self::CASH_REGISTER => $cashRegisterIds,
-            self::WAREHOUSE => $warehouseIds
+            self::WAREHOUSE => $warehouseIds,
         ];
 
     }
@@ -125,17 +128,17 @@ final class AccessScopeService {
     private static function resolveType(User $user, Role $role, string $type): ?array {
 
         $definition = self::definition($type);
-        $roleMode = (string) ($role->{$definition['role_mode']} ?? 'all');
-        $roleIds = $roleMode === 'all'
+        $roleMode = (string) ($role->{$definition["role_mode"]} ?? "all");
+        $roleIds = $roleMode === "all"
             ? null
-            : self::pivotIds($definition['role_table'], 'role_id', (int) $role->id, $definition['resource_key']);
+            : self::pivotIds($definition["role_table"], "role_id", (int) $role->id, $definition["resource_key"]);
 
-        $userMode = (string) ($user->{$definition['user_mode']} ?? 'inherit');
-        if($userMode !== 'restricted') {
+        $userMode = (string) ($user->{$definition["user_mode"]} ?? "inherit");
+        if ($userMode !== "restricted") {
             return $roleIds;
         }
 
-        $userIds = self::pivotIds($definition['user_table'], 'user_id', (int) $user->id, $definition['resource_key']);
+        $userIds = self::pivotIds($definition["user_table"], "user_id", (int) $user->id, $definition["resource_key"]);
 
         return $roleIds === null
             ? $userIds
@@ -150,24 +153,24 @@ final class AccessScopeService {
         int $companyId
     ): ?array {
 
-        if($branchIds === null) {
+        if ($branchIds === null) {
             return $resourceIds;
         }
 
-        if($branchIds === []) {
+        if ($branchIds === []) {
             return [];
         }
 
         $definition = self::definition($type);
-        $query = DB::table($definition['resource_table'])
-            ->where('company_id', $companyId)
-            ->whereIn('branch_id', $branchIds);
+        $query = DB::table($definition["resource_table"])
+            ->where("company_id", $companyId)
+            ->whereIn("branch_id", $branchIds);
 
-        if($resourceIds !== null) {
-            $query->whereIn('id', $resourceIds);
+        if ($resourceIds !== null) {
+            $query->whereIn("id", $resourceIds);
         }
 
-        return $query->pluck('id')->map(fn($id) => (int) $id)->values()->all();
+        return $query->pluck("id")->map(fn ($id) => (int) $id)->values()->all();
 
     }
 
@@ -175,9 +178,9 @@ final class AccessScopeService {
 
         return DB::table($table)
             ->where($ownerKey, $ownerId)
-            ->where('status', 'active')
+            ->where("status", "active")
             ->pluck($resourceKey)
-            ->map(fn($id) => (int) $id)
+            ->map(fn ($id) => (int) $id)
             ->unique()
             ->values()
             ->all();
@@ -188,41 +191,41 @@ final class AccessScopeService {
 
         $definition = self::definition($type);
 
-        return DB::table($definition['resource_table'])
-            ->where('company_id', $companyId)
-            ->where('id', $resourceId)
+        return DB::table($definition["resource_table"])
+            ->where("company_id", $companyId)
+            ->where("id", $resourceId)
             ->exists();
 
     }
 
     private static function definition(string $type): array {
 
-        return match($type) {
+        return match ($type) {
             self::BRANCH => [
-                'resource_table' => 'branches',
-                'resource_key' => 'branch_id',
-                'role_table' => 'role_branches',
-                'user_table' => 'user_branches',
-                'role_mode' => 'branch_scope_mode',
-                'user_mode' => 'branch_scope_mode'
+                "resource_table" => "branches",
+                "resource_key" => "branch_id",
+                "role_table" => "role_branches",
+                "user_table" => "user_branches",
+                "role_mode" => "branch_scope_mode",
+                "user_mode" => "branch_scope_mode",
             ],
             self::CASH_REGISTER => [
-                'resource_table' => 'cash_registers',
-                'resource_key' => 'cash_register_id',
-                'role_table' => 'role_cash_registers',
-                'user_table' => 'user_cash_registers',
-                'role_mode' => 'cash_register_scope_mode',
-                'user_mode' => 'cash_register_scope_mode'
+                "resource_table" => "cash_registers",
+                "resource_key" => "cash_register_id",
+                "role_table" => "role_cash_registers",
+                "user_table" => "user_cash_registers",
+                "role_mode" => "cash_register_scope_mode",
+                "user_mode" => "cash_register_scope_mode",
             ],
             self::WAREHOUSE => [
-                'resource_table' => 'warehouses',
-                'resource_key' => 'warehouse_id',
-                'role_table' => 'role_warehouses',
-                'user_table' => 'user_warehouses',
-                'role_mode' => 'warehouse_scope_mode',
-                'user_mode' => 'warehouse_scope_mode'
+                "resource_table" => "warehouses",
+                "resource_key" => "warehouse_id",
+                "role_table" => "role_warehouses",
+                "user_table" => "user_warehouses",
+                "role_mode" => "warehouse_scope_mode",
+                "user_mode" => "warehouse_scope_mode",
             ],
-            default => throw new InvalidArgumentException('Tipo de alcance no soportado.')
+            default => throw new InvalidArgumentException("Tipo de alcance no soportado.")
         };
 
     }
@@ -250,5 +253,4 @@ final class AccessScopeService {
         return [self::BRANCH => [], self::CASH_REGISTER => [], self::WAREHOUSE => []];
 
     }
-
 }

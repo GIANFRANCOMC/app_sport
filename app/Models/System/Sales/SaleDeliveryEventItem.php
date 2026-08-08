@@ -9,7 +9,6 @@ use App\Models\System\Warehouses\InventoryMovement;
 use Illuminate\Database\Eloquent\Model;
 
 class SaleDeliveryEventItem extends Model {
-
     protected $table = "sale_delivery_event_items";
 
     public $timestamps = false;
@@ -22,12 +21,12 @@ class SaleDeliveryEventItem extends Model {
         "item_id",
         "inventory_movement_id",
         "quantity",
-        "created_at"
+        "created_at",
     ];
 
     protected $casts = [
-        "quantity"   => "App\\Casts\\System\\ConfigurableDecimal",
-        "created_at" => "datetime"
+        "quantity" => "App\\Casts\\System\\ConfigurableDecimal",
+        "created_at" => "datetime",
     ];
 
     public function event() {
@@ -59,5 +58,4 @@ class SaleDeliveryEventItem extends Model {
         return $this->belongsTo(InventoryMovement::class, "inventory_movement_id", "id");
 
     }
-
 }

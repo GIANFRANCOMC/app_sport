@@ -5,8 +5,11 @@ declare(strict_types=1);
 namespace App\Services\System\Catalogs\Recipes;
 
 use App\Helpers\System\Utilities;
-use App\Models\System\Catalogs\{Item, RecipeDish, RecipeWasteRecord};
-use App\Models\System\Warehouses\{Warehouse, WarehouseItem};
+use App\Models\System\Catalogs\Item;
+use App\Models\System\Catalogs\RecipeDish;
+use App\Models\System\Catalogs\RecipeWasteRecord;
+use App\Models\System\Warehouses\Warehouse;
+use App\Models\System\Warehouses\WarehouseItem;
 use App\Services\System\Warehouses\Inventory\InventoryMovementService;
 use Carbon\Carbon;
 use DomainException;
@@ -14,7 +17,6 @@ use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 
 final class RecipeWasteService {
-
     public static function list(
         int $companyId,
         array $filters,
@@ -25,12 +27,12 @@ final class RecipeWasteService {
         return RecipeWasteRecord::query()
             ->where("company_id", $companyId)
             ->with(["recipe.item", "warehouse.branch", "item", "inventoryMovement", "createdBy"])
-            ->when($allowedWarehouseIds !== null, fn($query) => $query->whereIn("warehouse_id", $allowedWarehouseIds))
-            ->when($filters["recipe_dish_id"] ?? null, fn($query, $id) => $query->where("recipe_dish_id", $id))
-            ->when($filters["warehouse_id"] ?? null, fn($query, $id) => $query->where("warehouse_id", $id))
-            ->when($filters["item_id"] ?? null, fn($query, $id) => $query->where("item_id", $id))
-            ->when($filters["date_from"] ?? null, fn($query, $date) => $query->where("occurred_at", ">=", Utilities::startOfDay($date)))
-            ->when($filters["date_to"] ?? null, fn($query, $date) => $query->where("occurred_at", "<=", Utilities::endOfDay($date)))
+            ->when($allowedWarehouseIds !== null, fn ($query) => $query->whereIn("warehouse_id", $allowedWarehouseIds))
+            ->when($filters["recipe_dish_id"] ?? null, fn ($query, $id) => $query->where("recipe_dish_id", $id))
+            ->when($filters["warehouse_id"] ?? null, fn ($query, $id) => $query->where("warehouse_id", $id))
+            ->when($filters["item_id"] ?? null, fn ($query, $id) => $query->where("item_id", $id))
+            ->when($filters["date_from"] ?? null, fn ($query, $date) => $query->where("occurred_at", ">=", Utilities::startOfDay($date)))
+            ->when($filters["date_to"] ?? null, fn ($query, $date) => $query->where("occurred_at", "<=", Utilities::endOfDay($date)))
             ->latest("occurred_at")
             ->paginate($perPage);
 
@@ -44,12 +46,12 @@ final class RecipeWasteService {
         ?array $allowedWarehouseIds = null
     ): RecipeWasteRecord {
 
-        return DB::transaction(function() use($recipeId, $companyId, $userId, $data, $allowedWarehouseIds) {
+        return DB::transaction(function () use ($recipeId, $companyId, $userId, $data, $allowedWarehouseIds) {
 
             $warehouseId = (int) $data["warehouse_id"];
             $itemId = (int) $data["item_id"];
 
-            if($allowedWarehouseIds !== null && !in_array($warehouseId, $allowedWarehouseIds, true)) {
+            if ($allowedWarehouseIds !== null && ! in_array($warehouseId, $allowedWarehouseIds, true)) {
                 throw new DomainException("No tienes acceso al almacén seleccionado.");
             }
 
@@ -57,7 +59,7 @@ final class RecipeWasteService {
             $warehouse = Warehouse::query()->where("company_id", $companyId)->where("status", "active")->find($warehouseId);
             $item = Item::query()->where("company_id", $companyId)->where("type", "product")->find($itemId);
 
-            if(!$recipe || !$warehouse || !$item) {
+            if (! $recipe || ! $warehouse || ! $item) {
                 throw new DomainException("La receta, el almacén o el insumo no pertenece a la empresa.");
             }
 
@@ -80,7 +82,7 @@ final class RecipeWasteService {
                 "unit_cost" => $unitCost,
                 "reason" => trim((string) $data["reason"]),
                 "allow_negative" => (bool) ($data["allow_negative"] ?? false),
-                "metadata" => ["recipe_dish_id" => $recipe->id]
+                "metadata" => ["recipe_dish_id" => $recipe->id],
             ]);
 
             return RecipeWasteRecord::create([
@@ -95,11 +97,10 @@ final class RecipeWasteService {
                 "reason" => trim((string) $data["reason"]),
                 "occurred_at" => Carbon::parse($data["occurred_at"] ?? now()),
                 "created_at" => now(),
-                "created_by" => $userId
+                "created_by" => $userId,
             ])->load(["recipe.item", "warehouse.branch", "item", "inventoryMovement", "createdBy"]);
 
         });
 
     }
-
 }

@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\System\Essentials;
 
-use App\Http\Controllers\System\Base\BaseController;
 use App\Helpers\System\{Utilities};
-use Illuminate\Http\{JsonResponse, Request};
-
-use App\Services\System\Essentials\{DashboardConfigService, DashboardService};
+use App\Http\Controllers\System\Base\BaseController;
+use App\Services\System\Essentials\DashboardConfigService;
+use App\Services\System\Essentials\DashboardService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class DashboardController extends BaseController {
-
     /**
      * Translation namespace for dashboard module
      */
@@ -20,12 +20,12 @@ class DashboardController extends BaseController {
     /**
      * Get initialization parameters for the module
      *
-     * @param Request $request
      * @return \stdClass
      */
     public function initParams(Request $request) {
 
         $page = $this->getPage($request);
+
         return DashboardConfigService::getInitParams($this->getCompanyId(), $page, $this->getUserId());
 
     }
@@ -43,14 +43,11 @@ class DashboardController extends BaseController {
 
     /**
      * Get dashboard data for a specific date
-     *
-     * @param Request $request
-     * @return JsonResponse
      */
     public function initData(Request $request): JsonResponse {
 
-        $date = Utilities::isDefined($request->date) && Utilities::isValidDateFormat($request->date) 
-                ? $request->date 
+        $date = Utilities::isDefined($request->date) && Utilities::isValidDateFormat($request->date)
+                ? $request->date
                 : date("Y-m-d");
 
         $branchId = $request->filled("branch_id") ? (int) $request->input("branch_id") : null;
@@ -62,13 +59,10 @@ class DashboardController extends BaseController {
 
     /**
      * Get translation namespace for dashboard module
-     *
-     * @return string
      */
     protected function getTranslationNamespace(): string {
 
         return self::TRANSLATION_NAMESPACE;
 
     }
-
 }

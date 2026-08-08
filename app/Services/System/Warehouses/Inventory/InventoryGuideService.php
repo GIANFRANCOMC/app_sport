@@ -4,18 +4,16 @@ declare(strict_types=1);
 
 namespace App\Services\System\Warehouses\Inventory;
 
-use App\Models\System\Warehouses\{InventoryGuide, InventoryGuideItem};
-use DomainException;
+use App\Helpers\System\Utilities;
+use App\Models\System\Warehouses\InventoryGuide;
+use App\Models\System\Warehouses\InventoryGuideItem;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
-use App\Helpers\System\Utilities;
-
 final class InventoryGuideService {
-
     public static function create(int $companyId, int $userId, array $data): InventoryGuide {
 
-        return DB::transaction(function() use($companyId, $userId, $data) {
+        return DB::transaction(function () use ($companyId, $userId, $data) {
 
             $number = self::nextNumber($companyId, (string) $data["guide_type"]);
             $guide = InventoryGuide::create([
@@ -28,10 +26,10 @@ final class InventoryGuideService {
                 "reference" => $data["reference"] ?? null,
                 "status" => "confirmed",
                 "confirmed_at" => now(),
-                "confirmed_by" => $userId
+                "confirmed_by" => $userId,
             ]);
 
-            foreach($data["items"] as $detail) {
+            foreach ($data["items"] as $detail) {
 
                 $movement = InventoryMovementService::apply([
                     "company_id" => $companyId,
@@ -47,7 +45,7 @@ final class InventoryGuideService {
                         : null,
                     "reason" => $data["reason"],
                     "reference" => $number,
-                    "metadata" => ["inventory_guide_id" => $guide->id]
+                    "metadata" => ["inventory_guide_id" => $guide->id],
                 ]);
 
                 InventoryGuideItem::create([
@@ -56,7 +54,7 @@ final class InventoryGuideService {
                     "item_id" => $detail["item_id"],
                     "inventory_movement_id" => $movement->id,
                     "quantity" => $detail["quantity"],
-                    "unit_cost" => $movement->unit_cost
+                    "unit_cost" => $movement->unit_cost,
                 ]);
 
             }
@@ -72,10 +70,10 @@ final class InventoryGuideService {
         return InventoryGuide::query()
             ->where("company_id", $companyId)
             ->with(["warehouse.branch", "items.item", "confirmedBy"])
-            ->when($filters["warehouse_id"] ?? null, fn($query, $id) => $query->where("warehouse_id", $id))
-            ->when($filters["guide_type"] ?? null, fn($query, $type) => $query->where("guide_type", $type))
-            ->when($filters["date_from"] ?? null, fn($query, $date) => $query->where("issue_date", ">=", Utilities::startOfDay($date)))
-            ->when($filters["date_to"] ?? null, fn($query, $date) => $query->where("issue_date", "<=", Utilities::endOfDay($date)))
+            ->when($filters["warehouse_id"] ?? null, fn ($query, $id) => $query->where("warehouse_id", $id))
+            ->when($filters["guide_type"] ?? null, fn ($query, $type) => $query->where("guide_type", $type))
+            ->when($filters["date_from"] ?? null, fn ($query, $date) => $query->where("issue_date", ">=", Utilities::startOfDay($date)))
+            ->when($filters["date_to"] ?? null, fn ($query, $date) => $query->where("issue_date", "<=", Utilities::endOfDay($date)))
             ->orderByDesc("id");
 
     }
@@ -86,9 +84,9 @@ final class InventoryGuideService {
 
         do {
 
-            $number = $prefix . "-" . now()->format("Ymd") . "-" . strtoupper(Str::random(6));
+            $number = $prefix."-".now()->format("Ymd")."-".strtoupper(Str::random(6));
 
-        }while(InventoryGuide::query()
+        } while (InventoryGuide::query()
             ->where("company_id", $companyId)
             ->where("number", $number)
             ->exists());
@@ -96,5 +94,4 @@ final class InventoryGuideService {
         return $number;
 
     }
-
 }

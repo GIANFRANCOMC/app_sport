@@ -6,16 +6,19 @@ use App\Helpers\System\Utilities;
 use Illuminate\Database\Eloquent\Model;
 
 class BookComplaint extends Model {
+    protected $table = "book_complaints";
 
-    protected $table               = "book_complaints";
-    protected $primaryKey          = "id";
-    public $incrementing           = true;
-    public $timestamps             = true;
+    protected $primaryKey = "id";
+
+    public $incrementing = true;
+
+    public $timestamps = true;
+
     public static $snakeAttributes = true;
 
     protected $appends = [
         "formatted_type",
-        "formatted_status"
+        "formatted_status",
     ];
 
     protected $fillable = [
@@ -43,7 +46,7 @@ class BookComplaint extends Model {
         "created_at",
         "created_by",
         "updated_at",
-        "updated_by"
+        "updated_by",
     ];
 
     // Appends
@@ -65,7 +68,7 @@ class BookComplaint extends Model {
         $types = [
             ["code" => "complaint", "label" => "Queja", "description" => "Cuéntanos algo que no te gustó.", "icon" => "fa-solid fa-exclamation-circle", "color" => "warning"],
             ["code" => "claim", "label" => "Reclamo", "description" => "Pide que solucionemos un problema.", "icon" => "fa-solid fa-gavel", "color" => "danger"],
-            ["code" => "suggestion", "label" => "Sugerencia", "description" => "Idea o recomendación para mejorar.", "icon" => "fa-solid fa-lightbulb", "color" => "info"]
+            ["code" => "suggestion", "label" => "Sugerencia", "description" => "Idea o recomendación para mejorar.", "icon" => "fa-solid fa-lightbulb", "color" => "info"],
         ];
 
         return Utilities::getValues($types, $type, $code);
@@ -77,7 +80,7 @@ class BookComplaint extends Model {
         $statuses = [
             ["code" => "pending", "label" => "Aún no ha sido revisado"],
             ["code" => "in_progress", "label" => "Está en proceso de atención"],
-            ["code" => "resolved", "label" => "Ya ha sido atendido y cerrado"]
+            ["code" => "resolved", "label" => "Ya ha sido atendido y cerrado"],
         ];
 
         return Utilities::getValues($statuses, $type, $code);
@@ -102,5 +105,4 @@ class BookComplaint extends Model {
         return $this->belongsTo(IdentityDocumentType::class, "identity_document_type_id", "id");
 
     }
-
 }

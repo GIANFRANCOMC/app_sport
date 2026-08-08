@@ -8,7 +8,6 @@ use App\Http\Requests\System\Base\CompanyFormRequest;
 use Illuminate\Validation\Validator;
 
 final class StoreInventoryMovementRequest extends CompanyFormRequest {
-
     public function rules(): array {
 
         $round = $this->decimalPrecision();
@@ -21,19 +20,19 @@ final class StoreInventoryMovementRequest extends CompanyFormRequest {
             "origin_type" => ["required", "in:manual,replenishment,customer_return,supplier_return,physical_count"],
             "quantity" => ["nullable", "numeric", "gt:0", "max:{$maxValue}", "decimal:0,{$round}"],
             "resulting_balance" => ["nullable", "numeric", "min:0", "max:{$maxValue}", "decimal:0,{$round}"],
-            "reason" => ["required", "string", "max:255"]
+            "reason" => ["required", "string", "max:255"],
         ];
 
     }
 
     public function after(): array {
 
-        return [function(Validator $validator): void {
+        return [function (Validator $validator): void {
             $requiredField = $this->input("movement_type") === "correction"
                 ? "resulting_balance"
                 : "quantity";
 
-            if(!$this->filled($requiredField)) {
+            if (! $this->filled($requiredField)) {
                 $validator->errors()->add($requiredField, "Campo obligatorio.");
             }
         }];
@@ -45,5 +44,4 @@ final class StoreInventoryMovementRequest extends CompanyFormRequest {
         return ["movement_type", "origin_type", "reason"];
 
     }
-
 }

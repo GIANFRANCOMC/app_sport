@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace App\Models\System\Operations;
 
 use App\Models\System\Customers\Customer;
-use App\Models\System\Organizations\{Branch, Company, User};
+use App\Models\System\Organizations\Branch;
+use App\Models\System\Organizations\User;
 use App\Models\System\Sales\SaleHeader;
 use Illuminate\Database\Eloquent\Model;
 
 final class ServiceSession extends Model {
-
     protected $table = "service_sessions";
 
     protected $fillable = [
@@ -39,16 +39,13 @@ final class ServiceSession extends Model {
         "updated_at",
         "updated_by",
         "canceled_at",
-        "canceled_by"
+        "canceled_by",
     ];
 
     protected $casts = [
         "started_at" => "datetime",
         "ended_at" => "datetime",
-        "duration_minutes" => "integer"
-        ,"scheduled_at" => "datetime"
-        ,"expected_end_at" => "datetime"
-        ,"tolerance_minutes" => "integer"
+        "duration_minutes" => "integer", "scheduled_at" => "datetime", "expected_end_at" => "datetime", "tolerance_minutes" => "integer",
     ];
 
     public function branch() {
@@ -105,5 +102,4 @@ final class ServiceSession extends Model {
             ->orderByDesc("occurred_at");
 
     }
-
 }

@@ -3,21 +3,23 @@
 namespace App\Models\System\Organizations;
 
 use App\Helpers\System\Utilities;
+use App\Models\System\General\{IdentityDocumentType};
 use Illuminate\Database\Eloquent\Model;
 
-use App\Models\System\General\{IdentityDocumentType};
-
 class BookComplaint extends Model {
+    protected $table = "book_complaints";
 
-    protected $table               = "book_complaints";
-    protected $primaryKey          = "id";
-    public $incrementing           = true;
-    public $timestamps             = true;
+    protected $primaryKey = "id";
+
+    public $incrementing = true;
+
+    public $timestamps = true;
+
     public static $snakeAttributes = true;
 
     protected $appends = [
         "formatted_type",
-        "formatted_status"
+        "formatted_status",
     ];
 
     protected $fillable = [
@@ -45,7 +47,7 @@ class BookComplaint extends Model {
         "created_at",
         "created_by",
         "updated_at",
-        "updated_by"
+        "updated_by",
     ];
 
     protected $casts = ["responded_at" => "datetime"];
@@ -69,7 +71,7 @@ class BookComplaint extends Model {
         $types = [
             ["code" => "complaint", "label" => "Queja", "description" => "Cuéntanos algo que no te gustó.", "icon" => "fa-solid fa-exclamation-circle", "color" => "warning"],
             ["code" => "claim", "label" => "Reclamo", "description" => "Pide que solucionemos un problema.", "icon" => "fa-solid fa-gavel", "color" => "danger"],
-            ["code" => "suggestion", "label" => "Sugerencia", "description" => "Idea o recomendación para mejorar.", "icon" => "fa-solid fa-lightbulb", "color" => "info"]
+            ["code" => "suggestion", "label" => "Sugerencia", "description" => "Idea o recomendación para mejorar.", "icon" => "fa-solid fa-lightbulb", "color" => "info"],
         ];
 
         return Utilities::getValues($types, $type, $code);
@@ -81,7 +83,7 @@ class BookComplaint extends Model {
         $statuses = [
             ["code" => "pending", "label" => "Aún no ha sido revisado"],
             ["code" => "in_progress", "label" => "Está en proceso de atención"],
-            ["code" => "resolved", "label" => "Ya ha sido atendido y cerrado"]
+            ["code" => "resolved", "label" => "Ya ha sido atendido y cerrado"],
         ];
 
         return Utilities::getValues($statuses, $type, $code);
@@ -116,7 +118,7 @@ class BookComplaint extends Model {
     public function statusHistories() {
 
         return $this->hasMany(BookComplaintStatusHistory::class, "book_complaint_id")
-                    ->orderByDesc("changed_at");
+            ->orderByDesc("changed_at");
 
     }
 
@@ -125,5 +127,4 @@ class BookComplaint extends Model {
         return $this->belongsTo(User::class, "responded_by");
 
     }
-
 }

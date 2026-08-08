@@ -4,17 +4,13 @@ declare(strict_types=1);
 
 namespace App\Services\System\Organizations\Users;
 
+use App\Models\System\Organizations\User;
+use App\Services\System\Base\BaseConfigService;
+use App\Services\System\Base\CompanyReferenceDataService;
+use App\Services\System\Base\MasterReferenceDataService;
 use stdClass;
 
-use App\Models\System\Organizations\User;
-use App\Services\System\Base\{
-    BaseConfigService,
-    CompanyReferenceDataService,
-    MasterReferenceDataService
-};
-
 final class UserConfigService extends BaseConfigService {
-
     protected const USER_SCOPED_CACHE = true;
 
     protected static function getCachePrefix(): string {
@@ -29,24 +25,23 @@ final class UserConfigService extends BaseConfigService {
 
         return self::data([
             "identityDocumentTypes" => self::data([
-                "records" => MasterReferenceDataService::defaultIdentityDocuments($companyId)
+                "records" => MasterReferenceDataService::defaultIdentityDocuments($companyId),
             ]),
             "roles" => self::data([
-                "records" => $references->roles()
+                "records" => $references->roles(),
             ]),
             "branches" => self::data([
-                "records" => $references->activeBranches()
+                "records" => $references->activeBranches(),
             ]),
             "cashRegisters" => self::data([
-                "records" => $references->cashRegisters()
+                "records" => $references->cashRegisters(),
             ]),
             "warehouses" => self::data([
-                "records" => $references->stockWarehouses()
+                "records" => $references->stockWarehouses(),
             ]),
-            "genders"  => User::getGenders(),
-            "statuses" => User::getStatuses()
+            "genders" => User::getGenders(),
+            "statuses" => User::getStatuses(),
         ]);
 
     }
-
 }

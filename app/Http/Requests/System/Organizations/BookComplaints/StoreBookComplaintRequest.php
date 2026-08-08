@@ -4,11 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\System\Organizations\BookComplaints;
 
-use App\Helpers\System\Utilities;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreBookComplaintRequest extends FormRequest {
-
     /**
      * Determine if the user is authorized to make this request.
      */
@@ -27,10 +25,8 @@ class StoreBookComplaintRequest extends FormRequest {
 
         return [
             "admin_response" => "required|string|max:600",
-            "status"         => "required|string|in:pending,in_progress,resolved"
+            "status" => "required|string|in:pending,in_progress,resolved",
         ];
 
     }
-
-
 }

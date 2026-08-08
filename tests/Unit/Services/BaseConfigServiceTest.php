@@ -4,13 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Services;
 
+use App\Services\System\Base\BaseConfigService;
 use stdClass;
 use Tests\TestCase;
 
-use App\Services\System\Base\BaseConfigService;
-
 final class TestConfigService extends BaseConfigService {
-
     protected static function getCachePrefix(): string {
 
         return "test";
@@ -27,15 +25,13 @@ final class TestConfigService extends BaseConfigService {
 
         return self::data([
             "company_id" => $companyId,
-            "page"       => $page
+            "page" => $page,
         ]);
 
     }
-
 }
 
 class BaseConfigServiceTest extends TestCase {
-
     public function test_cache_is_isolated_by_company_and_page(): void {
 
         $main = TestConfigService::getInitParams(101, "main", 1);
@@ -73,5 +69,4 @@ class BaseConfigServiceTest extends TestCase {
         $this->assertFalse(cache()->has(TestConfigService::cacheKey(104, "list")));
 
     }
-
 }

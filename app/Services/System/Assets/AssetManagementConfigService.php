@@ -4,16 +4,13 @@ declare(strict_types=1);
 
 namespace App\Services\System\Assets;
 
+use App\Models\System\Assets\AssetAssignment;
+use App\Models\System\Assets\BranchAsset;
+use App\Services\System\Base\BaseConfigService;
+use App\Services\System\Base\CompanyReferenceDataService;
 use stdClass;
 
-use App\Models\System\Assets\{AssetAssignment, BranchAsset};
-use App\Services\System\Base\{
-    BaseConfigService,
-    CompanyReferenceDataService
-};
-
 final class AssetManagementConfigService extends BaseConfigService {
-
     protected const USER_SCOPED_CACHE = true;
 
     protected static function getCachePrefix(): string {
@@ -28,22 +25,21 @@ final class AssetManagementConfigService extends BaseConfigService {
 
         return self::data([
             "assets" => self::data([
-                "records" => $references->assets()
+                "records" => $references->assets(),
             ]),
             "branches" => self::data([
-                "records" => $references->activeBranches()
+                "records" => $references->activeBranches(),
             ]),
             "users" => self::data([
-                "records" => $references->users()
+                "records" => $references->users(),
             ]),
             "branchAssets" => self::data([
-                "statuses" => BranchAsset::getStatuses()
+                "statuses" => BranchAsset::getStatuses(),
             ]),
             "assetAssignments" => self::data([
-                "statuses" => AssetAssignment::getStatuses()
-            ])
+                "statuses" => AssetAssignment::getStatuses(),
+            ]),
         ]);
 
     }
-
 }

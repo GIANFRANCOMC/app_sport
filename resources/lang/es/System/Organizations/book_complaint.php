@@ -14,4 +14,3 @@ return [
     "exception_create" => "Error al crear la queja: :message",
     "exception_update" => "Error al actualizar la queja: :message",
 ];
-

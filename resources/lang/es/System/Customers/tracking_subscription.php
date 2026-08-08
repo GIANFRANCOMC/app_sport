@@ -16,4 +16,3 @@ return [
     "exception_update" => "Error al actualizar la suscripción: :message",
     "exception_cancel" => "Error al cancelar la suscripción: :message",
 ];
-

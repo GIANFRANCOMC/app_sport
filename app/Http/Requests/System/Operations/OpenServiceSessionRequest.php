@@ -7,7 +7,6 @@ namespace App\Http\Requests\System\Operations;
 use App\Http\Requests\System\Base\CompanyFormRequest;
 
 final class OpenServiceSessionRequest extends CompanyFormRequest {
-
     public function rules(): array {
 
         $round = $this->decimalPrecision();
@@ -27,7 +26,7 @@ final class OpenServiceSessionRequest extends CompanyFormRequest {
             "expected_end_at" => ["nullable", "date", "after:scheduled_at"],
             "tolerance_minutes" => ["nullable", "integer", "min:0", "max:1440"],
             "queue_code" => ["nullable", "string", "max:30"],
-            "observation" => ["nullable", "string", "max:500"]
+            "observation" => ["nullable", "string", "max:500"],
         ];
 
     }
@@ -37,5 +36,4 @@ final class OpenServiceSessionRequest extends CompanyFormRequest {
         return ["session_type", "queue_code", "observation"];
 
     }
-
 }

@@ -5,12 +5,11 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration {
-
     /**
      * Run the migrations.
      */
     public function up(): void {
-        Schema::create("sales_header", function(Blueprint $table) {
+        Schema::create("sales_header", function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger("company_id");
             $table->unsignedBigInteger("serie_id");
@@ -51,7 +50,7 @@ return new class extends Migration {
             $table->unique(["company_id", "serie_id", "sequential"]);
         });
 
-        Schema::create("series_correlative_movements", function(Blueprint $table) {
+        Schema::create("series_correlative_movements", function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger("company_id");
             $table->unsignedBigInteger("serie_id");
@@ -74,7 +73,7 @@ return new class extends Migration {
                 "series_corr_company_serie_seq_action_uq"
             );
         });
-        Schema::create("sales_body", function(Blueprint $table) {
+        Schema::create("sales_body", function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger("company_id");
             $table->unsignedBigInteger("sale_header_id");
@@ -108,7 +107,7 @@ return new class extends Migration {
             $table->foreign("company_id")->references("id")->on("companies")->onDelete("cascade");
         });
 
-        Schema::create("sale_taxes", function(Blueprint $table) {
+        Schema::create("sale_taxes", function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger("company_id");
             $table->unsignedBigInteger("sale_header_id");
@@ -134,7 +133,7 @@ return new class extends Migration {
             $table->foreign("company_id")->references("id")->on("companies")->onDelete("cascade");
         });
 
-        Schema::create("sale_payments", function(Blueprint $table) {
+        Schema::create("sale_payments", function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger("company_id");
             $table->unsignedBigInteger("sale_header_id");
@@ -169,6 +168,4 @@ return new class extends Migration {
         Schema::dropIfExists("sales_header");
 
     }
-
 };
-

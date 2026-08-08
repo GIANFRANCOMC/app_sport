@@ -8,8 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Route;
 
-class RouteServiceProvider extends ServiceProvider
-{
+class RouteServiceProvider extends ServiceProvider {
     /**
      * The path to your application's "home" route.
      *
@@ -17,57 +16,60 @@ class RouteServiceProvider extends ServiceProvider
      *
      * @var string
      */
-    public const HOME = '/dashboard';
+    public const HOME = "/dashboard";
 
     /**
      * Define your route model bindings, pattern filters, and other route configuration.
      */
-    public function boot(): void
-    {
-        RateLimiter::for('api', function (Request $request) {
+    public function boot(): void {
+        RateLimiter::for("api", function (Request $request) {
             return Limit::perMinute(60)->by($request->user()?->id ?: $request->ip());
         });
 
-        RateLimiter::for('guest-complaints', function(Request $request) {
-            $company = $request->route('company_slug', 'unknown');
+        RateLimiter::for("platform-login", function (Request $request) {
+            $email = strtolower((string) $request->input("email", "unknown"));
+
+            return Limit::perMinute(5)->by(hash("sha256", $email."|".$request->ip()));
+        });
+
+        RateLimiter::for("guest-complaints", function (Request $request) {
+            $company = $request->route("company_slug", "unknown");
 
             return [
-                Limit::perMinute((int) config('public_access.complaints.per_minute'))->by("complaint-minute:{$company}:{$request->ip()}"),
-                Limit::perDay((int) config('public_access.complaints.per_day'))->by("complaint-day:{$company}:{$request->ip()}")
+                Limit::perMinute((int) config("public_access.complaints.per_minute"))->by("complaint-minute:{$company}:{$request->ip()}"),
+                Limit::perDay((int) config("public_access.complaints.per_day"))->by("complaint-day:{$company}:{$request->ip()}"),
             ];
         });
 
-        RateLimiter::for('guest-status', fn(Request $request) =>
-            Limit::perMinute((int) config('public_access.status.per_minute'))
-                ->by("public-status:{$request->route('company_slug')}:{$request->ip()}")
+        RateLimiter::for("guest-status", fn (Request $request) => Limit::perMinute((int) config("public_access.status.per_minute"))
+            ->by("public-status:{$request->route("company_slug")}:{$request->ip()}")
         );
 
-        RateLimiter::for('guest-attendance', function(Request $request) {
-            $company = $request->route('company_slug', 'unknown');
+        RateLimiter::for("guest-attendance", function (Request $request) {
+            $company = $request->route("company_slug", "unknown");
 
             return [
-                Limit::perMinute((int) config('public_access.attendance.per_minute'))->by("attendance-minute:{$company}:{$request->ip()}"),
-                Limit::perHour((int) config('public_access.attendance.per_hour'))->by("attendance-hour:{$company}:{$request->ip()}")
+                Limit::perMinute((int) config("public_access.attendance.per_minute"))->by("attendance-minute:{$company}:{$request->ip()}"),
+                Limit::perHour((int) config("public_access.attendance.per_hour"))->by("attendance-hour:{$company}:{$request->ip()}"),
             ];
         });
 
-        RateLimiter::for('biometric-events', fn(Request $request) =>
-            Limit::perMinute((int) config('public_access.biometric_events.per_minute'))->by(
-                "biometric:{$request->route('company_slug')}:" . ($request->header('X-Device-Key') ?: $request->ip())
-            )
+        RateLimiter::for("biometric-events", fn (Request $request) => Limit::perMinute((int) config("public_access.biometric_events.per_minute"))->by(
+            "biometric:{$request->route("company_slug")}:".($request->header("X-Device-Key") ?: $request->ip())
+        )
         );
 
         $this->routes(function () {
-            Route::middleware('api')
-                ->prefix('api')
-                ->group(base_path('routes/api.php'));
+            Route::middleware("api")
+                ->prefix("api")
+                ->group(base_path("routes/api.php"));
 
-            Route::domain(config('tenancy.platform_subdomain', 'app').'.'.config('tenancy.base_domain'))
-                ->middleware('web')
-                ->group(base_path('routes/platform.php'));
+            Route::domain(config("tenancy.platform_subdomain", "app").".".config("tenancy.base_domain"))
+                ->middleware("web")
+                ->group(base_path("routes/platform.php"));
 
-            Route::middleware('web')
-                ->group(base_path('routes/web.php'));
+            Route::middleware("web")
+                ->group(base_path("routes/web.php"));
         });
     }
 }

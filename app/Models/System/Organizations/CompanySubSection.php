@@ -3,20 +3,22 @@
 namespace App\Models\System\Organizations;
 
 use App\Helpers\System\Utilities;
+use App\Models\System\General\{SubSection};
 use Illuminate\Database\Eloquent\Model;
 
-use App\Models\System\General\{SubSection};
-
 class CompanySubSection extends Model {
+    protected $table = "companies_sub_sections";
 
-    protected $table               = "companies_sub_sections";
-    protected $primaryKey          = "id";
-    public $incrementing           = true;
-    public $timestamps             = true;
+    protected $primaryKey = "id";
+
+    public $incrementing = true;
+
+    public $timestamps = true;
+
     public static $snakeAttributes = true;
 
     protected $appends = [
-        "formatted_status"
+        "formatted_status",
     ];
 
     protected $fillable = [
@@ -28,7 +30,7 @@ class CompanySubSection extends Model {
         "created_at",
         "created_by",
         "updated_at",
-        "updated_by"
+        "updated_by",
     ];
 
     // Appends
@@ -43,7 +45,7 @@ class CompanySubSection extends Model {
 
         $statuses = [
             ["code" => "active", "label" => "Activo"],
-            ["code" => "inactive", "label" => "Inactivo"]
+            ["code" => "inactive", "label" => "Inactivo"],
         ];
 
         return Utilities::getValues($statuses, $type, $code);
@@ -62,5 +64,4 @@ class CompanySubSection extends Model {
         return $this->belongsTo(SubSection::class, "sub_section_id", "id");
 
     }
-
 }

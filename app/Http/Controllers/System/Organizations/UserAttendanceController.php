@@ -5,23 +5,23 @@ declare(strict_types=1);
 namespace App\Http\Controllers\System\Organizations;
 
 use App\Http\Controllers\System\Base\BaseController;
-use App\Http\Requests\System\Organizations\UserAttendances\{
-    BiometricCheckInRequest,
-    CheckInUserAttendanceRequest,
-    CheckOutUserAttendanceRequest,
-    RequestUserAttendanceCorrectionRequest,
-    ReviewUserAttendanceCorrectionRequest,
-    StartUserAttendanceBreakRequest,
-    UserAttendanceSummaryRequest
-};
-use App\Services\System\Organizations\Users\{UserAttendanceConfigService, UserAttendanceService};
+use App\Http\Requests\System\Organizations\UserAttendances\BiometricCheckInRequest;
+use App\Http\Requests\System\Organizations\UserAttendances\CheckInUserAttendanceRequest;
+use App\Http\Requests\System\Organizations\UserAttendances\CheckOutUserAttendanceRequest;
+use App\Http\Requests\System\Organizations\UserAttendances\RequestUserAttendanceCorrectionRequest;
+use App\Http\Requests\System\Organizations\UserAttendances\ReviewUserAttendanceCorrectionRequest;
+use App\Http\Requests\System\Organizations\UserAttendances\StartUserAttendanceBreakRequest;
+use App\Http\Requests\System\Organizations\UserAttendances\UserAttendanceSummaryRequest;
 use App\Services\System\Base\CompanyReferenceDataService;
 use App\Services\System\Organizations\Companies\CompanySettingService;
-use Illuminate\Http\{JsonResponse, Request, Response};
+use App\Services\System\Organizations\Users\UserAttendanceConfigService;
+use App\Services\System\Organizations\Users\UserAttendanceService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Validation\ValidationException;
 
 final class UserAttendanceController extends BaseController {
-
     private const TRANSLATION_NAMESPACE = "System.Organizations.user_attendance";
 
     public function index() {
@@ -53,11 +53,11 @@ final class UserAttendanceController extends BaseController {
                     "user_id" => $request->input("user_id"),
                     "status" => $request->input("status"),
                     "date_from" => $request->input("date_from"),
-                    "date_to" => $request->input("date_to")
+                    "date_to" => $request->input("date_to"),
                 ],
                 $this->getPerPage($request),
                 $this->allowedBranchIds()
-            )
+            ),
         ]);
 
     }
@@ -69,7 +69,7 @@ final class UserAttendanceController extends BaseController {
             "user_id" => $request->input("user_id"),
             "status" => $request->input("status"),
             "date_from" => $request->input("date_from"),
-            "date_to" => $request->input("date_to")
+            "date_to" => $request->input("date_to"),
         ];
         $query = UserAttendanceService::getFilteredQuery(
             $this->getCompanyId(),
@@ -83,19 +83,19 @@ final class UserAttendanceController extends BaseController {
             25000
         ));
 
-        if((clone $query)->limit($limit + 1)->count() > $limit) {
+        if ((clone $query)->limit($limit + 1)->count() > $limit) {
             throw ValidationException::withMessages([
-                "filters" => "El reporte supera {$limit} registros. Reduce el rango o aplica más filtros."
+                "filters" => "El reporte supera {$limit} registros. Reduce el rango o aplica más filtros.",
             ]);
         }
 
         $handle = fopen("php://temp", "r+");
         fputcsv($handle, [
             "Fecha", "Colaborador", "Sucursal", "Ingreso", "Salida", "Horas trabajadas",
-            "Minutos ordinarios", "Tardanza", "Horas extra", "Pausas", "Estado"
+            "Minutos ordinarios", "Tardanza", "Horas extra", "Pausas", "Estado",
         ], ";");
 
-        foreach($query->orderByDesc("checked_in_at")->get() as $attendance) {
+        foreach ($query->orderByDesc("checked_in_at")->get() as $attendance) {
             fputcsv($handle, [
                 $attendance->work_date?->format("Y-m-d"),
                 $attendance->user?->name,
@@ -107,7 +107,7 @@ final class UserAttendanceController extends BaseController {
                 (int) $attendance->late_minutes,
                 (int) $attendance->overtime_minutes,
                 (int) $attendance->break_minutes,
-                $attendance->status
+                $attendance->status,
             ], ";");
         }
 
@@ -117,7 +117,7 @@ final class UserAttendanceController extends BaseController {
 
         return response("\xEF\xBB\xBF".$csv, 200, [
             "Content-Type" => "text/csv; charset=UTF-8",
-            "Content-Disposition" => "attachment; filename=gympe-asistencia-laboral-".now()->format("Ymd-His").".csv"
+            "Content-Disposition" => "attachment; filename=gympe-asistencia-laboral-".now()->format("Ymd-His").".csv",
         ]);
 
     }
@@ -129,23 +129,23 @@ final class UserAttendanceController extends BaseController {
             $attendance = UserAttendanceService::checkIn([
                 ...$request->validated(),
                 "company_id" => $this->getCompanyId(),
-                "actor_id" => $this->getUserId()
+                "actor_id" => $this->getUserId(),
             ]);
 
             return response()->json([
                 "bool" => true,
                 "msg" => "Ingreso del colaborador registrado correctamente.",
-                "attendance" => $attendance->load(["branch", "user"])
+                "attendance" => $attendance->load(["branch", "user"]),
             ]);
 
-        }catch(\DomainException $exception) {
+        } catch (\DomainException $exception) {
 
             return response()->json([
                 "bool" => false,
-                "msg" => $exception->getMessage()
+                "msg" => $exception->getMessage(),
             ], 422);
 
-        }catch(\Exception $exception) {
+        } catch (\Exception $exception) {
 
             return $this->handleException($exception, "check_in");
 
@@ -160,23 +160,23 @@ final class UserAttendanceController extends BaseController {
             $attendance = UserAttendanceService::checkOut([
                 ...$request->validated(),
                 "company_id" => $this->getCompanyId(),
-                "actor_id" => $this->getUserId()
+                "actor_id" => $this->getUserId(),
             ]);
 
             return response()->json([
                 "bool" => true,
                 "msg" => "Salida registrada. La jornada quedó finalizada.",
-                "attendance" => $attendance
+                "attendance" => $attendance,
             ]);
 
-        }catch(\DomainException $exception) {
+        } catch (\DomainException $exception) {
 
             return response()->json([
                 "bool" => false,
-                "msg" => $exception->getMessage()
+                "msg" => $exception->getMessage(),
             ], 422);
 
-        }catch(\Exception $exception) {
+        } catch (\Exception $exception) {
 
             return $this->handleException($exception, "check_out");
 
@@ -193,16 +193,16 @@ final class UserAttendanceController extends BaseController {
             $attendance = UserAttendanceService::checkInFromBiometric([
                 ...$data,
                 "company_id" => $this->getCompanyId(),
-                "actor_id" => $this->getUserId()
+                "actor_id" => $this->getUserId(),
             ]);
 
             return response()->json([
                 "bool" => true,
                 "msg" => "Ingreso biométrico registrado correctamente.",
-                "attendance" => $attendance->load(["branch", "user"])
+                "attendance" => $attendance->load(["branch", "user"]),
             ]);
 
-        }catch(\DomainException $exception) {
+        } catch (\DomainException $exception) {
 
             return response()->json(["bool" => false, "msg" => $exception->getMessage()], 422);
 
@@ -222,7 +222,7 @@ final class UserAttendanceController extends BaseController {
                 $data["week_start"] ?? null,
                 isset($data["branch_id"]) ? (int) $data["branch_id"] : null,
                 $this->allowedBranchIds()
-            )
+            ),
         ]);
 
     }
@@ -231,7 +231,7 @@ final class UserAttendanceController extends BaseController {
 
         $data = $request->validated();
 
-        return $this->domainResponse(function() use($attendanceId, $data) {
+        return $this->domainResponse(function () use ($attendanceId, $data) {
             $break = UserAttendanceService::startBreak(
                 $this->getCompanyId(),
                 $attendanceId,
@@ -246,7 +246,7 @@ final class UserAttendanceController extends BaseController {
 
     public function endBreak(int $attendanceId): JsonResponse {
 
-        return $this->domainResponse(function() use($attendanceId) {
+        return $this->domainResponse(function () use ($attendanceId) {
             $break = UserAttendanceService::endBreak(
                 $this->getCompanyId(),
                 $attendanceId,
@@ -262,7 +262,7 @@ final class UserAttendanceController extends BaseController {
 
         $data = $request->validated();
 
-        return $this->domainResponse(function() use($attendanceId, $data) {
+        return $this->domainResponse(function () use ($attendanceId, $data) {
             $correction = UserAttendanceService::requestCorrection(
                 $this->getCompanyId(),
                 $attendanceId,
@@ -279,7 +279,7 @@ final class UserAttendanceController extends BaseController {
 
         $data = $request->validated();
 
-        return $this->domainResponse(function() use($correctionId, $data) {
+        return $this->domainResponse(function () use ($correctionId, $data) {
             $correction = UserAttendanceService::reviewCorrection(
                 $this->getCompanyId(),
                 $correctionId,
@@ -297,7 +297,7 @@ final class UserAttendanceController extends BaseController {
 
         try {
             return response()->json(["bool" => true, ...$callback()]);
-        }catch(\DomainException $exception) {
+        } catch (\DomainException $exception) {
             return response()->json(["bool" => false, "msg" => $exception->getMessage()], 422);
         }
 
@@ -315,5 +315,4 @@ final class UserAttendanceController extends BaseController {
             ->allowedBranchIds();
 
     }
-
 }

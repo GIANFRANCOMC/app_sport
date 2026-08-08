@@ -13,21 +13,17 @@ use Illuminate\Support\Facades\DB;
  * Provides common functionality for all service classes
  */
 abstract class BaseService {
-
     /**
      * Translation namespace for the service
      * Must be defined in child classes
-     *
-     * @return string
      */
     abstract protected static function getTranslationNamespace(): string;
 
     /**
      * Get translation with fallback
      *
-     * @param string $key Translation key
-     * @param array $replace Replacements
-     * @return string
+     * @param  string  $key Translation key
+     * @param  array  $replace Replacements
      */
     protected static function trans(string $key, array $replace = []): string {
 
@@ -38,8 +34,8 @@ abstract class BaseService {
     /**
      * Execute database transaction
      *
-     * @param callable $callback
      * @return mixed
+     *
      * @throws \Exception
      */
     protected static function transaction(callable $callback) {
@@ -52,17 +48,16 @@ abstract class BaseService {
      * Prepare data for create/update operations
      * Filters only allowed fields
      *
-     * @param array $data Input data
-     * @param array $allowedFields Allowed fields
-     * @return array
+     * @param  array  $data Input data
+     * @param  array  $allowedFields Allowed fields
      */
     protected static function prepareData(array $data, array $allowedFields): array {
 
         $prepared = [];
 
-        foreach($allowedFields as $field) {
+        foreach ($allowedFields as $field) {
 
-            if(array_key_exists($field, $data)) {
+            if (array_key_exists($field, $data)) {
 
                 $prepared[$field] = $data[$field];
 
@@ -77,11 +72,10 @@ abstract class BaseService {
     /**
      * Prepare data for create operation
      *
-     * @param array $data Input data
-     * @param int $companyId Company ID
-     * @param int $userId User ID
-     * @param array $allowedFields Allowed fields
-     * @return array
+     * @param  array  $data Input data
+     * @param  int  $companyId Company ID
+     * @param  int  $userId User ID
+     * @param  array  $allowedFields Allowed fields
      */
     protected static function prepareDataForCreate(array $data, int $companyId, int $userId, array $allowedFields): array {
 
@@ -98,19 +92,18 @@ abstract class BaseService {
     /**
      * Prepare data for update operation (only changed fields)
      *
-     * @param Model $model Model instance
-     * @param array $data Input data
-     * @param array $allowedFields Allowed fields
-     * @param int $userId User ID
-     * @return array
+     * @param  Model  $model Model instance
+     * @param  array  $data Input data
+     * @param  array  $allowedFields Allowed fields
+     * @param  int  $userId User ID
      */
     protected static function prepareDataForUpdate(Model $model, array $data, array $allowedFields, int $userId): array {
 
         $updateData = [];
 
-        foreach($allowedFields as $field) {
+        foreach ($allowedFields as $field) {
 
-            if(isset($data[$field]) && $data[$field] !== $model->$field) {
+            if (isset($data[$field]) && $data[$field] !== $model->$field) {
 
                 $updateData[$field] = $data[$field];
 
@@ -118,7 +111,7 @@ abstract class BaseService {
 
         }
 
-        if(!empty($updateData)) {
+        if (! empty($updateData)) {
 
             $updateData["updated_at"] = now();
             $updateData["updated_by"] = $userId;
@@ -132,13 +125,12 @@ abstract class BaseService {
     /**
      * Validate model exists and belongs to company
      *
-     * @param Model|null $model Model instance
-     * @param int $companyId Company ID
-     * @return bool
+     * @param  Model|null  $model Model instance
+     * @param  int  $companyId Company ID
      */
     protected static function validateModel(?Model $model, int $companyId): bool {
 
-        if($model === null) {
+        if ($model === null) {
 
             return false;
 
@@ -147,6 +139,4 @@ abstract class BaseService {
         return isset($model->company_id) && $model->company_id === $companyId;
 
     }
-
 }
-

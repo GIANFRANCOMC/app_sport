@@ -3,21 +3,23 @@
 namespace App\Models\System\Assets;
 
 use App\Helpers\System\Utilities;
-use Illuminate\Database\Eloquent\Model;
-
 use App\Models\System\General\{Currency};
 use App\Models\System\Organizations\{Branch};
+use Illuminate\Database\Eloquent\Model;
 
 class BranchAsset extends Model {
+    protected $table = "branch_assets";
 
-    protected $table               = "branch_assets";
-    protected $primaryKey          = "id";
-    public $incrementing           = true;
-    public $timestamps             = true;
+    protected $primaryKey = "id";
+
+    public $incrementing = true;
+
+    public $timestamps = true;
+
     public static $snakeAttributes = true;
 
     protected $appends = [
-        "formatted_status"
+        "formatted_status",
     ];
 
     protected $fillable = [
@@ -33,7 +35,7 @@ class BranchAsset extends Model {
         "created_at",
         "created_by",
         "updated_at",
-        "updated_by"
+        "updated_by",
     ];
 
     // Appends
@@ -49,7 +51,7 @@ class BranchAsset extends Model {
         $statuses = [
             ["code" => "active", "label" => "Disponible"],
             ["code" => "maintenance", "label" => "En mantenimiento"],
-            ["code" => "retired", "label" => "Retirado"]
+            ["code" => "retired", "label" => "Retirado"],
         ];
 
         return Utilities::getValues($statuses, $type, $code);
@@ -74,5 +76,4 @@ class BranchAsset extends Model {
         return $this->belongsTo(Currency::class, "currency_id", "id");
 
     }
-
 }

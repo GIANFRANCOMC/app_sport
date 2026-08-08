@@ -3,21 +3,23 @@
 namespace App\Models\System\Assets;
 
 use App\Helpers\System\Utilities;
+use App\Models\System\Organizations\{Company};
 use Illuminate\Database\Eloquent\Model;
 
-use App\Models\System\Organizations\{Company};
-
 class Asset extends Model {
+    protected $table = "assets";
 
-    protected $table               = "assets";
-    protected $primaryKey          = "id";
-    public $incrementing           = true;
-    public $timestamps             = true;
+    protected $primaryKey = "id";
+
+    public $incrementing = true;
+
+    public $timestamps = true;
+
     public static $snakeAttributes = true;
 
     protected $appends = [
         "formatted_management_type",
-        "formatted_status"
+        "formatted_status",
     ];
 
     protected $fillable = [
@@ -33,7 +35,7 @@ class Asset extends Model {
         "created_at",
         "created_by",
         "updated_at",
-        "updated_by"
+        "updated_by",
     ];
 
     // Appends
@@ -54,7 +56,7 @@ class Asset extends Model {
 
         $managementTypes = [
             ["code" => "unit", "label" => "Unidad"],
-            ["code" => "stock", "label" => "Stock"]
+            ["code" => "stock", "label" => "Stock"],
         ];
 
         return Utilities::getValues($managementTypes, $type, $code);
@@ -65,7 +67,7 @@ class Asset extends Model {
 
         $statuses = [
             ["code" => "active", "label" => "Activo"],
-            ["code" => "inactive", "label" => "Inactivo"]
+            ["code" => "inactive", "label" => "Inactivo"],
         ];
 
         return Utilities::getValues($statuses, $type, $code);
@@ -102,5 +104,4 @@ class Asset extends Model {
         return $this->hasMany(BranchAsset::class, "asset_id", "id");
 
     }
-
 }

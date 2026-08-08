@@ -1,17 +1,16 @@
-﻿<?php
+<?php
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration {
-
     /**
      * Run the migrations.
      */
     public function up(): void {
 
-        Schema::create("biometric_device_brands", function(Blueprint $table) {
+        Schema::create("biometric_device_brands", function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger("company_id");
             $table->string("slug", 120);
@@ -28,7 +27,7 @@ return new class extends Migration {
             $table->unique(["company_id", "slug"]);
         });
 
-        Schema::create("biometric_device_models", function(Blueprint $table) {
+        Schema::create("biometric_device_models", function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger("company_id");
             $table->unsignedBigInteger("biometric_device_brand_id");
@@ -47,7 +46,7 @@ return new class extends Migration {
             $table->unique(["company_id", "biometric_device_brand_id", "slug"], "bdm_company_brand_slug_unique");
         });
 
-        Schema::create("biometric_devices", function(Blueprint $table) {
+        Schema::create("biometric_devices", function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger("company_id");
             $table->unsignedBigInteger("branch_id");
@@ -74,7 +73,7 @@ return new class extends Migration {
             $table->foreign("biometric_device_model_id")->references("id")->on("biometric_device_models")->onDelete("restrict");
         });
 
-        Schema::create("customer_biometric_fingerprints", function(Blueprint $table) {
+        Schema::create("customer_biometric_fingerprints", function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger("company_id");
             $table->unsignedBigInteger("customer_id");
@@ -96,7 +95,7 @@ return new class extends Migration {
             $table->unique(["company_id", "biometric_device_id", "device_user_id", "finger_index"], "cbf_company_device_user_finger_unique");
         });
 
-        Schema::create("biometric_device_events", function(Blueprint $table) {
+        Schema::create("biometric_device_events", function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger("company_id");
             $table->unsignedBigInteger("biometric_device_id");
@@ -118,11 +117,11 @@ return new class extends Migration {
             $table->unique(["company_id", "biometric_device_id", "event_uuid"], "bde_company_device_event_unique");
         });
 
-        Schema::table("attendances", function(Blueprint $table) {
+        Schema::table("attendances", function (Blueprint $table) {
             $table->foreign("biometric_device_id")
-                  ->references("id")
-                  ->on("biometric_devices")
-                  ->nullOnDelete();
+                ->references("id")
+                ->on("biometric_devices")
+                ->nullOnDelete();
         });
 
     }
@@ -132,7 +131,7 @@ return new class extends Migration {
      */
     public function down(): void {
 
-        Schema::table("attendances", function(Blueprint $table) {
+        Schema::table("attendances", function (Blueprint $table) {
             $table->dropForeign(["biometric_device_id"]);
         });
 
@@ -143,6 +142,4 @@ return new class extends Migration {
         Schema::dropIfExists("biometric_device_brands");
 
     }
-
 };
-

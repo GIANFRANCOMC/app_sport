@@ -5,16 +5,16 @@ declare(strict_types=1);
 namespace App\Models\System\Sales;
 
 use App\Helpers\System\Utilities;
-use App\Models\System\Organizations\{Company, User};
+use App\Models\System\Organizations\Company;
+use App\Models\System\Organizations\User;
 use App\Models\System\Warehouses\Warehouse;
 use Illuminate\Database\Eloquent\Model;
 
 class SaleDelivery extends Model {
-
     protected $table = "sale_deliveries";
 
     protected $appends = [
-        "formatted_status"
+        "formatted_status",
     ];
 
     protected $fillable = [
@@ -33,14 +33,14 @@ class SaleDelivery extends Model {
         "updated_at",
         "updated_by",
         "canceled_at",
-        "canceled_by"
+        "canceled_by",
     ];
 
     protected $casts = [
-        "total_quantity"     => "App\\Casts\\System\\ConfigurableDecimal",
+        "total_quantity" => "App\\Casts\\System\\ConfigurableDecimal",
         "delivered_quantity" => "App\\Casts\\System\\ConfigurableDecimal",
-        "pending_quantity"   => "App\\Casts\\System\\ConfigurableDecimal",
-        "last_delivered_at"  => "datetime"
+        "pending_quantity" => "App\\Casts\\System\\ConfigurableDecimal",
+        "last_delivered_at" => "datetime",
     ];
 
     public function getFormattedStatusAttribute(): string {
@@ -55,7 +55,7 @@ class SaleDelivery extends Model {
             ["code" => "pending", "label" => "Pendiente"],
             ["code" => "partial", "label" => "Parcial"],
             ["code" => "delivered", "label" => "Entregado"],
-            ["code" => "canceled", "label" => "Anulado"]
+            ["code" => "canceled", "label" => "Anulado"],
         ];
 
         return Utilities::getValues($statuses, $type, $code);
@@ -97,5 +97,4 @@ class SaleDelivery extends Model {
         return $this->hasMany(SaleDeliveryEvent::class, "sale_delivery_id", "id");
 
     }
-
 }

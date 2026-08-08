@@ -7,7 +7,6 @@ namespace App\Models\System\Catalogs;
 use Illuminate\Database\Eloquent\Model;
 
 class RecipeDishOption extends Model {
-
     protected $table = "recipe_dish_options";
 
     protected $fillable = [
@@ -20,7 +19,7 @@ class RecipeDishOption extends Model {
         "created_at",
         "created_by",
         "updated_at",
-        "updated_by"
+        "updated_by",
     ];
 
     public function recipeDish() {
@@ -32,8 +31,7 @@ class RecipeDishOption extends Model {
     public function components() {
 
         return $this->hasMany(RecipeDishOptionComponent::class, "recipe_dish_option_id", "id")
-                    ->where("status", "active");
+            ->where("status", "active");
 
     }
-
 }

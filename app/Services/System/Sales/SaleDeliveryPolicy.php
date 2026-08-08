@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Services\System\Sales;
 
 final class SaleDeliveryPolicy {
-
     public const PENDING = "pending";
+
     public const DELIVERED = "delivered";
 
     public static function usesManagedDelivery(string $sourceChannel, bool $requiresWarehouse): bool {
@@ -17,7 +17,7 @@ final class SaleDeliveryPolicy {
 
     public static function initialStatus(?string $requestedStatus, bool $requiresPhysicalDelivery): string {
 
-        if(!$requiresPhysicalDelivery) {
+        if (! $requiresPhysicalDelivery) {
             return self::DELIVERED;
         }
 
@@ -44,5 +44,4 @@ final class SaleDeliveryPolicy {
         return $requiresWarehouse && $deliveryStatus === self::PENDING;
 
     }
-
 }

@@ -5,10 +5,9 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration {
-
     public function up(): void {
 
-        Schema::create("service_floors", function(Blueprint $table) {
+        Schema::create("service_floors", function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger("company_id");
             $table->unsignedBigInteger("branch_id");
@@ -30,7 +29,7 @@ return new class extends Migration {
             $table->unique(["company_id", "branch_id", "code"]);
         });
 
-        Schema::create("service_stations", function(Blueprint $table) {
+        Schema::create("service_stations", function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger("company_id");
             $table->unsignedBigInteger("branch_id");
@@ -57,7 +56,7 @@ return new class extends Migration {
             $table->unique(["company_id", "branch_id", "code"]);
         });
 
-        Schema::create("service_sessions", function(Blueprint $table) {
+        Schema::create("service_sessions", function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger("company_id");
             $table->unsignedBigInteger("branch_id");
@@ -98,7 +97,7 @@ return new class extends Migration {
             $table->unique(["company_id", "reference"]);
         });
 
-        Schema::create("service_session_items", function(Blueprint $table) {
+        Schema::create("service_session_items", function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger("company_id");
             $table->unsignedBigInteger("service_session_id");
@@ -132,7 +131,7 @@ return new class extends Migration {
             $table->foreign("assigned_user_id")->references("id")->on("users")->nullOnDelete();
         });
 
-        Schema::create("service_session_pauses", function(Blueprint $table) {
+        Schema::create("service_session_pauses", function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger("company_id");
             $table->unsignedBigInteger("service_session_id");
@@ -154,7 +153,7 @@ return new class extends Migration {
             $table->foreign("resumed_by")->references("id")->on("users")->nullOnDelete();
         });
 
-        Schema::create("service_session_events", function(Blueprint $table) {
+        Schema::create("service_session_events", function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger("company_id");
             $table->unsignedBigInteger("service_session_id");
@@ -185,5 +184,4 @@ return new class extends Migration {
         Schema::dropIfExists("service_floors");
 
     }
-
 };

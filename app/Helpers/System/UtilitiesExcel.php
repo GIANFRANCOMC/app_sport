@@ -2,12 +2,10 @@
 
 namespace App\Helpers\System;
 
-use Exception;
 /* use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\{Alignment, NumberFormat, Fill};
  */
 class UtilitiesExcel {
-
     public static function columnasExcel() {
 
         $columnasExcel = [
@@ -36,7 +34,7 @@ class UtilitiesExcel {
             "W",
             "X",
             "Y",
-            "Z"
+            "Z",
         ];
 
         return $columnasExcel;
@@ -45,7 +43,7 @@ class UtilitiesExcel {
 
     public static function borderStyle($type = "default") {
 
-        return array('borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => array('rgb' => '000000')]]);
+        return ["borders" => ["allBorders" => ["borderStyle" => Border::BORDER_THIN, "color" => ["rgb" => "000000"]]]];
 
     }
 
@@ -53,7 +51,7 @@ class UtilitiesExcel {
 
         $suma = 0;
 
-        foreach($array as $key => $value) {
+        foreach ($array as $key => $value) {
 
             $suma = $suma + $value["cantidadMerge"]["columnas"];
 
@@ -65,27 +63,27 @@ class UtilitiesExcel {
 
     public static function stylesCustom($sheet, $inicioRango, $finRango = null, $value = null, $isBold = false, $isMerge = false, $align = "left", $isBorder = false, $rotate = -1) {
 
-        if($value) {
+        if ($value) {
 
             $sheet->getCell($inicioRango)->setValue($value);
 
         }
 
-        if($inicioRango && $finRango && $isBold) {
+        if ($inicioRango && $finRango && $isBold) {
 
             $sheet->getStyle($inicioRango.":".$finRango)->getFont()->setBold($isBold);
 
-        }else if($inicioRango && $isBold) {
+        } elseif ($inicioRango && $isBold) {
 
             $sheet->getStyle($inicioRango)->getFont()->setBold($isBold);
 
         }
 
-        if($inicioRango && $finRango && $align) {
+        if ($inicioRango && $finRango && $align) {
 
             $alignInformacion = explode("-", $align);
 
-            switch($alignInformacion[0]) {
+            switch ($alignInformacion[0]) {
                 case "left":
                     $sheet->getStyle($inicioRango.":".$finRango)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
                     break;
@@ -99,9 +97,9 @@ class UtilitiesExcel {
                     break;
             }
 
-            if(count($alignInformacion) > 1) {
+            if (count($alignInformacion) > 1) {
 
-                switch($alignInformacion[1]) {
+                switch ($alignInformacion[1]) {
                     case "top":
                         $sheet->getStyle($inicioRango.":".$finRango)->getAlignment()->setVertical(Alignment::VERTICAL_TOP);
                         break;
@@ -117,11 +115,11 @@ class UtilitiesExcel {
 
             }
 
-        }else if($inicioRango && $align) {
+        } elseif ($inicioRango && $align) {
 
             $alignInformacion = explode("-", $align);
 
-            switch($alignInformacion[0]) {
+            switch ($alignInformacion[0]) {
                 case "left":
                     $sheet->getStyle($inicioRango)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
                     break;
@@ -135,9 +133,9 @@ class UtilitiesExcel {
                     break;
             }
 
-            if(count($alignInformacion) > 1) {
+            if (count($alignInformacion) > 1) {
 
-                switch($alignInformacion[1]) {
+                switch ($alignInformacion[1]) {
                     case "top":
                         $sheet->getStyle($inicioRango.":".$finRango)->getAlignment()->setVertical(Alignment::VERTICAL_TOP);
                         break;
@@ -155,21 +153,21 @@ class UtilitiesExcel {
 
         }
 
-        if($inicioRango && $finRango && $isMerge) {
+        if ($inicioRango && $finRango && $isMerge) {
 
             $sheet->mergeCells($inicioRango.":".$finRango);
 
         }
 
-        if($isBorder) {
+        if ($isBorder) {
 
             $borderStyleDefault = self::borderStyle();
 
-            if($inicioRango && $finRango && $isBorder) {
+            if ($inicioRango && $finRango && $isBorder) {
 
                 $sheet->getStyle($inicioRango.":".$finRango)->applyFromArray($borderStyleDefault);
 
-            }else if($inicioRango && $isBorder) {
+            } elseif ($inicioRango && $isBorder) {
 
                 $sheet->getStyle($inicioRango)->applyFromArray($borderStyleDefault);
 
@@ -177,12 +175,11 @@ class UtilitiesExcel {
 
         }
 
-        if($rotate >= 0) {
+        if ($rotate >= 0) {
 
             $sheet->getStyle($inicioRango)->getAlignment()->setTextRotation($rotate);
 
         }
 
     }
-
 }

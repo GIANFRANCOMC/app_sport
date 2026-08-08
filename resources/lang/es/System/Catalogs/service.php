@@ -35,4 +35,3 @@ return [
     "exception_update" => "Error al actualizar el servicio: :message",
     "exception_delete" => "Error al eliminar el servicio: :message",
 ];
-

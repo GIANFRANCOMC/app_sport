@@ -4,24 +4,26 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\System\Catalogs;
 
-use App\Exports\System\Catalogs\Products\ProductListExport;
 use App\Exports\System\Catalogs\Products\ProductImportTemplateExport;
-use App\Imports\System\Catalogs\Products\ProductBasicImport;
-use App\Http\Controllers\System\Base\BaseController;
+use App\Exports\System\Catalogs\Products\ProductListExport;
 use App\Helpers\System\{Utilities};
-use Illuminate\Http\{JsonResponse, Request};
-use Symfony\Component\HttpFoundation\BinaryFileResponse;
-use Maatwebsite\Excel\Facades\Excel;
-
-use App\Http\Requests\System\Catalogs\Products\{ImportProductsRequest, StoreProductRequest, UpdateProductRequest};
-use App\Services\System\Base\{InitParamsCacheInvalidationService};
-use App\Services\System\Catalogs\Products\{ProductConfigService, ProductService};
+use App\Http\Controllers\System\Base\BaseController;
+use App\Http\Requests\System\Catalogs\Products\ImportProductsRequest;
+use App\Http\Requests\System\Catalogs\Products\StoreProductRequest;
+use App\Http\Requests\System\Catalogs\Products\UpdateProductRequest;
+use App\Imports\System\Catalogs\Products\ProductBasicImport;
 use App\Models\System\Organizations\Company;
+use App\Services\System\Base\{InitParamsCacheInvalidationService};
+use App\Services\System\Catalogs\Products\ProductConfigService;
+use App\Services\System\Catalogs\Products\ProductService;
 use App\Services\System\Warehouses\StockManagement\StockManagementService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
+use Maatwebsite\Excel\Facades\Excel;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class ProductController extends BaseController {
-
     /**
      * Translation namespace for module
      */
@@ -30,7 +32,6 @@ class ProductController extends BaseController {
     /**
      * Get initialization parameters for the module
      *
-     * @param Request $request
      * @return \stdClass
      */
     public function initParams(Request $request) {
@@ -44,7 +45,6 @@ class ProductController extends BaseController {
     /**
      * Get paginated list with filters
      *
-     * @param Request $request
      * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator
      */
     public function list(Request $request) {
@@ -61,7 +61,7 @@ class ProductController extends BaseController {
      */
     public function export(Request $request): BinaryFileResponse {
 
-        $fileName = "productos_" . now()->format("Y-m-d_His") . ".xlsx";
+        $fileName = "productos_".now()->format("Y-m-d_His").".xlsx";
 
         return Excel::download(
             new ProductListExport($this->getCompanyId(), $this->getFilters($request)),
@@ -88,11 +88,11 @@ class ProductController extends BaseController {
                 $this->getCompanyId()
             );
 
-            if(!$warehouse) {
+            if (! $warehouse) {
 
                 return response()->json([
                     "bool" => false,
-                    "msg"  => "El almacén seleccionado no está disponible."
+                    "msg" => "El almacén seleccionado no está disponible.",
                 ], 422);
 
             }
@@ -114,19 +114,18 @@ class ProductController extends BaseController {
 
             return response()->json([
                 "bool" => true,
-                "msg"  => "{$import->importedCount()} productos importados correctamente.",
-                "data" => ["imported" => $import->importedCount()]
+                "msg" => "{$import->importedCount()} productos importados correctamente.",
+                "data" => ["imported" => $import->importedCount()],
             ]);
 
-        }catch(ValidationException $e) {
+        } catch (ValidationException $e) {
 
             throw $e;
-
-        }catch(\Throwable $e) {
+        } catch (\Throwable $e) {
 
             return response()->json([
                 "bool" => false,
-                "msg"  => $e->getMessage()
+                "msg" => $e->getMessage(),
             ], 422);
 
         }
@@ -144,12 +143,8 @@ class ProductController extends BaseController {
 
     }
 
-
     /**
      * Store a newly created record
-     *
-     * @param StoreProductRequest $request
-     * @return JsonResponse
      */
     public function store(StoreProductRequest $request): JsonResponse {
 
@@ -158,7 +153,7 @@ class ProductController extends BaseController {
             $data = $this->prepareProductData($request);
             $item = ProductService::create($data, $this->getCompanyId(), $this->getUserId());
 
-            if(!Utilities::isDefined($item)) {
+            if (! Utilities::isDefined($item)) {
 
                 return $this->errorResponse("create_failed");
 
@@ -171,7 +166,7 @@ class ProductController extends BaseController {
 
             return $this->createdResponse($item, "created", "item");
 
-        }catch(\Exception $e) {
+        } catch (\Exception $e) {
 
             return $this->handleException($e, "create");
 
@@ -179,14 +174,10 @@ class ProductController extends BaseController {
 
     }
 
-
-
     /**
      * Update the specified record
      *
-     * @param UpdateProductRequest $request
-     * @param int $id Product ID
-     * @return JsonResponse
+     * @param  int  $id Product ID
      */
     public function update(UpdateProductRequest $request, int $id): JsonResponse {
 
@@ -194,7 +185,7 @@ class ProductController extends BaseController {
 
             $item = ProductService::findByIdAndCompany($id, $this->getCompanyId(), null);
 
-            if(!Utilities::isDefined($item)) {
+            if (! Utilities::isDefined($item)) {
 
                 return $this->notFoundResponse();
 
@@ -203,7 +194,7 @@ class ProductController extends BaseController {
             $data = $this->prepareProductData($request);
             $item = ProductService::update($item, $data, $this->getUserId());
 
-            if(!Utilities::isDefined($item)) {
+            if (! Utilities::isDefined($item)) {
 
                 return $this->errorResponse("update_failed");
 
@@ -216,7 +207,7 @@ class ProductController extends BaseController {
 
             return $this->updatedResponse($item, "updated", "item");
 
-        }catch(\Exception $e) {
+        } catch (\Exception $e) {
 
             return $this->handleException($e, "update");
 
@@ -224,49 +215,44 @@ class ProductController extends BaseController {
 
     }
 
-
     /**
      * Prepare record data from request
      *
-     * @param StoreProductRequest|UpdateProductRequest $request
-     * @return array
+     * @param  StoreProductRequest|UpdateProductRequest  $request
      */
     private function prepareProductData($request): array {
 
         return [
-            "company_id"       => $this->getCompanyId(),
-            "brand_id"         => $request->input("brand_id"),
-            "internal_code"    => $request->input("internal_code"),
-            "barcode"          => $request->input("barcode"),
-            "name"             => $request->input("name"),
-            "description"      => $request->input("description"),
-            "price"            => $request->input("price"),
+            "company_id" => $this->getCompanyId(),
+            "brand_id" => $request->input("brand_id"),
+            "internal_code" => $request->input("internal_code"),
+            "barcode" => $request->input("barcode"),
+            "name" => $request->input("name"),
+            "description" => $request->input("description"),
+            "price" => $request->input("price"),
             "price_includes_tax" => $request->boolean("price_includes_tax"),
-            "igv_exempt"       => $request->boolean("igv_exempt"),
-            "min_price"        => $request->input("min_price"),
-            "max_price"        => $request->input("max_price"),
-            "commission_type"  => $request->input("commission_type"),
+            "igv_exempt" => $request->boolean("igv_exempt"),
+            "min_price" => $request->input("min_price"),
+            "max_price" => $request->input("max_price"),
+            "commission_type" => $request->input("commission_type"),
             "commission_value" => $request->input("commission_value"),
-            "currency_id"      => $request->input("currency_id"),
-            "expires_at"       => $request->input("expires_at"),
-            "see_my_web"       => $request->input("see_my_web"),
+            "currency_id" => $request->input("currency_id"),
+            "expires_at" => $request->input("expires_at"),
+            "see_my_web" => $request->input("see_my_web"),
             "see_my_web_price" => $request->input("see_my_web_price"),
-            "status"           => $request->input("status"),
-            "categories"       => $request->input("categories"),
-            "inventory"        => $request->input("inventory", [])
+            "status" => $request->input("status"),
+            "categories" => $request->input("categories"),
+            "inventory" => $request->input("inventory", []),
         ];
 
     }
 
     /**
      * Get translation namespace for module
-     *
-     * @return string
      */
     protected function getTranslationNamespace(): string {
 
         return self::TRANSLATION_NAMESPACE;
 
     }
-
 }

@@ -4,12 +4,10 @@ declare(strict_types=1);
 
 namespace App\Services\System\Customers\Tracking;
 
+use App\Services\System\Base\BaseConfigService;
 use stdClass;
 
-use App\Services\System\Base\BaseConfigService;
-
 final class TrackingNotificationConfigService extends BaseConfigService {
-
     protected static function getCachePrefix(): string {
 
         return "tracking_notification";
@@ -21,5 +19,4 @@ final class TrackingNotificationConfigService extends BaseConfigService {
         return self::data();
 
     }
-
 }

@@ -3,21 +3,23 @@
 namespace App\Models\System\Catalogs;
 
 use App\Helpers\System\Utilities;
-use Illuminate\Database\Eloquent\Model;
-
 use App\Models\System\Catalogs\{CategoryItem};
 use App\Models\System\Organizations\{Company};
+use Illuminate\Database\Eloquent\Model;
 
 class Category extends Model {
+    protected $table = "categories";
 
-    protected $table               = "categories";
-    protected $primaryKey          = "id";
-    public $incrementing           = true;
-    public $timestamps             = true;
+    protected $primaryKey = "id";
+
+    public $incrementing = true;
+
+    public $timestamps = true;
+
     public static $snakeAttributes = true;
 
     protected $appends = [
-        "formatted_status"
+        "formatted_status",
     ];
 
     protected $fillable = [
@@ -31,12 +33,12 @@ class Category extends Model {
         "created_at",
         "created_by",
         "updated_at",
-        "updated_by"
+        "updated_by",
     ];
 
     protected $casts = [
         "sort_order" => "integer",
-        "is_public" => "boolean"
+        "is_public" => "boolean",
     ];
 
     // Appends
@@ -51,7 +53,7 @@ class Category extends Model {
 
         $statuses = [
             ["code" => "active", "label" => "Activo"],
-            ["code" => "inactive", "label" => "Inactivo"]
+            ["code" => "inactive", "label" => "Inactivo"],
         ];
 
         return Utilities::getValues($statuses, $type, $code);
@@ -68,8 +70,7 @@ class Category extends Model {
     public function items() {
 
         return $this->hasMany(CategoryItem::class, "category_id", "id")
-                    ->whereIn("status", ["active"]);
+            ->whereIn("status", ["active"]);
 
     }
-
 }

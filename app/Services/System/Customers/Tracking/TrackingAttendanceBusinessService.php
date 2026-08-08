@@ -5,23 +5,21 @@ declare(strict_types=1);
 namespace App\Services\System\Customers\Tracking;
 
 use App\Helpers\System\Utilities;
-use Carbon\Carbon;
-use Illuminate\Support\Facades\DB;
-use App\Models\System\Customers\{Attendance, Customer, Subscription};
+use App\Models\System\Customers\Attendance;
+use App\Models\System\Customers\Customer;
+use App\Models\System\Customers\Subscription;
 use App\Services\System\Devices\BiometricDevices\BiometricDeviceService;
 use App\Services\System\Organizations\Companies\CompanySettingService;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Business Service for Attendance Operations
  * Handles complex business logic for attendance validation and creation
  */
 class TrackingAttendanceBusinessService {
-
     /**
      * Validate start date format
-     *
-     * @param Carbon|null $startDate
-     * @return bool
      */
     public function validateStartDate(?Carbon $startDate): bool {
 
@@ -33,58 +31,56 @@ class TrackingAttendanceBusinessService {
     /**
      * Get valid customer by code or document number
      *
-     * @param string|int $code Customer ID or document number
-     * @param int $companyId Company ID
-     * @param string $type Search type: "document_number" or "carnet"
-     * @return Customer|null
+     * @param  string|int  $code Customer ID or document number
+     * @param  int  $companyId Company ID
+     * @param  string  $type Search type: "document_number" or "carnet"
      */
     public function getValidCustomer($code, int $companyId, string $type = ""): ?Customer {
 
-        if($this->normalizeLookupType($type) === "document_number") {
+        if ($this->normalizeLookupType($type) === "document_number") {
 
             return Customer::where("document_number", $code)
-                           ->where("company_id", $companyId)
-                           ->first();
+                ->where("company_id", $companyId)
+                ->first();
 
         }
 
         return Customer::where("id", $code)
-                       ->where("company_id", $companyId)
-                       ->first();
+            ->where("company_id", $companyId)
+            ->first();
 
     }
 
     /**
      * Get valid active subscriptions for customer
      *
-     * @param int $companyId Company ID
-     * @param int $branchId Branch ID
-     * @param int $customerId Customer ID
-     * @param Carbon $startDate Start date
+     * @param  int  $companyId Company ID
+     * @param  int  $branchId Branch ID
+     * @param  int  $customerId Customer ID
+     * @param  Carbon  $startDate Start date
      * @return \Illuminate\Database\Eloquent\Collection
      */
     public function getValidSubscriptions(int $companyId, int $branchId, int $customerId, Carbon $startDate) {
 
         return Subscription::where("company_id", $companyId)
-                           ->where("branch_id", $branchId)
-                           ->where("customer_id", $customerId)
-                           ->where("start_date", "<=", $startDate)
-                           ->where("end_date", ">=", $startDate)
-                           ->where("status", "active")
-                           ->orderBy("attendance_limit_per_day", "DESC")
-                           ->get();
+            ->where("branch_id", $branchId)
+            ->where("customer_id", $customerId)
+            ->where("start_date", "<=", $startDate)
+            ->where("end_date", ">=", $startDate)
+            ->where("status", "active")
+            ->orderBy("attendance_limit_per_day", "DESC")
+            ->get();
 
     }
 
     /**
      * Check attendance limits for customer
      *
-     * @param int $companyId Company ID
-     * @param int $branchId Branch ID
-     * @param int $customerId Customer ID
-     * @param Carbon $startDate Start date
-     * @param int $limit Daily limit
-     * @return array
+     * @param  int  $companyId Company ID
+     * @param  int  $branchId Branch ID
+     * @param  int  $customerId Customer ID
+     * @param  Carbon  $startDate Start date
+     * @param  int  $limit Daily limit
      */
     public function checkAttendanceLimits(int $companyId, int $branchId, int $customerId, Carbon $startDate, int $limit): array {
 
@@ -92,7 +88,7 @@ class TrackingAttendanceBusinessService {
             ->where("customer_id", $customerId)
             ->whereBetween("start_date", [
                 $startDate->copy()->startOfDay(),
-                $startDate->copy()->endOfDay()
+                $startDate->copy()->endOfDay(),
             ]);
 
         $scope = (string) CompanySettingService::value(
@@ -102,7 +98,7 @@ class TrackingAttendanceBusinessService {
             "branch"
         );
 
-        if($scope !== "company") {
+        if ($scope !== "company") {
 
             $dailyAttendances->where("branch_id", $branchId);
 
@@ -116,8 +112,8 @@ class TrackingAttendanceBusinessService {
             ->count();
 
         return [
-            "hasActive"    => $hasActive,
-            "exceedsLimit" => $finalized >= $limit
+            "hasActive" => $hasActive,
+            "exceedsLimit" => $finalized >= $limit,
         ];
 
     }
@@ -125,24 +121,23 @@ class TrackingAttendanceBusinessService {
     /**
      * Create new attendance record
      *
-     * @param array $data Attendance data
-     * @return Attendance
+     * @param  array  $data Attendance data
      */
     public function createAttendance(array $data): Attendance {
 
         return Attendance::create([
-            "company_id"  => $data["company_id"],
-            "branch_id"   => $data["branch_id"],
+            "company_id" => $data["company_id"],
+            "branch_id" => $data["branch_id"],
             "customer_id" => $data["customer_id"],
             "biometric_device_id" => $data["biometric_device_id"] ?? null,
             "source_reference" => $data["source_reference"] ?? null,
-            "start_date"  => $data["start_date"],
-            "end_date"    => $data["end_date"],
+            "start_date" => $data["start_date"],
+            "end_date" => $data["end_date"],
             "observation" => $data["observation"],
-            "type"        => $data["type"],
-            "status"      => "active",
-            "created_at"  => now(),
-            "created_by"  => $data["user_id"]
+            "type" => $data["type"],
+            "status" => "active",
+            "created_at" => now(),
+            "created_by" => $data["user_id"],
         ]);
 
     }
@@ -150,13 +145,13 @@ class TrackingAttendanceBusinessService {
     /**
      * Validate and create attendance with full business logic
      *
-     * @param array $data Attendance data
+     * @param  array  $data Attendance data
      * @return array Response array with bool, msg, and optional data
      */
     public function validateAndCreateAttendance(array $data): array {
 
         return DB::transaction(
-            fn() => $this->validateAndCreateAttendanceWithinTransaction($data)
+            fn () => $this->validateAndCreateAttendanceWithinTransaction($data)
         );
 
     }
@@ -165,26 +160,26 @@ class TrackingAttendanceBusinessService {
 
         $response = [
             "bool" => false,
-            "msg"  => ""
+            "msg" => "",
         ];
 
-        $companyId   = $data["company_id"];
-        $branchId    = $data["branch_id"];
-        $customerId  = $data["customer_id"] ?? "";
+        $companyId = $data["company_id"];
+        $branchId = $data["branch_id"];
+        $customerId = $data["customer_id"] ?? "";
         $customerDocumentNumber = $data["customer_document_number"] ?? "";
         $customerAttendanceType = Utilities::isDefined($data["customer_attendance_type"] ?? "")
             ? $this->normalizeLookupType((string) $data["customer_attendance_type"])
             : "carnet";
-        $startDate   = $data["start_date"] ?? null;
-        $endDate     = $data["end_date"] ?? null;
+        $startDate = $data["start_date"] ?? null;
+        $endDate = $data["end_date"] ?? null;
         $observation = $data["observation"] ?? "";
-        $userId      = $data["user_id"] ?? null;
-        $type        = $data["type"] ?? "manual_form";
-        $action      = $data["action"] ?? "automatic";
+        $userId = $data["user_id"] ?? null;
+        $type = $data["type"] ?? "manual_form";
+        $action = $data["action"] ?? "automatic";
 
-        if($action === "checkout"
+        if ($action === "checkout"
             && in_array($type, ["biometric", "qr_camera", "qr_scanner", "qr_public"], true)
-            && !(bool) CompanySettingService::value(
+            && ! (bool) CompanySettingService::value(
                 $companyId,
                 CompanySettingService::CUSTOMER_ATTENDANCE,
                 "allow_automatic_checkout",
@@ -193,7 +188,7 @@ class TrackingAttendanceBusinessService {
 
             return [
                 "bool" => false,
-                "msg" => "La salida automática por QR o biometría no está habilitada para la empresa."
+                "msg" => "La salida automática por QR o biometría no está habilitada para la empresa.",
             ];
 
         }
@@ -203,7 +198,7 @@ class TrackingAttendanceBusinessService {
             $startDate = now();
         }
 
-        if($endDate === null && $action === "checkout" && in_array($type, ["biometric", "qr_camera", "qr_scanner", "qr_public"], true)) {
+        if ($endDate === null && $action === "checkout" && in_array($type, ["biometric", "qr_camera", "qr_scanner", "qr_public"], true)) {
             $endDate = now();
         }
 
@@ -231,9 +226,10 @@ class TrackingAttendanceBusinessService {
 
         }
 
-        if(!Utilities::isDefined($customer)) {
+        if (! Utilities::isDefined($customer)) {
 
             $response["msg"] = "No se ha encontrado el cliente solicitado.";
+
             return $response;
 
         }
@@ -243,16 +239,17 @@ class TrackingAttendanceBusinessService {
             ->lockForUpdate()
             ->find($customer->id);
 
-        if(!Utilities::isDefined($customer)) {
+        if (! Utilities::isDefined($customer)) {
 
             $response["msg"] = "No se ha encontrado el cliente solicitado.";
+
             return $response;
 
         }
 
         $response["customer"] = $customer;
 
-        if($type === "biometric" && Utilities::isDefined($deviceId)) {
+        if ($type === "biometric" && Utilities::isDefined($deviceId)) {
 
             $tolerance = max(0, (int) CompanySettingService::value(
                 $companyId,
@@ -268,13 +265,13 @@ class TrackingAttendanceBusinessService {
                 ->where("created_at", ">=", now()->subSeconds($tolerance))
                 ->exists();
 
-            if($tolerance > 0 && $duplicate) {
+            if ($tolerance > 0 && $duplicate) {
 
                 return [
                     "bool" => true,
                     "msg" => "Lectura biométrica duplicada ignorada.",
                     "action" => "ignored_duplicate",
-                    "customer" => $customer
+                    "customer" => $customer,
                 ];
 
             }
@@ -288,7 +285,7 @@ class TrackingAttendanceBusinessService {
             ->where("customer_id", $customer->id)
             ->where("status", "active");
 
-        if(Utilities::isDefined($data["attendance_id"] ?? null)) {
+        if (Utilities::isDefined($data["attendance_id"] ?? null)) {
 
             $activeAttendanceQuery->whereKey((int) $data["attendance_id"]);
 
@@ -302,47 +299,51 @@ class TrackingAttendanceBusinessService {
         $maxActiveHours = $this->maxActiveHours($companyId);
 
         // Handle checkout
-        if(in_array($action, ["checkout"])) {
+        if (in_array($action, ["checkout"])) {
 
-            if(!Utilities::isDefined($activeAttendance)) {
+            if (! Utilities::isDefined($activeAttendance)) {
 
                 $response["msg"] = "$customer->name: No se ha podido concluir la asistencia.";
+
                 return $response;
 
             }
 
             $proposedStartDate = Carbon::parse($activeAttendance->start_date);
-            $proposedEndDate  = $endDate;
+            $proposedEndDate = $endDate;
 
-            if(!$proposedEndDate->greaterThan($proposedStartDate)) {
+            if (! $proposedEndDate->greaterThan($proposedStartDate)) {
 
-                $response["msg"] = "$customer->name: La salida debe ser mayor al ingreso " . $proposedStartDate->format("d-m-Y h:i A") . ".";
+                $response["msg"] = "$customer->name: La salida debe ser mayor al ingreso ".$proposedStartDate->format("d-m-Y h:i A").".";
+
                 return $response;
 
             }
 
-            if($proposedEndDate->diffInMinutes($proposedStartDate) < 2) {
+            if ($proposedEndDate->diffInMinutes($proposedStartDate) < 2) {
 
-                $response["msg"] = "$customer->name: La salida debe ser al menos 2 minutos después del ingreso " . $proposedStartDate->format("d-m-Y h:i A") . ".";
+                $response["msg"] = "$customer->name: La salida debe ser al menos 2 minutos después del ingreso ".$proposedStartDate->format("d-m-Y h:i A").".";
+
                 return $response;
 
             }
 
-            if($this->attendanceExceedsMaxDuration($activeAttendance, $proposedEndDate, $maxActiveHours)) {
+            if ($this->attendanceExceedsMaxDuration($activeAttendance, $proposedEndDate, $maxActiveHours)) {
 
                 $response["msg"] = "$customer->name: La asistencia supera {$maxActiveHours} horas. Registra una corrección o crea una nueva asistencia.";
+
                 return $response;
 
             }
 
-            $activeAttendance->end_date   = $proposedEndDate;
-            $activeAttendance->status     = "finalized";
+            $activeAttendance->end_date = $proposedEndDate;
+            $activeAttendance->status = "finalized";
             $activeAttendance->updated_at = now();
             $activeAttendance->updated_by = $userId;
             $activeAttendance->save();
 
-            $response["bool"]   = true;
-            $response["msg"]    = "¡Hasta pronto, $customer->name! Gracias por visitarnos.";
+            $response["bool"] = true;
+            $response["msg"] = "¡Hasta pronto, $customer->name! Gracias por visitarnos.";
             $response["action"] = "checkout";
 
             return $response;
@@ -350,17 +351,18 @@ class TrackingAttendanceBusinessService {
         }
 
         // Break: Checkout action without active attendance
-        if(in_array($action, ["checkout"])) {
+        if (in_array($action, ["checkout"])) {
 
             $response["msg"] = "$customer->name: Sin respuesta.";
+
             return $response;
 
         }
 
         // Check for active attendance (checkin)
-        if(Utilities::isDefined($activeAttendance)) {
+        if (Utilities::isDefined($activeAttendance)) {
 
-            if($this->attendanceExceedsMaxDuration($activeAttendance, $startDate, $maxActiveHours)) {
+            if ($this->attendanceExceedsMaxDuration($activeAttendance, $startDate, $maxActiveHours)) {
 
                 $this->closeExpiredAttendance($activeAttendance, $maxActiveHours, $userId);
                 $activeAttendance = null;
@@ -369,9 +371,10 @@ class TrackingAttendanceBusinessService {
 
         }
 
-        if(Utilities::isDefined($activeAttendance)) {
+        if (Utilities::isDefined($activeAttendance)) {
 
             $response["msg"] = "$customer->name: Cuenta con un registro de asistencia 'En curso'.";
+
             return $response;
 
         }
@@ -379,49 +382,52 @@ class TrackingAttendanceBusinessService {
         // Validate subscriptions
         $subscriptions = $this->getValidSubscriptions($companyId, $branchId, $customer->id, $startDate);
 
-        if($subscriptions->isEmpty()) {
+        if ($subscriptions->isEmpty()) {
 
             $response["msg"] = "$customer->name: No cuenta con una membresía vigente en la sucursal.";
+
             return $response;
 
         }
 
         $subscription = $subscriptions->first();
-        $limitPerDay  = intval($subscription->attendance_limit_per_day);
+        $limitPerDay = intval($subscription->attendance_limit_per_day);
 
         // Check attendance limits
         $check = $this->checkAttendanceLimits($companyId, $branchId, $customer->id, $startDate, $limitPerDay);
 
-        if($check["hasActive"]) {
+        if ($check["hasActive"]) {
 
             $response["msg"] = "$customer->name: Cuenta con un registro de asistencia 'En curso'.";
+
             return $response;
 
         }
 
-        if($check["exceedsLimit"]) {
+        if ($check["exceedsLimit"]) {
 
             $response["msg"] = "$customer->name: Alcanzó el límite diario de {$limitPerDay} asistencia(s) para esta sucursal.";
+
             return $response;
 
         }
 
         // Create attendance
         $result = $this->createAttendance([
-            "company_id"  => $companyId,
-            "branch_id"   => $branchId,
+            "company_id" => $companyId,
+            "branch_id" => $branchId,
             "customer_id" => $customer->id,
             "biometric_device_id" => $deviceId,
             "source_reference" => $sourceReference,
-            "start_date"  => $startDate,
-            "end_date"    => null,
+            "start_date" => $startDate,
+            "end_date" => null,
             "observation" => $observation,
-            "user_id"     => $userId,
-            "type"        => $type
+            "user_id" => $userId,
+            "type" => $type,
         ]);
 
-        $response["bool"]   = true;
-        $response["msg"]    = "¡Bienvenido, $customer->name! Disfruta tu rutina.";
+        $response["bool"] = true;
+        $response["msg"] = "¡Bienvenido, $customer->name! Disfruta tu rutina.";
         $response["action"] = "checkin";
 
         return $response;
@@ -469,5 +475,4 @@ class TrackingAttendanceBusinessService {
         $attendance->save();
 
     }
-
 }

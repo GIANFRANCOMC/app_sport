@@ -4,18 +4,19 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\System\Organizations;
 
-use App\Http\Controllers\System\Base\BaseController;
 use App\Helpers\System\{Utilities};
-use Illuminate\Http\{JsonResponse, Request};
+use App\Http\Controllers\System\Base\BaseController;
+use App\Http\Requests\System\Organizations\Branches\StoreBranchRequest;
+use App\Http\Requests\System\Organizations\Branches\UpdateBranchRequest;
+use App\Services\System\Base\{InitParamsCacheInvalidationService};
+use App\Services\System\Organizations\Branches\BranchConfigService;
+use App\Services\System\Organizations\Branches\BranchService;
+use App\Services\System\Organizations\Branches\SerieService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\URL;
 
-use App\Http\Requests\System\Organizations\Branches\{StoreBranchRequest, UpdateBranchRequest};
-use App\Services\System\Base\{InitParamsCacheInvalidationService};
-use App\Services\System\Organizations\Branches\{BranchConfigService, BranchService};
-use App\Services\System\Organizations\Branches\SerieService;
-
 class BranchController extends BaseController {
-
     /**
      * Translation namespace for module
      */
@@ -24,7 +25,6 @@ class BranchController extends BaseController {
     /**
      * Get initialization parameters for the module
      *
-     * @param Request $request
      * @return \stdClass
      */
     public function initParams(Request $request) {
@@ -38,7 +38,6 @@ class BranchController extends BaseController {
     /**
      * Get paginated list with filters
      *
-     * @param Request $request
      * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator
      */
     public function list(Request $request) {
@@ -61,21 +60,17 @@ class BranchController extends BaseController {
 
     }
 
-
     /**
      * Store a newly created record
-     *
-     * @param StoreBranchRequest $request
-     * @return JsonResponse
      */
     public function store(StoreBranchRequest $request): JsonResponse {
 
         try {
 
-            $data   = $this->prepareBranchData($request);
+            $data = $this->prepareBranchData($request);
             $branch = BranchService::create($data, $this->getCompanyId(), $this->getUserId());
 
-            if(!Utilities::isDefined($branch)) {
+            if (! Utilities::isDefined($branch)) {
 
                 return $this->errorResponse("create_failed");
 
@@ -88,7 +83,7 @@ class BranchController extends BaseController {
 
             return $this->createdResponse($branch, "created", "branch");
 
-        }catch(\Exception $e) {
+        } catch (\Exception $e) {
 
             return $this->handleException($e, "create");
 
@@ -96,14 +91,10 @@ class BranchController extends BaseController {
 
     }
 
-
-
     /**
      * Update the specified record
      *
-     * @param UpdateBranchRequest $request
-     * @param int $id Branch ID
-     * @return JsonResponse
+     * @param  int  $id Branch ID
      */
     public function update(UpdateBranchRequest $request, int $id): JsonResponse {
 
@@ -111,16 +102,16 @@ class BranchController extends BaseController {
 
             $branch = BranchService::findByIdAndCompany($id, $this->getCompanyId(), null);
 
-            if(!Utilities::isDefined($branch)) {
+            if (! Utilities::isDefined($branch)) {
 
                 return $this->notFoundResponse();
 
             }
 
-            $data   = $this->prepareBranchData($request);
+            $data = $this->prepareBranchData($request);
             $branch = BranchService::update($branch, $data, $this->getUserId());
 
-            if(!Utilities::isDefined($branch)) {
+            if (! Utilities::isDefined($branch)) {
 
                 return $this->errorResponse("update_failed");
 
@@ -133,7 +124,7 @@ class BranchController extends BaseController {
 
             return $this->updatedResponse($branch, "updated", "branch");
 
-        }catch(\Exception $e) {
+        } catch (\Exception $e) {
 
             return $this->handleException($e, "update");
 
@@ -141,11 +132,10 @@ class BranchController extends BaseController {
 
     }
 
-
     public function seriesAudit(Request $request): JsonResponse {
 
         $filters = $request->only([
-            "branch_id", "serie_id", "user_id", "source", "action", "date_from", "date_to"
+            "branch_id", "serie_id", "user_id", "source", "action", "date_from", "date_to",
         ]);
 
         return response()->json([
@@ -155,7 +145,7 @@ class BranchController extends BaseController {
             "gaps" => SerieService::detectGaps(
                 $this->getCompanyId(),
                 $request->filled("branch_id") ? (int) $request->branch_id : null
-            )
+            ),
         ]);
 
     }
@@ -163,16 +153,16 @@ class BranchController extends BaseController {
     public function exportSeriesAudit(Request $request) {
 
         $rows = SerieService::auditQuery($this->getCompanyId(), $request->only([
-            "branch_id", "serie_id", "user_id", "source", "action", "date_from", "date_to"
+            "branch_id", "serie_id", "user_id", "source", "action", "date_from", "date_to",
         ]))->get();
 
-        return response()->streamDownload(function() use($rows) {
+        return response()->streamDownload(function () use ($rows) {
 
             $output = fopen("php://output", "w");
-            fputs($output, "\xEF\xBB\xBF");
+            fwrite($output, "\xEF\xBB\xBF");
             fputcsv($output, ["Fecha", "Sucursal", "Serie", "Correlativo", "Acción", "Origen", "Responsable"], ";");
 
-            foreach($rows as $row) {
+            foreach ($rows as $row) {
 
                 fputcsv($output, [
                     $row->occurred_at,
@@ -181,15 +171,15 @@ class BranchController extends BaseController {
                     $row->sequential,
                     $row->action,
                     $row->source,
-                    $row->user_name
+                    $row->user_name,
                 ], ";");
 
             }
 
             fclose($output);
 
-        }, "auditoria-correlativos-" . now()->format("Ymd-His") . ".csv", [
-            "Content-Type" => "text/csv; charset=UTF-8"
+        }, "auditoria-correlativos-".now()->format("Ymd-His").".csv", [
+            "Content-Type" => "text/csv; charset=UTF-8",
         ]);
 
     }
@@ -197,7 +187,7 @@ class BranchController extends BaseController {
     public function publicAttendanceLink(Request $request, int $id): JsonResponse {
 
         $branch = BranchService::findByIdAndCompany($id, $this->getCompanyId(), ["active"]);
-        if(!$branch) {
+        if (! $branch) {
             return $this->notFoundResponse();
         }
 
@@ -208,7 +198,7 @@ class BranchController extends BaseController {
             $expiresAt,
             [
                 "company_slug" => $this->getAuthUser()->company->slug,
-                "branch" => $branch->id
+                "branch" => $branch->id,
             ]
         );
 
@@ -216,8 +206,8 @@ class BranchController extends BaseController {
             "bool" => true,
             "data" => [
                 "url" => $url,
-                "expires_at" => $expiresAt->toIso8601String()
-            ]
+                "expires_at" => $expiresAt->toIso8601String(),
+            ],
         ]);
 
     }
@@ -225,35 +215,31 @@ class BranchController extends BaseController {
     /**
      * Prepare record data from request
      *
-     * @param StoreBranchRequest|UpdateBranchRequest $request
-     * @return array
+     * @param  StoreBranchRequest|UpdateBranchRequest  $request
      */
     private function prepareBranchData($request): array {
 
         return [
-            "company_id"    => $this->getCompanyId(),
+            "company_id" => $this->getCompanyId(),
             "internal_code" => $request->input("internal_code"),
-            "name"          => $request->input("name"),
-            "address"       => $request->input("address"),
-            "reference"     => $request->input("reference"),
-            "telephone"     => $request->input("telephone"),
-            "email"         => $request->input("email"),
-            "capacity"      => $request->input("capacity"),
-            "map_url"       => $request->input("map_url"),
-            "status"        => $request->input("status")
+            "name" => $request->input("name"),
+            "address" => $request->input("address"),
+            "reference" => $request->input("reference"),
+            "telephone" => $request->input("telephone"),
+            "email" => $request->input("email"),
+            "capacity" => $request->input("capacity"),
+            "map_url" => $request->input("map_url"),
+            "status" => $request->input("status"),
         ];
 
     }
 
     /**
      * Get translation namespace for module
-     *
-     * @return string
      */
     protected function getTranslationNamespace(): string {
 
         return self::TRANSLATION_NAMESPACE;
 
     }
-
 }

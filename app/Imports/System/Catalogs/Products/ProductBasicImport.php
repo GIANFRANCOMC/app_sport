@@ -4,20 +4,21 @@ declare(strict_types=1);
 
 namespace App\Imports\System\Catalogs\Products;
 
-use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\{DB, Validator};
-use Illuminate\Support\Str;
-use Illuminate\Validation\Rule;
-use Illuminate\Validation\ValidationException;
-use Maatwebsite\Excel\Concerns\{SkipsEmptyRows, ToCollection, WithHeadingRow};
-
 use App\Models\System\Catalogs\Item;
 use App\Rules\System\Catalogs\ValidEan13;
 use App\Services\System\Base\InternalCodeService;
 use App\Services\System\Catalogs\Products\ProductService;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
+use Maatwebsite\Excel\Concerns\SkipsEmptyRows;
+use Maatwebsite\Excel\Concerns\ToCollection;
+use Maatwebsite\Excel\Concerns\WithHeadingRow;
 
-final class ProductBasicImport implements ToCollection, WithHeadingRow, SkipsEmptyRows {
-
+final class ProductBasicImport implements SkipsEmptyRows, ToCollection, WithHeadingRow {
     private int $importedCount = 0;
 
     public function __construct(
@@ -30,56 +31,55 @@ final class ProductBasicImport implements ToCollection, WithHeadingRow, SkipsEmp
 
     public function collection(Collection $rows): void {
 
-        if($rows->count() > 500) {
+        if ($rows->count() > 500) {
 
             throw ValidationException::withMessages([
-                "file" => ["El archivo puede contener como máximo 500 productos."]
+                "file" => ["El archivo puede contener como máximo 500 productos."],
             ]);
 
         }
 
-        DB::transaction(function() use($rows) {
+        DB::transaction(function () use ($rows) {
 
-            foreach($rows as $index => $row) {
+            foreach ($rows as $index => $row) {
 
                 $rowNumber = $index + 2;
                 $data = $this->normalizeRow($row->toArray());
                 $validator = $this->validator($data);
 
-                if($validator->fails()) {
+                if ($validator->fails()) {
 
                     $errors = [];
 
-                    foreach($validator->errors()->toArray() as $field => $messages) {
+                    foreach ($validator->errors()->toArray() as $field => $messages) {
 
                         $errors["file"][] = "Fila {$rowNumber}, {$this->fieldLabel($field)}: {$messages[0]}";
 
                     }
 
                     throw ValidationException::withMessages($errors);
-
                 }
 
                 ProductService::create([
-                    "company_id"       => $this->companyId,
-                    "internal_code"    => $data["internal_code"],
-                    "barcode"          => $data["barcode"],
-                    "name"             => $data["name"],
-                    "description"      => $data["description"],
-                    "price"            => (float) $data["price"],
-                    "min_price"        => null,
-                    "max_price"        => null,
-                    "currency_id"      => $this->currencyId,
-                    "brand_id"         => null,
-                    "categories"       => [],
-                    "see_my_web"       => false,
+                    "company_id" => $this->companyId,
+                    "internal_code" => $data["internal_code"],
+                    "barcode" => $data["barcode"],
+                    "name" => $data["name"],
+                    "description" => $data["description"],
+                    "price" => (float) $data["price"],
+                    "min_price" => null,
+                    "max_price" => null,
+                    "currency_id" => $this->currencyId,
+                    "brand_id" => null,
+                    "categories" => [],
+                    "see_my_web" => false,
                     "see_my_web_price" => false,
-                    "status"           => "active",
-                    "inventory"        => [[
-                        "warehouse_id"  => $this->warehouseId,
+                    "status" => "active",
+                    "inventory" => [[
+                        "warehouse_id" => $this->warehouseId,
                         "initial_stock" => (float) ($data["initial_stock"] ?? 0),
-                        "minimum_stock" => (float) ($data["minimum_stock"] ?? 0)
-                    ]]
+                        "minimum_stock" => (float) ($data["minimum_stock"] ?? 0),
+                    ]],
                 ], $this->companyId, $this->userId);
 
                 $this->importedCount++;
@@ -105,12 +105,12 @@ final class ProductBasicImport implements ToCollection, WithHeadingRow, SkipsEmp
             "internal_code" => $internalCode !== ""
                 ? InternalCodeService::applyPrefix($this->companyId, "product", $internalCode)
                 : $this->generateInternalCode(),
-            "barcode"       => $barcode !== "" ? $barcode : $this->generateBarcode(),
-            "name"          => trim((string) ($row["nombre"] ?? "")),
-            "description"   => trim((string) ($row["descripcion"] ?? "")) ?: null,
-            "price"         => $row["precio"] ?? null,
+            "barcode" => $barcode !== "" ? $barcode : $this->generateBarcode(),
+            "name" => trim((string) ($row["nombre"] ?? "")),
+            "description" => trim((string) ($row["descripcion"] ?? "")) ?: null,
+            "price" => $row["precio"] ?? null,
             "initial_stock" => $this->optionalNumber($row["stock_inicial"] ?? null, 0),
-            "minimum_stock" => $this->optionalNumber($row["stock_minimo"] ?? null, 0)
+            "minimum_stock" => $this->optionalNumber($row["stock_minimo"] ?? null, 0),
         ];
 
     }
@@ -125,26 +125,26 @@ final class ProductBasicImport implements ToCollection, WithHeadingRow, SkipsEmp
                 "regex:/^[A-Za-z0-9._-]+$/",
                 Rule::unique("items", "internal_code")
                     ->where("company_id", $this->companyId)
-                    ->where("type", "product")
+                    ->where("type", "product"),
             ],
             "barcode" => [
                 "required",
                 "string",
                 new ValidEan13(),
-                Rule::unique("items", "barcode")->where("company_id", $this->companyId)
+                Rule::unique("items", "barcode")->where("company_id", $this->companyId),
             ],
-            "name"          => ["required", "string", "max:50"],
-            "description"   => ["nullable", "string", "max:100"],
-            "price"         => ["required", "numeric", "min:0.01"],
+            "name" => ["required", "string", "max:50"],
+            "description" => ["nullable", "string", "max:100"],
+            "price" => ["required", "numeric", "min:0.01"],
             "initial_stock" => ["required", "numeric", "min:0"],
-            "minimum_stock" => ["required", "numeric", "min:0"]
+            "minimum_stock" => ["required", "numeric", "min:0"],
         ], [
             "required" => "Campo obligatorio.",
-            "numeric"  => "Ingresa un número válido.",
-            "min"      => "Debe ser mayor o igual al mínimo permitido.",
-            "max"      => "Supera la longitud permitida.",
-            "unique"   => "Ya existe un producto con este valor.",
-            "regex"    => "Contiene caracteres no permitidos."
+            "numeric" => "Ingresa un número válido.",
+            "min" => "Debe ser mayor o igual al mínimo permitido.",
+            "max" => "Supera la longitud permitida.",
+            "unique" => "Ya existe un producto con este valor.",
+            "regex" => "Contiene caracteres no permitidos.",
         ]);
 
     }
@@ -159,7 +159,7 @@ final class ProductBasicImport implements ToCollection, WithHeadingRow, SkipsEmp
                 Str::upper(Str::random(7))
             );
 
-        }while(Item::where("company_id", $this->companyId)
+        } while (Item::where("company_id", $this->companyId)
             ->where("type", "product")
             ->where("internal_code", $code)
             ->exists());
@@ -172,10 +172,10 @@ final class ProductBasicImport implements ToCollection, WithHeadingRow, SkipsEmp
 
         do {
 
-            $base = "200" . str_pad((string) random_int(0, 999999999), 9, "0", STR_PAD_LEFT);
-            $barcode = $base . $this->ean13CheckDigit($base);
+            $base = "200".str_pad((string) random_int(0, 999999999), 9, "0", STR_PAD_LEFT);
+            $barcode = $base.$this->ean13CheckDigit($base);
 
-        }while(Item::where("company_id", $this->companyId)
+        } while (Item::where("company_id", $this->companyId)
             ->where("barcode", $barcode)
             ->exists());
 
@@ -187,7 +187,7 @@ final class ProductBasicImport implements ToCollection, WithHeadingRow, SkipsEmp
 
         $sum = 0;
 
-        foreach(str_split($base) as $index => $digit) {
+        foreach (str_split($base) as $index => $digit) {
 
             $sum += (int) $digit * ($index % 2 === 0 ? 1 : 3);
 
@@ -207,14 +207,13 @@ final class ProductBasicImport implements ToCollection, WithHeadingRow, SkipsEmp
 
         return [
             "internal_code" => "código interno",
-            "barcode"       => "código de barras",
-            "name"          => "nombre",
-            "description"   => "descripción",
-            "price"         => "precio",
+            "barcode" => "código de barras",
+            "name" => "nombre",
+            "description" => "descripción",
+            "price" => "precio",
             "initial_stock" => "stock inicial",
-            "minimum_stock" => "stock mínimo"
+            "minimum_stock" => "stock mínimo",
         ][$field] ?? $field;
 
     }
-
 }

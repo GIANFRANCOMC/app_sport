@@ -7,7 +7,6 @@ namespace App\Http\Requests\System\Operations;
 use App\Http\Requests\System\Base\CompanyFormRequest;
 
 final class StoreServiceFloorRequest extends CompanyFormRequest {
-
     public function rules(): array {
 
         return [
@@ -18,7 +17,7 @@ final class StoreServiceFloorRequest extends CompanyFormRequest {
             "sort_order" => ["nullable", "integer", "min:1", "max:999"],
             "background_color" => ["nullable", "regex:/^#[0-9a-fA-F]{6}$/"],
             "description" => ["nullable", "string", "max:500"],
-            "status" => ["nullable", "in:active,inactive"]
+            "status" => ["nullable", "in:active,inactive"],
         ];
 
     }
@@ -28,5 +27,4 @@ final class StoreServiceFloorRequest extends CompanyFormRequest {
         return ["code", "name", "background_color", "description", "status"];
 
     }
-
 }

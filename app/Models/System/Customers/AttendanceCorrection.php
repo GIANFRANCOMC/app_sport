@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Models\System\Customers;
 
-use App\Models\System\Organizations\{Company, User};
+use App\Models\System\Organizations\Company;
+use App\Models\System\Organizations\User;
 use Illuminate\Database\Eloquent\Model;
 
 final class AttendanceCorrection extends Model {
-
     protected $table = "attendance_corrections";
 
     protected $fillable = [
@@ -23,7 +23,7 @@ final class AttendanceCorrection extends Model {
         "status",
         "reviewed_by",
         "review_note",
-        "reviewed_at"
+        "reviewed_at",
     ];
 
     protected $casts = [
@@ -31,7 +31,7 @@ final class AttendanceCorrection extends Model {
         "previous_end_date" => "datetime",
         "requested_start_date" => "datetime",
         "requested_end_date" => "datetime",
-        "reviewed_at" => "datetime"
+        "reviewed_at" => "datetime",
     ];
 
     public function company() {
@@ -57,5 +57,4 @@ final class AttendanceCorrection extends Model {
         return $this->belongsTo(User::class, "reviewed_by");
 
     }
-
 }

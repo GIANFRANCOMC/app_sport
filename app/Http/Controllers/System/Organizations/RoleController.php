@@ -6,13 +6,16 @@ namespace App\Http\Controllers\System\Organizations;
 
 use App\Helpers\System\Utilities;
 use App\Http\Controllers\System\Base\BaseController;
-use App\Http\Requests\System\Organizations\Roles\{DuplicateRoleRequest, StoreRoleRequest};
+use App\Http\Requests\System\Organizations\Roles\DuplicateRoleRequest;
+use App\Http\Requests\System\Organizations\Roles\StoreRoleRequest;
 use App\Services\System\Base\InitParamsCacheInvalidationService;
-use App\Services\System\Organizations\Roles\{RoleConfigService, RolePermissionService, RoleService};
-use Illuminate\Http\{JsonResponse, Request};
+use App\Services\System\Organizations\Roles\RoleConfigService;
+use App\Services\System\Organizations\Roles\RolePermissionService;
+use App\Services\System\Organizations\Roles\RoleService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class RoleController extends BaseController {
-
     private const TRANSLATION_NAMESPACE = "System.Organizations.role";
 
     public function index() {
@@ -59,7 +62,7 @@ class RoleController extends BaseController {
         return response()->json([
             "bool" => true,
             "msg" => "Perfil agregado correctamente.",
-            "data" => $role
+            "data" => $role,
         ], 201);
 
     }
@@ -78,7 +81,7 @@ class RoleController extends BaseController {
         return response()->json([
             "bool" => true,
             "msg" => "Perfil actualizado correctamente.",
-            "data" => $role
+            "data" => $role,
         ]);
 
     }
@@ -97,7 +100,7 @@ class RoleController extends BaseController {
         return response()->json([
             "bool" => true,
             "msg" => "Perfil duplicado correctamente.",
-            "data" => $role
+            "data" => $role,
         ], 201);
 
     }
@@ -119,5 +122,4 @@ class RoleController extends BaseController {
         return self::TRANSLATION_NAMESPACE;
 
     }
-
 }

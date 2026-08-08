@@ -4,19 +4,18 @@ declare(strict_types=1);
 
 namespace App\Services\System\Sales;
 
+use App\Helpers\System\Utilities;
+use App\Models\System\Catalogs\Item;
+use App\Models\System\Sales\QuotationHeader;
+use App\Models\System\Sales\QuotationItem;
+use App\Models\System\Sales\QuotationTax;
+use App\Services\System\Finance\CommercialDocumentSettlementService;
 use DomainException;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
-use App\Helpers\System\Utilities;
-use App\Models\System\Catalogs\Item;
-use App\Models\System\Sales\{QuotationHeader, QuotationItem, QuotationTax};
-use App\Services\System\Finance\CommercialDocumentSettlementService;
-use App\Services\System\Sales\SaleConfigService;
-
 final class QuotationService {
-
     public static function query(int $companyId, array $filters = []): Builder {
 
         $query = QuotationHeader::query()
@@ -24,14 +23,14 @@ final class QuotationService {
             ->with(["holder:id,name,document_number", "seller:id,name", "currency:id,code,sign", "branch:id,name"]);
 
         $word = trim((string) ($filters["word"] ?? ""));
-        if($word !== "") {
-            $query->where(function($query) use($word) {
+        if ($word !== "") {
+            $query->where(function ($query) use ($word) {
                 $query->where("reference", "like", "%{$word}%")
-                    ->orWhereHas("holder", fn($query) => $query->where("name", "like", "%{$word}%"));
+                    ->orWhereHas("holder", fn ($query) => $query->where("name", "like", "%{$word}%"));
             });
         }
 
-        if(!empty($filters["status"])) {
+        if (! empty($filters["status"])) {
             $query->where("status", $filters["status"]);
         }
 
@@ -41,25 +40,25 @@ final class QuotationService {
 
     public static function create(int $companyId, int $userId, array $data): QuotationHeader {
 
-        return DB::transaction(function() use($companyId, $userId, $data) {
+        return DB::transaction(function () use ($companyId, $userId, $data) {
 
             $details = collect($data["details"] ?? []);
-            if($details->isEmpty()) {
+            if ($details->isEmpty()) {
                 throw new DomainException("Agrega al menos un detalle a la cotización.");
             }
 
-            $itemIds = $details->pluck("item_id")->map(fn($id) => (int) $id)->unique()->values();
+            $itemIds = $details->pluck("item_id")->map(fn ($id) => (int) $id)->unique()->values();
             $items = Item::query()
                 ->where("company_id", $companyId)
                 ->whereIn("id", $itemIds)
                 ->get()
                 ->keyBy("id");
 
-            if($items->count() !== $itemIds->count()) {
+            if ($items->count() !== $itemIds->count()) {
                 throw new DomainException("Uno de los items no pertenece a la empresa.");
             }
 
-            $normalizedDetails = $details->map(function($detail) use($items) {
+            $normalizedDetails = $details->map(function ($detail) use ($items) {
                 $item = $items->get((int) $detail["item_id"]);
                 $quantity = Utilities::round($detail["quantity"] ?? 1);
                 $price = Utilities::round($detail["price"] ?? $item->price);
@@ -76,7 +75,7 @@ final class QuotationService {
                         ? false
                         : filter_var($detail["price_includes_tax"] ?? $item->price_includes_tax ?? true, FILTER_VALIDATE_BOOL),
                     "total" => Utilities::round($quantity * $price),
-                    "observation" => $detail["observation"] ?? null
+                    "observation" => $detail["observation"] ?? null,
                 ];
             })->values();
 
@@ -85,8 +84,8 @@ final class QuotationService {
                 $companyId,
                 $normalizedDetails->all(),
                 $userId,
-                collect($data["taxes"] ?? [])->pluck("tax_id")->filter()->map(fn($id) => (int) $id)->all(),
-                collect($data["taxes"] ?? [])->filter(fn($tax) => !empty($tax["tax_id"]))->mapWithKeys(fn($tax) => [(int) $tax["tax_id"] => (int) ($tax["quantity"] ?? 1)])->all()
+                collect($data["taxes"] ?? [])->pluck("tax_id")->filter()->map(fn ($id) => (int) $id)->all(),
+                collect($data["taxes"] ?? [])->filter(fn ($tax) => ! empty($tax["tax_id"]))->mapWithKeys(fn ($tax) => [(int) $tax["tax_id"] => (int) ($tax["quantity"] ?? 1)])->all()
             );
 
             $taxTotal = Utilities::round((float) $taxLines->sum("amount"));
@@ -110,24 +109,25 @@ final class QuotationService {
                 "observation" => $data["observation"] ?? null,
                 "status" => $data["status"] ?? "draft",
                 "created_at" => now(),
-                "created_by" => $userId
+                "created_by" => $userId,
             ]);
 
-            QuotationItem::insert($normalizedDetails->map(fn($detail) => [
+            QuotationItem::insert($normalizedDetails->map(fn ($detail) => [
                 "company_id" => $companyId,
                 "quotation_header_id" => $quotation->id,
                 "created_at" => now(),
-                "created_by" => $userId
+                "created_by" => $userId,
             ] + $detail)->all());
 
-            if($taxLines->isNotEmpty()) {
-                QuotationTax::insert($taxLines->map(function($tax) use($companyId, $userId, $quotation) {
+            if ($taxLines->isNotEmpty()) {
+                QuotationTax::insert($taxLines->map(function ($tax) use ($companyId, $userId, $quotation) {
                     unset($tax["_total_impact"]);
+
                     return [
                         "company_id" => $companyId,
                         "quotation_header_id" => $quotation->id,
                         "created_at" => now(),
-                        "created_by" => $userId
+                        "created_by" => $userId,
                     ] + $tax;
                 })->all());
             }
@@ -153,7 +153,7 @@ final class QuotationService {
 
         $quotation = self::find($companyId, $quotationId);
 
-        if(!in_array($quotation->status, ["draft", "sent", "accepted"], true)) {
+        if (! in_array($quotation->status, ["draft", "sent", "accepted"], true)) {
             throw new DomainException("La cotización no puede convertirse en venta.");
         }
 
@@ -169,7 +169,7 @@ final class QuotationService {
             "holder_id" => $quotation->holder_id,
             "currency_id" => $quotation->currency_id,
             "observation" => "Venta generada desde {$quotation->reference}",
-            "details" => $quotation->items->map(function(QuotationItem $detail) use($items) {
+            "details" => $quotation->items->map(function (QuotationItem $detail) use ($items) {
                 $item = $items->get((int) $detail->item_id);
                 $price = Utilities::round((float) ($item?->price ?? $detail->price));
 
@@ -185,9 +185,9 @@ final class QuotationService {
                         ? false
                         : (bool) ($item?->price_includes_tax ?? $detail->price_includes_tax),
                     "observation" => $detail->observation,
-                    "recalculated_from_quote" => Utilities::round((float) $detail->price) !== $price
+                    "recalculated_from_quote" => Utilities::round((float) $detail->price) !== $price,
                 ];
-            })->all()
+            })->all(),
         ];
 
     }
@@ -196,7 +196,7 @@ final class QuotationService {
 
         $quotation = self::find($companyId, $quotationId);
 
-        if($quotation->status === "converted") {
+        if ($quotation->status === "converted") {
             throw new DomainException("No puedes anular una cotización ya convertida en venta.");
         }
 
@@ -205,7 +205,7 @@ final class QuotationService {
             "canceled_at" => now(),
             "canceled_by" => $userId,
             "updated_at" => now(),
-            "updated_by" => $userId
+            "updated_by" => $userId,
         ]);
 
         SaleConfigService::clearCache($companyId, "main");
@@ -217,11 +217,10 @@ final class QuotationService {
     private static function generateReference(int $companyId): string {
 
         do {
-            $reference = "COT-" . strtoupper(Str::random(10));
-        }while(QuotationHeader::query()->where("company_id", $companyId)->where("reference", $reference)->exists());
+            $reference = "COT-".strtoupper(Str::random(10));
+        } while (QuotationHeader::query()->where("company_id", $companyId)->where("reference", $reference)->exists());
 
         return $reference;
 
     }
-
 }

@@ -4,13 +4,15 @@ declare(strict_types=1);
 
 namespace App\Models\System\Catalogs;
 
-use App\Models\System\Organizations\{Company, User};
-use App\Models\System\Warehouses\{InventoryMovement, Warehouse};
+use App\Models\System\Organizations\Company;
+use App\Models\System\Organizations\User;
+use App\Models\System\Warehouses\InventoryMovement;
+use App\Models\System\Warehouses\Warehouse;
 use Illuminate\Database\Eloquent\Model;
 
 final class RecipeWasteRecord extends Model {
-
     protected $table = "recipe_waste_records";
+
     public $timestamps = false;
 
     protected $fillable = [
@@ -25,7 +27,7 @@ final class RecipeWasteRecord extends Model {
         "reason",
         "occurred_at",
         "created_at",
-        "created_by"
+        "created_by",
     ];
 
     protected $casts = [
@@ -33,7 +35,7 @@ final class RecipeWasteRecord extends Model {
         "unit_cost" => "App\\Casts\\System\\ConfigurableDecimal",
         "total_cost" => "App\\Casts\\System\\ConfigurableDecimal",
         "occurred_at" => "datetime",
-        "created_at" => "datetime"
+        "created_at" => "datetime",
     ];
 
     public function company() {
@@ -59,5 +61,4 @@ final class RecipeWasteRecord extends Model {
     public function createdBy() {
         return $this->belongsTo(User::class, "created_by");
     }
-
 }

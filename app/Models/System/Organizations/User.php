@@ -5,28 +5,30 @@ namespace App\Models\System\Organizations;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 
 use App\Helpers\System\Utilities;
+use App\Models\System\General\{IdentityDocumentType};
+use App\Models\System\Organizations\{Company};
+use App\Models\System\Sales\{SaleHeader};
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 
-use App\Models\System\General\{IdentityDocumentType};
-use App\Models\System\Organizations\{Company};
-use App\Models\System\Sales\{SaleHeader};
-
 class User extends Authenticatable {
-
     use HasApiTokens, Notifiable;
 
-    protected $table               = "users";
-    protected $primaryKey          = "id";
-    public $incrementing           = true;
-    public $timestamps             = true;
+    protected $table = "users";
+
+    protected $primaryKey = "id";
+
+    public $incrementing = true;
+
+    public $timestamps = true;
+
     public static $snakeAttributes = true;
 
     protected $appends = [
         "formatted_gender",
         "formatted_status",
-        "formatted_preferences"
+        "formatted_preferences",
     ];
 
     /**
@@ -53,7 +55,7 @@ class User extends Authenticatable {
         "created_at",
         "created_by",
         "updated_at",
-        "updated_by"
+        "updated_by",
     ];
 
     /**
@@ -97,27 +99,27 @@ class User extends Authenticatable {
 
     public function getFormattedPreferencesAttribute() {
 
-        if($this->relationLoaded("preferences")) {
+        if ($this->relationLoaded("preferences")) {
 
             $preferences = $this->getRelation("preferences");
 
-        }else {
+        } else {
 
             $preferences = $this->preferences()
-                                ->where("company_id", $this->company_id)
-                                ->get();
+                ->where("company_id", $this->company_id)
+                ->get();
 
             $this->setRelation("preferences", $preferences);
 
         }
 
         return $preferences
-                    ->where("company_id", (int) $this->company_id)
-                    ->mapWithKeys(function ($e) {
+            ->where("company_id", (int) $this->company_id)
+            ->mapWithKeys(function ($e) {
 
-                        return [$e->slug => json_decode($e->value)];
+                return [$e->slug => json_decode($e->value)];
 
-                    });
+            });
 
     }
 
@@ -127,7 +129,7 @@ class User extends Authenticatable {
         $statuses = [
             ["code" => "male", "label" => "Masculino"],
             ["code" => "female", "label" => "Femenino"],
-            ["code" => "other", "label" => "Otro"]
+            ["code" => "other", "label" => "Otro"],
         ];
 
         return Utilities::getValues($statuses, $type, $code);
@@ -139,7 +141,7 @@ class User extends Authenticatable {
         $statuses = [
             ["code" => "active", "label" => "Activo"],
             ["code" => "inactive", "label" => "Inactivo"],
-            ["code" => "blocked", "label" => "Bloqueado"]
+            ["code" => "blocked", "label" => "Bloqueado"],
         ];
 
         return Utilities::getValues($statuses, $type, $code);
@@ -162,8 +164,8 @@ class User extends Authenticatable {
     public function branches() {
 
         return $this->belongsToMany(Branch::class, "user_branches", "user_id", "branch_id")
-                    ->withPivot(["company_id", "status", "created_by", "updated_by"])
-                    ->wherePivot("status", "active");
+            ->withPivot(["company_id", "status", "created_by", "updated_by"])
+            ->wherePivot("status", "active");
 
     }
 
@@ -198,14 +200,14 @@ class User extends Authenticatable {
     public function preferences() {
 
         return $this->hasMany(UserPreference::class, "user_id", "id")
-                    ->whereIn("status", ["active"]);
+            ->whereIn("status", ["active"]);
 
     }
 
     public function salesHeader() {
 
         return $this->hasMany(SaleHeader::class, "seller_id", "id")
-                    ->whereIn("status", ["active"]);
+            ->whereIn("status", ["active"]);
 
     }
 
@@ -224,5 +226,4 @@ class User extends Authenticatable {
         )->where("status", "active");
 
     }
-
 }

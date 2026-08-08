@@ -34,6 +34,9 @@ TENANCY_ENFORCE_SUBDOMAINS=true
 TENANCY_RESERVED_SUBDOMAINS=www,api,admin,app,mail,static,assets
 TENANCY_RESOLVER_CACHE_SECONDS=60
 TENANT_ENFORCE_DB_PREFIX=true
+PLATFORM_ADMIN_NAME="Administrador SaaS"
+PLATFORM_ADMIN_EMAIL=admin@ejemplo.com
+PLATFORM_ADMIN_PASSWORD=una-clave-unica-desde-el-gestor-de-secretos
 
 SESSION_DRIVER=redis
 SESSION_ENCRYPT=true
@@ -81,8 +84,7 @@ Referencias oficiales: [DNS wildcard](https://docs.digitalocean.com/products/net
 composer install --no-dev --optimize-autoloader
 npm ci
 npm run build
-php artisan migrate --database=landlord --path=database/migrations/landlord --force
-php artisan platform:admin admin@ejemplo.com --name="Administrador SaaS"
+php artisan platform:install
 php artisan optimize:clear
 php artisan config:cache
 php artisan route:cache

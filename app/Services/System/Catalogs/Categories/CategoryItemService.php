@@ -7,20 +7,19 @@ namespace App\Services\System\Catalogs\Categories;
 use App\Models\System\Catalogs\{CategoryItem};
 
 class CategoryItemService {
-
     public static function sync(int $itemId, array $categories, int $userId): void {
 
         CategoryItem::where("item_id", $itemId)
-                    ->where("status", "active")
-                    ->update([
-                        "status"     => "inactive",
-                        "updated_at" => now(),
-                        "updated_by" => $userId
-                    ]);
+            ->where("status", "active")
+            ->update([
+                "status" => "inactive",
+                "updated_at" => now(),
+                "updated_by" => $userId,
+            ]);
 
-        foreach($categories as $category) {
+        foreach ($categories as $category) {
 
-            if(!isset($category["category_id"])) {
+            if (! isset($category["category_id"])) {
 
                 continue;
 
@@ -29,19 +28,16 @@ class CategoryItemService {
             CategoryItem::updateOrInsert(
                 [
                     "category_id" => $category["category_id"],
-                    "item_id"     => $itemId
+                    "item_id" => $itemId,
                 ],
                 [
-                    "status"      => "active",
-                    "updated_at"  => now(),
-                    "updated_by"  => $userId
+                    "status" => "active",
+                    "updated_at" => now(),
+                    "updated_by" => $userId,
                 ]
             );
 
         }
 
     }
-
 }
-
-

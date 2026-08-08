@@ -4,24 +4,22 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\System\Organizations;
 
-use App\Http\Controllers\System\Base\BaseController;
 use App\Helpers\System\{Utilities};
-use Illuminate\Http\{JsonResponse, Request};
-
-use App\Http\Requests\System\Organizations\Users\{
-    ChangeUserPasswordRequest,
-    RegisterUserFingerprintRequest,
-    StoreUserRequest,
-    UpdateUserRequest
-};
-use App\Services\System\Base\{InitParamsCacheInvalidationService};
-use App\Services\System\Auth\AuthenticationAuditService;
-use App\Services\System\Organizations\Users\{UserConfigService, UserService};
-use App\Services\System\Devices\BiometricDevices\BiometricDeviceService;
+use App\Http\Controllers\System\Base\BaseController;
+use App\Http\Requests\System\Organizations\Users\ChangeUserPasswordRequest;
+use App\Http\Requests\System\Organizations\Users\RegisterUserFingerprintRequest;
+use App\Http\Requests\System\Organizations\Users\StoreUserRequest;
+use App\Http\Requests\System\Organizations\Users\UpdateUserRequest;
 use App\Models\System\Organizations\AuthenticationEvent;
+use App\Services\System\Auth\AuthenticationAuditService;
+use App\Services\System\Base\{InitParamsCacheInvalidationService};
+use App\Services\System\Devices\BiometricDevices\BiometricDeviceService;
+use App\Services\System\Organizations\Users\UserConfigService;
+use App\Services\System\Organizations\Users\UserService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class UserController extends BaseController {
-
     /**
      * Translation namespace for module
      */
@@ -30,7 +28,6 @@ class UserController extends BaseController {
     /**
      * Get initialization parameters for the module
      *
-     * @param Request $request
      * @return \stdClass
      */
     public function initParams(Request $request) {
@@ -44,7 +41,6 @@ class UserController extends BaseController {
     /**
      * Get paginated list with filters
      *
-     * @param Request $request
      * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator
      */
     public function list(Request $request) {
@@ -67,12 +63,8 @@ class UserController extends BaseController {
 
     }
 
-
     /**
      * Store a newly created record
-     *
-     * @param StoreUserRequest $request
-     * @return JsonResponse
      */
     public function store(StoreUserRequest $request): JsonResponse {
 
@@ -81,7 +73,7 @@ class UserController extends BaseController {
             $data = $this->prepareUserData($request);
             $user = UserService::create($data, $this->getCompanyId(), $this->getUserId());
 
-            if(!Utilities::isDefined($user)) {
+            if (! Utilities::isDefined($user)) {
 
                 return $this->errorResponse("create_failed");
 
@@ -94,7 +86,7 @@ class UserController extends BaseController {
 
             return $this->createdResponse($user, "created", "user");
 
-        }catch(\Exception $e) {
+        } catch (\Exception $e) {
 
             return $this->handleException($e, "create");
 
@@ -102,14 +94,10 @@ class UserController extends BaseController {
 
     }
 
-
-
     /**
      * Update the specified record
      *
-     * @param UpdateUserRequest $request
-     * @param int $id User ID
-     * @return JsonResponse
+     * @param  int  $id User ID
      */
     public function update(UpdateUserRequest $request, int $id): JsonResponse {
 
@@ -117,7 +105,7 @@ class UserController extends BaseController {
 
             $user = UserService::findByIdAndCompany($id, $this->getCompanyId(), null);
 
-            if(!Utilities::isDefined($user)) {
+            if (! Utilities::isDefined($user)) {
 
                 return $this->notFoundResponse();
 
@@ -126,7 +114,7 @@ class UserController extends BaseController {
             $data = $this->prepareUserData($request);
             $user = UserService::update($user, $data, $this->getUserId());
 
-            if(!Utilities::isDefined($user)) {
+            if (! Utilities::isDefined($user)) {
 
                 return $this->errorResponse("update_failed");
 
@@ -139,7 +127,7 @@ class UserController extends BaseController {
 
             return $this->updatedResponse($user, "updated", "user");
 
-        }catch(\Exception $e) {
+        } catch (\Exception $e) {
 
             return $this->handleException($e, "update");
 
@@ -150,27 +138,26 @@ class UserController extends BaseController {
     public function authenticationEvents(Request $request, int $id): JsonResponse {
 
         $user = UserService::findByIdAndCompany($id, $this->getCompanyId(), null, []);
-        if(!$user) {
+        if (! $user) {
             return $this->notFoundResponse();
         }
 
         $events = AuthenticationEvent::query()
             ->where("company_id", $this->getCompanyId())
             ->where("user_id", $user->id)
-            ->when($request->input("event_type"), fn($query, $eventType) => $query->where("event_type", $eventType))
-            ->when($request->input("result"), fn($query, $result) => $query->where("result", $result))
-            ->when($request->input("date_from"), fn($query, $date) => $query->where("occurred_at", ">=", Utilities::startOfDay($date)))
-            ->when($request->input("date_to"), fn($query, $date) => $query->where("occurred_at", "<=", Utilities::endOfDay($date)))
+            ->when($request->input("event_type"), fn ($query, $eventType) => $query->where("event_type", $eventType))
+            ->when($request->input("result"), fn ($query, $result) => $query->where("result", $result))
+            ->when($request->input("date_from"), fn ($query, $date) => $query->where("occurred_at", ">=", Utilities::startOfDay($date)))
+            ->when($request->input("date_to"), fn ($query, $date) => $query->where("occurred_at", "<=", Utilities::endOfDay($date)))
             ->latest("occurred_at")
             ->paginate($this->getPerPage($request));
 
         return response()->json([
             "bool" => true,
-            "data" => $events
+            "data" => $events,
         ]);
 
     }
-
 
     public function changePassword(ChangeUserPasswordRequest $request, int $id): JsonResponse {
 
@@ -178,7 +165,7 @@ class UserController extends BaseController {
 
             $user = UserService::findByIdAndCompany($id, $this->getCompanyId(), null, []);
 
-            if(!$user) {
+            if (! $user) {
 
                 return $this->notFoundResponse();
 
@@ -202,7 +189,7 @@ class UserController extends BaseController {
 
             return $this->updatedResponse($user, "updated", "user");
 
-        }catch(\Exception $e) {
+        } catch (\Exception $e) {
 
             return $this->handleException($e, "update");
 
@@ -217,11 +204,13 @@ class UserController extends BaseController {
         try {
 
             $user = UserService::findByIdAndCompany($id, $this->getCompanyId(), ["active"]);
-            if(!$user) return $this->notFoundResponse();
+            if (! $user) {
+                return $this->notFoundResponse();
+            }
 
             $deviceId = (int) $data["biometric_device_id"];
             $device = BiometricDeviceService::findByIdAndCompany($deviceId, $this->getCompanyId(), ["active"]);
-            if(!$device) {
+            if (! $device) {
                 return $this->errorResponse("not_found", ["msg" => "El dispositivo biométrico no está disponible."], 404);
             }
 
@@ -240,11 +229,11 @@ class UserController extends BaseController {
 
             return $this->createdResponse($fingerprint, "fingerprint_registered", "biometric_fingerprint");
 
-        }catch(\DomainException $exception) {
+        } catch (\DomainException $exception) {
 
             return response()->json(["bool" => false, "msg" => $exception->getMessage()], 422);
 
-        }catch(\Throwable $exception) {
+        } catch (\Throwable $exception) {
 
             return $this->handleException($exception, "register_fingerprint");
 
@@ -255,40 +244,39 @@ class UserController extends BaseController {
     /**
      * Prepare record data from request
      *
-     * @param StoreUserRequest|UpdateUserRequest $request
-     * @return array
+     * @param  StoreUserRequest|UpdateUserRequest  $request
      */
     private function prepareUserData($request): array {
 
         $data = [
-            "company_id"                => $this->getCompanyId(),
-            "role_id"                   => $request->input("role_id"),
+            "company_id" => $this->getCompanyId(),
+            "role_id" => $request->input("role_id"),
             "identity_document_type_id" => $request->input("identity_document_type_id"),
-            "document_number"           => $request->input("document_number"),
-            "name"                      => $request->input("name"),
-            "email"                     => $request->input("email"),
-            "phone_number"              => $request->input("phone_number"),
-            "gender"                    => $request->input("gender"),
-            "birthdate"                 => $request->input("birthdate"),
-            "status"                    => $request->input("status"),
-            "branch_ids"                => collect($request->input("branch_ids", []))
-                                            ->filter()
-                                            ->map(fn($branchId) => (int) $branchId)
-                                            ->values()
-                                            ->all(),
-            "cash_register_ids"         => collect($request->input("cash_register_ids", []))
-                                            ->filter()
-                                            ->map(fn($cashRegisterId) => (int) $cashRegisterId)
-                                            ->values()
-                                            ->all(),
-            "warehouse_ids"             => collect($request->input("warehouse_ids", []))
-                                            ->filter()
-                                            ->map(fn($warehouseId) => (int) $warehouseId)
-                                            ->values()
-                                            ->all()
+            "document_number" => $request->input("document_number"),
+            "name" => $request->input("name"),
+            "email" => $request->input("email"),
+            "phone_number" => $request->input("phone_number"),
+            "gender" => $request->input("gender"),
+            "birthdate" => $request->input("birthdate"),
+            "status" => $request->input("status"),
+            "branch_ids" => collect($request->input("branch_ids", []))
+                ->filter()
+                ->map(fn ($branchId) => (int) $branchId)
+                ->values()
+                ->all(),
+            "cash_register_ids" => collect($request->input("cash_register_ids", []))
+                ->filter()
+                ->map(fn ($cashRegisterId) => (int) $cashRegisterId)
+                ->values()
+                ->all(),
+            "warehouse_ids" => collect($request->input("warehouse_ids", []))
+                ->filter()
+                ->map(fn ($warehouseId) => (int) $warehouseId)
+                ->values()
+                ->all(),
         ];
 
-        if($request instanceof StoreUserRequest) {
+        if ($request instanceof StoreUserRequest) {
             $data["password"] = $request->input("password");
         }
 
@@ -302,13 +290,10 @@ class UserController extends BaseController {
 
     /**
      * Get translation namespace for module
-     *
-     * @return string
      */
     protected function getTranslationNamespace(): string {
 
         return self::TRANSLATION_NAMESPACE;
 
     }
-
 }

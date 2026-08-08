@@ -4,16 +4,17 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\System\Catalogs;
 
-use App\Http\Controllers\System\Base\BaseController;
 use App\Helpers\System\{Utilities};
-use Illuminate\Http\{JsonResponse, Request};
-
-use App\Http\Requests\System\Catalogs\Categories\{StoreCategoryRequest, UpdateCategoryRequest};
+use App\Http\Controllers\System\Base\BaseController;
+use App\Http\Requests\System\Catalogs\Categories\StoreCategoryRequest;
+use App\Http\Requests\System\Catalogs\Categories\UpdateCategoryRequest;
 use App\Services\System\Base\{InitParamsCacheInvalidationService};
-use App\Services\System\Catalogs\Categories\{CategoryConfigService, CategoryService};
+use App\Services\System\Catalogs\Categories\CategoryConfigService;
+use App\Services\System\Catalogs\Categories\CategoryService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class CategoryController extends BaseController {
-
     /**
      * Translation namespace for module
      */
@@ -22,7 +23,6 @@ class CategoryController extends BaseController {
     /**
      * Get initialization parameters for the module
      *
-     * @param Request $request
      * @return \stdClass
      */
     public function initParams(Request $request) {
@@ -36,7 +36,6 @@ class CategoryController extends BaseController {
     /**
      * Get paginated list with filters
      *
-     * @param Request $request
      * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator
      */
     public function list(Request $request) {
@@ -59,21 +58,17 @@ class CategoryController extends BaseController {
 
     }
 
-
     /**
      * Store a newly created record
-     *
-     * @param StoreCategoryRequest $request
-     * @return JsonResponse
      */
     public function store(StoreCategoryRequest $request): JsonResponse {
 
         try {
 
-            $data     = $this->prepareCategoryData($request);
+            $data = $this->prepareCategoryData($request);
             $category = CategoryService::create($data, $this->getCompanyId(), $this->getUserId());
 
-            if(!Utilities::isDefined($category)) {
+            if (! Utilities::isDefined($category)) {
 
                 return $this->errorResponse("create_failed");
 
@@ -86,7 +81,7 @@ class CategoryController extends BaseController {
 
             return $this->createdResponse($category, "created", "category");
 
-        }catch(\Exception $e) {
+        } catch (\Exception $e) {
 
             return $this->handleException($e, "create");
 
@@ -94,14 +89,10 @@ class CategoryController extends BaseController {
 
     }
 
-
-
     /**
      * Update the specified record
      *
-     * @param UpdateCategoryRequest $request
-     * @param int $id Category ID
-     * @return JsonResponse
+     * @param  int  $id Category ID
      */
     public function update(UpdateCategoryRequest $request, int $id): JsonResponse {
 
@@ -109,16 +100,16 @@ class CategoryController extends BaseController {
 
             $category = CategoryService::findByIdAndCompany($id, $this->getCompanyId(), null);
 
-            if(!Utilities::isDefined($category)) {
+            if (! Utilities::isDefined($category)) {
 
                 return $this->notFoundResponse();
 
             }
 
-            $data     = $this->prepareCategoryData($request);
+            $data = $this->prepareCategoryData($request);
             $category = CategoryService::update($category, $data, $this->getUserId());
 
-            if(!Utilities::isDefined($category)) {
+            if (! Utilities::isDefined($category)) {
 
                 return $this->errorResponse("update_failed");
 
@@ -131,11 +122,11 @@ class CategoryController extends BaseController {
 
             return $this->updatedResponse($category, "updated", "category");
 
-        }catch(\DomainException $exception) {
+        } catch (\DomainException $exception) {
 
             return response()->json(["bool" => false, "msg" => $exception->getMessage()], 422);
 
-        }catch(\Exception $e) {
+        } catch (\Exception $e) {
 
             return $this->handleException($e, "update");
 
@@ -147,8 +138,7 @@ class CategoryController extends BaseController {
      * Remove the specified record
      * Deletes the category only when no active product dependency exists.
      *
-     * @param int $id Category ID
-     * @return JsonResponse
+     * @param  int  $id Category ID
      */
     public function destroy(int $id): JsonResponse {
 
@@ -160,7 +150,7 @@ class CategoryController extends BaseController {
             );
 
             return response()->json(["bool" => true, "msg" => "Categoría eliminada correctamente."]);
-        }catch(\DomainException $exception) {
+        } catch (\DomainException $exception) {
             return response()->json(["bool" => false, "msg" => $exception->getMessage()], 422);
         }
 
@@ -169,32 +159,28 @@ class CategoryController extends BaseController {
     /**
      * Prepare record data from request
      *
-     * @param StoreCategoryRequest|UpdateCategoryRequest $request
-     * @return array
+     * @param  StoreCategoryRequest|UpdateCategoryRequest  $request
      */
     private function prepareCategoryData($request): array {
 
         return [
-            "company_id"    => $this->getCompanyId(),
+            "company_id" => $this->getCompanyId(),
             "internal_code" => $request->input("internal_code"),
-            "name"          => $request->input("name"),
-            "description"   => $request->input("description"),
-            "sort_order"    => $request->input("sort_order", 1),
-            "is_public"     => $request->boolean("is_public", true),
-            "status"        => $request->input("status")
+            "name" => $request->input("name"),
+            "description" => $request->input("description"),
+            "sort_order" => $request->input("sort_order", 1),
+            "is_public" => $request->boolean("is_public", true),
+            "status" => $request->input("status"),
         ];
 
     }
 
     /**
      * Get translation namespace for module
-     *
-     * @return string
      */
     protected function getTranslationNamespace(): string {
 
         return self::TRANSLATION_NAMESPACE;
 
     }
-
 }

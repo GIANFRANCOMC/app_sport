@@ -8,7 +8,6 @@ use App\Http\Requests\System\Base\CompanyFormRequest;
 use App\Rules\System\Defaults\BelongsToCompany;
 
 final class ProcessTrackingAttendanceBatchRequest extends CompanyFormRequest {
-
     public function rules(): array {
 
         return [
@@ -16,7 +15,7 @@ final class ProcessTrackingAttendanceBatchRequest extends CompanyFormRequest {
                 "bail",
                 "required",
                 "integer",
-                new BelongsToCompany("branches", ["status" => "active"], "La sucursal seleccionada no esta disponible.")
+                new BelongsToCompany("branches", ["status" => "active"], "La sucursal seleccionada no esta disponible."),
             ],
             "customers" => ["required", "array", "min:1", "max:200"],
             "customers.*.customer_id" => ["nullable", "required_without:customers.*.customer_document_number", "integer"],
@@ -24,7 +23,7 @@ final class ProcessTrackingAttendanceBatchRequest extends CompanyFormRequest {
             "customers.*.customer_attendance_type" => ["nullable", "string", "in:carnet,document_number,dni,dnie"],
             "start_date" => ["nullable", "date"],
             "end_date" => ["nullable", "date", "after:start_date"],
-            "observation" => ["nullable", "string", "max:500"]
+            "observation" => ["nullable", "string", "max:500"],
         ];
 
     }
@@ -34,5 +33,4 @@ final class ProcessTrackingAttendanceBatchRequest extends CompanyFormRequest {
         return ["start_date", "end_date", "observation"];
 
     }
-
 }

@@ -3,23 +3,25 @@
 namespace App\Models\System\Sales;
 
 use App\Helpers\System\Utilities;
-use Illuminate\Database\Eloquent\Model;
-use Carbon\Carbon;
-use Exception;
-
-use App\Models\System\Organizations\{User};
 use App\Models\System\Customers\{Customer};
+use App\Models\System\Finance\{CashSession};
 use App\Models\System\General\{Currency};
 use App\Models\System\Organizations\{Serie};
-use App\Models\System\Finance\{CashSession};
+use App\Models\System\Organizations\{User};
 use App\Models\System\Warehouses\{Warehouse};
+use Carbon\Carbon;
+use Exception;
+use Illuminate\Database\Eloquent\Model;
 
 class SaleHeader extends Model {
+    protected $table = "sales_header";
 
-    protected $table               = "sales_header";
-    protected $primaryKey          = "id";
-    public $incrementing           = true;
-    public $timestamps             = true;
+    protected $primaryKey = "id";
+
+    public $incrementing = true;
+
+    public $timestamps = true;
+
     public static $snakeAttributes = true;
 
     protected $appends = [
@@ -33,7 +35,7 @@ class SaleHeader extends Model {
         "formatted_delivery_method",
         "formatted_delivery_status",
         "formatted_payment_modality",
-        "formatted_payment_status"
+        "formatted_payment_status",
     ];
 
     protected $fillable = [
@@ -43,22 +45,22 @@ class SaleHeader extends Model {
         "holder_id",
         "seller_id",
         "currency_id",
-            "warehouse_id",
-            "delivery_method_id",
-            "cash_session_id",
-            "quotation_header_id",
-            "issue_date",
-            "delivery_mode",
-            "delivery_status",
-            "delivered_at",
-            "delivered_by",
-            "delivery_observation",
-            "payment_modality",
-            "installment_extra_percentage",
-            "installment_extra_amount",
-            "subtotal",
-            "tax",
-            "commission_total",
+        "warehouse_id",
+        "delivery_method_id",
+        "cash_session_id",
+        "quotation_header_id",
+        "issue_date",
+        "delivery_mode",
+        "delivery_status",
+        "delivered_at",
+        "delivered_by",
+        "delivery_observation",
+        "payment_modality",
+        "installment_extra_percentage",
+        "installment_extra_amount",
+        "subtotal",
+        "tax",
+        "commission_total",
         "total",
         "paid_amount",
         "balance_due",
@@ -70,7 +72,7 @@ class SaleHeader extends Model {
         "updated_at",
         "updated_by",
         "canceled_at",
-        "canceled_by"
+        "canceled_by",
     ];
 
     // Appends
@@ -88,7 +90,7 @@ class SaleHeader extends Model {
 
             $serie_sequential = $this->serie->legible_serie."-".str_pad($this->sequential, 8, "0", STR_PAD_LEFT);
 
-        }catch(Exception $e) {
+        } catch (Exception $e) {
 
             $serie_sequential = "Error";
 
@@ -110,10 +112,12 @@ class SaleHeader extends Model {
 
         $issueDate = $this->attributes["issue_date"] ?? null;
 
-        if(!$issueDate) return 0;
+        if (! $issueDate) {
+            return 0;
+        }
 
-        $issueDateCarbon  = Carbon::parse($issueDate);
-        $todayCarbon      = Carbon::now();
+        $issueDateCarbon = Carbon::parse($issueDate);
+        $todayCarbon = Carbon::now();
         $differenceInDays = $issueDateCarbon->diffInDays($todayCarbon);
 
         return $issueDateCarbon->isFuture() ? $differenceInDays : -$differenceInDays;
@@ -168,7 +172,7 @@ class SaleHeader extends Model {
         $statuses = [
             ["code" => "active", "label" => "Activo"],
             ["code" => "inactive", "label" => "Inactivo"],
-            ["code" => "canceled", "label" => "Anulado"]
+            ["code" => "canceled", "label" => "Anulado"],
         ];
 
         return Utilities::getValues($statuses, $type, $code);
@@ -179,7 +183,7 @@ class SaleHeader extends Model {
 
         $modes = [
             ["code" => "immediate", "label" => "Entrega inmediata"],
-            ["code" => "pending", "label" => "Entrega pendiente"]
+            ["code" => "pending", "label" => "Entrega pendiente"],
         ];
 
         return Utilities::getValues($modes, $type, $code);
@@ -192,7 +196,7 @@ class SaleHeader extends Model {
             ["code" => "pending", "label" => "Pendiente"],
             ["code" => "partial", "label" => "Parcial"],
             ["code" => "delivered", "label" => "Entregado"],
-            ["code" => "canceled", "label" => "Anulado"]
+            ["code" => "canceled", "label" => "Anulado"],
         ];
 
         return Utilities::getValues($statuses, $type, $code);
@@ -204,7 +208,7 @@ class SaleHeader extends Model {
         $modalities = [
             ["code" => "paid_now", "label" => "Pago al momento"],
             ["code" => "cash_on_delivery", "label" => "Contraentrega"],
-            ["code" => "installments", "label" => "Crédito en cuotas"]
+            ["code" => "installments", "label" => "Crédito en cuotas"],
         ];
 
         return Utilities::getValues($modalities, $type, $code);
@@ -217,7 +221,7 @@ class SaleHeader extends Model {
             ["code" => "unpaid", "label" => "Pendiente"],
             ["code" => "partial", "label" => "Parcial"],
             ["code" => "paid", "label" => "Pagado"],
-            ["code" => "overpaid", "label" => "Sobrepagado"]
+            ["code" => "overpaid", "label" => "Sobrepagado"],
         ];
 
         return Utilities::getValues($statuses, $type, $code);
@@ -231,30 +235,30 @@ class SaleHeader extends Model {
         try {
 
             $serie = Serie::query()
-                          ->where("id", $serie_id)
-                          ->lockForUpdate()
-                          ->first(["id", "init"]);
+                ->where("id", $serie_id)
+                ->lockForUpdate()
+                ->first(["id", "init"]);
 
-            if(!Utilities::isDefined($serie)) {
+            if (! Utilities::isDefined($serie)) {
 
                 return 0;
 
             }
 
             $maxSequential = SaleHeader::where("serie_id", $serie_id)
-                                       ->max("sequential");
+                ->max("sequential");
 
-            if(Utilities::isDefined($maxSequential)) {
+            if (Utilities::isDefined($maxSequential)) {
 
                 $newSequential = intval($maxSequential) + 1;
 
-            }else {
+            } else {
 
                 $newSequential = intval($serie->init);
 
             }
 
-        }catch(Exception $e) {
+        } catch (Exception $e) {
 
             $newSequential = 0;
 
@@ -322,7 +326,7 @@ class SaleHeader extends Model {
     public function positions() {
 
         return $this->hasMany(SaleBody::class, "sale_header_id", "id")
-                    ->whereIn("status", ["active"]);
+            ->whereIn("status", ["active"]);
 
     }
 
@@ -335,14 +339,14 @@ class SaleHeader extends Model {
     public function taxes() {
 
         return $this->hasMany(SaleTax::class, "sale_header_id", "id")
-                    ->whereIn("status", ["active"]);
+            ->whereIn("status", ["active"]);
 
     }
 
     public function payments() {
 
         return $this->hasMany(SalePayment::class, "sale_header_id", "id")
-                    ->whereIn("status", ["active"]);
+            ->whereIn("status", ["active"]);
 
     }
 
@@ -357,5 +361,4 @@ class SaleHeader extends Model {
         return $this->hasOne(SaleAccountReceivable::class, "sale_header_id", "id");
 
     }
-
 }

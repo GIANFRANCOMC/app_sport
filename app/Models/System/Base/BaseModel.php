@@ -12,24 +12,25 @@ use Illuminate\Database\Eloquent\Model;
  * Provides common functionality for all system models
  */
 abstract class BaseModel extends Model {
-
     public $incrementing = true;
-    public $timestamps   = true;
+
+    public $timestamps = true;
+
     public static $snakeAttributes = true;
 
     /**
      * Get statuses array
      * Override in child classes if needed
      *
-     * @param string $type Type: "all" or "first"
-     * @param string $code Status code
+     * @param  string  $type Type: "all" or "first"
+     * @param  string  $code Status code
      * @return array|array|null
      */
     public static function getStatuses(string $type = "all", string $code = "") {
 
         $statuses = [
             ["code" => "active", "label" => "Activo"],
-            ["code" => "inactive", "label" => "Inactivo"]
+            ["code" => "inactive", "label" => "Inactivo"],
         ];
 
         return Utilities::getValues($statuses, $type, $code);
@@ -38,8 +39,6 @@ abstract class BaseModel extends Model {
 
     /**
      * Get formatted status attribute
-     *
-     * @return string
      */
     public function getFormattedStatusAttribute(): string {
 
@@ -50,7 +49,7 @@ abstract class BaseModel extends Model {
     /**
      * Scope: Active records
      *
-     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @param  \Illuminate\Database\Eloquent\Builder  $query
      * @return \Illuminate\Database\Eloquent\Builder
      */
     public function scopeActive($query) {
@@ -62,7 +61,7 @@ abstract class BaseModel extends Model {
     /**
      * Scope: Inactive records
      *
-     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @param  \Illuminate\Database\Eloquent\Builder  $query
      * @return \Illuminate\Database\Eloquent\Builder
      */
     public function scopeInactive($query) {
@@ -74,8 +73,8 @@ abstract class BaseModel extends Model {
     /**
      * Scope: By company
      *
-     * @param \Illuminate\Database\Eloquent\Builder $query
-     * @param int $companyId Company ID
+     * @param  \Illuminate\Database\Eloquent\Builder  $query
+     * @param  int  $companyId Company ID
      * @return \Illuminate\Database\Eloquent\Builder
      */
     public function scopeByCompany($query, int $companyId) {
@@ -83,6 +82,4 @@ abstract class BaseModel extends Model {
         return $query->where("company_id", $companyId);
 
     }
-
 }
-

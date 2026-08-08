@@ -8,4 +8,3 @@ return [
     "not_found" => "Datos no encontrados",
     "not_implemented" => "Funcionalidad no implementada",
 ];
-

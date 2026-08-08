@@ -13,9 +13,9 @@ return [
     |
     */
 
-    'failed' => 'Estas credenciales no coinciden con nuestros registros.',
-    'password' => 'The provided password is incorrect.',
-    'throttle' => 'Too many login attempts. Please try again in :seconds seconds.',
-    'captcha' => 'No se pudo verificar el captcha. Intenta nuevamente.',
-    'company_inactive' => 'La empresa no está activa. Por favor, contacta al administrador.',
+    "failed" => "Estas credenciales no coinciden con nuestros registros.",
+    "password" => "The provided password is incorrect.",
+    "throttle" => "Too many login attempts. Please try again in :seconds seconds.",
+    "captcha" => "No se pudo verificar el captcha. Intenta nuevamente.",
+    "company_inactive" => "La empresa no está activa. Por favor, contacta al administrador.",
 ];

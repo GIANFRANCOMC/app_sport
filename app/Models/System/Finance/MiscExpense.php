@@ -4,13 +4,12 @@ declare(strict_types=1);
 
 namespace App\Models\System\Finance;
 
+use App\Models\System\General\Currency;
+use App\Models\System\Organizations\Branch;
+use App\Models\System\Organizations\User;
 use Illuminate\Database\Eloquent\Model;
 
-use App\Models\System\General\Currency;
-use App\Models\System\Organizations\{Branch, User};
-
 final class MiscExpense extends Model {
-
     protected $table = "misc_expenses";
 
     protected $fillable = [
@@ -33,13 +32,13 @@ final class MiscExpense extends Model {
         "updated_at",
         "updated_by",
         "canceled_at",
-        "canceled_by"
+        "canceled_by",
     ];
 
     protected $casts = [
         "expense_date" => "date:Y-m-d",
         "amount" => "App\\Casts\\System\\ConfigurableDecimal",
-        "canceled_at" => "datetime"
+        "canceled_at" => "datetime",
     ];
 
     public function branch() {
@@ -65,5 +64,4 @@ final class MiscExpense extends Model {
     public function responsibleUser() {
         return $this->belongsTo(User::class, "responsible_user_id");
     }
-
 }

@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Services\System\Operations;
 
-use App\Services\System\Base\{BaseConfigService, CompanyReferenceDataService};
+use App\Services\System\Base\BaseConfigService;
+use App\Services\System\Base\CompanyReferenceDataService;
 use stdClass;
 
 final class ServiceOperationConfigService extends BaseConfigService {
-
     protected const USER_SCOPED_CACHE = true;
 
     protected static function getCachePrefix(): string {
@@ -37,9 +37,8 @@ final class ServiceOperationConfigService extends BaseConfigService {
             "stationColors" => ServiceOperationService::stationColors(),
             "stationShapes" => ServiceOperationService::stationShapes(),
             "sessionTypes" => ServiceOperationService::sessionTypes(),
-            "sessionStatuses" => ServiceOperationService::sessionStatuses()
+            "sessionStatuses" => ServiceOperationService::sessionStatuses(),
         ]);
 
     }
-
 }

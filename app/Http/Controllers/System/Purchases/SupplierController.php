@@ -9,10 +9,10 @@ use App\Http\Controllers\System\Base\BaseController;
 use App\Http\Requests\System\Purchases\StoreSupplierRequest;
 use App\Services\System\Base\InitParamsCacheInvalidationService;
 use App\Services\System\Purchases\SupplierService;
-use Illuminate\Http\{JsonResponse, Request};
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 final class SupplierController extends BaseController {
-
     private const TRANSLATION_NAMESPACE = "System.Purchases.supplier";
 
     public function index() {
@@ -46,7 +46,7 @@ final class SupplierController extends BaseController {
         return response()->json([
             "bool" => true,
             "msg" => "Proveedor agregado correctamente.",
-            "data" => $supplier
+            "data" => $supplier,
         ], 201);
 
     }
@@ -68,7 +68,7 @@ final class SupplierController extends BaseController {
         return response()->json([
             "bool" => true,
             "msg" => "Proveedor actualizado correctamente.",
-            "data" => $supplier
+            "data" => $supplier,
         ]);
 
     }
@@ -78,5 +78,4 @@ final class SupplierController extends BaseController {
         return self::TRANSLATION_NAMESPACE;
 
     }
-
 }

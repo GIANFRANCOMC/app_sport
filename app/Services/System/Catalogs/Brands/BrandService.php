@@ -12,7 +12,6 @@ use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 
 final class BrandService {
-
     private const ALLOWED_FIELDS = [
         "internal_code",
         "name",
@@ -20,7 +19,7 @@ final class BrandService {
         "logo_path",
         "origin_country_code",
         "website_url",
-        "status"
+        "status",
     ];
 
     private const SEARCHABLE_FIELDS = [
@@ -28,19 +27,19 @@ final class BrandService {
         "name",
         "description",
         "origin_country_code",
-        "website_url"
+        "website_url",
     ];
 
     public static function create(array $data, int $companyId, int $userId): Brand {
 
         self::validateContext($companyId, $userId);
 
-        return DB::transaction(function() use($data, $companyId, $userId) {
+        return DB::transaction(function () use ($data, $companyId, $userId) {
 
             return Brand::create(self::prepareData($data, [
                 "company_id" => $companyId,
                 "status" => $data["status"] ?? "active",
-                "created_by" => $userId
+                "created_by" => $userId,
             ]));
 
         });
@@ -51,17 +50,16 @@ final class BrandService {
 
         self::validateContext($companyId, $userId);
 
-        if((int) $brand->company_id !== $companyId) {
+        if ((int) $brand->company_id !== $companyId) {
 
             throw new InvalidArgumentException("La marca no pertenece a la empresa autenticada.");
-
         }
 
-        DB::transaction(function() use($brand, $data, $userId) {
+        DB::transaction(function () use ($brand, $data, $userId) {
 
             $changes = self::prepareChangedData($brand, $data);
 
-            if($changes !== []) {
+            if ($changes !== []) {
 
                 $changes["updated_by"] = $userId;
                 $brand->update($changes);
@@ -81,10 +79,10 @@ final class BrandService {
     ): ?Brand {
 
         $query = Brand::query()
-                      ->whereKey($id)
-                      ->where("company_id", $companyId);
+            ->whereKey($id)
+            ->where("company_id", $companyId);
 
-        if($statuses !== null && $statuses !== []) {
+        if ($statuses !== null && $statuses !== []) {
 
             $query->whereIn("status", $statuses);
 
@@ -101,23 +99,23 @@ final class BrandService {
     ): LengthAwarePaginator {
 
         $query = Brand::query()
-                      ->where("company_id", $companyId)
-                      ->withCount([
-                          "products as products_count" => fn(Builder $builder) => $builder->where("status", "active")
-                      ]);
+            ->where("company_id", $companyId)
+            ->withCount([
+                "products as products_count" => fn (Builder $builder) => $builder->where("status", "active"),
+            ]);
 
         $filterBy = $filters["filter_by"] ?? null;
         $word = $filters["word"] ?? null;
 
-        if(Utilities::isDefined($word) && Utilities::isDefined($filterBy)) {
+        if (Utilities::isDefined($word) && Utilities::isDefined($filterBy)) {
 
             $searchTerm = Utilities::getWordSearch($word);
 
-            if($filterBy === "all") {
+            if ($filterBy === "all") {
 
-                $query->where(function(Builder $builder) use($searchTerm) {
+                $query->where(function (Builder $builder) use ($searchTerm) {
 
-                    foreach(self::SEARCHABLE_FIELDS as $index => $field) {
+                    foreach (self::SEARCHABLE_FIELDS as $index => $field) {
 
                         $method = $index === 0 ? "where" : "orWhere";
                         $builder->{$method}($field, "like", $searchTerm);
@@ -126,7 +124,7 @@ final class BrandService {
 
                 });
 
-            }elseif(in_array($filterBy, self::SEARCHABLE_FIELDS, true)) {
+            } elseif (in_array($filterBy, self::SEARCHABLE_FIELDS, true)) {
 
                 $query->where($filterBy, "like", $searchTerm);
 
@@ -135,7 +133,7 @@ final class BrandService {
         }
 
         return $query->orderBy("name")
-                     ->paginate($perPage);
+            ->paginate($perPage);
 
     }
 
@@ -143,9 +141,9 @@ final class BrandService {
 
         $prepared = $defaults;
 
-        foreach(self::ALLOWED_FIELDS as $field) {
+        foreach (self::ALLOWED_FIELDS as $field) {
 
-            if(array_key_exists($field, $data)) {
+            if (array_key_exists($field, $data)) {
 
                 $prepared[$field] = $data[$field];
 
@@ -163,7 +161,7 @@ final class BrandService {
 
         return array_filter(
             $prepared,
-            fn($value, $field) => $value !== $brand->{$field},
+            fn ($value, $field) => $value !== $brand->{$field},
             ARRAY_FILTER_USE_BOTH
         );
 
@@ -171,12 +169,10 @@ final class BrandService {
 
     private static function validateContext(int $companyId, int $userId): void {
 
-        if($companyId <= 0 || $userId <= 0) {
+        if ($companyId <= 0 || $userId <= 0) {
 
             throw new InvalidArgumentException("La empresa y el usuario autenticado son obligatorios.");
-
         }
 
     }
-
 }

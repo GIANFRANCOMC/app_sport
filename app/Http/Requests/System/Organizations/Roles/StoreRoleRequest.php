@@ -4,18 +4,17 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\System\Organizations\Roles;
 
-use App\Rules\System\Defaults\BelongsToCompany;
 use App\Http\Requests\System\Base\CompanyFormRequest;
+use App\Rules\System\Defaults\BelongsToCompany;
 use Illuminate\Validation\Rule;
 
 class StoreRoleRequest extends CompanyFormRequest {
-
     protected function prepareForValidation(): void {
 
         $this->merge([
             "branch_scope_mode" => $this->input("branch_scope_mode", "all"),
             "cash_register_scope_mode" => $this->input("cash_register_scope_mode", "all"),
-            "warehouse_scope_mode" => $this->input("warehouse_scope_mode", "all")
+            "warehouse_scope_mode" => $this->input("warehouse_scope_mode", "all"),
         ]);
 
     }
@@ -33,7 +32,7 @@ class StoreRoleRequest extends CompanyFormRequest {
                 "max:80",
                 Rule::unique("roles", "name")
                     ->where("company_id", $companyId)
-                    ->ignore($roleId)
+                    ->ignore($roleId),
             ],
             "is_full_access" => ["required", "boolean"],
             "sub_section_ids" => ["array"],
@@ -51,7 +50,7 @@ class StoreRoleRequest extends CompanyFormRequest {
             "cash_register_ids.*" => ["integer", "distinct", new BelongsToCompany("cash_registers")],
             "warehouse_ids" => ["required_if:warehouse_scope_mode,restricted", "array", "min:1"],
             "warehouse_ids.*" => ["integer", "distinct", new BelongsToCompany("warehouses")],
-            "status" => ["required", Rule::in(["active", "inactive"])]
+            "status" => ["required", Rule::in(["active", "inactive"])],
         ];
 
     }
@@ -67,9 +66,8 @@ class StoreRoleRequest extends CompanyFormRequest {
             "distinct" => "No repitas una opción.",
             "in" => "Selecciona una opción válida.",
             "min" => "Selecciona al menos una acción.",
-            "max" => "Supera la longitud permitida."
+            "max" => "Supera la longitud permitida.",
         ];
 
     }
-
 }

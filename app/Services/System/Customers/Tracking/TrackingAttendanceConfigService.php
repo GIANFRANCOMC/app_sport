@@ -4,15 +4,11 @@ declare(strict_types=1);
 
 namespace App\Services\System\Customers\Tracking;
 
+use App\Services\System\Base\BaseConfigService;
+use App\Services\System\Base\CompanyReferenceDataService;
 use stdClass;
 
-use App\Services\System\Base\{
-    BaseConfigService,
-    CompanyReferenceDataService
-};
-
 final class TrackingAttendanceConfigService extends BaseConfigService {
-
     protected const USER_SCOPED_CACHE = true;
 
     protected static function getCachePrefix(): string {
@@ -27,13 +23,12 @@ final class TrackingAttendanceConfigService extends BaseConfigService {
 
         return self::data([
             "branches" => self::data([
-                "records" => $references->activeBranches()
+                "records" => $references->activeBranches(),
             ]),
             "customers" => self::data([
-                "records" => $references->activeCustomers()
-            ])
+                "records" => $references->activeCustomers(),
+            ]),
         ]);
 
     }
-
 }

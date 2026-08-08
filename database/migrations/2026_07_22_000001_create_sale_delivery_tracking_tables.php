@@ -5,10 +5,9 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration {
-
     public function up(): void {
 
-        Schema::create("sale_deliveries", function(Blueprint $table) {
+        Schema::create("sale_deliveries", function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger("company_id");
             $table->unsignedBigInteger("sale_header_id");
@@ -34,7 +33,7 @@ return new class extends Migration {
             $table->unique(["company_id", "sale_header_id"]);
         });
 
-        Schema::create("sale_delivery_items", function(Blueprint $table) {
+        Schema::create("sale_delivery_items", function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger("company_id");
             $table->unsignedBigInteger("sale_delivery_id");
@@ -56,7 +55,7 @@ return new class extends Migration {
             $table->unique(["company_id", "sale_delivery_id", "sale_body_id"], "sale_delivery_items_unique_body");
         });
 
-        Schema::create("sale_delivery_events", function(Blueprint $table) {
+        Schema::create("sale_delivery_events", function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger("company_id");
             $table->unsignedBigInteger("sale_delivery_id");
@@ -75,7 +74,7 @@ return new class extends Migration {
             $table->foreign("delivered_by")->references("id")->on("users")->nullOnDelete();
         });
 
-        Schema::create("sale_delivery_event_items", function(Blueprint $table) {
+        Schema::create("sale_delivery_event_items", function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger("company_id");
             $table->unsignedBigInteger("sale_delivery_event_id");
@@ -104,5 +103,4 @@ return new class extends Migration {
         Schema::dropIfExists("sale_deliveries");
 
     }
-
 };

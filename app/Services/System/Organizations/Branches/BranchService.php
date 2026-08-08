@@ -4,23 +4,22 @@ declare(strict_types=1);
 
 namespace App\Services\System\Organizations\Branches;
 
-use Exception;
-use App\Helpers\System\{TranslationHelper, Utilities};
-use Illuminate\Support\Facades\DB;
-use Illuminate\Contracts\Pagination\LengthAwarePaginator;
-use Illuminate\Database\Eloquent\Builder;
-
+use App\Helpers\System\TranslationHelper;
+use App\Helpers\System\Utilities;
+use App\Models\System\Assets\AssetAssignment;
+use App\Models\System\Organizations\{Branch};
 use App\Services\System\Organizations\Branches\{SerieService};
 use App\Services\System\Warehouses\Warehouses\{WarehouseService};
-use App\Models\System\Organizations\{Branch};
-use App\Models\System\Assets\AssetAssignment;
+use Exception;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Service class for managing module operations
  * Handles business logic for creating and updating records
  */
 class BranchService {
-
     /**
      * Translation namespace for module
      */
@@ -38,7 +37,7 @@ class BranchService {
         "email",
         "capacity",
         "map_url",
-        "status"
+        "status",
     ];
 
     /**
@@ -50,15 +49,14 @@ class BranchService {
         "address",
         "reference",
         "telephone",
-        "email"
+        "email",
     ];
 
     /**
      * Get translation with fallback
      *
-     * @param string $key Translation key
-     * @param array $replace Replacements
-     * @return string
+     * @param  string  $key Translation key
+     * @param  array  $replace Replacements
      */
     private static function trans(string $key, array $replace = []): string {
 
@@ -69,23 +67,22 @@ class BranchService {
     /**
      * Prepare data for creation
      *
-     * @param array $data Input data
-     * @param int $companyId Company
-     * @param int $userId User
-     * @return array
+     * @param  array  $data Input data
+     * @param  int  $companyId Company
+     * @param  int  $userId User
      */
     private static function prepareBranchDataForCreate(array $data, int $companyId, int $userId): array {
 
         $branchData = [
             "company_id" => $companyId,
-            "status"     => $data["status"] ?? "active",
+            "status" => $data["status"] ?? "active",
             "created_at" => now(),
-            "created_by" => $userId
+            "created_by" => $userId,
         ];
 
-        foreach(self::ALLOWED_FIELDS as $field) {
+        foreach (self::ALLOWED_FIELDS as $field) {
 
-            if(isset($data[$field])) {
+            if (isset($data[$field])) {
 
                 $branchData[$field] = $data[$field];
 
@@ -100,19 +97,18 @@ class BranchService {
     /**
      * Prepare data for update (only changed fields)
      *
-     * @param Branch $branch Record instance
-     * @param array $data Input data
-     * @return array
+     * @param  Branch  $branch Record instance
+     * @param  array  $data Input data
      */
     private static function prepareBranchDataForUpdate(Branch $branch, array $data): array {
 
         $updateData = [];
 
-        foreach(self::ALLOWED_FIELDS as $field) {
+        foreach (self::ALLOWED_FIELDS as $field) {
 
-            if(isset($data[$field])) {
+            if (isset($data[$field])) {
 
-                if($data[$field] !== $branch->$field) {
+                if ($data[$field] !== $branch->$field) {
 
                     $updateData[$field] = $data[$field];
 
@@ -129,17 +125,18 @@ class BranchService {
     /**
      * Create a new record
      *
-     * @param array $data Input data
-     * @param int $companyId Company that owns the branch
-     * @param int $userId User creating the record
+     * @param  array  $data Input data
+     * @param  int  $companyId Company that owns the branch
+     * @param  int  $userId User creating the record
      * @return Branch|null Created record instance or null on failure
+     *
      * @throws Exception
      */
     public static function create(array $data, int $companyId, int $userId): ?Branch {
 
         $branch = null;
 
-        DB::transaction(function() use($data, $companyId, $userId, &$branch) {
+        DB::transaction(function () use ($data, $companyId, $userId, &$branch) {
 
             // Prepare data with only allowed fields
             $branchData = self::prepareBranchDataForCreate($data, $companyId, $userId);
@@ -162,20 +159,20 @@ class BranchService {
     /**
      * Update an existing record
      *
-     * @param Branch $branch Record instance to update
-     * @param array $data Input data
-     * @param int $userId User updating the record
+     * @param  Branch  $branch Record instance to update
+     * @param  array  $data Input data
+     * @param  int  $userId User updating the record
      * @return Branch Updated record instance
      */
     public static function update(Branch $branch, array $data, int $userId): Branch {
 
-        DB::transaction(function() use($branch, $data, $userId) {
+        DB::transaction(function () use ($branch, $data, $userId) {
 
             // Prepare update data with only changed fields
             $updateData = self::prepareBranchDataForUpdate($branch, $data);
             $nameChanged = isset($updateData["name"]);
 
-            if(($updateData["status"] ?? null) === "inactive"
+            if (($updateData["status"] ?? null) === "inactive"
                 && AssetAssignment::query()
                     ->where("company_id", $branch->company_id)
                     ->where("branch_id", $branch->id)
@@ -183,18 +180,17 @@ class BranchService {
                     ->exists()) {
 
                 throw new Exception("No se puede inactivar la sucursal mientras tenga activos asignados a colaboradores.");
-
             }
 
             // Only update if there are changes
-            if(!empty($updateData)) {
+            if (! empty($updateData)) {
 
                 $updateData["updated_at"] = now();
                 $updateData["updated_by"] = $userId;
                 $branch->update($updateData);
 
                 // Update related warehouses names if branch name changed
-                if($nameChanged) {
+                if ($nameChanged) {
 
                     WarehouseService::updateNamesForBranch($branch->fresh(["warehousesAll"]), $userId);
 
@@ -211,24 +207,23 @@ class BranchService {
     /**
      * Find record by ID and company ID
      *
-     * @param int $id Record
-     * @param int $companyId Company
-     * @param array|null $statuses Filter by statuses (e.g. ["active"], ["active", "inactive"])
-     * @param array $relations Relations to eager load
-     * @return Branch|null
+     * @param  int  $id Record
+     * @param  int  $companyId Company
+     * @param  array|null  $statuses Filter by statuses (e.g. ["active"], ["active", "inactive"])
+     * @param  array  $relations Relations to eager load
      */
     public static function findByIdAndCompany(int $id, int $companyId, ?array $statuses = ["active"], array $relations = ["series.documentType", "warehouses"]): ?Branch {
 
         $query = Branch::where("id", $id)
-                       ->where("company_id", $companyId);
+            ->where("company_id", $companyId);
 
-        if($statuses !== null && !empty($statuses)) {
+        if ($statuses !== null && ! empty($statuses)) {
 
             $query->whereIn("status", $statuses);
 
         }
 
-        if($relations !== null && !empty($relations)) {
+        if ($relations !== null && ! empty($relations)) {
 
             $query->with($relations);
 
@@ -241,39 +236,38 @@ class BranchService {
     /**
      * Get paginated list of records with filters
      *
-     * @param int $companyId Company
-     * @param array $filters Filter parameters (filter_by, word)
-     * @param int $perPage Items per page
-     * @return LengthAwarePaginator
+     * @param  int  $companyId Company
+     * @param  array  $filters Filter parameters (filter_by, word)
+     * @param  int  $perPage Items per page
      */
     public static function getPaginatedList(int $companyId, array $filters = [], int $perPage = 15): LengthAwarePaginator {
 
         $query = Branch::where("company_id", $companyId)
-                       ->with(["series.documentType", "warehouses"]);
+            ->with(["series.documentType", "warehouses"]);
 
         // Apply filters
         $filterBy = $filters["filter_by"] ?? null;
-        $word     = $filters["word"] ?? null;
+        $word = $filters["word"] ?? null;
 
-        if(Utilities::isDefined($word) && Utilities::isDefined($filterBy)) {
+        if (Utilities::isDefined($word) && Utilities::isDefined($filterBy)) {
 
             $searchTerm = Utilities::getWordSearch($word);
 
-            if($filterBy === "all") {
+            if ($filterBy === "all") {
 
                 // Search across all searchable fields
-                $query->where(function(Builder $q) use($searchTerm) {
+                $query->where(function (Builder $q) use ($searchTerm) {
 
                     $searchableFields = self::SEARCHABLE_FIELDS;
-                    $firstField       = array_shift($searchableFields);
+                    $firstField = array_shift($searchableFields);
 
-                    if($firstField) {
+                    if ($firstField) {
 
                         $q->where($firstField, "like", $searchTerm);
 
                     }
 
-                    foreach($searchableFields as $field) {
+                    foreach ($searchableFields as $field) {
 
                         $q->orWhere($field, "like", $searchTerm);
 
@@ -281,7 +275,7 @@ class BranchService {
 
                 });
 
-            }elseif(in_array($filterBy, self::SEARCHABLE_FIELDS, true)) {
+            } elseif (in_array($filterBy, self::SEARCHABLE_FIELDS, true)) {
 
                 // Search in specific field
                 $query->where($filterBy, "like", $searchTerm);
@@ -291,8 +285,7 @@ class BranchService {
         }
 
         return $query->orderBy("name", "ASC")
-                     ->paginate($perPage);
+            ->paginate($perPage);
 
     }
-
 }

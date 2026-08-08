@@ -3,22 +3,25 @@
 namespace App\Models\System\General;
 
 use App\Helpers\System\Utilities;
-use Illuminate\Database\Eloquent\Model;
-
 use App\Models\System\Assets\{BranchAsset};
 use App\Models\System\Catalogs\{Item};
-use App\Models\System\Sales\{SaleBody, SaleHeader};
+use App\Models\System\Sales\SaleBody;
+use App\Models\System\Sales\SaleHeader;
+use Illuminate\Database\Eloquent\Model;
 
 class Currency extends Model {
+    protected $table = "currencies";
 
-    protected $table               = "currencies";
-    protected $primaryKey          = "id";
-    public $incrementing           = true;
-    public $timestamps             = true;
+    protected $primaryKey = "id";
+
+    public $incrementing = true;
+
+    public $timestamps = true;
+
     public static $snakeAttributes = true;
 
     protected $appends = [
-        "formatted_status"
+        "formatted_status",
     ];
 
     protected $fillable = [
@@ -31,7 +34,7 @@ class Currency extends Model {
         "created_at",
         "created_by",
         "updated_at",
-        "updated_by"
+        "updated_by",
     ];
 
     // Appends
@@ -46,7 +49,7 @@ class Currency extends Model {
 
         $statuses = [
             ["code" => "active", "label" => "Activo"],
-            ["code" => "inactive", "label" => "Inactivo"]
+            ["code" => "inactive", "label" => "Inactivo"],
         ];
 
         return Utilities::getValues($statuses, $type, $code);
@@ -63,22 +66,21 @@ class Currency extends Model {
     public function items() {
 
         return $this->hasMany(Item::class, "currency_id", "id")
-                    ->whereIn("status", ["active"]);
+            ->whereIn("status", ["active"]);
 
     }
 
     public function salesBody() {
 
         return $this->hasMany(SaleBody::class, "currency_id", "id")
-                    ->whereIn("status", ["active"]);
+            ->whereIn("status", ["active"]);
 
     }
 
     public function salesHeader() {
 
         return $this->hasMany(SaleHeader::class, "currency_id", "id")
-                    ->whereIn("status", ["active"]);
+            ->whereIn("status", ["active"]);
 
     }
-
 }

@@ -2,10 +2,11 @@
 
 namespace App\Exports;
 
-use Maatwebsite\Excel\Concerns\{FromCollection, WithColumnWidths, WithHeadings};
+use Maatwebsite\Excel\Concerns\FromCollection;
+use Maatwebsite\Excel\Concerns\WithColumnWidths;
+use Maatwebsite\Excel\Concerns\WithHeadings;
 
 class SaleExport implements FromCollection, WithColumnWidths, WithHeadings {
-
     protected $data;
 
     public function __construct($data) {
@@ -28,7 +29,7 @@ class SaleExport implements FromCollection, WithColumnWidths, WithHeadings {
             "C" => 20,
             "D" => 15,
             "E" => 20,
-            "F" => 25
+            "F" => 25,
         ];
 
     }
@@ -41,9 +42,8 @@ class SaleExport implements FromCollection, WithColumnWidths, WithHeadings {
             "FECHA DE EMISIÓN",
             "TOTAL",
             "MONEDA",
-            "ESTADO"
+            "ESTADO",
         ];
 
     }
-
 }

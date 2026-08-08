@@ -4,17 +4,13 @@ declare(strict_types=1);
 
 namespace App\Services\System\Customers\Customers;
 
+use App\Models\System\Customers\Customer;
+use App\Services\System\Base\BaseConfigService;
+use App\Services\System\Base\CompanyReferenceDataService;
+use App\Services\System\Base\MasterReferenceDataService;
 use stdClass;
 
-use App\Models\System\Customers\Customer;
-use App\Services\System\Base\{
-    BaseConfigService,
-    CompanyReferenceDataService,
-    MasterReferenceDataService
-};
-
 final class CustomerConfigService extends BaseConfigService {
-
     protected const USER_SCOPED_CACHE = true;
 
     protected static function getCachePrefix(): string {
@@ -29,15 +25,14 @@ final class CustomerConfigService extends BaseConfigService {
 
         return self::data([
             "biometricDevices" => self::data([
-                "records" => $references->biometricDevices()
+                "records" => $references->biometricDevices(),
             ]),
             "identityDocumentTypes" => self::data([
-                "records" => MasterReferenceDataService::customerIdentityDocuments($companyId)
+                "records" => MasterReferenceDataService::customerIdentityDocuments($companyId),
             ]),
-            "genders"  => Customer::getGenders(),
-            "statuses" => Customer::getStatuses()
+            "genders" => Customer::getGenders(),
+            "statuses" => Customer::getStatuses(),
         ]);
 
     }
-
 }

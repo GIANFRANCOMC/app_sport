@@ -7,8 +7,8 @@ namespace App\Models\System\Organizations;
 use Illuminate\Database\Eloquent\Model;
 
 final class BookComplaintStatusHistory extends Model {
-
     protected $table = "book_complaint_status_histories";
+
     public $timestamps = false;
 
     protected $fillable = [
@@ -18,7 +18,7 @@ final class BookComplaintStatusHistory extends Model {
         "previous_status",
         "new_status",
         "note",
-        "changed_at"
+        "changed_at",
     ];
 
     protected $casts = ["changed_at" => "datetime"];
@@ -34,5 +34,4 @@ final class BookComplaintStatusHistory extends Model {
         return $this->belongsTo(User::class, "changed_by");
 
     }
-
 }

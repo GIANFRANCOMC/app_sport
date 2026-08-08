@@ -8,7 +8,6 @@ use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
 final class PublicAttendanceRequest extends FormRequest {
-
     public function authorize(): bool {
 
         return true;
@@ -25,7 +24,7 @@ final class PublicAttendanceRequest extends FormRequest {
                 "integer",
                 Rule::exists("branches", "id")
                     ->where("company_id", $companyId)
-                    ->where("status", "active")
+                    ->where("status", "active"),
             ],
             "customers" => ["required", "array", "min:1", "max:20"],
             "customers.*.customer_id" => [
@@ -33,10 +32,9 @@ final class PublicAttendanceRequest extends FormRequest {
                 "integer",
                 Rule::exists("customers", "id")
                     ->where("company_id", $companyId)
-                    ->where("status", "active")
-            ]
+                    ->where("status", "active"),
+            ],
         ];
 
     }
-
 }

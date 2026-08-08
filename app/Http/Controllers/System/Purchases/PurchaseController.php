@@ -7,14 +7,18 @@ namespace App\Http\Controllers\System\Purchases;
 use App\Exports\System\Purchases\PurchaseListExport;
 use App\Helpers\System\Utilities;
 use App\Http\Controllers\System\Base\BaseController;
-use App\Http\Requests\System\Purchases\{ReceivePurchaseRequest, StorePurchaseRequest, StorePurchaseReturnRequest};
-use App\Services\System\Purchases\{PurchaseConfigService, PurchaseReturnService, PurchaseService};
-use Illuminate\Http\{JsonResponse, Request};
+use App\Http\Requests\System\Purchases\ReceivePurchaseRequest;
+use App\Http\Requests\System\Purchases\StorePurchaseRequest;
+use App\Http\Requests\System\Purchases\StorePurchaseReturnRequest;
+use App\Services\System\Purchases\PurchaseConfigService;
+use App\Services\System\Purchases\PurchaseReturnService;
+use App\Services\System\Purchases\PurchaseService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 final class PurchaseController extends BaseController {
-
     private const TRANSLATION_NAMESPACE = "System.Purchases.purchase";
 
     public function index() {
@@ -45,7 +49,7 @@ final class PurchaseController extends BaseController {
             $this->getCompanyId(),
             [
                 "word" => $request->input("word"),
-                "status" => $request->input("status")
+                "status" => $request->input("status"),
             ],
             $this->getUserId()
         )->paginate($this->getPerPage($request, Utilities::$per_page_default));
@@ -72,14 +76,14 @@ final class PurchaseController extends BaseController {
             return response()->json([
                 "bool" => true,
                 "msg" => $message,
-                "data" => $purchase
+                "data" => $purchase,
             ], 201);
 
-        }catch(\Throwable $exception) {
+        } catch (\Throwable $exception) {
 
             return response()->json([
                 "bool" => false,
-                "msg" => $exception->getMessage()
+                "msg" => $exception->getMessage(),
             ], 422);
 
         }
@@ -106,14 +110,14 @@ final class PurchaseController extends BaseController {
             return response()->json([
                 "bool" => true,
                 "msg" => "Recepción registrada. Las existencias y el costo promedio fueron actualizados.",
-                "data" => $receipt
+                "data" => $receipt,
             ]);
 
-        }catch(\Throwable $exception) {
+        } catch (\Throwable $exception) {
 
             return response()->json([
                 "bool" => false,
-                "msg" => $exception->getMessage()
+                "msg" => $exception->getMessage(),
             ], 422);
 
         }
@@ -130,7 +134,7 @@ final class PurchaseController extends BaseController {
                 $this->getUserId()
             );
 
-            $message = match(true) {
+            $message = match (true) {
                 (bool) $purchase->getAttribute("inventory_reverted_on_cancellation") => "Compra anulada correctamente. Las recepciones asociadas fueron revertidas en inventario.",
                 (bool) $purchase->getAttribute("had_inventory_receipts") => "Compra anulada correctamente. Revisa si corresponde registrar devolución a proveedor desde Inventario.",
                 default => "Compra anulada. No se modificó el inventario porque no tenía recepciones."
@@ -139,14 +143,14 @@ final class PurchaseController extends BaseController {
             return response()->json([
                 "bool" => true,
                 "msg" => $message,
-                "data" => $purchase
+                "data" => $purchase,
             ]);
 
-        }catch(\Throwable $exception) {
+        } catch (\Throwable $exception) {
 
             return response()->json([
                 "bool" => false,
-                "msg" => $exception->getMessage()
+                "msg" => $exception->getMessage(),
             ], 422);
 
         }
@@ -166,9 +170,9 @@ final class PurchaseController extends BaseController {
             return response()->json([
                 "bool" => true,
                 "msg" => "Devolución registrada y existencias actualizadas.",
-                "data" => $return
+                "data" => $return,
             ], 201);
-        }catch(\Throwable $exception) {
+        } catch (\Throwable $exception) {
             return response()->json(["bool" => false, "msg" => $exception->getMessage()], 422);
         }
 
@@ -180,9 +184,9 @@ final class PurchaseController extends BaseController {
             return response()->json([
                 "bool" => true,
                 "msg" => "Orden aprobada correctamente.",
-                "data" => PurchaseService::approve($this->getCompanyId(), $id, $this->getUserId())
+                "data" => PurchaseService::approve($this->getCompanyId(), $id, $this->getUserId()),
             ]);
-        }catch(\Throwable $exception) {
+        } catch (\Throwable $exception) {
             return response()->json(["bool" => false, "msg" => $exception->getMessage()], 422);
         }
 
@@ -193,9 +197,9 @@ final class PurchaseController extends BaseController {
         return Excel::download(
             new PurchaseListExport($this->getCompanyId(), [
                 "word" => $request->input("word"),
-                "status" => $request->input("status")
+                "status" => $request->input("status"),
             ], $this->getUserId()),
-            "compras_" . now()->format("Y-m-d_His") . ".xlsx"
+            "compras_".now()->format("Y-m-d_His").".xlsx"
         );
 
     }
@@ -205,5 +209,4 @@ final class PurchaseController extends BaseController {
         return self::TRANSLATION_NAMESPACE;
 
     }
-
 }

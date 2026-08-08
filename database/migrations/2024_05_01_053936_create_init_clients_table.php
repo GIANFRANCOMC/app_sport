@@ -2,10 +2,9 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\{DB, Hash, Schema};
+use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration {
-
     /**
      * Run the migrations.
      */
@@ -48,7 +47,7 @@ return new class extends Migration {
             $table->unique(["company_id", "tracking_code"]);
         });
 
-        Schema::create("book_complaint_attachments", function(Blueprint $table) {
+        Schema::create("book_complaint_attachments", function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger("company_id");
             $table->unsignedBigInteger("book_complaint_id");
@@ -62,7 +61,7 @@ return new class extends Migration {
             $table->foreign("book_complaint_id")->references("id")->on("book_complaints")->onDelete("cascade");
         });
 
-        Schema::create("book_complaint_status_histories", function(Blueprint $table) {
+        Schema::create("book_complaint_status_histories", function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger("company_id");
             $table->unsignedBigInteger("book_complaint_id");
@@ -89,5 +88,4 @@ return new class extends Migration {
         Schema::dropIfExists("book_complaints");
 
     }
-
 };

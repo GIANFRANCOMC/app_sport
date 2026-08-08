@@ -7,12 +7,12 @@ namespace App\Console\Commands;
 use App\Events\SubscriptionExpired;
 use App\Models\System\Customers\Subscription;
 use App\Models\System\Tenancy\TenantDatabase;
-use App\Services\System\Tenancy\{TenantAdministrationService, TenantConnectionManager};
+use App\Services\System\Tenancy\TenantAdministrationService;
+use App\Services\System\Tenancy\TenantConnectionManager;
 use Illuminate\Console\Command;
 use Throwable;
 
 final class CancelExpiredSubscriptions extends Command {
-
     protected $signature = "subscriptions:cancel-expired
                             {--tenant= : Procesar únicamente el slug tenant indicado}
                             {--company= : Procesar únicamente una empresa}
@@ -29,13 +29,14 @@ final class CancelExpiredSubscriptions extends Command {
         $companyId = $this->option("company");
         $tenants = TenantDatabase::query()
             ->where("status", "active")
-            ->when($tenantSlug, fn($query) => $query->where("slug", $tenantSlug))
+            ->when($tenantSlug, fn ($query) => $query->where("slug", $tenantSlug))
             ->orderBy("id")
             ->get();
 
-        if($tenants->isEmpty()) {
+        if ($tenants->isEmpty()) {
 
             $this->error("No existen tenants activos para procesar.");
+
             return self::FAILURE;
 
         }
@@ -43,7 +44,7 @@ final class CancelExpiredSubscriptions extends Command {
         $rows = [];
         $hasFailure = false;
 
-        foreach($tenants as $tenant) {
+        foreach ($tenants as $tenant) {
 
             try {
 
@@ -55,15 +56,15 @@ final class CancelExpiredSubscriptions extends Command {
                 $rows[] = [$tenant->slug, $summary["processed"], $summary["expired"], "OK"];
                 $administration->audit($tenant, "cancel_expired_subscriptions", "success", $summary, "scheduler");
 
-            }catch(Throwable $exception) {
+            } catch (Throwable $exception) {
 
                 $hasFailure = true;
                 $rows[] = [$tenant->slug, 0, 0, $exception->getMessage()];
                 $administration->audit($tenant, "cancel_expired_subscriptions", "failure", [
-                    "error" => $exception->getMessage()
+                    "error" => $exception->getMessage(),
                 ], "scheduler");
 
-            }finally {
+            } finally {
 
                 $connectionManager->disconnect();
 
@@ -81,19 +82,19 @@ final class CancelExpiredSubscriptions extends Command {
 
         $subscriptions = Subscription::query()
             ->where("status", "active")
-            ->when($companyId, fn($query) => $query->where("company_id", $companyId))
+            ->when($companyId, fn ($query) => $query->where("company_id", $companyId))
             ->where("end_date", "<=", now())
             ->orderBy("end_date")
             ->limit($limit)
             ->get();
 
-        foreach($subscriptions as $subscription) {
+        foreach ($subscriptions as $subscription) {
 
             $subscription->update([
                 "motive" => "Membresía expirada.",
                 "status" => "inactive",
                 "updated_at" => now(),
-                "updated_by" => null
+                "updated_by" => null,
             ]);
 
             event(new SubscriptionExpired($subscription));
@@ -102,9 +103,8 @@ final class CancelExpiredSubscriptions extends Command {
 
         return [
             "processed" => $subscriptions->count(),
-            "expired" => $subscriptions->count()
+            "expired" => $subscriptions->count(),
         ];
 
     }
-
 }

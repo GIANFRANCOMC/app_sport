@@ -3,20 +3,22 @@
 namespace App\Models\System\Organizations;
 
 use App\Helpers\System\Utilities;
+use App\Models\System\Warehouses\{Warehouse};
 use Illuminate\Database\Eloquent\Model;
 
-use App\Models\System\Warehouses\{Warehouse};
-
 class Branch extends Model {
+    protected $table = "branches";
 
-    protected $table               = "branches";
-    protected $primaryKey          = "id";
-    public $incrementing           = true;
-    public $timestamps             = true;
+    protected $primaryKey = "id";
+
+    public $incrementing = true;
+
+    public $timestamps = true;
+
     public static $snakeAttributes = true;
 
     protected $appends = [
-        "formatted_status"
+        "formatted_status",
     ];
 
     protected $fillable = [
@@ -33,7 +35,7 @@ class Branch extends Model {
         "created_at",
         "created_by",
         "updated_at",
-        "updated_by"
+        "updated_by",
     ];
 
     // Appends
@@ -50,7 +52,7 @@ class Branch extends Model {
 
         $statuses = [
             ["code" => "active", "label" => "Activo"],
-            ["code" => "inactive", "label" => "Inactivo"]
+            ["code" => "inactive", "label" => "Inactivo"],
         ];
 
         return Utilities::getValues($statuses, $type, $code);
@@ -67,14 +69,14 @@ class Branch extends Model {
     public function series() {
 
         return $this->hasMany(Serie::class, "branch_id", "id")
-                    ->whereIn("status", ["active"]);
+            ->whereIn("status", ["active"]);
 
     }
 
     public function warehouses() {
 
         return $this->hasMany(Warehouse::class, "branch_id", "id")
-                    ->whereIn("status", ["active"]);
+            ->whereIn("status", ["active"]);
 
     }
 
@@ -89,5 +91,4 @@ class Branch extends Model {
         return $this->hasMany(UserAttendance::class, "branch_id", "id");
 
     }
-
 }

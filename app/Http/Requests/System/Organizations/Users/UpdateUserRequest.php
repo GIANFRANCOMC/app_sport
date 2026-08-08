@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\System\Organizations\Users;
 
-use App\Helpers\System\Utilities;
+use App\Rules\System\Defaults\BelongsToCompany;
+use App\Rules\System\Defaults\DocumentNumberLength;
+use App\Rules\System\Defaults\UniqueInCompany;
 use Illuminate\Foundation\Http\FormRequest;
-use App\Rules\System\Defaults\{BelongsToCompany, DocumentNumberLength, UniqueInCompany};
 
 class UpdateUserRequest extends FormRequest {
-
     /**
      * Determine if the user is authorized to make this request.
      */
@@ -29,25 +29,24 @@ class UpdateUserRequest extends FormRequest {
         $userId = (int) $this->route("id");
 
         $validations = [
-            "role_id"                   => ["required", "integer", new BelongsToCompany("roles", ["status" => "active"], null)],
+            "role_id" => ["required", "integer", new BelongsToCompany("roles", ["status" => "active"], null)],
             "identity_document_type_id" => ["required", "integer", new BelongsToCompany("identity_document_types", ["status" => "active"], "El tipo de documento no pertenece a la empresa.")],
-            "document_number"           => ["required", "string", new DocumentNumberLength((int) $this->identity_document_type_id), new UniqueInCompany("users", "document_number", $userId, [], "número de documento")],
-            "name"                      => "required|string|max:100",
-            "email"                     => ["required", "email", "max:100", new UniqueInCompany("users", "email", $userId, [], "correo electrónico")],
-            "phone_number"              => "nullable|string|max:15",
-            "gender"                    => "nullable|in:male,female,other",
-            "birthdate"                 => "nullable|date",
-            "status"                    => "required|in:active,inactive,blocked",
-            "branch_ids"                => "nullable|array",
-            "branch_ids.*"              => ["integer", "distinct", new BelongsToCompany("branches", [], null)],
-            "cash_register_ids"         => "nullable|array",
-            "cash_register_ids.*"       => ["integer", "distinct", new BelongsToCompany("cash_registers", [], null)],
-            "warehouse_ids"             => "nullable|array",
-            "warehouse_ids.*"           => ["integer", "distinct", new BelongsToCompany("warehouses", [], null)]
+            "document_number" => ["required", "string", new DocumentNumberLength((int) $this->identity_document_type_id), new UniqueInCompany("users", "document_number", $userId, [], "número de documento")],
+            "name" => "required|string|max:100",
+            "email" => ["required", "email", "max:100", new UniqueInCompany("users", "email", $userId, [], "correo electrónico")],
+            "phone_number" => "nullable|string|max:15",
+            "gender" => "nullable|in:male,female,other",
+            "birthdate" => "nullable|date",
+            "status" => "required|in:active,inactive,blocked",
+            "branch_ids" => "nullable|array",
+            "branch_ids.*" => ["integer", "distinct", new BelongsToCompany("branches", [], null)],
+            "cash_register_ids" => "nullable|array",
+            "cash_register_ids.*" => ["integer", "distinct", new BelongsToCompany("cash_registers", [], null)],
+            "warehouse_ids" => "nullable|array",
+            "warehouse_ids.*" => ["integer", "distinct", new BelongsToCompany("warehouses", [], null)],
         ];
 
         return $validations;
 
     }
-
 }

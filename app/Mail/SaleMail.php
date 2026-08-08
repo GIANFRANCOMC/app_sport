@@ -3,14 +3,12 @@
 namespace App\Mail;
 
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
 class SaleMail extends Mailable {
-
     use Queueable, SerializesModels;
 
     public $mail = null;
@@ -41,8 +39,8 @@ class SaleMail extends Mailable {
     public function content(): Content {
 
         return new Content(
-            view: 'emails/saleMail',
-            with: ['mail' => $this->mail]
+            view: "emails/saleMail",
+            with: ["mail" => $this->mail]
         );
 
     }
@@ -57,5 +55,4 @@ class SaleMail extends Mailable {
         return [];
 
     }
-
 }

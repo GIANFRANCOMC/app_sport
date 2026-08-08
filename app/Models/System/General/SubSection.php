@@ -3,20 +3,23 @@
 namespace App\Models\System\General;
 
 use App\Helpers\System\Utilities;
+use App\Models\System\Organizations\CompanySubSection;
+use App\Models\System\Organizations\RoleSubSection;
 use Illuminate\Database\Eloquent\Model;
 
-use App\Models\System\Organizations\{CompanySubSection, RoleSubSection};
-
 class SubSection extends Model {
+    protected $table = "sub_sections";
 
-    protected $table               = "sub_sections";
-    protected $primaryKey          = "id";
-    public $incrementing           = true;
-    public $timestamps             = true;
+    protected $primaryKey = "id";
+
+    public $incrementing = true;
+
+    public $timestamps = true;
+
     public static $snakeAttributes = true;
 
     protected $appends = [
-        "formatted_status"
+        "formatted_status",
     ];
 
     protected $fillable = [
@@ -34,7 +37,7 @@ class SubSection extends Model {
         "created_at",
         "created_by",
         "updated_at",
-        "updated_by"
+        "updated_by",
     ];
 
     // Appends
@@ -49,7 +52,7 @@ class SubSection extends Model {
 
         $statuses = [
             ["code" => "active", "label" => "Activo"],
-            ["code" => "inactive", "label" => "Inactivo"]
+            ["code" => "inactive", "label" => "Inactivo"],
         ];
 
         return Utilities::getValues($statuses, $type, $code);
@@ -72,15 +75,14 @@ class SubSection extends Model {
     public function companiesSubSections() {
 
         return $this->hasMany(CompanySubSection::class, "sub_section_id", "id")
-                    ->whereIn("status", ["active"]);
+            ->whereIn("status", ["active"]);
 
     }
 
     public function roleSubSections() {
 
         return $this->hasMany(RoleSubSection::class, "sub_section_id", "id")
-                    ->whereIn("status", ["active"]);
+            ->whereIn("status", ["active"]);
 
     }
-
 }

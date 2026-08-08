@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\System\Customers;
 
-use App\Http\Controllers\System\Base\BaseController;
 use App\Helpers\System\{Utilities};
-use Illuminate\Http\{Request, JsonResponse};
-
-use App\Services\System\Customers\Tracking\{TrackingNotificationConfigService, TrackingNotificationService};
+use App\Http\Controllers\System\Base\BaseController;
+use App\Services\System\Customers\Tracking\TrackingNotificationConfigService;
+use App\Services\System\Customers\Tracking\TrackingNotificationService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class TrackingNotificationController extends BaseController {
-
     /**
      * Translation namespace for tracking notification module
      */
@@ -20,12 +20,12 @@ class TrackingNotificationController extends BaseController {
     /**
      * Get initialization parameters for the module
      *
-     * @param Request $request
      * @return \stdClass
      */
     public function initParams(Request $request) {
 
         $page = $this->getPage($request);
+
         return TrackingNotificationConfigService::getInitParams($this->getCompanyId(), $page, $this->getUserId());
 
     }
@@ -33,7 +33,6 @@ class TrackingNotificationController extends BaseController {
     /**
      * Get paginated list of tracking notifications with filters
      *
-     * @param Request $request
      * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator
      */
     public function list(Request $request) {
@@ -68,9 +67,9 @@ class TrackingNotificationController extends BaseController {
             return response()->json([
                 "bool" => true,
                 "msg" => "Notificación preparada para reintento.",
-                "data" => $notification
+                "data" => $notification,
             ]);
-        }catch(\Throwable $exception) {
+        } catch (\Throwable $exception) {
             return $this->handleException($exception, "update");
         }
 
@@ -78,13 +77,10 @@ class TrackingNotificationController extends BaseController {
 
     /**
      * Get translation namespace for tracking notification module
-     *
-     * @return string
      */
     protected function getTranslationNamespace(): string {
 
         return self::TRANSLATION_NAMESPACE;
 
     }
-
 }

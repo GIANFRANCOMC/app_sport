@@ -9,7 +9,6 @@ use App\Models\System\Organizations\User;
 use Illuminate\Database\Eloquent\Model;
 
 final class ServiceSessionItem extends Model {
-
     protected $table = "service_session_items";
 
     protected $fillable = [
@@ -36,7 +35,7 @@ final class ServiceSessionItem extends Model {
         "updated_at",
         "updated_by",
         "canceled_at",
-        "canceled_by"
+        "canceled_by",
     ];
 
     protected $casts = [
@@ -48,7 +47,7 @@ final class ServiceSessionItem extends Model {
         "paused_minutes" => "integer",
         "preparation_started_at" => "datetime",
         "ready_at" => "datetime",
-        "delivered_at" => "datetime"
+        "delivered_at" => "datetime",
     ];
 
     public function session() {
@@ -68,5 +67,4 @@ final class ServiceSessionItem extends Model {
         return $this->belongsTo(User::class, "assigned_user_id", "id");
 
     }
-
 }

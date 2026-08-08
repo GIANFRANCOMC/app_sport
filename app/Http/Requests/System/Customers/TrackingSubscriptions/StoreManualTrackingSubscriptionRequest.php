@@ -8,7 +8,6 @@ use App\Http\Requests\System\Base\CompanyFormRequest;
 use App\Rules\System\Defaults\BelongsToCompany;
 
 final class StoreManualTrackingSubscriptionRequest extends CompanyFormRequest {
-
     public function rules(): array {
 
         return [
@@ -23,9 +22,8 @@ final class StoreManualTrackingSubscriptionRequest extends CompanyFormRequest {
             "force" => ["nullable", "boolean"],
             "attendance_limit_per_day" => ["nullable", "integer", "min:1", "max:999"],
             "observation" => ["nullable", "string", "max:500"],
-            "send_welcome_email" => ["nullable", "boolean"]
+            "send_welcome_email" => ["nullable", "boolean"],
         ];
 
     }
-
 }

@@ -1,7 +1,7 @@
 @extends('Platform.layouts.app')
 @section('title', 'Clientes tenant')
 @section('content')
-<div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+<div class="platform-card platform-card--hero platform-card__body d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
     <div><h1 class="platform-title">Clientes tenant</h1><p class="platform-subtitle">Control central de acceso, módulos y avisos.</p></div>
     <button class="btn platform-btn-primary text-white" data-bs-toggle="collapse" data-bs-target="#newTenant"><i class="fa-solid fa-plus me-1"></i> Nuevo cliente</button>
 </div>
@@ -17,9 +17,10 @@
             <div class="col-md-3"><label class="form-label">Nombre comercial</label><input class="form-control" name="commercial_name" required></div>
             <div class="col-md-3"><label class="form-label">Razón social</label><input class="form-control" name="legal_name" required></div>
             <div class="col-md-3"><label class="form-label">Documento</label><input class="form-control" name="document_number" required></div>
-            <div class="col-md-4"><label class="form-label">Administrador</label><input class="form-control" name="admin_name" required></div>
-            <div class="col-md-4"><label class="form-label">Correo administrador</label><input class="form-control" type="email" name="admin_email" required></div>
-            <div class="col-md-4"><label class="form-label">Contraseña inicial</label><input class="form-control" type="password" name="admin_password" minlength="8" required></div>
+            <div class="col-md-3"><label class="form-label">Administrador</label><input class="form-control" name="admin_name" required></div>
+            <div class="col-md-3"><label class="form-label">Correo administrador</label><input class="form-control" type="email" name="admin_email" required></div>
+            <div class="col-md-3"><label class="form-label">Contraseña inicial</label><input class="form-control" type="password" name="admin_password" minlength="10" required></div>
+            <div class="col-md-3"><label class="form-label">Confirmar contraseña</label><input class="form-control" type="password" name="admin_password_confirmation" minlength="10" required></div>
         </div>
         <div class="text-end mt-3"><button class="btn platform-btn-primary text-white">Crear y aprovisionar</button></div>
     </form>

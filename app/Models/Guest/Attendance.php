@@ -6,16 +6,19 @@ use App\Helpers\System\Utilities;
 use Illuminate\Database\Eloquent\Model;
 
 class Attendance extends Model {
+    protected $table = "attendances";
 
-    protected $table               = "attendances";
-    protected $primaryKey          = "id";
-    public $incrementing           = true;
-    public $timestamps             = true;
+    protected $primaryKey = "id";
+
+    public $incrementing = true;
+
+    public $timestamps = true;
+
     public static $snakeAttributes = true;
 
     protected $appends = [
         "formatted_type",
-        "formatted_status"
+        "formatted_status",
     ];
 
     protected $fillable = [
@@ -32,7 +35,7 @@ class Attendance extends Model {
         "updated_at",
         "updated_by",
         "canceled_at",
-        "canceled_by"
+        "canceled_by",
     ];
 
     // Appends
@@ -56,7 +59,7 @@ class Attendance extends Model {
             ["code" => "qr_camera", "label" => "Cámara interna"],
             ["code" => "qr_scanner", "label" => "Escáner externo"],
             ["code" => "qr_public", "label" => "Público"],
-            ["code" => "biometric", "label" => "Biométrico"]
+            ["code" => "biometric", "label" => "Biométrico"],
         ];
 
         return Utilities::getValues($types, $type, $code);
@@ -70,7 +73,7 @@ class Attendance extends Model {
             ["code" => "canceled", "label" => "Anulada"],
             ["code" => "inactive", "label" => "Inactiva"],
             ["code" => "finalized", "label" => "Concluida"],
-            ["code" => "absent", "label" => "Ausente"]
+            ["code" => "absent", "label" => "Ausente"],
         ];
 
         return Utilities::getValues($statuses, $type, $code);
@@ -95,5 +98,4 @@ class Attendance extends Model {
         return $this->belongsTo(Customer::class, "customer_id", "id");
 
     }
-
 }

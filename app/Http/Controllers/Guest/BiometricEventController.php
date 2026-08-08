@@ -10,7 +10,6 @@ use App\Services\System\Devices\BiometricDevices\BiometricEventService;
 use DomainException;
 
 final class BiometricEventController extends Controller {
-
     public function store(BiometricDeviceEventRequest $request) {
 
         try {
@@ -25,12 +24,11 @@ final class BiometricEventController extends Controller {
             return response()->json([
                 "bool" => true,
                 "event_uuid" => $event->event_uuid,
-                "status" => $event->processing_status
+                "status" => $event->processing_status,
             ], 202);
-        }catch(DomainException $exception) {
+        } catch (DomainException $exception) {
             return response()->json(["bool" => false, "msg" => $exception->getMessage()], 422);
         }
 
     }
-
 }

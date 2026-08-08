@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace App\Services\System\Base;
 
+use App\Services\System\Organizations\Companies\CompanySettingService;
 use Illuminate\Support\Facades\Cache;
 use InvalidArgumentException;
 use stdClass;
-use App\Services\System\Organizations\Companies\CompanySettingService;
 
 /**
  * Shared cache contract for System module initialization parameters.
  */
 abstract class BaseConfigService {
-
     protected const CACHE_TTL = 3600;
+
     protected const USER_SCOPED_CACHE = false;
 
     abstract protected static function getCachePrefix(): string;
@@ -44,14 +44,14 @@ abstract class BaseConfigService {
 
         $page = self::normalizePage($page);
 
-        if(static::usesUserScopedCache()) {
+        if (static::usesUserScopedCache()) {
             static::registerUserCacheScope($companyId, $userId);
         }
 
         return Cache::remember(
             static::cacheKey($companyId, $page, $userId),
             static::CACHE_TTL,
-            fn() => static::createInitParams($companyId, static::buildConfig($companyId, $page, $userId))
+            fn () => static::createInitParams($companyId, static::buildConfig($companyId, $page, $userId))
         );
 
     }
@@ -64,10 +64,10 @@ abstract class BaseConfigService {
             ? static::cachePages()
             : [self::normalizePage($page)];
 
-        if(static::usesUserScopedCache()) {
+        if (static::usesUserScopedCache()) {
 
-            foreach(static::registeredUserIds($companyId) as $userId) {
-                foreach(array_unique($pages) as $cachePage) {
+            foreach (static::registeredUserIds($companyId) as $userId) {
+                foreach (array_unique($pages) as $cachePage) {
                     Cache::forget(static::cacheKey($companyId, $cachePage, $userId));
                 }
             }
@@ -76,7 +76,7 @@ abstract class BaseConfigService {
 
         }
 
-        foreach(array_unique($pages) as $cachePage) {
+        foreach (array_unique($pages) as $cachePage) {
 
             Cache::forget(static::cacheKey($companyId, $cachePage));
 
@@ -94,7 +94,7 @@ abstract class BaseConfigService {
 
         self::validateCompanyId($companyId);
 
-        if(!static::usesUserScopedCache() || $userId <= 0) {
+        if (! static::usesUserScopedCache() || $userId <= 0) {
 
             return;
 
@@ -104,7 +104,7 @@ abstract class BaseConfigService {
             ? static::cachePages()
             : [self::normalizePage($page)];
 
-        foreach(array_unique($pages) as $cachePage) {
+        foreach (array_unique($pages) as $cachePage) {
 
             Cache::forget(static::cacheKey($companyId, $cachePage, $userId));
 
@@ -125,9 +125,9 @@ abstract class BaseConfigService {
             $page
         );
 
-        if(static::usesUserScopedCache()) {
+        if (static::usesUserScopedCache()) {
 
-            if(!$userId || $userId <= 0) {
+            if (! $userId || $userId <= 0) {
                 throw new InvalidArgumentException("User ID is required for user-scoped configuration cache.");
             }
 
@@ -142,15 +142,15 @@ abstract class BaseConfigService {
     public static function registerUserCacheScope(int $companyId, int $userId): void {
 
         self::validateCompanyId($companyId);
-        if($userId <= 0) {
+        if ($userId <= 0) {
             throw new InvalidArgumentException("User ID must be greater than zero.");
         }
 
         $key = self::userIndexKey($companyId);
         $userIds = collect(Cache::get($key, []))
             ->push($userId)
-            ->map(fn($id) => (int) $id)
-            ->filter(fn($id) => $id > 0)
+            ->map(fn ($id) => (int) $id)
+            ->filter(fn ($id) => $id > 0)
             ->unique()
             ->values()
             ->all();
@@ -161,6 +161,7 @@ abstract class BaseConfigService {
     public static function userIndexKey(int $companyId): string {
 
         self::validateCompanyId($companyId);
+
         return "init_params:user_index:company:{$companyId}";
 
     }
@@ -174,8 +175,8 @@ abstract class BaseConfigService {
     private static function registeredUserIds(int $companyId): array {
 
         return collect(Cache::get(self::userIndexKey($companyId), []))
-            ->map(fn($id) => (int) $id)
-            ->filter(fn($id) => $id > 0)
+            ->map(fn ($id) => (int) $id)
+            ->filter(fn ($id) => $id > 0)
             ->unique()
             ->values()
             ->all();
@@ -197,7 +198,7 @@ abstract class BaseConfigService {
 
         return self::data([
             "config" => $config,
-            "bool"   => true
+            "bool" => true,
         ]);
 
     }
@@ -215,9 +216,9 @@ abstract class BaseConfigService {
                     "round" => max(0, min(8, (int) ($numeric["decimal_precision"] ?? 3))),
                     "minValue" => (float) ($numeric["default_min_value"] ?? 0),
                     "maxValue" => (float) ($numeric["default_max_value"] ?? 999999999999.999),
-                    "maxSize" => max(1, (int) ($numeric["max_file_size_kb"] ?? 4096))
-                ]
-            ]
+                    "maxSize" => max(1, (int) ($numeric["max_file_size_kb"] ?? 4096)),
+                ],
+            ],
         ]);
 
     }
@@ -227,7 +228,7 @@ abstract class BaseConfigService {
         $page = strtolower(trim($page));
         $pages = static::cachePages();
 
-        if($page === "") {
+        if ($page === "") {
 
             return $pages[0] ?? "main";
 
@@ -241,12 +242,10 @@ abstract class BaseConfigService {
 
     private static function validateCompanyId(int $companyId): void {
 
-        if($companyId <= 0) {
+        if ($companyId <= 0) {
 
             throw new InvalidArgumentException("Company ID must be greater than zero.");
-
         }
 
     }
-
 }

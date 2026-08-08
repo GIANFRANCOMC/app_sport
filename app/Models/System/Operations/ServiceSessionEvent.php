@@ -8,7 +8,6 @@ use App\Models\System\Organizations\User;
 use Illuminate\Database\Eloquent\Model;
 
 final class ServiceSessionEvent extends Model {
-
     protected $table = "service_session_events";
 
     public $timestamps = false;
@@ -23,12 +22,12 @@ final class ServiceSessionEvent extends Model {
         "new_status",
         "note",
         "metadata",
-        "occurred_at"
+        "occurred_at",
     ];
 
     protected $casts = [
         "metadata" => "array",
-        "occurred_at" => "datetime"
+        "occurred_at" => "datetime",
     ];
 
     public function session() {
@@ -42,5 +41,4 @@ final class ServiceSessionEvent extends Model {
         return $this->belongsTo(User::class, "user_id", "id");
 
     }
-
 }

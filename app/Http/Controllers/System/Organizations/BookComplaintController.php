@@ -4,18 +4,18 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\System\Organizations;
 
-use App\Http\Controllers\System\Base\BaseController;
 use App\Helpers\System\{Utilities};
+use App\Http\Controllers\System\Base\BaseController;
+use App\Http\Requests\System\Organizations\BookComplaints\{UpdateBookComplaintRequest};
 use App\Models\System\Organizations\BookComplaintAttachment;
-use Illuminate\Http\{JsonResponse, Request};
+use App\Services\System\Organizations\BookComplaints\BookComplaintConfigService;
+use App\Services\System\Organizations\BookComplaints\BookComplaintService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
-use App\Http\Requests\System\Organizations\BookComplaints\{UpdateBookComplaintRequest};
-use App\Services\System\Organizations\BookComplaints\{BookComplaintConfigService, BookComplaintService};
-
 class BookComplaintController extends BaseController {
-
     /**
      * Translation namespace for book complaint module
      */
@@ -24,12 +24,12 @@ class BookComplaintController extends BaseController {
     /**
      * Get initialization parameters for the module
      *
-     * @param Request $request
      * @return \stdClass
      */
     public function initParams(Request $request) {
 
         $page = $this->getPage($request);
+
         return BookComplaintConfigService::getInitParams($this->getCompanyId(), $page, $this->getUserId());
 
     }
@@ -37,7 +37,6 @@ class BookComplaintController extends BaseController {
     /**
      * Get paginated list of book complaints with filters
      *
-     * @param Request $request
      * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator
      */
     public function list(Request $request) {
@@ -46,7 +45,7 @@ class BookComplaintController extends BaseController {
             "status",
             "type",
             "branch_id",
-            "word"
+            "word",
         ]));
         $perPage = $this->getPerPage($request, Utilities::$per_page_default);
 
@@ -65,16 +64,10 @@ class BookComplaintController extends BaseController {
 
     }
 
-
-
-
-
     /**
      * Update the specified book complaint
      *
-     * @param UpdateBookComplaintRequest $request
-     * @param int $id Book complaint ID
-     * @return JsonResponse
+     * @param  int  $id Book complaint ID
      */
     public function update(UpdateBookComplaintRequest $request, int $id): JsonResponse {
 
@@ -82,16 +75,16 @@ class BookComplaintController extends BaseController {
 
             $bookComplaint = BookComplaintService::findByIdAndCompany($id, $this->getCompanyId(), null);
 
-            if(!Utilities::isDefined($bookComplaint)) {
+            if (! Utilities::isDefined($bookComplaint)) {
 
                 return $this->notFoundResponse();
 
             }
 
-            $data         = $this->prepareBookComplaintData($request);
+            $data = $this->prepareBookComplaintData($request);
             $bookComplaint = BookComplaintService::update($bookComplaint, $data, $this->getUserId());
 
-            if(!Utilities::isDefined($bookComplaint)) {
+            if (! Utilities::isDefined($bookComplaint)) {
 
                 return $this->errorResponse("update_failed");
 
@@ -99,7 +92,7 @@ class BookComplaintController extends BaseController {
 
             return $this->updatedResponse($bookComplaint, "updated", "bookComplaint");
 
-        }catch(\Exception $e) {
+        } catch (\Exception $e) {
 
             return $this->handleException($e, "update");
 
@@ -123,12 +116,8 @@ class BookComplaintController extends BaseController {
 
     }
 
-
     /**
      * Prepare book complaint data from request
-     *
-     * @param UpdateBookComplaintRequest $request
-     * @return array
      */
     private function prepareBookComplaintData(UpdateBookComplaintRequest $request): array {
 
@@ -136,20 +125,17 @@ class BookComplaintController extends BaseController {
             "admin_response" => $request->admin_response,
             "public_response" => $request->public_response,
             "status_note" => $request->status_note,
-            "status"         => $request->status
+            "status" => $request->status,
         ];
 
     }
 
     /**
      * Get translation namespace for book complaint module
-     *
-     * @return string
      */
     protected function getTranslationNamespace(): string {
 
         return self::TRANSLATION_NAMESPACE;
 
     }
-
 }

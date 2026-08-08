@@ -4,17 +4,14 @@ declare(strict_types=1);
 
 namespace App\Services\System\Catalogs\Recipes;
 
+use App\Models\System\Catalogs\Item;
+use App\Models\System\Catalogs\RecipeDish;
+use App\Services\System\Base\BaseConfigService;
+use App\Services\System\Base\CompanyReferenceDataService;
+use App\Services\System\Base\MasterReferenceDataService;
 use stdClass;
 
-use App\Models\System\Catalogs\{Item, RecipeDish};
-use App\Services\System\Base\{
-    BaseConfigService,
-    CompanyReferenceDataService,
-    MasterReferenceDataService
-};
-
 final class RecipeConfigService extends BaseConfigService {
-
     protected const USER_SCOPED_CACHE = true;
 
     protected static function getCachePrefix(): string {
@@ -29,7 +26,7 @@ final class RecipeConfigService extends BaseConfigService {
 
         return self::data([
             "items" => self::data([
-                "records" => $references->saleItems()
+                "records" => $references->saleItems(),
             ]),
             "ingredients" => self::data([
                 "records" => Item::query()
@@ -38,15 +35,14 @@ final class RecipeConfigService extends BaseConfigService {
                     ->where("status", "active")
                     ->with(["currency", "brand"])
                     ->orderBy("name")
-                    ->get()
+                    ->get(),
             ]),
             "currencies" => self::data([
-                "records" => MasterReferenceDataService::currencies($companyId)
+                "records" => MasterReferenceDataService::currencies($companyId),
             ]),
             "internal_code_prefixes" => self::internalCodePrefixes($companyId),
-            "statuses" => RecipeDish::getStatuses()
+            "statuses" => RecipeDish::getStatuses(),
         ]);
 
     }
-
 }

@@ -4,14 +4,13 @@ declare(strict_types=1);
 
 namespace App\Models\System\Purchases;
 
-use Illuminate\Database\Eloquent\Model;
-
 use App\Models\System\Catalogs\Item;
 use App\Models\System\Warehouses\InventoryMovement;
+use Illuminate\Database\Eloquent\Model;
 
 final class PurchaseReceiptItem extends Model {
-
     protected $table = "purchase_receipt_items";
+
     public $timestamps = false;
 
     protected $fillable = [
@@ -24,14 +23,14 @@ final class PurchaseReceiptItem extends Model {
         "unit_cost",
         "total_cost",
         "created_at",
-        "created_by"
+        "created_by",
     ];
 
     protected $casts = [
         "quantity" => "App\\Casts\\System\\ConfigurableDecimal",
         "unit_cost" => "App\\Casts\\System\\ConfigurableDecimal",
         "total_cost" => "App\\Casts\\System\\ConfigurableDecimal",
-        "created_at" => "datetime"
+        "created_at" => "datetime",
     ];
 
     public function receipt() {
@@ -57,5 +56,4 @@ final class PurchaseReceiptItem extends Model {
         return $this->belongsTo(InventoryMovement::class, "inventory_movement_id");
 
     }
-
 }

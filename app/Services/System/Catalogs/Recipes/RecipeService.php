@@ -4,33 +4,30 @@ declare(strict_types=1);
 
 namespace App\Services\System\Catalogs\Recipes;
 
+use App\Helpers\System\Utilities;
+use App\Models\System\Catalogs\Item;
+use App\Models\System\Catalogs\RecipeDish;
+use App\Models\System\Catalogs\RecipeDishComponent;
+use App\Models\System\Catalogs\RecipeDishOption;
+use App\Models\System\Catalogs\RecipeDishOptionComponent;
+use App\Models\System\Catalogs\RecipeDishTopping;
+use App\Models\System\Catalogs\RecipeTopping;
+use App\Models\System\Catalogs\RecipeToppingComponent;
+use App\Models\System\Warehouses\Warehouse;
+use App\Models\System\Warehouses\WarehouseItem;
 use DomainException;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 
-use App\Helpers\System\Utilities;
-use App\Models\System\Catalogs\{
-    Item,
-    RecipeDish,
-    RecipeDishComponent,
-    RecipeDishOption,
-    RecipeDishOptionComponent,
-    RecipeDishTopping,
-    RecipeTopping,
-    RecipeToppingComponent
-};
-use App\Models\System\Warehouses\{Warehouse, WarehouseItem};
-
 final class RecipeService {
-
     private const RELATIONS = [
         "item.brand",
         "item.currency",
         "components.item",
         "dishToppings.topping.currency",
         "dishToppings.topping.components.item",
-        "options.components.item"
+        "options.components.item",
     ];
 
     public static function getPaginatedList(int $companyId, array $filters = [], int $perPage = 15): LengthAwarePaginator {
@@ -48,15 +45,15 @@ final class RecipeService {
         $filterBy = $filters["filter_by"] ?? null;
         $word = $filters["word"] ?? null;
 
-        if(Utilities::isDefined($word) && Utilities::isDefined($filterBy)) {
+        if (Utilities::isDefined($word) && Utilities::isDefined($filterBy)) {
 
             $searchTerm = Utilities::getWordSearch($word);
 
-            $query->where(function(Builder $builder) use($filterBy, $searchTerm) {
+            $query->where(function (Builder $builder) use ($filterBy, $searchTerm) {
 
-                if($filterBy === "all") {
+                if ($filterBy === "all") {
 
-                    $builder->whereHas("item", function(Builder $itemQuery) use($searchTerm) {
+                    $builder->whereHas("item", function (Builder $itemQuery) use ($searchTerm) {
                         $itemQuery->where("name", "like", $searchTerm)
                             ->orWhere("internal_code", "like", $searchTerm)
                             ->orWhere("barcode", "like", $searchTerm)
@@ -67,15 +64,15 @@ final class RecipeService {
 
                 }
 
-                if(in_array($filterBy, ["name", "internal_code", "barcode"], true)) {
+                if (in_array($filterBy, ["name", "internal_code", "barcode"], true)) {
 
-                    $builder->whereHas("item", fn(Builder $itemQuery) => $itemQuery->where($filterBy, "like", $searchTerm));
+                    $builder->whereHas("item", fn (Builder $itemQuery) => $itemQuery->where($filterBy, "like", $searchTerm));
 
                     return;
 
                 }
 
-                if($filterBy === "preparation_notes") {
+                if ($filterBy === "preparation_notes") {
 
                     $builder->where("preparation_notes", "like", $searchTerm);
 
@@ -91,7 +88,7 @@ final class RecipeService {
 
     public static function create(array $data, int $companyId, int $userId): RecipeDish {
 
-        return DB::transaction(function() use($data, $companyId, $userId) {
+        return DB::transaction(function () use ($data, $companyId, $userId) {
 
             self::assertItemBelongsToCompany((int) $data["item_id"], $companyId);
 
@@ -103,7 +100,7 @@ final class RecipeService {
                 "preparation_notes" => $data["preparation_notes"] ?? null,
                 "status" => $data["status"] ?? "active",
                 "created_at" => now(),
-                "created_by" => $userId
+                "created_by" => $userId,
             ]);
 
             self::syncChildren($recipe, $data, $companyId, $userId);
@@ -116,13 +113,12 @@ final class RecipeService {
 
     public static function update(RecipeDish $recipe, array $data, int $companyId, int $userId): RecipeDish {
 
-        if((int) $recipe->company_id !== $companyId) {
+        if ((int) $recipe->company_id !== $companyId) {
 
             throw new DomainException("La receta seleccionada no pertenece a la empresa.");
-
         }
 
-        return DB::transaction(function() use($recipe, $data, $companyId, $userId) {
+        return DB::transaction(function () use ($recipe, $data, $companyId, $userId) {
 
             self::assertItemBelongsToCompany((int) $data["item_id"], $companyId);
 
@@ -133,7 +129,7 @@ final class RecipeService {
                 "preparation_notes" => $data["preparation_notes"] ?? null,
                 "status" => $data["status"] ?? "active",
                 "updated_at" => now(),
-                "updated_by" => $userId
+                "updated_by" => $userId,
             ]);
 
             self::syncChildren($recipe, $data, $companyId, $userId);
@@ -146,13 +142,12 @@ final class RecipeService {
 
     public static function delete(RecipeDish $recipe, int $companyId): void {
 
-        if((int) $recipe->company_id !== $companyId) {
+        if ((int) $recipe->company_id !== $companyId) {
 
             throw new DomainException("La receta seleccionada no pertenece a la empresa.");
-
         }
 
-        DB::transaction(function() use($recipe) {
+        DB::transaction(function () use ($recipe) {
 
             $toppingIds = RecipeDishTopping::where("recipe_dish_id", $recipe->id)
                 ->pluck("recipe_topping_id")
@@ -160,7 +155,7 @@ final class RecipeService {
 
             $recipe->delete();
 
-            if(!empty($toppingIds)) {
+            if (! empty($toppingIds)) {
 
                 RecipeTopping::whereIn("id", $toppingIds)->delete();
 
@@ -177,10 +172,9 @@ final class RecipeService {
         ?array $allowedWarehouseIds = null
     ): array {
 
-        if($allowedWarehouseIds !== null && !in_array($warehouseId, $allowedWarehouseIds, true)) {
+        if ($allowedWarehouseIds !== null && ! in_array($warehouseId, $allowedWarehouseIds, true)) {
 
             throw new DomainException("No tienes acceso al almacén seleccionado.");
-
         }
 
         $warehouse = Warehouse::query()
@@ -188,10 +182,9 @@ final class RecipeService {
             ->where("status", "active")
             ->find($warehouseId);
 
-        if(!$warehouse) {
+        if (! $warehouse) {
 
             throw new DomainException("El almacén seleccionado no está activo o no pertenece a la empresa.");
-
         }
 
         $recipe = RecipeDish::query()
@@ -199,19 +192,18 @@ final class RecipeService {
             ->with(self::RELATIONS)
             ->find($recipeId);
 
-        if(!$recipe) {
+        if (! $recipe) {
 
             throw new DomainException("La receta seleccionada no pertenece a la empresa.");
-
         }
 
         $itemIds = $recipe->components->pluck("item_id");
 
-        foreach($recipe->options as $option) {
+        foreach ($recipe->options as $option) {
             $itemIds = $itemIds->merge($option->components->pluck("item_id"));
         }
 
-        foreach($recipe->dishToppings as $link) {
+        foreach ($recipe->dishToppings as $link) {
             $itemIds = $itemIds->merge($link->topping?->components?->pluck("item_id") ?? collect());
         }
 
@@ -226,15 +218,15 @@ final class RecipeService {
         $yield = max(0.0001, (float) $recipe->yield_quantity);
         $recipeWasteFactor = 1 + (max(0, (float) $recipe->waste_percentage) / 100);
         $base = self::costComponents($recipe->components, $costs, $recipeWasteFactor / $yield, $companyId);
-        $options = $recipe->options->map(fn($option) => [
+        $options = $recipe->options->map(fn ($option) => [
             "id" => $option->id,
             "name" => $option->name,
-            "cost" => self::costComponents($option->components, $costs, $recipeWasteFactor, $companyId)["total"]
+            "cost" => self::costComponents($option->components, $costs, $recipeWasteFactor, $companyId)["total"],
         ])->values();
-        $toppings = $recipe->dishToppings->map(fn($link) => [
+        $toppings = $recipe->dishToppings->map(fn ($link) => [
             "id" => $link->id,
             "name" => $link->topping?->name,
-            "cost" => self::costComponents($link->topping?->components ?? collect(), $costs, $recipeWasteFactor, $companyId)["total"]
+            "cost" => self::costComponents($link->topping?->components ?? collect(), $costs, $recipeWasteFactor, $companyId)["total"],
         ])->values();
 
         return [
@@ -247,9 +239,9 @@ final class RecipeService {
             "option_costs" => $options,
             "topping_costs" => $toppings,
             "missing_cost_item_ids" => $itemIds
-                ->reject(fn($itemId) => $costs->has($itemId) && $costs->get($itemId) !== null)
+                ->reject(fn ($itemId) => $costs->has($itemId) && $costs->get($itemId) !== null)
                 ->values()
-                ->all()
+                ->all(),
         ];
 
     }
@@ -266,12 +258,12 @@ final class RecipeService {
 
         RecipeDishComponent::where("recipe_dish_id", $recipe->id)->delete();
 
-        foreach($components as $component) {
+        foreach ($components as $component) {
 
             $itemId = (int) ($component["item_id"] ?? 0);
             $quantity = (float) ($component["quantity"] ?? 0);
 
-            if($itemId <= 0 || $quantity <= 0) {
+            if ($itemId <= 0 || $quantity <= 0) {
                 continue;
             }
 
@@ -286,7 +278,7 @@ final class RecipeService {
                 "note" => $component["note"] ?? null,
                 "status" => "active",
                 "created_at" => now(),
-                "created_by" => $userId
+                "created_by" => $userId,
             ]);
 
         }
@@ -303,17 +295,17 @@ final class RecipeService {
 
         RecipeDishTopping::where("recipe_dish_id", $recipe->id)->delete();
 
-        if(!empty($oldToppingIds)) {
+        if (! empty($oldToppingIds)) {
 
             RecipeTopping::whereIn("id", $oldToppingIds)->delete();
 
         }
 
-        foreach($toppings as $toppingData) {
+        foreach ($toppings as $toppingData) {
 
             $name = trim((string) ($toppingData["name"] ?? ""));
 
-            if($name === "") {
+            if ($name === "") {
                 continue;
             }
 
@@ -327,7 +319,7 @@ final class RecipeService {
                 "max_quantity" => $toppingData["max_quantity"] ?? null,
                 "status" => $toppingData["status"] ?? "active",
                 "created_at" => now(),
-                "created_by" => $userId
+                "created_by" => $userId,
             ]);
 
             RecipeDishTopping::create([
@@ -339,7 +331,7 @@ final class RecipeService {
                 "max_quantity" => $toppingData["max_quantity"] ?? null,
                 "status" => "active",
                 "created_at" => now(),
-                "created_by" => $userId
+                "created_by" => $userId,
             ]);
 
             self::syncToppingComponents($topping, $toppingData["components"] ?? [], $companyId, $userId);
@@ -350,12 +342,12 @@ final class RecipeService {
 
     private static function syncToppingComponents(RecipeTopping $topping, array $components, int $companyId, int $userId): void {
 
-        foreach($components as $component) {
+        foreach ($components as $component) {
 
             $itemId = (int) ($component["item_id"] ?? 0);
             $quantity = (float) ($component["quantity"] ?? 0);
 
-            if($itemId <= 0 || $quantity <= 0) {
+            if ($itemId <= 0 || $quantity <= 0) {
                 continue;
             }
 
@@ -370,7 +362,7 @@ final class RecipeService {
                 "note" => $component["note"] ?? null,
                 "status" => "active",
                 "created_at" => now(),
-                "created_by" => $userId
+                "created_by" => $userId,
             ]);
 
         }
@@ -381,11 +373,11 @@ final class RecipeService {
 
         RecipeDishOption::where("recipe_dish_id", $recipe->id)->delete();
 
-        foreach($options as $optionData) {
+        foreach ($options as $optionData) {
 
             $name = trim((string) ($optionData["name"] ?? ""));
 
-            if($name === "") {
+            if ($name === "") {
                 continue;
             }
 
@@ -397,15 +389,15 @@ final class RecipeService {
                 "max_portions" => $optionData["max_portions"] ?? null,
                 "status" => $optionData["status"] ?? "active",
                 "created_at" => now(),
-                "created_by" => $userId
+                "created_by" => $userId,
             ]);
 
-            foreach(($optionData["components"] ?? []) as $component) {
+            foreach (($optionData["components"] ?? []) as $component) {
 
                 $itemId = (int) ($component["item_id"] ?? 0);
                 $quantity = (float) ($component["quantity"] ?? 0);
 
-                if($itemId <= 0 || $quantity <= 0) {
+                if ($itemId <= 0 || $quantity <= 0) {
                     continue;
                 }
 
@@ -420,7 +412,7 @@ final class RecipeService {
                     "note" => $component["note"] ?? null,
                     "status" => "active",
                     "created_at" => now(),
-                    "created_by" => $userId
+                    "created_by" => $userId,
                 ]);
 
             }
@@ -431,17 +423,16 @@ final class RecipeService {
 
     private static function assertItemBelongsToCompany(int $itemId, int $companyId): void {
 
-        if($itemId <= 0 || !Item::whereKey($itemId)->where("company_id", $companyId)->exists()) {
+        if ($itemId <= 0 || ! Item::whereKey($itemId)->where("company_id", $companyId)->exists()) {
 
             throw new DomainException("El producto, servicio o insumo seleccionado no pertenece a la empresa.");
-
         }
 
     }
 
     private static function costComponents($components, $costs, float $multiplier, int $companyId): array {
 
-        $rows = collect($components)->map(function($component) use($costs, $multiplier, $companyId) {
+        $rows = collect($components)->map(function ($component) use ($costs, $multiplier, $companyId) {
 
             $wasteFactor = 1 + (max(0, (float) $component->waste_percentage) / 100);
             $quantity = Utilities::round((float) $component->quantity * $multiplier * $wasteFactor, null, $companyId);
@@ -452,16 +443,15 @@ final class RecipeService {
                 "item" => $component->item,
                 "quantity_with_waste" => $quantity,
                 "average_unit_cost" => $unitCost,
-                "cost" => Utilities::round($quantity * $unitCost, null, $companyId)
+                "cost" => Utilities::round($quantity * $unitCost, null, $companyId),
             ];
 
         })->values();
 
         return [
             "components" => $rows,
-            "total" => Utilities::round((float) $rows->sum("cost"), null, $companyId)
+            "total" => Utilities::round((float) $rows->sum("cost"), null, $companyId),
         ];
 
     }
-
 }

@@ -4,13 +4,12 @@ declare(strict_types=1);
 
 namespace App\Models\System\Purchases;
 
+use App\Models\System\Warehouses\Warehouse;
 use Illuminate\Database\Eloquent\Model;
 
-use App\Models\System\Warehouses\Warehouse;
-
 final class PurchaseReceipt extends Model {
-
     protected $table = "purchase_receipts";
+
     public $timestamps = false;
 
     protected $fillable = [
@@ -24,13 +23,13 @@ final class PurchaseReceipt extends Model {
         "created_at",
         "created_by",
         "canceled_at",
-        "canceled_by"
+        "canceled_by",
     ];
 
     protected $casts = [
         "received_at" => "datetime",
         "created_at" => "datetime",
-        "canceled_at" => "datetime"
+        "canceled_at" => "datetime",
     ];
 
     public function purchase() {
@@ -50,5 +49,4 @@ final class PurchaseReceipt extends Model {
         return $this->hasMany(PurchaseReceiptItem::class, "purchase_receipt_id");
 
     }
-
 }

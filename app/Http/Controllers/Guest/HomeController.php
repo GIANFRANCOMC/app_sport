@@ -10,7 +10,6 @@ use Illuminate\Http\Request;
 use stdClass;
 
 class HomeController extends Controller {
-
     public function initParams(Request $request) {
 
         $company = $request->get("company");
@@ -21,17 +20,17 @@ class HomeController extends Controller {
 
         $page = $request->page ?? "";
 
-        if(in_array($page, ["main"])) {
+        if (in_array($page, ["main"])) {
 
             $config->companies = new stdClass();
             $config->companies->statuses = Company::getStatuses();
 
             $socialsMedia = $company->socialsMedia;
 
-            $company->facebook  = optional($socialsMedia->where("type", "facebook")->first())->link;
+            $company->facebook = optional($socialsMedia->where("type", "facebook")->first())->link;
             $company->instagram = optional($socialsMedia->where("type", "instagram")->first())->link;
-            $company->whatsapp  = optional($socialsMedia->where("type", "whatsapp")->first())->link;
-            $company->ownerApp  = Utilities::getOwnerApp();
+            $company->whatsapp = optional($socialsMedia->where("type", "whatsapp")->first())->link;
+            $company->ownerApp = Utilities::getOwnerApp();
 
             $config->items = new stdClass();
             $config->items->records = GuestCatalogService::publicItems($company->id);
@@ -39,9 +38,9 @@ class HomeController extends Controller {
             $config->categories = new stdClass();
             $config->categories->records = GuestCatalogService::publicCategories($company->id);
 
-            foreach($config->items->records as $record) {
+            foreach ($config->items->records as $record) {
 
-                if(!$record->see_my_web_price) {
+                if (! $record->see_my_web_price) {
 
                     unset($record->price);
                     unset($record->min_price);
@@ -58,7 +57,7 @@ class HomeController extends Controller {
         }
 
         $initParams->config = $config;
-        $initParams->bool   = true;
+        $initParams->bool = true;
 
         return $initParams;
 
@@ -73,8 +72,8 @@ class HomeController extends Controller {
             "meta" => [
                 "title" => "{$company->commercial_name} | Catálogo y atención",
                 "description" => $company->description ?: "Conoce productos, servicios, membresías y canales de atención de {$company->commercial_name}.",
-                "image" => $company->combinationmark ?: $company->logotype ?: $company->logomark
-            ]
+                "image" => $company->combinationmark ?: $company->logotype ?: $company->logomark,
+            ],
         ]);
 
     }
@@ -86,5 +85,4 @@ class HomeController extends Controller {
         return response()->json(["bool" => true, "msg" => "Data obtenida", "data" => $data], 200);
 
     }
-
 }

@@ -4,26 +4,29 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
-use App\Models\System\Organizations\UserAttendance;
 use App\Services\System\Customers\Tracking\TrackingAttendanceBusinessService;
 use App\Services\System\Organizations\Users\UserAttendanceService;
 use Carbon\Carbon;
 use DomainException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
-use Tests\TestCase;
 use Tests\Concerns\ProvisionsSystemDatabase;
+use Tests\TestCase;
 
 final class AttendanceFlowsTest extends TestCase {
-
-    use RefreshDatabase;
     use ProvisionsSystemDatabase;
+    use RefreshDatabase;
 
     private int $branchId;
+
     private int $currencyId;
+
     private int $customerId;
+
     private int $seriesId;
+
     private int $userId;
+
     private int $warehouseId;
 
     protected function setUp(): void {
@@ -31,27 +34,27 @@ final class AttendanceFlowsTest extends TestCase {
         parent::setUp();
         $this->provisionSystemDatabase();
 
-        $identityId = DB::table('identity_document_types')
-            ->where('company_id', 1)
-            ->where('code', 'dni')
-            ->value('id');
-        DB::table('customers')->updateOrInsert(
-            ['company_id' => 1, 'document_number' => '70000002'],
+        $identityId = DB::table("identity_document_types")
+            ->where("company_id", 1)
+            ->where("code", "dni")
+            ->value("id");
+        DB::table("customers")->updateOrInsert(
+            ["company_id" => 1, "document_number" => "70000002"],
             [
-                'company_id' => 1,
-                'identity_document_type_id' => $identityId,
-                'document_number' => '70000002',
-                'name' => 'Cliente de pruebas',
-                'status' => 'active',
-                'updated_at' => now()
+                "company_id" => 1,
+                "identity_document_type_id" => $identityId,
+                "document_number" => "70000002",
+                "name" => "Cliente de pruebas",
+                "status" => "active",
+                "updated_at" => now(),
             ]
         );
-        $this->branchId = (int) DB::table('branches')->where('company_id', 1)->where('name', 'Sede Principal')->value('id');
-        $this->currencyId = (int) DB::table('currencies')->where('company_id', 1)->where('code', 'PEN')->value('id');
-        $this->customerId = (int) DB::table('customers')->where('company_id', 1)->where('document_number', '70000002')->value('id');
-        $this->seriesId = (int) DB::table('series')->where('company_id', 1)->where('branch_id', $this->branchId)->value('id');
-        $this->userId = (int) DB::table('users')->where('company_id', 1)->where('email', 'admin@example.test')->value('id');
-        $this->warehouseId = (int) DB::table('warehouses')->where('company_id', 1)->where('branch_id', $this->branchId)->value('id');
+        $this->branchId = (int) DB::table("branches")->where("company_id", 1)->where("name", "Sede Principal")->value("id");
+        $this->currencyId = (int) DB::table("currencies")->where("company_id", 1)->where("code", "PEN")->value("id");
+        $this->customerId = (int) DB::table("customers")->where("company_id", 1)->where("document_number", "70000002")->value("id");
+        $this->seriesId = (int) DB::table("series")->where("company_id", 1)->where("branch_id", $this->branchId)->value("id");
+        $this->userId = (int) DB::table("users")->where("company_id", 1)->where("email", "admin@example.test")->value("id");
+        $this->warehouseId = (int) DB::table("warehouses")->where("company_id", 1)->where("branch_id", $this->branchId)->value("id");
 
     }
 
@@ -69,7 +72,7 @@ final class AttendanceFlowsTest extends TestCase {
             "end_date" => null,
             "user_id" => $this->userId,
             "type" => "manual_form",
-            "action" => "checkin"
+            "action" => "checkin",
         ]);
 
         $this->assertTrue($checkIn["bool"]);
@@ -77,7 +80,7 @@ final class AttendanceFlowsTest extends TestCase {
             "company_id" => 1,
             "branch_id" => $this->branchId,
             "customer_id" => $this->customerId,
-            "status" => "active"
+            "status" => "active",
         ]);
 
         $checkOut = $service->validateAndCreateAttendance([
@@ -87,7 +90,7 @@ final class AttendanceFlowsTest extends TestCase {
             "start_date" => null,
             "end_date" => $checkInAt->copy()->addHours(2),
             "user_id" => $this->userId,
-            "action" => "checkout"
+            "action" => "checkout",
         ]);
 
         $this->assertTrue($checkOut["bool"]);
@@ -95,7 +98,7 @@ final class AttendanceFlowsTest extends TestCase {
             "company_id" => 1,
             "branch_id" => $this->branchId,
             "customer_id" => $this->customerId,
-            "status" => "finalized"
+            "status" => "finalized",
         ]);
 
     }
@@ -114,7 +117,7 @@ final class AttendanceFlowsTest extends TestCase {
             "type" => "manual_form",
             "status" => "finalized",
             "created_at" => now(),
-            "created_by" => $this->userId
+            "created_by" => $this->userId,
         ]);
 
         $result = app(TrackingAttendanceBusinessService::class)->validateAndCreateAttendance([
@@ -125,7 +128,7 @@ final class AttendanceFlowsTest extends TestCase {
             "end_date" => null,
             "user_id" => $this->userId,
             "type" => "manual_form",
-            "action" => "checkin"
+            "action" => "checkin",
         ]);
 
         $this->assertFalse($result["bool"]);
@@ -143,7 +146,7 @@ final class AttendanceFlowsTest extends TestCase {
             "branch_id" => $this->branchId,
             "user_id" => $this->userId,
             "actor_id" => $this->userId,
-            "checked_in_at" => $checkInAt
+            "checked_in_at" => $checkInAt,
         ]);
 
         $this->assertSame(UserAttendanceService::STATUS_ACTIVE, $attendance->status);
@@ -153,7 +156,7 @@ final class AttendanceFlowsTest extends TestCase {
             "branch_id" => $this->branchId,
             "user_id" => $this->userId,
             "actor_id" => $this->userId,
-            "checked_out_at" => $checkInAt->copy()->addHours(8)
+            "checked_out_at" => $checkInAt->copy()->addHours(8),
         ]);
 
         $this->assertSame(UserAttendanceService::STATUS_FINALIZED, $attendance->status);
@@ -174,7 +177,7 @@ final class AttendanceFlowsTest extends TestCase {
             "internal_code" => "SUC-TEST-2",
             "name" => "Sede secundaria",
             "status" => "active",
-            "created_at" => now()
+            "created_at" => now(),
         ]);
 
         $secondBranchId = (int) DB::table("branches")->where("internal_code", "SUC-TEST-2")->value("id");
@@ -184,7 +187,7 @@ final class AttendanceFlowsTest extends TestCase {
             "branch_id" => $this->branchId,
             "user_id" => $this->userId,
             "actor_id" => $this->userId,
-            "checked_in_at" => "2026-07-02 08:00:00"
+            "checked_in_at" => "2026-07-02 08:00:00",
         ]);
 
         $this->expectException(DomainException::class);
@@ -195,7 +198,7 @@ final class AttendanceFlowsTest extends TestCase {
             "branch_id" => $secondBranchId,
             "user_id" => $this->userId,
             "actor_id" => $this->userId,
-            "checked_in_at" => "2026-07-02 09:00:00"
+            "checked_in_at" => "2026-07-02 09:00:00",
         ]);
 
     }
@@ -210,7 +213,7 @@ final class AttendanceFlowsTest extends TestCase {
             "currency_id" => $this->currencyId,
             "type" => "subscription",
             "status" => "active",
-            "created_at" => now()
+            "created_at" => now(),
         ]);
 
         $saleId = (int) DB::table("sales_header")->insertGetId([
@@ -226,7 +229,7 @@ final class AttendanceFlowsTest extends TestCase {
             "tax" => 0,
             "total" => 10,
             "status" => "active",
-            "created_at" => now()
+            "created_at" => now(),
         ]);
 
         $saleBodyId = (int) DB::table("sales_body")->insertGetId([
@@ -243,7 +246,7 @@ final class AttendanceFlowsTest extends TestCase {
             "type" => "subscription",
             "extras" => "{}",
             "status" => "active",
-            "created_at" => now()
+            "created_at" => now(),
         ]);
 
         DB::table("subscriptions")->insert([
@@ -259,9 +262,8 @@ final class AttendanceFlowsTest extends TestCase {
             "attendance_limit_per_day" => $limit,
             "type" => "sale",
             "status" => "active",
-            "created_at" => now()
+            "created_at" => now(),
         ]);
 
     }
-
 }

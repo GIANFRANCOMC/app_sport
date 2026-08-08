@@ -35,4 +35,3 @@ return [
     "exception_update" => "Error al actualizar la suscripción: :message",
     "exception_delete" => "Error al eliminar la suscripción: :message",
 ];
-

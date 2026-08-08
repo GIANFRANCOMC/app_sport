@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\System\Sales;
 
-use Illuminate\Http\{JsonResponse, Request};
-use Illuminate\Support\Facades\Validator;
-
 use App\Helpers\System\Utilities;
 use App\Http\Controllers\System\Base\BaseController;
-use App\Services\System\Sales\{QuotationService, SaleConfigService};
+use App\Services\System\Sales\QuotationService;
+use App\Services\System\Sales\SaleConfigService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 
 final class QuotationController extends BaseController {
-
     private const TRANSLATION_NAMESPACE = "System.Sales.quotations";
 
     public function index() {
@@ -39,7 +39,7 @@ final class QuotationController extends BaseController {
             $this->getCompanyId(),
             [
                 "word" => $request->input("word"),
-                "status" => $request->input("status")
+                "status" => $request->input("status"),
             ]
         )->paginate($this->getPerPage($request, Utilities::$per_page_default));
 
@@ -56,9 +56,9 @@ final class QuotationController extends BaseController {
         try {
             return response()->json([
                 "bool" => true,
-                "data" => QuotationService::saleDraft($this->getCompanyId(), $id)
+                "data" => QuotationService::saleDraft($this->getCompanyId(), $id),
             ]);
-        }catch(\Throwable $exception) {
+        } catch (\Throwable $exception) {
             return response()->json(["bool" => false, "msg" => $exception->getMessage()], 422);
         }
 
@@ -85,17 +85,17 @@ final class QuotationController extends BaseController {
             "details.*.price" => ["nullable", "numeric", "min:0", "decimal:0,$round"],
             "details.*.price_includes_tax" => ["nullable", "boolean"],
             "details.*.igv_exempt" => ["nullable", "boolean"],
-            "details.*.observation" => ["nullable", "string", "max:1000"]
+            "details.*.observation" => ["nullable", "string", "max:1000"],
         ], [
             "required" => "Campo obligatorio.",
             "details.min" => "Agrega al menos un detalle.",
             "numeric" => "Ingresa un número válido.",
             "gt" => "Debe ser mayor que cero.",
             "decimal" => "Usa hasta {$round} decimales.",
-            "after_or_equal" => "No puede ser anterior a la fecha de emisión."
+            "after_or_equal" => "No puede ser anterior a la fecha de emisión.",
         ]);
 
-        if($validator->fails()) {
+        if ($validator->fails()) {
             return response()->json(["bool" => false, "errors" => $validator->errors()], 422);
         }
 
@@ -103,9 +103,9 @@ final class QuotationController extends BaseController {
             return response()->json([
                 "bool" => true,
                 "msg" => "Cotización registrada correctamente.",
-                "data" => QuotationService::create($this->getCompanyId(), $this->getUserId(), $validator->validated())
+                "data" => QuotationService::create($this->getCompanyId(), $this->getUserId(), $validator->validated()),
             ], 201);
-        }catch(\Throwable $exception) {
+        } catch (\Throwable $exception) {
             return response()->json(["bool" => false, "msg" => $exception->getMessage()], 422);
         }
 
@@ -117,9 +117,9 @@ final class QuotationController extends BaseController {
             return response()->json([
                 "bool" => true,
                 "msg" => "Cotización anulada correctamente.",
-                "data" => QuotationService::cancel($this->getCompanyId(), $id, $this->getUserId())
+                "data" => QuotationService::cancel($this->getCompanyId(), $id, $this->getUserId()),
             ]);
-        }catch(\Throwable $exception) {
+        } catch (\Throwable $exception) {
             return response()->json(["bool" => false, "msg" => $exception->getMessage()], 422);
         }
 
@@ -130,5 +130,4 @@ final class QuotationController extends BaseController {
         return self::TRANSLATION_NAMESPACE;
 
     }
-
 }

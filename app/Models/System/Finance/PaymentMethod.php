@@ -8,7 +8,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 final class PaymentMethod extends Model {
-
     protected $table = "payment_methods";
 
     protected $fillable = [
@@ -28,21 +27,20 @@ final class PaymentMethod extends Model {
         "created_at",
         "created_by",
         "updated_at",
-        "updated_by"
+        "updated_by",
     ];
 
     protected $casts = [
         "requires_reference" => "boolean",
         "supports_variants" => "boolean",
         "allows_partial_payment" => "boolean",
-        "is_default" => "boolean"
+        "is_default" => "boolean",
     ];
 
     public function variants(): HasMany {
 
         return $this->hasMany(PaymentMethodVariant::class, "payment_method_id")
-                    ->where("status", "active");
+            ->where("status", "active");
 
     }
-
 }

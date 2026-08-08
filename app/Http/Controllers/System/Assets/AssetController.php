@@ -4,16 +4,17 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\System\Assets;
 
-use App\Http\Controllers\System\Base\BaseController;
 use App\Helpers\System\{Utilities};
-use Illuminate\Http\{JsonResponse, Request};
-
-use App\Http\Requests\System\Assets\Assets\{StoreAssetRequest, UpdateAssetRequest};
+use App\Http\Controllers\System\Base\BaseController;
+use App\Http\Requests\System\Assets\Assets\StoreAssetRequest;
+use App\Http\Requests\System\Assets\Assets\UpdateAssetRequest;
+use App\Services\System\Assets\Assets\AssetConfigService;
+use App\Services\System\Assets\Assets\AssetService;
 use App\Services\System\Base\{InitParamsCacheInvalidationService};
-use App\Services\System\Assets\Assets\{AssetConfigService, AssetService};
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class AssetController extends BaseController {
-
     /**
      * Translation namespace for module
      */
@@ -22,7 +23,6 @@ class AssetController extends BaseController {
     /**
      * Get initialization parameters for the module
      *
-     * @param Request $request
      * @return \stdClass
      */
     public function initParams(Request $request) {
@@ -36,7 +36,6 @@ class AssetController extends BaseController {
     /**
      * Get paginated list with filters
      *
-     * @param Request $request
      * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator
      */
     public function list(Request $request) {
@@ -59,21 +58,17 @@ class AssetController extends BaseController {
 
     }
 
-
     /**
      * Store a newly created record
-     *
-     * @param StoreAssetRequest $request
-     * @return JsonResponse
      */
     public function store(StoreAssetRequest $request): JsonResponse {
 
         try {
 
-            $data  = $this->prepareAssetData($request);
+            $data = $this->prepareAssetData($request);
             $asset = AssetService::create($data, $this->getCompanyId(), $this->getUserId());
 
-            if(!Utilities::isDefined($asset)) {
+            if (! Utilities::isDefined($asset)) {
 
                 return $this->errorResponse("create_failed");
 
@@ -86,7 +81,7 @@ class AssetController extends BaseController {
 
             return $this->createdResponse($asset, "created", "asset");
 
-        }catch(\Exception $e) {
+        } catch (\Exception $e) {
 
             return $this->handleException($e, "create");
 
@@ -94,14 +89,10 @@ class AssetController extends BaseController {
 
     }
 
-
-
     /**
      * Update the specified record
      *
-     * @param UpdateAssetRequest $request
-     * @param int $id Asset ID
-     * @return JsonResponse
+     * @param  int  $id Asset ID
      */
     public function update(UpdateAssetRequest $request, int $id): JsonResponse {
 
@@ -109,16 +100,16 @@ class AssetController extends BaseController {
 
             $asset = AssetService::findByIdAndCompany($id, $this->getCompanyId(), null);
 
-            if(!Utilities::isDefined($asset)) {
+            if (! Utilities::isDefined($asset)) {
 
                 return $this->notFoundResponse();
 
             }
 
-            $data  = $this->prepareAssetData($request);
+            $data = $this->prepareAssetData($request);
             $asset = AssetService::update($asset, $data, $this->getUserId());
 
-            if(!Utilities::isDefined($asset)) {
+            if (! Utilities::isDefined($asset)) {
 
                 return $this->errorResponse("update_failed");
 
@@ -131,7 +122,7 @@ class AssetController extends BaseController {
 
             return $this->updatedResponse($asset, "updated", "asset");
 
-        }catch(\Exception $e) {
+        } catch (\Exception $e) {
 
             return $this->handleException($e, "update");
 
@@ -139,37 +130,32 @@ class AssetController extends BaseController {
 
     }
 
-
     /**
      * Prepare record data from request
      *
-     * @param StoreAssetRequest|UpdateAssetRequest $request
-     * @return array
+     * @param  StoreAssetRequest|UpdateAssetRequest  $request
      */
     private function prepareAssetData($request): array {
 
         return [
-            "company_id"    => $this->getCompanyId(),
+            "company_id" => $this->getCompanyId(),
             "asset_category_id" => $request->input("asset_category_id"),
             "internal_code" => $request->input("internal_code"),
             "patrimonial_code" => $request->input("patrimonial_code"),
             "serial_number" => $request->input("serial_number"),
-            "name"          => $request->input("name"),
-            "description"   => $request->input("description"),
-            "status"        => $request->input("status")
+            "name" => $request->input("name"),
+            "description" => $request->input("description"),
+            "status" => $request->input("status"),
         ];
 
     }
 
     /**
      * Get translation namespace for module
-     *
-     * @return string
      */
     protected function getTranslationNamespace(): string {
 
         return self::TRANSLATION_NAMESPACE;
 
     }
-
 }

@@ -7,8 +7,12 @@ namespace App\Services\System\Operations;
 use App\Helpers\System\Utilities;
 use App\Models\System\Catalogs\Item;
 use App\Models\System\Customers\Customer;
-use App\Models\System\Operations\{ServiceFloor, ServiceSession, ServiceSessionItem, ServiceStation};
-use App\Models\System\Organizations\{Branch, User};
+use App\Models\System\Operations\ServiceFloor;
+use App\Models\System\Operations\ServiceSession;
+use App\Models\System\Operations\ServiceSessionItem;
+use App\Models\System\Operations\ServiceStation;
+use App\Models\System\Organizations\Branch;
+use App\Models\System\Organizations\User;
 use App\Services\System\Base\CompanyReferenceDataService;
 use App\Services\System\Organizations\AccessScopeService;
 use Carbon\Carbon;
@@ -17,10 +21,12 @@ use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 
 final class ServiceOperationService {
-
     public const STATUS_PENDING = "pending";
+
     public const STATUS_IN_PROGRESS = "in_progress";
+
     public const STATUS_COMPLETED = "completed";
+
     public const STATUS_CANCELED = "canceled";
 
     public static function stationTypes(): array {
@@ -32,7 +38,7 @@ final class ServiceOperationService {
             ["code" => "room", "label" => "Habitación"],
             ["code" => "court", "label" => "Cancha"],
             ["code" => "bay", "label" => "Bahía de atención"],
-            ["code" => "other", "label" => "Otro"]
+            ["code" => "other", "label" => "Otro"],
         ];
 
     }
@@ -44,7 +50,7 @@ final class ServiceOperationService {
             ["code" => "catalog_service", "label" => "Servicio del catálogo"],
             ["code" => "appointment", "label" => "Cita"],
             ["code" => "rental", "label" => "Alquiler"],
-            ["code" => "other", "label" => "Otra operación"]
+            ["code" => "other", "label" => "Otra operación"],
         ];
 
     }
@@ -55,7 +61,7 @@ final class ServiceOperationService {
             ["code" => self::STATUS_PENDING, "label" => "Pendiente"],
             ["code" => self::STATUS_IN_PROGRESS, "label" => "En curso"],
             ["code" => self::STATUS_COMPLETED, "label" => "Finalizada"],
-            ["code" => self::STATUS_CANCELED, "label" => "Cancelada"]
+            ["code" => self::STATUS_CANCELED, "label" => "Cancelada"],
         ];
 
     }
@@ -71,7 +77,7 @@ final class ServiceOperationService {
         return [
             ["code" => "round", "label" => "Redonda"],
             ["code" => "square", "label" => "Cuadrada"],
-            ["code" => "rectangle", "label" => "Rectangular"]
+            ["code" => "rectangle", "label" => "Rectangular"],
         ];
 
     }
@@ -85,20 +91,20 @@ final class ServiceOperationService {
         $value = (float) ($item?->commission_value ?? 0);
         $legacyRate = (float) ($item?->commission_rate ?? 0);
 
-        if($type === "none" && $legacyRate > 0) {
+        if ($type === "none" && $legacyRate > 0) {
 
             $type = "percentage";
             $value = $legacyRate;
 
         }
 
-        if($type === "percentage") {
+        if ($type === "percentage") {
 
             return Utilities::round(($quantity * $unitPrice) * (min($value, 100) / 100));
 
         }
 
-        if($type === "fixed") {
+        if ($type === "fixed") {
 
             return Utilities::round($quantity * max($value, 0));
 
@@ -118,7 +124,7 @@ final class ServiceOperationService {
             ->where("code", trim((string) $data["code"]))
             ->exists();
 
-        if($duplicate) {
+        if ($duplicate) {
             throw new DomainException("Ya existe un piso con ese código en la sucursal.");
         }
 
@@ -133,7 +139,7 @@ final class ServiceOperationService {
             "description" => $data["description"] ?? null,
             "status" => (string) ($data["status"] ?? "active"),
             "created_at" => now(),
-            "created_by" => $actorId
+            "created_by" => $actorId,
         ]);
 
     }
@@ -146,7 +152,7 @@ final class ServiceOperationService {
             ->where("company_id", $companyId)
             ->where("branch_id", $branchId)
             ->where("status", "active")
-            ->withCount(["stations" => fn($query) => $query->where("status", "active")])
+            ->withCount(["stations" => fn ($query) => $query->where("status", "active")])
             ->orderBy("sort_order")
             ->orderBy("level_number")
             ->orderBy("name")
@@ -156,7 +162,7 @@ final class ServiceOperationService {
 
     public static function updateFloor(int $companyId, int $actorId, int $floorId, array $data): ServiceFloor {
 
-        return DB::transaction(function() use($companyId, $actorId, $floorId, $data) {
+        return DB::transaction(function () use ($companyId, $actorId, $floorId, $data) {
             $branchId = (int) $data["branch_id"];
             self::requireBranch($companyId, $branchId, $actorId);
 
@@ -165,7 +171,7 @@ final class ServiceOperationService {
                 ->lockForUpdate()
                 ->find($floorId);
 
-            if(!$floor) {
+            if (! $floor) {
                 throw new DomainException("El piso no está disponible.");
             }
 
@@ -176,7 +182,7 @@ final class ServiceOperationService {
                 ->where("id", "!=", $floorId)
                 ->exists();
 
-            if($duplicate) {
+            if ($duplicate) {
                 throw new DomainException("Ya existe un piso con ese código en la sucursal.");
             }
 
@@ -190,7 +196,7 @@ final class ServiceOperationService {
                 "description" => $data["description"] ?? $floor->description,
                 "status" => (string) ($data["status"] ?? $floor->status),
                 "updated_at" => now(),
-                "updated_by" => $actorId
+                "updated_by" => $actorId,
             ]);
             $floor->save();
 
@@ -214,7 +220,7 @@ final class ServiceOperationService {
             ->where("code", trim((string) $data["code"]))
             ->exists();
 
-        if($duplicate) {
+        if ($duplicate) {
             throw new DomainException("Ya existe una mesa o estación con ese código en la sucursal.");
         }
 
@@ -239,7 +245,7 @@ final class ServiceOperationService {
             "description" => $data["description"] ?? null,
             "status" => (string) ($data["status"] ?? "active"),
             "created_at" => now(),
-            "created_by" => $actorId
+            "created_by" => $actorId,
         ]);
 
     }
@@ -252,12 +258,12 @@ final class ServiceOperationService {
             ->where("company_id", $companyId)
             ->where("branch_id", $branchId)
             ->where("status", "active")
-            ->when($floorId, fn($query) => $query->where("service_floor_id", $floorId))
+            ->when($floorId, fn ($query) => $query->where("service_floor_id", $floorId))
             ->with([
                 "floor",
                 "activeSession.customer",
                 "activeSession.assignedUser",
-                "activeSession.items.assignedUser"
+                "activeSession.items.assignedUser",
             ])
             ->orderBy("name")
             ->get();
@@ -266,7 +272,7 @@ final class ServiceOperationService {
 
     public static function updateStation(int $companyId, int $actorId, int $stationId, array $data): ServiceStation {
 
-        return DB::transaction(function() use($companyId, $actorId, $stationId, $data) {
+        return DB::transaction(function () use ($companyId, $actorId, $stationId, $data) {
             $branchId = (int) $data["branch_id"];
             self::requireBranch($companyId, $branchId, $actorId);
 
@@ -275,7 +281,7 @@ final class ServiceOperationService {
                 ->lockForUpdate()
                 ->find($stationId);
 
-            if(!$station) {
+            if (! $station) {
                 throw new DomainException("La mesa o estación no está disponible.");
             }
 
@@ -287,7 +293,7 @@ final class ServiceOperationService {
                 ->where("id", "!=", $stationId)
                 ->exists();
 
-            if($duplicate) {
+            if ($duplicate) {
                 throw new DomainException("Ya existe una mesa o estación con ese código en la sucursal.");
             }
 
@@ -305,7 +311,7 @@ final class ServiceOperationService {
                 "description" => $data["description"] ?? $station->description,
                 "status" => (string) ($data["status"] ?? $station->status),
                 "updated_at" => now(),
-                "updated_by" => $actorId
+                "updated_by" => $actorId,
             ]);
             $station->save();
 
@@ -321,13 +327,13 @@ final class ServiceOperationService {
         array $data
     ): ServiceStation {
 
-        return DB::transaction(function() use($companyId, $actorId, $stationId, $data) {
+        return DB::transaction(function () use ($companyId, $actorId, $stationId, $data) {
             $station = ServiceStation::query()
                 ->where("company_id", $companyId)
                 ->lockForUpdate()
                 ->find($stationId);
 
-            if(!$station) {
+            if (! $station) {
                 throw new DomainException("La mesa o estación no está disponible.");
             }
 
@@ -364,27 +370,27 @@ final class ServiceOperationService {
             ->with(["branch", "station", "customer", "assignedUser", "items.assignedUser", "sale"]);
 
         $branchIds = CompanyReferenceDataService::for($companyId, $actorId)->allowedBranchIds();
-        if($branchIds !== null) {
+        if ($branchIds !== null) {
             $query->whereIn("branch_id", $branchIds);
         }
 
-        foreach(["branch_id", "service_station_id", "assigned_user_id", "session_type"] as $field) {
-            if(!empty($filters[$field])) {
+        foreach (["branch_id", "service_station_id", "assigned_user_id", "session_type"] as $field) {
+            if (! empty($filters[$field])) {
                 $query->where($field, $filters[$field]);
             }
         }
 
-        if(($filters["status"] ?? null) === "open") {
+        if (($filters["status"] ?? null) === "open") {
             $query->whereIn("status", [self::STATUS_PENDING, self::STATUS_IN_PROGRESS]);
-        }elseif(!empty($filters["status"])) {
+        } elseif (! empty($filters["status"])) {
             $query->where("status", $filters["status"]);
         }
 
-        if(!empty($filters["date_from"])) {
+        if (! empty($filters["date_from"])) {
             $query->where("created_at", ">=", Utilities::startOfDay($filters["date_from"]));
         }
 
-        if(!empty($filters["date_to"])) {
+        if (! empty($filters["date_to"])) {
             $query->where("created_at", "<=", Utilities::endOfDay($filters["date_to"]));
         }
 
@@ -404,15 +410,15 @@ final class ServiceOperationService {
                 "items.item",
                 "items.assignedUser",
                 "sale",
-                "events.user"
+                "events.user",
             ])
             ->find($sessionId);
 
-        if(!$session) {
+        if (! $session) {
             throw new DomainException("La sesión de servicio no está disponible.");
         }
 
-        if($actorId) {
+        if ($actorId) {
             self::requireBranch($companyId, (int) $session->branch_id, $actorId);
         }
 
@@ -422,10 +428,10 @@ final class ServiceOperationService {
 
     public static function open(int $companyId, int $actorId, array $data): ServiceSession {
 
-        return DB::transaction(function() use($companyId, $actorId, $data) {
+        return DB::transaction(function () use ($companyId, $actorId, $data) {
 
             $branchId = (int) $data["branch_id"];
-            $stationId = !empty($data["service_station_id"])
+            $stationId = ! empty($data["service_station_id"])
                 ? (int) $data["service_station_id"]
                 : null;
 
@@ -433,7 +439,7 @@ final class ServiceOperationService {
             self::requireOptionalUser($companyId, $data["assigned_user_id"] ?? null);
             self::requireOptionalCustomer($companyId, $data["customer_id"] ?? null);
 
-            if($stationId) {
+            if ($stationId) {
                 $station = ServiceStation::query()
                     ->where("company_id", $companyId)
                     ->where("branch_id", $branchId)
@@ -441,7 +447,7 @@ final class ServiceOperationService {
                     ->lockForUpdate()
                     ->find($stationId);
 
-                if(!$station) {
+                if (! $station) {
                     throw new DomainException("La estación no está activa o no pertenece a la sucursal.");
                 }
 
@@ -451,12 +457,12 @@ final class ServiceOperationService {
                     ->whereIn("status", [self::STATUS_PENDING, self::STATUS_IN_PROGRESS])
                     ->exists();
 
-                if($occupied) {
+                if ($occupied) {
                     throw new DomainException("La estación ya tiene una atención en curso.");
                 }
             }
 
-            $startedAt = !empty($data["start_immediately"])
+            $startedAt = ! empty($data["start_immediately"])
                 ? Carbon::parse($data["started_at"] ?? now())
                 : null;
 
@@ -477,17 +483,17 @@ final class ServiceOperationService {
                 "queue_code" => $data["queue_code"] ?? null,
                 "observation" => $data["observation"] ?? null,
                 "created_at" => now(),
-                "created_by" => $actorId
+                "created_by" => $actorId,
             ]);
 
             self::recordEvent($session, $actorId, "opened", null, $session->status);
 
-            if(!empty($data["item_id"])) {
+            if (! empty($data["item_id"])) {
                 self::addItem($companyId, $actorId, $session->id, [
                     "item_id" => (int) $data["item_id"],
                     "assigned_user_id" => $data["assigned_user_id"] ?? null,
                     "quantity" => $data["quantity"] ?? 1,
-                    "start_immediately" => (bool) $startedAt
+                    "start_immediately" => (bool) $startedAt,
                 ]);
             }
 
@@ -499,7 +505,7 @@ final class ServiceOperationService {
 
     public static function addItem(int $companyId, int $actorId, int $sessionId, array $data): ServiceSessionItem {
 
-        return DB::transaction(function() use($companyId, $actorId, $sessionId, $data) {
+        return DB::transaction(function () use ($companyId, $actorId, $sessionId, $data) {
 
             $session = self::lockOpenSession($companyId, $sessionId);
             self::requireBranch($companyId, (int) $session->branch_id, $actorId);
@@ -508,12 +514,12 @@ final class ServiceOperationService {
                 ->where("status", "active")
                 ->find((int) $data["item_id"]);
 
-            if(!$item) {
+            if (! $item) {
                 throw new DomainException("El producto o servicio no está disponible.");
             }
 
             self::requireOptionalUser($companyId, $data["assigned_user_id"] ?? null);
-            $startedAt = !empty($data["start_immediately"]) ? now() : null;
+            $startedAt = ! empty($data["start_immediately"]) ? now() : null;
 
             $detail = ServiceSessionItem::create([
                 "company_id" => $companyId,
@@ -528,7 +534,7 @@ final class ServiceOperationService {
                 "started_at" => $startedAt,
                 "observation" => $data["observation"] ?? null,
                 "created_at" => now(),
-                "created_by" => $actorId
+                "created_by" => $actorId,
             ]);
 
             self::recordEvent(
@@ -549,11 +555,11 @@ final class ServiceOperationService {
 
     public static function start(int $companyId, int $actorId, int $sessionId): ServiceSession {
 
-        return DB::transaction(function() use($companyId, $actorId, $sessionId) {
+        return DB::transaction(function () use ($companyId, $actorId, $sessionId) {
             $session = self::lockOpenSession($companyId, $sessionId);
             self::requireBranch($companyId, (int) $session->branch_id, $actorId);
 
-            if($session->status === self::STATUS_IN_PROGRESS) {
+            if ($session->status === self::STATUS_IN_PROGRESS) {
                 return self::find($companyId, $sessionId, $actorId);
             }
 
@@ -588,7 +594,7 @@ final class ServiceOperationService {
         string $status
     ): ServiceSessionItem {
 
-        return DB::transaction(function() use($companyId, $actorId, $itemId, $status) {
+        return DB::transaction(function () use ($companyId, $actorId, $itemId, $status) {
             $item = ServiceSessionItem::query()
                 ->where("company_id", $companyId)
                 ->with("session")
@@ -598,22 +604,22 @@ final class ServiceOperationService {
 
             self::requireBranch($companyId, (int) $session->branch_id, $actorId);
 
-            if(in_array($session->status, [self::STATUS_COMPLETED, self::STATUS_CANCELED], true)) {
+            if (in_array($session->status, [self::STATUS_COMPLETED, self::STATUS_CANCELED], true)) {
                 throw new DomainException("La atención ya no admite cambios de preparación.");
             }
 
             $previousStatus = (string) ($item->preparation_status ?: "pending");
-            if($previousStatus === $status) {
+            if ($previousStatus === $status) {
                 return $item->fresh();
             }
 
             $allowedTransitions = [
                 "pending" => "preparing",
                 "preparing" => "ready",
-                "ready" => "delivered"
+                "ready" => "delivered",
             ];
 
-            if(($allowedTransitions[$previousStatus] ?? null) !== $status) {
+            if (($allowedTransitions[$previousStatus] ?? null) !== $status) {
                 throw new DomainException("El cambio de estado de preparación no es válido.");
             }
 
@@ -649,10 +655,10 @@ final class ServiceOperationService {
         ?int $saleHeaderId = null
     ): ServiceSession {
 
-        return DB::transaction(function() use($companyId, $actorId, $sessionId, $saleHeaderId) {
+        return DB::transaction(function () use ($companyId, $actorId, $sessionId, $saleHeaderId) {
             $session = self::lockOpenSession($companyId, $sessionId);
             self::requireBranch($companyId, (int) $session->branch_id, $actorId);
-            if(DB::table("service_session_pauses")
+            if (DB::table("service_session_pauses")
                 ->where("company_id", $companyId)
                 ->where("service_session_id", $sessionId)
                 ->where("status", "active")
@@ -668,7 +674,7 @@ final class ServiceOperationService {
                 ->where("service_session_id", $session->id)
                 ->whereIn("status", [self::STATUS_PENDING, self::STATUS_IN_PROGRESS])
                 ->get()
-                ->each(function(ServiceSessionItem $item) use($endedAt, $actorId) {
+                ->each(function (ServiceSessionItem $item) use ($endedAt, $actorId) {
                     $itemStart = $item->started_at ? Carbon::parse($item->started_at) : Carbon::parse($item->created_at);
                     $item->status = self::STATUS_COMPLETED;
                     $item->started_at = $item->started_at ?? $itemStart;
@@ -703,7 +709,7 @@ final class ServiceOperationService {
 
     public static function reassign(int $companyId, int $actorId, int $sessionId, int $assignedUserId, ?string $note = null): ServiceSession {
 
-        return DB::transaction(function() use($companyId, $actorId, $sessionId, $assignedUserId, $note) {
+        return DB::transaction(function () use ($companyId, $actorId, $sessionId, $assignedUserId, $note) {
             $session = self::lockOpenSession($companyId, $sessionId);
             self::requireBranch($companyId, (int) $session->branch_id, $actorId);
             self::requireOptionalUser($companyId, $assignedUserId);
@@ -715,7 +721,7 @@ final class ServiceOperationService {
 
             self::recordEvent($session, $actorId, "reassigned", null, null, $note, [
                 "previous_user_id" => $previousUserId,
-                "assigned_user_id" => $assignedUserId
+                "assigned_user_id" => $assignedUserId,
             ]);
 
             return self::find($companyId, $sessionId, $actorId);
@@ -725,11 +731,11 @@ final class ServiceOperationService {
 
     public static function pause(int $companyId, int $actorId, int $sessionId, ?int $itemId, ?string $reason): array {
 
-        return DB::transaction(function() use($companyId, $actorId, $sessionId, $itemId, $reason) {
+        return DB::transaction(function () use ($companyId, $actorId, $sessionId, $itemId, $reason) {
             $session = self::lockOpenSession($companyId, $sessionId);
             self::requireBranch($companyId, (int) $session->branch_id, $actorId);
 
-            if(DB::table("service_session_pauses")
+            if (DB::table("service_session_pauses")
                 ->where("company_id", $companyId)
                 ->where("service_session_id", $sessionId)
                 ->where("status", "active")
@@ -737,7 +743,7 @@ final class ServiceOperationService {
                 throw new DomainException("La atención ya tiene una pausa en curso.");
             }
 
-            if($itemId && !ServiceSessionItem::query()
+            if ($itemId && ! ServiceSessionItem::query()
                 ->where("company_id", $companyId)
                 ->where("service_session_id", $sessionId)
                 ->where("id", $itemId)
@@ -754,7 +760,7 @@ final class ServiceOperationService {
                 "duration_minutes" => 0,
                 "reason" => $reason,
                 "status" => "active",
-                "created_at" => now()
+                "created_at" => now(),
             ]);
 
             self::recordEvent($session, $actorId, "paused", null, null, $reason, ["item_id" => $itemId]);
@@ -770,7 +776,7 @@ final class ServiceOperationService {
 
     public static function resume(int $companyId, int $actorId, int $sessionId): array {
 
-        return DB::transaction(function() use($companyId, $actorId, $sessionId) {
+        return DB::transaction(function () use ($companyId, $actorId, $sessionId) {
             $session = self::lockOpenSession($companyId, $sessionId);
             self::requireBranch($companyId, (int) $session->branch_id, $actorId);
             $pause = DB::table("service_session_pauses")
@@ -780,7 +786,7 @@ final class ServiceOperationService {
                 ->lockForUpdate()
                 ->first();
 
-            if(!$pause) {
+            if (! $pause) {
                 throw new DomainException("La atención no tiene una pausa en curso.");
             }
 
@@ -795,10 +801,10 @@ final class ServiceOperationService {
                     "resumed_at" => $resumedAt,
                     "duration_minutes" => $minutes,
                     "status" => "finalized",
-                    "updated_at" => now()
+                    "updated_at" => now(),
                 ]);
 
-            if($pause->service_session_item_id) {
+            if ($pause->service_session_item_id) {
                 ServiceSessionItem::query()
                     ->where("company_id", $companyId)
                     ->where("service_session_id", $sessionId)
@@ -819,7 +825,7 @@ final class ServiceOperationService {
 
     public static function cancel(int $companyId, int $actorId, int $sessionId, string $reason): ServiceSession {
 
-        return DB::transaction(function() use($companyId, $actorId, $sessionId, $reason) {
+        return DB::transaction(function () use ($companyId, $actorId, $sessionId, $reason) {
             $session = self::lockOpenSession($companyId, $sessionId);
             self::requireBranch($companyId, (int) $session->branch_id, $actorId);
             $previous = $session->status;
@@ -840,10 +846,10 @@ final class ServiceOperationService {
 
     public static function reports(int $companyId, int $actorId, array $filters = []): array {
 
-        $dateFrom = !empty($filters["date_from"])
+        $dateFrom = ! empty($filters["date_from"])
             ? Carbon::parse($filters["date_from"])->startOfDay()
             : now()->copy()->startOfMonth();
-        $dateTo = !empty($filters["date_to"])
+        $dateTo = ! empty($filters["date_to"])
             ? Carbon::parse($filters["date_to"])->endOfDay()
             : now()->copy()->endOfDay();
 
@@ -853,22 +859,22 @@ final class ServiceOperationService {
             ->with(["branch", "station", "assignedUser", "items.item", "items.assignedUser"]);
 
         $branchIds = CompanyReferenceDataService::for($companyId, $actorId)->allowedBranchIds();
-        if($branchIds !== null) {
+        if ($branchIds !== null) {
             $query->whereIn("branch_id", $branchIds);
         }
 
-        foreach(["branch_id", "service_station_id", "assigned_user_id", "session_type"] as $field) {
-            if(!empty($filters[$field])) {
+        foreach (["branch_id", "service_station_id", "assigned_user_id", "session_type"] as $field) {
+            if (! empty($filters[$field])) {
                 $query->where($field, $filters[$field]);
             }
         }
 
         $sessions = $query->get();
         $completed = $sessions->where("status", self::STATUS_COMPLETED);
-        $withSla = $completed->filter(function(ServiceSession $session) {
-            return !empty($session->expected_end_at);
+        $withSla = $completed->filter(function (ServiceSession $session) {
+            return ! empty($session->expected_end_at);
         });
-        $late = $withSla->filter(function(ServiceSession $session) {
+        $late = $withSla->filter(function (ServiceSession $session) {
             $limit = Carbon::parse($session->expected_end_at)
                 ->addMinutes((int) ($session->tolerance_minutes ?? 0));
 
@@ -876,8 +882,8 @@ final class ServiceOperationService {
         });
         $commissionTotal = 0.0;
 
-        $sessions->each(function(ServiceSession $session) use(&$commissionTotal) {
-            $session->items->each(function(ServiceSessionItem $detail) use(&$commissionTotal) {
+        $sessions->each(function (ServiceSession $session) use (&$commissionTotal) {
+            $session->items->each(function (ServiceSessionItem $detail) use (&$commissionTotal) {
                 $commissionTotal += self::calculateDetailCommission($detail);
             });
         });
@@ -885,7 +891,7 @@ final class ServiceOperationService {
         return [
             "period" => [
                 "date_from" => $dateFrom->toDateString(),
-                "date_to" => $dateTo->toDateString()
+                "date_to" => $dateTo->toDateString(),
             ],
             "summary" => [
                 "total_sessions" => $sessions->count(),
@@ -897,12 +903,12 @@ final class ServiceOperationService {
                 "sla_compliance_rate" => $withSla->count()
                     ? Utilities::round((($withSla->count() - $late->count()) / $withSla->count()) * 100, null, $companyId)
                     : null,
-                "commission_total" => Utilities::round($commissionTotal, null, $companyId)
+                "commission_total" => Utilities::round($commissionTotal, null, $companyId),
             ],
             "by_branch" => self::reportGroup($sessions, "branch", "Sucursal"),
             "by_station" => self::reportGroup($sessions, "station", "Estación"),
             "by_responsible" => self::reportGroup($sessions, "assignedUser", "Responsable"),
-            "by_service" => self::reportItemsGroup($sessions)
+            "by_service" => self::reportItemsGroup($sessions),
         ];
 
     }
@@ -914,18 +920,18 @@ final class ServiceOperationService {
         bool $complete
     ): ServiceSessionItem {
 
-        return DB::transaction(function() use($companyId, $actorId, $itemId, $complete) {
+        return DB::transaction(function () use ($companyId, $actorId, $itemId, $complete) {
             $item = ServiceSessionItem::query()
                 ->where("company_id", $companyId)
                 ->with("session")
                 ->lockForUpdate()
                 ->find($itemId);
 
-            if(!$item || in_array($item->status, [self::STATUS_COMPLETED, self::STATUS_CANCELED], true)) {
+            if (! $item || in_array($item->status, [self::STATUS_COMPLETED, self::STATUS_CANCELED], true)) {
                 throw new DomainException("El detalle de servicio no está disponible para esta acción.");
             }
 
-            if(!$item->session || !in_array($item->session->status, [self::STATUS_PENDING, self::STATUS_IN_PROGRESS], true)) {
+            if (! $item->session || ! in_array($item->session->status, [self::STATUS_PENDING, self::STATUS_IN_PROGRESS], true)) {
                 throw new DomainException("La atención ya terminó o no está disponible.");
             }
 
@@ -933,18 +939,18 @@ final class ServiceOperationService {
 
             $previousStatus = (string) $item->status;
 
-            if($complete) {
+            if ($complete) {
                 $endedAt = now();
                 $startedAt = $item->started_at ? Carbon::parse($item->started_at) : Carbon::parse($item->created_at);
                 $item->status = self::STATUS_COMPLETED;
                 $item->started_at = $item->started_at ?? $startedAt;
                 $item->ended_at = $endedAt;
                 $item->duration_minutes = $startedAt->diffInMinutes($endedAt);
-            }else {
+            } else {
                 $item->status = self::STATUS_IN_PROGRESS;
                 $item->started_at = now();
 
-                if($item->session->status === self::STATUS_PENDING) {
+                if ($item->session->status === self::STATUS_PENDING) {
                     $item->session->status = self::STATUS_IN_PROGRESS;
                     $item->session->started_at = now();
                     $item->session->updated_at = now();
@@ -980,7 +986,7 @@ final class ServiceOperationService {
             ->lockForUpdate()
             ->find($sessionId);
 
-        if(!$session) {
+        if (! $session) {
             throw new DomainException("La sesión ya terminó o no está disponible.");
         }
 
@@ -995,17 +1001,17 @@ final class ServiceOperationService {
             ->where("status", "active")
             ->find($branchId);
 
-        if(!$branch) {
+        if (! $branch) {
             throw new DomainException("La sucursal no está activa o no pertenece a la empresa.");
         }
 
-        if($actorId) {
+        if ($actorId) {
             $actor = User::query()
                 ->where("company_id", $companyId)
                 ->where("status", "active")
                 ->find($actorId);
 
-            if(!$actor || !AccessScopeService::canAccess($actor, AccessScopeService::BRANCH, $branchId)) {
+            if (! $actor || ! AccessScopeService::canAccess($actor, AccessScopeService::BRANCH, $branchId)) {
                 throw new DomainException("No tienes acceso operativo a esta sucursal.");
             }
         }
@@ -1016,14 +1022,16 @@ final class ServiceOperationService {
 
     private static function requireOptionalUser(int $companyId, mixed $userId): ?User {
 
-        if(empty($userId)) return null;
+        if (empty($userId)) {
+            return null;
+        }
 
         $user = User::query()
             ->where("company_id", $companyId)
             ->where("status", "active")
             ->find((int) $userId);
 
-        if(!$user) {
+        if (! $user) {
             throw new DomainException("El responsable no está activo o no pertenece a la empresa.");
         }
 
@@ -1033,14 +1041,16 @@ final class ServiceOperationService {
 
     private static function requireOptionalCustomer(int $companyId, mixed $customerId): ?Customer {
 
-        if(empty($customerId)) return null;
+        if (empty($customerId)) {
+            return null;
+        }
 
         $customer = Customer::query()
             ->where("company_id", $companyId)
             ->where("status", "active")
             ->find((int) $customerId);
 
-        if(!$customer) {
+        if (! $customer) {
             throw new DomainException("El cliente no está activo o no pertenece a la empresa.");
         }
 
@@ -1050,7 +1060,9 @@ final class ServiceOperationService {
 
     private static function requireOptionalFloor(int $companyId, int $branchId, mixed $floorId): ?ServiceFloor {
 
-        if(empty($floorId)) return null;
+        if (empty($floorId)) {
+            return null;
+        }
 
         $floor = ServiceFloor::query()
             ->where("company_id", $companyId)
@@ -1058,7 +1070,7 @@ final class ServiceOperationService {
             ->where("status", "active")
             ->find((int) $floorId);
 
-        if(!$floor) {
+        if (! $floor) {
             throw new DomainException("El piso no está activo o no pertenece a la sucursal.");
         }
 
@@ -1076,7 +1088,7 @@ final class ServiceOperationService {
 
         return [
             "x" => 8 + (($position % 6) * 16.8),
-            "y" => min(11 + (intdiv($position, 6) * 19.5), 89)
+            "y" => min(11 + (intdiv($position, 6) * 19.5), 89),
         ];
 
     }
@@ -1089,15 +1101,15 @@ final class ServiceOperationService {
 
     private static function nextReference(): string {
 
-        return "SRV-" . Utilities::generateCode(10);
+        return "SRV-".Utilities::generateCode(10);
 
     }
 
     private static function reportGroup($sessions, string $relation, string $fallback): array {
 
         return $sessions
-            ->groupBy(fn(ServiceSession $session) => optional($session->{$relation})->id ?? 0)
-            ->map(function($records) use($relation, $fallback) {
+            ->groupBy(fn (ServiceSession $session) => optional($session->{$relation})->id ?? 0)
+            ->map(function ($records) use ($relation, $fallback) {
                 $first = $records->first();
                 $related = $first ? $first->{$relation} : null;
                 $completed = $records->where("status", self::STATUS_COMPLETED);
@@ -1107,7 +1119,7 @@ final class ServiceOperationService {
                     "name" => $related?->name ?? "Sin {$fallback}",
                     "total_sessions" => $records->count(),
                     "completed_sessions" => $completed->count(),
-                    "average_duration_minutes" => Utilities::round((float) $completed->avg("duration_minutes"))
+                    "average_duration_minutes" => Utilities::round((float) $completed->avg("duration_minutes")),
                 ];
             })
             ->values()
@@ -1117,13 +1129,13 @@ final class ServiceOperationService {
 
     private static function reportItemsGroup($sessions): array {
 
-        $details = $sessions->flatMap(fn(ServiceSession $session) => $session->items);
+        $details = $sessions->flatMap(fn (ServiceSession $session) => $session->items);
 
         return $details
             ->groupBy("item_id")
-            ->map(function($records) {
+            ->map(function ($records) {
                 $first = $records->first();
-                $commission = $records->sum(function(ServiceSessionItem $detail) {
+                $commission = $records->sum(function (ServiceSessionItem $detail) {
                     return self::calculateDetailCommission($detail);
                 });
 
@@ -1131,9 +1143,9 @@ final class ServiceOperationService {
                     "id" => $first?->item_id,
                     "name" => $first?->name ?? "Detalle sin nombre",
                     "quantity" => Utilities::round((float) $records->sum("quantity")),
-                    "total" => Utilities::round((float) $records->sum(fn(ServiceSessionItem $detail) => (float) $detail->quantity * (float) $detail->unit_price)),
+                    "total" => Utilities::round((float) $records->sum(fn (ServiceSessionItem $detail) => (float) $detail->quantity * (float) $detail->unit_price)),
                     "commission_total" => Utilities::round($commission),
-                    "average_duration_minutes" => Utilities::round((float) $records->avg("duration_minutes"))
+                    "average_duration_minutes" => Utilities::round((float) $records->avg("duration_minutes")),
                 ];
             })
             ->sortByDesc("quantity")
@@ -1162,9 +1174,8 @@ final class ServiceOperationService {
             "new_status" => $newStatus,
             "note" => $note,
             "metadata" => $metadata ? json_encode($metadata, JSON_UNESCAPED_UNICODE) : null,
-            "occurred_at" => now()
+            "occurred_at" => now(),
         ]);
 
     }
-
 }

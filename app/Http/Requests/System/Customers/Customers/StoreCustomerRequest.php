@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\System\Customers\Customers;
 
-use App\Rules\System\Defaults\{BelongsToCompany, DocumentNumberLength, UniqueInCompany};
+use App\Rules\System\Defaults\BelongsToCompany;
+use App\Rules\System\Defaults\DocumentNumberLength;
+use App\Rules\System\Defaults\UniqueInCompany;
 use Illuminate\Foundation\Http\FormRequest;
 
 final class StoreCustomerRequest extends FormRequest {
-
     public function authorize(): bool {
 
         return true;
@@ -30,9 +31,8 @@ final class StoreCustomerRequest extends FormRequest {
             "medical_notes" => ["nullable", "string", "max:5000"],
             "gender" => ["nullable", "in:male,female,other"],
             "birthdate" => ["nullable", "date"],
-            "status" => ["required", "in:active,inactive"]
+            "status" => ["required", "in:active,inactive"],
         ];
 
     }
-
 }

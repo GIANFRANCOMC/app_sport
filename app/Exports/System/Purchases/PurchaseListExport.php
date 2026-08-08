@@ -5,18 +5,16 @@ declare(strict_types=1);
 namespace App\Exports\System\Purchases;
 
 use App\Services\System\Purchases\PurchaseService;
-use Maatwebsite\Excel\Concerns\{
-    FromQuery,
-    ShouldAutoSize,
-    WithHeadings,
-    WithMapping,
-    WithStyles
-};
-use PhpOffice\PhpSpreadsheet\Style\{Alignment, Fill};
+use Maatwebsite\Excel\Concerns\FromQuery;
+use Maatwebsite\Excel\Concerns\ShouldAutoSize;
+use Maatwebsite\Excel\Concerns\WithHeadings;
+use Maatwebsite\Excel\Concerns\WithMapping;
+use Maatwebsite\Excel\Concerns\WithStyles;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
 final class PurchaseListExport implements FromQuery, ShouldAutoSize, WithHeadings, WithMapping, WithStyles {
-
     public function __construct(
         private readonly int $companyId,
         private readonly array $filters = [],
@@ -43,7 +41,7 @@ final class PurchaseListExport implements FromQuery, ShouldAutoSize, WithHeading
             "Impuesto",
             "Total",
             "Recepción",
-            "Estado"
+            "Estado",
         ];
 
     }
@@ -60,8 +58,8 @@ final class PurchaseListExport implements FromQuery, ShouldAutoSize, WithHeading
             (float) $purchase->subtotal,
             (float) $purchase->tax,
             (float) $purchase->total,
-            $purchase->receipt_progress . "%",
-            $purchase->formatted_status
+            $purchase->receipt_progress."%",
+            $purchase->formatted_status,
         ];
 
     }
@@ -74,13 +72,12 @@ final class PurchaseListExport implements FromQuery, ShouldAutoSize, WithHeading
             "font" => ["bold" => true, "color" => ["rgb" => "FFFFFF"]],
             "fill" => [
                 "fillType" => Fill::FILL_SOLID,
-                "startColor" => ["rgb" => "1A1A35"]
+                "startColor" => ["rgb" => "1A1A35"],
             ],
-            "alignment" => ["horizontal" => Alignment::HORIZONTAL_CENTER]
+            "alignment" => ["horizontal" => Alignment::HORIZONTAL_CENTER],
         ]);
 
         return [];
 
     }
-
 }

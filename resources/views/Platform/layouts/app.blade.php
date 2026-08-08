@@ -17,8 +17,12 @@
     @if(isset($platformUser))
         <nav class="platform-nav">
             <div class="platform-nav__inner">
-                <a class="platform-brand" href="{{ route('platform.tenants.index') }}">Gympe <small>Administración SaaS</small></a>
+                <div class="platform-nav__left">
+                    <a class="platform-brand" href="{{ route('platform.tenants.index') }}">Gympe <small>Administración SaaS</small></a>
+                    <a class="platform-nav__link {{ request()->routeIs('platform.tenants.*') ? 'is-active' : '' }}" href="{{ route('platform.tenants.index') }}">Tenants</a>
+                </div>
                 <div class="d-flex align-items-center gap-3">
+                    <span class="platform-secure"><i class="fa-solid fa-shield-halved"></i> Landlord</span>
                     <span class="small text-muted">{{ $platformUser->name }}</span>
                     <form method="POST" action="{{ route('platform.logout') }}">@csrf<button class="btn btn-sm btn-outline-secondary">Salir</button></form>
                 </div>

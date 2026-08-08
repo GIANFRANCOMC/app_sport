@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Models\System\Purchases;
 
-use App\Models\System\Finance\{PaymentMethod, PaymentMethodVariant};
+use App\Models\System\Finance\PaymentMethod;
+use App\Models\System\Finance\PaymentMethodVariant;
 use Illuminate\Database\Eloquent\Model;
 
 final class PurchasePayment extends Model {
-
     protected $table = "purchase_payments";
 
     protected $fillable = [
@@ -24,11 +24,11 @@ final class PurchasePayment extends Model {
         "created_at",
         "created_by",
         "updated_at",
-        "updated_by"
+        "updated_by",
     ];
 
     protected $casts = [
-        "amount" => "App\\Casts\\System\\ConfigurableDecimal"
+        "amount" => "App\\Casts\\System\\ConfigurableDecimal",
     ];
 
     public function paymentMethod() {
@@ -42,5 +42,4 @@ final class PurchasePayment extends Model {
         return $this->belongsTo(PaymentMethodVariant::class, "payment_method_variant_id");
 
     }
-
 }

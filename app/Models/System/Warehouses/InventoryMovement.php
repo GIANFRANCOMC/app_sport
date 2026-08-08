@@ -4,15 +4,16 @@ declare(strict_types=1);
 
 namespace App\Models\System\Warehouses;
 
+use App\Models\System\Catalogs\Item;
+use App\Models\System\Organizations\Company;
+use App\Models\System\Organizations\User;
 use Illuminate\Database\Eloquent\Model;
 
-use App\Models\System\Catalogs\Item;
-use App\Models\System\Organizations\{Company, User};
-
 class InventoryMovement extends Model {
-
     protected $table = "inventory_movements";
+
     public $timestamps = false;
+
     protected $appends = ["reference"];
 
     protected $fillable = [
@@ -32,19 +33,19 @@ class InventoryMovement extends Model {
         "value_after",
         "reason",
         "metadata",
-        "created_at"
+        "created_at",
     ];
 
     protected $casts = [
         "quantity_before" => "App\\Casts\\System\\ConfigurableDecimal",
         "quantity_change" => "App\\Casts\\System\\ConfigurableDecimal",
-        "quantity_after"  => "App\\Casts\\System\\ConfigurableDecimal",
-        "unit_cost"       => "App\\Casts\\System\\ConfigurableDecimal",
-        "value_before"    => "App\\Casts\\System\\ConfigurableDecimal",
-        "value_change"    => "App\\Casts\\System\\ConfigurableDecimal",
-        "value_after"     => "App\\Casts\\System\\ConfigurableDecimal",
-        "metadata"        => "array",
-        "created_at"      => "datetime"
+        "quantity_after" => "App\\Casts\\System\\ConfigurableDecimal",
+        "unit_cost" => "App\\Casts\\System\\ConfigurableDecimal",
+        "value_before" => "App\\Casts\\System\\ConfigurableDecimal",
+        "value_change" => "App\\Casts\\System\\ConfigurableDecimal",
+        "value_after" => "App\\Casts\\System\\ConfigurableDecimal",
+        "metadata" => "array",
+        "created_at" => "datetime",
     ];
 
     public function getReferenceAttribute(): ?string {
@@ -76,5 +77,4 @@ class InventoryMovement extends Model {
         return $this->belongsTo(User::class, "user_id", "id");
 
     }
-
 }

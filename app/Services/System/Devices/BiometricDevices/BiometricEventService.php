@@ -4,15 +4,16 @@ declare(strict_types=1);
 
 namespace App\Services\System\Devices\BiometricDevices;
 
-use App\Models\System\Devices\{BiometricDevice, BiometricDeviceEvent};
+use App\Models\System\Devices\BiometricDevice;
+use App\Models\System\Devices\BiometricDeviceEvent;
 use App\Services\System\Customers\Tracking\TrackingAttendanceBusinessService;
 use App\Services\System\Organizations\Users\UserAttendanceService;
 use DomainException;
-use Illuminate\Support\Facades\{Crypt, DB};
+use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\DB;
 use Throwable;
 
 final class BiometricEventService {
-
     public static function receive(
         int $companyId,
         string $accessKey,
@@ -27,21 +28,21 @@ final class BiometricEventService {
             ->where("status", "active")
             ->first();
 
-        if(!$device || !$device->secret_encrypted) {
+        if (! $device || ! $device->secret_encrypted) {
             throw new DomainException("Las credenciales del dispositivo no son válidas.");
         }
 
         $expected = hash_hmac("sha256", $rawPayload, Crypt::decryptString($device->secret_encrypted));
-        if(!$signature || !hash_equals($expected, $signature)) {
+        if (! $signature || ! hash_equals($expected, $signature)) {
             throw new DomainException("La firma del evento biométrico no es válida.");
         }
 
-        return DB::transaction(function() use($companyId, $device, $payload) {
+        return DB::transaction(function () use ($companyId, $device, $payload) {
             $event = BiometricDeviceEvent::query()->firstOrCreate(
                 [
                     "company_id" => $companyId,
                     "biometric_device_id" => $device->id,
-                    "event_uuid" => $payload["event_uuid"]
+                    "event_uuid" => $payload["event_uuid"],
                 ],
                 [
                     "event_type" => $payload["event_type"],
@@ -50,15 +51,15 @@ final class BiometricEventService {
                     "occurred_at" => $payload["occurred_at"],
                     "payload" => $payload["payload"] ?? null,
                     "processing_status" => "pending",
-                    "attempts" => 0
+                    "attempts" => 0,
                 ]
             );
 
-            if($event->processing_status === "processed") {
+            if ($event->processing_status === "processed") {
                 return $event;
             }
 
-            if((int) $event->attempts >= 3) {
+            if ((int) $event->attempts >= 3) {
                 throw new DomainException("El evento agotó sus intentos de procesamiento y requiere revisión.");
             }
 
@@ -69,13 +70,13 @@ final class BiometricEventService {
                 $event->forceFill([
                     "processing_status" => "processed",
                     "processed_at" => now(),
-                    "last_error" => null
+                    "last_error" => null,
                 ])->save();
                 $device->forceFill(["last_seen_at" => now()])->save();
-            }catch(Throwable $exception) {
+            } catch (Throwable $exception) {
                 $event->forceFill([
                     "processing_status" => "failed",
-                    "last_error" => mb_substr($exception->getMessage(), 0, 500)
+                    "last_error" => mb_substr($exception->getMessage(), 0, 500),
                 ])->save();
 
                 throw $exception;
@@ -90,7 +91,7 @@ final class BiometricEventService {
 
         $isCheckout = $event->event_type === "check_out";
 
-        if($event->subject_type === "customer") {
+        if ($event->subject_type === "customer") {
             $result = app(TrackingAttendanceBusinessService::class)->validateAndCreateAttendance([
                 "company_id" => $device->company_id,
                 "branch_id" => $device->branch_id,
@@ -102,10 +103,10 @@ final class BiometricEventService {
                 "type" => "biometric",
                 "action" => $isCheckout ? "checkout" : "automatic",
                 "observation" => "Evento biométrico {$event->event_uuid}",
-                "user_id" => null
+                "user_id" => null,
             ]);
 
-            if(!($result["bool"] ?? false)) {
+            if (! ($result["bool"] ?? false)) {
                 throw new DomainException((string) ($result["msg"] ?? "No se procesó la asistencia del cliente."));
             }
 
@@ -118,7 +119,7 @@ final class BiometricEventService {
             (int) $device->company_id
         );
 
-        if(!$user) {
+        if (! $user) {
             throw new DomainException("No existe un colaborador vinculado con la identidad biométrica.");
         }
 
@@ -128,15 +129,14 @@ final class BiometricEventService {
             "user_id" => $user->id,
             "actor_id" => null,
             "source_type" => UserAttendanceService::SOURCE_BIOMETRIC,
-            "source_reference" => "event:{$event->event_uuid}"
+            "source_reference" => "event:{$event->event_uuid}",
         ];
 
-        if($isCheckout) {
+        if ($isCheckout) {
             UserAttendanceService::checkOut([...$data, "checked_out_at" => $event->occurred_at]);
-        }else {
+        } else {
             UserAttendanceService::checkIn([...$data, "checked_in_at" => $event->occurred_at]);
         }
 
     }
-
 }

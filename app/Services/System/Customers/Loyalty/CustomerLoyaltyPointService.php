@@ -5,13 +5,14 @@ declare(strict_types=1);
 namespace App\Services\System\Customers\Loyalty;
 
 use App\Helpers\System\Utilities;
-use App\Models\System\Sales\{SaleBody, SaleHeader};
+use App\Models\System\Sales\SaleBody;
+use App\Models\System\Sales\SaleHeader;
 use App\Services\System\Organizations\Companies\CompanySettingService;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\{DB, Schema};
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 final class CustomerLoyaltyPointService {
-
     public static function awardForSale(
         SaleHeader $saleHeader,
         Collection $saleBodies,
@@ -19,13 +20,13 @@ final class CustomerLoyaltyPointService {
         int $userId
     ): void {
 
-        if(!self::isEnabled($companyId) || !self::hasTables()) {
+        if (! self::isEnabled($companyId) || ! self::hasTables()) {
 
             return;
 
         }
 
-        if(self::saleAlreadyAwarded((int) $saleHeader->id, $companyId)) {
+        if (self::saleAlreadyAwarded((int) $saleHeader->id, $companyId)) {
 
             return;
 
@@ -33,17 +34,17 @@ final class CustomerLoyaltyPointService {
 
         $rules = self::activeRules($companyId);
 
-        if($rules->isEmpty()) {
+        if ($rules->isEmpty()) {
 
             return;
 
         }
 
-        foreach($rules as $rule) {
+        foreach ($rules as $rule) {
 
             $eligibleBodies = self::eligibleBodies($saleBodies, $rule);
 
-            if($eligibleBodies->isEmpty()) {
+            if ($eligibleBodies->isEmpty()) {
 
                 continue;
 
@@ -51,7 +52,7 @@ final class CustomerLoyaltyPointService {
 
             $calculation = self::calculatePoints($saleHeader, $eligibleBodies, $rule);
 
-            if($calculation["points"] <= 0) {
+            if ($calculation["points"] <= 0) {
 
                 continue;
 
@@ -68,7 +69,7 @@ final class CustomerLoyaltyPointService {
                 "basis_amount" => $calculation["basis_amount"],
                 "points" => $calculation["points"],
                 "description" => "Puntos generados por venta {$saleHeader->serie_sequential}.",
-                "created_by" => $userId
+                "created_by" => $userId,
             ]);
 
         }
@@ -81,7 +82,7 @@ final class CustomerLoyaltyPointService {
         int $userId
     ): void {
 
-        if(!self::hasTables()) {
+        if (! self::hasTables()) {
 
             return;
 
@@ -94,7 +95,7 @@ final class CustomerLoyaltyPointService {
             true
         );
 
-        if(!$enabled || self::saleAlreadyReversed((int) $saleHeader->id, $companyId)) {
+        if (! $enabled || self::saleAlreadyReversed((int) $saleHeader->id, $companyId)) {
 
             return;
 
@@ -107,7 +108,7 @@ final class CustomerLoyaltyPointService {
             ->where("status", "active")
             ->sum("points");
 
-        if($earnedPoints <= 0) {
+        if ($earnedPoints <= 0) {
 
             return;
 
@@ -124,7 +125,7 @@ final class CustomerLoyaltyPointService {
             "basis_amount" => $earnedPoints,
             "points" => -abs($earnedPoints),
             "description" => "Reverso de puntos por anulación de venta {$saleHeader->serie_sequential}.",
-            "created_by" => $userId
+            "created_by" => $userId,
         ]);
 
         DB::table("customer_point_movements")
@@ -134,7 +135,7 @@ final class CustomerLoyaltyPointService {
             ->update([
                 "status" => "canceled",
                 "updated_at" => now(),
-                "updated_by" => $userId
+                "updated_by" => $userId,
             ]);
 
     }
@@ -143,21 +144,21 @@ final class CustomerLoyaltyPointService {
 
         $triggerType = (string) $rule->trigger_type;
 
-        if($triggerType === "item_quantity" || $triggerType === "subscription_sale") {
+        if ($triggerType === "item_quantity" || $triggerType === "subscription_sale") {
 
             $quantity = Utilities::round((float) $saleBodies->sum("quantity"));
 
             return [
                 "basis_type" => "item_quantity",
                 "basis_amount" => $quantity,
-                "points" => Utilities::round($quantity * (float) $rule->points_per_unit)
+                "points" => Utilities::round($quantity * (float) $rule->points_per_unit),
             ];
 
         }
 
         $basisAmount = Utilities::round((float) $saleBodies->sum("total"));
 
-        if($basisAmount < (float) $rule->minimum_sale_total) {
+        if ($basisAmount < (float) $rule->minimum_sale_total) {
 
             return ["basis_type" => "sale_total", "basis_amount" => $basisAmount, "points" => 0];
 
@@ -169,7 +170,7 @@ final class CustomerLoyaltyPointService {
         return [
             "basis_type" => "sale_total",
             "basis_amount" => $basisAmount,
-            "points" => Utilities::round($steps * (float) $rule->points_per_amount)
+            "points" => Utilities::round($steps * (float) $rule->points_per_amount),
         ];
 
     }
@@ -178,21 +179,21 @@ final class CustomerLoyaltyPointService {
 
         $scope = (string) $rule->apply_scope;
 
-        if($scope === "selected_items") {
+        if ($scope === "selected_items") {
 
             $itemIds = DB::table("loyalty_point_rule_items")
                 ->where("company_id", (int) $rule->company_id)
                 ->where("loyalty_point_rule_id", (int) $rule->id)
                 ->where("status", "active")
                 ->pluck("item_id")
-                ->map(fn($id) => (int) $id)
+                ->map(fn ($id) => (int) $id)
                 ->all();
 
-            return $saleBodies->filter(fn(SaleBody $body) => in_array((int) $body->item_id, $itemIds, true));
+            return $saleBodies->filter(fn (SaleBody $body) => in_array((int) $body->item_id, $itemIds, true));
 
         }
 
-        if($scope === "all") {
+        if ($scope === "all") {
 
             return $saleBodies;
 
@@ -218,19 +219,19 @@ final class CustomerLoyaltyPointService {
             "occurred_at" => now(),
             "status" => "active",
             "created_at" => now(),
-            "created_by" => $data["created_by"]
+            "created_by" => $data["created_by"],
         ]);
 
         DB::table("customer_point_balances")->updateOrInsert(
             [
                 "company_id" => $data["company_id"],
-                "customer_id" => $data["customer_id"]
+                "customer_id" => $data["customer_id"],
             ],
             [
                 "company_id" => $data["company_id"],
                 "customer_id" => $data["customer_id"],
                 "updated_at" => now(),
-                "updated_by" => $data["created_by"]
+                "updated_by" => $data["created_by"],
             ]
         );
 
@@ -239,7 +240,7 @@ final class CustomerLoyaltyPointService {
             ->where("customer_id", $data["customer_id"])
             ->increment("points_balance", (float) $data["points"], [
                 "updated_at" => now(),
-                "updated_by" => $data["created_by"]
+                "updated_by" => $data["created_by"],
             ]);
 
     }
@@ -262,11 +263,11 @@ final class CustomerLoyaltyPointService {
         return DB::table("loyalty_point_rules")
             ->where("company_id", $companyId)
             ->where("status", "active")
-            ->where(function($query) use($now) {
+            ->where(function ($query) use ($now) {
                 $query->whereNull("starts_at")
                     ->orWhere("starts_at", "<=", $now);
             })
-            ->where(function($query) use($now) {
+            ->where(function ($query) use ($now) {
                 $query->whereNull("ends_at")
                     ->orWhere("ends_at", ">=", $now);
             })
@@ -302,5 +303,4 @@ final class CustomerLoyaltyPointService {
             && Schema::hasTable("loyalty_point_rules");
 
     }
-
 }

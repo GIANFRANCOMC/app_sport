@@ -9,27 +9,29 @@ use Illuminate\Console\Command;
 use Throwable;
 
 final class SuspendTenant extends Command {
+    protected $signature = "tenant:suspend {slug} {--activate : Reactiva el tenant en lugar de suspenderlo} {--force : Omite confirmación interactiva}";
 
-    protected $signature = 'tenant:suspend {slug} {--activate : Reactiva el tenant en lugar de suspenderlo} {--force : Omite confirmación interactiva}';
-    protected $description = 'Suspende o reactiva un tenant e invalida su caché de resolución.';
+    protected $description = "Suspende o reactiva un tenant e invalida su caché de resolución.";
 
     public function handle(TenantAdministrationService $service): int {
-        $slug = (string) $this->argument('slug');
-        $status = $this->option('activate') ? 'active' : 'suspended';
+        $slug = (string) $this->argument("slug");
+        $status = $this->option("activate") ? "active" : "suspended";
 
-        if(!$this->option('force') && !$this->confirm("¿Confirmas cambiar {$slug} a {$status}?")) {
-            $this->warn('Operación cancelada.');
+        if (! $this->option("force") && ! $this->confirm("¿Confirmas cambiar {$slug} a {$status}?")) {
+            $this->warn("Operación cancelada.");
+
             return self::SUCCESS;
         }
 
         try {
-            $tenant = $service->changeStatus($slug, $status, get_current_user() ?: 'console');
+            $tenant = $service->changeStatus($slug, $status, get_current_user() ?: "console");
             $this->info("Tenant {$tenant->slug} actualizado a {$tenant->status}.");
+
             return self::SUCCESS;
-        }catch(Throwable $exception) {
+        } catch (Throwable $exception) {
             $this->error($exception->getMessage());
+
             return self::FAILURE;
         }
     }
-
 }

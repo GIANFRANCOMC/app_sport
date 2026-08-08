@@ -4,18 +4,15 @@ declare(strict_types=1);
 
 namespace App\Services\System\Purchases;
 
+use App\Models\System\Catalogs\Item;
+use App\Models\System\Purchases\PurchaseHeader;
+use App\Models\System\Purchases\Supplier;
+use App\Services\System\Base\BaseConfigService;
+use App\Services\System\Base\CompanyReferenceDataService;
+use App\Services\System\Base\MasterReferenceDataService;
 use stdClass;
 
-use App\Models\System\Catalogs\Item;
-use App\Models\System\Purchases\{PurchaseHeader, Supplier};
-use App\Services\System\Base\{
-    BaseConfigService,
-    CompanyReferenceDataService,
-    MasterReferenceDataService
-};
-
 final class PurchaseConfigService extends BaseConfigService {
-
     protected const USER_SCOPED_CACHE = true;
 
     protected static function getCachePrefix(): string {
@@ -34,16 +31,16 @@ final class PurchaseConfigService extends BaseConfigService {
                     ->where("company_id", $companyId)
                     ->where("status", "active")
                     ->orderBy("name")
-                    ->get()
+                    ->get(),
             ]),
             "branches" => self::data([
-                "records" => $references->activeBranches()
+                "records" => $references->activeBranches(),
             ]),
             "warehouses" => self::data([
-                "records" => $references->stockWarehouses()
+                "records" => $references->stockWarehouses(),
             ]),
             "currencies" => self::data([
-                "records" => MasterReferenceDataService::currencies($companyId)
+                "records" => MasterReferenceDataService::currencies($companyId),
             ]),
             "products" => self::data([
                 "records" => Item::query()
@@ -52,22 +49,21 @@ final class PurchaseConfigService extends BaseConfigService {
                     ->where("status", "active")
                     ->select(["id", "internal_code", "barcode", "name"])
                     ->orderBy("name")
-                    ->get()
+                    ->get(),
             ]),
             "purchaseDocumentTypes" => self::data([
-                "records" => PurchaseHeader::getDocumentTypes()
+                "records" => PurchaseHeader::getDocumentTypes(),
             ]),
             "purchaseDeliveryModes" => self::data([
-                "records" => PurchaseHeader::getDeliveryModes()
+                "records" => PurchaseHeader::getDeliveryModes(),
             ]),
             "taxes" => self::data([
-                "records" => $references->taxesFor("purchase")
+                "records" => $references->taxesFor("purchase"),
             ]),
             "paymentMethods" => self::data([
-                "records" => $references->paymentMethodsFor("purchase")
-            ])
+                "records" => $references->paymentMethodsFor("purchase"),
+            ]),
         ]);
 
     }
-
 }

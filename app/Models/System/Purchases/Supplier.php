@@ -7,7 +7,6 @@ namespace App\Models\System\Purchases;
 use Illuminate\Database\Eloquent\Model;
 
 final class Supplier extends Model {
-
     protected $table = "suppliers";
 
     protected $fillable = [
@@ -25,12 +24,12 @@ final class Supplier extends Model {
         "created_at",
         "created_by",
         "updated_at",
-        "updated_by"
+        "updated_by",
     ];
 
     protected $casts = [
         "payment_term_days" => "integer",
-        "credit_limit" => "App\\Casts\\System\\ConfigurableDecimal"
+        "credit_limit" => "App\\Casts\\System\\ConfigurableDecimal",
     ];
 
     public function purchases() {
@@ -50,5 +49,4 @@ final class Supplier extends Model {
         return $this->hasMany(SupplierBankAccount::class, "supplier_id");
 
     }
-
 }

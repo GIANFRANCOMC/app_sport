@@ -4,19 +4,18 @@ declare(strict_types=1);
 
 namespace App\Services\System\Catalogs\Categories;
 
-use App\Helpers\System\{TranslationHelper, Utilities};
-use Illuminate\Support\Facades\DB;
+use App\Helpers\System\TranslationHelper;
+use App\Helpers\System\Utilities;
+use App\Models\System\Catalogs\{Category};
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
-
-use App\Models\System\Catalogs\{Category};
+use Illuminate\Support\Facades\DB;
 
 /**
  * Service class for managing module operations
  * Handles business logic for creating and updating records
  */
 class CategoryService {
-
     /**
      * Translation namespace for module
      */
@@ -31,7 +30,7 @@ class CategoryService {
         "description",
         "sort_order",
         "is_public",
-        "status"
+        "status",
     ];
 
     /**
@@ -40,15 +39,14 @@ class CategoryService {
     private const SEARCHABLE_FIELDS = [
         "internal_code",
         "name",
-        "description"
+        "description",
     ];
 
     /**
      * Get translation with fallback
      *
-     * @param string $key Translation key
-     * @param array $replace Replacements
-     * @return string
+     * @param  string  $key Translation key
+     * @param  array  $replace Replacements
      */
     private static function trans(string $key, array $replace = []): string {
 
@@ -59,23 +57,22 @@ class CategoryService {
     /**
      * Prepare data for creation
      *
-     * @param array $data Input data
-     * @param int $companyId Company
-     * @param int $userId User
-     * @return array
+     * @param  array  $data Input data
+     * @param  int  $companyId Company
+     * @param  int  $userId User
      */
     private static function prepareCategoryDataForCreate(array $data, int $companyId, int $userId): array {
 
         $categoryData = [
             "company_id" => $companyId,
-            "status"     => $data["status"] ?? "active",
+            "status" => $data["status"] ?? "active",
             "created_at" => now(),
-            "created_by" => $userId
+            "created_by" => $userId,
         ];
 
-        foreach(self::ALLOWED_FIELDS as $field) {
+        foreach (self::ALLOWED_FIELDS as $field) {
 
-            if(isset($data[$field])) {
+            if (isset($data[$field])) {
 
                 $categoryData[$field] = $data[$field];
 
@@ -90,19 +87,18 @@ class CategoryService {
     /**
      * Prepare data for update (only changed fields)
      *
-     * @param Category $category Record instance
-     * @param array $data Input data
-     * @return array
+     * @param  Category  $category Record instance
+     * @param  array  $data Input data
      */
     private static function prepareCategoryDataForUpdate(Category $category, array $data): array {
 
         $updateData = [];
 
-        foreach(self::ALLOWED_FIELDS as $field) {
+        foreach (self::ALLOWED_FIELDS as $field) {
 
-            if(isset($data[$field])) {
+            if (isset($data[$field])) {
 
-                if($data[$field] !== $category->$field) {
+                if ($data[$field] !== $category->$field) {
 
                     $updateData[$field] = $data[$field];
 
@@ -119,16 +115,17 @@ class CategoryService {
     /**
      * Create a new record
      *
-     * @param array $data Input data
-     * @param int|null $userId User creating the record
+     * @param  array  $data Input data
+     * @param  int|null  $userId User creating the record
      * @return Category|null Created record instance or null on failure
+     *
      * @throws Exception
      */
     public static function create(array $data, int $companyId, int $userId): ?Category {
 
         $category = null;
 
-        DB::transaction(function() use($data, $companyId, $userId, &$category) {
+        DB::transaction(function () use ($data, $companyId, $userId, &$category) {
 
             // Prepare data with only allowed fields
             $categoryData = self::prepareCategoryDataForCreate($data, $companyId, $userId);
@@ -145,16 +142,16 @@ class CategoryService {
     /**
      * Update an existing record
      *
-     * @param Category $category Record instance to update
-     * @param array $data Input data
-     * @param int|null $userId User updating the record
+     * @param  Category  $category Record instance to update
+     * @param  array  $data Input data
+     * @param  int|null  $userId User updating the record
      * @return Category Updated record instance
      */
     public static function update(Category $category, array $data, int $userId): Category {
 
-        DB::transaction(function() use($category, $data, $userId) {
+        DB::transaction(function () use ($category, $data, $userId) {
 
-            if(($data["status"] ?? null) === "inactive" && $category->status !== "inactive") {
+            if (($data["status"] ?? null) === "inactive" && $category->status !== "inactive") {
 
                 self::assertCategoryHasNoActiveItems(
                     (int) $category->company_id,
@@ -168,7 +165,7 @@ class CategoryService {
             $updateData = self::prepareCategoryDataForUpdate($category, $data);
 
             // Only update if there are changes
-            if(!empty($updateData)) {
+            if (! empty($updateData)) {
 
                 $updateData["updated_at"] = now();
                 $updateData["updated_by"] = $userId;
@@ -185,24 +182,23 @@ class CategoryService {
     /**
      * Find record by ID and company ID
      *
-     * @param int $id Record
-     * @param int $companyId Company
-     * @param array|null $statuses Filter by statuses (e.g. ["active"], ["active", "inactive"])
-     * @param array $relations Relations to eager load
-     * @return Category|null
+     * @param  int  $id Record
+     * @param  int  $companyId Company
+     * @param  array|null  $statuses Filter by statuses (e.g. ["active"], ["active", "inactive"])
+     * @param  array  $relations Relations to eager load
      */
     public static function findByIdAndCompany(int $id, int $companyId, ?array $statuses = ["active"], array $relations = []): ?Category {
 
         $query = Category::where("id", $id)
-                         ->where("company_id", $companyId);
+            ->where("company_id", $companyId);
 
-        if($statuses !== null && !empty($statuses)) {
+        if ($statuses !== null && ! empty($statuses)) {
 
             $query->whereIn("status", $statuses);
 
         }
 
-        if($relations !== null && !empty($relations)) {
+        if ($relations !== null && ! empty($relations)) {
 
             $query->with($relations);
 
@@ -215,49 +211,48 @@ class CategoryService {
     /**
      * Get paginated list of records with filters
      *
-     * @param int $companyId Company
-     * @param array $filters Filter parameters (filter_by, word)
-     * @param int $perPage Items per page
-     * @return LengthAwarePaginator
+     * @param  int  $companyId Company
+     * @param  array  $filters Filter parameters (filter_by, word)
+     * @param  int  $perPage Items per page
      */
     public static function getPaginatedList(int $companyId, array $filters = [], int $perPage = 15): LengthAwarePaginator {
 
         $query = Category::where("company_id", $companyId)
-                         ->withCount([
-                             "items as active_items_count" => function($builder) {
+            ->withCount([
+                "items as active_items_count" => function ($builder) {
 
-                                 $builder->whereHas("item", function($itemQuery) {
+                    $builder->whereHas("item", function ($itemQuery) {
 
-                                     $itemQuery->where("status", "active");
+                        $itemQuery->where("status", "active");
 
-                                 });
+                    });
 
-                             }
-                         ]);
+                },
+            ]);
 
         // Apply filters
         $filterBy = $filters["filter_by"] ?? null;
-        $word     = $filters["word"] ?? null;
+        $word = $filters["word"] ?? null;
 
-        if(Utilities::isDefined($word) && Utilities::isDefined($filterBy)) {
+        if (Utilities::isDefined($word) && Utilities::isDefined($filterBy)) {
 
             $searchTerm = Utilities::getWordSearch($word);
 
-            if($filterBy === "all") {
+            if ($filterBy === "all") {
 
                 // Search across all searchable fields
-                $query->where(function(Builder $q) use($searchTerm) {
+                $query->where(function (Builder $q) use ($searchTerm) {
 
                     $searchableFields = self::SEARCHABLE_FIELDS;
-                    $firstField       = array_shift($searchableFields);
+                    $firstField = array_shift($searchableFields);
 
-                    if($firstField) {
+                    if ($firstField) {
 
                         $q->where($firstField, "like", $searchTerm);
 
                     }
 
-                    foreach($searchableFields as $field) {
+                    foreach ($searchableFields as $field) {
 
                         $q->orWhere($field, "like", $searchTerm);
 
@@ -265,7 +260,7 @@ class CategoryService {
 
                 });
 
-            }elseif(in_array($filterBy, self::SEARCHABLE_FIELDS, true)) {
+            } elseif (in_array($filterBy, self::SEARCHABLE_FIELDS, true)) {
 
                 // Search in specific field
                 $query->where($filterBy, "like", $searchTerm);
@@ -275,14 +270,14 @@ class CategoryService {
         }
 
         return $query->orderBy("sort_order")
-                     ->orderBy("name", "ASC")
-                     ->paginate($perPage);
+            ->orderBy("name", "ASC")
+            ->paginate($perPage);
 
     }
 
     public static function delete(int $companyId, int $categoryId): void {
 
-        DB::transaction(function() use($companyId, $categoryId) {
+        DB::transaction(function () use ($companyId, $categoryId) {
             $category = Category::query()
                 ->where("company_id", $companyId)
                 ->lockForUpdate()
@@ -304,12 +299,10 @@ class CategoryService {
             ->where("items.status", "active")
             ->exists();
 
-        if($hasActiveItems) {
+        if ($hasActiveItems) {
 
             throw new \DomainException($message);
-
         }
 
     }
-
 }

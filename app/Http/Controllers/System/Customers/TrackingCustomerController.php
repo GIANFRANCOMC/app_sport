@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace App\Http\Controllers\System\Customers;
 
 use App\Http\Controllers\System\Base\BaseController;
-use Illuminate\Http\{JsonResponse, Request};
-
-use App\Services\System\Customers\Tracking\{TrackingCustomerConfigService, TrackingCustomerBusinessService};
+use App\Services\System\Customers\Tracking\TrackingCustomerBusinessService;
+use App\Services\System\Customers\Tracking\TrackingCustomerConfigService;
 use App\Services\System\Organizations\AccessScopeService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class TrackingCustomerController extends BaseController {
-
     /**
      * Translation namespace for tracking customer module
      */
@@ -20,16 +20,15 @@ class TrackingCustomerController extends BaseController {
     /**
      * Get initialization parameters for the module
      *
-     * @param Request $request
      * @return \stdClass
      */
     public function initParams(Request $request) {
 
         $page = $this->getPage($request);
+
         return TrackingCustomerConfigService::getInitParams($this->getCompanyId(), $page, $this->getUserId());
 
     }
-
 
     /**
      * Display the tracking customers index page
@@ -42,26 +41,17 @@ class TrackingCustomerController extends BaseController {
 
     }
 
-
-
-
-
-
-
     /**
      * Get tracking information for a customer
      *
-     * @param Request $request
-     * @param int $id Customer ID
-     * @param TrackingCustomerBusinessService $businessService
-     * @return JsonResponse
+     * @param  int  $id Customer ID
      */
     public function getTracking(Request $request, int $id, TrackingCustomerBusinessService $businessService): JsonResponse {
 
         try {
 
             $result = $businessService->get([
-                "company_id"  => $this->getCompanyId(),
+                "company_id" => $this->getCompanyId(),
                 "customer_id" => $id,
                 "period_type" => $request->input("period_type"),
                 "start_date" => $request->input("start_date"),
@@ -70,10 +60,10 @@ class TrackingCustomerController extends BaseController {
                     $this->getAuthUser(),
                     AccessScopeService::BRANCH
                 ),
-                "options"     => $request->input("options")
+                "options" => $request->input("options"),
             ]);
 
-            if($result["bool"]) {
+            if ($result["bool"]) {
 
                 return $this->successResponse($result["tracking"], "retrieved");
 
@@ -81,7 +71,7 @@ class TrackingCustomerController extends BaseController {
 
             return $this->errorResponse($result["msg"] ?? "retrieve_failed", [], 422);
 
-        }catch(\Exception $e) {
+        } catch (\Exception $e) {
 
             return $this->handleException($e, "retrieve");
 
@@ -91,13 +81,10 @@ class TrackingCustomerController extends BaseController {
 
     /**
      * Get translation namespace for tracking customer module
-     *
-     * @return string
      */
     protected function getTranslationNamespace(): string {
 
         return self::TRANSLATION_NAMESPACE;
 
     }
-
 }

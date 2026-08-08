@@ -4,16 +4,17 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\System\Catalogs;
 
-use App\Http\Controllers\System\Base\BaseController;
 use App\Helpers\System\{Utilities};
-use Illuminate\Http\{JsonResponse, Request};
-
-use App\Http\Requests\System\Catalogs\Services\{StoreServiceRequest, UpdateServiceRequest};
+use App\Http\Controllers\System\Base\BaseController;
+use App\Http\Requests\System\Catalogs\Services\StoreServiceRequest;
+use App\Http\Requests\System\Catalogs\Services\UpdateServiceRequest;
 use App\Services\System\Base\{InitParamsCacheInvalidationService};
-use App\Services\System\Catalogs\Services\{ServiceConfigService, ServiceService};
+use App\Services\System\Catalogs\Services\ServiceConfigService;
+use App\Services\System\Catalogs\Services\ServiceService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class ServiceController extends BaseController {
-
     /**
      * Translation namespace for module
      */
@@ -22,7 +23,6 @@ class ServiceController extends BaseController {
     /**
      * Get initialization parameters for the module
      *
-     * @param Request $request
      * @return \stdClass
      */
     public function initParams(Request $request) {
@@ -36,7 +36,6 @@ class ServiceController extends BaseController {
     /**
      * Get paginated list with filters
      *
-     * @param Request $request
      * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator
      */
     public function list(Request $request) {
@@ -59,12 +58,8 @@ class ServiceController extends BaseController {
 
     }
 
-
     /**
      * Store a newly created record
-     *
-     * @param StoreServiceRequest $request
-     * @return JsonResponse
      */
     public function store(StoreServiceRequest $request): JsonResponse {
 
@@ -73,7 +68,7 @@ class ServiceController extends BaseController {
             $data = $this->prepareServiceData($request);
             $item = ServiceService::create($data, $this->getCompanyId(), $this->getUserId());
 
-            if(!Utilities::isDefined($item)) {
+            if (! Utilities::isDefined($item)) {
 
                 return $this->errorResponse("create_failed");
 
@@ -86,7 +81,7 @@ class ServiceController extends BaseController {
 
             return $this->createdResponse($item, "created", "item");
 
-        }catch(\Exception $e) {
+        } catch (\Exception $e) {
 
             return $this->handleException($e, "create");
 
@@ -94,14 +89,10 @@ class ServiceController extends BaseController {
 
     }
 
-
-
     /**
      * Update the specified record
      *
-     * @param UpdateServiceRequest $request
-     * @param int $id Service ID
-     * @return JsonResponse
+     * @param  int  $id Service ID
      */
     public function update(UpdateServiceRequest $request, int $id): JsonResponse {
 
@@ -109,7 +100,7 @@ class ServiceController extends BaseController {
 
             $item = ServiceService::findByIdAndCompany($id, $this->getCompanyId(), null);
 
-            if(!Utilities::isDefined($item)) {
+            if (! Utilities::isDefined($item)) {
 
                 return $this->notFoundResponse();
 
@@ -118,7 +109,7 @@ class ServiceController extends BaseController {
             $data = $this->prepareServiceData($request);
             $item = ServiceService::update($item, $data, $this->getUserId());
 
-            if(!Utilities::isDefined($item)) {
+            if (! Utilities::isDefined($item)) {
 
                 return $this->errorResponse("update_failed");
 
@@ -131,7 +122,7 @@ class ServiceController extends BaseController {
 
             return $this->updatedResponse($item, "updated", "item");
 
-        }catch(\Exception $e) {
+        } catch (\Exception $e) {
 
             return $this->handleException($e, "update");
 
@@ -139,50 +130,45 @@ class ServiceController extends BaseController {
 
     }
 
-
     /**
      * Prepare record data from request
      *
-     * @param StoreServiceRequest|UpdateServiceRequest $request
-     * @return array
+     * @param  StoreServiceRequest|UpdateServiceRequest  $request
      */
     private function prepareServiceData($request): array {
 
         return [
-            "company_id"       => $this->getCompanyId(),
-            "internal_code"    => $request->input("internal_code"),
-            "name"             => $request->input("name"),
-            "description"      => $request->input("description"),
-            "price"            => $request->input("price"),
+            "company_id" => $this->getCompanyId(),
+            "internal_code" => $request->input("internal_code"),
+            "name" => $request->input("name"),
+            "description" => $request->input("description"),
+            "price" => $request->input("price"),
             "price_includes_tax" => $request->boolean("price_includes_tax"),
-            "igv_exempt"       => $request->boolean("igv_exempt"),
-            "min_price"        => $request->input("min_price"),
-            "max_price"        => $request->input("max_price"),
-            "currency_id"      => $request->input("currency_id"),
+            "igv_exempt" => $request->boolean("igv_exempt"),
+            "min_price" => $request->input("min_price"),
+            "max_price" => $request->input("max_price"),
+            "currency_id" => $request->input("currency_id"),
             "estimated_duration_minutes" => $request->input("estimated_duration_minutes"),
-            "commission_rate"  => $request->input("commission_rate"),
-            "commission_type"  => $request->input("commission_type"),
+            "commission_rate" => $request->input("commission_rate"),
+            "commission_type" => $request->input("commission_type"),
             "commission_value" => $request->input("commission_value"),
             "capacity_control_enabled" => $request->boolean("capacity_control_enabled"),
-            "capacity_limit"   => $request->input("capacity_limit"),
-            "expires_at"       => $request->input("expires_at"),
-            "see_my_web"       => $request->input("see_my_web"),
+            "capacity_limit" => $request->input("capacity_limit"),
+            "expires_at" => $request->input("expires_at"),
+            "see_my_web" => $request->input("see_my_web"),
             "see_my_web_price" => $request->input("see_my_web_price"),
-            "status"           => $request->input("status"),
-            "categories"       => $request->input("categories")
+            "status" => $request->input("status"),
+            "categories" => $request->input("categories"),
         ];
 
     }
 
     /**
      * Get translation namespace for module
-     *
-     * @return string
      */
     protected function getTranslationNamespace(): string {
 
         return self::TRANSLATION_NAMESPACE;
 
     }
-
 }

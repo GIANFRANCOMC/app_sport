@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\System\Organizations;
 
-use App\Http\Controllers\System\Base\BaseController;
 use App\Helpers\System\{Utilities};
-use Illuminate\Http\{JsonResponse, Request};
-
+use App\Http\Controllers\System\Base\BaseController;
 use App\Http\Requests\System\Organizations\Companies\UpdateCompanyRequest;
-use App\Services\System\Organizations\Companies\{CompanyConfigService, CompanyService};
+use App\Services\System\Organizations\Companies\CompanyConfigService;
+use App\Services\System\Organizations\Companies\CompanyService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class CompanyController extends BaseController {
-
     /**
      * Translation namespace for module
      */
@@ -21,7 +21,6 @@ class CompanyController extends BaseController {
     /**
      * Get initialization parameters for the module
      *
-     * @param Request $request
      * @return \stdClass
      */
     public function initParams(Request $request) {
@@ -31,7 +30,6 @@ class CompanyController extends BaseController {
         return CompanyConfigService::getInitParams($this->getCompanyId(), $page, $this->getUserId());
 
     }
-
 
     /**
      * Display the module index page
@@ -44,16 +42,10 @@ class CompanyController extends BaseController {
 
     }
 
-
-
-
-
     /**
      * Update the specified company
      *
-     * @param UpdateCompanyRequest $request
-     * @param int $id Company ID
-     * @return JsonResponse
+     * @param  int  $id Company ID
      */
     public function update(UpdateCompanyRequest $request, int $id): JsonResponse {
 
@@ -61,17 +53,17 @@ class CompanyController extends BaseController {
 
             $company = CompanyService::findByIdAndCompany($id, $this->getCompanyId(), null);
 
-            if(!Utilities::isDefined($company)) {
+            if (! Utilities::isDefined($company)) {
 
                 return $this->notFoundResponse();
 
             }
 
-            $data    = $this->prepareCompanyData($request);
-            $files   = $this->prepareCompanyFiles($request);
+            $data = $this->prepareCompanyData($request);
+            $files = $this->prepareCompanyFiles($request);
             $company = CompanyService::update($company, $data, $files, $this->getUserId());
 
-            if(!Utilities::isDefined($company)) {
+            if (! Utilities::isDefined($company)) {
 
                 return $this->errorResponse("update_failed");
 
@@ -81,7 +73,7 @@ class CompanyController extends BaseController {
 
             return $this->updatedResponse($company, "updated", "company");
 
-        }catch(\Exception $e) {
+        } catch (\Exception $e) {
 
             return $this->handleException($e, "update");
 
@@ -89,37 +81,30 @@ class CompanyController extends BaseController {
 
     }
 
-
     /**
      * Prepare company data from request
-     *
-     * @param UpdateCompanyRequest $request
-     * @return array
      */
     private function prepareCompanyData(UpdateCompanyRequest $request): array {
 
         return [
             "identity_document_type_id" => $request->input("identity_document_type_id"),
-            "document_number"           => $request->input("document_number"),
-            "legal_name"                => $request->input("legal_name"),
-            "commercial_name"           => $request->input("commercial_name"),
-            "tagline"                   => $request->input("tagline"),
-            "description"               => $request->input("description"),
-            "address"                   => $request->input("address"),
-            "telephone"                 => $request->input("telephone"),
-            "email"                     => $request->input("email"),
-            "facebook"                  => $request->input("facebook"),
-            "instagram"                 => $request->input("instagram"),
-            "whatsapp"                  => $request->input("whatsapp")
+            "document_number" => $request->input("document_number"),
+            "legal_name" => $request->input("legal_name"),
+            "commercial_name" => $request->input("commercial_name"),
+            "tagline" => $request->input("tagline"),
+            "description" => $request->input("description"),
+            "address" => $request->input("address"),
+            "telephone" => $request->input("telephone"),
+            "email" => $request->input("email"),
+            "facebook" => $request->input("facebook"),
+            "instagram" => $request->input("instagram"),
+            "whatsapp" => $request->input("whatsapp"),
         ];
 
     }
 
     /**
      * Prepare company files from request
-     *
-     * @param UpdateCompanyRequest $request
-     * @return array
      */
     private function prepareCompanyFiles(UpdateCompanyRequest $request): array {
 
@@ -127,9 +112,9 @@ class CompanyController extends BaseController {
 
         $imageFields = ["logotype", "combinationmark", "logomark", "login_image"];
 
-        foreach($imageFields as $field) {
+        foreach ($imageFields as $field) {
 
-            if($request->hasFile($field) && $request->file($field)) {
+            if ($request->hasFile($field) && $request->file($field)) {
 
                 $files[$field] = $request->file($field);
 
@@ -143,13 +128,10 @@ class CompanyController extends BaseController {
 
     /**
      * Get translation namespace for module
-     *
-     * @return string
      */
     protected function getTranslationNamespace(): string {
 
         return self::TRANSLATION_NAMESPACE;
 
     }
-
 }

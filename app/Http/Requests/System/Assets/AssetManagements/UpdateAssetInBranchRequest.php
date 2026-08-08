@@ -7,7 +7,6 @@ namespace App\Http\Requests\System\Assets\AssetManagements;
 use App\Http\Requests\System\Base\CompanyFormRequest;
 
 final class UpdateAssetInBranchRequest extends CompanyFormRequest {
-
     public function rules(): array {
 
         $round = $this->decimalPrecision();
@@ -20,7 +19,7 @@ final class UpdateAssetInBranchRequest extends CompanyFormRequest {
             "quantity" => ["required", "numeric", "min:0", "max:{$maxValue}", "decimal:0,{$round}"],
             "acquisition_value" => ["nullable", "numeric", "min:0", "max:{$maxValue}", "decimal:0,{$round}"],
             "acquisition_date" => ["nullable", "date"],
-            "note" => ["nullable", "string", "max:500"]
+            "note" => ["nullable", "string", "max:500"],
         ];
 
     }
@@ -30,5 +29,4 @@ final class UpdateAssetInBranchRequest extends CompanyFormRequest {
         return ["note"];
 
     }
-
 }

@@ -4,14 +4,13 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Guest;
 
-use App\Services\System\Organizations\Companies\CompanySettingService;
 use App\Services\Security\TurnstileVerificationService;
+use App\Services\System\Organizations\Companies\CompanySettingService;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
 
 final class StoreBookComplaintRequest extends FormRequest {
-
     public function authorize(): bool {
 
         return true;
@@ -27,12 +26,12 @@ final class StoreBookComplaintRequest extends FormRequest {
             "branch_id" => [
                 "required",
                 "integer",
-                Rule::exists("branches", "id")->where("company_id", $companyId)->where("status", "active")
+                Rule::exists("branches", "id")->where("company_id", $companyId)->where("status", "active"),
             ],
             "identity_document_type_id" => [
                 "required",
                 "integer",
-                Rule::exists("identity_document_types", "id")->where("company_id", $companyId)
+                Rule::exists("identity_document_types", "id")->where("company_id", $companyId),
             ],
             "document_number" => ["required", "string", "max:30"],
             "name" => ["required", "string", "max:255"],
@@ -48,9 +47,9 @@ final class StoreBookComplaintRequest extends FormRequest {
                 Rule::requiredIf(TurnstileVerificationService::enabled()),
                 "nullable",
                 "string",
-                "max:2048"
+                "max:2048",
             ],
-            "website" => ["prohibited"]
+            "website" => ["prohibited"],
         ];
 
     }
@@ -68,12 +67,12 @@ final class StoreBookComplaintRequest extends FormRequest {
 
     public function after(): array {
 
-        return [function(Validator $validator): void {
-            if($validator->errors()->has("cf-turnstile-response")) {
+        return [function (Validator $validator): void {
+            if ($validator->errors()->has("cf-turnstile-response")) {
                 return;
             }
 
-            if(!TurnstileVerificationService::verify(
+            if (! TurnstileVerificationService::verify(
                 $this->input("cf-turnstile-response"),
                 $this->ip()
             )) {
@@ -82,5 +81,4 @@ final class StoreBookComplaintRequest extends FormRequest {
         }];
 
     }
-
 }

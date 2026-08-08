@@ -4,12 +4,10 @@ declare(strict_types=1);
 
 namespace App\Models\System\Purchases;
 
+use App\Models\System\Catalogs\Item;
 use Illuminate\Database\Eloquent\Model;
 
-use App\Models\System\Catalogs\Item;
-
 final class PurchaseItem extends Model {
-
     protected $table = "purchase_items";
 
     protected $fillable = [
@@ -27,7 +25,7 @@ final class PurchaseItem extends Model {
         "created_at",
         "created_by",
         "updated_at",
-        "updated_by"
+        "updated_by",
     ];
 
     protected $casts = [
@@ -36,7 +34,7 @@ final class PurchaseItem extends Model {
         "unit_cost" => "App\\Casts\\System\\ConfigurableDecimal",
         "allocated_expense_total" => "App\\Casts\\System\\ConfigurableDecimal",
         "inventory_unit_cost" => "App\\Casts\\System\\ConfigurableDecimal",
-        "subtotal" => "App\\Casts\\System\\ConfigurableDecimal"
+        "subtotal" => "App\\Casts\\System\\ConfigurableDecimal",
     ];
 
     protected $appends = ["remaining_quantity"];
@@ -62,5 +60,4 @@ final class PurchaseItem extends Model {
         return $this->belongsTo(Item::class, "item_id");
 
     }
-
 }

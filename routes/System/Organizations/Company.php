@@ -7,6 +7,6 @@ use Illuminate\Support\Facades\Route;
 
 $entity = "companies";
 
-Route::get("",            [CompanyController::class, "index"])->name("$entity.index");
+Route::get("", [CompanyController::class, "index"])->name("$entity.index");
 Route::get("/initParams", [CompanyController::class, "initParams"])->name("$entity.initParams");
-Route::patch("/{id}",     [CompanyController::class, "update"])->name("$entity.update");
+Route::patch("/{id}", [CompanyController::class, "update"])->name("$entity.update");

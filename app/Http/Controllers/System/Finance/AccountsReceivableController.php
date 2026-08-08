@@ -11,7 +11,6 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 final class AccountsReceivableController extends BaseController {
-
     public function __construct(private readonly AccountsReceivableService $service) {
 
     }
@@ -40,7 +39,7 @@ final class AccountsReceivableController extends BaseController {
                 $filters,
                 $this->getPerPage($request, Utilities::$per_page_default)
             ),
-            "summary" => $this->service->summary($this->getCompanyId(), $this->getUserId(), $filters)
+            "summary" => $this->service->summary($this->getCompanyId(), $this->getUserId(), $filters),
         ]);
 
     }
@@ -49,7 +48,7 @@ final class AccountsReceivableController extends BaseController {
 
         return response()->json([
             "bool" => true,
-            "data" => $this->service->find($this->getCompanyId(), $this->getUserId(), $id)
+            "data" => $this->service->find($this->getCompanyId(), $this->getUserId(), $id),
         ]);
 
     }
@@ -60,9 +59,8 @@ final class AccountsReceivableController extends BaseController {
             "search" => $request->input("search"),
             "status" => $request->input("status"),
             "date_from" => $request->input("date_from"),
-            "date_to" => $request->input("date_to")
-        ], fn($value) => $value !== null && $value !== "");
+            "date_to" => $request->input("date_to"),
+        ], fn ($value) => $value !== null && $value !== "");
 
     }
-
 }

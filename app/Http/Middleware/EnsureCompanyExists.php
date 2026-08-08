@@ -6,10 +6,8 @@ use App\Helpers\System\Utilities;
 use App\Models\Guest\Company;
 use Closure;
 use Illuminate\Http\Request;
-use Symfony\Component\HttpFoundation\Response;
 
 class EnsureCompanyExists {
-
     /**
      * Handle an incoming request.
      *
@@ -19,17 +17,17 @@ class EnsureCompanyExists {
 
         $slug = $request->route("company_slug");
 
-        if(!Utilities::isDefined($slug)) {
+        if (! Utilities::isDefined($slug)) {
 
             abort(404, "Invalid company");
 
         }
 
         $company = Company::where("slug", $slug)
-                          ->where("status", "active")
-                          ->first();
+            ->where("status", "active")
+            ->first();
 
-        if(!Utilities::isDefined($company)) {
+        if (! Utilities::isDefined($company)) {
 
             abort(404, "Company not found");
 
@@ -41,5 +39,4 @@ class EnsureCompanyExists {
         return $next($request);
 
     }
-
 }

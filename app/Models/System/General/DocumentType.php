@@ -3,20 +3,22 @@
 namespace App\Models\System\General;
 
 use App\Helpers\System\Utilities;
+use App\Models\System\Organizations\{Serie};
 use Illuminate\Database\Eloquent\Model;
 
-use App\Models\System\Organizations\{Serie};
-
 class DocumentType extends Model {
+    protected $table = "document_types";
 
-    protected $table               = "document_types";
-    protected $primaryKey          = "id";
-    public $incrementing           = true;
-    public $timestamps             = true;
+    protected $primaryKey = "id";
+
+    public $incrementing = true;
+
+    public $timestamps = true;
+
     public static $snakeAttributes = true;
 
     protected $appends = [
-        "formatted_status"
+        "formatted_status",
     ];
 
     protected $fillable = [
@@ -27,7 +29,7 @@ class DocumentType extends Model {
         "created_at",
         "created_by",
         "updated_at",
-        "updated_by"
+        "updated_by",
     ];
 
     public static function displayName(?string $name, ?string $code = null): string {
@@ -35,13 +37,13 @@ class DocumentType extends Model {
         $value = trim((string) ($name ?: $code));
         $normalized = strtoupper($value);
 
-        if(str_contains($normalized, "BOLETA") || $normalized === "BV") {
+        if (str_contains($normalized, "BOLETA") || $normalized === "BV") {
 
             return "BOLETA";
 
         }
 
-        if($normalized === "FA") {
+        if ($normalized === "FA") {
 
             return "FACTURA";
 
@@ -75,7 +77,7 @@ class DocumentType extends Model {
 
         $statuses = [
             ["code" => "active", "label" => "Activo"],
-            ["code" => "inactive", "label" => "Inactivo"]
+            ["code" => "inactive", "label" => "Inactivo"],
         ];
 
         return Utilities::getValues($statuses, $type, $code);
@@ -86,8 +88,7 @@ class DocumentType extends Model {
     public function series() {
 
         return $this->hasMany(Serie::class, "document_type_id", "id")
-                    ->whereIn("status", ["active"]);
+            ->whereIn("status", ["active"]);
 
     }
-
 }

@@ -5,16 +5,17 @@ declare(strict_types=1);
 namespace App\Services\System\Organizations\Roles;
 
 use App\Helpers\System\Utilities;
-use App\Models\System\Organizations\{Role, RoleSubSection, User};
+use App\Models\System\Organizations\Role;
+use App\Models\System\Organizations\RoleSubSection;
+use App\Models\System\Organizations\User;
 use App\Services\System\Organizations\AccessScopeService;
 use App\Services\System\Organizations\BusinessAuditService;
-use Illuminate\Auth\Access\AuthorizationException;
 use App\Services\System\Organizations\Companies\CompanySectionService;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 
 final class RoleService {
-
     public static function query(int $companyId, string $word = ""): Builder {
 
         $query = Role::query()
@@ -23,16 +24,16 @@ final class RoleService {
                 "roleSubSections:id,company_id,role_id,sub_section_id,actions",
                 "branches:id,name",
                 "cashRegisters:id,branch_id,name",
-                "warehouses:id,branch_id,name"
+                "warehouses:id,branch_id,name",
             ])
             ->withCount([
                 "users",
-                "roleSubSections as modules_count"
+                "roleSubSections as modules_count",
             ]);
 
         $word = trim($word);
 
-        if($word !== "") {
+        if ($word !== "") {
 
             $query->where("name", "like", "%{$word}%");
 
@@ -50,7 +51,7 @@ final class RoleService {
                 "roleSubSections:id,company_id,role_id,sub_section_id,actions",
                 "branches:id,name",
                 "cashRegisters:id,branch_id,name",
-                "warehouses:id,branch_id,name"
+                "warehouses:id,branch_id,name",
             ])
             ->findOrFail($roleId);
 
@@ -60,7 +61,7 @@ final class RoleService {
 
         self::assertCanDelegate($companyId, $userId, $data);
 
-        return DB::transaction(function() use($companyId, $userId, $data) {
+        return DB::transaction(function () use ($companyId, $userId, $data) {
 
             $role = Role::create([
                 "company_id" => $companyId,
@@ -72,7 +73,7 @@ final class RoleService {
                 "warehouse_scope_mode" => self::scopeMode($data, "warehouse"),
                 "status" => $data["status"],
                 "created_at" => now(),
-                "created_by" => $userId
+                "created_by" => $userId,
             ]);
 
             self::syncPermissions($companyId, $role, $data, $userId);
@@ -90,7 +91,7 @@ final class RoleService {
         self::assertCanDelegate($companyId, $userId, $data, $roleId);
         self::assertCompanyKeepsAdministrator($companyId, $roleId, $data);
 
-        return DB::transaction(function() use($companyId, $roleId, $userId, $data) {
+        return DB::transaction(function () use ($companyId, $roleId, $userId, $data) {
 
             $before = self::roleSnapshot(self::find($companyId, $roleId));
             $role = Role::query()
@@ -104,7 +105,7 @@ final class RoleService {
                 "warehouse_scope_mode" => self::scopeMode($data, "warehouse"),
                 "status" => $data["status"],
                 "updated_at" => now(),
-                "updated_by" => $userId
+                "updated_by" => $userId,
             ]);
 
             self::syncPermissions($companyId, $role, $data, $userId);
@@ -122,13 +123,13 @@ final class RoleService {
         $source = self::find($companyId, $roleId);
 
         $permissions = $source->is_full_access
-            ? self::enabledSubSectionIds($companyId)->map(fn($subSectionId) => [
+            ? self::enabledSubSectionIds($companyId)->map(fn ($subSectionId) => [
                 "sub_section_id" => (int) $subSectionId,
-                "actions" => RolePermissionService::actionCodes()
+                "actions" => RolePermissionService::actionCodes(),
             ])->values()->all()
-            : $source->roleSubSections->map(fn(RoleSubSection $permission) => [
+            : $source->roleSubSections->map(fn (RoleSubSection $permission) => [
                 "sub_section_id" => (int) $permission->sub_section_id,
-                "actions" => $permission->actions
+                "actions" => $permission->actions,
             ])->values()->all();
 
         return self::create($companyId, $userId, [
@@ -141,7 +142,7 @@ final class RoleService {
             "branch_ids" => $source->branches->pluck("id")->all(),
             "cash_register_ids" => $source->cashRegisters->pluck("id")->all(),
             "warehouse_ids" => $source->warehouses->pluck("id")->all(),
-            "status" => "active"
+            "status" => "active",
         ]);
 
     }
@@ -155,30 +156,30 @@ final class RoleService {
 
         $enabledIds = self::enabledSubSectionIds($companyId);
         $allActions = RolePermissionService::actionCodes();
-        $permissions = collect($data["permissions"] ?? [])->map(function($permission) use($allActions) {
+        $permissions = collect($data["permissions"] ?? [])->map(function ($permission) use ($allActions) {
             $actions = collect($permission["actions"] ?? $allActions)
                 ->intersect($allActions)
                 ->unique();
 
-            if($actions->isNotEmpty() && !$actions->contains("view")) {
+            if ($actions->isNotEmpty() && ! $actions->contains("view")) {
                 $actions->prepend("view");
             }
 
             return [
                 "sub_section_id" => (int) ($permission["sub_section_id"] ?? 0),
-                "actions" => $actions->values()->all()
+                "actions" => $actions->values()->all(),
             ];
         });
 
-        if($permissions->isEmpty()) {
-            $permissions = collect($data["sub_section_ids"] ?? [])->map(fn($id) => [
+        if ($permissions->isEmpty()) {
+            $permissions = collect($data["sub_section_ids"] ?? [])->map(fn ($id) => [
                 "sub_section_id" => (int) $id,
-                "actions" => $allActions
+                "actions" => $allActions,
             ]);
         }
 
         $permissions = $permissions
-            ->filter(fn($permission) => $enabledIds->contains($permission["sub_section_id"]) && !empty($permission["actions"]))
+            ->filter(fn ($permission) => $enabledIds->contains($permission["sub_section_id"]) && ! empty($permission["actions"]))
             ->unique("sub_section_id")
             ->values();
 
@@ -186,22 +187,23 @@ final class RoleService {
             ->where("role_id", $role->id)
             ->delete();
 
-        if($role->is_full_access || $permissions->isEmpty()) {
+        if ($role->is_full_access || $permissions->isEmpty()) {
 
             RolePermissionService::clearRoleCache($companyId, (int) $role->id);
             \App\Services\System\Organizations\Companies\CompanySectionService::clearCache($companyId, (int) $role->id);
+
             return;
 
         }
 
-        RoleSubSection::insert($permissions->map(fn($permission) => [
+        RoleSubSection::insert($permissions->map(fn ($permission) => [
             "company_id" => $companyId,
             "role_id" => $role->id,
             "sub_section_id" => $permission["sub_section_id"],
             "actions" => json_encode($permission["actions"]),
             "status" => "active",
             "created_at" => now(),
-            "created_by" => $userId
+            "created_by" => $userId,
         ])->all());
 
         RolePermissionService::clearRoleCache($companyId, (int) $role->id);
@@ -214,14 +216,14 @@ final class RoleService {
         $definitions = [
             "branch" => ["table" => "role_branches", "key" => "branch_id", "resource" => "branches"],
             "cash_register" => ["table" => "role_cash_registers", "key" => "cash_register_id", "resource" => "cash_registers"],
-            "warehouse" => ["table" => "role_warehouses", "key" => "warehouse_id", "resource" => "warehouses"]
+            "warehouse" => ["table" => "role_warehouses", "key" => "warehouse_id", "resource" => "warehouses"],
         ];
         $branchIds = self::validScopeIds($companyId, "branches", $data["branch_ids"] ?? []);
 
-        foreach($definitions as $type => $definition) {
+        foreach ($definitions as $type => $definition) {
             DB::table($definition["table"])->where("role_id", $role->id)->delete();
 
-            if($role->is_full_access || self::scopeMode($data, $type) !== "restricted") {
+            if ($role->is_full_access || self::scopeMode($data, $type) !== "restricted") {
                 continue;
             }
 
@@ -234,17 +236,17 @@ final class RoleService {
                     $branchIds
                 );
 
-            if(empty($ids)) {
+            if (empty($ids)) {
                 continue;
             }
 
-            DB::table($definition["table"])->insert(array_map(fn($id) => [
+            DB::table($definition["table"])->insert(array_map(fn ($id) => [
                 "company_id" => $companyId,
                 "role_id" => $role->id,
                 $definition["key"] => $id,
                 "status" => "active",
                 "created_at" => now(),
-                "created_by" => $userId
+                "created_by" => $userId,
             ], $ids));
         }
 
@@ -261,19 +263,19 @@ final class RoleService {
 
         $query = DB::table($table)
             ->where("company_id", $companyId)
-            ->whereIn("id", collect($ids)->map(fn($id) => (int) $id)->filter()->unique());
+            ->whereIn("id", collect($ids)->map(fn ($id) => (int) $id)->filter()->unique());
 
-        if($branchIds !== null) {
+        if ($branchIds !== null) {
             $query->whereIn("branch_id", $branchIds);
         }
 
-        return $query->pluck("id")->map(fn($id) => (int) $id)->values()->all();
+        return $query->pluck("id")->map(fn ($id) => (int) $id)->values()->all();
 
     }
 
     private static function scopeMode(array $data, string $type): string {
 
-        if((bool) ($data["is_full_access"] ?? false)) {
+        if ((bool) ($data["is_full_access"] ?? false)) {
             return "all";
         }
 
@@ -285,7 +287,7 @@ final class RoleService {
 
     private static function roleSnapshot(?Role $role): array {
 
-        if(!$role) {
+        if (! $role) {
 
             return [];
 
@@ -301,16 +303,16 @@ final class RoleService {
             "permissions" => $role->is_full_access
                 ? ["full_access"]
                 : $role->roleSubSections
-                    ->map(fn(RoleSubSection $permission) => [
+                    ->map(fn (RoleSubSection $permission) => [
                         "sub_section_id" => (int) $permission->sub_section_id,
-                        "actions" => $permission->actions
+                        "actions" => $permission->actions,
                     ])
                     ->sortBy("sub_section_id")
                     ->values()
                     ->all(),
             "branch_ids" => $role->branches->pluck("id")->sort()->values()->all(),
             "cash_register_ids" => $role->cashRegisters->pluck("id")->sort()->values()->all(),
-            "warehouse_ids" => $role->warehouses->pluck("id")->sort()->values()->all()
+            "warehouse_ids" => $role->warehouses->pluck("id")->sort()->values()->all(),
         ];
 
     }
@@ -324,7 +326,7 @@ final class RoleService {
         string $action
     ): void {
 
-        if($before === $after) {
+        if ($before === $after) {
             return;
         }
 
@@ -349,7 +351,7 @@ final class RoleService {
             ->pluck("subSections")
             ->flatten()
             ->pluck("id")
-            ->map(fn($id) => (int) $id);
+            ->map(fn ($id) => (int) $id);
 
     }
 
@@ -365,15 +367,15 @@ final class RoleService {
             ->with("role.roleSubSections")
             ->findOrFail($actorId);
 
-        if($actor->role?->is_full_access) {
+        if ($actor->role?->is_full_access) {
             return;
         }
 
-        if((bool) ($data["is_full_access"] ?? false)) {
+        if ((bool) ($data["is_full_access"] ?? false)) {
             throw new AuthorizationException("No puedes conceder acceso total.");
         }
 
-        if($targetRoleId && Role::query()
+        if ($targetRoleId && Role::query()
             ->where("company_id", $companyId)
             ->where("id", $targetRoleId)
             ->where("is_full_access", true)
@@ -382,24 +384,24 @@ final class RoleService {
         }
 
         $allActions = RolePermissionService::actionCodes();
-        $actorPermissions = $actor->role->roleSubSections->mapWithKeys(fn($permission) => [
-            (int) $permission->sub_section_id => collect($permission->actions ?: $allActions)->values()->all()
+        $actorPermissions = $actor->role->roleSubSections->mapWithKeys(fn ($permission) => [
+            (int) $permission->sub_section_id => collect($permission->actions ?: $allActions)->values()->all(),
         ]);
         $requestedPermissions = collect($data["permissions"] ?? []);
 
-        if($requestedPermissions->isEmpty()) {
-            $requestedPermissions = collect($data["sub_section_ids"] ?? [])->map(fn($id) => [
+        if ($requestedPermissions->isEmpty()) {
+            $requestedPermissions = collect($data["sub_section_ids"] ?? [])->map(fn ($id) => [
                 "sub_section_id" => (int) $id,
-                "actions" => $allActions
+                "actions" => $allActions,
             ]);
         }
 
-        foreach($requestedPermissions as $permission) {
+        foreach ($requestedPermissions as $permission) {
             $subSectionId = (int) ($permission["sub_section_id"] ?? 0);
             $allowedActions = collect($actorPermissions->get($subSectionId, []));
             $requestedActions = collect($permission["actions"] ?? $allActions);
 
-            if($subSectionId <= 0 || $requestedActions->diff($allowedActions)->isNotEmpty()) {
+            if ($subSectionId <= 0 || $requestedActions->diff($allowedActions)->isNotEmpty()) {
                 throw new AuthorizationException("No puedes conceder módulos o acciones que no posees.");
             }
         }
@@ -407,19 +409,19 @@ final class RoleService {
         $scopeDefinitions = [
             "branch" => AccessScopeService::BRANCH,
             "cash_register" => AccessScopeService::CASH_REGISTER,
-            "warehouse" => AccessScopeService::WAREHOUSE
+            "warehouse" => AccessScopeService::WAREHOUSE,
         ];
 
-        foreach($scopeDefinitions as $field => $scopeType) {
+        foreach ($scopeDefinitions as $field => $scopeType) {
             $allowedIds = AccessScopeService::allowedIds($actor, $scopeType);
             $mode = (string) ($data["{$field}_scope_mode"] ?? "all");
 
-            if($allowedIds !== null && $mode !== "restricted") {
+            if ($allowedIds !== null && $mode !== "restricted") {
                 throw new AuthorizationException("No puedes ampliar el alcance operativo más allá de tu perfil.");
             }
 
-            $requestedIds = collect($data["{$field}_ids"] ?? [])->map(fn($id) => (int) $id);
-            if($allowedIds !== null && $requestedIds->diff($allowedIds)->isNotEmpty()) {
+            $requestedIds = collect($data["{$field}_ids"] ?? [])->map(fn ($id) => (int) $id);
+            if ($allowedIds !== null && $requestedIds->diff($allowedIds)->isNotEmpty()) {
                 throw new AuthorizationException("Seleccionaste recursos fuera de tu alcance operativo.");
             }
         }
@@ -430,28 +432,27 @@ final class RoleService {
 
         $role = Role::query()->where("company_id", $companyId)->findOrFail($roleId);
         $removesFullAccess = $role->is_full_access && (
-            !(bool) ($data["is_full_access"] ?? false)
+            ! (bool) ($data["is_full_access"] ?? false)
             || ($data["status"] ?? "active") !== "active"
         );
 
-        if(!$removesFullAccess) {
+        if (! $removesFullAccess) {
             return;
         }
 
         $otherAdministratorExists = User::query()
             ->where("company_id", $companyId)
             ->where("status", "active")
-            ->whereHas("role", fn(Builder $query) => $query
+            ->whereHas("role", fn (Builder $query) => $query
                 ->where("company_id", $companyId)
                 ->where("status", "active")
                 ->where("is_full_access", true)
                 ->where("id", "!=", $roleId))
             ->exists();
 
-        if(!$otherAdministratorExists) {
+        if (! $otherAdministratorExists) {
             throw new AuthorizationException("La empresa debe conservar al menos un usuario con acceso total.");
         }
 
     }
-
 }

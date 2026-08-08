@@ -3,20 +3,22 @@
 namespace App\Models\System\Warehouses;
 
 use App\Helpers\System\Utilities;
+use App\Models\System\Organizations\{Branch};
 use Illuminate\Database\Eloquent\Model;
 
-use App\Models\System\Organizations\{Branch};
-
 class Warehouse extends Model {
+    protected $table = "warehouses";
 
-    protected $table               = "warehouses";
-    protected $primaryKey          = "id";
-    public $incrementing           = true;
-    public $timestamps             = true;
+    protected $primaryKey = "id";
+
+    public $incrementing = true;
+
+    public $timestamps = true;
+
     public static $snakeAttributes = true;
 
     protected $appends = [
-        "formatted_status"
+        "formatted_status",
     ];
 
     protected $fillable = [
@@ -27,20 +29,20 @@ class Warehouse extends Model {
         "created_at",
         "created_by",
         "updated_at",
-        "updated_by"
+        "updated_by",
     ];
 
     public static function plainName(?string $name): string {
 
         $name = trim((string) $name);
 
-        if($name === "") {
+        if ($name === "") {
 
             return "";
 
         }
 
-        $normalized = preg_replace('/^.+\s-\s((?:Almacén|Almacen)\s+\d+)$/u', '$1', $name);
+        $normalized = preg_replace("/^.+\\s-\\s((?:Almacén|Almacen)\\s+\\d+)\$/u", "\$1", $name);
 
         return trim($normalized ?: $name);
 
@@ -72,7 +74,7 @@ class Warehouse extends Model {
 
         $statuses = [
             ["code" => "active", "label" => "Activo"],
-            ["code" => "inactive", "label" => "Inactivo"]
+            ["code" => "inactive", "label" => "Inactivo"],
         ];
 
         return Utilities::getValues($statuses, $type, $code);
@@ -91,5 +93,4 @@ class Warehouse extends Model {
         return $this->hasMany(InventoryMovement::class, "warehouse_id", "id");
 
     }
-
 }

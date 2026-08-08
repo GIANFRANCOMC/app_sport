@@ -8,7 +8,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 final class PaymentMethodVariant extends Model {
-
     protected $table = "payment_method_variants";
 
     protected $fillable = [
@@ -25,12 +24,12 @@ final class PaymentMethodVariant extends Model {
         "created_at",
         "created_by",
         "updated_at",
-        "updated_by"
+        "updated_by",
     ];
 
     protected $casts = [
         "requires_reference" => "boolean",
-        "is_default" => "boolean"
+        "is_default" => "boolean",
     ];
 
     public function paymentMethod(): BelongsTo {
@@ -38,5 +37,4 @@ final class PaymentMethodVariant extends Model {
         return $this->belongsTo(PaymentMethod::class, "payment_method_id");
 
     }
-
 }

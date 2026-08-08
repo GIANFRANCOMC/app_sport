@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace App\Http\Controllers\System\Base;
 
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\System\Concerns\{HandlesApiResponses, HandlesExceptions};
+use App\Http\Controllers\System\Concerns\HandlesApiResponses;
+use App\Http\Controllers\System\Concerns\HandlesExceptions;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -14,7 +15,6 @@ use Illuminate\Support\Facades\Auth;
  * Provides common functionality for all system controllers
  */
 abstract class BaseController extends Controller {
-
     use HandlesApiResponses, HandlesExceptions;
 
     /**
@@ -30,8 +30,6 @@ abstract class BaseController extends Controller {
 
     /**
      * Get authenticated user's company ID
-     *
-     * @return int
      */
     protected function getCompanyId(): int {
 
@@ -41,8 +39,6 @@ abstract class BaseController extends Controller {
 
     /**
      * Get authenticated user's ID
-     *
-     * @return int
      */
     protected function getUserId(): int {
 
@@ -53,9 +49,7 @@ abstract class BaseController extends Controller {
     /**
      * Get per page value from request
      *
-     * @param Request $request
-     * @param int $default Default per page
-     * @return int
+     * @param  int  $default Default per page
      */
     protected function getPerPage(Request $request, int $default = 15): int {
 
@@ -65,30 +59,22 @@ abstract class BaseController extends Controller {
 
     /**
      * Get filters from request
-     *
-     * @param Request $request
-     * @return array
      */
     protected function getFilters(Request $request): array {
 
         return [
             "filter_by" => $request->input("filter_by"),
-            "word"      => $request->input("word")
+            "word" => $request->input("word"),
         ];
 
     }
 
     /**
      * Get page identifier from request
-     *
-     * @param Request $request
-     * @return string
      */
     protected function getPage(Request $request): string {
 
         return $request->input("page", "");
 
     }
-
 }
-

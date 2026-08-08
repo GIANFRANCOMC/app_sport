@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Models\System\Operations;
 
-use App\Models\System\Organizations\{Branch, Company};
+use App\Models\System\Organizations\Branch;
+use App\Models\System\Organizations\Company;
 use Illuminate\Database\Eloquent\Model;
 
 final class ServiceFloor extends Model {
-
     protected $table = "service_floors";
 
     protected $fillable = [
@@ -24,12 +24,12 @@ final class ServiceFloor extends Model {
         "created_at",
         "created_by",
         "updated_at",
-        "updated_by"
+        "updated_by",
     ];
 
     protected $casts = [
         "level_number" => "integer",
-        "sort_order" => "integer"
+        "sort_order" => "integer",
     ];
 
     public function company() {
@@ -49,5 +49,4 @@ final class ServiceFloor extends Model {
         return $this->hasMany(ServiceStation::class, "service_floor_id", "id");
 
     }
-
 }

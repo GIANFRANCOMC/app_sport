@@ -9,7 +9,6 @@ use App\Models\System\Organizations\Company;
 use Illuminate\Database\Eloquent\Model;
 
 class Brand extends Model {
-
     protected $table = "brands";
 
     protected $fillable = [
@@ -24,11 +23,11 @@ class Brand extends Model {
         "created_at",
         "created_by",
         "updated_at",
-        "updated_by"
+        "updated_by",
     ];
 
     protected $appends = [
-        "formatted_status"
+        "formatted_status",
     ];
 
     public function getFormattedStatusAttribute(): string {
@@ -41,7 +40,7 @@ class Brand extends Model {
 
         return Utilities::getValues([
             ["code" => "active", "label" => "Activo"],
-            ["code" => "inactive", "label" => "Inactivo"]
+            ["code" => "inactive", "label" => "Inactivo"],
         ], $type, $code);
 
     }
@@ -55,8 +54,7 @@ class Brand extends Model {
     public function products() {
 
         return $this->hasMany(Item::class, "brand_id", "id")
-                    ->where("type", "product");
+            ->where("type", "product");
 
     }
-
 }

@@ -7,7 +7,6 @@ namespace App\Http\Requests\System\Finance;
 use App\Http\Requests\System\Base\CompanyFormRequest;
 
 final class CloseCashSessionRequest extends CompanyFormRequest {
-
     public function rules(): array {
 
         $round = $this->decimalPrecision();
@@ -24,7 +23,7 @@ final class CloseCashSessionRequest extends CompanyFormRequest {
             "inventory_counts.*.item_id" => ["required_with:inventory_counts", "integer"],
             "inventory_counts.*.counted_quantity" => ["required_with:inventory_counts", "numeric", "min:0", "max:{$maxValue}", "decimal:0,{$round}"],
             "inventory_counts.*.observation" => ["nullable", "string", "max:500"],
-            "observation" => ["nullable", "string", "max:300"]
+            "observation" => ["nullable", "string", "max:300"],
         ];
 
     }
@@ -34,5 +33,4 @@ final class CloseCashSessionRequest extends CompanyFormRequest {
         return ["observation"];
 
     }
-
 }

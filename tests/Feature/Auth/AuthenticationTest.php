@@ -2,22 +2,23 @@
 
 namespace Tests\Feature\Auth;
 
-use App\Http\Middleware\{EnsureAuthenticatedSession, EnsureTenantSession, ResolveTenant, TrustHosts};
+use App\Http\Middleware\EnsureAuthenticatedSession;
+use App\Http\Middleware\EnsureTenantSession;
+use App\Http\Middleware\ResolveTenant;
+use App\Http\Middleware\TrustHosts;
 use App\Models\System\Organizations\User;
 use App\Providers\RouteServiceProvider;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
 use Tests\Concerns\ProvisionsSystemDatabase;
+use Tests\TestCase;
 
-class AuthenticationTest extends TestCase
-{
-    use RefreshDatabase;
+class AuthenticationTest extends TestCase {
     use ProvisionsSystemDatabase;
+    use RefreshDatabase;
 
-    protected function setUp(): void
-    {
+    protected function setUp(): void {
         parent::setUp();
-        config(['public_access.captcha.enabled' => false]);
+        config(["public_access.captcha.enabled" => false]);
         $this->provisionSystemDatabase();
         $this->withoutMiddleware([
             TrustHosts::class,
@@ -27,47 +28,43 @@ class AuthenticationTest extends TestCase
         ]);
     }
 
-    public function test_login_screen_can_be_rendered(): void
-    {
-        $response = $this->get('/login');
+    public function test_login_screen_can_be_rendered(): void {
+        $response = $this->get("/login");
 
         $response->assertStatus(200);
     }
 
-    public function test_users_can_authenticate_using_the_login_screen(): void
-    {
-        $user = User::where('company_id', 1)->where('email', 'admin@example.test')->firstOrFail();
+    public function test_users_can_authenticate_using_the_login_screen(): void {
+        $user = User::where("company_id", 1)->where("email", "admin@example.test")->firstOrFail();
 
-        $response = $this->post('/login', [
-            'email' => $user->email,
-            'password' => 'password',
-            'company_id' => 1,
+        $response = $this->post("/login", [
+            "email" => $user->email,
+            "password" => "password",
+            "company_id" => 1,
         ]);
 
         $this->assertAuthenticated();
         $response->assertRedirect(RouteServiceProvider::HOME);
     }
 
-    public function test_users_can_not_authenticate_with_invalid_password(): void
-    {
-        $user = User::where('company_id', 1)->where('email', 'admin@example.test')->firstOrFail();
+    public function test_users_can_not_authenticate_with_invalid_password(): void {
+        $user = User::where("company_id", 1)->where("email", "admin@example.test")->firstOrFail();
 
-        $this->post('/login', [
-            'email' => $user->email,
-            'password' => 'wrong-password',
-            'company_id' => 1,
+        $this->post("/login", [
+            "email" => $user->email,
+            "password" => "wrong-password",
+            "company_id" => 1,
         ]);
 
         $this->assertGuest();
     }
 
-    public function test_users_can_logout(): void
-    {
-        $user = User::where('company_id', 1)->where('email', 'admin@example.test')->firstOrFail();
+    public function test_users_can_logout(): void {
+        $user = User::where("company_id", 1)->where("email", "admin@example.test")->firstOrFail();
 
-        $response = $this->actingAs($user)->post('/logout');
+        $response = $this->actingAs($user)->post("/logout");
 
         $this->assertGuest();
-        $response->assertRedirect('/?company=' . base64_encode('1'));
+        $response->assertRedirect("/?company=".base64_encode("1"));
     }
 }

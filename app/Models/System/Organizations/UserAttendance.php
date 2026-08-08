@@ -8,7 +8,6 @@ use App\Helpers\System\Utilities;
 use Illuminate\Database\Eloquent\Model;
 
 final class UserAttendance extends Model {
-
     protected $table = "user_attendances";
 
     protected $fillable = [
@@ -33,7 +32,7 @@ final class UserAttendance extends Model {
         "updated_at",
         "updated_by",
         "canceled_at",
-        "canceled_by"
+        "canceled_by",
     ];
 
     protected $casts = [
@@ -44,11 +43,11 @@ final class UserAttendance extends Model {
         "ordinary_minutes" => "integer",
         "late_minutes" => "integer",
         "overtime_minutes" => "integer",
-        "break_minutes" => "integer"
+        "break_minutes" => "integer",
     ];
 
     protected $appends = [
-        "worked_hours"
+        "worked_hours",
     ];
 
     public function getWorkedHoursAttribute(): float {
@@ -90,5 +89,4 @@ final class UserAttendance extends Model {
         return $this->hasMany(UserAttendanceCorrection::class, "user_attendance_id", "id");
 
     }
-
 }

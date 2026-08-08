@@ -3,21 +3,23 @@
 namespace App\Models\System\Organizations;
 
 use App\Helpers\System\Utilities;
+use App\Models\System\General\{DocumentType};
 use Illuminate\Database\Eloquent\Model;
 
-use App\Models\System\General\{DocumentType};
-
 class Serie extends Model {
+    protected $table = "series";
 
-    protected $table               = "series";
-    protected $primaryKey          = "id";
-    public $incrementing           = true;
-    public $timestamps             = true;
+    protected $primaryKey = "id";
+
+    public $incrementing = true;
+
+    public $timestamps = true;
+
     public static $snakeAttributes = true;
 
     protected $appends = [
         "legible_serie",
-        "formatted_status"
+        "formatted_status",
     ];
 
     protected $fillable = [
@@ -31,7 +33,7 @@ class Serie extends Model {
         "created_at",
         "created_by",
         "updated_at",
-        "updated_by"
+        "updated_by",
     ];
 
     // Appends
@@ -52,7 +54,7 @@ class Serie extends Model {
 
         $statuses = [
             ["code" => "active", "label" => "Activo"],
-            ["code" => "inactive", "label" => "Inactivo"]
+            ["code" => "inactive", "label" => "Inactivo"],
         ];
 
         return Utilities::getValues($statuses, $type, $code);
@@ -71,5 +73,4 @@ class Serie extends Model {
         return $this->belongsTo(DocumentType::class, "document_type_id", "id");
 
     }
-
 }

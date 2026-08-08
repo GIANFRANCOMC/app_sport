@@ -4,23 +4,22 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\System\Catalogs;
 
-use Illuminate\Http\{JsonResponse, Request};
-
 use App\Helpers\System\Utilities;
 use App\Http\Controllers\System\Base\BaseController;
-use App\Http\Requests\System\Catalogs\Recipes\{
-    RecipeWarehouseRequest,
-    StoreRecipeRequest,
-    StoreRecipeWasteRequest,
-    UpdateRecipeRequest
-};
+use App\Http\Requests\System\Catalogs\Recipes\RecipeWarehouseRequest;
+use App\Http\Requests\System\Catalogs\Recipes\StoreRecipeRequest;
+use App\Http\Requests\System\Catalogs\Recipes\StoreRecipeWasteRequest;
+use App\Http\Requests\System\Catalogs\Recipes\UpdateRecipeRequest;
 use App\Models\System\Catalogs\RecipeDish;
-use App\Services\System\Base\InitParamsCacheInvalidationService;
 use App\Services\System\Base\CompanyReferenceDataService;
-use App\Services\System\Catalogs\Recipes\{RecipeConfigService, RecipeService, RecipeWasteService};
+use App\Services\System\Base\InitParamsCacheInvalidationService;
+use App\Services\System\Catalogs\Recipes\RecipeConfigService;
+use App\Services\System\Catalogs\Recipes\RecipeService;
+use App\Services\System\Catalogs\Recipes\RecipeWasteService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class RecipeController extends BaseController {
-
     private const TRANSLATION_NAMESPACE = "System.Catalogs.recipe";
 
     protected function getTranslationNamespace(): string {
@@ -65,14 +64,14 @@ class RecipeController extends BaseController {
             return response()->json([
                 "bool" => true,
                 "msg" => "Receta o platillo agregado correctamente.",
-                "data" => $recipe
+                "data" => $recipe,
             ], 201);
 
-        }catch(\Throwable $e) {
+        } catch (\Throwable $e) {
 
             return response()->json([
                 "bool" => false,
-                "msg" => $e->getMessage()
+                "msg" => $e->getMessage(),
             ], 422);
 
         }
@@ -93,14 +92,14 @@ class RecipeController extends BaseController {
             return response()->json([
                 "bool" => true,
                 "msg" => "Receta o platillo actualizado correctamente.",
-                "data" => $recipe
+                "data" => $recipe,
             ]);
 
-        }catch(\Throwable $e) {
+        } catch (\Throwable $e) {
 
             return response()->json([
                 "bool" => false,
-                "msg" => $e->getMessage()
+                "msg" => $e->getMessage(),
             ], 422);
 
         }
@@ -114,7 +113,7 @@ class RecipeController extends BaseController {
             "item.currency",
             "components.item",
             "dishToppings.topping.components.item",
-            "options.components.item"
+            "options.components.item",
         ])
             ->where("company_id", $this->getCompanyId())
             ->findOrFail($id);
@@ -137,14 +136,14 @@ class RecipeController extends BaseController {
                     $this->getCompanyId(),
                     CompanyReferenceDataService::for($this->getCompanyId(), $this->getUserId())
                         ->allowedWarehouseIds()
-                )
+                ),
             ]);
 
-        }catch(\DomainException $exception) {
+        } catch (\DomainException $exception) {
 
             return response()->json([
                 "bool" => false,
-                "msg" => $exception->getMessage()
+                "msg" => $exception->getMessage(),
             ], 422);
 
         }
@@ -161,7 +160,7 @@ class RecipeController extends BaseController {
                 $this->getPerPage($request),
                 CompanyReferenceDataService::for($this->getCompanyId(), $this->getUserId())
                     ->allowedWarehouseIds()
-            )
+            ),
         ]);
 
     }
@@ -182,10 +181,10 @@ class RecipeController extends BaseController {
                     $data,
                     CompanyReferenceDataService::for($this->getCompanyId(), $this->getUserId())
                         ->allowedWarehouseIds()
-                )
+                ),
             ], 201);
 
-        }catch(\DomainException $exception) {
+        } catch (\DomainException $exception) {
 
             return response()->json(["bool" => false, "msg" => $exception->getMessage()], 422);
 
@@ -206,18 +205,17 @@ class RecipeController extends BaseController {
 
             return response()->json([
                 "bool" => true,
-                "msg" => "Receta o platillo eliminado correctamente."
+                "msg" => "Receta o platillo eliminado correctamente.",
             ]);
 
-        }catch(\Throwable $e) {
+        } catch (\Throwable $e) {
 
             return response()->json([
                 "bool" => false,
-                "msg" => $e->getMessage()
+                "msg" => $e->getMessage(),
             ], 422);
 
         }
 
     }
-
 }

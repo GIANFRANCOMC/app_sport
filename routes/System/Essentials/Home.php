@@ -5,6 +5,6 @@ use Illuminate\Support\Facades\Route;
 
 $entity = "home";
 
-Route::get('',            [HomeController::class, 'index'])->name("$entity.index");
-Route::get('/initParams', [HomeController::class, 'initParams'])->name("$entity.initParams");
-Route::patch('/{id}',     [HomeController::class, 'update'])->whereNumber("id")->name("$entity.update");
+Route::get("", [HomeController::class, "index"])->name("$entity.index");
+Route::get("/initParams", [HomeController::class, "initParams"])->name("$entity.initParams");
+Route::patch("/{id}", [HomeController::class, "update"])->whereNumber("id")->name("$entity.update");

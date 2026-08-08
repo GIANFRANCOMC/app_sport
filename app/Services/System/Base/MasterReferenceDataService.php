@@ -4,32 +4,31 @@ declare(strict_types=1);
 
 namespace App\Services\System\Base;
 
+use App\Models\System\General\Currency;
+use App\Models\System\General\IdentityDocumentType;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Cache;
-
-use App\Models\System\General\{Currency, IdentityDocumentType};
 
 /**
  * Provides active company-scoped master data used by module initParams.
  */
 final class MasterReferenceDataService {
-
     private const CACHE_TTL = 21600;
 
     private const DEFAULT_IDENTITY_DOCUMENT_CODES = [
         "doc.trib.no.dom.sin.ruc",
-        "dni"
+        "dni",
     ];
 
     private const COMPANY_IDENTITY_DOCUMENT_CODES = [
         "doc.trib.no.dom.sin.ruc",
-        "ruc"
+        "ruc",
     ];
 
     private const CUSTOMER_IDENTITY_DOCUMENT_CODES = [
         "doc.trib.no.dom.sin.ruc",
         "dni",
-        "ruc"
+        "ruc",
     ];
 
     public static function currencies(int $companyId): Collection {
@@ -37,11 +36,11 @@ final class MasterReferenceDataService {
         return Cache::remember(
             self::cacheKey($companyId, "currencies"),
             self::CACHE_TTL,
-            fn() => Currency::query()
-                            ->where("company_id", $companyId)
-                            ->where("status", "active")
-                            ->orderBy("code")
-                            ->get()
+            fn () => Currency::query()
+                ->where("company_id", $companyId)
+                ->where("status", "active")
+                ->orderBy("code")
+                ->get()
         );
 
     }
@@ -67,8 +66,8 @@ final class MasterReferenceDataService {
     private static function identityDocuments(int $companyId, array $codes): Collection {
 
         return self::activeIdentityDocuments($companyId)
-                   ->whereIn("code", $codes)
-                   ->values();
+            ->whereIn("code", $codes)
+            ->values();
 
     }
 
@@ -84,11 +83,11 @@ final class MasterReferenceDataService {
         return Cache::remember(
             self::cacheKey($companyId, "identity_documents"),
             self::CACHE_TTL,
-            fn() => IdentityDocumentType::query()
-                                      ->where("company_id", $companyId)
-                                      ->where("status", "active")
-                                      ->orderBy("name")
-                                      ->get()
+            fn () => IdentityDocumentType::query()
+                ->where("company_id", $companyId)
+                ->where("status", "active")
+                ->orderBy("name")
+                ->get()
         );
 
     }
@@ -98,5 +97,4 @@ final class MasterReferenceDataService {
         return "master_reference:company:{$companyId}:{$name}:active";
 
     }
-
 }

@@ -9,7 +9,6 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 final class FinancialSettlementReportService {
-
     public static function summarize(
         int $companyId,
         string $type,
@@ -21,7 +20,7 @@ final class FinancialSettlementReportService {
         $scopes = $scope === "both" ? ["sale", "purchase"] : [$scope];
 
         return collect($scopes)
-            ->flatMap(fn($currentScope) => $type === "payments"
+            ->flatMap(fn ($currentScope) => $type === "payments"
                 ? self::payments($companyId, $currentScope, $dateFrom, $dateTo)
                 : self::taxes($companyId, $currentScope, $dateFrom, $dateTo)
             )
@@ -39,8 +38,8 @@ final class FinancialSettlementReportService {
             ->join("{$headerTable} as header", "header.id", "=", "detail.{$foreignKey}")
             ->where("detail.company_id", $companyId)
             ->where("detail.status", "active")
-            ->when($from, fn($query) => $query->where("header.{$dateColumn}", ">=", Utilities::startOfDay($from)))
-            ->when($to, fn($query) => $query->where("header.{$dateColumn}", "<=", Utilities::endOfDay($to)))
+            ->when($from, fn ($query) => $query->where("header.{$dateColumn}", ">=", Utilities::startOfDay($from)))
+            ->when($to, fn ($query) => $query->where("header.{$dateColumn}", "<=", Utilities::endOfDay($to)))
             ->groupBy("detail.tax_id", "detail.name", "detail.calculation_type", "detail.operation_type")
             ->selectRaw("? as scope, detail.tax_id, detail.name, detail.calculation_type, detail.operation_type, COUNT(DISTINCT header.id) as documents, SUM(detail.quantity) as quantity, SUM(detail.base_amount) as base_amount, SUM(detail.amount) as amount", [$scope])
             ->get();
@@ -57,12 +56,11 @@ final class FinancialSettlementReportService {
             ->join("{$headerTable} as header", "header.id", "=", "detail.{$foreignKey}")
             ->where("detail.company_id", $companyId)
             ->where("detail.status", "active")
-            ->when($from, fn($query) => $query->where("header.{$dateColumn}", ">=", Utilities::startOfDay($from)))
-            ->when($to, fn($query) => $query->where("header.{$dateColumn}", "<=", Utilities::endOfDay($to)))
+            ->when($from, fn ($query) => $query->where("header.{$dateColumn}", ">=", Utilities::startOfDay($from)))
+            ->when($to, fn ($query) => $query->where("header.{$dateColumn}", "<=", Utilities::endOfDay($to)))
             ->groupBy("detail.payment_method_id", "detail.name")
             ->selectRaw("? as scope, detail.payment_method_id, detail.name, COUNT(DISTINCT header.id) as documents, SUM(detail.amount) as amount", [$scope])
             ->get();
 
     }
-
 }

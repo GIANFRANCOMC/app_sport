@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Models\System\Finance;
 
+use App\Models\System\Organizations\Branch;
+use App\Models\System\Organizations\User;
 use Illuminate\Database\Eloquent\Model;
-use App\Models\System\Organizations\{Branch, User};
 
 final class CashMovement extends Model {
-
     protected $table = "cash_movements";
 
     protected $fillable = [
@@ -28,7 +28,7 @@ final class CashMovement extends Model {
         "created_at",
         "created_by",
         "updated_at",
-        "updated_by"
+        "updated_by",
     ];
 
     public function branch() {
@@ -54,5 +54,4 @@ final class CashMovement extends Model {
         return $this->belongsTo(User::class, "user_id", "id");
 
     }
-
 }

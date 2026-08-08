@@ -4,13 +4,11 @@ declare(strict_types=1);
 
 namespace App\Models\System\Sales;
 
-use Illuminate\Database\Eloquent\Model;
-
 use App\Models\System\Catalogs\Item;
 use App\Models\System\General\Currency;
+use Illuminate\Database\Eloquent\Model;
 
 final class QuotationItem extends Model {
-
     protected $table = "quotation_items";
 
     protected $fillable = [
@@ -30,7 +28,7 @@ final class QuotationItem extends Model {
         "created_at",
         "created_by",
         "updated_at",
-        "updated_by"
+        "updated_by",
     ];
 
     protected $casts = [
@@ -38,7 +36,7 @@ final class QuotationItem extends Model {
         "price" => "App\\Casts\\System\\ConfigurableDecimal",
         "price_includes_tax" => "boolean",
         "igv_exempt" => "boolean",
-        "total" => "App\\Casts\\System\\ConfigurableDecimal"
+        "total" => "App\\Casts\\System\\ConfigurableDecimal",
     ];
 
     public function item() {
@@ -48,5 +46,4 @@ final class QuotationItem extends Model {
     public function currency() {
         return $this->belongsTo(Currency::class, "currency_id");
     }
-
 }

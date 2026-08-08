@@ -5,10 +5,9 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration {
-
     public function up(): void {
 
-        Schema::create("user_attendances", function(Blueprint $table) {
+        Schema::create("user_attendances", function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger("company_id");
             $table->unsignedBigInteger("branch_id");
@@ -39,7 +38,7 @@ return new class extends Migration {
             $table->foreign("user_id")->references("id")->on("users")->restrictOnDelete();
         });
 
-        Schema::create("user_biometric_fingerprints", function(Blueprint $table) {
+        Schema::create("user_biometric_fingerprints", function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger("company_id");
             $table->unsignedBigInteger("user_id");
@@ -64,7 +63,7 @@ return new class extends Migration {
             );
         });
 
-        Schema::create("user_work_schedules", function(Blueprint $table) {
+        Schema::create("user_work_schedules", function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger("company_id");
             $table->unsignedBigInteger("branch_id")->nullable();
@@ -88,7 +87,7 @@ return new class extends Migration {
             $table->foreign("user_id")->references("id")->on("users")->nullOnDelete();
         });
 
-        Schema::create("user_attendance_breaks", function(Blueprint $table) {
+        Schema::create("user_attendance_breaks", function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger("company_id");
             $table->unsignedBigInteger("user_attendance_id");
@@ -106,7 +105,7 @@ return new class extends Migration {
             $table->foreign("user_attendance_id")->references("id")->on("user_attendances")->onDelete("cascade");
         });
 
-        Schema::create("user_attendance_corrections", function(Blueprint $table) {
+        Schema::create("user_attendance_corrections", function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger("company_id");
             $table->unsignedBigInteger("user_attendance_id");
@@ -138,5 +137,4 @@ return new class extends Migration {
         Schema::dropIfExists("user_attendances");
 
     }
-
 };

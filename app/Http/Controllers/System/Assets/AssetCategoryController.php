@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace App\Http\Controllers\System\Assets;
 
 use App\Http\Controllers\System\Base\BaseController;
-use App\Http\Requests\System\Assets\AssetCategories\{StoreAssetCategoryRequest, UpdateAssetCategoryRequest};
+use App\Http\Requests\System\Assets\AssetCategories\StoreAssetCategoryRequest;
+use App\Http\Requests\System\Assets\AssetCategories\UpdateAssetCategoryRequest;
 use App\Models\System\Assets\AssetCategory;
 use App\Services\System\Base\InitParamsCacheInvalidationService;
 use Illuminate\Http\JsonResponse;
 
 final class AssetCategoryController extends BaseController {
-
     public function list() {
         return AssetCategory::query()
             ->where("company_id", $this->getCompanyId())
@@ -26,7 +26,7 @@ final class AssetCategoryController extends BaseController {
             ...$data,
             "company_id" => $this->getCompanyId(),
             "status" => $data["status"] ?? "active",
-            "created_by" => $this->getUserId()
+            "created_by" => $this->getUserId(),
         ]);
         InitParamsCacheInvalidationService::invalidate(InitParamsCacheInvalidationService::ASSETS, $this->getCompanyId());
 

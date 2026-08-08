@@ -8,15 +8,14 @@ use App\Models\System\Organizations\CompanySubSection;
 use App\Services\System\Organizations\Companies\CompanySectionService;
 
 final class CompanySubSectionObserver {
-
     public function saved(CompanySubSection $companySubSection): void {
 
         $companyIds = [
             (int) $companySubSection->company_id,
-            (int) $companySubSection->getOriginal("company_id")
+            (int) $companySubSection->getOriginal("company_id"),
         ];
 
-        foreach(array_unique(array_filter($companyIds)) as $companyId) {
+        foreach (array_unique(array_filter($companyIds)) as $companyId) {
 
             CompanySectionService::clearCompanyCache($companyId);
 
@@ -29,5 +28,4 @@ final class CompanySubSectionObserver {
         CompanySectionService::clearCompanyCache((int) $companySubSection->company_id);
 
     }
-
 }

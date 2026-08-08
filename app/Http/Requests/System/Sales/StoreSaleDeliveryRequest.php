@@ -7,15 +7,14 @@ namespace App\Http\Requests\System\Sales;
 use App\Http\Requests\System\Base\CompanyFormRequest;
 
 class StoreSaleDeliveryRequest extends CompanyFormRequest {
-
     protected function prepareForValidation(): void {
 
         $this->merge([
             "warehouse_id" => $this->nullableIntegerInput($this->input("warehouse_id")),
             "items" => collect($this->input("items", []))
-                ->map(function($item) {
+                ->map(function ($item) {
 
-                    if(!is_array($item)) {
+                    if (! is_array($item)) {
                         return $item;
                     }
 
@@ -26,7 +25,7 @@ class StoreSaleDeliveryRequest extends CompanyFormRequest {
 
                 })
                 ->values()
-                ->all()
+                ->all(),
         ]);
 
     }
@@ -42,7 +41,7 @@ class StoreSaleDeliveryRequest extends CompanyFormRequest {
             "observation" => "nullable|string|max:500",
             "items" => "required|array|min:1|max:100",
             "items.*.sale_delivery_item_id" => "required|integer",
-            "items.*.quantity" => "required|numeric|min:0|max:$maxValue|decimal:0,$round"
+            "items.*.quantity" => "required|numeric|min:0|max:$maxValue|decimal:0,$round",
         ];
 
     }
@@ -53,9 +52,8 @@ class StoreSaleDeliveryRequest extends CompanyFormRequest {
             "warehouse_id.required" => "Selecciona el almacén desde donde se entregará.",
             "items.required" => "Indica al menos un producto a entregar.",
             "items.*.quantity.numeric" => "La cantidad debe ser un número válido.",
-            "items.*.quantity.max" => "La cantidad supera el máximo permitido."
+            "items.*.quantity.max" => "La cantidad supera el máximo permitido.",
         ];
 
     }
-
 }

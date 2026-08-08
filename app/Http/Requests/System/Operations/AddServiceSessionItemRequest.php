@@ -7,7 +7,6 @@ namespace App\Http\Requests\System\Operations;
 use App\Http\Requests\System\Base\CompanyFormRequest;
 
 final class AddServiceSessionItemRequest extends CompanyFormRequest {
-
     public function rules(): array {
 
         $round = $this->decimalPrecision();
@@ -18,7 +17,7 @@ final class AddServiceSessionItemRequest extends CompanyFormRequest {
             "assigned_user_id" => ["nullable", "integer"],
             "quantity" => ["required", "numeric", "min:0.0001", "max:{$maxValue}", "decimal:0,{$round}"],
             "start_immediately" => ["nullable", "boolean"],
-            "observation" => ["nullable", "string", "max:500"]
+            "observation" => ["nullable", "string", "max:500"],
         ];
 
     }
@@ -28,5 +27,4 @@ final class AddServiceSessionItemRequest extends CompanyFormRequest {
         return ["observation"];
 
     }
-
 }

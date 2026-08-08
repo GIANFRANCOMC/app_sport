@@ -7,7 +7,6 @@ namespace App\Http\Requests\System\Customers\TrackingSubscriptions;
 use App\Http\Requests\System\Base\CompanyFormRequest;
 
 class CancelTrackingSubscriptionRequest extends CompanyFormRequest {
-
     /**
      * Get the validation rules that apply to the request.
      *
@@ -16,7 +15,7 @@ class CancelTrackingSubscriptionRequest extends CompanyFormRequest {
     public function rules(): array {
 
         return [
-            "motive" => "nullable|string|max:300"
+            "motive" => "nullable|string|max:300",
         ];
 
     }
@@ -26,5 +25,4 @@ class CancelTrackingSubscriptionRequest extends CompanyFormRequest {
         return ["motive"];
 
     }
-
 }

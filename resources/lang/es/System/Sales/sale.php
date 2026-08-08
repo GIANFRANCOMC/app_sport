@@ -16,4 +16,3 @@ return [
     "exception_update" => "Error al actualizar la venta: :message",
     "exception_cancel" => "Error al cancelar la venta: :message",
 ];
-

@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Models\System\Finance;
 
-use Illuminate\Database\Eloquent\Model;
-use App\Models\System\Organizations\{Branch, User};
+use App\Models\System\Organizations\Branch;
+use App\Models\System\Organizations\User;
 use App\Models\System\Sales\SaleHeader;
+use Illuminate\Database\Eloquent\Model;
 
 final class CashSession extends Model {
-
     protected $table = "cash_sessions";
 
     protected $fillable = [
@@ -29,7 +29,7 @@ final class CashSession extends Model {
         "created_at",
         "created_by",
         "updated_at",
-        "updated_by"
+        "updated_by",
     ];
 
     public function branch() {
@@ -79,5 +79,4 @@ final class CashSession extends Model {
         return $this->hasMany(SaleHeader::class, "cash_session_id", "id");
 
     }
-
 }

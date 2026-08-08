@@ -8,7 +8,6 @@ use App\Http\Requests\System\Base\CompanyFormRequest;
 use App\Rules\System\Defaults\BelongsToCompany;
 
 final class ImportProductsRequest extends CompanyFormRequest {
-
     public function rules(): array {
 
         $maxFileSizeKb = $this->numericMaxFileSizeKb();
@@ -19,8 +18,8 @@ final class ImportProductsRequest extends CompanyFormRequest {
                 "bail",
                 "required",
                 "integer",
-                new BelongsToCompany("warehouses", ["status" => "active"], "El almacen seleccionado no esta disponible.")
-            ]
+                new BelongsToCompany("warehouses", ["status" => "active"], "El almacen seleccionado no esta disponible."),
+            ],
         ];
 
     }
@@ -32,9 +31,8 @@ final class ImportProductsRequest extends CompanyFormRequest {
         return array_merge(parent::messages(), [
             "file.file" => "Seleccione un archivo valido.",
             "file.mimes" => "Use un archivo Excel o CSV.",
-            "file.max" => "El archivo no debe superar {$maxFileSizeMb} MB."
+            "file.max" => "El archivo no debe superar {$maxFileSizeMb} MB.",
         ]);
 
     }
-
 }

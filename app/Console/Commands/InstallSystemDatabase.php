@@ -6,14 +6,13 @@ namespace App\Console\Commands;
 
 use App\Services\System\Database\SystemCatalogSyncService;
 use App\Services\System\Organizations\Companies\CompanyProvisioningService;
+use Database\Seeders\SystemNavigationSeeder;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Str;
-use Database\Seeders\SystemNavigationSeeder;
 
-final class InstallSystemDatabase extends Command
-{
-    protected $signature = 'system:install
+final class InstallSystemDatabase extends Command {
+    protected $signature = "system:install
         {--company-id=1 : ID interno de la organización}
         {--slug=demo : Identificador único}
         {--commercial-name=Empresa demo : Nombre comercial}
@@ -23,59 +22,60 @@ final class InstallSystemDatabase extends Command
         {--admin-email=admin@example.com : Correo del administrador}
         {--admin-password= : Contraseña; obligatoria en modo no interactivo}
         {--fresh : Reconstruye todas las tablas; elimina los datos actuales}
-        {--seed : Ejecuta seeders adicionales después del aprovisionamiento}';
+        {--seed : Ejecuta seeders adicionales después del aprovisionamiento}";
 
-    protected $description = 'Instala esquema, catálogo y organización inicial en un flujo único e idempotente.';
+    protected $description = "Instala esquema, catálogo y organización inicial en un flujo único e idempotente.";
 
-    public function handle(CompanyProvisioningService $provisioning, SystemCatalogSyncService $catalog): int
-    {
-        if($this->option('fresh') && !$this->confirm('Esto eliminará todos los datos. ¿Deseas continuar?', false)) {
+    public function handle(CompanyProvisioningService $provisioning, SystemCatalogSyncService $catalog): int {
+        if ($this->option("fresh") && ! $this->confirm("Esto eliminará todos los datos. ¿Deseas continuar?", false)) {
             return self::FAILURE;
         }
 
-        $migrationCommand = $this->option('fresh') ? 'migrate:fresh' : 'migrate';
-        $migrationOptions = ['--force' => true];
-        if($this->option('seed')) {
-            $migrationOptions['--seed'] = true;
+        $migrationCommand = $this->option("fresh") ? "migrate:fresh" : "migrate";
+        $migrationOptions = ["--force" => true];
+        if ($this->option("seed")) {
+            $migrationOptions["--seed"] = true;
         }
-        $this->components->task('Aplicando esquema de base de datos', function() use ($migrationCommand, $migrationOptions) {
+        $this->components->task("Aplicando esquema de base de datos", function () use ($migrationCommand, $migrationOptions) {
             return Artisan::call($migrationCommand, $migrationOptions) === self::SUCCESS;
         });
-        Artisan::call('db:seed', [
-            '--class' => SystemNavigationSeeder::class,
-            '--force' => true
+        Artisan::call("db:seed", [
+            "--class" => SystemNavigationSeeder::class,
+            "--force" => true,
         ]);
 
-        $password = (string) ($this->option('admin-password') ?: '');
-        if($password === '' && $this->input->isInteractive()) {
-            $password = (string) $this->secret('Contraseña del administrador');
+        $password = (string) ($this->option("admin-password") ?: "");
+        if ($password === "" && $this->input->isInteractive()) {
+            $password = (string) $this->secret("Contraseña del administrador");
         }
-        if(strlen($password) < 8) {
-            $this->components->error('La contraseña del administrador debe tener al menos 8 caracteres.');
+        if (strlen($password) < 8) {
+            $this->components->error("La contraseña del administrador debe tener al menos 8 caracteres.");
+
             return self::FAILURE;
         }
 
-        $companyId = (int) $this->option('company-id');
-        $slug = Str::slug((string) $this->option('slug'));
+        $companyId = (int) $this->option("company-id");
+        $slug = Str::slug((string) $this->option("slug"));
         $provisioning->createOrUpdate([
-            'slug' => $slug,
-            'commercial_name' => (string) $this->option('commercial-name'),
-            'legal_name' => (string) $this->option('legal-name'),
-            'document_number' => (string) $this->option('document-number'),
-            'email' => (string) $this->option('admin-email'),
+            "slug" => $slug,
+            "commercial_name" => (string) $this->option("commercial-name"),
+            "legal_name" => (string) $this->option("legal-name"),
+            "document_number" => (string) $this->option("document-number"),
+            "email" => (string) $this->option("admin-email"),
         ], $companyId);
         $catalog->sync($companyId);
         $provisioning->enable($companyId);
         $provisioning->ensureAdminUser(
             $companyId,
-            (string) $this->option('admin-name'),
-            (string) $this->option('admin-email'),
+            (string) $this->option("admin-name"),
+            (string) $this->option("admin-email"),
             $password
         );
 
-        Artisan::call('optimize:clear');
+        Artisan::call("optimize:clear");
         $this->newLine();
-        $this->components->info("Sistema listo para {$this->option('commercial-name')} ({$slug}).");
+        $this->components->info("Sistema listo para {$this->option("commercial-name")} ({$slug}).");
+
         return self::SUCCESS;
     }
 }

@@ -9,7 +9,6 @@ use App\Rules\System\Defaults\UniqueInCompany;
 use App\Services\System\Base\InternalCodeService;
 
 abstract class BrandRequest extends CompanyFormRequest {
-
     public function rules(): array {
 
         $brandId = $this->route("id") ? (int) $this->route("id") : null;
@@ -20,19 +19,19 @@ abstract class BrandRequest extends CompanyFormRequest {
                 "string",
                 "max:50",
                 "regex:/^[A-Za-z0-9._-]+$/",
-                new UniqueInCompany("brands", "internal_code", $brandId, [], "código interno")
+                new UniqueInCompany("brands", "internal_code", $brandId, [], "código interno"),
             ],
             "name" => [
                 "required",
                 "string",
                 "max:100",
-                new UniqueInCompany("brands", "name", $brandId, [], "nombre")
+                new UniqueInCompany("brands", "name", $brandId, [], "nombre"),
             ],
             "description" => ["nullable", "string", "max:250"],
             "logo_path" => ["nullable", "string", "max:500"],
             "origin_country_code" => ["nullable", "string", "size:3"],
             "website_url" => ["nullable", "url", "max:500"],
-            "status" => ["required", "in:active,inactive"]
+            "status" => ["required", "in:active,inactive"],
         ];
 
     }
@@ -43,7 +42,7 @@ abstract class BrandRequest extends CompanyFormRequest {
             "internal_code" => "código interno",
             "name" => "nombre",
             "description" => "descripción",
-            "status" => "estado"
+            "status" => "estado",
         ];
 
     }
@@ -51,7 +50,7 @@ abstract class BrandRequest extends CompanyFormRequest {
     public function messages(): array {
 
         return array_merge(parent::messages(), [
-            "internal_code.regex" => "El código interno solo puede contener letras, números, puntos, guiones y guiones bajos."
+            "internal_code.regex" => "El código interno solo puede contener letras, números, puntos, guiones y guiones bajos.",
         ]);
 
     }
@@ -64,7 +63,7 @@ abstract class BrandRequest extends CompanyFormRequest {
             "description",
             "logo_path",
             "origin_country_code",
-            "website_url"
+            "website_url",
         ];
 
     }
@@ -78,9 +77,8 @@ abstract class BrandRequest extends CompanyFormRequest {
                 (int) $this->user()?->company_id,
                 "brand",
                 $this->input("internal_code")
-            )
+            ),
         ]);
 
     }
-
 }

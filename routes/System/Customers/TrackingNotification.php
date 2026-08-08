@@ -5,7 +5,7 @@ use Illuminate\Support\Facades\Route;
 
 $entity = "tracking_notifications";
 
-Route::get('',               [TrackingNotificationController::class, 'index'])->name("$entity.index");
-Route::get('/initParams',    [TrackingNotificationController::class, 'initParams'])->name("$entity.initParams");
-Route::get('/list',          [TrackingNotificationController::class, 'list'])->name("$entity.list");
-Route::patch('/{id}/retry', [TrackingNotificationController::class, 'retry'])->name("$entity.retry");
+Route::get("", [TrackingNotificationController::class, "index"])->name("$entity.index");
+Route::get("/initParams", [TrackingNotificationController::class, "initParams"])->name("$entity.initParams");
+Route::get("/list", [TrackingNotificationController::class, "list"])->name("$entity.list");
+Route::patch("/{id}/retry", [TrackingNotificationController::class, "retry"])->name("$entity.retry");

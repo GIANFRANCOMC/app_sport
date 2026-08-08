@@ -14,4 +14,3 @@ return [
     "exception_create" => "Error al crear el cliente: :message",
     "exception_update" => "Error al actualizar el cliente: :message",
 ];
-

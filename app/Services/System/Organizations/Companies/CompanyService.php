@@ -4,22 +4,21 @@ declare(strict_types=1);
 
 namespace App\Services\System\Organizations\Companies;
 
-use Exception;
-use App\Helpers\System\{TranslationHelper, Utilities};
-use Illuminate\Support\Facades\{DB, Storage};
-use Illuminate\Contracts\Pagination\LengthAwarePaginator;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Http\UploadedFile;
-
-use App\Models\System\Organizations\{Company, CompanySocialMedia};
+use App\Helpers\System\TranslationHelper;
+use App\Helpers\System\Utilities;
+use App\Models\System\Organizations\Company;
+use App\Models\System\Organizations\CompanySocialMedia;
 use App\Services\System\Tenancy\TenantStoragePath;
+use Exception;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 /**
  * Service class for managing module operations
  * Handles business logic for updating records
  */
 class CompanyService {
-
     /**
      * Translation namespace for module
      */
@@ -37,7 +36,7 @@ class CompanyService {
         "description",
         "address",
         "telephone",
-        "email"
+        "email",
     ];
 
     /**
@@ -47,7 +46,7 @@ class CompanyService {
         "logotype",
         "combinationmark",
         "logomark",
-        "login_image"
+        "login_image",
     ];
 
     /**
@@ -56,15 +55,14 @@ class CompanyService {
     private const SOCIAL_MEDIA_TYPES = [
         "facebook",
         "instagram",
-        "whatsapp"
+        "whatsapp",
     ];
 
     /**
      * Get translation with fallback
      *
-     * @param string $key Translation key
-     * @param array $replace Replacements
-     * @return string
+     * @param  string  $key Translation key
+     * @param  array  $replace Replacements
      */
     private static function trans(string $key, array $replace = []): string {
 
@@ -75,22 +73,22 @@ class CompanyService {
     /**
      * Handle file upload for images
      *
-     * @param Company $company Record instance
-     * @param string $fieldName Field name (logotype, combinationmark, etc.)
-     * @param UploadedFile|null $file Uploaded file
+     * @param  Company  $company Record instance
+     * @param  string  $fieldName Field name (logotype, combinationmark, etc.)
+     * @param  UploadedFile|null  $file Uploaded file
      * @return string|null File path or null
      */
     private static function handleImageUpload(Company $company, string $fieldName, ?UploadedFile $file): ?string {
 
-        if(!$file || !$file->isValid()) {
+        if (! $file || ! $file->isValid()) {
 
             return null;
 
         }
 
         $extension = $file->getClientOriginalExtension();
-        $fileName  = "{$fieldName}.{$extension}";
-        $filePath  = $file->storeAs(
+        $fileName = "{$fieldName}.{$extension}";
+        $filePath = $file->storeAs(
             TenantStoragePath::for("{$company->internal_code}/branding"),
             $fileName,
             "public"
@@ -103,33 +101,32 @@ class CompanyService {
     /**
      * Update or create social media link
      *
-     * @param Company $company Record instance
-     * @param string $type Social media type (facebook, instagram, whatsapp)
-     * @param string|null $link Social media link
-     * @param int|null $userId User
-     * @return CompanySocialMedia
+     * @param  Company  $company Record instance
+     * @param  string  $type Social media type (facebook, instagram, whatsapp)
+     * @param  string|null  $link Social media link
+     * @param  int|null  $userId User
      */
     private static function updateOrCreateSocialMedia(Company $company, string $type, ?string $link, ?int $userId): CompanySocialMedia {
 
         $socialMedia = CompanySocialMedia::where("company_id", $company->id)
-                                         ->where("type", $type)
-                                         ->first();
+            ->where("type", $type)
+            ->first();
 
-        if(Utilities::isDefined($socialMedia)) {
+        if (Utilities::isDefined($socialMedia)) {
 
-            $socialMedia->link       = $link ?? "";
-            $socialMedia->status     = "active";
+            $socialMedia->link = $link ?? "";
+            $socialMedia->status = "active";
             $socialMedia->updated_at = now();
             $socialMedia->updated_by = $userId;
             $socialMedia->save();
 
-        }else {
+        } else {
 
             $socialMedia = new CompanySocialMedia();
             $socialMedia->company_id = $company->id;
-            $socialMedia->type       = $type;
-            $socialMedia->link       = $link ?? "";
-            $socialMedia->status     = "active";
+            $socialMedia->type = $type;
+            $socialMedia->link = $link ?? "";
+            $socialMedia->status = "active";
             $socialMedia->created_at = now();
             $socialMedia->created_by = $userId;
             $socialMedia->save();
@@ -143,19 +140,18 @@ class CompanyService {
     /**
      * Prepare data for update (only changed fields)
      *
-     * @param Company $company Record instance
-     * @param array $data Input data
-     * @return array
+     * @param  Company  $company Record instance
+     * @param  array  $data Input data
      */
     private static function prepareCompanyDataForUpdate(Company $company, array $data): array {
 
         $updateData = [];
 
-        foreach(self::ALLOWED_FIELDS as $field) {
+        foreach (self::ALLOWED_FIELDS as $field) {
 
-            if(isset($data[$field])) {
+            if (isset($data[$field])) {
 
-                if($data[$field] !== $company->$field) {
+                if ($data[$field] !== $company->$field) {
 
                     $updateData[$field] = $data[$field];
 
@@ -172,15 +168,14 @@ class CompanyService {
     /**
      * Find record by ID and company ID
      *
-     * @param int $id Record
-     * @param int $companyId Company (must match id for Company model)
-     * @param array|null $statuses Filter by statuses (e.g. ["active"], ["active", "inactive"])
-     * @param array $relations Relations to eager load
-     * @return Company|null
+     * @param  int  $id Record
+     * @param  int  $companyId Company (must match id for Company model)
+     * @param  array|null  $statuses Filter by statuses (e.g. ["active"], ["active", "inactive"])
+     * @param  array  $relations Relations to eager load
      */
     public static function findByIdAndCompany(int $id, int $companyId, ?array $statuses = ["active"], array $relations = ["identityDocumentType"]): ?Company {
 
-        if($id !== $companyId) {
+        if ($id !== $companyId) {
 
             return null;
 
@@ -188,13 +183,13 @@ class CompanyService {
 
         $query = Company::where("id", $id);
 
-        if($statuses !== null && !empty($statuses)) {
+        if ($statuses !== null && ! empty($statuses)) {
 
             $query->whereIn("status", $statuses);
 
         }
 
-        if($relations !== null && !empty($relations)) {
+        if ($relations !== null && ! empty($relations)) {
 
             $query->with($relations);
 
@@ -207,33 +202,34 @@ class CompanyService {
     /**
      * Update an existing record
      *
-     * @param Company $company Record instance to update
-     * @param array $data Input data
-     * @param array $files Uploaded files array
-     * @param int|null $userId User updating the record
+     * @param  Company  $company Record instance to update
+     * @param  array  $data Input data
+     * @param  array  $files Uploaded files array
+     * @param  int|null  $userId User updating the record
      * @return Company Updated record instance
+     *
      * @throws Exception
      */
     public static function update(Company $company, array $data, array $files, int $userId): Company {
 
         $obsoleteFiles = [];
 
-        DB::transaction(function() use($company, $data, $files, $userId, &$obsoleteFiles) {
+        DB::transaction(function () use ($company, $data, $files, $userId, &$obsoleteFiles) {
 
             // Prepare update data with only changed fields
             $updateData = self::prepareCompanyDataForUpdate($company, $data);
 
             // Handle image uploads
-            foreach(self::IMAGE_FIELDS as $field) {
+            foreach (self::IMAGE_FIELDS as $field) {
 
-                if(isset($files[$field]) && $files[$field] instanceof \Illuminate\Http\UploadedFile) {
+                if (isset($files[$field]) && $files[$field] instanceof \Illuminate\Http\UploadedFile) {
 
                     $filePath = self::handleImageUpload($company, $field, $files[$field]);
 
-                    if($filePath) {
+                    if ($filePath) {
 
                         $previousPath = $company->{$field};
-                        if($previousPath && $previousPath !== $filePath) {
+                        if ($previousPath && $previousPath !== $filePath) {
 
                             $obsoleteFiles[] = $previousPath;
 
@@ -248,7 +244,7 @@ class CompanyService {
             }
 
             // Update record
-            if(!empty($updateData)) {
+            if (! empty($updateData)) {
 
                 $updateData["updated_at"] = now();
                 $updateData["updated_by"] = $userId;
@@ -257,9 +253,9 @@ class CompanyService {
             }
 
             // Update or create social media links
-            foreach(self::SOCIAL_MEDIA_TYPES as $type) {
+            foreach (self::SOCIAL_MEDIA_TYPES as $type) {
 
-                if(isset($data[$type])) {
+                if (isset($data[$type])) {
 
                     self::updateOrCreateSocialMedia($company, $type, $data[$type], $userId);
 
@@ -269,7 +265,7 @@ class CompanyService {
 
         });
 
-        foreach(array_unique($obsoleteFiles) as $obsoleteFile) {
+        foreach (array_unique($obsoleteFiles) as $obsoleteFile) {
 
             Storage::disk("public")->delete($obsoleteFile);
 
@@ -278,5 +274,4 @@ class CompanyService {
         return $company->fresh(["identityDocumentType"]);
 
     }
-
 }

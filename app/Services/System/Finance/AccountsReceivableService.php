@@ -12,7 +12,6 @@ use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 
 final class AccountsReceivableService {
-
     public function paginate(int $companyId, int $userId, array $filters, int $perPage): LengthAwarePaginator {
 
         $paginator = $this->query($companyId, $userId, $filters)
@@ -23,7 +22,7 @@ final class AccountsReceivableService {
             ->paginate($perPage);
 
         $paginator->setCollection(
-            $paginator->getCollection()->map(fn(SaleAccountReceivable $account) => $this->formatAccount($account))
+            $paginator->getCollection()->map(fn (SaleAccountReceivable $account) => $this->formatAccount($account))
         );
 
         return $paginator;
@@ -35,9 +34,9 @@ final class AccountsReceivableService {
         $account = $this->query($companyId, $userId)
             ->with([
                 ...$this->listRelations(),
-                "payments" => fn($query) => $query
+                "payments" => fn ($query) => $query
                     ->with(["paymentMethod:id,name,image_path", "paymentMethodVariant:id,name,image_path"])
-                    ->latest("paid_at")
+                    ->latest("paid_at"),
             ])
             ->findOrFail($accountId);
 
@@ -55,7 +54,7 @@ final class AccountsReceivableService {
             ->with("currency:id,code,sign")
             ->groupBy("currency_id")
             ->get()
-            ->map(function($row) use($companyId) {
+            ->map(function ($row) use ($companyId) {
 
                 return [
                     "currency_id" => (int) $row->currency_id,
@@ -63,14 +62,14 @@ final class AccountsReceivableService {
                     "sign" => $row->currency?->sign ?? "",
                     "total" => Utilities::round((float) $row->total_amount, null, $companyId),
                     "paid" => Utilities::round((float) $row->paid_amount, null, $companyId),
-                    "pending" => Utilities::round((float) $row->pending_amount, null, $companyId)
+                    "pending" => Utilities::round((float) $row->pending_amount, null, $companyId),
                 ];
 
             })
             ->values();
 
         $overdueAmounts = (clone $query)
-            ->whereHas("installments", fn($installmentQuery) => $installmentQuery
+            ->whereHas("installments", fn ($installmentQuery) => $installmentQuery
                 ->whereIn("status", ["pending", "partial", "overdue"])
                 ->where("pending_amount", ">", 0)
                 ->whereDate("due_date", "<", now()->toDateString()))
@@ -81,12 +80,12 @@ final class AccountsReceivableService {
         return [
             "accounts" => (clone $query)->count(),
             "overdue_accounts" => (clone $query)
-                ->whereHas("installments", fn($installmentQuery) => $installmentQuery
+                ->whereHas("installments", fn ($installmentQuery) => $installmentQuery
                     ->whereIn("status", ["pending", "partial", "overdue"])
                     ->where("pending_amount", ">", 0)
                     ->whereDate("due_date", "<", now()->toDateString()))
                 ->count(),
-            "amounts" => $amounts->map(function($amount) use($overdueAmounts, $companyId) {
+            "amounts" => $amounts->map(function ($amount) use ($overdueAmounts, $companyId) {
 
                 $amount["overdue"] = Utilities::round(
                     (float) ($overdueAmounts[$amount["currency_id"]] ?? 0),
@@ -96,7 +95,7 @@ final class AccountsReceivableService {
 
                 return $amount;
 
-            })->values()
+            })->values(),
         ];
 
     }
@@ -106,24 +105,24 @@ final class AccountsReceivableService {
         $query = SaleAccountReceivable::query()->where("company_id", $companyId);
         $branchIds = CompanyReferenceDataService::for($companyId, $userId)->allowedBranchIds();
 
-        if($branchIds !== null) {
+        if ($branchIds !== null) {
 
-            $query->whereHas("sale.serie", fn($serieQuery) => $serieQuery->whereIn("branch_id", $branchIds));
+            $query->whereHas("sale.serie", fn ($serieQuery) => $serieQuery->whereIn("branch_id", $branchIds));
 
         }
 
         $search = trim((string) ($filters["search"] ?? ""));
-        if($search !== "") {
+        if ($search !== "") {
 
-            $query->where(function($searchQuery) use($search) {
+            $query->where(function ($searchQuery) use ($search) {
 
                 $searchQuery
-                    ->whereHas("customer", fn($customerQuery) => $customerQuery
+                    ->whereHas("customer", fn ($customerQuery) => $customerQuery
                         ->where("name", "like", "%{$search}%")
                         ->orWhere("document_number", "like", "%{$search}%"))
-                    ->orWhereHas("sale", fn($saleQuery) => $saleQuery
+                    ->orWhereHas("sale", fn ($saleQuery) => $saleQuery
                         ->where("sequential", "like", "%{$search}%")
-                        ->orWhereHas("serie", fn($serieQuery) => $serieQuery
+                        ->orWhereHas("serie", fn ($serieQuery) => $serieQuery
                             ->whereRaw("CONCAT(code, number) LIKE ?", ["%{$search}%"])));
 
             });
@@ -131,26 +130,26 @@ final class AccountsReceivableService {
         }
 
         $status = (string) ($filters["status"] ?? "");
-        if($status === "overdue") {
+        if ($status === "overdue") {
 
-            $query->whereHas("installments", fn($installmentQuery) => $installmentQuery
+            $query->whereHas("installments", fn ($installmentQuery) => $installmentQuery
                 ->whereIn("status", ["pending", "partial", "overdue"])
                 ->where("pending_amount", ">", 0)
                 ->whereDate("due_date", "<", now()->toDateString()));
 
-        }elseif(in_array($status, ["pending", "partial", "paid", "canceled"], true)) {
+        } elseif (in_array($status, ["pending", "partial", "paid", "canceled"], true)) {
 
             $query->where("status", $status);
 
         }
 
-        if(!empty($filters["date_from"])) {
+        if (! empty($filters["date_from"])) {
 
             $query->whereDate("issue_date", ">=", $filters["date_from"]);
 
         }
 
-        if(!empty($filters["date_to"])) {
+        if (! empty($filters["date_to"])) {
 
             $query->whereDate("issue_date", "<=", $filters["date_to"]);
 
@@ -168,16 +167,16 @@ final class AccountsReceivableService {
             "sale:id,serie_id,sequential,issue_date,total,paid_amount,balance_due,payment_status,status",
             "sale.serie:id,branch_id,code,number",
             "sale.serie.branch:id,name",
-            "installments" => fn($query) => $query
+            "installments" => fn ($query) => $query
                 ->select(["id", "sale_account_receivable_id", "installment_number", "due_date", "amount", "paid_amount", "pending_amount", "status"])
-                ->orderBy("installment_number")
+                ->orderBy("installment_number"),
         ];
 
     }
 
     private function formatAccount(SaleAccountReceivable $account, bool $includePayments = false): array {
 
-        $installments = $account->installments->map(function($installment) {
+        $installments = $account->installments->map(function ($installment) {
 
             $isOverdue = (float) $installment->pending_amount > 0
                 && $installment->due_date
@@ -190,18 +189,18 @@ final class AccountsReceivableService {
                 "amount" => (float) $installment->amount,
                 "paid_amount" => (float) $installment->paid_amount,
                 "pending_amount" => (float) $installment->pending_amount,
-                "status" => $isOverdue ? "overdue" : $installment->status
+                "status" => $isOverdue ? "overdue" : $installment->status,
             ];
 
         });
         $nextInstallment = $installments
-            ->filter(fn($installment) => $installment["pending_amount"] > 0)
-            ->sortBy(fn($installment) => $installment["due_date"] ?? "9999-12-31")
+            ->filter(fn ($installment) => $installment["pending_amount"] > 0)
+            ->sortBy(fn ($installment) => $installment["due_date"] ?? "9999-12-31")
             ->first();
-        $isOverdue = $installments->contains(fn($installment) => $installment["status"] === "overdue");
+        $isOverdue = $installments->contains(fn ($installment) => $installment["status"] === "overdue");
         $status = $account->status;
 
-        if(!in_array($status, ["paid", "canceled"], true)) {
+        if (! in_array($status, ["paid", "canceled"], true)) {
 
             $status = $isOverdue ? "overdue" : ((float) $account->paid_amount > 0 ? "partial" : "pending");
 
@@ -219,12 +218,12 @@ final class AccountsReceivableService {
             "customer" => [
                 "id" => (int) $account->customer_id,
                 "name" => $account->customer?->name ?? "Cliente",
-                "document_number" => $account->customer?->document_number ?? ""
+                "document_number" => $account->customer?->document_number ?? "",
             ],
             "currency" => [
                 "id" => (int) $account->currency_id,
                 "code" => $account->currency?->code ?? "",
-                "sign" => $account->currency?->sign ?? ""
+                "sign" => $account->currency?->sign ?? "",
             ],
             "issue_date" => $account->issue_date?->format("Y-m-d"),
             "due_date" => $account->due_date?->format("Y-m-d"),
@@ -238,19 +237,19 @@ final class AccountsReceivableService {
             "status" => $status,
             "observation" => $account->observation,
             "next_installment" => $nextInstallment,
-            "installments" => $installments->values()
+            "installments" => $installments->values(),
         ];
 
-        if($includePayments) {
+        if ($includePayments) {
 
-            $result["payments"] = $account->payments->map(fn($payment) => [
+            $result["payments"] = $account->payments->map(fn ($payment) => [
                 "id" => (int) $payment->id,
                 "paid_at" => $payment->paid_at?->format("Y-m-d H:i:s"),
                 "amount" => (float) $payment->amount,
                 "method" => $payment->paymentMethodVariant?->name ?? $payment->paymentMethod?->name ?? "Pago",
                 "image_path" => $payment->paymentMethodVariant?->image_path ?? $payment->paymentMethod?->image_path,
                 "reference" => $payment->reference,
-                "observation" => $payment->observation
+                "observation" => $payment->observation,
             ])->values();
 
         }
@@ -258,5 +257,4 @@ final class AccountsReceivableService {
         return $result;
 
     }
-
 }

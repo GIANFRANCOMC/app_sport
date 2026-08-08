@@ -12,23 +12,21 @@ use Illuminate\Http\Response;
  * Provides consistent API response formatting
  */
 class ApiResponse {
-
     /**
      * Success response
      *
-     * @param mixed $data Response data
-     * @param string $message Success message
-     * @param int $statusCode HTTP status code
-     * @return JsonResponse
+     * @param  mixed  $data Response data
+     * @param  string  $message Success message
+     * @param  int  $statusCode HTTP status code
      */
     public static function success($data = null, string $message = "", int $statusCode = Response::HTTP_OK): JsonResponse {
 
         $response = [
             "bool" => true,
-            "msg"  => $message
+            "msg" => $message,
         ];
 
-        if($data !== null) {
+        if ($data !== null) {
 
             $response["data"] = $data;
 
@@ -41,19 +39,18 @@ class ApiResponse {
     /**
      * Error response
      *
-     * @param string $message Error message
-     * @param int $statusCode HTTP status code
-     * @param array $errors Validation errors (optional)
-     * @return JsonResponse
+     * @param  string  $message Error message
+     * @param  int  $statusCode HTTP status code
+     * @param  array  $errors Validation errors (optional)
      */
     public static function error(string $message, int $statusCode = Response::HTTP_INTERNAL_SERVER_ERROR, array $errors = []): JsonResponse {
 
         $response = [
             "bool" => false,
-            "msg"  => $message
+            "msg" => $message,
         ];
 
-        if(!empty($errors)) {
+        if (! empty($errors)) {
 
             $response["errors"] = $errors;
 
@@ -65,8 +62,7 @@ class ApiResponse {
     /**
      * Not found response
      *
-     * @param string $message Error message
-     * @return JsonResponse
+     * @param  string  $message Error message
      */
     public static function notFound(string $message = "Resource not found"): JsonResponse {
 
@@ -77,9 +73,8 @@ class ApiResponse {
     /**
      * Validation error response
      *
-     * @param array $errors Validation errors
-     * @param string $message Error message
-     * @return JsonResponse
+     * @param  array  $errors Validation errors
+     * @param  string  $message Error message
      */
     public static function validationError(array $errors, string $message = "Validation failed"): JsonResponse {
 
@@ -90,19 +85,18 @@ class ApiResponse {
     /**
      * Created response (legacy format for frontend compatibility)
      *
-     * @param mixed $resource Created resource data
-     * @param string $message Success message
-     * @param string $resourceKey Resource key name (e.g., "branch", "item")
-     * @return JsonResponse
+     * @param  mixed  $resource Created resource data
+     * @param  string  $message Success message
+     * @param  string  $resourceKey Resource key name (e.g., "branch", "item")
      */
     public static function created($resource = null, string $message = "Resource created successfully", string $resourceKey = "data"): JsonResponse {
 
         $response = [
             "bool" => true,
-            "msg"  => $message
+            "msg" => $message,
         ];
 
-        if($resource !== null) {
+        if ($resource !== null) {
 
             $response[$resourceKey] = $resource;
 
@@ -114,19 +108,18 @@ class ApiResponse {
     /**
      * Updated response (legacy format for frontend compatibility)
      *
-     * @param mixed $resource Updated resource data
-     * @param string $message Success message
-     * @param string $resourceKey Resource key name (e.g., "branch", "item")
-     * @return JsonResponse
+     * @param  mixed  $resource Updated resource data
+     * @param  string  $message Success message
+     * @param  string  $resourceKey Resource key name (e.g., "branch", "item")
      */
     public static function updated($resource = null, string $message = "Resource updated successfully", string $resourceKey = "data"): JsonResponse {
 
         $response = [
             "bool" => true,
-            "msg"  => $message
+            "msg" => $message,
         ];
 
-        if($resource !== null) {
+        if ($resource !== null) {
 
             $response[$resourceKey] = $resource;
 
@@ -135,6 +128,4 @@ class ApiResponse {
         return response()->json($response, Response::HTTP_OK);
 
     }
-
 }
-

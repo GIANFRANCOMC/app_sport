@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Services\System\Organizations\Branches;
 
-use Exception;
-
 use App\Helpers\System\Utilities;
 use App\Models\System\General\{DocumentType};
-use App\Models\System\Organizations\{Branch, Serie};
+use App\Models\System\Organizations\Branch;
+use App\Models\System\Organizations\Serie;
+use Exception;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -16,12 +16,10 @@ use Illuminate\Support\Facades\DB;
  * Handles business logic for creating document series for branches
  */
 class SerieService {
-
     /**
      * Get new sequential number for branch (based on company branch count)
      *
-     * @param int $companyId Company ID
-     * @return int
+     * @param  int  $companyId Company ID
      */
     public static function getNewSequential(int $companyId, int $branchId): int {
 
@@ -30,12 +28,12 @@ class SerieService {
         try {
 
             $maxSequential = Branch::where("company_id", $companyId)
-                                   ->where("id", "!=", $branchId)
-                                   ->count();
+                ->where("id", "!=", $branchId)
+                ->count();
 
             $newSequential = intval($maxSequential) + 1;
 
-        }catch(Exception $e) {
+        } catch (Exception $e) {
 
             $newSequential = 0;
 
@@ -49,9 +47,9 @@ class SerieService {
      * Create series for all active document types for a given branch
      * Uses bulk insert for better performance
      *
-     * @param int $branchId Branch ID
-     * @param int $companyId Company ID
-     * @param int|null $userId User ID creating the series
+     * @param  int  $branchId Branch ID
+     * @param  int  $companyId Company ID
+     * @param  int|null  $userId User ID creating the series
      * @return array Collection of created series
      */
     public static function createForBranch(int $branchId, int $companyId, ?int $userId = null): array {
@@ -61,11 +59,11 @@ class SerieService {
 
         // Get all active document types for the company (only needed fields)
         $documentTypes = DocumentType::where("company_id", $companyId)
-                                     ->whereIn("status", ["active"])
-                                     ->select("id", "code")
-                                     ->get();
+            ->whereIn("status", ["active"])
+            ->select("id", "code")
+            ->get();
 
-        if($documentTypes->isEmpty()) {
+        if ($documentTypes->isEmpty()) {
 
             return [];
 
@@ -74,18 +72,18 @@ class SerieService {
         // Prepare bulk insert data
         $now = now();
 
-        $seriesData = $documentTypes->map(function($documentType) use($companyId, $branchId, $newSequential, $userId, $now) {
+        $seriesData = $documentTypes->map(function ($documentType) use ($companyId, $branchId, $newSequential, $userId, $now) {
 
             return [
-                "company_id"       => $companyId,
-                "branch_id"        => $branchId,
+                "company_id" => $companyId,
+                "branch_id" => $branchId,
                 "document_type_id" => $documentType->id,
-                "code"             => $documentType->code,
-                "number"           => $newSequential,
-                "init"             => 1,
-                "status"           => "active",
-                "created_at"       => $now,
-                "created_by"       => $userId
+                "code" => $documentType->code,
+                "number" => $newSequential,
+                "init" => 1,
+                "status" => "active",
+                "created_at" => $now,
+                "created_by" => $userId,
             ];
 
         })->toArray();
@@ -105,13 +103,13 @@ class SerieService {
             ->join("branches", "branches.id", "=", "series.branch_id")
             ->leftJoin("users", "users.id", "=", "movement.user_id")
             ->where("movement.company_id", $companyId)
-            ->when($filters["branch_id"] ?? null, fn($query, $id) => $query->where("series.branch_id", $id))
-            ->when($filters["serie_id"] ?? null, fn($query, $id) => $query->where("movement.serie_id", $id))
-            ->when($filters["user_id"] ?? null, fn($query, $id) => $query->where("movement.user_id", $id))
-            ->when($filters["source"] ?? null, fn($query, $source) => $query->where("movement.source", $source))
-            ->when($filters["action"] ?? null, fn($query, $action) => $query->where("movement.action", $action))
-            ->when($filters["date_from"] ?? null, fn($query, $date) => $query->where("movement.occurred_at", ">=", Utilities::startOfDay($date)))
-            ->when($filters["date_to"] ?? null, fn($query, $date) => $query->where("movement.occurred_at", "<=", Utilities::endOfDay($date)))
+            ->when($filters["branch_id"] ?? null, fn ($query, $id) => $query->where("series.branch_id", $id))
+            ->when($filters["serie_id"] ?? null, fn ($query, $id) => $query->where("movement.serie_id", $id))
+            ->when($filters["user_id"] ?? null, fn ($query, $id) => $query->where("movement.user_id", $id))
+            ->when($filters["source"] ?? null, fn ($query, $source) => $query->where("movement.source", $source))
+            ->when($filters["action"] ?? null, fn ($query, $action) => $query->where("movement.action", $action))
+            ->when($filters["date_from"] ?? null, fn ($query, $date) => $query->where("movement.occurred_at", ">=", Utilities::startOfDay($date)))
+            ->when($filters["date_to"] ?? null, fn ($query, $date) => $query->where("movement.occurred_at", "<=", Utilities::endOfDay($date)))
             ->select([
                 "movement.id",
                 "movement.sequential",
@@ -124,7 +122,7 @@ class SerieService {
                 "series.number as serie_number",
                 "branches.id as branch_id",
                 "branches.name as branch_name",
-                "users.name as user_name"
+                "users.name as user_name",
             ])
             ->orderByDesc("movement.occurred_at");
 
@@ -134,9 +132,9 @@ class SerieService {
 
         return Serie::query()
             ->where("company_id", $companyId)
-            ->when($branchId, fn($query) => $query->where("branch_id", $branchId))
+            ->when($branchId, fn ($query) => $query->where("branch_id", $branchId))
             ->get()
-            ->map(function(Serie $serie) use($companyId) {
+            ->map(function (Serie $serie) use ($companyId) {
 
                 $issued = DB::table("series_correlative_movements")
                     ->where("company_id", $companyId)
@@ -144,10 +142,10 @@ class SerieService {
                     ->where("action", "issued")
                     ->orderBy("sequential")
                     ->pluck("sequential")
-                    ->map(fn($value) => (int) $value)
+                    ->map(fn ($value) => (int) $value)
                     ->all();
 
-                if(count($issued) < 2) {
+                if (count($issued) < 2) {
 
                     return null;
 
@@ -161,7 +159,7 @@ class SerieService {
                     "serie" => $serie->legible_serie,
                     "first" => min($issued),
                     "last" => max($issued),
-                    "missing" => $missing
+                    "missing" => $missing,
                 ];
 
             })
@@ -170,5 +168,4 @@ class SerieService {
             ->all();
 
     }
-
 }

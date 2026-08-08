@@ -4,19 +4,18 @@ declare(strict_types=1);
 
 namespace App\Services\System\Assets\Assets;
 
-use App\Helpers\System\{TranslationHelper, Utilities};
-use Illuminate\Support\Facades\DB;
+use App\Helpers\System\TranslationHelper;
+use App\Helpers\System\Utilities;
+use App\Models\System\Assets\{Asset};
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
-
-use App\Models\System\Assets\{Asset};
+use Illuminate\Support\Facades\DB;
 
 /**
  * Service class for managing module operations
  * Handles business logic for creating and updating records
  */
 class AssetService {
-
     /**
      * Translation namespace for module
      */
@@ -32,7 +31,7 @@ class AssetService {
         "serial_number",
         "name",
         "description",
-        "status"
+        "status",
     ];
 
     /**
@@ -43,15 +42,14 @@ class AssetService {
         "patrimonial_code",
         "serial_number",
         "name",
-        "description"
+        "description",
     ];
 
     /**
      * Get translation with fallback
      *
-     * @param string $key Translation key
-     * @param array $replace Replacements
-     * @return string
+     * @param  string  $key Translation key
+     * @param  array  $replace Replacements
      */
     private static function trans(string $key, array $replace = []): string {
 
@@ -62,24 +60,23 @@ class AssetService {
     /**
      * Prepare data for creation
      *
-     * @param array $data Input data
-     * @param int $companyId Company
-     * @param int $userId User
-     * @return array
+     * @param  array  $data Input data
+     * @param  int  $companyId Company
+     * @param  int  $userId User
      */
     private static function prepareAssetDataForCreate(array $data, int $companyId, int $userId): array {
 
         $assetData = [
-            "company_id"      => $companyId,
+            "company_id" => $companyId,
             "management_type" => "stock",
-            "status"          => $data["status"] ?? "active",
-            "created_at"      => now(),
-            "created_by"      => $userId
+            "status" => $data["status"] ?? "active",
+            "created_at" => now(),
+            "created_by" => $userId,
         ];
 
-        foreach(self::ALLOWED_FIELDS as $field) {
+        foreach (self::ALLOWED_FIELDS as $field) {
 
-            if(isset($data[$field])) {
+            if (isset($data[$field])) {
 
                 $assetData[$field] = $data[$field];
 
@@ -94,19 +91,18 @@ class AssetService {
     /**
      * Prepare data for update (only changed fields)
      *
-     * @param Asset $asset Record instance
-     * @param array $data Input data
-     * @return array
+     * @param  Asset  $asset Record instance
+     * @param  array  $data Input data
      */
     private static function prepareAssetDataForUpdate(Asset $asset, array $data): array {
 
         $updateData = [];
 
-        foreach(self::ALLOWED_FIELDS as $field) {
+        foreach (self::ALLOWED_FIELDS as $field) {
 
-            if(isset($data[$field])) {
+            if (isset($data[$field])) {
 
-                if($data[$field] !== $asset->$field) {
+                if ($data[$field] !== $asset->$field) {
 
                     $updateData[$field] = $data[$field];
 
@@ -123,16 +119,17 @@ class AssetService {
     /**
      * Create a new record
      *
-     * @param array $data Input data
-     * @param int|null $userId User creating the record
+     * @param  array  $data Input data
+     * @param  int|null  $userId User creating the record
      * @return Asset|null Created record instance or null on failure
+     *
      * @throws Exception
      */
     public static function create(array $data, int $companyId, int $userId): ?Asset {
 
         $asset = null;
 
-        DB::transaction(function() use($data, $companyId, $userId, &$asset) {
+        DB::transaction(function () use ($data, $companyId, $userId, &$asset) {
 
             // Prepare data with only allowed fields
             $assetData = self::prepareAssetDataForCreate($data, $companyId, $userId);
@@ -149,20 +146,20 @@ class AssetService {
     /**
      * Update an existing record
      *
-     * @param Asset $asset Record instance to update
-     * @param array $data Input data
-     * @param int|null $userId User updating the record
+     * @param  Asset  $asset Record instance to update
+     * @param  array  $data Input data
+     * @param  int|null  $userId User updating the record
      * @return Asset Updated record instance
      */
     public static function update(Asset $asset, array $data, int $userId): Asset {
 
-        DB::transaction(function() use($asset, $data, $userId) {
+        DB::transaction(function () use ($asset, $data, $userId) {
 
             // Prepare update data with only changed fields
             $updateData = self::prepareAssetDataForUpdate($asset, $data);
 
             // Only update if there are changes
-            if(!empty($updateData)) {
+            if (! empty($updateData)) {
 
                 $updateData["updated_at"] = now();
                 $updateData["updated_by"] = $userId;
@@ -179,24 +176,23 @@ class AssetService {
     /**
      * Find record by ID and company ID
      *
-     * @param int $id Record
-     * @param int $companyId Company
-     * @param array|null $statuses Filter by statuses (e.g. ["active"], ["active", "inactive"])
-     * @param array $relations Relations to eager load
-     * @return Asset|null
+     * @param  int  $id Record
+     * @param  int  $companyId Company
+     * @param  array|null  $statuses Filter by statuses (e.g. ["active"], ["active", "inactive"])
+     * @param  array  $relations Relations to eager load
      */
     public static function findByIdAndCompany(int $id, int $companyId, ?array $statuses = ["active"], array $relations = []): ?Asset {
 
         $query = Asset::where("id", $id)
-                      ->where("company_id", $companyId);
+            ->where("company_id", $companyId);
 
-        if($statuses !== null && !empty($statuses)) {
+        if ($statuses !== null && ! empty($statuses)) {
 
             $query->whereIn("status", $statuses);
 
         }
 
-        if($relations !== null && !empty($relations)) {
+        if ($relations !== null && ! empty($relations)) {
 
             $query->with($relations);
 
@@ -209,10 +205,9 @@ class AssetService {
     /**
      * Get paginated list of records with filters
      *
-     * @param int $companyId Company
-     * @param array $filters Filter parameters (filter_by, word)
-     * @param int $perPage Items per page
-     * @return LengthAwarePaginator
+     * @param  int  $companyId Company
+     * @param  array  $filters Filter parameters (filter_by, word)
+     * @param  int  $perPage Items per page
      */
     public static function getPaginatedList(int $companyId, array $filters = [], int $perPage = 15): LengthAwarePaginator {
 
@@ -220,27 +215,27 @@ class AssetService {
 
         // Apply filters
         $filterBy = $filters["filter_by"] ?? null;
-        $word     = $filters["word"] ?? null;
+        $word = $filters["word"] ?? null;
 
-        if(Utilities::isDefined($word) && Utilities::isDefined($filterBy)) {
+        if (Utilities::isDefined($word) && Utilities::isDefined($filterBy)) {
 
             $searchTerm = Utilities::getWordSearch($word);
 
-            if($filterBy === "all") {
+            if ($filterBy === "all") {
 
                 // Search across all searchable fields
-                $query->where(function(Builder $q) use($searchTerm) {
+                $query->where(function (Builder $q) use ($searchTerm) {
 
                     $searchableFields = self::SEARCHABLE_FIELDS;
-                    $firstField       = array_shift($searchableFields);
+                    $firstField = array_shift($searchableFields);
 
-                    if($firstField) {
+                    if ($firstField) {
 
                         $q->where($firstField, "like", $searchTerm);
 
                     }
 
-                    foreach($searchableFields as $field) {
+                    foreach ($searchableFields as $field) {
 
                         $q->orWhere($field, "like", $searchTerm);
 
@@ -248,7 +243,7 @@ class AssetService {
 
                 });
 
-            }elseif(in_array($filterBy, self::SEARCHABLE_FIELDS, true)) {
+            } elseif (in_array($filterBy, self::SEARCHABLE_FIELDS, true)) {
 
                 // Search in specific field
                 $query->where($filterBy, "like", $searchTerm);
@@ -258,8 +253,7 @@ class AssetService {
         }
 
         return $query->orderBy("name", "ASC")
-                     ->paginate($perPage);
+            ->paginate($perPage);
 
     }
-
 }

@@ -14,31 +14,30 @@ use DomainException;
  * Handles business logic for listing and managing tracking notifications
  */
 class TrackingNotificationService {
-
     /**
      * Get paginated list of subscription emails with filters
      *
-     * @param int $companyId Company ID
-     * @param array $filters Filters array
-     * @param int $perPage Items per page
+     * @param  int  $companyId Company ID
+     * @param  array  $filters Filters array
+     * @param  int  $perPage Items per page
      * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator
      */
     public static function getPaginatedList(int $companyId, array $filters, int $perPage) {
 
         $status = $filters["status"] ?? null;
 
-        return SubscriptionEmail::when(Utilities::isDefined($status), function($query) use($status) {
+        return SubscriptionEmail::when(Utilities::isDefined($status), function ($query) use ($status) {
 
-                                    $query->where(function($query) use($status) {
+            $query->where(function ($query) use ($status) {
 
-                                        $query->where("status", $status);
+                $query->where("status", $status);
 
-                                    });
+            });
 
-                                 })
-                                 ->where("company_id", $companyId)
-                                 ->orderBy("id", "DESC")
-                                 ->paginate($perPage);
+        })
+            ->where("company_id", $companyId)
+            ->orderBy("id", "DESC")
+            ->paginate($perPage);
 
     }
 
@@ -48,7 +47,7 @@ class TrackingNotificationService {
             ->where("company_id", $companyId)
             ->findOrFail($notificationId);
 
-        if($notification->status !== "failed") {
+        if ($notification->status !== "failed") {
             throw new DomainException("Solo se pueden reintentar notificaciones fallidas.");
         }
 
@@ -59,7 +58,7 @@ class TrackingNotificationService {
             "next_attempt_at" => now(),
             "failed_at" => null,
             "last_error" => null,
-            "updated_by" => $userId
+            "updated_by" => $userId,
         ])->save();
 
         BusinessAuditService::record(
@@ -78,6 +77,4 @@ class TrackingNotificationService {
         return $notification->fresh();
 
     }
-
 }
-

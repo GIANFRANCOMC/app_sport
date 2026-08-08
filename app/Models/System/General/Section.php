@@ -6,15 +6,18 @@ use App\Helpers\System\Utilities;
 use Illuminate\Database\Eloquent\Model;
 
 class Section extends Model {
+    protected $table = "sections";
 
-    protected $table               = "sections";
-    protected $primaryKey          = "id";
-    public $incrementing           = true;
-    public $timestamps             = true;
+    protected $primaryKey = "id";
+
+    public $incrementing = true;
+
+    public $timestamps = true;
+
     public static $snakeAttributes = true;
 
     protected $appends = [
-        "formatted_status"
+        "formatted_status",
     ];
 
     protected $fillable = [
@@ -30,7 +33,7 @@ class Section extends Model {
         "created_at",
         "created_by",
         "updated_at",
-        "updated_by"
+        "updated_by",
     ];
 
     // Appends
@@ -45,7 +48,7 @@ class Section extends Model {
 
         $statuses = [
             ["code" => "active", "label" => "Activo"],
-            ["code" => "inactive", "label" => "Inactivo"]
+            ["code" => "inactive", "label" => "Inactivo"],
         ];
 
         return Utilities::getValues($statuses, $type, $code);
@@ -62,16 +65,15 @@ class Section extends Model {
     public function menuGroups() {
 
         return $this->hasMany(MenuGroup::class, "section_id", "id")
-                    ->where("status", "active")
-                    ->orderBy("order");
+            ->where("status", "active")
+            ->orderBy("order");
 
     }
 
     public function subSections() {
 
         return $this->hasMany(SubSection::class, "section_id", "id")
-                    ->whereIn("status", ["active"]);
+            ->whereIn("status", ["active"]);
 
     }
-
 }

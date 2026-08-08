@@ -7,6 +7,12 @@ Este archivo describe las tablas creadas por migraciones y usadas por System. Al
 
 Estas tablas viven en la conexión `landlord`, no en cada BD tenant. Resuelven exclusivamente subdominios registrados hacia una base de datos aislada.
 
+### platform_users
+
+Administradores exclusivos de `app.<TENANCY_BASE_DOMAIN>`. Campos: `name`, `email`, `password`, `status`, `session_version`, `last_login_at` y `last_login_ip`.
+
+No se relaciona con `users` de los tenants. `session_version` permite revocar todas las sesiones al rotar credenciales mediante `platform:admin`.
+
 ### tenant_databases
 
 Registro central de tenants. Campos: `slug`, `company_id`, `database_name`, `status` y `last_resolved_at`.
@@ -25,6 +31,12 @@ Relaciones: pertenece a `tenant_databases`. `domain` debe ser único para evitar
 Bitácora operativa de landlord. Campos: `tenant_database_id`, `company_id`, `action`, `result`, `host`, `ip_address`, `actor`, `context` y `occurred_at`.
 
 Registra aprovisionamiento, verificación de salud, suspensión, reactivación, limpieza de caché, ejecución tenant del scheduler y rechazos contra hosts desconocidos. `context` contiene únicamente metadatos operativos; nunca credenciales ni identificadores de sesión en texto plano. La relación con `tenant_databases` es nullable para poder auditar hosts que todavía no corresponden a un tenant conocido.
+
+### tenant_announcements
+
+Avisos administrados desde landlord y visibles dentro de un tenant. Campos: `tenant_database_id`, `title`, `message`, `severity`, `starts_at`, `ends_at`, `dismissible`, `status`, `created_by` y `updated_by`.
+
+Los avisos se filtran por tenant, vigencia y estado. El contenido se escapa al renderizarse y nunca habilita HTML arbitrario.
 
 ## Maestros generales
 

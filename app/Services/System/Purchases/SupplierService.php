@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace App\Services\System\Purchases;
 
-use App\Models\System\Purchases\{Supplier, SupplierBankAccount, SupplierContact};
+use App\Models\System\Purchases\Supplier;
+use App\Models\System\Purchases\SupplierBankAccount;
+use App\Models\System\Purchases\SupplierContact;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 
 final class SupplierService {
-
     public static function query(int $companyId, string $word = "") {
 
         $query = Supplier::query()
@@ -19,9 +20,9 @@ final class SupplierService {
             ->withSum("purchases as purchased_total", "total");
         $word = trim($word);
 
-        if($word !== "") {
+        if ($word !== "") {
 
-            $query->where(function($query) use($word) {
+            $query->where(function ($query) use ($word) {
 
                 $query->where("name", "like", "%{$word}%")
                     ->orWhere("document_number", "like", "%{$word}%")
@@ -37,12 +38,12 @@ final class SupplierService {
 
     public static function create(int $companyId, int $userId, array $data): Supplier {
 
-        return DB::transaction(function() use($companyId, $userId, $data) {
+        return DB::transaction(function () use ($companyId, $userId, $data) {
             $supplier = Supplier::create([
                 ...Arr::except($data, ["contacts", "bank_accounts"]),
                 "company_id" => $companyId,
                 "created_at" => now(),
-                "created_by" => $userId
+                "created_by" => $userId,
             ]);
             self::syncRelated($supplier, $companyId, $data);
 
@@ -58,7 +59,7 @@ final class SupplierService {
         array $data
     ): Supplier {
 
-        return DB::transaction(function() use($companyId, $supplierId, $userId, $data) {
+        return DB::transaction(function () use ($companyId, $supplierId, $userId, $data) {
             $supplier = Supplier::query()
                 ->where("company_id", $companyId)
                 ->lockForUpdate()
@@ -66,7 +67,7 @@ final class SupplierService {
             $supplier->update([
                 ...Arr::except($data, ["contacts", "bank_accounts"]),
                 "updated_at" => now(),
-                "updated_by" => $userId
+                "updated_by" => $userId,
             ]);
             self::syncRelated($supplier, $companyId, $data);
 
@@ -77,38 +78,37 @@ final class SupplierService {
 
     private static function syncRelated(Supplier $supplier, int $companyId, array $data): void {
 
-        if(array_key_exists("contacts", $data)) {
+        if (array_key_exists("contacts", $data)) {
             SupplierContact::query()->where("supplier_id", $supplier->id)->delete();
             $primaryAssigned = false;
-            foreach($data["contacts"] ?? [] as $index => $contact) {
-                $isPrimary = !$primaryAssigned && (bool) ($contact["is_primary"] ?? $index === 0);
+            foreach ($data["contacts"] ?? [] as $index => $contact) {
+                $isPrimary = ! $primaryAssigned && (bool) ($contact["is_primary"] ?? $index === 0);
                 $primaryAssigned = $primaryAssigned || $isPrimary;
                 SupplierContact::create([
                     ...$contact,
                     "company_id" => $companyId,
                     "supplier_id" => $supplier->id,
                     "is_primary" => $isPrimary,
-                    "status" => "active"
+                    "status" => "active",
                 ]);
             }
         }
 
-        if(array_key_exists("bank_accounts", $data)) {
+        if (array_key_exists("bank_accounts", $data)) {
             SupplierBankAccount::query()->where("supplier_id", $supplier->id)->delete();
             $primaryAssigned = false;
-            foreach($data["bank_accounts"] ?? [] as $index => $account) {
-                $isPrimary = !$primaryAssigned && (bool) ($account["is_primary"] ?? $index === 0);
+            foreach ($data["bank_accounts"] ?? [] as $index => $account) {
+                $isPrimary = ! $primaryAssigned && (bool) ($account["is_primary"] ?? $index === 0);
                 $primaryAssigned = $primaryAssigned || $isPrimary;
                 SupplierBankAccount::create([
                     ...$account,
                     "company_id" => $companyId,
                     "supplier_id" => $supplier->id,
                     "is_primary" => $isPrimary,
-                    "status" => "active"
+                    "status" => "active",
                 ]);
             }
         }
 
     }
-
 }

@@ -8,7 +8,6 @@ use App\Http\Requests\System\Base\CompanyFormRequest;
 use App\Rules\System\Defaults\BelongsToCompany;
 
 final class RecipeWarehouseRequest extends CompanyFormRequest {
-
     public function rules(): array {
 
         return [
@@ -16,10 +15,9 @@ final class RecipeWarehouseRequest extends CompanyFormRequest {
                 "bail",
                 "required",
                 "integer",
-                new BelongsToCompany("warehouses", ["status" => "active"], "El almacen seleccionado no esta disponible.")
-            ]
+                new BelongsToCompany("warehouses", ["status" => "active"], "El almacen seleccionado no esta disponible."),
+            ],
         ];
 
     }
-
 }

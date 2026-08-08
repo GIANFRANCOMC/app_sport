@@ -4,12 +4,10 @@ declare(strict_types=1);
 
 namespace App\Models\System\Sales;
 
+use App\Models\System\Finance\Tax;
 use Illuminate\Database\Eloquent\Model;
 
-use App\Models\System\Finance\Tax;
-
 final class QuotationTax extends Model {
-
     protected $table = "quotation_taxes";
 
     protected $fillable = [
@@ -29,7 +27,7 @@ final class QuotationTax extends Model {
         "created_at",
         "created_by",
         "updated_at",
-        "updated_by"
+        "updated_by",
     ];
 
     protected $casts = [
@@ -37,11 +35,10 @@ final class QuotationTax extends Model {
         "is_required" => "boolean",
         "quantity" => "integer",
         "base_amount" => "App\\Casts\\System\\ConfigurableDecimal",
-        "amount" => "App\\Casts\\System\\ConfigurableDecimal"
+        "amount" => "App\\Casts\\System\\ConfigurableDecimal",
     ];
 
     public function tax() {
         return $this->belongsTo(Tax::class, "tax_id");
     }
-
 }

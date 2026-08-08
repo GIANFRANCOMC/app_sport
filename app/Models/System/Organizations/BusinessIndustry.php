@@ -7,7 +7,6 @@ namespace App\Models\System\Organizations;
 use Illuminate\Database\Eloquent\Model;
 
 final class BusinessIndustry extends Model {
-
     protected $table = "business_industries";
 
     protected $fillable = [
@@ -19,7 +18,7 @@ final class BusinessIndustry extends Model {
         "created_at",
         "created_by",
         "updated_at",
-        "updated_by"
+        "updated_by",
     ];
 
     public function moduleSets() {
@@ -27,5 +26,4 @@ final class BusinessIndustry extends Model {
         return $this->hasMany(BusinessIndustryModuleSet::class, "business_industry_id");
 
     }
-
 }

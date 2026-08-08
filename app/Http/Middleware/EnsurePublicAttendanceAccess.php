@@ -9,22 +9,20 @@ use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 final class EnsurePublicAttendanceAccess {
-
     public function handle(Request $request, Closure $next): Response {
 
-        $access = $request->session()->get('_public_attendance_access');
-        $companyId = (int) $request->attributes->get('company')?->id;
-        $branchId = (int) $request->input('branch_id');
+        $access = $request->session()->get("_public_attendance_access");
+        $companyId = (int) $request->attributes->get("company")?->id;
+        $branchId = (int) $request->input("branch_id");
 
-        if(!is_array($access)
-            || (int) ($access['company_id'] ?? 0) !== $companyId
-            || (int) ($access['branch_id'] ?? 0) !== $branchId
-            || (int) ($access['expires_at'] ?? 0) < now()->timestamp) {
-            abort(403, 'El enlace de asistencia no es válido o ya venció.');
+        if (! is_array($access)
+            || (int) ($access["company_id"] ?? 0) !== $companyId
+            || (int) ($access["branch_id"] ?? 0) !== $branchId
+            || (int) ($access["expires_at"] ?? 0) < now()->timestamp) {
+            abort(403, "El enlace de asistencia no es válido o ya venció.");
         }
 
         return $next($request);
 
     }
-
 }

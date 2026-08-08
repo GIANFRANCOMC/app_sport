@@ -9,7 +9,6 @@ use App\Services\System\Base\BaseConfigService;
 use stdClass;
 
 final class BrandConfigService extends BaseConfigService {
-
     protected static function getCachePrefix(): string {
 
         return "brand";
@@ -20,9 +19,8 @@ final class BrandConfigService extends BaseConfigService {
 
         return self::data([
             "internal_code_prefixes" => self::internalCodePrefixes($companyId),
-            "statuses" => Brand::getStatuses()
+            "statuses" => Brand::getStatuses(),
         ]);
 
     }
-
 }

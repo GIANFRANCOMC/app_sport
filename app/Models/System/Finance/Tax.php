@@ -7,7 +7,6 @@ namespace App\Models\System\Finance;
 use Illuminate\Database\Eloquent\Model;
 
 final class Tax extends Model {
-
     protected $table = "taxes";
 
     protected $fillable = [
@@ -27,7 +26,7 @@ final class Tax extends Model {
         "created_at",
         "created_by",
         "updated_at",
-        "updated_by"
+        "updated_by",
     ];
 
     protected $casts = [
@@ -35,7 +34,6 @@ final class Tax extends Model {
         "min_apply_quantity" => "integer",
         "max_apply_quantity" => "integer",
         "is_required" => "boolean",
-        "is_default" => "boolean"
+        "is_default" => "boolean",
     ];
-
 }

@@ -7,7 +7,6 @@ namespace App\Http\Requests\System\Assets\AssetManagements;
 use App\Http\Requests\System\Base\CompanyFormRequest;
 
 final class AssignAssetToUserRequest extends CompanyFormRequest {
-
     public function rules(): array {
 
         $round = $this->decimalPrecision();
@@ -20,9 +19,8 @@ final class AssignAssetToUserRequest extends CompanyFormRequest {
             "assignments" => ["required", "array", "min:1"],
             "assignments.*.id" => ["nullable", "integer"],
             "assignments.*.user_id" => ["required", "integer"],
-            "assignments.*.quantity" => ["required", "numeric", "min:0.0001", "max:{$maxValue}", "decimal:0,{$round}"]
+            "assignments.*.quantity" => ["required", "numeric", "min:0.0001", "max:{$maxValue}", "decimal:0,{$round}"],
         ];
 
     }
-
 }

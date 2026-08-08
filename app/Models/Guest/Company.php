@@ -3,19 +3,21 @@
 namespace App\Models\Guest;
 
 use App\Helpers\System\Utilities;
-use Exception;
 use Illuminate\Database\Eloquent\Model;
 
 class Company extends Model {
+    protected $table = "companies";
 
-    protected $table               = "companies";
-    protected $primaryKey          = "id";
-    public $incrementing           = true;
-    public $timestamps             = true;
+    protected $primaryKey = "id";
+
+    public $incrementing = true;
+
+    public $timestamps = true;
+
     public static $snakeAttributes = true;
 
     protected $appends = [
-        "formatted_status"
+        "formatted_status",
     ];
 
     protected $hidden = [
@@ -23,7 +25,7 @@ class Company extends Model {
         "created_by",
         "updated_by",
         "created_at",
-        "updated_at"
+        "updated_at",
     ];
 
     protected $fillable = [
@@ -48,7 +50,7 @@ class Company extends Model {
         "created_at",
         "created_by",
         "updated_at",
-        "updated_by"
+        "updated_by",
     ];
 
     // Appends
@@ -63,7 +65,7 @@ class Company extends Model {
 
         $statuses = [
             ["code" => "active", "label" => "Activo"],
-            ["code" => "inactive", "label" => "Inactivo"]
+            ["code" => "inactive", "label" => "Inactivo"],
         ];
 
         return Utilities::getValues($statuses, $type, $code);
@@ -86,8 +88,7 @@ class Company extends Model {
     public function socialsMedia() {
 
         return $this->hasMany(CompanySocialMedia::class, "company_id", "id")
-                    ->whereIn("status", ["active"]);
+            ->whereIn("status", ["active"]);
 
     }
-
 }

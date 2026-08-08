@@ -7,7 +7,6 @@ namespace App\Services\Security;
 use Illuminate\Support\Facades\Http;
 
 final class TurnstileVerificationService {
-
     private const VERIFY_URL = "https://challenges.cloudflare.com/turnstile/v0/siteverify";
 
     public static function enabled(): bool {
@@ -19,11 +18,11 @@ final class TurnstileVerificationService {
 
     public static function verify(?string $token, ?string $ipAddress = null): bool {
 
-        if(!self::enabled()) {
+        if (! self::enabled()) {
             return true;
         }
 
-        if(trim((string) $token) === "") {
+        if (trim((string) $token) === "") {
             return false;
         }
 
@@ -34,14 +33,13 @@ final class TurnstileVerificationService {
                 ->post(self::VERIFY_URL, [
                     "secret" => (string) config("public_access.captcha.secret"),
                     "response" => $token,
-                    "remoteip" => $ipAddress
+                    "remoteip" => $ipAddress,
                 ]);
 
             return $response->successful() && $response->json("success") === true;
-        }catch(\Throwable) {
+        } catch (\Throwable) {
             return false;
         }
 
     }
-
 }

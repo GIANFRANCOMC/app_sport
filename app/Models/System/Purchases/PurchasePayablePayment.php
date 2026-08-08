@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Models\System\Purchases;
 
-use App\Models\System\Finance\{PaymentMethod, PaymentMethodVariant};
+use App\Models\System\Finance\PaymentMethod;
+use App\Models\System\Finance\PaymentMethodVariant;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 final class PurchasePayablePayment extends Model {
-
     protected $table = "purchase_payable_payments";
 
     protected $fillable = [
@@ -25,12 +25,12 @@ final class PurchasePayablePayment extends Model {
         "created_at",
         "created_by",
         "updated_at",
-        "updated_by"
+        "updated_by",
     ];
 
     protected $casts = [
         "paid_at" => "datetime",
-        "amount" => "App\\Casts\\System\\ConfigurableDecimal"
+        "amount" => "App\\Casts\\System\\ConfigurableDecimal",
     ];
 
     public function accountPayable(): BelongsTo {
@@ -50,5 +50,4 @@ final class PurchasePayablePayment extends Model {
         return $this->belongsTo(PaymentMethodVariant::class, "payment_method_variant_id");
 
     }
-
 }

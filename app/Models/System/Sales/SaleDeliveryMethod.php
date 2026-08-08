@@ -8,7 +8,6 @@ use App\Models\System\Organizations\Company;
 use Illuminate\Database\Eloquent\Model;
 
 final class SaleDeliveryMethod extends Model {
-
     protected $table = "sale_delivery_methods";
 
     protected $fillable = [
@@ -22,12 +21,12 @@ final class SaleDeliveryMethod extends Model {
         "created_at",
         "created_by",
         "updated_at",
-        "updated_by"
+        "updated_by",
     ];
 
     protected $casts = [
         "sort_order" => "integer",
-        "is_default" => "boolean"
+        "is_default" => "boolean",
     ];
 
     public function company() {
@@ -35,5 +34,4 @@ final class SaleDeliveryMethod extends Model {
         return $this->belongsTo(Company::class, "company_id", "id");
 
     }
-
 }

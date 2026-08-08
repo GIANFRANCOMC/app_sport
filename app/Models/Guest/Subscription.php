@@ -3,21 +3,23 @@
 namespace App\Models\Guest;
 
 use App\Helpers\System\Utilities;
-use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 
 class Subscription extends Model {
+    protected $table = "subscriptions";
 
-    protected $table               = "subscriptions";
-    protected $primaryKey          = "id";
-    public $incrementing           = true;
-    public $timestamps             = true;
+    protected $primaryKey = "id";
+
+    public $incrementing = true;
+
+    public $timestamps = true;
+
     public static $snakeAttributes = true;
 
     protected $appends = [
         "formatted_duration",
         "formatted_type",
-        "formatted_status"
+        "formatted_status",
     ];
 
     protected $fillable = [
@@ -42,13 +44,13 @@ class Subscription extends Model {
         "updated_at",
         "updated_by",
         "canceled_at",
-        "canceled_by"
+        "canceled_by",
     ];
 
     // Appends
     public function getFormattedDurationAttribute() {
 
-        if(Utilities::isDefined($this->duration_type) && Utilities::isDefined($this->duration_value)) {
+        if (Utilities::isDefined($this->duration_type) && Utilities::isDefined($this->duration_value)) {
 
             $prop = $this->duration_value > 1 ? "plural" : "label";
             $durationType = self::getDurationTypes("first", $this->attributes["duration_type"] ?? "")[$prop] ?? "";
@@ -81,7 +83,7 @@ class Subscription extends Model {
             ["code" => "day", "label" => "Día", "plural" => "Días"],
             ["code" => "today", "label" => "Rutina", "plural" => "Rutinas"],
             ["code" => "month", "label" => "Mes", "plural" => "Meses"],
-            ["code" => "year", "label" => "Año", "plural" => "Años"]
+            ["code" => "year", "label" => "Año", "plural" => "Años"],
         ];
 
         return Utilities::getValues($types, $type, $code);
@@ -92,7 +94,7 @@ class Subscription extends Model {
 
         $types = [
             ["code" => "sale", "label" => "Venta"],
-            ["code" => "manual", "label" => "Manual"]
+            ["code" => "manual", "label" => "Manual"],
         ];
 
         return Utilities::getValues($types, $type, $code);
@@ -104,7 +106,7 @@ class Subscription extends Model {
         $statuses = [
             ["code" => "active", "label" => "Vigente"],
             ["code" => "inactive", "label" => "Vencida"],
-            ["code" => "canceled", "label" => "Anulada"]
+            ["code" => "canceled", "label" => "Anulada"],
         ];
 
         return Utilities::getValues($statuses, $type, $code);
@@ -129,5 +131,4 @@ class Subscription extends Model {
         return $this->belongsTo(Customer::class, "customer_id", "id");
 
     }
-
 }

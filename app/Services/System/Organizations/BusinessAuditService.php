@@ -8,7 +8,6 @@ use App\Models\System\Organizations\BusinessAuditLog;
 use Illuminate\Database\Eloquent\Model;
 
 final class BusinessAuditService {
-
     private const HIDDEN_FIELDS = [
         "password",
         "password_confirmation",
@@ -22,7 +21,7 @@ final class BusinessAuditService {
         "private_key",
         "signature",
         "authorization",
-        "fingerprint_template"
+        "fingerprint_template",
     ];
 
     public static function record(
@@ -55,7 +54,7 @@ final class BusinessAuditService {
             "context" => self::sanitize($context),
             "ip_address" => $request?->ip(),
             "user_agent" => $request ? mb_substr((string) $request->userAgent(), 0, 500) : null,
-            "occurred_at" => now()
+            "occurred_at" => now(),
         ]);
 
     }
@@ -63,7 +62,7 @@ final class BusinessAuditService {
     public static function recordModelChange(Model $model, string $action): ?BusinessAuditLog {
 
         $companyId = (int) ($model->getAttribute("company_id") ?? 0);
-        if($companyId <= 0) {
+        if ($companyId <= 0) {
             return null;
         }
 
@@ -87,19 +86,19 @@ final class BusinessAuditService {
     private static function sanitize(array $data): array {
 
         $settingKey = strtolower((string) ($data["key"] ?? ""));
-        if(array_key_exists("value", $data)
-            && preg_match('/(?:secret|password|token|credential|api[_-]?key|private[_-]?key)/', $settingKey)) {
+        if (array_key_exists("value", $data)
+            && preg_match("/(?:secret|password|token|credential|api[_-]?key|private[_-]?key)/", $settingKey)) {
             $data["value"] = "[REDACTED]";
         }
 
-        foreach($data as $key => $value) {
-            if(in_array(strtolower((string) $key), self::HIDDEN_FIELDS, true)) {
+        foreach ($data as $key => $value) {
+            if (in_array(strtolower((string) $key), self::HIDDEN_FIELDS, true)) {
                 unset($data[$key]);
 
                 continue;
             }
 
-            if(is_array($value)) {
+            if (is_array($value)) {
                 $data[$key] = self::sanitize($value);
             }
         }
@@ -107,5 +106,4 @@ final class BusinessAuditService {
         return $data;
 
     }
-
 }

@@ -4,19 +4,18 @@ declare(strict_types=1);
 
 namespace App\Services\System\Customers\Customers;
 
-use App\Helpers\System\{TranslationHelper, Utilities};
-use Illuminate\Support\Facades\DB;
+use App\Helpers\System\TranslationHelper;
+use App\Helpers\System\Utilities;
+use App\Models\System\Customers\{Customer};
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
-
-use App\Models\System\Customers\{Customer};
+use Illuminate\Support\Facades\DB;
 
 /**
  * Service class for managing module operations
  * Handles business logic for creating and updating records
  */
 class CustomerService {
-
     /**
      * Translation namespace for module
      */
@@ -36,7 +35,7 @@ class CustomerService {
         "medical_notes",
         "gender",
         "birthdate",
-        "status"
+        "status",
     ];
 
     /**
@@ -46,15 +45,14 @@ class CustomerService {
         "document_number",
         "name",
         "email",
-        "phone_number"
+        "phone_number",
     ];
 
     /**
      * Get translation with fallback
      *
-     * @param string $key Translation key
-     * @param array $replace Replacements
-     * @return string
+     * @param  string  $key Translation key
+     * @param  array  $replace Replacements
      */
     private static function trans(string $key, array $replace = []): string {
 
@@ -65,23 +63,22 @@ class CustomerService {
     /**
      * Prepare data for creation
      *
-     * @param array $data Input data
-     * @param int $companyId Company
-     * @param int $userId User
-     * @return array
+     * @param  array  $data Input data
+     * @param  int  $companyId Company
+     * @param  int  $userId User
      */
     private static function prepareCustomerDataForCreate(array $data, int $companyId, int $userId): array {
 
         $customerData = [
             "company_id" => $companyId,
-            "status"     => $data["status"] ?? "active",
+            "status" => $data["status"] ?? "active",
             "created_at" => now(),
-            "created_by" => $userId
+            "created_by" => $userId,
         ];
 
-        foreach(self::ALLOWED_FIELDS as $field) {
+        foreach (self::ALLOWED_FIELDS as $field) {
 
-            if(isset($data[$field])) {
+            if (isset($data[$field])) {
 
                 $customerData[$field] = $data[$field];
 
@@ -96,17 +93,16 @@ class CustomerService {
     /**
      * Prepare data for update (only changed fields)
      *
-     * @param Customer $customer Record instance
-     * @param array $data Input data
-     * @return array
+     * @param  Customer  $customer Record instance
+     * @param  array  $data Input data
      */
     private static function prepareCustomerDataForUpdate(Customer $customer, array $data): array {
 
         $updateData = [];
 
-        foreach(self::ALLOWED_FIELDS as $field) {
+        foreach (self::ALLOWED_FIELDS as $field) {
 
-            if(isset($data[$field]) && $data[$field] !== $customer->$field) {
+            if (isset($data[$field]) && $data[$field] !== $customer->$field) {
 
                 $updateData[$field] = $data[$field];
 
@@ -121,16 +117,17 @@ class CustomerService {
     /**
      * Create a new record
      *
-     * @param array $data Input data
-     * @param int|null $userId User creating the record
+     * @param  array  $data Input data
+     * @param  int|null  $userId User creating the record
      * @return Customer|null Created record instance or null on failure
+     *
      * @throws Exception
      */
     public static function create(array $data, int $companyId, int $userId): ?Customer {
 
         $customer = null;
 
-        DB::transaction(function() use($data, $companyId, $userId, &$customer) {
+        DB::transaction(function () use ($data, $companyId, $userId, &$customer) {
 
             // Prepare data with only allowed fields
             $customerData = self::prepareCustomerDataForCreate($data, $companyId, $userId);
@@ -147,20 +144,20 @@ class CustomerService {
     /**
      * Update an existing record
      *
-     * @param Customer $customer Record instance to update
-     * @param array $data Input data
-     * @param int|null $userId User updating the record
+     * @param  Customer  $customer Record instance to update
+     * @param  array  $data Input data
+     * @param  int|null  $userId User updating the record
      * @return Customer Updated record instance
      */
     public static function update(Customer $customer, array $data, int $userId): Customer {
 
-        DB::transaction(function() use($customer, $data, $userId) {
+        DB::transaction(function () use ($customer, $data, $userId) {
 
             // Prepare update data with only changed fields
             $updateData = self::prepareCustomerDataForUpdate($customer, $data);
 
             // Only update if there are changes
-            if(!empty($updateData)) {
+            if (! empty($updateData)) {
 
                 $updateData["updated_at"] = now();
                 $updateData["updated_by"] = $userId;
@@ -177,24 +174,23 @@ class CustomerService {
     /**
      * Find record by ID and company ID
      *
-     * @param int $id Record
-     * @param int $companyId Company
-     * @param array|null $statuses Filter by statuses (e.g. ["active"], ["active", "inactive"])
-     * @param array $relations Relations to eager load
-     * @return Customer|null
+     * @param  int  $id Record
+     * @param  int  $companyId Company
+     * @param  array|null  $statuses Filter by statuses (e.g. ["active"], ["active", "inactive"])
+     * @param  array  $relations Relations to eager load
      */
     public static function findByIdAndCompany(int $id, int $companyId, ?array $statuses = ["active"], array $relations = ["identityDocumentType"]): ?Customer {
 
         $query = Customer::where("id", $id)
-                         ->where("company_id", $companyId);
+            ->where("company_id", $companyId);
 
-        if($statuses !== null && !empty($statuses)) {
+        if ($statuses !== null && ! empty($statuses)) {
 
             $query->whereIn("status", $statuses);
 
         }
 
-        if(!empty($relations)) {
+        if (! empty($relations)) {
 
             $query->with($relations);
 
@@ -207,39 +203,38 @@ class CustomerService {
     /**
      * Get paginated list of records with filters
      *
-     * @param int $companyId Company
-     * @param array $filters Filter parameters (filter_by, word)
-     * @param int $perPage Items per page
-     * @return LengthAwarePaginator
+     * @param  int  $companyId Company
+     * @param  array  $filters Filter parameters (filter_by, word)
+     * @param  int  $perPage Items per page
      */
     public static function getPaginatedList(int $companyId, array $filters = [], int $perPage = 15): LengthAwarePaginator {
 
         $query = Customer::where("company_id", $companyId)
-                         ->with(["identityDocumentType"]);
+            ->with(["identityDocumentType"]);
 
         // Apply filters
         $filterBy = $filters["filter_by"] ?? null;
-        $word     = $filters["word"] ?? null;
+        $word = $filters["word"] ?? null;
 
-        if(Utilities::isDefined($word) && Utilities::isDefined($filterBy)) {
+        if (Utilities::isDefined($word) && Utilities::isDefined($filterBy)) {
 
             $searchTerm = Utilities::getWordSearch($word);
 
-            if($filterBy === "all") {
+            if ($filterBy === "all") {
 
                 // Search across all searchable fields
-                $query->where(function(Builder $q) use($searchTerm) {
+                $query->where(function (Builder $q) use ($searchTerm) {
 
                     $searchableFields = self::SEARCHABLE_FIELDS;
-                    $firstField       = array_shift($searchableFields);
+                    $firstField = array_shift($searchableFields);
 
-                    if($firstField) {
+                    if ($firstField) {
 
                         $q->where($firstField, "like", $searchTerm);
 
                     }
 
-                    foreach($searchableFields as $field) {
+                    foreach ($searchableFields as $field) {
 
                         $q->orWhere($field, "like", $searchTerm);
 
@@ -247,7 +242,7 @@ class CustomerService {
 
                 });
 
-            }elseif(in_array($filterBy, self::SEARCHABLE_FIELDS, true)) {
+            } elseif (in_array($filterBy, self::SEARCHABLE_FIELDS, true)) {
 
                 // Search in specific field
                 $query->where($filterBy, "like", $searchTerm);
@@ -257,8 +252,7 @@ class CustomerService {
         }
 
         return $query->orderBy("name", "ASC")
-                     ->paginate($perPage);
+            ->paginate($perPage);
 
     }
-
 }

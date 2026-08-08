@@ -5,12 +5,13 @@ declare(strict_types=1);
 namespace App\Models\System\Finance;
 
 use App\Models\System\Catalogs\Item;
-use App\Models\System\Organizations\{Branch, Company};
-use App\Models\System\Warehouses\{InventoryMovement, Warehouse};
+use App\Models\System\Organizations\Branch;
+use App\Models\System\Organizations\Company;
+use App\Models\System\Warehouses\InventoryMovement;
+use App\Models\System\Warehouses\Warehouse;
 use Illuminate\Database\Eloquent\Model;
 
 class CashSessionInventoryCount extends Model {
-
     protected $table = "cash_session_inventory_counts";
 
     protected $fillable = [
@@ -28,13 +29,13 @@ class CashSessionInventoryCount extends Model {
         "created_at",
         "created_by",
         "updated_at",
-        "updated_by"
+        "updated_by",
     ];
 
     protected $casts = [
         "system_quantity" => "App\\Casts\\System\\ConfigurableDecimal",
         "counted_quantity" => "App\\Casts\\System\\ConfigurableDecimal",
-        "difference_quantity" => "App\\Casts\\System\\ConfigurableDecimal"
+        "difference_quantity" => "App\\Casts\\System\\ConfigurableDecimal",
     ];
 
     public function company() {
@@ -60,5 +61,4 @@ class CashSessionInventoryCount extends Model {
     public function inventoryMovement() {
         return $this->belongsTo(InventoryMovement::class, "inventory_movement_id", "id");
     }
-
 }

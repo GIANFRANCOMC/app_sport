@@ -7,7 +7,6 @@ namespace App\Models\System\Catalogs;
 use Illuminate\Database\Eloquent\Model;
 
 class RecipeDishTopping extends Model {
-
     protected $table = "recipe_dish_toppings";
 
     protected $fillable = [
@@ -21,13 +20,13 @@ class RecipeDishTopping extends Model {
         "created_at",
         "created_by",
         "updated_at",
-        "updated_by"
+        "updated_by",
     ];
 
     protected $casts = [
         "is_default" => "boolean",
         "min_quantity" => "integer",
-        "max_quantity" => "integer"
+        "max_quantity" => "integer",
     ];
 
     public function recipeDish() {
@@ -41,5 +40,4 @@ class RecipeDishTopping extends Model {
         return $this->belongsTo(RecipeTopping::class, "recipe_topping_id", "id");
 
     }
-
 }

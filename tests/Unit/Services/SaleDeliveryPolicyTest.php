@@ -6,7 +6,6 @@ use App\Services\System\Sales\SaleDeliveryPolicy;
 use PHPUnit\Framework\TestCase;
 
 class SaleDeliveryPolicyTest extends TestCase {
-
     public function test_physical_sale_keeps_pending_status_independently_from_method(): void {
 
         $status = SaleDeliveryPolicy::initialStatus("pending", true);
@@ -51,5 +50,4 @@ class SaleDeliveryPolicyTest extends TestCase {
         $this->assertFalse(SaleDeliveryPolicy::usesManagedDelivery("sale", false));
 
     }
-
 }

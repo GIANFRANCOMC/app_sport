@@ -35,4 +35,3 @@ return [
     "exception_update" => "Error al actualizar la categoría: :message",
     "exception_delete" => "Error al eliminar la categoría: :message",
 ];
-

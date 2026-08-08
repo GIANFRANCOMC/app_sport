@@ -7,7 +7,6 @@ namespace App\Services\System\Tenancy;
 use App\Models\System\Tenancy\TenantDatabase;
 
 final class TenantContext {
-
     private ?TenantDatabase $tenant = null;
 
     public function set(?TenantDatabase $tenant): void {
@@ -33,5 +32,4 @@ final class TenantContext {
         return $this->tenant?->company_id;
 
     }
-
 }

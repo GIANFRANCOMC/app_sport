@@ -7,7 +7,6 @@ namespace App\Http\Requests\System\Purchases;
 use App\Http\Requests\System\Base\CompanyFormRequest;
 
 final class ReceivePurchaseRequest extends CompanyFormRequest {
-
     public function authorize(): bool {
 
         return parent::authorize();
@@ -24,7 +23,7 @@ final class ReceivePurchaseRequest extends CompanyFormRequest {
             "observation" => ["nullable", "string", "max:1000"],
             "items" => ["required", "array", "min:1"],
             "items.*.purchase_item_id" => ["required", "integer", "distinct"],
-            "items.*.quantity" => ["required", "numeric", "gt:0", "max:{$maxValue}", "decimal:0,{$round}"]
+            "items.*.quantity" => ["required", "numeric", "gt:0", "max:{$maxValue}", "decimal:0,{$round}"],
         ];
 
     }
@@ -37,9 +36,8 @@ final class ReceivePurchaseRequest extends CompanyFormRequest {
             "distinct" => "No repitas un producto.",
             "numeric" => "Ingresa un número válido.",
             "gt" => "Debe ser mayor que cero.",
-            "max" => "Supera la longitud permitida."
+            "max" => "Supera la longitud permitida.",
         ];
 
     }
-
 }

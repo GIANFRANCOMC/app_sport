@@ -8,13 +8,12 @@ use App\Http\Requests\System\Base\CompanyFormRequest;
 use App\Rules\System\Defaults\BelongsToCompany;
 
 class StoreRecipeRequest extends CompanyFormRequest {
-
     public function rules(): array {
 
         $round = $this->decimalPrecision();
         $maxValue = $this->numericMaxValue();
 
-        $productFromCompany = fn(string $message) => new BelongsToCompany(
+        $productFromCompany = fn (string $message) => new BelongsToCompany(
             "items",
             ["type" => "product"],
             $message
@@ -56,7 +55,7 @@ class StoreRecipeRequest extends CompanyFormRequest {
             "options.*.components.*.item_id" => ["required_with:options.*.components.*.quantity", "nullable", "integer", $productFromCompany("Un insumo de la opcion no pertenece a la empresa.")],
             "options.*.components.*.quantity" => ["required_with:options.*.components.*.item_id", "nullable", "numeric", "min:0.0001", "max:{$maxValue}", "decimal:0,{$round}"],
             "options.*.components.*.waste_percentage" => ["nullable", "numeric", "min:0", "max:100", "decimal:0,{$round}"],
-            "options.*.components.*.note" => ["nullable", "string", "max:255"]
+            "options.*.components.*.note" => ["nullable", "string", "max:255"],
         ];
 
     }
@@ -65,7 +64,7 @@ class StoreRecipeRequest extends CompanyFormRequest {
 
         return array_merge(parent::messages(), [
             "min.numeric" => "Debe ser mayor que cero.",
-            "max.array" => "Supera el limite de registros permitido."
+            "max.array" => "Supera el limite de registros permitido.",
         ]);
 
     }
@@ -75,5 +74,4 @@ class StoreRecipeRequest extends CompanyFormRequest {
         return ["preparation_notes"];
 
     }
-
 }

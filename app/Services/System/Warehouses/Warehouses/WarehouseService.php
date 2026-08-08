@@ -12,23 +12,22 @@ use App\Models\System\Warehouses\Warehouse;
  * Handles business logic for creating and updating warehouses related to branches
  */
 class WarehouseService {
-
     /**
      * Create default warehouse for a new branch
      *
-     * @param Branch $branch Persisted branch that owns the warehouse
-     * @param int|null $userId User ID creating the warehouse
+     * @param  Branch  $branch Persisted branch that owns the warehouse
+     * @param  int|null  $userId User ID creating the warehouse
      * @return Warehouse Created warehouse instance
      */
     public static function createDefaultForBranch(Branch $branch, ?int $userId = null): Warehouse {
 
         $warehouse = Warehouse::create([
             "company_id" => $branch->company_id,
-            "branch_id"  => $branch->id,
-            "name"       => self::generateWarehouseName(1),
-            "status"     => "active",
+            "branch_id" => $branch->id,
+            "name" => self::generateWarehouseName(1),
+            "status" => "active",
             "created_at" => now(),
-            "created_by" => $userId
+            "created_by" => $userId,
         ]);
 
         WarehouseItemService::createForWarehouse(
@@ -45,15 +44,15 @@ class WarehouseService {
      * Update warehouse names for a branch when branch name changes
      * Uses bulk update for better performance
      *
-     * @param Branch $branch Branch instance
-     * @param int|null $userId User ID updating the warehouses
+     * @param  Branch  $branch Branch instance
+     * @param  int|null  $userId User ID updating the warehouses
      * @return int Number of updated warehouses
      */
     public static function updateNamesForBranch(Branch $branch, ?int $userId = null): int {
 
         $warehouses = $branch->warehousesAll;
 
-        if($warehouses->isEmpty()) {
+        if ($warehouses->isEmpty()) {
 
             return 0;
 
@@ -63,11 +62,11 @@ class WarehouseService {
         $seq = 1;
 
         // Update warehouses efficiently
-        foreach($warehouses as $warehouse) {
+        foreach ($warehouses as $warehouse) {
 
             $cleanName = Warehouse::plainName((string) $warehouse->name);
 
-            $warehouse->name       = $cleanName !== "" ? $cleanName : self::generateWarehouseName($seq);
+            $warehouse->name = $cleanName !== "" ? $cleanName : self::generateWarehouseName($seq);
             $warehouse->updated_at = $now;
             $warehouse->updated_by = $userId;
             $warehouse->save();
@@ -83,8 +82,8 @@ class WarehouseService {
     /**
      * Generate warehouse name based on branch name and sequence
      *
-     * @param string $branchName Branch name
-     * @param int $sequence Sequence number
+     * @param  string  $branchName Branch name
+     * @param  int  $sequence Sequence number
      * @return string Generated warehouse name
      */
     public static function generateWarehouseName(int $sequence): string {
@@ -92,5 +91,4 @@ class WarehouseService {
         return "Almacén {$sequence}";
 
     }
-
 }
