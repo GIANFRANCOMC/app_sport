@@ -22,16 +22,19 @@ System no debe asumir comportamiento de visitantes publicos. Si una funcionalida
 2. [DEVELOPMENT_GUIDE.md](DEVELOPMENT_GUIDE.md)
 3. [BACKEND_CONVENTIONS.md](BACKEND_CONVENTIONS.md)
 4. [CODE_STYLE.md](CODE_STYLE.md)
-5. [TABLES.md](TABLES.md)
-6. [DATABASE_INSTALLATION.md](DATABASE_INSTALLATION.md)
-7. [TESTING.md](TESTING.md)
-8. [modules/00_menu_order.md](modules/00_menu_order.md)
-9. Modulos numerados en [modules](modules)
-10. Decisiones de evolucion en [new_requirements](new_requirements)
+5. [TENANT_NAVIGATION.md](TENANT_NAVIGATION.md)
+6. [TABLES.md](TABLES.md)
+7. [DATABASE_INSTALLATION.md](DATABASE_INSTALLATION.md)
+8. [TESTING.md](TESTING.md)
+9. [modules/00_menu_order.md](modules/00_menu_order.md)
+10. Modulos numerados en [modules](modules)
+11. Decisiones de evolucion en [new_requirements](new_requirements)
 
 ## Modulos Por Menu
 
-El menú se consulta desde `menu_categories`, `sections`, `menu_groups` y `sub_sections`, y se organiza en cuatro categorías:
+El menú se consulta desde `menu_categories`, `sections`, `menu_groups` y `sub_sections`. Visualmente utiliza una barra de módulos basada en `sections` y un panel contextual basado en `menu_groups` y `sub_sections`.
+
+Las cuatro categorías se conservan para organización interna y aprovisionamiento, pero ya no se muestran como encabezados permanentes:
 
 1. Principal.
 2. Operaciones.

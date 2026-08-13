@@ -14,11 +14,95 @@
                         ->take(2)
                         ->map(fn($part) => Str::upper(Str::substr($part, 0, 1)))
                         ->join('') ?: 'U';
+
+    $subSectionIds = $sections->pluck("subSections")->flatten()->pluck("id")->toArray();
+    $valuePreferences = $preferences["config_companies_sub_sections"]->sub_sections ?? [];
+    $configuredSubSectionIds = collect($valuePreferences)->pluck("sub_section_id")->map(fn($id) => (int) $id)->toArray();
+    $visibleSubSectionIds = collect($valuePreferences)
+        ->filter(fn($preference) => data_get($preference, "visible_in_menu", true))
+        ->pluck("sub_section_id")
+        ->map(fn($id) => (int) $id)
+        ->unique()
+        ->values()
+        ->toArray();
+    $unconfiguredSubSectionIds = collect($subSectionIds)
+        ->reject(fn($id) => in_array($id, $configuredSubSectionIds, true))
+        ->toArray();
+    $sectionFiltered = count($valuePreferences) > 0
+        ? array_merge($unconfiguredSubSectionIds, $visibleSubSectionIds)
+        : $subSectionIds;
+
+    $navigationSections = $sections
+        ->map(function($section) use ($sectionFiltered) {
+
+            $section->setRelation(
+                "subSections",
+                $section->subSections->whereIn("id", $sectionFiltered)->values()
+            );
+
+            return $section;
+
+        })
+        ->filter(fn($section) => $section->subSections->isNotEmpty())
+        ->values();
+
+    $activeNavigationSubSection = $navigationSections
+        ->pluck("subSections")
+        ->flatten()
+        ->first(function($subSection) {
+
+            if(request()->routeIs($subSection->dom_route)) {
+
+                return true;
+
+            }
+
+            $route = Illuminate\Support\Facades\Route::getRoutes()->getByName($subSection->dom_route);
+
+            return $route && request()->is(ltrim($route->uri(), "/")."/*");
+
+        });
+
+    $activeNavigationSection = $activeNavigationSubSection
+        ? $navigationSections->firstWhere("id", $activeNavigationSubSection->section_id)
+        : $navigationSections->first();
+    $showNavigationContext = ($activeNavigationSection?->subSections->count() ?? 0) > 1;
+
+    $favoritePreferences = collect($valuePreferences)
+        ->filter(fn($preference) => data_get($preference, "is_favorite", false))
+        ->pluck("sub_section_id")
+        ->map(fn($id) => (int) $id)
+        ->unique()
+        ->values()
+        ->toArray();
+    $favoriteMenuGroups = collect();
+
+    foreach($navigationSections as $section) {
+
+        $favoriteSubSections = $section->subSections->whereIn("id", $favoritePreferences);
+
+        if($favoriteSubSections->isEmpty()) {
+
+            continue;
+
+        }
+
+        $favoriteMenuGroups->push([
+            "section" => $section->dom_label,
+            "icon" => $section->dom_icon,
+            "items" => $favoriteSubSections->map(fn($subSection) => [
+                "label" => $subSection->dom_label,
+                "description" => $subSection->description,
+                "url" => $subSection->dom_route_url,
+            ])->values(),
+        ]);
+
+    }
 @endphp
 
 <html
     lang="en"
-    class="light-style layout-navbar-fixed layout-menu-fixed layout-compact br-html-brand"
+    class="light-style layout-navbar-fixed layout-menu-fixed layout-compact br-html-brand br-navigation-ready {{ $showNavigationContext ? 'br-navigation-with-context' : 'br-navigation-without-context' }}"
     dir="ltr"
     data-theme="theme-default"
     data-assets-path="{{ $systemAssetsPath }}"
@@ -36,174 +120,121 @@
     <body class="br-layout">
         <div class="layout-wrapper layout-content-navbar">
             <div class="layout-container">
-                <aside id="layout-menu" class="layout-menu menu-vertical menu bg-menu-theme br-menu-brand">
-                    <ul class="menu-inner">
-                        <li class="menu-header br-sidebar-profile-wrap text-start">
-                            <div class="br-sidebar-profile">
-                                <div class="br-sidebar-profile-avatar flex-shrink-0">
-                                    <div class="avatar avatar-lg rounded-circle br-brand-avatar br-sidebar-initials-avatar" aria-label="Iniciales de {{ $user->name }}">
-                                        <span aria-hidden="true">{{ $userInitials }}</span>
-                                    </div>
-                                </div>
-                                <div class="br-sidebar-profile-meta">
-                                    <p class="br-sidebar-profile-user mb-1" title="{{ $user->name }}">
-                                        {{ Str::limit($user->name, 28) }}
-                                    </p>
-                                    <p class="br-sidebar-profile-company mb-1 d-none" title="{{ $company->commercial_name }}">
-                                        {{ Str::limit($company->commercial_name, 28) }}
-                                    </p>
-                                    <div class="br-sidebar-profile-role-head mb-0">
-                                        <p class="br-sidebar-profile-role mb-0" title="{{ $role->name }}">
-                                            <span class="br-sidebar-profile-role-name">{{ Str::limit($role->name, 26) }}</span>
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-                        </li>
-                        @php
-                            $subSectionIds    = $sections->pluck("subSections")->flatten()->pluck("id")->toArray();
-                            $valuePreferences = $preferences["config_companies_sub_sections"]->sub_sections ?? [];
+                <aside id="layout-menu" class="layout-menu menu-vertical menu bg-menu-theme br-menu-brand br-navigation {{ $showNavigationContext ? 'has-context' : 'without-context' }}" aria-label="Navegación principal">
+                    <div class="br-navigation__rail">
+                        <a
+                            href="{{ $navigationSections->first()?->subSections->first()?->dom_route_url ?? '#' }}"
+                            class="br-navigation__brand"
+                            aria-label="Ir al inicio"
+                            title="{{ $company->commercial_name }}">
+                            <span aria-hidden="true">{{ Str::upper(Str::substr($company->commercial_name, 0, 1)) }}</span>
+                        </a>
 
-                            $favoritePreferences = collect($valuePreferences)
-                                                        ->filter(fn($preference) => data_get($preference, "is_favorite", false))
-                                                        ->pluck("sub_section_id")
-                                                        ->map(fn($id) => (int) $id)
-                                                        ->unique()
-                                                        ->values()
-                                                        ->toArray();
-
-                            $visiblePreferences = collect($valuePreferences)
-                                                        ->filter(fn($preference) => data_get($preference, "visible_in_menu", true))
-                                                        ->pluck("sub_section_id")
-                                                        ->map(fn($id) => (int) $id)
-                                                        ->unique()
-                                                        ->values()
-                                                        ->toArray();
-
-                            $favoriteMenuGroups = collect();
-
-                            foreach($sections as $section) {
-
-                                $subSectionsFab = $section->subSections->whereIn("id", $favoritePreferences);
-
-                                if(!$subSectionsFab->first()) {
-
-                                    continue;
-
-                                }
-
-                                $favoriteMenuGroups->push([
-                                    "section" => $section->dom_label,
-                                    "icon" => $section->dom_icon,
-                                    "items" => $subSectionsFab->map(fn($subSection) => [
-                                        "label" => $subSection->dom_label,
-                                        "description" => $subSection->description,
-                                        "url" => $subSection->dom_route_url
-                                    ])->values()
-                                ]);
-
-                            }
-                        @endphp
-                        @php
-                            $allPreferences = collect($valuePreferences)->pluck("sub_section_id")->toArray();
-                            $allFiltered = collect($subSectionIds)->filter(fn($id) => !in_array($id, $allPreferences))->toArray();
-                            $sectionFiltered = count($valuePreferences) > 0
-                                ? array_merge($allFiltered, $visiblePreferences)
-                                : $subSectionIds;
-                        @endphp
-                        @foreach($sections->groupBy(fn($section) => $section->menuCategory?->id ?? 0) as $categorySections)
-                            @continue(!$categorySections->pluck('subSections')->flatten()->whereIn('id', $sectionFiltered)->isNotEmpty())
-                            @php
-                                $menuCategory = $categorySections->first()->menuCategory;
-                            @endphp
-                            @if($menuCategory?->slug !== 'principal')
-                                <li class="menu-header divider py-0 br-menu-category">
-                                    @php
-                                        $menuCategoryName = $menuCategory?->name ?? 'Menú';
-                                    @endphp
-                                    <span class="menu-header-text text-uppercase divider-text">
-                                        <span class="br-menu-category__full">{{ $menuCategoryName }}</span>
-                                        <span class="br-menu-category__short" aria-hidden="true">{{ Str::upper(Str::substr($menuCategoryName, 0, 3)) }}</span>
-                                    </span>
-                                </li>
-                            @endif
-                        @foreach($categorySections as $section)
-                            @php
-                                $subSectionsFiltered = $section->subSections->whereIn("id", $sectionFiltered);
-
-                                $reference = $subSectionsFiltered->first();
-
-                                if(!$reference) {
-
-                                    continue;
-
-                                }
-                            @endphp
-                            <li class="menu-item {{ $section->dom_id }}" id="{{ $section->dom_id }}">
-                                <a href="{{ $section->has_sub_menu ? 'javascript:void(0);' : $reference->dom_route_url }}" class="{{ $section->has_sub_menu ? 'menu-link menu-toggle fw-semibold' : 'menu-link fw-semibold' }}">
-                                    <i class="{{ $section->dom_icon }} br-icon-accent"></i>
-                                    <div>{{ $section->dom_label }}</div>
+                        <nav class="br-navigation__modules" aria-label="Módulos disponibles">
+                            @foreach($navigationSections as $section)
+                                @php
+                                    $isActiveSection = $activeNavigationSection?->id === $section->id;
+                                    $reference = $section->subSections->first();
+                                @endphp
+                                <a
+                                    href="{{ $reference->dom_route_url }}"
+                                    id="{{ $section->dom_id }}"
+                                    class="br-navigation__module {{ $isActiveSection ? 'is-active' : '' }} {{ $section->dom_id }}"
+                                    data-navigation-section="{{ $section->id }}"
+                                    aria-label="{{ $section->dom_label }}"
+                                    aria-current="{{ $isActiveSection ? 'true' : 'false' }}"
+                                    data-bs-toggle="tooltip"
+                                    data-bs-placement="right"
+                                    title="{{ $section->dom_label }}">
+                                    <i class="{{ $section->dom_icon }}" aria-hidden="true"></i>
                                 </a>
-                                @if($section->has_sub_menu)
-                                    <ul class="menu-sub">
-                                        @foreach($subSectionsFiltered->groupBy(fn($subSection) => $subSection->menuGroup?->id ?? 0) as $menuGroupItems)
+                            @endforeach
+                        </nav>
+
+                        <div class="br-navigation__account">
+                            <button
+                                type="button"
+                                class="br-navigation__user"
+                                data-bs-toggle="dropdown"
+                                data-bs-auto-close="outside"
+                                aria-expanded="false"
+                                aria-label="Abrir menú de {{ $user->name }}"
+                                title="{{ $user->name }}">
+                                <span aria-hidden="true">{{ $userInitials }}</span>
+                            </button>
+                            <ul class="dropdown-menu br-navigation__user-menu">
+                                <li class="br-navigation__user-summary">
+                                    <strong>{{ $user->name }}</strong>
+                                    <span>{{ $role->name }}</span>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <button type="button" class="dropdown-item br-navbar-user__logout" onclick="$('#logout').submit();">
+                                        <i class="fa-solid fa-power-off" aria-hidden="true"></i>
+                                        <span>Cerrar sesión</span>
+                                    </button>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    @if($showNavigationContext)
+                    <div class="br-navigation__context" id="brNavigationContext">
+                        <div class="br-navigation__context-head">
+                            <span class="br-navigation__eyebrow">Módulo</span>
+                            <div class="br-navigation__title-row">
+                                <i class="{{ $activeNavigationSection?->dom_icon }}" aria-hidden="true"></i>
+                                <h2 class="br-navigation__title">{{ $activeNavigationSection?->dom_label }}</h2>
+                            </div>
+                            <p class="br-navigation__location" aria-label="Ubicación actual">
+                                {{ $activeNavigationSubSection?->menuGroup?->name ?? $activeNavigationSection?->dom_label }}
+                                @if($activeNavigationSubSection)
+                                    <span aria-hidden="true">/</span>
+                                    <strong>{{ $activeNavigationSubSection->dom_label }}</strong>
+                                @endif
+                            </p>
+                        </div>
+
+                        <nav class="br-navigation__context-body" aria-label="Opciones de {{ $activeNavigationSection?->dom_label }}">
+                            @foreach($activeNavigationSection?->subSections->groupBy(fn($subSection) => $subSection->menuGroup?->id ?? 0) ?? [] as $menuGroupItems)
+                                @php
+                                    $menuGroup = $menuGroupItems->first()->menuGroup;
+                                    $menuGroupIsActive = $activeNavigationSubSection
+                                        && $menuGroupItems->contains("id", $activeNavigationSubSection->id);
+                                @endphp
+                                <section class="br-navigation__group {{ $menuGroupIsActive ? 'is-current' : '' }}">
+                                    @if($menuGroup)
+                                        <h3 class="br-navigation__group-title">{{ $menuGroup->name }}</h3>
+                                    @endif
+                                    <ul class="br-navigation__pages">
+                                        @foreach($menuGroupItems as $subSection)
                                             @php
-                                                $menuGroup = $menuGroupItems->first()->menuGroup;
-                                                $hasNestedGroups = $menuGroup
-                                                    && $subSectionsFiltered->pluck('menu_group_id')->filter()->unique()->count() > 1;
-                                                $menuGroupIsActive = $menuGroupItems
-                                                    ->contains(fn($subSection) => request()->routeIs($subSection->dom_route));
+                                                $isActivePage = $activeNavigationSubSection?->id === $subSection->id;
                                             @endphp
-                                            @if($hasNestedGroups)
-                                                <li class="menu-item br-menu-group {{ $menuGroupIsActive ? 'open' : '' }}" id="menu-group-{{ $menuGroup->slug }}">
-                                                    <a href="javascript:void(0);" class="menu-link menu-toggle br-menu-group__toggle">
-                                                        <span class="br-menu-child-bullet" aria-hidden="true"></span>
-                                                        <div class="text-truncate">{{ $menuGroup->name }}</div>
-                                                    </a>
-                                                    <ul class="menu-sub br-menu-group__items">
-                                                        @foreach($menuGroupItems as $subSection)
-                                                            <li class="menu-item {{ $subSection->dom_id }}" id="{{ $subSection->dom_id }}">
-                                                                <a href="{{ $subSection->dom_route_url }}" class="fw-regular menu-link">
-                                                                    <span class="br-menu-child-bullet" aria-hidden="true"></span>
-                                                                    <div class="text-truncate">{{ $subSection->dom_label }}</div>
-                                                                </a>
-                                                            </li>
-                                                        @endforeach
-                                                    </ul>
-                                                </li>
-                                            @else
-                                                @foreach($menuGroupItems as $subSection)
-                                                    <li class="menu-item {{ $subSection->dom_id }}" id="{{ $subSection->dom_id }}">
-                                                        <a href="{{ $subSection->dom_route_url }}" class="fw-regular menu-link">
-                                                            <span class="br-menu-child-bullet" aria-hidden="true"></span>
-                                                            <div class="text-truncate">{{ $subSection->dom_label }}</div>
-                                                        </a>
-                                                    </li>
-                                                @endforeach
-                                            @endif
+                                            <li>
+                                                <a
+                                                    href="{{ $subSection->dom_route_url }}"
+                                                    id="{{ $subSection->dom_id }}"
+                                                    class="br-navigation__page {{ $subSection->dom_id }} {{ $isActivePage ? 'active' : '' }}"
+                                                    data-navigation-section="{{ $activeNavigationSection->id }}"
+                                                    aria-current="{{ $isActivePage ? 'page' : 'false' }}">
+                                                    <span>{{ $subSection->dom_label }}</span>
+                                                    @if($isActivePage)
+                                                        <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
+                                                    @endif
+                                                </a>
+                                            </li>
                                         @endforeach
                                     </ul>
-                                @endif
-                            </li>
-                        @endforeach
-                        @endforeach
-                        <li class="menu-item br-menu-logout-item">
-                            <a href="javascript:void(0)" class="menu-link br-menu-logout" onclick="$('#logout').submit();" role="button" aria-label="Cerrar sesión" title="Cerrar sesión">
-                                <span class="br-menu-logout__inner">
-                                    <span class="br-menu-logout__icon-wrap" aria-hidden="true">
-                                        <i class="fa-solid fa-power-off"></i>
-                                    </span>
-                                    <span class="br-menu-logout__label">Cerrar sesión</span>
-                                </span>
-                            </a>
-                            <form method="POST" action="{{ route('logout') }}" id="logout">
-                                @csrf
-                            </form>
-                        </li>
-                        <li class="menu-header invisible">
-                            <small class="menu-header-text text-uppercase"></small>
-                        </li>
-                    </ul>
+                                </section>
+                            @endforeach
+                        </nav>
+                    </div>
+                    @endif
+
+                    <form method="POST" action="{{ route('logout') }}" id="logout" class="d-none">
+                        @csrf
+                    </form>
                 </aside>
                 <div class="layout-page br-layout-page">
                     <nav class="layout-navbar navbar navbar-expand-xl navbar-detached align-items-center bg-navbar-theme br-layout-navbar" id="layout-navbar">
@@ -521,5 +552,100 @@
         </script>
 
         @include("System.layouts.partials.down")
+        <script>
+            (function () {
+
+                var navigation = document.getElementById("layout-menu");
+
+                if(!navigation) {
+
+                    return;
+
+                }
+
+                var tooltips = navigation.querySelectorAll('[data-bs-toggle="tooltip"]');
+
+                tooltips.forEach(function (element) {
+
+                    if(window.bootstrap?.Tooltip) {
+
+                        window.bootstrap.Tooltip.getOrCreateInstance(element, {
+                            container: document.body,
+                            trigger: "hover focus"
+                        });
+
+                    }
+
+                });
+
+                function sectionIdFor(target) {
+
+                    var directSection = target.closest("[data-navigation-section]")?.dataset.navigationSection;
+
+                    if(directSection) {
+
+                        return directSection;
+
+                    }
+
+                    var targetTokens = Array.from(target.classList);
+                    var matchingModule = Array.from(navigation.querySelectorAll(".br-navigation__module"))
+                        .find(function (moduleLink) {
+
+                            return targetTokens.some(function (token) {
+
+                                return token.startsWith("menu-parent-") && moduleLink.classList.contains(token);
+
+                            });
+
+                        });
+
+                    return matchingModule?.dataset.navigationSection || null;
+
+                }
+
+                var activeObserver = new MutationObserver(function (mutations) {
+
+                    mutations.forEach(function (mutation) {
+
+                        var target = mutation.target;
+
+                        if(!target.classList.contains("active") && !target.classList.contains("open")) {
+
+                            return;
+
+                        }
+
+                        var sectionId = sectionIdFor(target);
+
+                        if(!sectionId) {
+
+                            return;
+
+                        }
+
+                        navigation.querySelectorAll("[data-navigation-section]").forEach(function (moduleLink) {
+
+                            var isActive = moduleLink.dataset.navigationSection === sectionId;
+                            moduleLink.classList.toggle("is-active", isActive);
+                            moduleLink.setAttribute("aria-current", isActive ? "true" : "false");
+
+                        });
+
+                    });
+
+                });
+
+                navigation.querySelectorAll("[class*='menu-']").forEach(function (element) {
+
+                    activeObserver.observe(element, {
+                        attributes: true,
+                        attributeFilter: ["class"]
+                    });
+
+                });
+
+            })();
+        </script>
     </body>
 </html>

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature;
 
 use Illuminate\Foundation\Testing\{RefreshDatabase};
-use Illuminate\Support\Facades\{DB};
+use Illuminate\Support\Facades\{Auth, DB};
 use Tests\Concerns\{ProvisionsSystemDatabase};
 use Tests\{TestCase};
 
@@ -59,6 +59,33 @@ final class SystemNavigationProvisioningTest extends TestCase {
         $this->assertSame("Clientes", $attendance->section_name);
         $this->assertSame("Membresías", $attendance->group_name);
         $this->assertSame(2, (int) $attendance->order);
+
+    }
+
+    public function test_tenant_navigation_renders_only_allowed_modules_and_marks_the_current_route(): void {
+
+        $user = \App\Models\System\Organizations\User::query()
+            ->where("company_id", 1)
+            ->where("email", "admin@example.test")
+            ->firstOrFail();
+
+        Auth::login($user);
+
+        $response = $this->withoutMiddleware([
+            \App\Http\Middleware\ResolveTenant::class,
+            \App\Http\Middleware\TrustHosts::class,
+            \App\Http\Middleware\EnsureTenantSession::class,
+            \App\Http\Middleware\EnsureAuthenticatedSession::class,
+            \App\Http\Middleware\EnsureModulePermission::class,
+            \App\Http\Middleware\EnsureOperationalScope::class,
+        ])->get(route("dashboard.index"));
+
+        $response->assertOk();
+        $response->assertSee("br-navigation__rail", false);
+        $response->assertSee("br-navigation without-context", false);
+        $response->assertSee("id=\"menu-parent-dashboard\"", false);
+        $response->assertDontSee("id=\"brNavigationContext\"", false);
+        $response->assertDontSee("br-menu-category__full", false);
 
     }
 }
