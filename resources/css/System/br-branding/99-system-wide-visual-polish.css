@@ -287,15 +287,6 @@ body.br-layout ::placeholder {
   color: var(--br-white) !important;
 }
 
-.br-tenant-announcement {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 1rem;
-  border-radius: 0.65rem;
-  font-size: 0.82rem;
-}
-
 .br-layout .br-menu-brand .br-menu-group > .br-menu-group__items .br-menu-child-bullet {
   width: 0.28rem !important;
   min-width: 0.28rem !important;

@@ -358,13 +358,12 @@ const ENTITY_SPECIAL_ROUTES = {
         operations: "operations",
         transfers: "transfers"
     },
-    cash_registers: {
-        sessions: "sessions",
-        movements: "movements",
-        summary: "summary",
+    cash_sessions: {
         open: "open",
-        close: "close",
-        movement: "movement"
+        close: "close"
+    },
+    cash_summary: {
+        data: "data"
     },
     branches: {
         seriesAudit: "series/audit",

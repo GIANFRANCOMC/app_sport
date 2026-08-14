@@ -7,7 +7,7 @@ namespace App\Services\System\Essentials;
 use App\Models\System\General\{SubSection};
 use App\Models\System\Organizations\{User, UserNavigationMetric};
 use App\Services\System\Organizations\Companies\{CompanySectionService};
-use Illuminate\Support\Facades\{DB, Schema};
+use Illuminate\Support\Facades\{DB, Route, Schema};
 use Illuminate\Support\{Collection};
 
 final class UserNavigationService {
@@ -19,9 +19,13 @@ final class UserNavigationService {
 
     private const WORKSPACE_ROUTE = "workspace.index";
 
-    public function record(User $user, string $routeName): void {
+    public function record(User $user, string $routeName, ?string $requestedPath = null): void {
 
-        if($routeName === self::WORKSPACE_ROUTE || !$this->metricsAvailable()) {
+        if(
+            $routeName === self::WORKSPACE_ROUTE
+            || !$this->routeMatchesRequest($routeName, $requestedPath)
+            || !$this->metricsAvailable()
+        ) {
 
             return;
 
@@ -98,6 +102,21 @@ final class UserNavigationService {
                 ->increment("visit_count", 1, ["recent_rank" => 1]);
 
         }, 3);
+
+    }
+
+    private function routeMatchesRequest(string $routeName, ?string $requestedPath): bool {
+
+        if(!$requestedPath || !Route::has($routeName)) {
+
+            return true;
+
+        }
+
+        $routePath = parse_url(route($routeName), PHP_URL_PATH);
+
+        return is_string($routePath)
+            && rtrim($routePath, "/") === rtrim($requestedPath, "/");
 
     }
 

@@ -63,7 +63,7 @@
 
 .br-navigation__brand,
 .br-navigation__module,
-.br-navigation__user {
+.br-navigation__logout {
   position: relative;
   display: inline-flex;
   align-items: center;
@@ -99,7 +99,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: safe center;
-  gap: 0.18rem;
+  gap: 0.38rem;
   width: 100%;
   min-height: 0;
   overflow-x: hidden;
@@ -149,51 +149,25 @@
   transform: translateY(-50%) scaleY(1);
 }
 
-.br-navigation__account {
+.br-navigation__session {
   position: relative;
   flex: 0 0 auto;
   padding-top: 0.55rem;
 }
 
-.br-navigation__user {
-  border: 1px solid color-mix(in srgb, var(--br-white) 18%, transparent);
-  background: color-mix(in srgb, var(--br-white) 9%, transparent);
+.br-navigation__logout {
+  border: 1px solid color-mix(in srgb, var(--br-danger) 70%, transparent);
+  background: color-mix(in srgb, var(--br-danger) 24%, transparent);
+  color: color-mix(in srgb, var(--br-danger) 34%, var(--br-white));
+  font-size: 0.98rem;
+}
+
+.br-navigation__logout:hover,
+.br-navigation__logout:focus-visible {
+  border-color: var(--br-danger);
+  background: var(--br-danger);
   color: var(--br-white);
-  font-size: 0.72rem;
-  font-weight: 750;
-}
-
-.br-navigation__user:hover,
-.br-navigation__user:focus-visible,
-.br-navigation__user[aria-expanded="true"] {
-  background: color-mix(in srgb, var(--br-white) 16%, transparent);
-}
-
-.br-navigation__user-menu {
-  min-width: 13rem;
-  margin-left: 0.55rem !important;
-  padding: 0.48rem;
-  border-color: var(--br-border);
-  border-radius: 0.78rem;
-  box-shadow: 0 0.8rem 2rem color-mix(in srgb, var(--br-secondary) 16%, transparent);
-}
-
-.br-navigation__user-summary {
-  display: flex;
-  flex-direction: column;
-  gap: 0.12rem;
-  padding: 0.45rem 0.55rem;
-}
-
-.br-navigation__user-summary strong {
-  color: var(--br-text);
-  font-size: 0.82rem;
-  font-weight: 650;
-}
-
-.br-navigation__user-summary span {
-  color: var(--br-text-muted);
-  font-size: 0.7rem;
+  transform: translateY(-1px);
 }
 
 .br-navigation__context {
@@ -209,104 +183,47 @@
 
 .br-navigation__context-head {
   flex: 0 0 auto;
-  padding: 1.12rem 1rem 0.82rem;
+  padding: 1.14rem 1rem 1rem;
   border-bottom: 1px solid color-mix(in srgb, var(--br-border) 78%, var(--br-white));
 }
 
-.br-navigation__eyebrow {
-  display: block;
-  margin-bottom: 0.38rem;
-  color: var(--br-text-muted);
-  font-size: 0.6rem;
-  font-weight: 650;
-  letter-spacing: 0.12em;
-  line-height: 1;
-  text-transform: uppercase;
-}
-
-.br-navigation__title-row {
-  display: flex;
-  align-items: center;
-  gap: 0.48rem;
-}
-
-.br-navigation__title-row > i {
-  color: var(--br-primary);
-  font-size: 0.92rem;
-}
-
-.br-navigation__title {
+.br-navigation__world-title {
   min-width: 0;
   margin: 0;
   color: var(--br-secondary);
-  font-size: 0.96rem;
-  font-weight: 720;
-  letter-spacing: -0.01em;
-  line-height: 1.22;
+  font-size: 0.83rem;
+  font-weight: 700;
+  letter-spacing: 0.055em;
+  line-height: 1.3;
   white-space: normal;
-}
-
-.br-navigation__location {
-  display: flex;
-  align-items: center;
-  gap: 0.3rem;
-  min-width: 0;
-  margin: 0.5rem 0 0;
-  overflow: hidden;
-  color: var(--br-text-muted);
-  font-size: 0.66rem;
-  line-height: 1.25;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.br-navigation__location strong {
-  overflow: hidden;
-  color: color-mix(in srgb, var(--br-secondary) 72%, var(--br-text-muted));
-  font-weight: 600;
-  text-overflow: ellipsis;
+  text-transform: uppercase;
 }
 
 .br-navigation__context-body {
   flex: 1 1 auto;
   min-height: 0;
-  padding: 0.72rem 0.68rem 1rem;
+  padding: 1.05rem 0.68rem 1rem;
   overflow-x: hidden;
   overflow-y: auto;
 }
 
 .br-navigation__group + .br-navigation__group {
-  margin-top: 1rem;
+  margin-top: 1.12rem;
 }
 
 .br-navigation__group-title {
-  display: flex;
-  align-items: center;
-  gap: 0.42rem;
-  margin: 0 0 0.34rem;
-  padding: 0 0.52rem;
-  color: var(--br-text-muted);
-  font-size: 0.62rem;
+  margin: 0 0 0.42rem;
+  padding: 0 0.5rem;
+  color: color-mix(in srgb, var(--br-secondary) 52%, var(--br-text-muted));
+  font-size: 0.58rem;
   font-weight: 700;
-  letter-spacing: 0.065em;
+  letter-spacing: 0.045em;
   line-height: 1.3;
   text-transform: uppercase;
 }
 
-.br-navigation__group-title::after {
-  flex: 1 1 auto;
-  min-width: 1rem;
-  height: 1px;
-  background: color-mix(in srgb, var(--br-border) 72%, transparent);
-  content: "";
-}
-
 .br-navigation__group.is-current .br-navigation__group-title {
-  color: color-mix(in srgb, var(--br-primary) 74%, var(--br-secondary));
-}
-
-.br-navigation__group.is-current .br-navigation__group-title::after {
-  background: color-mix(in srgb, var(--br-primary) 24%, var(--br-border));
+  color: color-mix(in srgb, var(--br-primary) 50%, var(--br-secondary));
 }
 
 .br-navigation__pages {
@@ -361,9 +278,35 @@
   opacity: 0.65;
 }
 
-.tooltip.br-navigation-tooltip .tooltip-inner,
-.br-layout + .tooltip .tooltip-inner {
-  font-size: 0.7rem;
+.tooltip.br-navigation-tooltip {
+  --bs-tooltip-bg: color-mix(in srgb, var(--br-secondary) 96%, var(--br-white));
+  --bs-tooltip-color: var(--br-white);
+  --bs-tooltip-opacity: 1;
+  --bs-tooltip-border-radius: 0.52rem;
+}
+
+.tooltip.br-navigation-tooltip .tooltip-inner {
+  padding: 0.46rem 0.64rem;
+  border: 1px solid color-mix(in srgb, var(--br-white) 10%, transparent);
+  box-shadow: 0 0.55rem 1.3rem color-mix(in srgb, var(--br-secondary) 22%, transparent);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.tooltip.br-navigation-logout-tooltip {
+  --bs-tooltip-bg: color-mix(in srgb, var(--br-danger) 72%, var(--br-secondary));
+  --bs-tooltip-color: var(--br-white);
+  --bs-tooltip-opacity: 1;
+  --bs-tooltip-border-radius: 0.52rem;
+}
+
+.tooltip.br-navigation-logout-tooltip .tooltip-inner {
+  padding: 0.46rem 0.64rem;
+  border: 1px solid color-mix(in srgb, var(--br-white) 12%, transparent);
+  box-shadow: 0 0.55rem 1.3rem color-mix(in srgb, var(--br-secondary) 22%, transparent);
+  font-size: 0.68rem;
+  font-weight: 600;
 }
 
 @media (min-width: 1200px) {
@@ -432,7 +375,7 @@
 
   .br-navigation__brand,
   .br-navigation__module,
-  .br-navigation__user {
+  .br-navigation__logout {
     width: 2.55rem;
     height: 2.55rem;
     min-width: 2.55rem;

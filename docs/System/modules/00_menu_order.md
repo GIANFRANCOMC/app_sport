@@ -43,11 +43,13 @@ El servicio carga categoría y grupo, aplica el orden empresarial y genera la UR
 
 Cuando una sección contiene más de un grupo, cada grupo se representa como un submenú desplegable real. No se muestra como un rótulo estático seguido de opciones planas. El grupo que contiene la ruta actual se abre automáticamente.
 
-Los títulos de categoría tienen peso normal y tamaño reducido. `Principal` no dibuja encabezado. Su único módulo, `Mi espacio de trabajo`, agrupa Mi espacio, Inicio, Dashboard y Reportes dentro del panel contextual. En escritorio colapsado las demás categorías muestran únicamente sus tres primeros caracteres; al expandir o pasar el cursor recuperan el nombre completo.
+Los títulos de categoría tienen peso normal y tamaño reducido. `Principal` no dibuja encabezado. Su único mundo, `Mi espacio de trabajo`, agrupa Mi espacio, Menú y favoritos, Mi cuenta, Dashboard y Reportes dentro del panel contextual. En escritorio colapsado las demás categorías muestran únicamente sus tres primeros caracteres; al expandir o pasar el cursor recuperan el nombre completo.
 
-Los grupos internos usan encabezados compactos en mayúsculas, espaciado tipográfico y una línea divisoria. El grupo actual recibe solamente un acento de color; así, el encabezado nunca se confunde con una página seleccionable. Sus opciones usan una segunda sangría y menor contraste, de modo que se distinguen sección, grupo y acceso final.
+Los grupos internos usan encabezados compactos en mayúsculas y espaciado tipográfico, sin líneas decorativas. El grupo actual recibe solamente una variación leve de color; así, el encabezado no se confunde con una página seleccionable ni agrega ruido visual. Sus opciones usan una segunda sangría y menor contraste, de modo que se distinguen mundo, grupo y acceso final.
 
-En el riel principal, los iconos de los módulos se centran verticalmente entre la marca superior y la cuenta del usuario. Si la cantidad de módulos supera la altura disponible, el contenedor mantiene desplazamiento vertical.
+En el riel principal, los iconos de los mundos se centran verticalmente entre la marca superior y la cuenta del usuario, con separación suficiente entre accesos. Si la cantidad de mundos supera la altura disponible, el contenedor mantiene desplazamiento vertical. Sus tooltips usan el fondo, contraste, borde y sombra del branding System.
+
+La cabecera contextual muestra únicamente el nombre del mundo. No repite el grupo, la página, la ruta completa ni muestra un icono decorativo.
 
 - **Clientes** agrupa Gestión, Membresías, Servicios y Atención al cliente.
 - **Mi organización** agrupa Empresa, Sedes, Activos y Colaboradores.

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\System\Organizations;
 
 use App\Http\Controllers\System\Base\{BaseController};
+use App\Models\System\General\{SubSection};
 use App\Services\System\Organizations\{BusinessProfileService};
 use Illuminate\Http\{JsonResponse, Request};
 
@@ -20,7 +21,35 @@ final class BusinessProfileController extends BaseController {
     public function initParams(): JsonResponse {
 
         return response()->json([
+            "bool" => true,
             "industries" => BusinessProfileService::industries($this->getCompanyId()),
+            "enabled_module_ids" => BusinessProfileService::enabledModuleIds($this->getCompanyId()),
+            "modules" => SubSection::query()
+                ->with("section:id,dom_label,order")
+                ->where("status", "active")
+                ->orderBy("section_id")
+                ->orderBy("order")
+                ->get(["id", "section_id", "dom_label", "description", "dom_route"]),
+        ]);
+
+    }
+
+    public function updateModules(Request $request): JsonResponse {
+
+        $data = $request->validate([
+            "enabled_module_ids" => ["present", "array"],
+            "enabled_module_ids.*" => ["integer", "distinct"],
+        ]);
+
+        BusinessProfileService::updateModules(
+            $this->getCompanyId(),
+            $data["enabled_module_ids"],
+            $this->getUserId()
+        );
+
+        return response()->json([
+            "bool" => true,
+            "msg" => "Los módulos de la empresa se actualizaron correctamente.",
         ]);
 
     }

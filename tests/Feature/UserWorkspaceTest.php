@@ -127,4 +127,71 @@ final class UserWorkspaceTest extends TestCase {
         $this->assertSame("/workspace", \App\Providers\RouteServiceProvider::HOME);
 
     }
+
+    public function test_authenticated_user_can_only_update_personal_account_fields(): void {
+
+        Auth::login($this->user);
+        $originalRoleId = $this->user->role_id;
+        $originalCompanyId = $this->user->company_id;
+
+        $response = $this->withoutMiddleware([
+            \App\Http\Middleware\ResolveTenant::class,
+            \App\Http\Middleware\TrustHosts::class,
+            \App\Http\Middleware\EnsureTenantSession::class,
+            \App\Http\Middleware\EnsureAuthenticatedSession::class,
+            \App\Http\Middleware\EnsureOperationalScope::class,
+        ])->patch(route("account.update"), [
+            "name" => "Administrador actualizado",
+            "email" => "cuenta.actualizada@example.test",
+            "phone_number" => "999888777",
+            "gender" => "other",
+            "birthdate" => "1990-05-12",
+            "role_id" => null,
+            "company_id" => 999,
+            "status" => "blocked",
+        ]);
+
+        $response->assertRedirect(route("account.index"));
+        $response->assertSessionHas("status");
+
+        $this->user->refresh();
+
+        $this->assertSame("Administrador actualizado", $this->user->name);
+        $this->assertSame("cuenta.actualizada@example.test", $this->user->email);
+        $this->assertSame("999888777", $this->user->phone_number);
+        $this->assertSame($originalRoleId, $this->user->role_id);
+        $this->assertSame($originalCompanyId, $this->user->company_id);
+        $this->assertSame("active", $this->user->status);
+
+    }
+
+    public function test_http_navigation_records_new_sale_without_confusing_it_with_pos(): void {
+
+        Auth::login($this->user);
+
+        $this->withoutMiddleware([
+            \App\Http\Middleware\ResolveTenant::class,
+            \App\Http\Middleware\TrustHosts::class,
+            \App\Http\Middleware\EnsureTenantSession::class,
+            \App\Http\Middleware\EnsureAuthenticatedSession::class,
+            \App\Http\Middleware\EnsureModulePermission::class,
+            \App\Http\Middleware\EnsureOperationalScope::class,
+        ])->get(route("sales.create"))->assertOk();
+
+        $newSaleId = DB::table("sub_sections")->where("dom_route", "sales.create")->value("id");
+        $posId = DB::table("sub_sections")->where("dom_route", "sales.pos")->value("id");
+
+        $this->assertDatabaseHas("user_navigation_metrics", [
+            "company_id" => $this->user->company_id,
+            "user_id" => $this->user->id,
+            "sub_section_id" => $newSaleId,
+            "recent_rank" => 1,
+        ]);
+        $this->assertDatabaseMissing("user_navigation_metrics", [
+            "company_id" => $this->user->company_id,
+            "user_id" => $this->user->id,
+            "sub_section_id" => $posId,
+        ]);
+
+    }
 }

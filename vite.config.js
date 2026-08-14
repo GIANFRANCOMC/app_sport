@@ -59,12 +59,18 @@ export default defineConfig({
                 'resources/js/System/Pages/Organizations/roles/main.js',
                 'resources/js/System/Pages/Organizations/users/main.js',
                 'resources/js/System/Pages/Organizations/user_attendances/main.js',
+                'resources/js/System/Pages/Organizations/business_profile/main.js',
 
                 // System Pages - Operations
                 'resources/js/System/Pages/Operations/service_operations/main.js',
 
                 // System Pages - Finance
                 'resources/js/System/Pages/Finance/accounts_receivable/main.js',
+                'resources/js/System/Pages/Finance/cash_registers/main.js',
+                'resources/js/System/Pages/Finance/cash_sessions/main.js',
+                'resources/js/System/Pages/Finance/cash_movements/main.js',
+                'resources/js/System/Pages/Finance/cash_summary/main.js',
+                'resources/js/System/Pages/Finance/misc_expenses/main.js',
 
                 // System Pages - Sales
                 'resources/js/System/Pages/Sales/sales/list.js',

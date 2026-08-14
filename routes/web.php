@@ -65,6 +65,7 @@ Route::middleware(["auth", "verified", "module.permission", "resource.scope", "n
     Route::prefix("/biometric_devices")->group($systemRoute."/Devices/BiometricDevice.php");
 
     // Essentials
+    Route::prefix("/account")->group($systemRoute."/Essentials/Account.php");
     Route::prefix("/workspace")->group($systemRoute."/Essentials/Workspace.php");
     Route::prefix("/dashboard")->group($systemRoute."/Essentials/Dashboard.php");
     Route::prefix("/helpers")->group($systemRoute."/Essentials/Helper.php");
@@ -93,6 +94,9 @@ Route::middleware(["auth", "verified", "module.permission", "resource.scope", "n
 
     // Finance
     Route::prefix("/cash_registers")->group($systemRoute."/Finance/CashRegister.php");
+    Route::prefix("/cash-sessions")->group($systemRoute."/Finance/CashSession.php");
+    Route::prefix("/cash-movements")->group($systemRoute."/Finance/CashMovement.php");
+    Route::prefix("/cash-summary")->group($systemRoute."/Finance/CashSummary.php");
     Route::prefix("/accounts_receivable")->group($systemRoute."/Finance/AccountsReceivable.php");
     Route::prefix("/misc_expenses")->group($systemRoute."/Finance/MiscExpense.php");
 

@@ -2,7 +2,7 @@
 
 ## Propósito
 
-`Mi espacio de trabajo` consolida en un solo módulo primario las páginas Mi espacio, Inicio, Dashboard y Reportes. Su página inicial, `Mi espacio`, permite retomar rápidamente las rutas recientes y acceder a las funciones más utilizadas por cada usuario.
+`Mi espacio de trabajo` consolida en un solo mundo las páginas Mi espacio, Menú y favoritos, Mi cuenta, Dashboard y Reportes. Su página inicial, `Mi espacio`, permite retomar rápidamente las rutas recientes y acceder a las funciones más utilizadas por cada usuario.
 
 La autenticación tenant utiliza `/workspace` como destino predeterminado.
 
@@ -48,4 +48,4 @@ La propia ruta `workspace.index`, endpoints AJAX, respuestas JSON y errores no s
 - Solo diez páginas conservan `recent_rank`.
 - Los contadores permanecen agregados aunque una página salga de recientes.
 - Mi espacio es el destino autenticado predeterminado.
-- Inicio, Dashboard y Reportes comparten el mismo módulo primario.
+- Menú y favoritos, Mi cuenta, Dashboard y Reportes comparten el mismo mundo.

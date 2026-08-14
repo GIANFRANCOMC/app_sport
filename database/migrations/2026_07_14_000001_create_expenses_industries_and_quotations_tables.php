@@ -2,7 +2,7 @@
 
 use Illuminate\Database\Migrations\{Migration};
 use Illuminate\Database\Schema\{Blueprint};
-use Illuminate\Support\Facades\{DB, Schema};
+use Illuminate\Support\Facades\{Schema};
 
 return new class extends Migration {
     public function up(): void {
@@ -207,9 +207,6 @@ return new class extends Migration {
 
         });
 
-        $this->registerMiscExpenseCategories();
-        $this->registerBusinessProfiles();
-
     }
 
     public function down(): void {
@@ -236,114 +233,6 @@ return new class extends Migration {
         });
 
         Schema::dropIfExists("business_industries");
-
-    }
-
-    private function registerBusinessProfiles(): void {
-
-        $profiles = [
-            "gym" => [
-                "name" => "Gimnasio y membresías",
-                "description" => "Base para gimnasios, estudios deportivos y negocios con membresías, asistencias y servicios recurrentes.",
-            ],
-            "restaurant" => [
-                "name" => "Restaurante y comida",
-                "description" => "Base para restaurantes, cafeterías y negocios de comida con POS, mesas, recetas y cocina.",
-            ],
-            "retail" => [
-                "name" => "Comercio y retail",
-                "description" => "Base para tiendas con productos, inventario, compras, caja y ventas rápidas.",
-            ],
-        ];
-
-        $enabledModules = DB::table("sub_sections")->pluck("id")->map(fn($id) => (int) $id)->all();
-
-        DB::table("companies")->pluck("id")->each(function($companyId) use ($profiles, $enabledModules) {
-
-            foreach($profiles as $slug => $profile) {
-
-                DB::table("business_industries")->updateOrInsert(
-                    ["company_id" => $companyId, "slug" => $slug],
-                    [
-                        "name" => $profile["name"],
-                        "description" => $profile["description"],
-                        "status" => "active",
-                        "created_at" => now(),
-                        "updated_at" => now(),
-                    ]
-                );
-
-                $industryId = (int) DB::table("business_industries")
-                    ->where("company_id", $companyId)
-                    ->where("slug", $slug)
-                    ->value("id");
-
-                foreach($enabledModules as $subSectionId) {
-
-                    DB::table("business_industry_module_sets")->updateOrInsert(
-                        [
-                            "company_id" => $companyId,
-                            "business_industry_id" => $industryId,
-                            "sub_section_id" => $subSectionId,
-                        ],
-                        [
-                            "is_enabled_by_default" => true,
-                            "reason" => "Módulo disponible para el rubro {$profile["name"]}.",
-                            "status" => "active",
-                            "created_at" => now(),
-                            "updated_at" => now(),
-                        ]
-                    );
-
-                }
-
-            }
-
-            $defaultIndustryId = (int) DB::table("business_industries")
-                ->where("company_id", $companyId)
-                ->where("slug", "gym")
-                ->value("id");
-
-            if($defaultIndustryId > 0) {
-
-                DB::table("companies")
-                    ->where("id", $companyId)
-                    ->whereNull("business_industry_id")
-                    ->update(["business_industry_id" => $defaultIndustryId]);
-
-            }
-
-        });
-
-    }
-
-    private function registerMiscExpenseCategories(): void {
-
-        $categories = [
-            ["name" => "Mantenimiento", "description" => "Gastos de conservación, ajustes menores y revisiones operativas."],
-            ["name" => "Reparación", "description" => "Gastos por arreglo de equipos, mobiliario, infraestructura o herramientas."],
-            ["name" => "Servicios básicos", "description" => "Pagos de luz, agua, internet, telefonía u otros servicios de operación."],
-            ["name" => "Suministros menores", "description" => "Compras pequeñas que no ingresan como inventario comercial."],
-            ["name" => "Otros gastos", "description" => "Gastos operativos que no encajan en una categoría específica."],
-        ];
-
-        DB::table("companies")->pluck("id")->each(function($companyId) use ($categories) {
-
-            foreach($categories as $category) {
-
-                DB::table("misc_expense_categories")->updateOrInsert(
-                    ["company_id" => $companyId, "name" => $category["name"]],
-                    [
-                        "description" => $category["description"],
-                        "status" => "active",
-                        "created_at" => now(),
-                        "updated_at" => now(),
-                    ]
-                );
-
-            }
-
-        });
 
     }
 };

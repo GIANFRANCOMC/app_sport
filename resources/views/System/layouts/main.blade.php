@@ -145,54 +145,32 @@
                                     aria-current="{{ $isActiveSection ? 'true' : 'false' }}"
                                     data-bs-toggle="tooltip"
                                     data-bs-placement="right"
+                                    data-bs-custom-class="br-navigation-tooltip"
                                     title="{{ $section->dom_label }}">
                                     <i class="{{ $section->dom_icon }}" aria-hidden="true"></i>
                                 </a>
                             @endforeach
                         </nav>
 
-                        <div class="br-navigation__account">
+                        <div class="br-navigation__session">
                             <button
                                 type="button"
-                                class="br-navigation__user"
-                                data-bs-toggle="dropdown"
-                                data-bs-auto-close="outside"
-                                aria-expanded="false"
-                                aria-label="Abrir menú de {{ $user->name }}"
-                                title="{{ $user->name }}">
-                                <span aria-hidden="true">{{ $userInitials }}</span>
+                                class="br-navigation__logout"
+                                data-bs-toggle="tooltip"
+                                data-bs-placement="right"
+                                data-bs-custom-class="br-navigation-logout-tooltip"
+                                aria-label="Cerrar sesión"
+                                title="Cerrar sesión"
+                                onclick="confirmLogout();">
+                                <i class="fa-solid fa-power-off" aria-hidden="true"></i>
                             </button>
-                            <ul class="dropdown-menu br-navigation__user-menu">
-                                <li class="br-navigation__user-summary">
-                                    <strong>{{ $user->name }}</strong>
-                                    <span>{{ $role->name }}</span>
-                                </li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li>
-                                    <button type="button" class="dropdown-item br-navbar-user__logout" onclick="$('#logout').submit();">
-                                        <i class="fa-solid fa-power-off" aria-hidden="true"></i>
-                                        <span>Cerrar sesión</span>
-                                    </button>
-                                </li>
-                            </ul>
                         </div>
                     </div>
 
                     @if($showNavigationContext)
                     <div class="br-navigation__context" id="brNavigationContext">
                         <div class="br-navigation__context-head">
-                            <span class="br-navigation__eyebrow">Módulo</span>
-                            <div class="br-navigation__title-row">
-                                <i class="{{ $activeNavigationSection?->dom_icon }}" aria-hidden="true"></i>
-                                <h2 class="br-navigation__title">{{ $activeNavigationSection?->dom_label }}</h2>
-                            </div>
-                            <p class="br-navigation__location" aria-label="Ubicación actual">
-                                {{ $activeNavigationSubSection?->menuGroup?->name ?? $activeNavigationSection?->dom_label }}
-                                @if($activeNavigationSubSection)
-                                    <span aria-hidden="true">/</span>
-                                    <strong>{{ $activeNavigationSubSection->dom_label }}</strong>
-                                @endif
-                            </p>
+                            <h2 class="br-navigation__world-title">{{ $activeNavigationSection?->dom_label }}</h2>
                         </div>
 
                         <nav class="br-navigation__context-body" aria-label="Opciones de {{ $activeNavigationSection?->dom_label }}">
@@ -322,6 +300,46 @@
                                     <span class="br-navbar-favorites__count" id="brFabFavoritesCount">{{ $favoriteMenuGroups->sum(fn($group) => $group['items']->count()) }}</span>
                                 </button>
                                 </div>
+                                <div class="dropdown br-navbar-announcements">
+                                    <button
+                                        type="button"
+                                        class="br-navbar-announcements__toggle"
+                                        data-bs-toggle="dropdown"
+                                        data-bs-auto-close="outside"
+                                        aria-expanded="false"
+                                        aria-label="Abrir anuncios">
+                                        <i class="fa-regular fa-bell" aria-hidden="true"></i>
+                                        <span class="br-navbar-announcements__label">Anuncios</span>
+                                        <span class="br-navbar-announcements__count">{{ ($tenantAnnouncements ?? collect())->count() }}</span>
+                                    </button>
+                                    <div class="dropdown-menu dropdown-menu-end br-navbar-announcements__menu">
+                                        <div class="br-navbar-announcements__head">
+                                            <div>
+                                                <strong>Anuncios</strong>
+                                                <span>Comunicaciones de la plataforma</span>
+                                            </div>
+                                            <i class="fa-regular fa-bell" aria-hidden="true"></i>
+                                        </div>
+                                        <div class="br-navbar-announcements__body">
+                                            @forelse(($tenantAnnouncements ?? collect()) as $announcement)
+                                                <article class="br-navbar-announcement br-navbar-announcement--{{ $announcement->severity }}">
+                                                    <span class="br-navbar-announcement__icon" aria-hidden="true">
+                                                        <i class="fa-solid fa-circle-info"></i>
+                                                    </span>
+                                                    <div>
+                                                        <strong>{{ $announcement->title }}</strong>
+                                                        <p>{{ $announcement->message }}</p>
+                                                    </div>
+                                                </article>
+                                            @empty
+                                                <div class="br-navbar-announcements__empty">
+                                                    <i class="fa-regular fa-bell-slash" aria-hidden="true"></i>
+                                                    <span>No hay anuncios vigentes.</span>
+                                                </div>
+                                            @endforelse
+                                        </div>
+                                    </div>
+                                </div>
                                 <div class="dropdown br-navbar-user">
                                     <button
                                         type="button"
@@ -339,7 +357,13 @@
                                         </li>
                                         <li><hr class="dropdown-divider"></li>
                                         <li>
-                                            <button type="button" class="dropdown-item br-navbar-user__logout" onclick="$('#logout').submit();">
+                                            <a href="{{ route("account.index") }}" class="dropdown-item br-navbar-user__profile">
+                                                <i class="fa-regular fa-user" aria-hidden="true"></i>
+                                                <span>Mi perfil</span>
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <button type="button" class="dropdown-item br-navbar-user__logout" onclick="confirmLogout();">
                                                 <i class="fa-solid fa-power-off" aria-hidden="true"></i>
                                                 <span>Cerrar sesión</span>
                                             </button>
@@ -351,14 +375,6 @@
                     </nav>
                     <div class="content-wrapper br-layout-content">
                         <div class="container-xxl flex-grow-1 container-p-y">
-                            @foreach(($tenantAnnouncements ?? collect()) as $announcement)
-                                <div class="alert alert-{{ $announcement->severity }} alert-dismissible br-tenant-announcement" role="alert">
-                                    <div><strong>{{ $announcement->title }}</strong><div>{{ $announcement->message }}</div></div>
-                                    @if($announcement->dismissible)
-                                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
-                                    @endif
-                                </div>
-                            @endforeach
                             @yield('content')
                         </div>
                         <div class="content-backdrop fade"></div>
@@ -368,6 +384,46 @@
             <div class="layout-overlay layout-menu-toggle"></div>
             {{-- <div class="drag-target"></div> --}}
         </div>
+
+        <script>
+            window.confirmLogout = function () {
+
+                var submitLogout = function () {
+
+                    document.getElementById("logout")?.requestSubmit();
+
+                };
+
+                if (!window.Swal) {
+
+                    if (window.confirm("¿Deseas cerrar sesión?")) submitLogout();
+
+                    return;
+
+                }
+
+                window.Swal.fire({
+                    title: "¿Deseas cerrar sesión?",
+                    text: "Tendrás que volver a ingresar tus credenciales para continuar.",
+                    icon: "question",
+                    showCancelButton: true,
+                    confirmButtonText: "Sí, cerrar sesión",
+                    cancelButtonText: "Cancelar",
+                    buttonsStyling: false,
+                    customClass: {
+                        popup: "br-swal",
+                        confirmButton: "br-btn br-btn-danger ms-2",
+                        cancelButton: "br-btn br-btn-cancel"
+                    },
+                    reverseButtons: true
+                }).then(function (result) {
+
+                    if (result.isConfirmed) submitLogout();
+
+                });
+
+            };
+        </script>
 
         <script>
             (function () {
@@ -571,6 +627,7 @@
 
                         window.bootstrap.Tooltip.getOrCreateInstance(element, {
                             container: document.body,
+                            customClass: element.dataset.bsCustomClass || "br-navigation-tooltip",
                             trigger: "hover focus"
                         });
 

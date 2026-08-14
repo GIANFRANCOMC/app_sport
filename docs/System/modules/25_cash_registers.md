@@ -4,18 +4,19 @@
 
 Gestiona apertura, cierre, arqueo, resumen y trazabilidad de caja por sucursal. Caja no reemplaza ventas ni inventario: agrupa el dinero registrado por metodo de pago y permite cuadrar lo esperado contra lo contado.
 
-La visualizacion principal conserva `cash_registers.index` como ruta legacy, pero el menu usa accesos independientes:
+Cada función de caja tiene una ruta de página independiente:
 
-- `cash_registers.registers.index`
-- `cash_registers.sessions.index`
-- `cash_registers.movements.index`
-- `cash_registers.summary.index`
+- `cash_registers.index` (`/cash_registers`)
+- `cash_sessions.index` (`/cash-sessions`)
+- `cash_movements.index` (`/cash-movements`)
+- `cash_summary.index` (`/cash-summary`)
 
 La vista se monta desde:
 
-- `resources/views/System/general/Finance/cash_registers/main.blade.php`
-- `resources/js/System/Pages/Finance/cash_registers/main.vue`
-- `resources/js/System/Pages/Finance/cash_registers/main.js`
+- `resources/views/System/general/Finance/{cash_registers,cash_sessions,cash_movements,cash_summary}/main.blade.php`
+- `resources/js/System/Pages/Finance/{cash_registers,cash_sessions,cash_movements,cash_summary}/main.js`
+- `resources/js/System/Pages/Finance/cash_registers/main.vue`, compartido como componente operativo.
+- `resources/js/System/Pages/Finance/cash_registers/mount.js`, responsable de montar cada vista con su contexto inicial.
 
 ## Tablas
 
@@ -46,14 +47,14 @@ La vista se monta desde:
 
 ## UI implementada
 
-- Menú `Cajas > Cajas` con acceso `cash_registers.registers.index`.
-- Menú `Cajas > Aperturas y cierres` con acceso `cash_registers.sessions.index`.
-- Menú `Cajas > Movimientos` con acceso `cash_registers.movements.index`.
-- Menú `Cajas > Resumen` con acceso `cash_registers.summary.index`.
+- Menú `Cajas > Cajas` con acceso `cash_registers.index`.
+- Menú `Cajas > Aperturas y cierres` con acceso `cash_sessions.index`.
+- Menú `Cajas > Movimientos` con acceso `cash_movements.index`.
+- Menú `Cajas > Resumen` con acceso `cash_summary.index`.
 - Acción `Agregar caja`: permite crear varias cajas por sucursal desde el módulo Caja. El código interno puede dejarse vacío y se genera automáticamente con prefijo `CAJ-`.
 - Las acciones `Abrir caja` y `Cerrar caja` se muestran por cada caja del listado. No existen botones globales para evitar abrir o cerrar una caja equivocada.
 - Entrada `Venta POS` dentro de ventas usando el flujo de nueva venta, pero con título y menú propios.
-- Pestañas de Caja:
+- Vistas independientes de Caja:
   - `Cajas`: estado de cada caja, sesion activa y monto esperado.
   - `Aperturas y cierres`: historial de sesiones, esperado, contado y diferencia.
   - `Resumen`: totales y desglose por metodo de pago.
@@ -62,17 +63,26 @@ La vista se monta desde:
 - Acción `Descargar`: exporta movimientos filtrados en CSV compatible con Excel.
 - Modales con `data-bs-backdrop="static"` y `data-bs-keyboard="false"` para evitar cierre accidental.
 - Al cerrar una caja principal, la modal muestra un bloque de conteo físico con producto, almacén, saldo del sistema, conteo real, diferencia y observación por línea. El botón **Usar saldo sistema** precarga el conteo cuando no hay diferencias.
-- Cada acceso de menú abre la vista correspondiente mediante `/cash_registers/page/{registers|sessions|movements|summary}`; al cambiar de sección dentro de la pantalla se actualiza la URL con `history.pushState` sin recargar.
+- Ya no existen rutas `/cash_registers/page/...`, pestañas que muten la URL ni `history.pushState`. Cada acceso resuelve su controlador, Blade y entrada Vite; la lógica operativa común se reutiliza sin duplicarla.
 - La cabecera de Caja es compacta: muestra la sección activa y prioriza el selector de caja de trabajo, manteniendo el contexto operativo visible.
 
 ## Backend implementado
 
 - `routes/System/Finance/CashRegister.php`
+- `routes/System/Finance/CashSession.php`
+- `routes/System/Finance/CashMovement.php`
+- `routes/System/Finance/CashSummary.php`
 - `app/Http/Controllers/System/Finance/CashRegisterController.php`
+- `app/Http/Controllers/System/Finance/{CashSessionController,CashMovementController,CashSummaryController}.php`
 - `app/Services/System/Finance/CashRegisterConfigService.php`
 - `app/Services/System/Finance/CashRegisterService.php`
 - `StoreCashRegisterRequest`, `OpenCashSessionRequest`, `CloseCashSessionRequest` y `StoreCashMovementRequest` encapsulan validación y normalización.
-- `resources/js/System/Helpers/Requests.js` expone rutas especiales: `sessions`, `movements`, `summary`, `open`, `close`.
+- `resources/js/System/Helpers/Requests.js` expone únicamente las rutas especiales `cash_sessions.open`, `cash_sessions.close` y `cash_summary.data`; listado, registro y exportación usan el contrato REST estándar de cada recurso.
+- `CashRegisterController` conserva únicamente configuración y mantenimiento de cajas.
+- `CashSessionController` atiende listado, apertura y cierre mediante `/cash-sessions`.
+- `CashMovementController` atiende listado, registro y exportación mediante `/cash-movements`.
+- `CashSummaryController` entrega el consolidado mediante `/cash-summary/data`.
+- Los cuatro frontends tienen entradas Vite independientes y reutilizan un único componente operativo; no duplican reglas ni consultas.
 - `movement`: registra ingresos, salidas y ajustes manuales.
 - `export`: descarga movimientos de caja.
 - `CashRegisterConfigService` entrega productos inventariables por almacén y sucursal permitida para preparar el conteo físico del cierre principal.

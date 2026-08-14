@@ -49,6 +49,8 @@ final class CompanyProvisioningService {
             $this->seedPaymentMethods($companyId);
             $this->seedSaleDeliveryMethods($companyId);
             $this->seedOperationalDefaults($companyId);
+            $this->seedMiscExpenseCategories($companyId);
+            $this->seedBusinessProfiles($companyId);
 
             if($enableModules) {
 
@@ -307,6 +309,103 @@ final class CompanyProvisioningService {
             );
 
         }
+
+    }
+
+    private function seedMiscExpenseCategories(int $companyId): void {
+
+        if(!Schema::hasTable("misc_expense_categories")) {
+
+            return;
+
+        }
+
+        $categories = [
+            ["name" => "Mantenimiento", "description" => "Gastos de conservación, ajustes menores y revisiones operativas."],
+            ["name" => "Reparación", "description" => "Gastos por arreglo de equipos, mobiliario, infraestructura o herramientas."],
+            ["name" => "Servicios básicos", "description" => "Pagos de luz, agua, internet, telefonía u otros servicios de operación."],
+            ["name" => "Suministros menores", "description" => "Compras pequeñas que no ingresan como inventario comercial."],
+            ["name" => "Otros gastos", "description" => "Gastos operativos que no encajan en una categoría específica."],
+        ];
+
+        foreach($categories as $category) {
+
+            DB::table("misc_expense_categories")->updateOrInsert(
+                ["company_id" => $companyId, "name" => $category["name"]],
+                $category + ["company_id" => $companyId, "status" => "active", "updated_at" => now()]
+            );
+
+        }
+
+    }
+
+    private function seedBusinessProfiles(int $companyId): void {
+
+        if(!Schema::hasTable("business_industries") || !Schema::hasTable("business_industry_module_sets")) {
+
+            return;
+
+        }
+
+        $profiles = [
+            "gym" => [
+                "name" => "Gimnasio y membresías",
+                "description" => "Base para gimnasios, estudios deportivos y negocios con membresías, asistencias y servicios recurrentes.",
+            ],
+            "restaurant" => [
+                "name" => "Restaurante y comida",
+                "description" => "Base para restaurantes, cafeterías y negocios de comida con POS, mesas, recetas y cocina.",
+            ],
+            "retail" => [
+                "name" => "Comercio y retail",
+                "description" => "Base para tiendas con productos, inventario, compras, caja y ventas rápidas.",
+            ],
+        ];
+        $subSectionIds = DB::table("sub_sections")
+            ->where("status", "active")
+            ->pluck("id");
+
+        foreach($profiles as $slug => $profile) {
+
+            DB::table("business_industries")->updateOrInsert(
+                ["company_id" => $companyId, "slug" => $slug],
+                $profile + ["company_id" => $companyId, "status" => "active", "updated_at" => now()]
+            );
+
+            $industryId = (int) DB::table("business_industries")
+                ->where("company_id", $companyId)
+                ->where("slug", $slug)
+                ->value("id");
+
+            foreach($subSectionIds as $subSectionId) {
+
+                DB::table("business_industry_module_sets")->updateOrInsert(
+                    [
+                        "company_id" => $companyId,
+                        "business_industry_id" => $industryId,
+                        "sub_section_id" => $subSectionId,
+                    ],
+                    [
+                        "is_enabled_by_default" => true,
+                        "reason" => "Módulo disponible para el rubro {$profile["name"]}.",
+                        "status" => "active",
+                        "updated_at" => now(),
+                    ]
+                );
+
+            }
+
+        }
+
+        $defaultIndustryId = (int) DB::table("business_industries")
+            ->where("company_id", $companyId)
+            ->where("slug", "gym")
+            ->value("id");
+
+        DB::table("companies")
+            ->where("id", $companyId)
+            ->whereNull("business_industry_id")
+            ->update(["business_industry_id" => $defaultIndustryId]);
 
     }
 

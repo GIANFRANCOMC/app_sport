@@ -18,7 +18,8 @@ La estructura visible se obtiene de los catálogos existentes de base de datos:
 El primer módulo se denomina `Mi espacio de trabajo` y agrupa las páginas estructurales:
 
 - Mi espacio.
-- Inicio.
+- Menú y favoritos.
+- Mi cuenta.
 - Dashboard.
 - Reportes.
 
@@ -79,6 +80,16 @@ Las solicitudes de inicialización tienen un límite de 20 segundos. Ante error 
 
 El botón existente del navbar continúa controlando el colapsado mediante la infraestructura del template y conserva su preferencia en `localStorage`.
 
+## Acciones globales del navbar
+
+- **Favoritos** conserva exclusivamente los accesos marcados por el usuario.
+- **Anuncios** abre un panel independiente junto a Favoritos. Los avisos vigentes ya no se insertan dentro del contenido de cada página.
+- El avatar con las iniciales abre **Mi perfil** y **Cerrar sesión**.
+- Cerrar sesión, tanto desde el avatar como desde el riel, solicita confirmación antes de enviar el formulario `POST` protegido con CSRF.
+- El acceso de salida usa una señal visual roja tenue en reposo y el tratamiento danger completo al pasar el cursor.
+
+El seguimiento captura el nombre de ruta y la URL solicitada antes de ejecutar el controlador. Antes de incrementar el contador comprueba que ambas correspondan exactamente, evitando que una vista compartida —por ejemplo Nueva venta y Venta POS— registre otra página del catálogo.
+
 ## Archivos principales
 
 - `resources/views/System/layouts/main.blade.php`: resolución y marcado accesible.
@@ -89,6 +100,9 @@ El botón existente del navbar continúa controlando el colapsado mediante la in
 - `app/Http/Middleware/TrackUserNavigation.php`: registro no intrusivo de navegación.
 - `resources/views/System/general/Essentials/workspace/main.blade.php`: pantalla Mi espacio.
 - `resources/css/System/br-branding/52-workspace.css`: presentación responsive de Mi espacio.
+- `app/Http/Controllers/System/Essentials/AccountController.php`: edición segura de la cuenta autenticada.
+- `resources/views/System/general/Essentials/account/main.blade.php`: formulario de datos personales.
+- `resources/css/System/br-branding/53-account.css`: presentación responsive de Mi cuenta.
 
 Después de modificar estilos ejecutar:
 

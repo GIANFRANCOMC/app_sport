@@ -26,23 +26,6 @@
             </div>
         </div>
 
-        <nav class="nav nav-pills nav-fill br-entity-tabs br-cash__tabs" aria-label="Secciones de caja">
-            <button
-                v-for="view in views"
-                :key="view.id"
-                type="button"
-                class="nav-link br-entity-tab"
-                :class="{active: activeView === view.id, 'is-active': activeView === view.id}"
-                :aria-selected="activeView === view.id"
-                @click="setView(view.id)">
-                <span class="br-entity-tab__step"><i :class="view.icon" aria-hidden="true"></i></span>
-                <span class="br-entity-tab__content">
-                    <strong>{{ view.label }}</strong>
-                    <small>{{ view.description }}</small>
-                </span>
-            </button>
-        </nav>
-
         <section class="br-filter-bar br-cash__toolbar">
             <div class="br-filter-bar__field">
                 <label class="form-label">Búsqueda</label>
@@ -59,6 +42,7 @@
                     <span>Buscar</span>
                 </button>
                 <button
+                    v-if="activeView === 'registers'"
                     type="button"
                     class="br-btn br-btn-action-create"
                     data-bs-toggle="tooltip"
@@ -562,20 +546,6 @@ const MODULE = {
     breadcrumbParent: "Cajas"
 };
 
-const ROUTE_VIEW_MAP = {
-    registers: "registers",
-    sessions: "sessions",
-    movements: "movements",
-    summary: "summary"
-};
-
-const VIEW_ROUTE_MAP = {
-    registers: "/cash_registers/page/registers",
-    sessions: "/cash_registers/page/sessions",
-    movements: "/cash_registers/page/movements",
-    summary: "/cash_registers/page/summary"
-};
-
 const VIEW_MENU_MAP = {
     registers: "menu-cash-registers",
     sessions: "menu-cash-sessions",
@@ -584,15 +554,25 @@ const VIEW_MENU_MAP = {
 };
 
 export default {
+    props: {
+        initialView: {
+            type: String,
+            default: "registers",
+            validator: value => ["registers", "sessions", "movements", "summary"].includes(value)
+        }
+    },
     data() {
         return {
             config: Requests.config({entity: MODULE.entity}),
+            sessionConfig: Requests.config({entity: "cash_sessions"}),
+            movementConfig: Requests.config({entity: "cash_movements"}),
+            summaryConfig: Requests.config({entity: "cash_summary"}),
             registers: [],
             sessions: {data: [], links: []},
             movements: {data: [], links: []},
             summary: {sessions: [], payments: [], totals: {opening: 0, expected: 0, counted: 0, difference: 0}},
             selectedRegister: null,
-            activeView: "registers",
+            activeView: this.initialView,
             filters: {search: ""},
             options: {
                 registers: [],
@@ -633,7 +613,7 @@ export default {
     },
     computed: {
         breadcrumbTitles() {
-            return [{title: MODULE.breadcrumbParent}, {title: MODULE.pageTitle, active: true}];
+            return [{title: MODULE.breadcrumbParent}, {title: this.activeViewMeta.label, active: true}];
         },
         registerOptions() {
             return this.options.registers.map(register => ({
@@ -671,17 +651,11 @@ export default {
         }
     },
     mounted() {
-        this.activeView = this.initialViewFromPath();
         Utils.navbarItem("menu-parent-cash", {addClass: "open"});
         Utils.navbarItem(this.activeMenuId(), {addClass: "active"});
         this.initParams();
     },
     methods: {
-        initialViewFromPath() {
-            const segment = window.location.pathname.split("?")[0].split("/").filter(Boolean).pop();
-
-            return ROUTE_VIEW_MAP[segment] || "registers";
-        },
         activeMenuId() {
             return VIEW_MENU_MAP[this.activeView] || VIEW_MENU_MAP.registers;
         },
@@ -715,21 +689,6 @@ export default {
 
             return this.getRegisters();
         },
-        setView(view) {
-            if(this.activeView === view) return;
-
-            this.activeView = view;
-            Utils.navbarItem(this.activeMenuId(), {addClass: "active"});
-            this.updateBrowserUrl(view);
-            this.$nextTick(() => this.refreshActiveView());
-        },
-        updateBrowserUrl(view) {
-            const path = VIEW_ROUTE_MAP[view];
-
-            if(path && window.location.pathname !== path) {
-                window.history.pushState({}, "", path);
-            }
-        },
         baseFilters() {
             return {
                 filter: {
@@ -755,7 +714,7 @@ export default {
         async getSessions(pageUrl = null) {
             this.loading.sessions = true;
             const result = await Requests.get({
-                route: pageUrl || this.config.routes.sessions,
+                route: pageUrl || this.sessionConfig.routes.list,
                 data: this.baseFilters()
             });
             this.loading.sessions = false;
@@ -765,7 +724,7 @@ export default {
         async getMovements(pageUrl = null) {
             this.loading.movements = true;
             const result = await Requests.get({
-                route: pageUrl || this.config.routes.movements,
+                route: pageUrl || this.movementConfig.routes.list,
                 data: this.baseFilters()
             });
             this.loading.movements = false;
@@ -775,7 +734,7 @@ export default {
         async getSummary() {
             this.loading.summary = true;
             const result = await Requests.get({
-                route: this.config.routes.summary,
+                route: this.summaryConfig.routes.data,
                 data: this.baseFilters()
             });
             this.loading.summary = false;
@@ -888,7 +847,7 @@ export default {
         async submitOpen() {
             this.saving = true;
             const result = await Requests.post({
-                route: this.config.routes.open,
+                route: this.sessionConfig.routes.open,
                 data: {
                     cash_register_id: this.forms.open.cash_register?.id,
                     opening_amount: this.forms.open.opening_amount,
@@ -926,7 +885,7 @@ export default {
             };
             delete payload.requires_inventory_count;
             const result = await Requests.post({
-                route: this.config.routes.close,
+                route: this.sessionConfig.routes.close,
                 data: payload
             });
             this.saving = false;
@@ -940,7 +899,7 @@ export default {
         async submitMovement() {
             this.saving = true;
             const result = await Requests.post({
-                route: this.config.routes.movement,
+                route: this.movementConfig.routes.store,
                 data: {
                     cash_session_id: this.currentSession?.id,
                     movement_type: this.forms.movement.type?.id,
@@ -962,7 +921,7 @@ export default {
             Alerts.swals({type: "loading", message: "Preparando descarga"});
 
             const result = await Requests.download({
-                route: this.config.routes.export,
+                route: this.movementConfig.routes.export,
                 data: this.baseFilters(),
                 fileName: "caja_movimientos.csv",
                 showAlert: true

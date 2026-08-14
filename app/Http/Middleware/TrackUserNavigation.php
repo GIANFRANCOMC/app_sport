@@ -17,9 +17,10 @@ final class TrackUserNavigation {
 
     public function handle(Request $request, Closure $next): Response {
 
+        $routeName = $request->route()?->getName();
+        $requestedPath = "/".ltrim($request->path(), "/");
         $response = $next($request);
         $user = $request->user();
-        $routeName = $request->route()?->getName();
 
         if(
             !$user
@@ -36,7 +37,7 @@ final class TrackUserNavigation {
 
         try {
 
-            $this->navigationService->record($user, $routeName);
+            $this->navigationService->record($user, $routeName, $requestedPath);
 
         } catch(Throwable $exception) {
 
