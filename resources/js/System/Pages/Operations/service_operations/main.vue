@@ -663,7 +663,7 @@ export default {
         }
     },
     mounted() {
-        Utils.navbarItem("menu-parent-restaurant-services", {addClass: "open"});
+        Utils.navbarItem("menu-parent-customers", {addClass: "open"});
         Utils.navbarItem(this.isRestaurant ? "menu-restaurant-pos" : "menu-service-sessions", {addClass: "active"});
         this.timer = window.setInterval(() => { this.now = Date.now(); }, 30000);
         this.initParams();

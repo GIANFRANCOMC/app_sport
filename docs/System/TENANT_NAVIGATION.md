@@ -15,6 +15,34 @@ La estructura visible se obtiene de los catálogos existentes de base de datos:
 
 `menu_categories` continúa disponible para ordenamiento y configuración interna, pero sus categorías no se muestran en la navegación.
 
+El primer módulo se denomina `Mi espacio de trabajo` y agrupa las páginas estructurales:
+
+- Mi espacio.
+- Inicio.
+- Dashboard.
+- Reportes.
+
+De esta forma ocupan un único acceso en la barra primaria y se seleccionan desde el panel contextual.
+
+## Mi espacio y recomendaciones
+
+Después de autenticarse, el usuario es dirigido a `/workspace`. Esta pantalla presenta:
+
+- las últimas diez páginas visitadas;
+- las diez páginas con mayor cantidad de visitas;
+- accesos iniciales permitidos cuando todavía no existe actividad suficiente.
+
+La navegación se registra mediante `UserNavigationService` únicamente para peticiones `GET` HTML exitosas cuya ruta corresponda exactamente a una `sub_section` activa. No se contabilizan solicitudes AJAX, respuestas JSON, errores ni la propia pantalla `workspace.index`.
+
+Durante una recreación progresiva de bases tenant, `UserNavigationService` comprueba la disponibilidad de `user_navigation_metrics`. Si una base todavía no contiene la tabla, la navegación continúa sin registrar métricas y Mi espacio muestra accesos iniciales; no se generan excepciones ni se bloquea la carga de otros módulos.
+
+`user_navigation_metrics` no es un historial de eventos. Conserva una sola fila por combinación `company_id`, `user_id` y `sub_section_id` con:
+
+- `visit_count`: contador acumulado y atómico;
+- `recent_rank`: posición de 1 a 10, o `NULL` cuando la página ya no pertenece a las últimas diez.
+
+Por tanto, el número de filas por usuario está limitado naturalmente por la cantidad de páginas navegables del catálogo. No se almacenan fecha, hora ni una fila nueva por visita. Las consultas de Mi espacio vuelven a filtrar las páginas con `CompanySectionService`, por lo que nunca recomiendan módulos desactivados o no permitidos para el rol.
+
 ## Permisos y módulos habilitados
 
 `CompanySectionService` sigue siendo la única fuente del menú. Antes de renderizar, filtra:
@@ -45,6 +73,10 @@ Se conservan los `dom_id` y clases históricas para que los componentes Vue que 
 - Escritorio colapsado: permanece únicamente la barra primaria; el hover no modifica su ancho.
 - Tablet y móvil: la navegación completa funciona como drawer/offcanvas y conserva la jerarquía módulo, sección y página.
 
+Las variables históricas `--br-sidebar-width` y `--br-sidebar-collapsed-width` se proyectan sobre las dimensiones de la navegación nueva. Navbar, panel contextual y contenido comparten así una sola fuente de ancho y nunca se superponen.
+
+Las solicitudes de inicialización tienen un límite de 20 segundos. Ante error o timeout se cierra siempre el loader global y se muestra el mensaje correspondiente, evitando overlays permanentes cuando un endpoint no responde.
+
 El botón existente del navbar continúa controlando el colapsado mediante la infraestructura del template y conserva su preferencia en `localStorage`.
 
 ## Archivos principales
@@ -53,6 +85,10 @@ El botón existente del navbar continúa controlando el colapsado mediante la in
 - `resources/css/System/br-branding/51-two-level-navigation.css`: diseño responsive de dos niveles.
 - `app/Services/System/Organizations/Companies/CompanySectionService.php`: permisos y módulos disponibles.
 - `database/seeders/SystemNavigationSeeder.php`: catálogo de módulos, secciones y páginas.
+- `app/Services/System/Essentials/UserNavigationService.php`: contadores, recientes y recomendaciones.
+- `app/Http/Middleware/TrackUserNavigation.php`: registro no intrusivo de navegación.
+- `resources/views/System/general/Essentials/workspace/main.blade.php`: pantalla Mi espacio.
+- `resources/css/System/br-branding/52-workspace.css`: presentación responsive de Mi espacio.
 
 Después de modificar estilos ejecutar:
 

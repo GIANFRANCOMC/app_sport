@@ -215,7 +215,7 @@ export default {
         }
     },
     mounted() {
-        Utils.navbarItem("menu-parent-staff", {addClass: "open"});
+        Utils.navbarItem("menu-parent-infrastructure", {addClass: "open"});
         Utils.navbarItem("menu-user-attendances", {addClass: "active"});
         this.initParams();
     },

@@ -37,7 +37,7 @@ final class SystemNavigationProvisioningTest extends TestCase {
             ->where("status", "active")
             ->count();
 
-        $this->assertSame(47, $catalogCount);
+        $this->assertSame(48, $catalogCount);
         $this->assertSame($catalogCount, $companyCount);
         $this->assertSame($catalogCount, $adminCount);
 
@@ -82,10 +82,60 @@ final class SystemNavigationProvisioningTest extends TestCase {
 
         $response->assertOk();
         $response->assertSee("br-navigation__rail", false);
-        $response->assertSee("br-navigation without-context", false);
-        $response->assertSee("id=\"menu-parent-dashboard\"", false);
-        $response->assertDontSee("id=\"brNavigationContext\"", false);
+        $response->assertSee("br-navigation has-context", false);
+        $response->assertSee("id=\"menu-parent-workspace\"", false);
+        $response->assertSee("id=\"brNavigationContext\"", false);
+        $response->assertSee("Mi espacio de trabajo", false);
         $response->assertDontSee("br-menu-category__full", false);
+
+    }
+
+    public function test_workspace_groups_home_dashboard_and_reports_in_one_primary_module(): void {
+
+        $routes = DB::table("sub_sections")
+            ->whereIn("dom_route", ["workspace.index", "home.index", "dashboard.index", "reports.index"])
+            ->orderBy("order")
+            ->get(["section_id", "dom_route"]);
+
+        $this->assertCount(4, $routes);
+        $this->assertSame([1], $routes->pluck("section_id")->unique()->values()->all());
+        $this->assertSame(
+            ["workspace.index", "home.index", "dashboard.index", "reports.index"],
+            $routes->pluck("dom_route")->all()
+        );
+
+    }
+
+    public function test_customer_attention_and_company_resources_are_grouped_in_their_parent_modules(): void {
+
+        $customerSections = DB::table("sub_sections")
+            ->join("sections", "sections.id", "=", "sub_sections.section_id")
+            ->whereIn("sub_sections.dom_route", [
+                "service_sessions.index",
+                "tracking_notifications.index",
+                "book_complaints.index",
+            ])
+            ->pluck("sections.dom_label")
+            ->unique()
+            ->values()
+            ->all();
+
+        $organizationSections = DB::table("sub_sections")
+            ->join("sections", "sections.id", "=", "sub_sections.section_id")
+            ->whereIn("sub_sections.dom_route", [
+                "users.index",
+                "user_attendances.index",
+                "companies.index",
+            ])
+            ->pluck("sections.dom_label")
+            ->unique()
+            ->values()
+            ->all();
+
+        $this->assertSame(["Clientes"], $customerSections);
+        $this->assertSame(["Mi organización"], $organizationSections);
+        $this->assertFalse(DB::table("sections")->where("dom_label", "Atención al cliente")->exists());
+        $this->assertFalse(DB::table("sections")->where("dom_label", "Colaboradores")->exists());
 
     }
 }

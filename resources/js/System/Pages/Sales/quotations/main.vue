@@ -526,7 +526,7 @@ export default {
         }
     },
     mounted() {
-        Utils.navbarItem("menu-parent-quotations", {addClass: "open"});
+        Utils.navbarItem("menu-parent-sales", {addClass: "open"});
         Utils.navbarItem(this.isCreatePage ? "menu-quotations-create" : "menu-quotations-list", {});
         this.initParams();
     },

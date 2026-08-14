@@ -173,7 +173,7 @@ import * as Utils     from "@System/Helpers/Utils.js";
 
 const MODULE_CONFIG = {
     entity: "dashboard",
-    menuId: "menu-parent-dashboard",
+    menuId: "menu-parent-workspace",
     pageTitle: "Dashboard",
     breadcrumbParent: "Esenciales"
 };

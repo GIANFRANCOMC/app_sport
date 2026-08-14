@@ -135,7 +135,7 @@ const PAGE_CONFIG = {
     modulesAriaLabel: "Módulos disponibles",
     active: true,
     menu: {
-        id: "menu-parent-home"
+        id: "menu-parent-workspace"
     },
     filters: {
         search: {

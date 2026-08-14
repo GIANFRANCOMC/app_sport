@@ -301,7 +301,7 @@ export default {
                     page: {
                         title: "Reportes",
                         active: true,
-                        menu: {id: "menu-parent-reports"}
+                        menu: {id: "menu-parent-workspace"}
                     }
                 }
             }

@@ -37,7 +37,7 @@ Route::middleware("guest")->group(function() {
 
 });
 
-Route::middleware(["auth", "verified", "module.permission", "resource.scope"])->group(function() use ($systemRoute) {
+Route::middleware(["auth", "verified", "module.permission", "resource.scope", "navigation.track"])->group(function() use ($systemRoute) {
 
     Route::post("/send-subscription-emails", [NotificationController::class, "sendSubscriptionEmails"])
         ->middleware("throttle:6,1")
@@ -65,6 +65,7 @@ Route::middleware(["auth", "verified", "module.permission", "resource.scope"])->
     Route::prefix("/biometric_devices")->group($systemRoute."/Devices/BiometricDevice.php");
 
     // Essentials
+    Route::prefix("/workspace")->group($systemRoute."/Essentials/Workspace.php");
     Route::prefix("/dashboard")->group($systemRoute."/Essentials/Dashboard.php");
     Route::prefix("/helpers")->group($systemRoute."/Essentials/Helper.php");
     Route::prefix("/master-data")->group($systemRoute."/General/MasterData.php");

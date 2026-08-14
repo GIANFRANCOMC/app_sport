@@ -73,5 +73,6 @@ class Kernel extends HttpKernel {
         "resource.scope" => \App\Http\Middleware\EnsureOperationalScope::class,
         "public.attendance.access" => \App\Http\Middleware\EnsurePublicAttendanceAccess::class,
         "platform.auth" => \App\Http\Middleware\EnsurePlatformAuthenticated::class,
+        "navigation.track" => \App\Http\Middleware\TrackUserNavigation::class,
     ];
 }

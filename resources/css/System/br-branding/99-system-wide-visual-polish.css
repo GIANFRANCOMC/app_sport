@@ -7,8 +7,8 @@
 body.br-layout {
   --br-ui-font-size: 0.705rem;
   --br-ui-line-height: 1.25;
-  --br-sidebar-width: 13.55rem;
-  --br-sidebar-collapsed-width: 4.25rem;
+  --br-sidebar-width: var(--br-navigation-width, 17.5rem);
+  --br-sidebar-collapsed-width: var(--br-navigation-rail-width, 4.25rem);
   --br-sidebar-profile-top-padding: 0.82rem;
   --br-sidebar-profile-height: 3.15rem;
   --br-sidebar-profile-block-height: calc(var(--br-sidebar-profile-top-padding) + var(--br-sidebar-profile-height));
@@ -20,6 +20,11 @@ body.br-layout {
   --br-app-control-radius: var(--br-radius-sm);
   --br-app-row-hover: color-mix(in srgb, var(--br-primary-soft) 52%, var(--br-white));
   --br-app-panel-border: color-mix(in srgb, var(--br-border) 88%, var(--br-white));
+}
+
+html.br-navigation-without-context body.br-layout,
+html.layout-menu-collapsed body.br-layout {
+  --br-sidebar-width: var(--br-navigation-rail-width, 4.25rem);
 }
 
 body.br-layout ::selection {

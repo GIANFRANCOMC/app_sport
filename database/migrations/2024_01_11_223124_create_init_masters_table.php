@@ -299,6 +299,23 @@ return new class extends Migration {
             $table->foreign("user_id")->references("id")->on("users")->onDelete("cascade");
 
         });
+        Schema::create("user_navigation_metrics", function(Blueprint $table) {
+
+            $table->id();
+            $table->unsignedBigInteger("company_id");
+            $table->unsignedBigInteger("user_id");
+            $table->unsignedBigInteger("sub_section_id");
+            $table->unsignedBigInteger("visit_count")->default(0);
+            $table->unsignedTinyInteger("recent_rank")->nullable();
+
+            $table->foreign("company_id")->references("id")->on("companies")->onDelete("cascade");
+            $table->foreign("user_id")->references("id")->on("users")->onDelete("cascade");
+            $table->foreign("sub_section_id")->references("id")->on("sub_sections")->onDelete("cascade");
+            $table->unique(["company_id", "user_id", "sub_section_id"], "user_navigation_route_unique");
+            $table->index(["company_id", "user_id", "recent_rank"], "user_navigation_recent_index");
+            $table->index(["company_id", "user_id", "visit_count"], "user_navigation_visits_index");
+
+        });
         // Los datos se aprovisionan después del esquema mediante system:install.
 
     }
@@ -311,6 +328,7 @@ return new class extends Migration {
         Schema::disableForeignKeyConstraints();
 
         Schema::dropIfExists("authentication_events");
+        Schema::dropIfExists("user_navigation_metrics");
         Schema::dropIfExists("user_preferences");
         Schema::dropIfExists("users");
         Schema::dropIfExists("role_sub_sections");

@@ -26,30 +26,32 @@ El servicio carga categoría y grupo, aplica el orden empresarial y genera la UR
 ## Categorías principales
 
 1. **Principal**
-   - Inicio.
-   - Dashboard.
-   - Reportes.
+   - Mi espacio de trabajo.
 2. **Operaciones**
    - Ventas.
    - Compras.
    - Caja y finanzas.
-   - Atención al cliente.
 3. **Gestión**
    - Clientes.
    - Catálogo comercial.
    - Inventario.
-   - Colaboradores.
 4. **Administración**
-   - Organización.
+   - Mi organización.
    - Configuración.
 
 ## Grupos y opciones
 
 Cuando una sección contiene más de un grupo, cada grupo se representa como un submenú desplegable real. No se muestra como un rótulo estático seguido de opciones planas. El grupo que contiene la ruta actual se abre automáticamente.
 
-Los títulos de categoría tienen peso normal y tamaño reducido. `Principal` no dibuja encabezado: Inicio, Dashboard y Reportes aparecen directamente. En escritorio colapsado las demás categorías muestran únicamente sus tres primeros caracteres; al expandir o pasar el cursor recuperan el nombre completo.
+Los títulos de categoría tienen peso normal y tamaño reducido. `Principal` no dibuja encabezado. Su único módulo, `Mi espacio de trabajo`, agrupa Mi espacio, Inicio, Dashboard y Reportes dentro del panel contextual. En escritorio colapsado las demás categorías muestran únicamente sus tres primeros caracteres; al expandir o pasar el cursor recuperan el nombre completo.
 
-Los grupos internos se presentan como controles de submenú compactos y sus opciones usan una segunda sangría y menor contraste, de modo que se distinguen sección, submenú y acceso final.
+Los grupos internos usan encabezados compactos en mayúsculas, espaciado tipográfico y una línea divisoria. El grupo actual recibe solamente un acento de color; así, el encabezado nunca se confunde con una página seleccionable. Sus opciones usan una segunda sangría y menor contraste, de modo que se distinguen sección, grupo y acceso final.
+
+En el riel principal, los iconos de los módulos se centran verticalmente entre la marca superior y la cuenta del usuario. Si la cantidad de módulos supera la altura disponible, el contenedor mantiene desplazamiento vertical.
+
+- **Clientes** agrupa Gestión, Membresías, Servicios y Atención al cliente.
+- **Mi organización** agrupa Empresa, Sedes, Activos y Colaboradores.
+- **Configuración** conserva Accesos y Datos maestros.
 
 ### Ventas
 
@@ -68,15 +70,12 @@ Los grupos internos se presentan como controles de submenú compactos y sus opci
 - **Operación de caja**: Cajas, Aperturas y cierres, Movimientos.
 - **Control**: Resumen de caja, Gastos varios.
 
-### Atención al cliente
-
-- **Servicios**: Servicios en curso.
-- **Comunicaciones**: Notificaciones, Libro de reclamaciones.
-
 ### Clientes
 
 - **Gestión**: Clientes, Historial.
 - **Membresías**: Membresías, Asistencias de clientes.
+- **Servicios**: Servicios en curso.
+- **Atención al cliente**: Notificaciones, Libro de reclamaciones.
 
 ### Catálogo comercial
 
@@ -88,18 +87,15 @@ Los grupos internos se presentan como controles de submenú compactos y sus opci
 - **Control**: Control de stock.
 - **Movimientos**: Kardex, Traslados, Guías, Kardex valorizado.
 
-### Colaboradores
+### Mi organización
 
-- **Equipo**: Colaboradores, Asistencia del personal.
-
-### Organización
-
+- **Empresa**: Mi empresa.
 - **Sedes**: Sucursales.
 - **Activos**: Activos, Gestión de activos, Dispositivos biométricos.
+- **Colaboradores**: Colaboradores, Asistencia del personal.
 
 ### Configuración
 
-- **Empresa**: Mi empresa.
 - **Accesos**: Perfiles de acceso.
 - **Datos maestros**: Maestros internos, Rubro y módulos.
 

@@ -14,6 +14,21 @@ if (document.getElementById('layout-menu')) {
   isHorizontalLayout = document.getElementById('layout-menu').classList.contains('menu-horizontal');
 }
 
+const customNavigation = document.querySelector('#layout-menu.br-navigation');
+
+function setCustomNavigationCollapsed(collapsed) {
+  if (!customNavigation) return false;
+
+  if (window.Helpers.isSmallScreen()) {
+    document.documentElement.classList.toggle('layout-menu-expanded', !collapsed);
+  } else {
+    document.documentElement.classList.toggle('layout-menu-collapsed', collapsed);
+  }
+
+  window.dispatchEvent(new Event('resize'));
+  return true;
+}
+
 (function () {
   setTimeout(function () {
     window.Helpers.initCustomOptionCheck();
@@ -32,6 +47,8 @@ if (document.getElementById('layout-menu')) {
 
   let layoutMenuEl = document.querySelectorAll('#layout-menu');
   layoutMenuEl.forEach(function (element) {
+    if (element.classList.contains('br-navigation')) return;
+
     menu = new Menu(element, {
       orientation: isHorizontalLayout ? 'horizontal' : 'vertical',
       closeChildren: isHorizontalLayout ? true : false,
@@ -52,7 +69,9 @@ if (document.getElementById('layout-menu')) {
   menuToggler.forEach(item => {
     item.addEventListener('click', event => {
       event.preventDefault();
-      window.Helpers.toggleCollapsed();
+      if (!setCustomNavigationCollapsed(!window.Helpers.isCollapsed())) {
+        window.Helpers.toggleCollapsed();
+      }
       // Enable menu state with local storage support if enableMenuLocalStorage = true from config.js
       if (config.enableMenuLocalStorage && !window.Helpers.isSmallScreen()) {
         try {
@@ -75,12 +94,12 @@ if (document.getElementById('layout-menu')) {
 
   // Detect swipe gesture on the target element and call swipe In
   window.Helpers.swipeIn('.drag-target', function (e) {
-    window.Helpers.setCollapsed(false);
+    if (!setCustomNavigationCollapsed(false)) window.Helpers.setCollapsed(false);
   });
 
   // Detect swipe gesture on the target element and call swipe Out
   window.Helpers.swipeOut('#layout-menu', function (e) {
-    if (window.Helpers.isSmallScreen()) window.Helpers.setCollapsed(true);
+    if (window.Helpers.isSmallScreen() && !setCustomNavigationCollapsed(true)) window.Helpers.setCollapsed(true);
   });
 
   // Display in main menu when menu scrolls

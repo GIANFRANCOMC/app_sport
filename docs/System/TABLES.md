@@ -218,6 +218,14 @@ Uso actual en Home:
 - La aplicación consolida una sola preferencia activa por usuario y slug al actualizar.
 - Preferencias activas antiguas duplicadas pasan a `inactive`.
 
+### user_navigation_metrics
+
+Preferencias agregadas de navegación por usuario. Campos: `company_id`, `user_id`, `sub_section_id`, `visit_count` y `recent_rank`.
+
+La combinación `company_id + user_id + sub_section_id` es única. Cada visita incrementa `visit_count` sobre la misma fila; no se crea un evento ni se guardan fecha y hora. `recent_rank` solo admite el uso funcional de las posiciones 1 a 10 y queda en `NULL` cuando la página sale de las diez rutas recientes.
+
+Relaciones: pertenece a `companies`, `users` y `sub_sections`. Las tres relaciones eliminan la métrica en cascada. Los índices por rango reciente y contador permiten obtener Mi espacio sin recorrer historiales de navegación.
+
 ## Organizacion fisica
 
 ### branches

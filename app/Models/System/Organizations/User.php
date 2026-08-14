@@ -204,6 +204,13 @@ class User extends Authenticatable {
 
     }
 
+    public function navigationMetrics() {
+
+        return $this->hasMany(UserNavigationMetric::class, "user_id", "id")
+            ->where("company_id", $this->company_id);
+
+    }
+
     public function salesHeader() {
 
         return $this->hasMany(SaleHeader::class, "seller_id", "id")

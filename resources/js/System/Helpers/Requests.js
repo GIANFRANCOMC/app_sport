@@ -3,6 +3,8 @@ import * as Alerts from "./Alerts.js";
 import * as Utils from "./Utils.js";
 import { requestRoute, generalConfig, applyGeneralConfig } from "./Constants.js";
 
+const DEFAULT_GET_TIMEOUT_MS = 20000;
+
 export function config({entity = "", type = "", extras = null}) {
 
     let baseRoute = `${requestRoute}`;
@@ -27,8 +29,8 @@ export function get({route = "", data = {}, showAlert = false}) {
 
 	return new Promise((resolve, reject) => {
 
-		let requestUrl    = route,
-            requestConfig = {};
+        let requestUrl    = route,
+            requestConfig = {timeout: DEFAULT_GET_TIMEOUT_MS};
 
         let params = {...data};
 
@@ -43,13 +45,17 @@ export function get({route = "", data = {}, showAlert = false}) {
 			resolve({data: response.data, bool: true});
 
 		})
-		.catch(error => {
+        .catch(error => {
 
             const status = error?.response?.status;
             const errorData = error?.response?.data;
-            const errorMessage = errorData?.msg || errorData?.message || error?.message || error;
+            const errorMessage = error?.code === "ECONNABORTED"
+                ? "La consulta tardó demasiado. Intenta nuevamente."
+                : errorData?.msg || errorData?.message || error?.message || error;
 
             if(showAlert) {
+
+                Alerts.swals({show: false});
 
                 if([500].includes(status)) {
 

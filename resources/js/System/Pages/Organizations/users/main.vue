@@ -777,19 +777,25 @@ export default {
     },
     mounted: async function() {
 
-        Utils.navbarItem("menu-parent-configuration", {addClass: "open"});
+        Utils.navbarItem("menu-parent-infrastructure", {addClass: "open"});
         Utils.navbarItem(this.config.entity.page.menu.id, {});
 
         Alerts.swals({type: "initParams"});
 
-        const initParams = await this.initParams();
+        try {
 
-        this.isInitialized = true;
+            const initParams = await this.initParams();
 
-        if(initParams) {
+            if(initParams) {
 
+                this.listEntity({});
+
+            }
+
+        }finally {
+
+            this.isInitialized = true;
             Alerts.swals({show: false});
-            this.listEntity({});
 
         }
 

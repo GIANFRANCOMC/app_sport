@@ -201,15 +201,19 @@ export function initVueModule(config = {}) {
             Utils.navbarItem(menuId || moduleConfig.config.entity.page.menu.id, {});
             Alerts.swals({ type: "initParams" });
 
-            const initParams = await this.initParams({});
-            const initOthers = await this.initOthers({});
+            try {
 
-            if (initParams && initOthers) {
-                Alerts.swals({ show: false });
+                const initParams = await this.initParams({});
+                const initOthers = await this.initOthers({});
 
-                if (config.autoLoadList !== false) {
+                if (initParams && initOthers && config.autoLoadList !== false) {
                     this.listEntity({});
                 }
+
+            } finally {
+
+                Alerts.swals({ show: false });
+
             }
         },
         computed: {
@@ -223,5 +227,4 @@ export function initVueModule(config = {}) {
         }
     };
 }
-
 
