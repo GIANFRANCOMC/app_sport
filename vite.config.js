@@ -18,6 +18,7 @@ export default defineConfig({
                 'resources/css/System/platform.css',
                 'resources/css/Platform/app.css',
                 'resources/js/System/app.js',
+                'resources/js/Platform/app.js',
 
                 // Guest Pages
                 'resources/js/Guest/Pages/home/main.js',

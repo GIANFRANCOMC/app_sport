@@ -74,23 +74,22 @@ final class PlatformTenantService {
                     "mc.order as category_order",
                 ]);
 
-            DB::transaction(function() use ($companyId, $enabled, $modules): void {
+            $now = now();
+            $records = $modules->map(fn($module) => [
+                "company_id" => $companyId,
+                "sub_section_id" => (int) $module->id,
+                "section_order" => ((int) $module->category_order * 100) + (int) $module->section_order,
+                "sub_section_order" => (int) $module->item_order,
+                "status" => $enabled->contains((int) $module->id) ? "active" : "inactive",
+                "created_at" => $now,
+                "updated_at" => $now,
+            ])->all();
 
-                foreach($modules as $module) {
-
-                    DB::table("companies_sub_sections")->updateOrInsert(
-                        ["company_id" => $companyId, "sub_section_id" => $module->id],
-                        [
-                            "section_order" => ((int) $module->category_order * 100) + (int) $module->section_order,
-                            "sub_section_order" => (int) $module->item_order,
-                            "status" => $enabled->contains((int) $module->id) ? "active" : "inactive",
-                            "updated_at" => now(),
-                        ]
-                    );
-
-                }
-
-            });
+            DB::table("companies_sub_sections")->upsert(
+                $records,
+                ["company_id", "sub_section_id"],
+                ["section_order", "sub_section_order", "status", "updated_at"]
+            );
 
             CompanySectionService::clearCompanyCache($companyId);
 

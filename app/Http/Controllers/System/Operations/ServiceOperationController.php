@@ -46,6 +46,45 @@ final class ServiceOperationController extends BaseController {
 
     }
 
+    public function board(Request $request): JsonResponse {
+
+        $data = $request->validate([
+            "branch_id" => ["required", "integer"],
+            "service_floor_id" => ["nullable", "integer"],
+        ]);
+
+        return response()->json([
+            "bool" => true,
+            "data" => ServiceOperationService::board(
+                $this->getCompanyId(),
+                $this->getUserId(),
+                (int) $data["branch_id"],
+                isset($data["service_floor_id"]) ? (int) $data["service_floor_id"] : null
+            ),
+        ]);
+
+    }
+
+    public function options(Request $request): JsonResponse {
+
+        $data = $request->validate([
+            "resource" => ["required", "in:customers,items"],
+            "search" => ["nullable", "string", "max:100"],
+            "item_type" => ["nullable", "in:product,service,subscription"],
+        ]);
+
+        return response()->json([
+            "bool" => true,
+            "data" => ServiceOperationService::options(
+                $this->getCompanyId(),
+                (string) $data["resource"],
+                trim((string) ($data["search"] ?? "")),
+                $data["item_type"] ?? null
+            ),
+        ]);
+
+    }
+
     public function floors(Request $request): JsonResponse {
 
         $request->validate(["branch_id" => ["required", "integer"]]);

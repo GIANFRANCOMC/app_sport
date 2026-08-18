@@ -36,6 +36,15 @@ class RouteServiceProvider extends ServiceProvider {
 
         });
 
+        RateLimiter::for("platform-provision", fn(Request $request) => [
+            Limit::perMinute(1)->by("platform-provision-minute:".$request->ip()),
+            Limit::perHour(6)->by("platform-provision-hour:".$request->ip()),
+        ]);
+
+        RateLimiter::for("platform-write", fn(Request $request) => Limit::perMinute(30)
+            ->by("platform-write:".((int) $request->session()->get("platform_user_id", 0)).":".$request->ip())
+        );
+
         RateLimiter::for("guest-complaints", function(Request $request) {
 
             $company = $request->route("company_slug", "unknown");

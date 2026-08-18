@@ -31,13 +31,14 @@ return new class extends Migration {
             $table->id();
             $table->string("slug", 120)->unique();
             $table->unsignedBigInteger("company_id")->nullable();
-            $table->string("database_name", 180);
+            $table->string("database_name", 180)->unique();
             $table->enum("status", ["provisioning", "active", "inactive", "suspended"])->default("provisioning");
             $table->timestamp("last_resolved_at")->nullable();
             $table->timestamp("created_at")->useCurrent()->nullable();
             $table->integer("created_by")->nullable();
             $table->timestamp("updated_at")->nullable();
             $table->integer("updated_by")->nullable();
+            $table->index(["status", "slug"], "tenant_databases_status_slug_index");
 
         });
 
@@ -55,6 +56,7 @@ return new class extends Migration {
             $table->integer("updated_by")->nullable();
 
             $table->foreign("tenant_database_id")->references("id")->on("tenant_databases")->onDelete("cascade");
+            $table->index(["tenant_database_id", "status", "is_primary"], "tenant_domains_tenant_status_index");
 
         });
 
@@ -72,6 +74,8 @@ return new class extends Migration {
             $table->timestamp("occurred_at")->useCurrent();
 
             $table->foreign("tenant_database_id")->references("id")->on("tenant_databases")->nullOnDelete();
+            $table->index(["tenant_database_id", "occurred_at"], "tenant_audit_logs_timeline_index");
+            $table->index(["action", "result", "occurred_at"], "tenant_audit_logs_action_index");
 
         });
 

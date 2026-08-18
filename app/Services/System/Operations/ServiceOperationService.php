@@ -14,7 +14,9 @@ use App\Services\System\Organizations\{AccessScopeService};
 use Carbon\{Carbon};
 use DomainException;
 use Illuminate\Contracts\Pagination\{LengthAwarePaginator};
+use Illuminate\Database\Eloquent\{Builder};
 use Illuminate\Support\Facades\{DB};
+use Illuminate\Support\{Collection};
 
 final class ServiceOperationService {
     public const STATUS_PENDING = "pending";
@@ -260,6 +262,114 @@ final class ServiceOperationService {
 
         self::requireBranch($companyId, $branchId, $actorId);
 
+        return self::stationQuery($companyId, $branchId, $floorId)->get();
+
+    }
+
+    public static function board(
+        int $companyId,
+        int $actorId,
+        int $branchId,
+        ?int $floorId = null
+    ): array {
+
+        self::requireBranch($companyId, $branchId, $actorId);
+
+        $floors = ServiceFloor::query()
+            ->where("company_id", $companyId)
+            ->where("branch_id", $branchId)
+            ->where("status", "active")
+            ->withCount(["stations" => fn($query) => $query->where("status", "active")])
+            ->orderBy("sort_order")
+            ->orderBy("level_number")
+            ->orderBy("name")
+            ->get();
+        $selectedFloor = $floorId
+            ? $floors->firstWhere("id", $floorId)
+            : $floors->first();
+
+        return [
+            "floors" => $floors,
+            "selected_floor_id" => $selectedFloor?->id,
+            "stations" => $selectedFloor
+                ? self::stationQuery($companyId, $branchId, (int) $selectedFloor->id)->get()
+                : collect(),
+        ];
+
+    }
+
+    public static function options(
+        int $companyId,
+        string $resource,
+        string $search = "",
+        ?string $itemType = null,
+        int $limit = 30
+    ): Collection {
+
+        $limit = min(50, max(1, $limit));
+
+        if($resource === "customers") {
+
+            return DB::table("customers")
+                ->where("company_id", $companyId)
+                ->where("status", "active")
+                ->when($search !== "", function($query) use ($search) {
+
+                    $query->where(function($query) use ($search) {
+
+                        $query->where("name", "like", "%{$search}%")
+                            ->orWhere("document_number", "like", "%{$search}%");
+
+                    });
+
+                })
+                ->orderBy("name")
+                ->limit($limit)
+                ->get(["id", "name", "document_number"]);
+
+        }
+
+        if($resource !== "items") {
+
+            throw new DomainException("El recurso de búsqueda no está disponible.");
+
+        }
+
+        return DB::table("items")
+            ->where("company_id", $companyId)
+            ->where("status", "active")
+            ->where(function($query) {
+
+                $query->whereNull("expires_at")
+                    ->orWhere("expires_at", ">", now());
+
+            })
+            ->where(function($query) {
+
+                $query->where("capacity_control_enabled", false)
+                    ->orWhereColumn("capacity_used", "<", "capacity_limit");
+
+            })
+            ->when($itemType, fn($query) => $query->where("type", $itemType))
+            ->when($search !== "", function($query) use ($search) {
+
+                $query->where(function($query) use ($search) {
+
+                    $query->where("name", "like", "%{$search}%")
+                        ->orWhere("internal_code", "like", "%{$search}%")
+                        ->orWhere("barcode", "like", "%{$search}%");
+
+                });
+
+            })
+            ->orderBy("name")
+            ->limit($limit)
+            ->get(["id", "name", "type", "price"]);
+
+    }
+
+    private static function stationQuery(int $companyId, int $branchId, ?int $floorId = null): Builder {
+
         return ServiceStation::query()
             ->where("company_id", $companyId)
             ->where("branch_id", $branchId)
@@ -271,8 +381,7 @@ final class ServiceOperationService {
                 "activeSession.assignedUser",
                 "activeSession.items.assignedUser",
             ])
-            ->orderBy("name")
-            ->get();
+            ->orderBy("name");
 
     }
 

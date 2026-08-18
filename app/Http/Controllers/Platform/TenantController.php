@@ -6,25 +6,44 @@ namespace App\Http\Controllers\Platform;
 
 use App\Http\Controllers\{Controller};
 use App\Models\System\Tenancy\{TenantAnnouncement, TenantDatabase};
-use App\Services\System\Tenancy\{PlatformTenantService, TenantAdministrationService, TenantConnectionManager};
-use Illuminate\Http\{RedirectResponse, Request};
-use Illuminate\Support\Facades\{Artisan};
-use Illuminate\Validation\{Rule};
-use Illuminate\View\{View};
+use App\Services\System\Tenancy\{PlatformTenantProvisioner, PlatformTenantService, TenantAdministrationService};
+use Illuminate\Http\{JsonResponse, Request};
+use Illuminate\Validation\{Rule, ValidationException};
+use RuntimeException;
 
 final class TenantController extends Controller {
-    public function index(TenantAdministrationService $administration): View {
+    public function index(Request $request, TenantAdministrationService $administration): JsonResponse {
 
-        $tenants = $administration->list();
+        $data = $request->validate([
+            "search" => ["nullable", "string", "max:100"],
+            "status" => ["nullable", Rule::in(["provisioning", "active", "inactive", "suspended"])],
+            "page" => ["nullable", "integer", "min:1"],
+            "per_page" => ["nullable", "integer", "min:10", "max:50"],
+        ]);
+        $tenants = $administration->paginate(
+            trim((string) ($data["search"] ?? "")),
+            $data["status"] ?? null,
+            (int) ($data["per_page"] ?? 20)
+        );
 
-        return view("Platform.tenants.index", [
-            "tenants" => $tenants,
-            "counts" => $tenants->countBy("status"),
+        return response()->json([
+            "data" => collect($tenants->items())->map(fn(TenantDatabase $tenant) => $administration->serialize($tenant))->values(),
+            "meta" => [
+                "current_page" => $tenants->currentPage(),
+                "last_page" => $tenants->lastPage(),
+                "per_page" => $tenants->perPage(),
+                "total" => $tenants->total(),
+            ],
+            "counts" => $administration->counts(),
         ]);
 
     }
 
-    public function store(Request $request, TenantConnectionManager $connections): RedirectResponse {
+    public function store(
+        Request $request,
+        PlatformTenantProvisioner $provisioner,
+        TenantAdministrationService $administration
+    ): JsonResponse {
 
         $data = $request->validate([
             "slug" => ["required", "alpha_dash", "max:60"],
@@ -35,47 +54,41 @@ final class TenantController extends Controller {
             "admin_email" => ["required", "email", "max:190"],
             "admin_password" => ["required", "string", "min:10", "max:255", "confirmed"],
         ]);
-
         try {
 
-            $exitCode = Artisan::call("tenant:create", [
-                "slug" => strtolower($data["slug"]),
-                "--commercial-name" => $data["commercial_name"],
-                "--legal-name" => $data["legal_name"],
-                "--document-number" => $data["document_number"],
-                "--admin-name" => $data["admin_name"],
-                "--admin-email" => $data["admin_email"],
-                "--admin-password" => $data["admin_password"],
-                "--skip-cache-clear" => true,
+            $tenant = $provisioner->create($data);
+
+        } catch(RuntimeException $exception) {
+
+            throw ValidationException::withMessages([
+                "tenant" => $exception->getMessage(),
             ]);
 
-        } finally {
-
-            $connections->disconnect();
-
         }
 
-        if($exitCode !== 0) {
-
-            return back()
-                ->withErrors(["tenant" => trim(Artisan::output()) ?: "No se pudo crear el tenant."])
-                ->withInput($request->except(["admin_password", "admin_password_confirmation"]));
-
-        }
-
-        return redirect()->route("platform.tenants.index")->with("success", "Cliente tenant creado correctamente.");
+        return response()->json([
+            "message" => "Cliente tenant creado correctamente.",
+            "data" => $administration->serialize($tenant),
+        ], 201);
 
     }
 
-    public function show(TenantDatabase $tenant, PlatformTenantService $platformTenants): View {
+    public function show(
+        TenantDatabase $tenant,
+        PlatformTenantService $platformTenants,
+        TenantAdministrationService $administration
+    ): JsonResponse {
 
-        return view("Platform.tenants.show", [
-            "tenant" => $tenant->load("domains"),
-            "modules" => $platformTenants->modules($tenant),
-            "announcements" => TenantAnnouncement::query()
-                ->where("tenant_database_id", $tenant->id)
-                ->latest()
-                ->get(),
+        return response()->json([
+            "data" => [
+                "tenant" => $administration->serialize($tenant->load("domains")),
+                "modules" => $platformTenants->modules($tenant),
+                "announcements" => TenantAnnouncement::query()
+                    ->where("tenant_database_id", $tenant->id)
+                    ->latest()
+                    ->limit(50)
+                    ->get(),
+            ],
         ]);
 
     }
@@ -84,15 +97,18 @@ final class TenantController extends Controller {
         Request $request,
         TenantDatabase $tenant,
         TenantAdministrationService $administration
-    ): RedirectResponse {
+    ): JsonResponse {
 
         $data = $request->validate([
             "status" => ["required", Rule::in(["active", "inactive", "suspended"])],
         ]);
         $actor = $request->attributes->get("platformUser");
-        $administration->changeStatus($tenant->slug, $data["status"], $actor?->email);
+        $updated = $administration->changeStatus($tenant->slug, $data["status"], $actor?->email);
 
-        return back()->with("success", "Estado del cliente actualizado.");
+        return response()->json([
+            "message" => "Estado del cliente actualizado.",
+            "data" => $administration->serialize($updated),
+        ]);
 
     }
 
@@ -101,18 +117,21 @@ final class TenantController extends Controller {
         TenantDatabase $tenant,
         PlatformTenantService $platformTenants,
         TenantAdministrationService $administration
-    ): RedirectResponse {
+    ): JsonResponse {
 
         $data = $request->validate(["modules" => ["nullable", "array"], "modules.*" => ["integer"]]);
         $enabledCount = $platformTenants->updateModules($tenant, $data["modules"] ?? []);
         $actor = $request->attributes->get("platformUser");
         $administration->audit($tenant, "modules_updated", "success", ["enabled_count" => $enabledCount], $actor?->email);
 
-        return back()->with("success", "Módulos actualizados: {$enabledCount} activos.");
+        return response()->json([
+            "message" => "Módulos actualizados: {$enabledCount} activos.",
+            "data" => ["enabled_count" => $enabledCount],
+        ]);
 
     }
 
-    public function announcement(Request $request, TenantDatabase $tenant): RedirectResponse {
+    public function announcement(Request $request, TenantDatabase $tenant): JsonResponse {
 
         $data = $request->validate([
             "title" => ["required", "string", "max:180"],
@@ -123,8 +142,7 @@ final class TenantController extends Controller {
             "dismissible" => ["nullable", "boolean"],
         ]);
         $user = $request->attributes->get("platformUser");
-
-        TenantAnnouncement::query()->create($data + [
+        $announcement = TenantAnnouncement::query()->create($data + [
             "tenant_database_id" => $tenant->id,
             "dismissible" => (bool) ($data["dismissible"] ?? false),
             "status" => "active",
@@ -132,7 +150,10 @@ final class TenantController extends Controller {
             "updated_by" => $user->id,
         ]);
 
-        return back()->with("success", "Aviso publicado en el tenant.");
+        return response()->json([
+            "message" => "Aviso publicado en el tenant.",
+            "data" => $announcement,
+        ], 201);
 
     }
 
@@ -140,14 +161,17 @@ final class TenantController extends Controller {
         Request $request,
         TenantDatabase $tenant,
         TenantAnnouncement $announcement
-    ): RedirectResponse {
+    ): JsonResponse {
 
         abort_unless((int) $announcement->tenant_database_id === (int) $tenant->id, 404);
         $data = $request->validate(["status" => ["required", Rule::in(["active", "inactive"])]]);
         $user = $request->attributes->get("platformUser");
         $announcement->forceFill($data + ["updated_by" => $user->id])->save();
 
-        return back()->with("success", "Estado del aviso actualizado.");
+        return response()->json([
+            "message" => "Estado del aviso actualizado.",
+            "data" => $announcement->fresh(),
+        ]);
 
     }
 }

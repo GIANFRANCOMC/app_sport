@@ -296,6 +296,8 @@
                     :options="itemOptions"
                     :clearable="false"
                     :searchable="true"
+                    :filterable="false"
+                    @search="searchItems"
                     placeholder="Producto o servicio"/>
                 <v-select
                     v-model="detailForm.user"
@@ -511,7 +513,7 @@
                         </div>
                         <div class="form-group col-md-6">
                             <label class="form-label">Cliente</label>
-                            <v-select v-model="sessionForm.customer" :options="customerOptions" :clearable="true" :searchable="true" placeholder="Cliente general"/>
+                            <v-select v-model="sessionForm.customer" :options="customerOptions" :clearable="true" :searchable="true" :filterable="false" @search="searchCustomers" placeholder="Cliente general"/>
                         </div>
                         <div class="form-group col-md-6">
                             <label class="form-label">Responsable</label>
@@ -519,7 +521,7 @@
                         </div>
                         <div class="form-group col-md-8">
                             <label class="form-label">{{ isRestaurant ? 'Primer producto o servicio' : 'Servicio' }}</label>
-                            <v-select v-model="sessionForm.item" :options="itemOptions" :clearable="true" :searchable="true" placeholder="Puede agregarse después"/>
+                            <v-select v-model="sessionForm.item" :options="itemOptions" :clearable="true" :searchable="true" :filterable="false" @search="searchItems" placeholder="Puede agregarse después"/>
                         </div>
                         <InputNumber v-model="sessionForm.quantity" title="Cantidad" :minValue="0.0001" :decimals="4" :hasDiv="true" :xl="4" :lg="4" :md="12" :sm="12"/>
                         <template v-if="!isRestaurant">
@@ -587,6 +589,8 @@ export default {
             reports: null,
             selectedSession: null,
             loading: false,
+            optionSearchTimers: {customers: null, items: null},
+            optionSearchSequence: {customers: 0, items: 0},
             saving: false,
             now: Date.now(),
             timer: null,
@@ -670,6 +674,8 @@ export default {
     },
     beforeUnmount() {
         window.clearInterval(this.timer);
+        window.clearTimeout(this.optionSearchTimers.customers);
+        window.clearTimeout(this.optionSearchTimers.items);
         this.removeStationDragListeners();
     },
     methods: {
@@ -692,12 +698,12 @@ export default {
             this.stationForm.type = this.stationTypeOptions.find(type => type.code === "table") || this.stationTypeOptions[0] || null;
             this.stationForm.shape = this.stationShapeOptions.find(shape => shape.code === "round") || this.stationShapeOptions[0] || null;
             await this.refresh();
+            this.$nextTick(() => this.preloadOperationOptions());
         },
         async refresh() {
             if(!this.selectedBranch) return;
             if(this.isRestaurant) {
-                await this.getFloors();
-                await this.getStations();
+                await this.getBoard();
                 return;
             }
 
@@ -720,6 +726,30 @@ export default {
             this.floors = result.data.data;
             this.selectedFloor = this.floors.find(floor => floor.id === this.selectedFloor?.id) || this.floors[0] || null;
         },
+        async getBoard() {
+            this.loading = true;
+            const result = await Requests.get({
+                route: this.config.routes.board,
+                data: {
+                    branch_id: this.selectedBranch.id,
+                    service_floor_id: this.selectedFloor?.id || null
+                }
+            });
+            this.loading = false;
+
+            if(!Requests.valid({result})) {
+                this.floors = [];
+                this.selectedFloor = null;
+                this.stations = [];
+                this.notify(result, "No fue posible cargar las mesas.");
+                return;
+            }
+
+            const data = result.data.data;
+            this.floors = data.floors || [];
+            this.selectedFloor = this.floors.find(floor => floor.id === data.selected_floor_id) || null;
+            this.stations = data.stations || [];
+        },
         async getStations() {
             if(!this.selectedFloor) {
                 this.stations = [];
@@ -738,6 +768,39 @@ export default {
             this.selectedFloor = floor;
             this.selectedSession = null;
             await this.getStations();
+        },
+        preloadOperationOptions() {
+            this.loadOperationOptions("customers", "");
+            this.loadOperationOptions("items", "");
+        },
+        searchCustomers(search, toggleLoading) {
+            this.scheduleOptionSearch("customers", search, toggleLoading);
+        },
+        searchItems(search, toggleLoading) {
+            this.scheduleOptionSearch("items", search, toggleLoading);
+        },
+        scheduleOptionSearch(resource, search, toggleLoading) {
+            window.clearTimeout(this.optionSearchTimers[resource]);
+            toggleLoading?.(true);
+            this.optionSearchTimers[resource] = window.setTimeout(async () => {
+                await this.loadOperationOptions(resource, search);
+                toggleLoading?.(false);
+            }, 250);
+        },
+        async loadOperationOptions(resource, search) {
+            const sequence = ++this.optionSearchSequence[resource];
+            const result = await Requests.get({
+                route: this.config.routes.options,
+                data: {
+                    resource,
+                    search: search || "",
+                    item_type: resource === "items" && !this.isRestaurant ? "service" : null
+                }
+            });
+
+            if(sequence !== this.optionSearchSequence[resource] || !Requests.valid({result})) return;
+
+            this.options[resource] = result.data.data || [];
         },
         async getSessions(url = null) {
             this.loading = true;

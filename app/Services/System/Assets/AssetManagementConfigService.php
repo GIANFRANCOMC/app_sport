@@ -29,7 +29,7 @@ final class AssetManagementConfigService extends BaseConfigService {
                 "records" => $references->activeBranches(),
             ]),
             "users" => self::data([
-                "records" => $references->users(),
+                "records" => $references->userOptions(),
             ]),
             "branchAssets" => self::data([
                 "statuses" => BranchAsset::getStatuses(),

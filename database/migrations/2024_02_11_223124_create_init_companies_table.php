@@ -243,6 +243,7 @@ return new class extends Migration {
             $table->foreign("company_id")->references("id")->on("companies")->onDelete("cascade");
             $table->foreign("brand_id")->references("id")->on("brands")->nullOnDelete();
             $table->foreign("currency_id")->references("id")->on("currencies")->onDelete("cascade");
+            $table->index(["company_id", "status", "type", "name"], "items_operation_search_index");
 
         });
         Schema::create("asset_categories", function(Blueprint $table) {
@@ -347,6 +348,7 @@ return new class extends Migration {
                 ["company_id", "identity_document_type_id", "document_number"],
                 "customers_company_identity_document_unique"
             );
+            $table->index(["company_id", "status", "name"], "customers_operation_search_index");
 
         });
         Schema::create("warehouses", function(Blueprint $table) {

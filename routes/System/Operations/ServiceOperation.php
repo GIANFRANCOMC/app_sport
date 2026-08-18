@@ -8,6 +8,8 @@ use Illuminate\Support\Facades\{Route};
 Route::get("/restaurant", [ServiceOperationController::class, "index"])->name("restaurant_pos.index");
 Route::get("/services", [ServiceOperationController::class, "index"])->name("service_sessions.index");
 Route::get("/initParams", [ServiceOperationController::class, "initParams"])->name("service_operations.initParams");
+Route::get("/board", [ServiceOperationController::class, "board"])->name("service_operations.board");
+Route::get("/options", [ServiceOperationController::class, "options"])->name("service_operations.options");
 Route::get("/floors", [ServiceOperationController::class, "floors"])->name("service_operations.floors");
 Route::post("/floors", [ServiceOperationController::class, "storeFloor"])->name("service_operations.floors.store");
 Route::patch("/floors/{id}", [ServiceOperationController::class, "updateFloor"])->name("service_operations.floors.update");

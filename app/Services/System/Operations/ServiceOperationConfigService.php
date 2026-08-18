@@ -29,9 +29,9 @@ final class ServiceOperationConfigService extends BaseConfigService {
         return self::data([
             "page" => $page,
             "branches" => $references->activeBranches(),
-            "users" => $references->users(),
-            "customers" => $references->activeCustomers(),
-            "items" => $references->saleItems(),
+            "users" => $references->userOptions(),
+            "customers" => [],
+            "items" => [],
             "stationTypes" => ServiceOperationService::stationTypes(),
             "stationColors" => ServiceOperationService::stationColors(),
             "stationShapes" => ServiceOperationService::stationShapes(),

@@ -54,7 +54,7 @@ final class CreateTenantCompany extends Command {
         }
 
         LandlordSchemaService::ensure();
-        $this->assertRegistryIsAvailable($slug, $domain);
+        $this->assertRegistryIsAvailable($slug, $domain, $databaseName);
 
         $tenant = null;
 
@@ -229,7 +229,7 @@ final class CreateTenantCompany extends Command {
 
     }
 
-    private function assertRegistryIsAvailable(string $slug, string $domain): void {
+    private function assertRegistryIsAvailable(string $slug, string $domain, string $databaseName): void {
 
         $existingTenant = DB::connection("landlord")
             ->table("tenant_databases")
@@ -250,6 +250,17 @@ final class CreateTenantCompany extends Command {
         if($existingDomain && (!$existingTenant || (int) $existingDomain->tenant_database_id !== (int) $existingTenant->id)) {
 
             throw new InvalidArgumentException("Ya existe un tenant con ese dominio.");
+
+        }
+
+        $databaseTenant = DB::connection("landlord")
+            ->table("tenant_databases")
+            ->where("database_name", $databaseName)
+            ->first();
+
+        if($databaseTenant && (!$existingTenant || (int) $databaseTenant->id !== (int) $existingTenant->id)) {
+
+            throw new InvalidArgumentException("La base de datos ya está asignada a otro tenant.");
 
         }
 

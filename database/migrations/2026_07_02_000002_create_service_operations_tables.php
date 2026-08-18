@@ -28,6 +28,7 @@ return new class extends Migration {
             $table->foreign("company_id")->references("id")->on("companies")->onDelete("cascade");
             $table->foreign("branch_id")->references("id")->on("branches")->restrictOnDelete();
             $table->unique(["company_id", "branch_id", "code"]);
+            $table->index(["company_id", "branch_id", "status", "sort_order"], "service_floors_board_index");
 
         });
 
@@ -57,6 +58,7 @@ return new class extends Migration {
             $table->foreign("branch_id")->references("id")->on("branches")->restrictOnDelete();
             $table->foreign("service_floor_id")->references("id")->on("service_floors")->restrictOnDelete();
             $table->unique(["company_id", "branch_id", "code"]);
+            $table->index(["company_id", "branch_id", "service_floor_id", "status"], "service_stations_board_index");
 
         });
 
@@ -100,6 +102,8 @@ return new class extends Migration {
             $table->foreign("opened_by")->references("id")->on("users")->restrictOnDelete();
             $table->foreign("closed_by")->references("id")->on("users")->nullOnDelete();
             $table->unique(["company_id", "reference"]);
+            $table->index(["company_id", "service_station_id", "status"], "service_sessions_station_status_index");
+            $table->index(["company_id", "branch_id", "session_type", "status", "created_at"], "service_sessions_list_index");
 
         });
 
@@ -136,6 +140,7 @@ return new class extends Migration {
             $table->foreign("service_session_id")->references("id")->on("service_sessions")->onDelete("cascade");
             $table->foreign("item_id")->references("id")->on("items")->restrictOnDelete();
             $table->foreign("assigned_user_id")->references("id")->on("users")->nullOnDelete();
+            $table->index(["company_id", "service_session_id", "status"], "service_session_items_status_index");
 
         });
 
@@ -181,6 +186,7 @@ return new class extends Migration {
             $table->foreign("service_session_id")->references("id")->on("service_sessions")->onDelete("cascade");
             $table->foreign("service_session_item_id")->references("id")->on("service_session_items")->onDelete("cascade");
             $table->foreign("user_id")->references("id")->on("users")->nullOnDelete();
+            $table->index(["company_id", "service_session_id", "occurred_at"], "service_session_events_timeline_index");
 
         });
 

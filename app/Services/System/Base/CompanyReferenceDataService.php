@@ -250,6 +250,16 @@ final class CompanyReferenceDataService {
 
     }
 
+    public function userOptions(): Collection {
+
+        return User::query()
+            ->where("company_id", $this->companyId)
+            ->where("status", "active")
+            ->orderBy("name")
+            ->get(["id", "name"]);
+
+    }
+
     private function branchQuery(): Builder {
 
         $query = Branch::query()

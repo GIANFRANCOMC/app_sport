@@ -111,6 +111,8 @@ return [
         "users.biometric-fingerprints.store" => ["users.index"],
 
         "service_operations.initParams" => ["restaurant_pos.index", "service_sessions.index"],
+        "service_operations.board" => ["restaurant_pos.index"],
+        "service_operations.options" => ["restaurant_pos.index", "service_sessions.index"],
         "service_operations.floors" => ["restaurant_pos.index"],
         "service_operations.floors.store" => ["restaurant_pos.index"],
         "service_operations.stations" => ["restaurant_pos.index", "service_sessions.index"],

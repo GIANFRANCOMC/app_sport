@@ -22,7 +22,7 @@ final class UserAttendanceConfigService extends BaseConfigService {
 
         return self::data([
             "branches" => $references->activeBranches(),
-            "users" => $references->users(),
+            "users" => $references->userOptions(),
             "sourceTypes" => collect(UserAttendanceService::sourceTypes())->map(fn($source) => [
                 "code" => $source,
                 "label" => match ($source) {

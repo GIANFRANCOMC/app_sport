@@ -390,6 +390,8 @@ const ENTITY_SPECIAL_ROUTES = {
         events: "events"
     },
     service_operations: {
+        board: "board",
+        options: "options",
         floors: "floors",
         stations: "stations",
         sessions: "sessions",

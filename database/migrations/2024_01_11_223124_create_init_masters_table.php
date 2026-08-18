@@ -195,6 +195,8 @@ return new class extends Migration {
 
             $table->foreign("company_id")->references("id")->on("companies")->onDelete("cascade");
             $table->foreign("sub_section_id")->references("id")->on("sub_sections")->onDelete("cascade");
+            $table->unique(["company_id", "sub_section_id"], "companies_sub_sections_company_module_unique");
+            $table->index(["company_id", "status", "section_order", "sub_section_order"], "companies_sub_sections_navigation_index");
 
         });
         Schema::create("roles", function(Blueprint $table) {

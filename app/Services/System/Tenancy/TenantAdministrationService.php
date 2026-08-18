@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services\System\Tenancy;
 
 use App\Models\System\Tenancy\{TenantAuditLog, TenantDatabase};
+use Illuminate\Contracts\Pagination\{LengthAwarePaginator};
 use Illuminate\Support\Facades\{Cache, DB, Schema};
 use Illuminate\Support\{Collection};
 use RuntimeException;
@@ -21,6 +22,76 @@ final class TenantAdministrationService {
             ->when($status, fn($query) => $query->where("status", $status))
             ->orderBy("slug")
             ->get();
+
+    }
+
+    public function paginate(string $search = "", ?string $status = null, int $perPage = 20): LengthAwarePaginator {
+
+        return TenantDatabase::query()
+            ->select([
+                "id", "slug", "company_id", "database_name", "status",
+                "last_resolved_at", "created_at", "updated_at",
+            ])
+            ->with(["domains" => fn($query) => $query
+                ->select(["id", "tenant_database_id", "domain", "is_primary", "status"])
+                ->orderByDesc("is_primary")
+                ->orderBy("domain")])
+            ->when($status, fn($query) => $query->where("status", $status))
+            ->when($search !== "", function($query) use ($search): void {
+
+                $prefix = addcslashes($search, "\\%_")."%";
+                $query->where(function($query) use ($prefix): void {
+
+                    $query->where("slug", "like", $prefix)
+                        ->orWhere("database_name", "like", $prefix)
+                        ->orWhereHas("domains", fn($domains) => $domains->where("domain", "like", $prefix));
+
+                });
+
+            })
+            ->orderBy("slug")
+            ->paginate(min(50, max(10, $perPage)))
+            ->withQueryString();
+
+    }
+
+    public function counts(): array {
+
+        $counts = TenantDatabase::query()
+            ->selectRaw("status, COUNT(*) as aggregate")
+            ->groupBy("status")
+            ->pluck("aggregate", "status")
+            ->map(fn($count) => (int) $count)
+            ->all();
+
+        return [
+            "total" => array_sum($counts),
+            "active" => $counts["active"] ?? 0,
+            "inactive" => $counts["inactive"] ?? 0,
+            "suspended" => $counts["suspended"] ?? 0,
+            "provisioning" => $counts["provisioning"] ?? 0,
+        ];
+
+    }
+
+    public function serialize(TenantDatabase $tenant): array {
+
+        $tenant->loadMissing("domains");
+        $primaryDomain = $tenant->domains->firstWhere("is_primary", true)
+            ?? $tenant->domains->first();
+
+        return [
+            "id" => (int) $tenant->id,
+            "slug" => (string) $tenant->slug,
+            "company_id" => $tenant->company_id ? (int) $tenant->company_id : null,
+            "database_name" => (string) $tenant->database_name,
+            "status" => (string) $tenant->status,
+            "domain" => $primaryDomain?->domain,
+            "url" => $primaryDomain ? "//{$primaryDomain->domain}" : null,
+            "last_resolved_at" => $tenant->last_resolved_at?->toIso8601String(),
+            "created_at" => $tenant->created_at?->toIso8601String(),
+            "updated_at" => $tenant->updated_at?->toIso8601String(),
+        ];
 
     }
 

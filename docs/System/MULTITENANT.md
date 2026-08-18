@@ -4,6 +4,8 @@
 
 Gympe atiende subdominios tenant registrados, por ejemplo `demo.gympe.test`, y reserva `app.gympe.test` para la administración central del SaaS. El dominio raíz pertenece a otro proyecto y este código no lo atiende.
 
+La arquitectura y las convenciones del panel central están documentadas en `docs/System/PLATFORM_ADMINISTRATION.md`. Su interfaz autenticada funciona como un shell Vue con endpoints JSON y navegación sin recarga completa.
+
 Cada tenant dispone de:
 
 - un subdominio único de un solo nivel;
