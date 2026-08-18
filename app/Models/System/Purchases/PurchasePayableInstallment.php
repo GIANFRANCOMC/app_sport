@@ -4,10 +4,14 @@ declare(strict_types=1);
 
 namespace App\Models\System\Purchases;
 
+use App\Models\Concerns\{BelongsToCompany};
 use Illuminate\Database\Eloquent\Relations\{BelongsTo};
+use Illuminate\Database\Eloquent\{Builder};
 use Illuminate\Database\Eloquent\{Model};
 
 final class PurchasePayableInstallment extends Model {
+    use BelongsToCompany;
+
     protected $table = "purchase_payable_installments";
 
     protected $fillable = [
@@ -31,6 +35,12 @@ final class PurchasePayableInstallment extends Model {
         "paid_amount" => "App\\Casts\\System\\ConfigurableDecimal",
         "pending_amount" => "App\\Casts\\System\\ConfigurableDecimal",
     ];
+
+    public function scopeOutstanding(Builder $query): Builder {
+
+        return $query->whereIn("status", ["pending", "partial", "overdue"]);
+
+    }
 
     public function accountPayable(): BelongsTo {
 

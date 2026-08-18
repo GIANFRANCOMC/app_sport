@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace App\Models\System\Sales;
 
+use App\Models\Concerns\{BelongsToCompany};
 use App\Models\System\Finance\{PaymentMethod, PaymentMethodVariant};
-use Illuminate\Database\Eloquent\{Model};
+use Illuminate\Database\Eloquent\{Model, Relations\BelongsTo};
 
 final class SalePayment extends Model {
+    use BelongsToCompany;
+
     protected $table = "sale_payments";
 
     protected $fillable = [
@@ -30,13 +33,19 @@ final class SalePayment extends Model {
         "amount" => "App\\Casts\\System\\ConfigurableDecimal",
     ];
 
-    public function paymentMethod() {
+    public function saleHeader(): BelongsTo {
+
+        return $this->belongsTo(SaleHeader::class, "sale_header_id");
+
+    }
+
+    public function paymentMethod(): BelongsTo {
 
         return $this->belongsTo(PaymentMethod::class, "payment_method_id");
 
     }
 
-    public function paymentMethodVariant() {
+    public function paymentMethodVariant(): BelongsTo {
 
         return $this->belongsTo(PaymentMethodVariant::class, "payment_method_variant_id");
 

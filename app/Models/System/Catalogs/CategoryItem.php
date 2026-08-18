@@ -1,21 +1,18 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models\System\Catalogs;
 
 use App\Helpers\System\{Utilities};
+use App\Models\Concerns\{BelongsToCompany};
 use App\Models\System\Catalogs\{Category};
-use Illuminate\Database\Eloquent\{Model};
+use Illuminate\Database\Eloquent\{Model, Relations\BelongsTo};
 
 class CategoryItem extends Model {
+    use BelongsToCompany;
+
     protected $table = "category_items";
-
-    protected $primaryKey = "id";
-
-    public $incrementing = true;
-
-    public $timestamps = true;
-
-    public static $snakeAttributes = true;
 
     protected $appends = [
         "formatted_status",
@@ -52,13 +49,13 @@ class CategoryItem extends Model {
     }
 
     // Relationships
-    public function category() {
+    public function category(): BelongsTo {
 
         return $this->belongsTo(Category::class, "category_id", "id");
 
     }
 
-    public function item() {
+    public function item(): BelongsTo {
 
         return $this->belongsTo(Item::class, "item_id", "id");
 

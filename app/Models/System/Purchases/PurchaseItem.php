@@ -4,10 +4,14 @@ declare(strict_types=1);
 
 namespace App\Models\System\Purchases;
 
+use App\Helpers\System\{Utilities};
+use App\Models\Concerns\{BelongsToCompany};
 use App\Models\System\Catalogs\{Item};
-use Illuminate\Database\Eloquent\{Model};
+use Illuminate\Database\Eloquent\{Builder, Model, Relations\BelongsTo};
 
 final class PurchaseItem extends Model {
+    use BelongsToCompany;
+
     protected $table = "purchase_items";
 
     protected $fillable = [
@@ -41,21 +45,29 @@ final class PurchaseItem extends Model {
 
     public function getRemainingQuantityAttribute(): float {
 
-        return round(
+        return Utilities::round(
             (float) ($this->attributes["quantity"] ?? 0)
             - (float) ($this->attributes["received_quantity"] ?? 0),
-            2
+            null,
+            (int) ($this->attributes["company_id"] ?? 0)
         );
 
     }
 
-    public function purchase() {
+    public function scopePendingReceipt(Builder $query): Builder {
+
+        return $query->whereIn("status", ["pending", "partial"])
+            ->whereColumn("received_quantity", "<", "quantity");
+
+    }
+
+    public function purchase(): BelongsTo {
 
         return $this->belongsTo(PurchaseHeader::class, "purchase_header_id");
 
     }
 
-    public function item() {
+    public function item(): BelongsTo {
 
         return $this->belongsTo(Item::class, "item_id");
 

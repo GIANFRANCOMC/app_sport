@@ -1,22 +1,18 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models\System\Catalogs;
 
 use App\Helpers\System\{Utilities};
+use App\Models\Concerns\{BelongsToCompany};
 use App\Models\System\Catalogs\{CategoryItem};
-use App\Models\System\Organizations\{Company};
-use Illuminate\Database\Eloquent\{Model};
+use Illuminate\Database\Eloquent\{Builder, Model, Relations\HasMany};
 
 class Category extends Model {
+    use BelongsToCompany;
+
     protected $table = "categories";
-
-    protected $primaryKey = "id";
-
-    public $incrementing = true;
-
-    public $timestamps = true;
-
-    public static $snakeAttributes = true;
 
     protected $appends = [
         "formatted_status",
@@ -61,13 +57,13 @@ class Category extends Model {
     }
 
     // Relationships
-    public function company() {
+    public function scopeActive(Builder $query): Builder {
 
-        return $this->belongsTo(Company::class, "company_id", "id");
+        return $query->where("status", "active");
 
     }
 
-    public function items() {
+    public function items(): HasMany {
 
         return $this->hasMany(CategoryItem::class, "category_id", "id")
             ->whereIn("status", ["active"]);

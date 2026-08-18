@@ -1,24 +1,21 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models\System\Sales;
 
 use App\Helpers\System\{Utilities};
+use App\Models\Concerns\{BelongsToCompany};
 use App\Models\System\Catalogs\{Item};
 use App\Models\System\Customers\{Customer};
 use App\Models\System\General\{Currency};
 use Exception;
-use Illuminate\Database\Eloquent\{Model};
+use Illuminate\Database\Eloquent\{Builder, Model, Relations\BelongsTo};
 
 class SaleBody extends Model {
+    use BelongsToCompany;
+
     protected $table = "sales_body";
-
-    protected $primaryKey = "id";
-
-    public $incrementing = true;
-
-    public $timestamps = true;
-
-    public static $snakeAttributes = true;
 
     protected $appends = [
         "formatted_type",
@@ -51,6 +48,17 @@ class SaleBody extends Model {
         "updated_by",
         "canceled_at",
         "canceled_by",
+    ];
+
+    protected $casts = [
+        "quantity" => "App\\Casts\\System\\ConfigurableDecimal",
+        "price" => "App\\Casts\\System\\ConfigurableDecimal",
+        "price_includes_tax" => "boolean",
+        "igv_exempt" => "boolean",
+        "total" => "App\\Casts\\System\\ConfigurableDecimal",
+        "commission_value" => "App\\Casts\\System\\ConfigurableDecimal",
+        "commission_amount" => "App\\Casts\\System\\ConfigurableDecimal",
+        "canceled_at" => "datetime",
     ];
 
     // Appends
@@ -97,12 +105,7 @@ class SaleBody extends Model {
 
     public static function getTypes($type = "all", $code = "") {
 
-        $types = [
-            ["code" => "sale", "label" => "Venta"],
-            ["code" => "manual", "label" => "Manual"],
-        ];
-
-        return Utilities::getValues($types, $type, $code);
+        return Item::getTypes($type, $code);
 
     }
 
@@ -118,26 +121,38 @@ class SaleBody extends Model {
 
     }
 
+    public function scopeActive(Builder $query): Builder {
+
+        return $query->where("status", "active");
+
+    }
+
+    public function scopeForSale(Builder $query, int $saleHeaderId): Builder {
+
+        return $query->where("sale_header_id", $saleHeaderId);
+
+    }
+
     // Relationships
-    public function saleHeader() {
+    public function saleHeader(): BelongsTo {
 
         return $this->belongsTo(SaleHeader::class, "sale_header_id", "id");
 
     }
 
-    public function item() {
+    public function item(): BelongsTo {
 
         return $this->belongsTo(Item::class, "item_id", "id");
 
     }
 
-    public function currency() {
+    public function currency(): BelongsTo {
 
         return $this->belongsTo(Currency::class, "currency_id", "id");
 
     }
 
-    public function customer() {
+    public function customer(): BelongsTo {
 
         return $this->belongsTo(Customer::class, "customer_id", "id");
 

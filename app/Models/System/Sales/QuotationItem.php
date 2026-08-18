@@ -4,11 +4,14 @@ declare(strict_types=1);
 
 namespace App\Models\System\Sales;
 
+use App\Models\Concerns\{BelongsToCompany};
 use App\Models\System\Catalogs\{Item};
 use App\Models\System\General\{Currency};
-use Illuminate\Database\Eloquent\{Model};
+use Illuminate\Database\Eloquent\{Model, Relations\BelongsTo};
 
 final class QuotationItem extends Model {
+    use BelongsToCompany;
+
     protected $table = "quotation_items";
 
     protected $fillable = [
@@ -39,13 +42,19 @@ final class QuotationItem extends Model {
         "total" => "App\\Casts\\System\\ConfigurableDecimal",
     ];
 
-    public function item() {
+    public function quotation(): BelongsTo {
+
+        return $this->belongsTo(QuotationHeader::class, "quotation_header_id");
+
+    }
+
+    public function item(): BelongsTo {
 
         return $this->belongsTo(Item::class, "item_id");
 
     }
 
-    public function currency() {
+    public function currency(): BelongsTo {
 
         return $this->belongsTo(Currency::class, "currency_id");
 

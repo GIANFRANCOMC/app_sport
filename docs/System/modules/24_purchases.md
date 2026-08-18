@@ -79,3 +79,21 @@ El método inicial es promedio ponderado por producto y almacén. Los impuestos 
 - Compras solo lista productos con estado `active`.
 - Un producto `inactive` no puede seleccionarse para nuevas órdenes o facturas de compra; primero debe reactivarse desde Catálogo comercial.
 - Los almacenes disponibles respetan las sucursales permitidas del colaborador.
+
+## Ingresos pendientes
+
+- Ruta independiente: `/purchases/pending-receipts` (`purchases.receipts.index`).
+- Reutiliza `PurchaseService::receive()`; no existe una segunda lógica de inventario.
+- Solo consulta compras aprobadas con estado `confirmed` o `partial`.
+- Cada recepción puede ser parcial o total y registra `purchase_receipts`, `purchase_receipt_items` y movimientos de Kardex dentro de la misma transacción.
+- Una compra sale automáticamente de Ingresos pendientes cuando todos sus detalles alcanzan la cantidad solicitada.
+
+## Cuentas por pagar
+
+- Ruta independiente: `/accounts_payable`.
+- Controlador: `AccountsPayableController`.
+- Servicio: `AccountsPayableService`.
+- Tablas reutilizadas: `purchase_accounts_payable`, `purchase_payable_installments` y `purchase_payable_payments`.
+- La vista sigue la estructura de Cuentas por cobrar: indicadores, filtros, listado, vencimientos y cronograma de cuotas.
+- Las consultas respetan empresa y almacenes permitidos para el colaborador.
+- No se crea una cuenta adicional por cada consulta: existe una sola cuenta por compra y las cuotas/pagos se relacionan con ella.

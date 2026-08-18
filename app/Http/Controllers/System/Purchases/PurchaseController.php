@@ -28,6 +28,12 @@ final class PurchaseController extends BaseController {
 
     }
 
+    public function pendingReceipts() {
+
+        return view("System/general/Purchases/purchases/main");
+
+    }
+
     public function initParams(Request $request) {
 
         return PurchaseConfigService::getInitParams(

@@ -4,11 +4,14 @@ declare(strict_types=1);
 
 namespace App\Models\System\Purchases;
 
+use App\Models\Concerns\{BelongsToCompany};
 use App\Models\System\General\{Currency};
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
 use Illuminate\Database\Eloquent\{Model};
 
 final class PurchaseAccountPayable extends Model {
+    use BelongsToCompany;
+
     protected $table = "purchase_accounts_payable";
 
     protected $fillable = [

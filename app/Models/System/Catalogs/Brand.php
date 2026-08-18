@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace App\Models\System\Catalogs;
 
 use App\Helpers\System\{Utilities};
-use App\Models\System\Organizations\{Company};
-use Illuminate\Database\Eloquent\{Model};
+use App\Models\Concerns\{BelongsToCompany};
+use Illuminate\Database\Eloquent\{Builder, Model, Relations\HasMany};
 
 class Brand extends Model {
+    use BelongsToCompany;
+
     protected $table = "brands";
 
     protected $fillable = [
@@ -45,13 +47,13 @@ class Brand extends Model {
 
     }
 
-    public function company() {
+    public function scopeActive(Builder $query): Builder {
 
-        return $this->belongsTo(Company::class, "company_id", "id");
+        return $query->where("status", "active");
 
     }
 
-    public function products() {
+    public function products(): HasMany {
 
         return $this->hasMany(Item::class, "brand_id", "id")
             ->where("type", "product");

@@ -299,7 +299,7 @@
             </div>
         </div>
 
-        <section v-if="activeMode === 'list'" class="br-filter-bar">
+        <section v-if="['list', 'receipts'].includes(activeMode)" class="br-filter-bar">
             <div class="row align-items-end g-2">
                 <InputText
                     v-model="filters.word"
@@ -311,7 +311,7 @@
                     lg="5"
                     @enterKeyPressed="listPurchases({})"/>
                 <div class="form-group col-xl-3 col-lg-3 col-md-12">
-                    <label class="form-label">Estado</label>
+                    <label class="form-label">{{ activeMode === "receipts" ? "Estado del ingreso" : "Estado" }}</label>
                     <v-select
                         v-model="filters.status"
                         :options="statuses"
@@ -325,6 +325,7 @@
                             <span>Buscar</span>
                         </button>
                         <button
+                            v-if="activeMode === 'list'"
                             type="button"
                             class="br-btn br-btn-sm br-btn-action-open-create"
                             @click="changeMode('new')">
@@ -332,6 +333,7 @@
                             <span>Nuevo</span>
                         </button>
                         <button
+                            v-if="activeMode === 'list'"
                             type="button"
                             class="br-btn br-btn-sm br-btn-action-export br-btn-action-export--desktop-icon"
                             title="Descargar compras"
@@ -345,7 +347,7 @@
             </div>
         </section>
 
-        <section v-if="activeMode === 'list'" class="br-entity-list">
+        <section v-if="['list', 'receipts'].includes(activeMode)" class="br-entity-list">
             <div class="table-responsive">
                 <table class="table br-entity-table mb-0">
                     <thead class="br-table-header-surface">
@@ -378,7 +380,7 @@
                                 </td>
                                 <td>{{ purchase.warehouse?.name }}</td>
                                 <td class="text-end">
-                                    <strong>{{ purchase.currency?.sign }} {{ separatorNumber(purchase.total) }}</strong>
+                                    <strong class="br-amount-inline__amount">{{ purchase.currency?.sign }} {{ separatorNumber(purchase.total) }}</strong>
                                 </td>
                                 <td>
                                     <span class="br-purchases__progress-label">{{ purchase.receipt_progress }}%</span>
@@ -423,7 +425,7 @@
             </div>
         </section>
 
-        <div v-if="activeMode === 'list' && records.links" class="d-flex justify-content-center mt-3">
+        <div v-if="['list', 'receipts'].includes(activeMode) && records.links" class="d-flex justify-content-center mt-3">
             <Paginator :links="records.links" @clickPage="listPurchases"/>
         </div>
     </main>
@@ -488,7 +490,11 @@ export default {
     async mounted() {
         this.activeMode = this.initialModeFromPath();
         Utils.navbarItem("menu-parent-purchases", {addClass: "open"});
-        Utils.navbarItem(this.activeMode === "new" ? "menu-purchases-new" : "menu-purchases-list", {});
+        Utils.navbarItem({
+            new: "menu-purchases-new",
+            receipts: "menu-purchases-receipts",
+            list: "menu-purchases-list"
+        }[this.activeMode], {});
         Alerts.swals({type: "initParams"});
         await this.initParams();
         Alerts.swals({show: false});
@@ -548,7 +554,10 @@ export default {
         initialModeFromPath() {
             const segment = window.location.pathname.split("?")[0].split("/").filter(Boolean).pop();
 
-            return ["new", "create"].includes(segment) ? "new" : "list";
+            if(["new", "create"].includes(segment)) return "new";
+            if(segment === "pending-receipts") return "receipts";
+
+            return "list";
         },
         changeMode(mode) {
             this.activeMode = mode;
@@ -637,7 +646,12 @@ export default {
             this.loading = true;
             const result = await Requests.get({
                 route: url || this.config.entity.routes.list,
-                data: {word: this.filters.word, status: this.filters.status?.code || ""}
+                data: {
+                    word: this.filters.word,
+                    status: this.activeMode === "receipts"
+                        ? (this.filters.status?.code || "pending_receipt")
+                        : (this.filters.status?.code || "")
+                }
             });
             this.records = result.data || {total: 0, data: []};
             this.loading = false;
@@ -956,12 +970,24 @@ export default {
             return [
                 {title: "Compras"},
                 {
-                    title: this.activeMode === "new" ? "Nueva compra" : "Listado",
+                    title: {
+                        new: "Nueva compra",
+                        receipts: "Ingresos pendientes",
+                        list: "Compras registradas"
+                    }[this.activeMode],
                     active: true
                 }
             ];
         },
         statuses() {
+            if(this.activeMode === "receipts") {
+                return [
+                    {code: "", label: "Todos los ingresos pendientes"},
+                    {code: "confirmed", label: "Pendiente de recepción"},
+                    {code: "partial", label: "Recepción parcial"}
+                ];
+            }
+
             return [
                 {code: "", label: "Todos los estados"},
                 {code: "confirmed", label: "Pendiente de recepción"},

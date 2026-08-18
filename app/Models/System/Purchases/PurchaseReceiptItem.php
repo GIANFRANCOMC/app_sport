@@ -4,11 +4,14 @@ declare(strict_types=1);
 
 namespace App\Models\System\Purchases;
 
+use App\Models\Concerns\{BelongsToCompany};
 use App\Models\System\Catalogs\{Item};
 use App\Models\System\Warehouses\{InventoryMovement};
-use Illuminate\Database\Eloquent\{Model};
+use Illuminate\Database\Eloquent\{Model, Relations\BelongsTo};
 
 final class PurchaseReceiptItem extends Model {
+    use BelongsToCompany;
+
     protected $table = "purchase_receipt_items";
 
     public $timestamps = false;
@@ -33,25 +36,25 @@ final class PurchaseReceiptItem extends Model {
         "created_at" => "datetime",
     ];
 
-    public function receipt() {
+    public function receipt(): BelongsTo {
 
         return $this->belongsTo(PurchaseReceipt::class, "purchase_receipt_id");
 
     }
 
-    public function purchaseItem() {
+    public function purchaseItem(): BelongsTo {
 
         return $this->belongsTo(PurchaseItem::class, "purchase_item_id");
 
     }
 
-    public function item() {
+    public function item(): BelongsTo {
 
         return $this->belongsTo(Item::class, "item_id");
 
     }
 
-    public function inventoryMovement() {
+    public function inventoryMovement(): BelongsTo {
 
         return $this->belongsTo(InventoryMovement::class, "inventory_movement_id");
 

@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 namespace App\Models\System\Sales;
 
+use App\Models\Concerns\{BelongsToCompany};
 use App\Models\System\Customers\{Customer};
 use App\Models\System\General\{Currency};
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
-use Illuminate\Database\Eloquent\{Model};
+use Illuminate\Database\Eloquent\{Builder, Model};
 
 final class SaleAccountReceivable extends Model {
+    use BelongsToCompany;
+
     protected $table = "sale_accounts_receivable";
 
     protected $fillable = [
@@ -47,6 +50,18 @@ final class SaleAccountReceivable extends Model {
         "pending_amount" => "App\\Casts\\System\\ConfigurableDecimal",
         "canceled_at" => "datetime",
     ];
+
+    public function scopeOutstanding(Builder $query): Builder {
+
+        return $query->whereIn("status", ["pending", "partial", "overdue"]);
+
+    }
+
+    public function scopeForCustomer(Builder $query, int $customerId): Builder {
+
+        return $query->where("customer_id", $customerId);
+
+    }
 
     public function sale(): BelongsTo {
 

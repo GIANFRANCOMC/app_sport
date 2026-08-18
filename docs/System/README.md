@@ -26,9 +26,10 @@ System no debe asumir comportamiento de visitantes publicos. Si una funcionalida
 6. [TABLES.md](TABLES.md)
 7. [DATABASE_INSTALLATION.md](DATABASE_INSTALLATION.md)
 8. [TESTING.md](TESTING.md)
-9. [modules/00_menu_order.md](modules/00_menu_order.md)
-10. Modulos numerados en [modules](modules)
-11. Decisiones de evolucion en [new_requirements](new_requirements)
+9. [DATABASE_OPTIMIZATION.md](DATABASE_OPTIMIZATION.md)
+10. [modules/00_menu_order.md](modules/00_menu_order.md)
+11. Modulos numerados en [modules](modules)
+12. Decisiones de evolucion en [new_requirements](new_requirements)
 
 ## Modulos Por Menu
 

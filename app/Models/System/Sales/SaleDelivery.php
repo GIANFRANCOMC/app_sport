@@ -5,11 +5,14 @@ declare(strict_types=1);
 namespace App\Models\System\Sales;
 
 use App\Helpers\System\{Utilities};
-use App\Models\System\Organizations\{Company, User};
+use App\Models\Concerns\{BelongsToCompany};
+use App\Models\System\Organizations\{User};
 use App\Models\System\Warehouses\{Warehouse};
-use Illuminate\Database\Eloquent\{Model};
+use Illuminate\Database\Eloquent\{Builder, Model, Relations\BelongsTo, Relations\HasMany};
 
 class SaleDelivery extends Model {
+    use BelongsToCompany;
+
     protected $table = "sale_deliveries";
 
     protected $appends = [
@@ -61,37 +64,37 @@ class SaleDelivery extends Model {
 
     }
 
-    public function company() {
+    public function scopePending(Builder $query): Builder {
 
-        return $this->belongsTo(Company::class, "company_id", "id");
+        return $query->where("status", "pending");
 
     }
 
-    public function saleHeader() {
+    public function saleHeader(): BelongsTo {
 
         return $this->belongsTo(SaleHeader::class, "sale_header_id", "id");
 
     }
 
-    public function warehouse() {
+    public function warehouse(): BelongsTo {
 
         return $this->belongsTo(Warehouse::class, "warehouse_id", "id");
 
     }
 
-    public function lastDeliveredBy() {
+    public function lastDeliveredBy(): BelongsTo {
 
         return $this->belongsTo(User::class, "last_delivered_by", "id");
 
     }
 
-    public function items() {
+    public function items(): HasMany {
 
         return $this->hasMany(SaleDeliveryItem::class, "sale_delivery_id", "id");
 
     }
 
-    public function events() {
+    public function events(): HasMany {
 
         return $this->hasMany(SaleDeliveryEvent::class, "sale_delivery_id", "id");
 

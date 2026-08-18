@@ -4,11 +4,14 @@ declare(strict_types=1);
 
 namespace App\Models\System\Warehouses;
 
+use App\Models\Concerns\{BelongsToCompany};
 use App\Models\System\Catalogs\{Item};
-use App\Models\System\Organizations\{Company, User};
-use Illuminate\Database\Eloquent\{Model};
+use App\Models\System\Organizations\{User};
+use Illuminate\Database\Eloquent\{Builder, Model, Relations\BelongsTo};
 
 class InventoryMovement extends Model {
+    use BelongsToCompany;
+
     protected $table = "inventory_movements";
 
     public $timestamps = false;
@@ -53,25 +56,38 @@ class InventoryMovement extends Model {
 
     }
 
-    public function company() {
+    public function scopeForWarehouse(Builder $query, int $warehouseId): Builder {
 
-        return $this->belongsTo(Company::class, "company_id", "id");
+        return $query->where("warehouse_id", $warehouseId);
 
     }
 
-    public function warehouse() {
+    public function scopeForItem(Builder $query, int $itemId): Builder {
+
+        return $query->where("item_id", $itemId);
+
+    }
+
+    public function scopeFromOrigin(Builder $query, string $originType, ?int $originId = null): Builder {
+
+        return $query->where("origin_type", $originType)
+            ->when($originId !== null, fn(Builder $originQuery) => $originQuery->where("origin_id", $originId));
+
+    }
+
+    public function warehouse(): BelongsTo {
 
         return $this->belongsTo(Warehouse::class, "warehouse_id", "id");
 
     }
 
-    public function item() {
+    public function item(): BelongsTo {
 
         return $this->belongsTo(Item::class, "item_id", "id");
 
     }
 
-    public function user() {
+    public function user(): BelongsTo {
 
         return $this->belongsTo(User::class, "user_id", "id");
 

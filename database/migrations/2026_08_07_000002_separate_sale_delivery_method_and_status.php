@@ -43,7 +43,7 @@ return new class extends Migration {
                     ->references("id")
                     ->on("sale_delivery_methods")
                     ->nullOnDelete();
-                $table->index(["company_id", "delivery_method_id"], "sales_header_company_delivery_method_idx");
+                $table->index(["company_id", "delivery_method_id", "status", "issue_date"], "sales_header_company_delivery_method_idx");
 
             });
 

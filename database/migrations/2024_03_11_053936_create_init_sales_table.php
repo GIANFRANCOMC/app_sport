@@ -31,6 +31,12 @@ return new class extends Migration {
             $table->decimal("tax", 15, 3)->default(0);
             $table->decimal("commission_total", 15, 3)->default(0);
             $table->decimal("total", 15, 3);
+            $table->decimal("paid_amount", 15, 3)->default(0);
+            $table->decimal("balance_due", 15, 3)->default(0);
+            $table->enum("payment_status", ["unpaid", "partial", "paid", "overpaid"])->default("paid");
+            $table->enum("payment_modality", ["paid_now", "cash_on_delivery", "installments"])->default("paid_now");
+            $table->decimal("installment_extra_percentage", 15, 3)->default(0);
+            $table->decimal("installment_extra_amount", 15, 3)->default(0);
             $table->text("observation")->nullable();
             $table->enum("status", ["active", "canceled", "inactive"])->default("active");
 
@@ -41,15 +47,21 @@ return new class extends Migration {
             $table->timestamp("canceled_at")->nullable();
             $table->integer("canceled_by")->nullable();
 
-            $table->foreign("serie_id")->references("id")->on("series")->onDelete("cascade");
-            $table->foreign("holder_id")->references("id")->on("customers")->onDelete("cascade");
-            $table->foreign("seller_id")->references("id")->on("users")->onDelete("cascade");
-            $table->foreign("currency_id")->references("id")->on("currencies")->onDelete("cascade");
+            $table->foreign("serie_id")->references("id")->on("series")->restrictOnDelete();
+            $table->foreign("holder_id")->references("id")->on("customers")->restrictOnDelete();
+            $table->foreign("seller_id")->references("id")->on("users")->restrictOnDelete();
+            $table->foreign("currency_id")->references("id")->on("currencies")->restrictOnDelete();
             $table->foreign("warehouse_id")->references("id")->on("warehouses")->nullOnDelete();
             $table->foreign("cash_session_id")->references("id")->on("cash_sessions")->nullOnDelete();
             $table->foreign("delivered_by")->references("id")->on("users")->nullOnDelete();
             $table->foreign("company_id")->references("id")->on("companies")->onDelete("cascade");
-            $table->unique(["company_id", "serie_id", "sequential"]);
+            $table->unique(["company_id", "serie_id", "sequential"], "sales_header_company_serie_sequential_uq");
+            $table->index(["company_id", "status", "issue_date", "id"], "sales_header_company_status_date_idx");
+            $table->index(["company_id", "holder_id", "status", "issue_date", "id"], "sales_header_holder_status_date_idx");
+            $table->index(["company_id", "seller_id", "status", "issue_date", "id"], "sales_header_seller_status_date_idx");
+            $table->index(["company_id", "warehouse_id", "status", "issue_date", "id"], "sales_header_warehouse_status_date_idx");
+            $table->index(["company_id", "delivery_status", "status", "issue_date", "id"], "sales_header_delivery_status_date_idx");
+            $table->index(["company_id", "payment_status", "status", "issue_date", "id"], "sales_header_payment_status_date_idx");
 
         });
 
@@ -76,6 +88,7 @@ return new class extends Migration {
                 ["company_id", "serie_id", "sequential", "action"],
                 "series_corr_company_serie_seq_action_uq"
             );
+            $table->index(["company_id", "sale_header_id", "action", "occurred_at"], "series_corr_sale_action_date_idx");
 
         });
         Schema::create("sales_body", function(Blueprint $table) {
@@ -89,6 +102,7 @@ return new class extends Migration {
             $table->decimal("quantity", 15, 3);
             $table->decimal("price", 15, 3);
             $table->boolean("price_includes_tax")->default(true);
+            $table->boolean("igv_exempt")->default(false);
             $table->decimal("total", 15, 3);
             $table->enum("commission_type", ["none", "percentage", "fixed"])->default("none");
             $table->decimal("commission_value", 15, 3)->default(0);
@@ -107,10 +121,13 @@ return new class extends Migration {
             $table->integer("canceled_by")->nullable();
 
             $table->foreign("sale_header_id")->references("id")->on("sales_header")->onDelete("cascade");
-            $table->foreign("item_id")->references("id")->on("items")->onDelete("cascade");
-            $table->foreign("currency_id")->references("id")->on("currencies")->onDelete("cascade");
-            $table->foreign("customer_id")->references("id")->on("customers")->onDelete("cascade");
+            $table->foreign("item_id")->references("id")->on("items")->restrictOnDelete();
+            $table->foreign("currency_id")->references("id")->on("currencies")->restrictOnDelete();
+            $table->foreign("customer_id")->references("id")->on("customers")->restrictOnDelete();
             $table->foreign("company_id")->references("id")->on("companies")->onDelete("cascade");
+            $table->index(["company_id", "sale_header_id", "status", "id"], "sales_body_header_status_idx");
+            $table->index(["company_id", "item_id", "status", "created_at", "id"], "sales_body_item_status_date_idx");
+            $table->index(["company_id", "customer_id", "status", "created_at", "id"], "sales_body_customer_status_date_idx");
 
         });
 
@@ -139,6 +156,7 @@ return new class extends Migration {
             $table->foreign("sale_header_id")->references("id")->on("sales_header")->onDelete("cascade");
             $table->foreign("tax_id")->references("id")->on("taxes")->nullOnDelete();
             $table->foreign("company_id")->references("id")->on("companies")->onDelete("cascade");
+            $table->index(["company_id", "sale_header_id", "status"], "sale_taxes_header_status_idx");
 
         });
 
@@ -148,6 +166,7 @@ return new class extends Migration {
             $table->unsignedBigInteger("company_id");
             $table->unsignedBigInteger("sale_header_id");
             $table->unsignedBigInteger("payment_method_id")->nullable();
+            $table->unsignedBigInteger("payment_method_variant_id")->nullable();
             $table->string("name", 255);
             $table->decimal("amount", 15, 3)->default(0);
             $table->string("reference", 100)->nullable();
@@ -161,7 +180,10 @@ return new class extends Migration {
 
             $table->foreign("sale_header_id")->references("id")->on("sales_header")->onDelete("cascade");
             $table->foreign("payment_method_id")->references("id")->on("payment_methods")->nullOnDelete();
+            $table->foreign("payment_method_variant_id")->references("id")->on("payment_method_variants")->nullOnDelete();
             $table->foreign("company_id")->references("id")->on("companies")->onDelete("cascade");
+            $table->index(["company_id", "sale_header_id", "status"], "sale_payments_header_status_idx");
+            $table->index(["company_id", "payment_method_id", "status", "created_at"], "sale_payments_method_status_date_idx");
 
         });
 

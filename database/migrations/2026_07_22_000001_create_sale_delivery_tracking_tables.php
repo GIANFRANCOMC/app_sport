@@ -31,7 +31,9 @@ return new class extends Migration {
             $table->foreign("sale_header_id")->references("id")->on("sales_header")->onDelete("cascade");
             $table->foreign("warehouse_id")->references("id")->on("warehouses")->nullOnDelete();
             $table->foreign("last_delivered_by")->references("id")->on("users")->nullOnDelete();
-            $table->unique(["company_id", "sale_header_id"]);
+            $table->unique(["company_id", "sale_header_id"], "sale_deliveries_company_sale_uq");
+            $table->index(["company_id", "status", "created_at", "id"], "sale_deliveries_company_status_date_idx");
+            $table->index(["company_id", "warehouse_id", "status", "id"], "sale_deliveries_warehouse_status_idx");
 
         });
 
@@ -56,6 +58,7 @@ return new class extends Migration {
             $table->foreign("sale_body_id")->references("id")->on("sales_body")->onDelete("cascade");
             $table->foreign("item_id")->references("id")->on("items")->restrictOnDelete();
             $table->unique(["company_id", "sale_delivery_id", "sale_body_id"], "sale_delivery_items_unique_body");
+            $table->index(["company_id", "sale_delivery_id", "status", "id"], "sale_delivery_items_delivery_status_idx");
 
         });
 
@@ -77,6 +80,7 @@ return new class extends Migration {
             $table->foreign("sale_delivery_id")->references("id")->on("sale_deliveries")->onDelete("cascade");
             $table->foreign("warehouse_id")->references("id")->on("warehouses")->restrictOnDelete();
             $table->foreign("delivered_by")->references("id")->on("users")->nullOnDelete();
+            $table->index(["company_id", "sale_delivery_id", "status", "delivered_at", "id"], "sale_delivery_events_delivery_status_idx");
 
         });
 
@@ -98,6 +102,8 @@ return new class extends Migration {
             $table->foreign("sale_body_id")->references("id")->on("sales_body")->onDelete("cascade");
             $table->foreign("item_id")->references("id")->on("items")->restrictOnDelete();
             $table->foreign("inventory_movement_id")->references("id")->on("inventory_movements")->nullOnDelete();
+            $table->unique(["company_id", "sale_delivery_event_id", "sale_delivery_item_id"], "sale_delivery_event_items_event_item_uq");
+            $table->index(["company_id", "inventory_movement_id"], "sale_delivery_event_items_movement_idx");
 
         });
 

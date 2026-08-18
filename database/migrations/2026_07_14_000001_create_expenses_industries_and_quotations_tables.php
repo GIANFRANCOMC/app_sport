@@ -140,7 +140,9 @@ return new class extends Migration {
             $table->foreign("seller_id")->references("id")->on("users")->restrictOnDelete();
             $table->foreign("currency_id")->references("id")->on("currencies")->restrictOnDelete();
             $table->foreign("sale_header_id")->references("id")->on("sales_header")->nullOnDelete();
-            $table->unique(["company_id", "reference"]);
+            $table->unique(["company_id", "reference"], "quotation_headers_company_reference_uq");
+            $table->index(["company_id", "status", "issue_date", "id"], "quotation_headers_company_status_date_idx");
+            $table->index(["company_id", "holder_id", "status", "issue_date", "id"], "quotation_headers_holder_status_date_idx");
 
         });
 
@@ -156,6 +158,7 @@ return new class extends Migration {
             $table->decimal("quantity", 15, 3);
             $table->decimal("price", 15, 3);
             $table->boolean("price_includes_tax")->default(true);
+            $table->boolean("igv_exempt")->default(false);
             $table->decimal("total", 15, 3);
             $table->text("observation")->nullable();
             $table->enum("status", ["active", "inactive"])->default("active");
@@ -169,6 +172,8 @@ return new class extends Migration {
             $table->foreign("quotation_header_id")->references("id")->on("quotation_headers")->onDelete("cascade");
             $table->foreign("item_id")->references("id")->on("items")->restrictOnDelete();
             $table->foreign("currency_id")->references("id")->on("currencies")->restrictOnDelete();
+            $table->index(["company_id", "quotation_header_id", "status", "id"], "quotation_items_header_status_idx");
+            $table->index(["company_id", "item_id", "status", "id"], "quotation_items_item_status_idx");
 
         });
 
@@ -197,6 +202,7 @@ return new class extends Migration {
             $table->foreign("company_id")->references("id")->on("companies")->onDelete("cascade");
             $table->foreign("quotation_header_id")->references("id")->on("quotation_headers")->onDelete("cascade");
             $table->foreign("tax_id")->references("id")->on("taxes")->nullOnDelete();
+            $table->index(["company_id", "quotation_header_id", "status"], "quotation_taxes_header_status_idx");
 
         });
 

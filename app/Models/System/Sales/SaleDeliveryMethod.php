@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace App\Models\System\Sales;
 
-use App\Models\System\Organizations\{Company};
-use Illuminate\Database\Eloquent\{Model};
+use App\Models\Concerns\{BelongsToCompany};
+use Illuminate\Database\Eloquent\{Builder, Model, Relations\HasMany};
 
 final class SaleDeliveryMethod extends Model {
+    use BelongsToCompany;
+
     protected $table = "sale_delivery_methods";
 
     protected $fillable = [
@@ -29,9 +31,17 @@ final class SaleDeliveryMethod extends Model {
         "is_default" => "boolean",
     ];
 
-    public function company() {
+    public function scopeActive(Builder $query): Builder {
 
-        return $this->belongsTo(Company::class, "company_id", "id");
+        return $query->where("status", "active")
+            ->orderBy("sort_order")
+            ->orderBy("name");
+
+    }
+
+    public function sales(): HasMany {
+
+        return $this->hasMany(SaleHeader::class, "delivery_method_id");
 
     }
 }

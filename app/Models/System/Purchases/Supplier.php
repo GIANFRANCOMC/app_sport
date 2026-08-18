@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 namespace App\Models\System\Purchases;
 
-use Illuminate\Database\Eloquent\{Model};
+use App\Models\Concerns\{BelongsToCompany};
+use Illuminate\Database\Eloquent\{Builder, Model, Relations\HasMany};
 
 final class Supplier extends Model {
+    use BelongsToCompany;
+
     protected $table = "suppliers";
 
     protected $fillable = [
@@ -32,19 +35,25 @@ final class Supplier extends Model {
         "credit_limit" => "App\\Casts\\System\\ConfigurableDecimal",
     ];
 
-    public function purchases() {
+    public function scopeActive(Builder $query): Builder {
+
+        return $query->where("status", "active");
+
+    }
+
+    public function purchases(): HasMany {
 
         return $this->hasMany(PurchaseHeader::class, "supplier_id");
 
     }
 
-    public function contacts() {
+    public function contacts(): HasMany {
 
         return $this->hasMany(SupplierContact::class, "supplier_id");
 
     }
 
-    public function bankAccounts() {
+    public function bankAccounts(): HasMany {
 
         return $this->hasMany(SupplierBankAccount::class, "supplier_id");
 

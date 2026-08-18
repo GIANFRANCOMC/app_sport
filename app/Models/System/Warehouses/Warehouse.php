@@ -1,21 +1,18 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models\System\Warehouses;
 
 use App\Helpers\System\{Utilities};
+use App\Models\Concerns\{BelongsToCompany};
 use App\Models\System\Organizations\{Branch};
-use Illuminate\Database\Eloquent\{Model};
+use Illuminate\Database\Eloquent\{Builder, Model, Relations\BelongsTo, Relations\HasMany};
 
 class Warehouse extends Model {
+    use BelongsToCompany;
+
     protected $table = "warehouses";
-
-    protected $primaryKey = "id";
-
-    public $incrementing = true;
-
-    public $timestamps = true;
-
-    public static $snakeAttributes = true;
 
     protected $appends = [
         "formatted_status",
@@ -82,13 +79,31 @@ class Warehouse extends Model {
     }
 
     // Relationships
-    public function branch() {
+    public function scopeActive(Builder $query): Builder {
+
+        return $query->where("status", "active");
+
+    }
+
+    public function scopeForBranch(Builder $query, int $branchId): Builder {
+
+        return $query->where("branch_id", $branchId);
+
+    }
+
+    public function branch(): BelongsTo {
 
         return $this->belongsTo(Branch::class, "branch_id", "id");
 
     }
 
-    public function inventoryMovements() {
+    public function warehouseItems(): HasMany {
+
+        return $this->hasMany(WarehouseItem::class, "warehouse_id", "id");
+
+    }
+
+    public function inventoryMovements(): HasMany {
 
         return $this->hasMany(InventoryMovement::class, "warehouse_id", "id");
 

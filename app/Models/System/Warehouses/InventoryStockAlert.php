@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace App\Models\System\Warehouses;
 
-use App\Models\System\Organizations\{Company, User};
-use Illuminate\Database\Eloquent\{Model};
+use App\Models\Concerns\{BelongsToCompany};
+use App\Models\System\Organizations\{User};
+use Illuminate\Database\Eloquent\{Builder, Model, Relations\BelongsTo};
 
 final class InventoryStockAlert extends Model {
+    use BelongsToCompany;
+
     protected $table = "inventory_stock_alerts";
 
     protected $fillable = [
@@ -28,19 +31,19 @@ final class InventoryStockAlert extends Model {
         "resolved_at" => "datetime",
     ];
 
-    public function company() {
+    public function scopeOpen(Builder $query): Builder {
 
-        return $this->belongsTo(Company::class);
+        return $query->where("status", "open");
 
     }
 
-    public function warehouseItem() {
+    public function warehouseItem(): BelongsTo {
 
         return $this->belongsTo(WarehouseItem::class);
 
     }
 
-    public function resolvedBy() {
+    public function resolvedBy(): BelongsTo {
 
         return $this->belongsTo(User::class, "resolved_by");
 

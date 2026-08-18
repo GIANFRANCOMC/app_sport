@@ -5,11 +5,15 @@ declare(strict_types=1);
 namespace App\Models\System\Purchases;
 
 use App\Helpers\System\{Utilities};
+use App\Models\Concerns\{BelongsToCompany};
 use App\Models\System\General\{Currency};
+use App\Models\System\Organizations\{User};
 use App\Models\System\Warehouses\{Warehouse};
-use Illuminate\Database\Eloquent\{Model};
+use Illuminate\Database\Eloquent\{Builder, Model, Relations\BelongsTo, Relations\HasMany, Relations\HasOne};
 
 final class PurchaseHeader extends Model {
+    use BelongsToCompany;
+
     protected $table = "purchase_headers";
 
     protected $fillable = [
@@ -173,63 +177,76 @@ final class PurchaseHeader extends Model {
 
     }
 
-    public function supplier() {
+    public function scopePendingReceipt(Builder $query): Builder {
+
+        return $query->whereIn("status", ["confirmed", "partial"])
+            ->where("approval_status", "approved");
+
+    }
+
+    public function supplier(): BelongsTo {
 
         return $this->belongsTo(Supplier::class, "supplier_id");
 
     }
 
-    public function warehouse() {
+    public function warehouse(): BelongsTo {
 
         return $this->belongsTo(Warehouse::class, "warehouse_id");
 
     }
 
-    public function currency() {
+    public function currency(): BelongsTo {
 
         return $this->belongsTo(Currency::class, "currency_id");
 
     }
 
-    public function items() {
+    public function approvedBy(): BelongsTo {
+
+        return $this->belongsTo(User::class, "approved_by");
+
+    }
+
+    public function items(): HasMany {
 
         return $this->hasMany(PurchaseItem::class, "purchase_header_id");
 
     }
 
-    public function receipts() {
+    public function receipts(): HasMany {
 
         return $this->hasMany(PurchaseReceipt::class, "purchase_header_id");
 
     }
 
-    public function taxes() {
+    public function taxes(): HasMany {
 
         return $this->hasMany(PurchaseTax::class, "purchase_header_id")
             ->whereIn("status", ["active"]);
 
     }
 
-    public function payments() {
+    public function payments(): HasMany {
 
         return $this->hasMany(PurchasePayment::class, "purchase_header_id")
             ->whereIn("status", ["active"]);
 
     }
 
-    public function accountPayable() {
+    public function accountPayable(): HasOne {
 
         return $this->hasOne(PurchaseAccountPayable::class, "purchase_header_id");
 
     }
 
-    public function expenses() {
+    public function expenses(): HasMany {
 
         return $this->hasMany(PurchaseExpense::class, "purchase_header_id");
 
     }
 
-    public function returns() {
+    public function returns(): HasMany {
 
         return $this->hasMany(PurchaseReturn::class, "purchase_header_id");
 

@@ -83,6 +83,9 @@ return new class extends Migration {
             $table->unsignedBigInteger("approved_by")->nullable();
             $table->timestamp("approved_at")->nullable();
             $table->enum("delivery_mode", ["immediate", "pending"])->default("immediate");
+            $table->enum("payment_modality", ["paid_now", "cash_on_delivery", "installments"])->default("paid_now");
+            $table->decimal("installment_extra_percentage", 15, 3)->default(0);
+            $table->decimal("installment_extra_amount", 15, 3)->default(0);
             $table->decimal("subtotal", 15, 3)->default(0);
             $table->decimal("tax", 15, 3)->default(0);
             $table->decimal("expense_total", 15, 3)->default(0);
@@ -108,7 +111,12 @@ return new class extends Migration {
             $table->foreign("warehouse_id")->references("id")->on("warehouses")->onDelete("restrict");
             $table->foreign("currency_id")->references("id")->on("currencies")->onDelete("restrict");
             $table->foreign("approved_by")->references("id")->on("users")->nullOnDelete();
-            $table->unique(["company_id", "reference"]);
+            $table->unique(["company_id", "reference"], "purchase_headers_company_reference_uq");
+            $table->index(["company_id", "status", "issue_date", "id"], "purchase_headers_company_status_date_idx");
+            $table->index(["company_id", "warehouse_id", "status", "expected_date", "id"], "purchase_headers_warehouse_status_date_idx");
+            $table->index(["company_id", "supplier_id", "status", "issue_date", "id"], "purchase_headers_supplier_status_date_idx");
+            $table->index(["company_id", "payment_status", "status", "due_date", "id"], "purchase_headers_payment_status_date_idx");
+            $table->index(["company_id", "approval_status", "status", "id"], "purchase_headers_approval_status_idx");
 
         });
 
@@ -131,6 +139,8 @@ return new class extends Migration {
             $table->foreign("purchase_header_id")->references("id")->on("purchase_headers")->onDelete("cascade");
             $table->foreign("item_id")->references("id")->on("items")->onDelete("restrict");
             $table->foreign("company_id")->references("id")->on("companies")->onDelete("cascade");
+            $table->index(["company_id", "purchase_header_id", "status", "id"], "purchase_items_header_status_idx");
+            $table->index(["company_id", "item_id", "status", "created_at", "id"], "purchase_items_item_status_date_idx");
 
         });
 
@@ -151,6 +161,9 @@ return new class extends Migration {
             $table->foreign("purchase_header_id")->references("id")->on("purchase_headers")->onDelete("cascade");
             $table->foreign("warehouse_id")->references("id")->on("warehouses")->onDelete("restrict");
             $table->foreign("company_id")->references("id")->on("companies")->onDelete("cascade");
+            $table->unique(["company_id", "reference"], "purchase_receipts_company_reference_uq");
+            $table->index(["company_id", "purchase_header_id", "status", "received_at", "id"], "purchase_receipts_header_status_date_idx");
+            $table->index(["company_id", "warehouse_id", "status", "received_at", "id"], "purchase_receipts_warehouse_status_date_idx");
 
         });
 
@@ -172,6 +185,8 @@ return new class extends Migration {
             $table->foreign("item_id")->references("id")->on("items")->onDelete("restrict");
             $table->foreign("inventory_movement_id")->references("id")->on("inventory_movements")->nullOnDelete();
             $table->foreign("company_id")->references("id")->on("companies")->onDelete("cascade");
+            $table->unique(["company_id", "purchase_receipt_id", "purchase_item_id"], "purchase_receipt_items_receipt_item_uq");
+            $table->index(["company_id", "inventory_movement_id"], "purchase_receipt_items_movement_idx");
 
         });
 
@@ -198,6 +213,7 @@ return new class extends Migration {
             $table->foreign("purchase_header_id")->references("id")->on("purchase_headers")->onDelete("cascade");
             $table->foreign("tax_id")->references("id")->on("taxes")->nullOnDelete();
             $table->foreign("company_id")->references("id")->on("companies")->onDelete("cascade");
+            $table->index(["company_id", "purchase_header_id", "status"], "purchase_taxes_header_status_idx");
 
         });
 
@@ -207,6 +223,7 @@ return new class extends Migration {
             $table->unsignedBigInteger("company_id");
             $table->unsignedBigInteger("purchase_header_id");
             $table->unsignedBigInteger("payment_method_id")->nullable();
+            $table->unsignedBigInteger("payment_method_variant_id")->nullable();
             $table->string("name", 255);
             $table->decimal("amount", 15, 3)->default(0);
             $table->string("reference", 100)->nullable();
@@ -218,7 +235,10 @@ return new class extends Migration {
             $table->integer("updated_by")->nullable();
             $table->foreign("purchase_header_id")->references("id")->on("purchase_headers")->onDelete("cascade");
             $table->foreign("payment_method_id")->references("id")->on("payment_methods")->nullOnDelete();
+            $table->foreign("payment_method_variant_id")->references("id")->on("payment_method_variants")->nullOnDelete();
             $table->foreign("company_id")->references("id")->on("companies")->onDelete("cascade");
+            $table->index(["company_id", "purchase_header_id", "status"], "purchase_payments_header_status_idx");
+            $table->index(["company_id", "payment_method_id", "status", "created_at"], "purchase_payments_method_status_date_idx");
 
         });
 
@@ -259,7 +279,8 @@ return new class extends Migration {
             $table->foreign("purchase_header_id")->references("id")->on("purchase_headers")->restrictOnDelete();
             $table->foreign("purchase_receipt_id")->references("id")->on("purchase_receipts")->nullOnDelete();
             $table->foreign("warehouse_id")->references("id")->on("warehouses")->restrictOnDelete();
-            $table->unique(["company_id", "reference"]);
+            $table->unique(["company_id", "reference"], "purchase_returns_company_reference_uq");
+            $table->index(["company_id", "purchase_header_id", "status", "returned_at", "id"], "purchase_returns_header_status_date_idx");
 
         });
 

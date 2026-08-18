@@ -98,6 +98,7 @@ Route::middleware(["auth", "verified", "module.permission", "resource.scope", "n
     Route::prefix("/cash-movements")->group($systemRoute."/Finance/CashMovement.php");
     Route::prefix("/cash-summary")->group($systemRoute."/Finance/CashSummary.php");
     Route::prefix("/accounts_receivable")->group($systemRoute."/Finance/AccountsReceivable.php");
+    Route::prefix("/accounts_payable")->group($systemRoute."/Finance/AccountsPayable.php");
     Route::prefix("/misc_expenses")->group($systemRoute."/Finance/MiscExpense.php");
 
     // Purchases

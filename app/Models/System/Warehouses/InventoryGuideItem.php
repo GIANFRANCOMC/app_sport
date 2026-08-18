@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace App\Models\System\Warehouses;
 
+use App\Models\Concerns\{BelongsToCompany};
 use App\Models\System\Catalogs\{Item};
-use Illuminate\Database\Eloquent\{Model};
+use Illuminate\Database\Eloquent\{Model, Relations\BelongsTo};
 
 final class InventoryGuideItem extends Model {
+    use BelongsToCompany;
+
     protected $fillable = [
         "company_id",
         "inventory_guide_id",
@@ -17,21 +20,24 @@ final class InventoryGuideItem extends Model {
         "unit_cost",
     ];
 
-    protected $casts = ["quantity" => "App\\Casts\\System\\ConfigurableDecimal", "unit_cost" => "App\\Casts\\System\\ConfigurableDecimal"];
+    protected $casts = [
+        "quantity" => "App\\Casts\\System\\ConfigurableDecimal",
+        "unit_cost" => "App\\Casts\\System\\ConfigurableDecimal",
+    ];
 
-    public function guide() {
+    public function guide(): BelongsTo {
 
         return $this->belongsTo(InventoryGuide::class, "inventory_guide_id");
 
     }
 
-    public function item() {
+    public function item(): BelongsTo {
 
         return $this->belongsTo(Item::class);
 
     }
 
-    public function movement() {
+    public function movement(): BelongsTo {
 
         return $this->belongsTo(InventoryMovement::class, "inventory_movement_id");
 

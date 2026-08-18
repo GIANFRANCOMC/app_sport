@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace App\Models\System\Sales;
 
+use App\Models\Concerns\{BelongsToCompany};
 use App\Models\System\Catalogs\{Item};
-use Illuminate\Database\Eloquent\{Model};
+use Illuminate\Database\Eloquent\{Model, Relations\BelongsTo};
 
 class SaleDeliveryItem extends Model {
+    use BelongsToCompany;
+
     protected $table = "sale_delivery_items";
 
     protected $appends = [
@@ -41,19 +44,19 @@ class SaleDeliveryItem extends Model {
 
     }
 
-    public function delivery() {
+    public function delivery(): BelongsTo {
 
         return $this->belongsTo(SaleDelivery::class, "sale_delivery_id", "id");
 
     }
 
-    public function saleBody() {
+    public function saleBody(): BelongsTo {
 
         return $this->belongsTo(SaleBody::class, "sale_body_id", "id");
 
     }
 
-    public function item() {
+    public function item(): BelongsTo {
 
         return $this->belongsTo(Item::class, "item_id", "id");
 

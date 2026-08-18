@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace App\Models\System\Sales;
 
+use App\Models\Concerns\{BelongsToCompany};
 use App\Models\System\Finance\{Tax};
-use Illuminate\Database\Eloquent\{Model};
+use Illuminate\Database\Eloquent\{Model, Relations\BelongsTo};
 
 final class QuotationTax extends Model {
+    use BelongsToCompany;
+
     protected $table = "quotation_taxes";
 
     protected $fillable = [
@@ -38,7 +41,13 @@ final class QuotationTax extends Model {
         "amount" => "App\\Casts\\System\\ConfigurableDecimal",
     ];
 
-    public function tax() {
+    public function quotation(): BelongsTo {
+
+        return $this->belongsTo(QuotationHeader::class, "quotation_header_id");
+
+    }
+
+    public function tax(): BelongsTo {
 
         return $this->belongsTo(Tax::class, "tax_id");
 

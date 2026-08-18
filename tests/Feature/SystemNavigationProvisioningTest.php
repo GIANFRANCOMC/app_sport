@@ -38,7 +38,7 @@ final class SystemNavigationProvisioningTest extends TestCase {
             ->where("status", "active")
             ->count();
 
-        $this->assertSame(49, $catalogCount);
+        $this->assertSame(51, $catalogCount);
         $this->assertSame($catalogCount, $companyCount);
         $this->assertSame($catalogCount, $adminCount);
 
@@ -213,7 +213,7 @@ final class SystemNavigationProvisioningTest extends TestCase {
             ->assertOk()
             ->assertJsonPath("bool", true)
             ->assertJsonCount(3, "industries")
-            ->assertJsonCount(49, "modules");
+            ->assertJsonCount(51, "modules");
 
     }
 
@@ -247,6 +247,48 @@ final class SystemNavigationProvisioningTest extends TestCase {
         $this->assertSame(["Mi organización"], $organizationSections);
         $this->assertFalse(DB::table("sections")->where("dom_label", "Atención al cliente")->exists());
         $this->assertFalse(DB::table("sections")->where("dom_label", "Colaboradores")->exists());
+
+    }
+
+    public function test_purchase_receipts_and_payables_have_independent_routes_and_navigation(): void {
+
+        $this->assertTrue(Route::has("purchases.receipts.index"));
+        $this->assertTrue(Route::has("accounts_payable.index"));
+        $this->assertTrue(Route::has("accounts_payable.list"));
+        $this->assertSame("/purchases/pending-receipts", parse_url(route("purchases.receipts.index"), PHP_URL_PATH));
+        $this->assertSame("/accounts_payable", parse_url(route("accounts_payable.index"), PHP_URL_PATH));
+
+        $items = DB::table("sub_sections")
+            ->whereIn("sub_sections.dom_route", ["purchases.receipts.index", "accounts_payable.index"])
+            ->orderBy("sub_sections.order")
+            ->get(["sub_sections.menu_group_id", "sub_sections.dom_route"]);
+
+        $this->assertCount(2, $items);
+        $this->assertSame([25], $items->pluck("menu_group_id")->unique()->values()->all());
+        $this->assertSame(["purchases.receipts.index", "accounts_payable.index"], $items->pluck("dom_route")->all());
+
+        $user = \App\Models\System\Organizations\User::query()
+            ->where("company_id", 1)
+            ->where("email", "admin@example.test")
+            ->firstOrFail();
+        Auth::login($user);
+        $middleware = [
+            \App\Http\Middleware\ResolveTenant::class,
+            \App\Http\Middleware\TrustHosts::class,
+            \App\Http\Middleware\EnsureTenantSession::class,
+            \App\Http\Middleware\EnsureAuthenticatedSession::class,
+            \App\Http\Middleware\EnsureModulePermission::class,
+            \App\Http\Middleware\EnsureOperationalScope::class,
+        ];
+
+        $this->withoutMiddleware($middleware)
+            ->get(route("purchases.receipts.index"))
+            ->assertOk();
+        $this->withoutMiddleware($middleware)
+            ->get(route("accounts_payable.list"))
+            ->assertOk()
+            ->assertJsonPath("bool", true)
+            ->assertJsonPath("summary.accounts", 0);
 
     }
 }

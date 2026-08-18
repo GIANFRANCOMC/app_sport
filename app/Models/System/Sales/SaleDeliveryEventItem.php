@@ -4,11 +4,14 @@ declare(strict_types=1);
 
 namespace App\Models\System\Sales;
 
+use App\Models\Concerns\{BelongsToCompany};
 use App\Models\System\Catalogs\{Item};
 use App\Models\System\Warehouses\{InventoryMovement};
-use Illuminate\Database\Eloquent\{Model};
+use Illuminate\Database\Eloquent\{Model, Relations\BelongsTo};
 
 class SaleDeliveryEventItem extends Model {
+    use BelongsToCompany;
+
     protected $table = "sale_delivery_event_items";
 
     public $timestamps = false;
@@ -29,31 +32,31 @@ class SaleDeliveryEventItem extends Model {
         "created_at" => "datetime",
     ];
 
-    public function event() {
+    public function event(): BelongsTo {
 
         return $this->belongsTo(SaleDeliveryEvent::class, "sale_delivery_event_id", "id");
 
     }
 
-    public function deliveryItem() {
+    public function deliveryItem(): BelongsTo {
 
         return $this->belongsTo(SaleDeliveryItem::class, "sale_delivery_item_id", "id");
 
     }
 
-    public function saleBody() {
+    public function saleBody(): BelongsTo {
 
         return $this->belongsTo(SaleBody::class, "sale_body_id", "id");
 
     }
 
-    public function item() {
+    public function item(): BelongsTo {
 
         return $this->belongsTo(Item::class, "item_id", "id");
 
     }
 
-    public function inventoryMovement() {
+    public function inventoryMovement(): BelongsTo {
 
         return $this->belongsTo(InventoryMovement::class, "inventory_movement_id", "id");
 

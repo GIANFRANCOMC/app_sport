@@ -67,6 +67,7 @@ export default defineConfig({
 
                 // System Pages - Finance
                 'resources/js/System/Pages/Finance/accounts_receivable/main.js',
+                'resources/js/System/Pages/Finance/accounts_payable/main.js',
                 'resources/js/System/Pages/Finance/cash_registers/main.js',
                 'resources/js/System/Pages/Finance/cash_sessions/main.js',
                 'resources/js/System/Pages/Finance/cash_movements/main.js',

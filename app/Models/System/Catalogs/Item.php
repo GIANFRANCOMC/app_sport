@@ -1,24 +1,28 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models\System\Catalogs;
 
 use App\Helpers\System\{Utilities};
+use App\Models\Concerns\{BelongsToCompany};
 use App\Models\System\General\{Currency};
-use App\Models\System\Organizations\{Company};
 use App\Models\System\Sales\{SaleBody};
 use App\Models\System\Warehouses\{InventoryMovement, WarehouseItem};
-use Illuminate\Database\Eloquent\{Model};
+use Illuminate\Database\Eloquent\{Builder, Model, Relations\BelongsTo, Relations\HasMany};
 
 class Item extends Model {
+    use BelongsToCompany;
+
+    public const STATUS_ACTIVE = "active";
+
+    public const TYPE_PRODUCT = "product";
+
+    public const TYPE_SERVICE = "service";
+
+    public const TYPE_SUBSCRIPTION = "subscription";
+
     protected $table = "items";
-
-    protected $primaryKey = "id";
-
-    public $incrementing = true;
-
-    public $timestamps = true;
-
-    public static $snakeAttributes = true;
 
     protected $appends = [
         "formatted_type",
@@ -67,6 +71,9 @@ class Item extends Model {
     protected $casts = [
         "price_includes_tax" => "boolean",
         "igv_exempt" => "boolean",
+        "price" => "App\\Casts\\System\\ConfigurableDecimal",
+        "min_price" => "App\\Casts\\System\\ConfigurableDecimal",
+        "max_price" => "App\\Casts\\System\\ConfigurableDecimal",
         "estimated_duration_minutes" => "integer",
         "capacity_control_enabled" => "boolean",
         "capacity_limit" => "integer",
@@ -231,7 +238,19 @@ class Item extends Model {
 
     }
 
-    public function scopeAvailableForSale($query) {
+    public function scopeActive(Builder $query): Builder {
+
+        return $query->where("status", self::STATUS_ACTIVE);
+
+    }
+
+    public function scopeOfType(Builder $query, string $type): Builder {
+
+        return $query->where("type", $type);
+
+    }
+
+    public function scopeAvailableForSale(Builder $query): Builder {
 
         return $query->where("status", "active")
             ->where(function($subQuery) {
@@ -256,46 +275,40 @@ class Item extends Model {
     }
 
     // Relationships
-    public function company() {
-
-        return $this->belongsTo(Company::class, "company_id", "id");
-
-    }
-
-    public function currency() {
+    public function currency(): BelongsTo {
 
         return $this->belongsTo(Currency::class, "currency_id", "id");
 
     }
 
-    public function brand() {
+    public function brand(): BelongsTo {
 
         return $this->belongsTo(Brand::class, "brand_id", "id");
 
     }
 
-    public function categoryItems() {
+    public function categoryItems(): HasMany {
 
         return $this->hasMany(CategoryItem::class, "item_id", "id")
             ->whereIn("status", ["active"]);
 
     }
 
-    public function salesBody() {
+    public function salesBody(): HasMany {
 
         return $this->hasMany(SaleBody::class, "item_id", "id")
             ->whereIn("status", ["active"]);
 
     }
 
-    public function warehouseItems() {
+    public function warehouseItems(): HasMany {
 
         return $this->hasMany(WarehouseItem::class, "item_id", "id")
             ->whereIn("status", ["active"]);
 
     }
 
-    public function inventoryMovements() {
+    public function inventoryMovements(): HasMany {
 
         return $this->hasMany(InventoryMovement::class, "item_id", "id");
 

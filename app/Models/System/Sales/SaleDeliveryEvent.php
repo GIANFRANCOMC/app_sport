@@ -4,11 +4,14 @@ declare(strict_types=1);
 
 namespace App\Models\System\Sales;
 
-use App\Models\System\Organizations\{Company, User};
+use App\Models\Concerns\{BelongsToCompany};
+use App\Models\System\Organizations\{User};
 use App\Models\System\Warehouses\{Warehouse};
-use Illuminate\Database\Eloquent\{Model};
+use Illuminate\Database\Eloquent\{Model, Relations\BelongsTo, Relations\HasMany};
 
 class SaleDeliveryEvent extends Model {
+    use BelongsToCompany;
+
     protected $table = "sale_delivery_events";
 
     public $timestamps = false;
@@ -32,31 +35,25 @@ class SaleDeliveryEvent extends Model {
         "created_at" => "datetime",
     ];
 
-    public function company() {
-
-        return $this->belongsTo(Company::class, "company_id", "id");
-
-    }
-
-    public function delivery() {
+    public function delivery(): BelongsTo {
 
         return $this->belongsTo(SaleDelivery::class, "sale_delivery_id", "id");
 
     }
 
-    public function warehouse() {
+    public function warehouse(): BelongsTo {
 
         return $this->belongsTo(Warehouse::class, "warehouse_id", "id");
 
     }
 
-    public function deliveredBy() {
+    public function deliveredBy(): BelongsTo {
 
         return $this->belongsTo(User::class, "delivered_by", "id");
 
     }
 
-    public function items() {
+    public function items(): HasMany {
 
         return $this->hasMany(SaleDeliveryEventItem::class, "sale_delivery_event_id", "id");
 

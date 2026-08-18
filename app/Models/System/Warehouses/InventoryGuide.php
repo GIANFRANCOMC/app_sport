@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace App\Models\System\Warehouses;
 
-use App\Models\System\Organizations\{Company, User};
-use Illuminate\Database\Eloquent\{Model};
+use App\Models\Concerns\{BelongsToCompany};
+use App\Models\System\Organizations\{User};
+use Illuminate\Database\Eloquent\{Builder, Model, Relations\BelongsTo, Relations\HasMany};
 
 final class InventoryGuide extends Model {
+    use BelongsToCompany;
+
     protected $fillable = [
         "company_id",
         "warehouse_id",
@@ -29,25 +32,25 @@ final class InventoryGuide extends Model {
         "canceled_at" => "datetime",
     ];
 
-    public function company() {
+    public function scopeConfirmed(Builder $query): Builder {
 
-        return $this->belongsTo(Company::class);
+        return $query->where("status", "confirmed");
 
     }
 
-    public function warehouse() {
+    public function warehouse(): BelongsTo {
 
         return $this->belongsTo(Warehouse::class);
 
     }
 
-    public function items() {
+    public function items(): HasMany {
 
         return $this->hasMany(InventoryGuideItem::class);
 
     }
 
-    public function confirmedBy() {
+    public function confirmedBy(): BelongsTo {
 
         return $this->belongsTo(User::class, "confirmed_by");
 

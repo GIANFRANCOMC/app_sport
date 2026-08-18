@@ -1,28 +1,30 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models\System\Sales;
 
 use App\Helpers\System\{Utilities};
+use App\Models\Concerns\{BelongsToCompany};
 use App\Models\System\Customers\{Customer};
 use App\Models\System\Finance\{CashSession};
 use App\Models\System\General\{Currency};
-use App\Models\System\Organizations\{Serie};
-use App\Models\System\Organizations\{User};
+use App\Models\System\Organizations\{Serie, User};
 use App\Models\System\Warehouses\{Warehouse};
 use Carbon\{Carbon};
 use Exception;
-use Illuminate\Database\Eloquent\{Model};
+use Illuminate\Database\Eloquent\{Builder, Model, Relations\BelongsTo, Relations\HasMany, Relations\HasOne};
 
 class SaleHeader extends Model {
+    use BelongsToCompany;
+
+    public const STATUS_ACTIVE = "active";
+
+    public const DELIVERY_PENDING = "pending";
+
+    public const DELIVERY_DELIVERED = "delivered";
+
     protected $table = "sales_header";
-
-    protected $primaryKey = "id";
-
-    public $incrementing = true;
-
-    public $timestamps = true;
-
-    public static $snakeAttributes = true;
 
     protected $appends = [
         "hash_id",
@@ -73,6 +75,20 @@ class SaleHeader extends Model {
         "updated_by",
         "canceled_at",
         "canceled_by",
+    ];
+
+    protected $casts = [
+        "issue_date" => "date:Y-m-d",
+        "delivered_at" => "datetime",
+        "subtotal" => "App\\Casts\\System\\ConfigurableDecimal",
+        "tax" => "App\\Casts\\System\\ConfigurableDecimal",
+        "commission_total" => "App\\Casts\\System\\ConfigurableDecimal",
+        "total" => "App\\Casts\\System\\ConfigurableDecimal",
+        "paid_amount" => "App\\Casts\\System\\ConfigurableDecimal",
+        "balance_due" => "App\\Casts\\System\\ConfigurableDecimal",
+        "installment_extra_percentage" => "App\\Casts\\System\\ConfigurableDecimal",
+        "installment_extra_amount" => "App\\Casts\\System\\ConfigurableDecimal",
+        "canceled_at" => "datetime",
     ];
 
     // Appends
@@ -270,95 +286,116 @@ class SaleHeader extends Model {
 
     }
 
+    public function scopeActive(Builder $query): Builder {
+
+        return $query->where("status", self::STATUS_ACTIVE);
+
+    }
+
+    public function scopePendingDelivery(Builder $query): Builder {
+
+        return $query->active()
+            ->where("delivery_status", self::DELIVERY_PENDING);
+
+    }
+
+    public function scopeIssuedBetween(Builder $query, ?string $from, ?string $to): Builder {
+
+        return $query
+            ->when($from, fn(Builder $dateQuery) => $dateQuery->whereDate("issue_date", ">=", $from))
+            ->when($to, fn(Builder $dateQuery) => $dateQuery->whereDate("issue_date", "<=", $to));
+
+    }
+
     // Relationships
-    public function serie() {
+    public function serie(): BelongsTo {
 
         return $this->belongsTo(Serie::class, "serie_id", "id");
 
     }
 
-    public function holder() {
+    public function holder(): BelongsTo {
 
         return $this->belongsTo(Customer::class, "holder_id", "id");
 
     }
 
-    public function seller() {
+    public function seller(): BelongsTo {
 
         return $this->belongsTo(User::class, "seller_id", "id");
 
     }
 
-    public function currency() {
+    public function currency(): BelongsTo {
 
         return $this->belongsTo(Currency::class, "currency_id", "id");
 
     }
 
-    public function warehouse() {
+    public function warehouse(): BelongsTo {
 
         return $this->belongsTo(Warehouse::class, "warehouse_id", "id");
 
     }
 
-    public function deliveryMethod() {
+    public function deliveryMethod(): BelongsTo {
 
         return $this->belongsTo(SaleDeliveryMethod::class, "delivery_method_id", "id");
 
     }
 
-    public function cashSession() {
+    public function cashSession(): BelongsTo {
 
         return $this->belongsTo(CashSession::class, "cash_session_id", "id");
 
     }
 
-    public function quotation() {
+    public function quotation(): BelongsTo {
 
         return $this->belongsTo(QuotationHeader::class, "quotation_header_id", "id");
 
     }
 
-    public function deliveredBy() {
+    public function deliveredBy(): BelongsTo {
 
         return $this->belongsTo(User::class, "delivered_by", "id");
 
     }
 
-    public function positions() {
+    public function positions(): HasMany {
 
         return $this->hasMany(SaleBody::class, "sale_header_id", "id")
             ->whereIn("status", ["active"]);
 
     }
 
-    public function allPositions() {
+    public function allPositions(): HasMany {
 
         return $this->hasMany(SaleBody::class, "sale_header_id", "id");
 
     }
 
-    public function taxes() {
+    public function taxes(): HasMany {
 
         return $this->hasMany(SaleTax::class, "sale_header_id", "id")
             ->whereIn("status", ["active"]);
 
     }
 
-    public function payments() {
+    public function payments(): HasMany {
 
         return $this->hasMany(SalePayment::class, "sale_header_id", "id")
             ->whereIn("status", ["active"]);
 
     }
 
-    public function delivery() {
+    public function delivery(): HasOne {
 
         return $this->hasOne(SaleDelivery::class, "sale_header_id", "id");
 
     }
 
-    public function accountReceivable() {
+    public function accountReceivable(): HasOne {
 
         return $this->hasOne(SaleAccountReceivable::class, "sale_header_id", "id");
 

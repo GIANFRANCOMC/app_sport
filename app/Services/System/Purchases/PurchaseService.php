@@ -134,7 +134,11 @@ final class PurchaseService {
 
         }
 
-        if(!empty($filters["status"])) {
+        if(($filters["status"] ?? null) === "pending_receipt") {
+
+            $query->pendingReceipt();
+
+        }elseif(!empty($filters["status"])) {
 
             $query->where("status", $filters["status"]);
 
