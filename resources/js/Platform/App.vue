@@ -15,8 +15,8 @@
                     <span class="platform-secure"><i class="fa-solid fa-shield-halved"></i> Landlord</span>
                     <span class="platform-user__avatar">{{ userInitial }}</span>
                     <span class="platform-user__name">{{ config.user?.name }}</span>
-                    <button class="platform-icon-button" type="button" title="Cerrar sesión" :disabled="loggingOut" @click="logout">
-                        <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                    <button class="platform-logout-button" type="button" title="Cerrar sesión" :disabled="loggingOut" @click="logout">
+                        <i class="fa-solid fa-arrow-right-from-bracket"></i><span>Cerrar sesión</span>
                     </button>
                 </div>
             </div>

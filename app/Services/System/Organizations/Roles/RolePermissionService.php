@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\System\Organizations\Roles;
 
+use App\Models\System\General\{SubSection};
 use App\Models\System\Organizations\{Role, User};
 use App\Services\System\Organizations\{AccessScopeService};
 use Illuminate\Support\Facades\{Cache};
@@ -42,12 +43,6 @@ final class RolePermissionService {
         }
 
         $permissions = self::getPermissions((int) $user->company_id, (int) $user->role_id);
-        if($permissions["is_full_access"]) {
-
-            return true;
-
-        }
-
         $action = self::actionForRoute($routeName, $httpMethod);
         $candidates = config("permissions.route_modules.{$routeName}");
 
@@ -313,12 +308,26 @@ final class RolePermissionService {
         }
 
         $allActions = self::actionCodes();
-        $modulePermissions = $role->roleSubSections
-            ->filter(fn($permission) => $permission->subSection)
-            ->mapWithKeys(function($permission) use ($allActions) {
+        $enabledSubSections = $role->is_full_access
+            ? SubSection::query()
+                ->where("status", "active")
+                ->whereHas("companiesSubSections", function($query) use ($companyId): void {
 
-                $moduleRoute = (string) $permission->subSection->dom_route;
-                $actions = collect($permission->actions ?: $allActions)
+                    $query->where("company_id", $companyId)->where("status", "active");
+
+                })
+                ->get()
+            : $role->roleSubSections
+                ->filter(fn($permission) => $permission->subSection)
+                ->pluck("subSection");
+        $modulePermissions = $enabledSubSections
+            ->mapWithKeys(function($subSection) use ($allActions, $role) {
+
+                $moduleRoute = (string) $subSection->dom_route;
+                $permission = $role->is_full_access
+                    ? null
+                    : $role->roleSubSections->firstWhere("sub_section_id", $subSection->id);
+                $actions = collect($permission?->actions ?: $allActions)
                     ->intersect($allActions)
                     ->unique()
                     ->values()
@@ -331,9 +340,8 @@ final class RolePermissionService {
 
         return [
             "is_full_access" => (bool) $role->is_full_access,
-            "sub_section_ids" => $role->roleSubSections
-                ->filter(fn($permission) => $permission->subSection)
-                ->pluck("sub_section_id")
+            "sub_section_ids" => $enabledSubSections
+                ->pluck("id")
                 ->map(fn($id) => (int) $id)
                 ->values()
                 ->all(),

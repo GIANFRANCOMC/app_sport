@@ -23,7 +23,8 @@
                                 <h3>{{ section.name }}</h3>
                                 <div class="platform-module-grid">
                                     <label v-for="module in section.modules" :key="module.id" :class="['platform-module', {'is-enabled': isEnabled(module.id)}]">
-                                        <input class="form-check-input" type="checkbox" :checked="isEnabled(module.id)" @change="toggleModule(module.id)">
+                                        <input class="platform-check__input" type="checkbox" :checked="isEnabled(module.id)" @change="toggleModule(module.id)">
+                                        <span class="platform-check__box" aria-hidden="true"><i class="fa-solid fa-check"></i></span>
                                         <span><strong>{{ module.dom_label }}</strong><small>{{ module.group_name || "Acceso directo" }}</small></span>
                                     </label>
                                 </div>
@@ -38,7 +39,7 @@
                         <form class="platform-card__body" @submit.prevent="publishAnnouncement">
                             <div class="mb-3"><label class="form-label">Título</label><input v-model.trim="announcementForm.title" class="form-control" maxlength="180" required></div>
                             <div class="mb-3"><label class="form-label">Mensaje</label><textarea v-model.trim="announcementForm.message" class="form-control" rows="4" maxlength="2000" required></textarea></div>
-                            <div class="row g-2"><div class="col-6"><label class="form-label">Tipo</label><select v-model="announcementForm.severity" class="form-select"><option value="info">Información</option><option value="success">Éxito</option><option value="warning">Advertencia</option><option value="danger">Importante</option></select></div><div class="col-6 d-flex align-items-end pb-2"><label class="form-check"><input v-model="announcementForm.dismissible" class="form-check-input" type="checkbox"><span class="form-check-label">Descartable</span></label></div><div class="col-6"><label class="form-label">Desde</label><input v-model="announcementForm.starts_at" class="form-control" type="datetime-local"></div><div class="col-6"><label class="form-label">Hasta</label><input v-model="announcementForm.ends_at" class="form-control" type="datetime-local"></div></div>
+                            <div class="row g-2"><div class="col-6"><label class="form-label">Tipo</label><select v-model="announcementForm.severity" class="form-select"><option value="info">Información</option><option value="success">Éxito</option><option value="warning">Advertencia</option><option value="danger">Importante</option></select></div><div class="col-6 d-flex align-items-end pb-1"><label :class="['platform-toggle-check', {'is-checked': announcementForm.dismissible}]"><input v-model="announcementForm.dismissible" class="platform-check__input" type="checkbox"><span class="platform-check__box" aria-hidden="true"><i class="fa-solid fa-check"></i></span><span><strong>Descartable</strong><small>El usuario podrá cerrar el aviso</small></span></label></div><div class="col-6"><label class="form-label">Desde</label><input v-model="announcementForm.starts_at" class="form-control" type="datetime-local"></div><div class="col-6"><label class="form-label">Hasta</label><input v-model="announcementForm.ends_at" class="form-control" type="datetime-local"></div></div>
                             <button class="btn platform-btn-primary text-white w-100 mt-3" :disabled="publishing"><span v-if="publishing" class="spinner-border spinner-border-sm me-1"></span>{{ publishing ? "Publicando…" : "Publicar aviso" }}</button>
                         </form>
                     </div>

@@ -8,6 +8,23 @@ use Illuminate\Database\{Seeder};
 use Illuminate\Support\Facades\{DB};
 
 final class SystemNavigationSeeder extends Seeder {
+    private const DISABLED_BY_DEFAULT_ROUTES = [
+        "dashboard.index",
+        "reports.index",
+        "restaurant_pos.index",
+        "tracking_customers.index",
+        "tracking_subscriptions.index",
+        "tracking_attendances.index",
+        "tracking_notifications.index",
+        "book_complaints.index",
+        "subscriptions.index",
+        "recipes.index",
+        "assets.index",
+        "assets_management.index",
+        "biometric_devices.index",
+        "user_attendances.index",
+    ];
+
     public function run(): void {
 
         if(DB::table("sections")->exists() || DB::table("sub_sections")->exists()) {
@@ -67,11 +84,11 @@ final class SystemNavigationSeeder extends Seeder {
                 ["id" => 12, "section_id" => 1, "menu_group_id" => 23, "order" => 3, "slug" => "sc_account", "name" => "account", "dom_id" => "menu-account", "dom_label" => "Mi cuenta", "dom_route" => "account.index", "description" => "Actualiza tus datos personales y la información de tu cuenta."],
                 ["id" => 20, "section_id" => 1, "menu_group_id" => 24, "order" => 1, "slug" => "sc_dashboard", "name" => "dashboard", "dom_id" => "menu-dashboard", "dom_label" => "Dashboard", "dom_route" => "dashboard.index", "description" => "Consulta indicadores y el estado general de la operación."],
                 ["id" => 31, "section_id" => 3, "menu_group_id" => 1, "order" => 1, "slug" => "sc_sales-create", "name" => "sales-create", "dom_id" => "menu-sales-create", "dom_label" => "Nueva venta", "dom_route" => "sales.create", "description" => "Registra una venta de productos, servicios o membresías."],
-                ["id" => 30, "section_id" => 3, "menu_group_id" => 1, "order" => 2, "slug" => "sc_sales-list", "name" => "sales-list", "dom_id" => "menu-sales-list", "dom_label" => "Ventas registradas", "dom_route" => "sales.index", "description" => "Consulta las ventas registradas y sus detalles."],
+                ["id" => 30, "section_id" => 3, "menu_group_id" => 1, "order" => 2, "slug" => "sc_sales-list", "name" => "sales-list", "dom_id" => "menu-sales-list", "dom_label" => "Listado de ventas", "dom_route" => "sales.index", "description" => "Consulta las ventas registradas y sus detalles."],
                 ["id" => 32, "section_id" => 3, "menu_group_id" => 2, "order" => 1, "slug" => "sc_sales-pos", "name" => "sales-pos", "dom_id" => "menu-sales-pos", "dom_label" => "Venta POS", "dom_route" => "sales.pos", "description" => "Venta rápida para mostrador vinculada a caja y almacén."],
                 ["id" => 105, "section_id" => 3, "menu_group_id" => 2, "order" => 2, "slug" => "sc_restaurant-pos", "name" => "restaurant-pos", "dom_id" => "menu-restaurant-pos", "dom_label" => "POS restaurante", "dom_route" => "restaurant_pos.index", "description" => "Gestiona mesas, pedidos y cobros del restaurante."],
                 ["id" => 34, "section_id" => 3, "menu_group_id" => 3, "order" => 1, "slug" => "sc_quotations-create", "name" => "quotations-create", "dom_id" => "menu-quotations-create", "dom_label" => "Nueva cotización", "dom_route" => "quotations.create", "description" => "Registra una nueva propuesta comercial."],
-                ["id" => 33, "section_id" => 3, "menu_group_id" => 3, "order" => 2, "slug" => "sc_quotations-list", "name" => "quotations-list", "dom_id" => "menu-quotations-list", "dom_label" => "Cotizaciones registradas", "dom_route" => "quotations.index", "description" => "Consulta y convierte cotizaciones en ventas."],
+                ["id" => 33, "section_id" => 3, "menu_group_id" => 3, "order" => 2, "slug" => "sc_quotations-list", "name" => "quotations-list", "dom_id" => "menu-quotations-list", "dom_label" => "Listado de cotizaciones", "dom_route" => "quotations.index", "description" => "Consulta y convierte cotizaciones en ventas."],
                 ["id" => 35, "section_id" => 3, "menu_group_id" => 4, "order" => 1, "slug" => "sc_sales-deliveries", "name" => "sales-deliveries", "dom_id" => "menu-sales-deliveries", "dom_label" => "Entregas pendientes", "dom_route" => "sales.deliveries.index", "description" => "Controla despachos parciales y totales de ventas pendientes."],
                 ["id" => 36, "section_id" => 3, "menu_group_id" => 4, "order" => 2, "slug" => "sc_sales-accounts-receivable", "name" => "sales-accounts-receivable", "dom_id" => "menu-sales-accounts-receivable", "dom_label" => "Cuentas por cobrar", "dom_route" => "accounts_receivable.index", "description" => "Consulta saldos, vencimientos y cronogramas de ventas a crédito."],
                 ["id" => 92, "section_id" => 9, "menu_group_id" => 5, "order" => 1, "slug" => "sc_purchases-new", "name" => "purchases-new", "dom_id" => "menu-purchases-new", "dom_label" => "Nueva compra", "dom_route" => "purchases.create", "description" => "Registra una compra, sus tributos, pagos y recepción."],
@@ -158,6 +175,7 @@ final class SystemNavigationSeeder extends Seeder {
 
                 DB::table("sub_sections")->insert($record + [
                     "dom_icon" => "",
+                    "is_enabled_by_default" => !in_array($record["dom_route"], self::DISABLED_BY_DEFAULT_ROUTES, true),
                     "status" => "active",
                     "created_at" => now(),
                     "updated_at" => now(),

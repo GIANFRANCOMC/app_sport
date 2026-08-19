@@ -55,6 +55,8 @@ Por tanto, el número de filas por usuario está limitado naturalmente por la ca
 
 La vista no replica consultas ni reglas de autorización. Si el servicio no entrega una sección o página, la navegación no la muestra.
 
+La activación inicial se obtiene de `sub_sections.is_enabled_by_default`. Un rol con acceso total no omite esta licencia funcional de empresa: las rutas directas también se intersectan con `companies_sub_sections.status = active`. `CompanySectionService::clearCompanyCache()` invalida conjuntamente navegación y permisos cuando la plataforma modifica los módulos.
+
 ## Estado activo
 
 La ruta actual es la fuente principal para determinar:

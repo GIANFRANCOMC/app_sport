@@ -46,6 +46,24 @@ La actualización de módulos genera el estado completo en memoria y ejecuta un 
 
 El aprovisionamiento está encapsulado en `PlatformTenantProvisioner`; el controlador no administra conexiones ni comandos. La solicitud es asíncrona desde el navegador y mantiene un estado visual de progreso. El comando continúa siendo la única implementación del proceso de creación para evitar dos flujos de negocio diferentes.
 
+La creación se realiza desde un modal bloqueante. Mientras el backend prepara la base tenant, la interfaz impide cerrar el modal, repetir el envío o abandonar accidentalmente la página. El backend añade un bloqueo exclusivo por `slug` durante 15 minutos, conserva el `throttle` de aprovisionamiento y valida subdominio, documento y una contraseña robusta. Los intentos correctos y fallidos quedan registrados en `tenant_audit_logs` sin almacenar credenciales.
+
+Los módulos habilitados usan un control visual propio, accesible mediante teclado y con un check de alto contraste. El mismo patrón se reutiliza para la propiedad **Descartable** de los avisos. La acción de cada fila se denomina **Configurar**, y el cierre de sesión se presenta explícitamente como una acción destructiva.
+
+## Módulos iniciales de una organización
+
+`sub_sections.is_enabled_by_default` es la fuente de verdad persistida. `SystemNavigationSeeder` define el valor y `SystemCatalogSyncService` lo proyecta a `companies_sub_sections` al crear la empresa. La plataforma puede activar o desactivar posteriormente cualquier módulo mediante su escritura masiva.
+
+Los siguientes módulos nacen desactivados:
+
+- Dashboard y Reportes.
+- POS restaurante.
+- Historial, Membresías, Asistencias de clientes, Notificaciones y Libro de reclamaciones del mundo Clientes.
+- Membresías y Recetas y platillos del Catálogo comercial.
+- Activos, Gestión de activos, Dispositivos biométricos y Asistencia del personal de Mi organización.
+
+El rol administrador conserva el catálogo completo de permisos, pero la autorización siempre intersecta esos permisos con los módulos habilitados para la empresa. Por ello, un administrador tenant no puede abrir por URL directa un módulo que la plataforma haya desactivado. Al cambiar módulos se invalidan tanto la caché de navegación como la de autorización.
+
 ## Migraciones e impacto
 
 Como el proyecto todavía se encuentra en etapa descartable y la base será recreada, los cambios se consolidaron en las migraciones fuente:
@@ -56,6 +74,7 @@ Como el proyecto todavía se encuentra en etapa descartable y la base será recr
 - Índices de auditoría por tenant/fecha y acción/resultado/fecha.
 - `companies_sub_sections(company_id, sub_section_id)` ahora es único, requisito del `upsert`.
 - Índice de navegación de módulos por empresa, estado y orden.
+- `sub_sections.is_enabled_by_default` concentra la política inicial de activación y evita listas duplicadas en controladores o componentes.
 
 Impacto al aplicar sobre datos no descartables: primero debe comprobarse que no existan bases repetidas ni filas duplicadas en `companies_sub_sections`. En el flujo actual se espera recrear las bases, por lo que no se agregó una migración de limpieza que pudiera decidir arbitrariamente qué registro conservar.
 
@@ -87,8 +106,9 @@ La prueba `PlatformAdministrationArchitectureTest` protege el shell único, la e
 ## Validación realizada
 
 - Migración landlord ejecutada desde cero en `gympe_landlord_testing` y seeder completado.
-- Suite general: 64 pruebas y 239 aserciones aprobadas.
-- Compilación Vite de producción aprobada; el entry del panel pesa aproximadamente 24 kB sin comprimir y su CSS 13 kB.
+- Pruebas focalizadas de navegación y aprovisionamiento: 15 pruebas aprobadas, incluidas la política de módulos iniciales, la imposibilidad de omitirla por URL, el bloqueo de aprovisionamiento y el modal bloqueante.
+- Sintaxis PHP y formato Pint aprobados en todos los archivos PHP modificados.
+- Compilación Vite de producción aprobada, incluidos los entries independientes de Compras y la interfaz de plataforma.
 - Prueba HTTP real sobre `app.gympe.test`: shell 200, listado JSON 200 y detalle JSON 200.
 - En ejecución local caliente: listado cercano a 1.0 s, primer detalle 1.1 s y segundo detalle 0.76 s incluyendo todo el ciclo HTTP de Laragon. La consulta directa de los 49 módulos toma aproximadamente 71 ms; el resto corresponde al arranque y middleware del entorno local.
 

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Services\System\Tenancy;
 
 use App\Models\System\Tenancy\{TenantDatabase};
-use Illuminate\Support\Facades\{Artisan};
+use Illuminate\Support\Facades\{Artisan, Cache};
 use RuntimeException;
 
 final class PlatformTenantProvisioner {
@@ -14,10 +14,18 @@ final class PlatformTenantProvisioner {
 
     public function create(array $data): TenantDatabase {
 
+        $slug = strtolower($data["slug"]);
+        $lock = Cache::lock("platform:tenant-provision:".hash("sha256", $slug), 900);
+        if(!$lock->get()) {
+
+            throw new RuntimeException("Este cliente ya se está aprovisionando. Espera a que finalice el proceso actual.");
+
+        }
+
         try {
 
             $exitCode = Artisan::call("tenant:create", [
-                "slug" => strtolower($data["slug"]),
+                "slug" => $slug,
                 "--commercial-name" => $data["commercial_name"],
                 "--legal-name" => $data["legal_name"],
                 "--document-number" => $data["document_number"],
@@ -30,6 +38,7 @@ final class PlatformTenantProvisioner {
         } finally {
 
             $this->connections->disconnect();
+            $lock->release();
 
         }
 
@@ -41,7 +50,7 @@ final class PlatformTenantProvisioner {
 
         return TenantDatabase::query()
             ->with("domains")
-            ->where("slug", strtolower($data["slug"]))
+            ->where("slug", $slug)
             ->firstOrFail();
 
     }

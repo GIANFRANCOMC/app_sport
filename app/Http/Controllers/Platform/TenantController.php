@@ -8,6 +8,7 @@ use App\Http\Controllers\{Controller};
 use App\Models\System\Tenancy\{TenantAnnouncement, TenantDatabase};
 use App\Services\System\Tenancy\{PlatformTenantProvisioner, PlatformTenantService, TenantAdministrationService};
 use Illuminate\Http\{JsonResponse, Request};
+use Illuminate\Validation\Rules\{Password};
 use Illuminate\Validation\{Rule, ValidationException};
 use RuntimeException;
 
@@ -46,25 +47,35 @@ final class TenantController extends Controller {
     ): JsonResponse {
 
         $data = $request->validate([
-            "slug" => ["required", "alpha_dash", "max:60"],
+            "slug" => ["required", "string", "max:60", "regex:/^[a-z0-9](?:[a-z0-9-]{0,58}[a-z0-9])?$/", Rule::notIn(config("tenancy.reserved_subdomains", []))],
             "commercial_name" => ["required", "string", "max:180"],
             "legal_name" => ["required", "string", "max:220"],
-            "document_number" => ["required", "string", "max:20"],
+            "document_number" => ["required", "string", "regex:/^[A-Za-z0-9-]+$/", "max:20"],
             "admin_name" => ["required", "string", "max:150"],
             "admin_email" => ["required", "email", "max:190"],
-            "admin_password" => ["required", "string", "min:10", "max:255", "confirmed"],
+            "admin_password" => ["required", "string", "max:255", "confirmed", Password::min(12)->mixedCase()->numbers()->symbols()],
         ]);
+        $actor = $request->attributes->get("platformUser");
         try {
 
             $tenant = $provisioner->create($data);
 
         } catch(RuntimeException $exception) {
 
+            $administration->audit(null, "tenant_provision_failed", "failure", [
+                "slug" => $data["slug"],
+                "reason" => $exception->getMessage(),
+            ], $actor?->email, $request->getHost(), $request->ip());
+
             throw ValidationException::withMessages([
                 "tenant" => $exception->getMessage(),
             ]);
 
         }
+        $administration->audit($tenant, "tenant_provisioned", "success", [
+            "slug" => $tenant->slug,
+            "database_name" => $tenant->database_name,
+        ], $actor?->email, $request->getHost(), $request->ip());
 
         return response()->json([
             "message" => "Cliente tenant creado correctamente.",
@@ -119,7 +130,7 @@ final class TenantController extends Controller {
         TenantAdministrationService $administration
     ): JsonResponse {
 
-        $data = $request->validate(["modules" => ["nullable", "array"], "modules.*" => ["integer"]]);
+        $data = $request->validate(["modules" => ["nullable", "array", "max:200"], "modules.*" => ["integer", "distinct"]]);
         $enabledCount = $platformTenants->updateModules($tenant, $data["modules"] ?? []);
         $actor = $request->attributes->get("platformUser");
         $administration->audit($tenant, "modules_updated", "success", ["enabled_count" => $enabledCount], $actor?->email);

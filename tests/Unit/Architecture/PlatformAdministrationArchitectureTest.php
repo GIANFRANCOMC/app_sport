@@ -41,4 +41,17 @@ final class PlatformAdministrationArchitectureTest extends TestCase {
         $this->assertStringContainsString("platform:install", $schemaService);
 
     }
+
+    public function test_platform_provisioning_is_locked_and_uses_a_blocking_modal(): void {
+
+        $provisioner = file_get_contents(app_path("Services/System/Tenancy/PlatformTenantProvisioner.php"));
+        $tenantIndex = file_get_contents(resource_path("js/Platform/pages/TenantIndex.vue"));
+        $tenantDetail = file_get_contents(resource_path("js/Platform/pages/TenantDetail.vue"));
+
+        $this->assertStringContainsString("Cache::lock(", $provisioner);
+        $this->assertStringContainsString("platform-provisioning-lock", $tenantIndex);
+        $this->assertStringContainsString("beforeunload", $tenantIndex);
+        $this->assertStringContainsString("platform-check__box", $tenantDetail);
+
+    }
 }

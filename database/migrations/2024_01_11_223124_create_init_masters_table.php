@@ -168,6 +168,7 @@ return new class extends Migration {
             $table->string("dom_label", 255)->default("");
             $table->string("dom_icon", 255)->default("");
             $table->string("dom_route", 255)->default("");
+            $table->boolean("is_enabled_by_default")->default(true);
             $table->enum("status", ["active", "inactive"])->default("active");
 
             $table->timestamp("created_at")->useCurrent()->nullable();

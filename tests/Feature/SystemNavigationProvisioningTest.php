@@ -21,7 +21,7 @@ final class SystemNavigationProvisioningTest extends TestCase {
 
     }
 
-    public function test_every_catalog_module_is_enabled_for_the_company_and_admin_role(): void {
+    public function test_new_company_uses_catalog_defaults_and_keeps_the_admin_role_complete(): void {
 
         $catalogCount = DB::table("sub_sections")->where("status", "active")->count();
         $companyCount = DB::table("companies_sub_sections")
@@ -39,8 +39,41 @@ final class SystemNavigationProvisioningTest extends TestCase {
             ->count();
 
         $this->assertSame(51, $catalogCount);
-        $this->assertSame($catalogCount, $companyCount);
+        $disabledRoutes = [
+            "dashboard.index", "reports.index", "restaurant_pos.index",
+            "tracking_customers.index", "tracking_subscriptions.index", "tracking_attendances.index",
+            "tracking_notifications.index", "book_complaints.index", "subscriptions.index", "recipes.index",
+            "assets.index", "assets_management.index", "biometric_devices.index", "user_attendances.index",
+        ];
+        $disabledIds = DB::table("sub_sections")->whereIn("dom_route", $disabledRoutes)->pluck("id");
+
+        $this->assertCount(14, $disabledIds);
+        $this->assertSame($catalogCount - count($disabledRoutes), $companyCount);
         $this->assertSame($catalogCount, $adminCount);
+        $this->assertSame(
+            count($disabledRoutes),
+            DB::table("companies_sub_sections")
+                ->where("company_id", 1)
+                ->whereIn("sub_section_id", $disabledIds)
+                ->where("status", "inactive")
+                ->count()
+        );
+
+    }
+
+    public function test_full_access_role_cannot_bypass_a_company_disabled_module_by_url(): void {
+
+        $user = \App\Models\System\Organizations\User::query()
+            ->where("company_id", 1)
+            ->where("email", "admin@example.test")
+            ->firstOrFail();
+
+        $this->assertFalse(
+            \App\Services\System\Organizations\Roles\RolePermissionService::canAccessRoute($user, "dashboard.index")
+        );
+        $this->assertTrue(
+            \App\Services\System\Organizations\Roles\RolePermissionService::canAccessRoute($user, "sales.create")
+        );
 
     }
 

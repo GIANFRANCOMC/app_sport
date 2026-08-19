@@ -76,12 +76,14 @@ final class SystemCatalogSyncService {
 
         foreach($items as $item) {
 
+            $defaultStatus = (bool) $item->is_enabled_by_default ? "active" : "inactive";
+
             DB::table("companies_sub_sections")->updateOrInsert(
                 ["company_id" => $companyId, "sub_section_id" => $item->id],
                 [
                     "section_order" => $sectionOrders[$item->section_id] ?? 999,
                     "sub_section_order" => $item->order,
-                    "status" => "active",
+                    "status" => $defaultStatus,
                     "updated_at" => now(),
                 ]
             );

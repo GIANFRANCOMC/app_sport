@@ -49,6 +49,7 @@ final class CompanySectionService {
     public static function clearCompanyCache(int $companyId): void {
 
         self::clearCache($companyId);
+        RolePermissionService::clearCompanyCache($companyId);
 
         \App\Models\System\Organizations\Role::query()
             ->where("company_id", $companyId)
