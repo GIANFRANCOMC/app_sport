@@ -1,5 +1,7 @@
 # Instalación y aprovisionamiento de base de datos
 
+> La secuencia completa de clonación, instalación, desarrollo, producción y referencia de comandos vive en [docs/installation/README.md](../installation/README.md). Este archivo conserva únicamente las reglas internas del esquema y aprovisionamiento.
+
 ## Objetivo
 
 La creación de tablas, el catálogo global del sistema y los datos de cada organización tienen responsabilidades separadas:

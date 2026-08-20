@@ -1,5 +1,7 @@
 # Desarrollo local por subdominios
 
+> La instalación y los comandos canónicos están centralizados en [docs/installation/README.md](../../installation/README.md). Este archivo se limita a la configuración local de subdominios.
+
 ## Regla
 
 El dominio raíz no apunta a este proyecto. Para Blapos se usa exclusivamente `*.blapos.test`; cada tenant registrado necesita un host como `demo.blapos.test`.

@@ -1,5 +1,7 @@
 # System - Arquitectura multi-tenant por subdominio
 
+> Para secuencias ejecutables de instalación, desarrollo, producción y referencia completa de comandos, consultar la [guía unificada](../installation/README.md). Este documento define la arquitectura y las reglas de tenancy.
+
 ## Resumen
 
 Blapos atiende subdominios tenant registrados, por ejemplo `demo.blapos.test`, y reserva `app.blapos.test` para la administración central del SaaS. El dominio raíz pertenece a otro proyecto y este código no lo atiende.

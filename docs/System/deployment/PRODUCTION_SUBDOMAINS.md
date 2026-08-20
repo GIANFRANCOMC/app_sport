@@ -1,5 +1,7 @@
 # Producción en AWS o DigitalOcean
 
+> La secuencia canónica de despliegue y la matriz Desarrollo/Producción están en [docs/installation/README.md](../../installation/README.md). Este archivo conserva únicamente la topología e infraestructura por subdominios.
+
 ## Topología recomendada
 
 ```text

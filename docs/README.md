@@ -8,18 +8,19 @@ Esta carpeta es la memoria funcional y tecnica del proyecto. Esta separada en do
 ## Orden recomendado de lectura
 
 1. [PROJECT_CONTEXT.md](PROJECT_CONTEXT.md): vision general del producto.
-2. [GENERALIDADES.md](GENERALIDADES.md): reglas transversales de arquitectura, UI, branding, cache, migraciones y documentacion.
-3. [System/README.md](System/README.md): entrada a la plataforma interna.
-4. [System/ARCHITECTURE.md](System/ARCHITECTURE.md): arquitectura tecnica de System.
-5. [System/DEVELOPMENT_GUIDE.md](System/DEVELOPMENT_GUIDE.md): reglas de desarrollo y criterio para cambios.
-6. [System/TABLES.md](System/TABLES.md): tablas usadas por System.
-7. [System/DATABASE_INSTALLATION.md](System/DATABASE_INSTALLATION.md): instalación, sincronización y aprovisionamiento.
-8. [System/modules/00_menu_order.md](System/modules/00_menu_order.md): orden oficial de modulos segun menu.
-9. [System/TESTING.md](System/TESTING.md): aislamiento de pruebas y contratos vigentes.
-10. [Guest/README.md](Guest/README.md): entrada al portal publico.
-11. [Guest/ARCHITECTURE.md](Guest/ARCHITECTURE.md): arquitectura tecnica de Guest.
-12. [Guest/TABLES.md](Guest/TABLES.md): tablas usadas por Guest.
-13. [REQUEST_GUIDE.md](REQUEST_GUIDE.md): como pedir cambios.
+2. [installation/README.md](installation/README.md): instalación, comandos, desarrollo, producción y operación.
+3. [GENERALIDADES.md](GENERALIDADES.md): reglas transversales de arquitectura, UI, branding, cache, migraciones y documentacion.
+4. [System/README.md](System/README.md): entrada a la plataforma interna.
+5. [System/ARCHITECTURE.md](System/ARCHITECTURE.md): arquitectura tecnica de System.
+6. [System/DEVELOPMENT_GUIDE.md](System/DEVELOPMENT_GUIDE.md): reglas de desarrollo y criterio para cambios.
+7. [System/TABLES.md](System/TABLES.md): tablas usadas por System.
+8. [System/DATABASE_INSTALLATION.md](System/DATABASE_INSTALLATION.md): detalles internos de sincronización y aprovisionamiento.
+9. [System/modules/00_menu_order.md](System/modules/00_menu_order.md): orden oficial de modulos segun menu.
+10. [System/TESTING.md](System/TESTING.md): aislamiento de pruebas y contratos vigentes.
+11. [Guest/README.md](Guest/README.md): entrada al portal publico.
+12. [Guest/ARCHITECTURE.md](Guest/ARCHITECTURE.md): arquitectura tecnica de Guest.
+13. [Guest/TABLES.md](Guest/TABLES.md): tablas usadas por Guest.
+14. [REQUEST_GUIDE.md](REQUEST_GUIDE.md): como pedir cambios.
 
 ## Regla importante
 

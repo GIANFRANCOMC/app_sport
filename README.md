@@ -11,36 +11,9 @@ Plataforma multiempresa para ventas, POS, clientes, membresías, asistencias, ca
 - `company_id` dentro de cada tenant para empresa raíz y subcompañías
 - Permisos por módulo + acción y alcances de sucursal, caja y almacén
 
-## Instalación base
+## Instalación y operación
 
-```bash
-composer install
-npm install
-cp .env.example .env
-php artisan key:generate
-```
-
-Configura landlord, conexión tenant y `TENANCY_BASE_DOMAIN` antes de migrar. Luego crea landlord y el tenant indicando obligatoriamente su administrador:
-
-```bash
-php artisan migrate --database=landlord --path=database/migrations/landlord
-php artisan tenant:create demo --commercial-name="Demo Gym" --legal-name="Demo Gym S.A.C." --document-number=20600000001 --admin-email=admin@demo.test --admin-password="UnaClaveSegura123"
-npm run dev
-```
-
-Para una instalación no tenant sobre una base vacía utiliza `php artisan system:install`. El procedimiento completo está en [Instalación de base de datos](docs/System/DATABASE_INSTALLATION.md).
-
-En Windows, `copy .env.example .env` reemplaza al comando `cp`.
-
-## Comandos tenant
-
-```bash
-php artisan tenant:list
-php artisan tenant:health
-php artisan tenant:suspend demo --force
-php artisan tenant:suspend demo --activate --force
-php artisan tenant:cache-clear demo
-```
+La fuente canónica para clonar, configurar, desarrollar, desplegar y operar landlord y tenants es la [guía unificada de instalación](docs/installation/README.md). Incluye la matriz Desarrollo/Producción, comandos Artisan propios, shell, Tinker, MySQL, colas, scheduler, pruebas y operaciones destructivas.
 
 ## Documentación
 
@@ -51,6 +24,7 @@ Empieza en [docs/README.md](docs/README.md). Las referencias principales son:
 - [Arquitectura System](docs/System/ARCHITECTURE.md)
 - [Multi-tenant](docs/System/MULTITENANT.md)
 - [Instalación y aprovisionamiento](docs/System/DATABASE_INSTALLATION.md)
+- [Instalación y comandos unificados](docs/installation/README.md)
 - [Pruebas automatizadas](docs/System/TESTING.md)
 - [Seguridad y autenticación](docs/System/SECURITY_AND_AUTH.md)
 - [Tablas System](docs/System/TABLES.md)
