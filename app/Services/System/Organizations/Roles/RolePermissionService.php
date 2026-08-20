@@ -30,6 +30,7 @@ final class RolePermissionService {
         }
 
         $prefix = self::routePrefix($routeName);
+
         if(in_array($prefix, self::PUBLIC_ROUTE_PREFIXES, true)) {
 
             return true;
@@ -43,6 +44,7 @@ final class RolePermissionService {
         }
 
         $permissions = self::getPermissions((int) $user->company_id, (int) $user->role_id);
+
         $action = self::actionForRoute($routeName, $httpMethod);
         $candidates = config("permissions.route_modules.{$routeName}");
 
@@ -55,7 +57,7 @@ final class RolePermissionService {
 
         if(!is_array($candidates)) {
 
-            $candidates = array_key_exists($routeName, $permissions["modules"])
+            $candidates = in_array($routeName, $permissions["catalog_routes"], true)
                 ? [$routeName]
                 : collect(array_keys($permissions["modules"]))
                     ->filter(fn($moduleRoute) => self::routePrefix($moduleRoute) === $prefix)
@@ -77,6 +79,7 @@ final class RolePermissionService {
     public static function actionForRoute(string $routeName, string $httpMethod = "GET"): string {
 
         $configuredAction = config("permissions.route_actions.{$routeName}");
+
         if(is_string($configuredAction) && in_array($configuredAction, self::actionCodes(), true)) {
 
             return $configuredAction;
@@ -190,6 +193,7 @@ final class RolePermissionService {
     public static function canAssignRole(User $actor, Role $targetRole): bool {
 
         $actorPermissions = self::getPermissions((int) $actor->company_id, (int) $actor->role_id);
+
         if($actorPermissions["is_full_access"]) {
 
             return true;
@@ -197,6 +201,7 @@ final class RolePermissionService {
         }
 
         $targetPermissions = self::getPermissions((int) $actor->company_id, (int) $targetRole->id);
+
         if($targetPermissions["is_full_access"]) {
 
             return false;
@@ -206,6 +211,7 @@ final class RolePermissionService {
         foreach($targetPermissions["modules"] as $moduleRoute => $actions) {
 
             $actorActions = $actorPermissions["modules"][$moduleRoute] ?? [];
+
             if(array_diff($actions, $actorActions)) {
 
                 return false;
@@ -215,6 +221,7 @@ final class RolePermissionService {
         }
 
         $targetRole->loadMissing(["branches:id", "cashRegisters:id", "warehouses:id"]);
+
         $scopes = [
             [AccessScopeService::BRANCH, "branch_scope_mode", "branches"],
             [AccessScopeService::CASH_REGISTER, "cash_register_scope_mode", "cashRegisters"],
@@ -224,6 +231,7 @@ final class RolePermissionService {
         foreach($scopes as [$type, $modeField, $relation]) {
 
             $actorIds = AccessScopeService::allowedIds($actor, $type);
+
             if($actorIds === null) {
 
                 continue;
@@ -241,6 +249,7 @@ final class RolePermissionService {
             }
 
             $targetIds = $targetRole->{$relation}->pluck("id")->map(fn($id) => (int) $id)->all();
+
             if(array_diff($targetIds, $actorIds)) {
 
                 return false;
@@ -308,6 +317,7 @@ final class RolePermissionService {
         }
 
         $allActions = self::actionCodes();
+
         $enabledSubSections = $role->is_full_access
             ? SubSection::query()
                 ->where("status", "active")
@@ -320,6 +330,7 @@ final class RolePermissionService {
             : $role->roleSubSections
                 ->filter(fn($permission) => $permission->subSection)
                 ->pluck("subSection");
+
         $modulePermissions = $enabledSubSections
             ->mapWithKeys(function($subSection) use ($allActions, $role) {
 
@@ -327,6 +338,7 @@ final class RolePermissionService {
                 $permission = $role->is_full_access
                     ? null
                     : $role->roleSubSections->firstWhere("sub_section_id", $subSection->id);
+
                 $actions = collect($permission?->actions ?: $allActions)
                     ->intersect($allActions)
                     ->unique()
@@ -340,6 +352,12 @@ final class RolePermissionService {
 
         return [
             "is_full_access" => (bool) $role->is_full_access,
+            "catalog_routes" => SubSection::query()
+                ->where("status", "active")
+                ->where("dom_route", "!=", "")
+                ->pluck("dom_route")
+                ->values()
+                ->all(),
             "sub_section_ids" => $enabledSubSections
                 ->pluck("id")
                 ->map(fn($id) => (int) $id)
@@ -352,7 +370,7 @@ final class RolePermissionService {
 
     private static function deniedPermissions(): array {
 
-        return ["is_full_access" => false, "sub_section_ids" => [], "modules" => []];
+        return ["is_full_access" => false, "catalog_routes" => [], "sub_section_ids" => [], "modules" => []];
 
     }
 

@@ -22,14 +22,47 @@ final class PlatformAdministrationArchitectureTest extends TestCase {
 
     }
 
-    public function test_module_configuration_uses_one_bulk_write(): void {
+    public function test_platform_uses_opaque_tenant_routes_and_protected_profile_updates(): void {
+
+        $migration = file_get_contents(database_path("migrations/landlord/2026_06_25_000001_create_tenant_registry_tables.php"));
+        $tenantModel = file_get_contents(app_path("Models/System/Tenancy/TenantDatabase.php"));
+        $profileController = file_get_contents(app_path("Http/Controllers/Platform/PlatformProfileController.php"));
+
+        $this->assertStringContainsString("\$table->uuid(\"public_id\")->unique()", $migration);
+        $this->assertStringContainsString("return \"public_id\"", $tenantModel);
+        $this->assertStringContainsString("Hash::check(\$data[\"current_password\"]", $profileController);
+        $this->assertStringContainsString("\"session_version\"", $profileController);
+        $this->assertStringNotContainsString("/tenants/(\\d+)", file_get_contents(resource_path("js/Platform/App.vue")));
+
+    }
+
+    public function test_module_configuration_replaces_the_company_projection_atomically(): void {
 
         $service = file_get_contents(app_path("Services/System/Tenancy/PlatformTenantService.php"));
         $migration = file_get_contents(database_path("migrations/2024_01_11_223124_create_init_masters_table.php"));
 
-        $this->assertStringContainsString("->upsert(", $service);
+        $this->assertStringContainsString("DB::transaction(", $service);
+        $this->assertStringContainsString("->delete();", $service);
+        $this->assertStringContainsString("->insert(\$records);", $service);
+        $this->assertStringContainsString("revokeDisabledRolePermissions", $service);
         $this->assertStringNotContainsString("->updateOrInsert(", $service);
         $this->assertStringContainsString("companies_sub_sections_company_module_unique", $migration);
+        $this->assertStringContainsString("sub_sections_dom_route_unique", $migration);
+
+    }
+
+    public function test_role_scope_schema_is_defined_in_the_base_migrations(): void {
+
+        $masterMigration = file_get_contents(database_path("migrations/2024_01_11_223124_create_init_masters_table.php"));
+        $companyMigration = file_get_contents(database_path("migrations/2024_02_11_223124_create_init_companies_table.php"));
+        $salesMigration = file_get_contents(database_path("migrations/2024_03_11_053936_create_init_sales_table.php"));
+
+        $this->assertStringContainsString("\$table->json(\"actions\")", $masterMigration);
+        $this->assertStringContainsString("Schema::create(\"role_branches\"", $companyMigration);
+        $this->assertStringContainsString("Schema::create(\"user_warehouses\"", $companyMigration);
+        $this->assertStringContainsString("Schema::create(\"sale_delivery_methods\"", $salesMigration);
+        $this->assertFileDoesNotExist(database_path("migrations/2026_07_01_000001_expand_role_permissions_and_operational_scopes.php"));
+        $this->assertFileDoesNotExist(database_path("migrations/2026_08_07_000002_separate_sale_delivery_method_and_status.php"));
 
     }
 

@@ -69,6 +69,7 @@ class DocumentNumberLength implements ValidationRule {
         $documentNumber = (string) $value;
 
         // Validate that document_number contains only numbers
+
         if(!ctype_digit($documentNumber)) {
 
             $fieldName = $this->attributeName ?? $attribute;
@@ -79,6 +80,7 @@ class DocumentNumberLength implements ValidationRule {
         }
 
         $length = strlen($documentNumber);
+
         $minLength = (int) ($identityDocumentType->min_length ?? 1);
         $maxLength = (int) ($identityDocumentType->max_length ?? 1);
 

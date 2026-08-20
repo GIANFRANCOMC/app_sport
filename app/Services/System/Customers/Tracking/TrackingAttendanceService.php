@@ -51,6 +51,7 @@ class TrackingAttendanceService {
     ): LengthAwarePaginator {
 
         $query = self::query($companyId, $filters, $allowedBranchIds);
+
         if($query === null) {
 
             return new LengthAwarePaginator([], 0, 1, 1, ["path" => ""]);
@@ -68,6 +69,7 @@ class TrackingAttendanceService {
     ): Collection {
 
         $query = self::query($companyId, $filters, $allowedBranchIds);
+
         if($query === null) {
 
             return collect();
@@ -75,6 +77,7 @@ class TrackingAttendanceService {
         }
 
         $records = $query->limit(self::MAX_EXPORT_ROWS + 1)->get();
+
         if($records->count() > self::MAX_EXPORT_ROWS) {
 
             throw new DomainException("La exportación supera 10 000 registros. Reduce el rango de fechas.");
@@ -169,6 +172,7 @@ class TrackingAttendanceService {
         }
 
         $attendance->motive = $motive ?? "N/A";
+
         $attendance->status = "canceled";
         $attendance->updated_at = now();
         $attendance->updated_by = $userId;

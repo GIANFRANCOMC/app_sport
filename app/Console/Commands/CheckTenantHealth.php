@@ -29,6 +29,7 @@ final class CheckTenantHealth extends Command {
         }
 
         $hasFailure = false;
+
         $rows = $tenants->map(function($tenant) use ($service, &$hasFailure) {
 
             $health = $service->health($tenant);
@@ -37,6 +38,7 @@ final class CheckTenantHealth extends Command {
             return [$tenant->slug, $tenant->status, $health["database"], $health["healthy"] ? "OK" : "ERROR", $health["latency_ms"], $health["message"]];
 
         });
+
         $this->table(["Tenant", "Estado", "Base", "Salud", "ms", "Detalle"], $rows->all());
 
         return $hasFailure ? self::FAILURE : self::SUCCESS;

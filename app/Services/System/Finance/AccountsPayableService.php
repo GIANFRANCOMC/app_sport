@@ -48,6 +48,7 @@ final class AccountsPayableService {
 
         $query = $this->query($companyId, $userId, $filters)
             ->where("status", "!=", "canceled");
+
         $amounts = (clone $query)
             ->selectRaw("currency_id, SUM(total_amount) total_amount, SUM(paid_amount) paid_amount, SUM(pending_amount) pending_amount")
             ->with("currency:id,code,sign")
@@ -62,10 +63,12 @@ final class AccountsPayableService {
                 "pending" => Utilities::round((float) $row->pending_amount, null, $companyId),
             ])
             ->values();
+
         $overdueQuery = fn(Builder $installments) => $installments
             ->whereIn("status", ["pending", "partial", "overdue"])
             ->where("pending_amount", ">", 0)
             ->whereDate("due_date", "<", now()->toDateString());
+
         $overdueAmounts = (clone $query)
             ->whereHas("installments", $overdueQuery)
             ->selectRaw("currency_id, SUM(pending_amount) overdue_amount")
@@ -102,6 +105,7 @@ final class AccountsPayableService {
         }
 
         $search = trim((string) ($filters["search"] ?? ""));
+
         if($search !== "") {
 
             $query->where(function(Builder $searchQuery) use ($search) {
@@ -120,6 +124,7 @@ final class AccountsPayableService {
         }
 
         $status = (string) ($filters["status"] ?? "");
+
         if($status === "overdue") {
 
             $query->whereHas("installments", fn(Builder $installments) => $installments
@@ -173,7 +178,9 @@ final class AccountsPayableService {
             ];
 
         });
+
         $status = $account->status;
+
         if(!in_array($status, ["paid", "canceled"], true)) {
 
             $status = $installments->contains(fn(array $installment) => $installment["status"] === "overdue")
@@ -183,6 +190,7 @@ final class AccountsPayableService {
         }
 
         $purchase = $account->purchase;
+
         $document = trim(implode("-", array_filter([$purchase?->document_series, $purchase?->document_number])));
         $result = [
             "id" => (int) $account->id,

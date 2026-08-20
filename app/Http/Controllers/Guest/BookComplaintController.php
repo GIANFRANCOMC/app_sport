@@ -27,12 +27,14 @@ final class BookComplaintController extends Controller {
                 "types" => BookComplaint::getTypes(),
                 "statuses" => BookComplaint::getStatuses(),
             ];
+
             $config->identityDocumentTypes = (object) [
                 "records" => IdentityDocumentType::query()
                     ->where("company_id", $request->get("company")->id)
                     ->whereIn("id", [1, 2, 4])
                     ->get(),
             ];
+
             $config->branches = (object) [
                 "records" => Branch::query()
                     ->where("company_id", $request->get("company")->id)
@@ -44,6 +46,7 @@ final class BookComplaintController extends Controller {
         }
 
         $initParams->config = $config;
+
         $initParams->bool = true;
 
         return $initParams;
@@ -93,6 +96,7 @@ final class BookComplaintController extends Controller {
                 $payload = collect($request->validated())
                     ->except(["attachments", "cf-turnstile-response", "website"])
                     ->all();
+
                 $record = BookComplaint::create([
                     ...$payload,
                     "company_id" => $company->id,
@@ -126,6 +130,7 @@ final class BookComplaintController extends Controller {
                         $storedName,
                         "local"
                     );
+
                     $storedPaths[] = $path;
 
                     DB::table("book_complaint_attachments")->insert([
@@ -144,7 +149,7 @@ final class BookComplaintController extends Controller {
 
             });
 
-        } catch(\Throwable $exception) {
+        }catch(\Throwable $exception) {
 
             Storage::disk("local")->delete($storedPaths);
 

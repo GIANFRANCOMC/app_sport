@@ -198,6 +198,7 @@ class Item extends Model {
         }
 
         $limit = max(0, (int) ($this->attributes["capacity_limit"] ?? 0));
+
         $used = max(0, (int) ($this->attributes["capacity_used"] ?? 0));
 
         return max(0, $limit - $used);

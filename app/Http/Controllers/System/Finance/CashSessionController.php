@@ -44,7 +44,7 @@ final class CashSessionController extends BaseController {
 
             return response()->json(["bool" => true, "msg" => "Caja aperturada correctamente.", "data" => $session]);
 
-        } catch(\Throwable $exception) {
+        }catch(\Throwable $exception) {
 
             return response()->json(["bool" => false, "msg" => $exception->getMessage()], 422);
 
@@ -64,7 +64,7 @@ final class CashSessionController extends BaseController {
                 "data" => $session,
             ]);
 
-        } catch(RuntimeException $exception) {
+        }catch(RuntimeException $exception) {
 
             return response()->json(["bool" => false, "msg" => $exception->getMessage()], 422);
 

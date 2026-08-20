@@ -59,6 +59,7 @@ final class SaleConfigService extends BaseConfigService {
             ->where("status", "open");
 
         $cashRegisterIds = $references->allowedCashRegisterIds();
+
         if($cashRegisterIds !== null) {
 
             $cashSessions->whereIn("cash_register_id", $cashRegisterIds);

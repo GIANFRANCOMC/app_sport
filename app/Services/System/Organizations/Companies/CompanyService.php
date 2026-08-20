@@ -84,6 +84,7 @@ class CompanyService {
         }
 
         $extension = $file->getClientOriginalExtension();
+
         $fileName = "{$fieldName}.{$extension}";
         $filePath = $file->storeAs(
             TenantStoragePath::for("{$company->internal_code}/branding"),
@@ -217,6 +218,7 @@ class CompanyService {
             $updateData = self::prepareCompanyDataForUpdate($company, $data);
 
             // Handle image uploads
+
             foreach(self::IMAGE_FIELDS as $field) {
 
                 if(isset($files[$field]) && $files[$field] instanceof \Illuminate\Http\UploadedFile) {
@@ -226,6 +228,7 @@ class CompanyService {
                     if($filePath) {
 
                         $previousPath = $company->{$field};
+
                         if($previousPath && $previousPath !== $filePath) {
 
                             $obsoleteFiles[] = $previousPath;
@@ -241,6 +244,7 @@ class CompanyService {
             }
 
             // Update record
+
             if(!empty($updateData)) {
 
                 $updateData["updated_at"] = now();
@@ -250,6 +254,7 @@ class CompanyService {
             }
 
             // Update or create social media links
+
             foreach(self::SOCIAL_MEDIA_TYPES as $type) {
 
                 if(isset($data[$type])) {

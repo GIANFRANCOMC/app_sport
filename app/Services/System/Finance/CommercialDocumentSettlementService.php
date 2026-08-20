@@ -82,6 +82,7 @@ final class CommercialDocumentSettlementService {
 
         $methods = self::paymentCatalog($companyId, $scope, $selectedPayments)
             ->keyBy("id");
+
         $variants = self::paymentVariantCatalog($companyId, $selectedPayments)
             ->keyBy("id");
 
@@ -212,9 +213,11 @@ final class CommercialDocumentSettlementService {
         $calculationType = in_array($tax->calculation_type, ["percentage", "fixed"], true)
             ? $tax->calculation_type
             : "percentage";
+
         $operationType = in_array($tax->operation_type, ["addition", "subtraction"], true)
             ? $tax->operation_type
             : "addition";
+
         $amount = self::taxAmount($base, $rate, $calculationType, $operationType, $quantity, $companyId);
 
         return [
@@ -243,9 +246,11 @@ final class CommercialDocumentSettlementService {
         $calculationType = in_array($tax->calculation_type, ["percentage", "fixed"], true)
             ? $tax->calculation_type
             : "percentage";
+
         $operationType = in_array($tax->operation_type, ["addition", "subtraction"], true)
             ? $tax->operation_type
             : "addition";
+
         $isIgvTax = self::isIgvTax($tax);
         $base = 0.0;
         $amount = 0.0;
@@ -261,6 +266,7 @@ final class CommercialDocumentSettlementService {
             foreach($details as $detail) {
 
                 $lineTotal = Utilities::round((float) ($detail["quantity"] ?? 0) * (float) ($detail["price"] ?? 0), null, $companyId);
+
                 if($lineTotal <= 0) {
 
                     continue;
@@ -274,6 +280,7 @@ final class CommercialDocumentSettlementService {
                 }
 
                 $priceIncludesTax = filter_var($detail["price_includes_tax"] ?? true, FILTER_VALIDATE_BOOL);
+
                 $taxIsIncluded = $priceIncludesTax && $operationType === "addition" && $rate > 0;
 
                 if($taxIsIncluded) {
@@ -288,6 +295,7 @@ final class CommercialDocumentSettlementService {
                 }
 
                 $lineAmount = self::taxAmount($lineTotal, $rate, $calculationType, $operationType, 1, $companyId);
+
                 $base += $lineTotal;
                 $amount += $lineAmount;
                 $totalImpact += $lineAmount;
@@ -353,6 +361,7 @@ final class CommercialDocumentSettlementService {
         }
 
         $minimum = max(0, (int) ($tax->min_apply_quantity ?? 0));
+
         $maximum = $tax->max_apply_quantity !== null ? max($minimum, (int) $tax->max_apply_quantity) : null;
         $quantity = max(1, $minimum, (int) ($selectedTaxQuantities[$tax->id] ?? 1));
 
@@ -363,6 +372,7 @@ final class CommercialDocumentSettlementService {
     private static function paymentLine(Collection $methods, Collection $variants, array $paymentData, int $userId, int $companyId): ?array {
 
         $methodId = (int) ($paymentData["payment_method_id"] ?? 0);
+
         if($methodId <= 0) {
 
             return null;
@@ -370,6 +380,7 @@ final class CommercialDocumentSettlementService {
         }
 
         $method = $methods->get($methodId);
+
         $variantId = (int) ($paymentData["payment_method_variant_id"] ?? 0);
         $variant = $variantId > 0 ? $variants->get($variantId) : null;
         $amount = Utilities::round((float) ($paymentData["amount"] ?? 0), null, $companyId);

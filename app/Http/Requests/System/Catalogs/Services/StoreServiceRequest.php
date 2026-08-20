@@ -66,6 +66,7 @@ class StoreServiceRequest extends CompanyFormRequest {
     public function after(): array {
 
         return [
+
             function(Validator $validator) {
 
                 $this->validateCommission($validator);
@@ -123,6 +124,7 @@ class StoreServiceRequest extends CompanyFormRequest {
         }
 
         $type = (string) $this->input("commission_type", "none");
+
         $value = (float) ($this->input("commission_value") ?? 0);
 
         if($type === "percentage" && $value > 100) {

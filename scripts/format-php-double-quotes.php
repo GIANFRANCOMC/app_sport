@@ -15,9 +15,11 @@ $decodeSingleQuoted = static function(string $literal): string {
     for($index = 0; $index < $length; $index++) {
 
         $character = $content[$index];
+
         if($character === "\\" && $index + 1 < $length) {
 
             $next = $content[$index + 1];
+
             if($next === "\\" || $next === "'") {
 
                 $decoded .= $next;
@@ -50,6 +52,7 @@ $encodeDoubleQuoted = static function(string $value): string {
 foreach($roots as $root) {
 
     $absoluteRoot = dirname(__DIR__).DIRECTORY_SEPARATOR.$root;
+
     if(!is_dir($absoluteRoot)) {
 
         continue;
@@ -69,7 +72,9 @@ foreach($roots as $root) {
         }
 
         $path = $file->getPathname();
+
         $source = file_get_contents($path);
+
         if($source === false) {
 
             throw new RuntimeException("No se pudo leer {$path}.");
@@ -77,11 +82,13 @@ foreach($roots as $root) {
         }
 
         $formatted = "";
+
         foreach(token_get_all($source) as $token) {
 
             if(is_array($token)) {
 
                 [$type, $text] = $token;
+
                 if($type === T_CONSTANT_ENCAPSED_STRING && str_starts_with($text, "'")) {
 
                     $text = $encodeDoubleQuoted($decodeSingleQuoted($text));
@@ -104,6 +111,7 @@ foreach($roots as $root) {
         }
 
         $changedFiles[] = $path;
+
         if(!$checkOnly && file_put_contents($path, $formatted) === false) {
 
             throw new RuntimeException("No se pudo escribir {$path}.");

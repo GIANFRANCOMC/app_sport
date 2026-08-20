@@ -27,6 +27,7 @@ final class ClearTenantResolverCache extends Command {
         }
 
         $cleared = $service->clearResolverCache($tenant, get_current_user() ?: "console");
+
         $this->info("Claves de resolución eliminadas: {$cleared}.");
 
         return self::SUCCESS;

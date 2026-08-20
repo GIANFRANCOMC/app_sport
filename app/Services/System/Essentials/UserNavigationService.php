@@ -129,6 +129,7 @@ final class UserNavigationService {
         }
 
         $catalog = $this->allowedCatalog($user);
+
         $allowedIds = $catalog->keys()->all();
 
         if($allowedIds === []) {

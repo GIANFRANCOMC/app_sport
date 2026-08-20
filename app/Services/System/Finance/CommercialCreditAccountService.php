@@ -55,9 +55,11 @@ final class CommercialCreditAccountService {
         }
 
         $isInstallmentCredit = $sale->payment_modality === self::INSTALLMENTS;
+
         $receivablePrincipal = $isInstallmentCredit
             ? Utilities::round((float) $sale->balance_due - (float) $sale->installment_extra_amount, null, (int) $sale->company_id)
             : Utilities::round((float) $sale->total - (float) $sale->installment_extra_amount, null, (int) $sale->company_id);
+
         $receivableTotal = $isInstallmentCredit ? $sale->balance_due : $sale->total;
         $receivablePaid = $isInstallmentCredit ? 0 : $sale->paid_amount;
 
@@ -81,6 +83,7 @@ final class CommercialCreditAccountService {
         ]);
 
         self::createSaleInstallments($account, max(1, $installmentCount), $firstDueDate, $userId);
+
         if(!$isInstallmentCredit) {
 
             self::createSalePaymentTrace($account, $paymentLines, $userId);

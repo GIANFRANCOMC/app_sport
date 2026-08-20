@@ -203,6 +203,7 @@ final class ServiceOperationService {
                 "updated_at" => now(),
                 "updated_by" => $actorId,
             ]);
+
             $floor->save();
 
             return $floor->fresh();
@@ -284,6 +285,7 @@ final class ServiceOperationService {
             ->orderBy("level_number")
             ->orderBy("name")
             ->get();
+
         $selectedFloor = $floorId
             ? $floors->firstWhere("id", $floorId)
             : $floors->first();
@@ -404,6 +406,7 @@ final class ServiceOperationService {
             }
 
             $floor = self::requireOptionalFloor($companyId, $branchId, $data["service_floor_id"] ?? null);
+
             $duplicate = ServiceStation::query()
                 ->where("company_id", $companyId)
                 ->where("branch_id", $branchId)
@@ -433,6 +436,7 @@ final class ServiceOperationService {
                 "updated_at" => now(),
                 "updated_by" => $actorId,
             ]);
+
             $station->save();
 
             return $station->fresh(["floor", "activeSession.customer", "activeSession.items"]);
@@ -462,6 +466,7 @@ final class ServiceOperationService {
             }
 
             self::requireBranch($companyId, (int) $station->branch_id, $actorId);
+
             $floor = self::requireOptionalFloor(
                 $companyId,
                 (int) $station->branch_id,
@@ -495,6 +500,7 @@ final class ServiceOperationService {
             ->with(["branch", "station", "customer", "assignedUser", "items.assignedUser", "sale"]);
 
         $branchIds = CompanyReferenceDataService::for($companyId, $actorId)->allowedBranchIds();
+
         if($branchIds !== null) {
 
             $query->whereIn("branch_id", $branchIds);
@@ -672,6 +678,7 @@ final class ServiceOperationService {
             }
 
             self::requireOptionalUser($companyId, $data["assigned_user_id"] ?? null);
+
             $startedAt = !empty($data["start_immediately"]) ? now() : null;
 
             $detail = ServiceSessionItem::create([
@@ -720,6 +727,7 @@ final class ServiceOperationService {
             }
 
             $session->status = self::STATUS_IN_PROGRESS;
+
             $session->started_at = now();
             $session->updated_at = now();
             $session->updated_by = $actorId;
@@ -758,6 +766,7 @@ final class ServiceOperationService {
                 ->with("session")
                 ->lockForUpdate()
                 ->findOrFail($itemId);
+
             $session = $item->session;
 
             self::requireBranch($companyId, (int) $session->branch_id, $actorId);
@@ -769,6 +778,7 @@ final class ServiceOperationService {
             }
 
             $previousStatus = (string) ($item->preparation_status ?: "pending");
+
             if($previousStatus === $status) {
 
                 return $item->fresh();
@@ -788,9 +798,11 @@ final class ServiceOperationService {
             }
 
             $item->preparation_status = $status;
+
             $item->preparation_started_at = $status === "preparing"
                 ? now()
                 : $item->preparation_started_at;
+
             $item->ready_at = $status === "ready" ? now() : $item->ready_at;
             $item->delivered_at = $status === "delivered" ? now() : $item->delivered_at;
             $item->updated_by = $actorId;
@@ -824,6 +836,7 @@ final class ServiceOperationService {
 
             $session = self::lockOpenSession($companyId, $sessionId);
             self::requireBranch($companyId, (int) $session->branch_id, $actorId);
+
             if(DB::table("service_session_pauses")
                 ->where("company_id", $companyId)
                 ->where("service_session_id", $sessionId)
@@ -834,6 +847,7 @@ final class ServiceOperationService {
 
             }
             $previousStatus = $session->status;
+
             $endedAt = now();
             $startedAt = $session->started_at ? Carbon::parse($session->started_at) : Carbon::parse($session->created_at);
 
@@ -973,6 +987,7 @@ final class ServiceOperationService {
             }
 
             $resumedAt = now();
+
             $minutes = Carbon::parse($pause->paused_at)->diffInMinutes($resumedAt);
             DB::table("service_session_pauses")
                 ->where("company_id", $companyId)
@@ -1036,6 +1051,7 @@ final class ServiceOperationService {
         $dateFrom = !empty($filters["date_from"])
             ? Carbon::parse($filters["date_from"])->startOfDay()
             : now()->copy()->startOfMonth();
+
         $dateTo = !empty($filters["date_to"])
             ? Carbon::parse($filters["date_to"])->endOfDay()
             : now()->copy()->endOfDay();
@@ -1046,6 +1062,7 @@ final class ServiceOperationService {
             ->with(["branch", "station", "assignedUser", "items.item", "items.assignedUser"]);
 
         $branchIds = CompanyReferenceDataService::for($companyId, $actorId)->allowedBranchIds();
+
         if($branchIds !== null) {
 
             $query->whereIn("branch_id", $branchIds);
@@ -1063,12 +1080,14 @@ final class ServiceOperationService {
         }
 
         $sessions = $query->get();
+
         $completed = $sessions->where("status", self::STATUS_COMPLETED);
         $withSla = $completed->filter(function(ServiceSession $session) {
 
             return !empty($session->expected_end_at);
 
         });
+
         $late = $withSla->filter(function(ServiceSession $session) {
 
             $limit = Carbon::parse($session->expected_end_at)
@@ -1077,6 +1096,7 @@ final class ServiceOperationService {
             return $session->ended_at && Carbon::parse($session->ended_at)->greaterThan($limit);
 
         });
+
         $commissionTotal = 0.0;
 
         $sessions->each(function(ServiceSession $session) use (&$commissionTotal) {
@@ -1172,6 +1192,7 @@ final class ServiceOperationService {
             }
 
             $item->updated_at = now();
+
             $item->updated_by = $actorId;
             $item->save();
 

@@ -10,9 +10,11 @@ Las tablas conservan los nombres técnicos existentes para evitar un refactor co
 - `sales_header` contiene la cabecera comercial, entrega, pago y totales.
 - `sales_body` contiene la foto histórica de cada ítem vendido.
 
-Mientras el proyecto continúe en fase reiniciable, una columna final debe vivir en la migración que crea su tabla. Por esta razón `igv_exempt` quedó consolidado en `items`, `sales_body` y `quotation_items`; la migración correctiva independiente fue eliminada. Los campos de pago propios de la venta quedaron consolidados en `sales_header`.
+Mientras el proyecto continúe en fase reiniciable, una columna final debe vivir en la migración que crea su tabla. Por esta razón `igv_exempt` quedó consolidado en `items`, `sales_body` y `quotation_items`; la migración correctiva independiente fue eliminada. Los campos de pago y modalidad de entrega propios de la venta quedaron consolidados en `sales_header` y `sale_delivery_methods` nace desde la migración base de ventas.
 
-Las migraciones posteriores solo deben alterar una tabla existente cuando exista una dependencia real con otro dominio creado después, por ejemplo cotizaciones, variantes de medios de pago o modalidades de entrega.
+Las migraciones posteriores solo deben alterar una tabla existente cuando exista una dependencia real con otro dominio creado después, por ejemplo cotizaciones o tablas de biometría que referencian estructuras creadas por un dominio anterior.
+
+Los campos de acciones y alcances operativos de roles y usuarios viven directamente en la migración maestra. Sus tablas de relación con sucursales, cajas y almacenes se crean en la migración base de empresas, después de existir todos los recursos referenciados.
 
 ## Integridad multiempresa
 

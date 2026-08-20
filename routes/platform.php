@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\Platform\{PlatformAuthController, PlatformShellController, TenantController};
+use App\Http\Controllers\Platform\{PlatformAuthController, PlatformProfileController, PlatformShellController, TenantController};
 use Illuminate\Support\Facades\{Route};
 
 Route::get("/login", [PlatformAuthController::class, "create"])->name("platform.login");
@@ -10,6 +10,9 @@ Route::middleware("platform.auth")->group(function(): void {
 
     Route::get("/", fn() => redirect()->route("platform.tenants.index"))->name("platform.home");
     Route::post("/logout", [PlatformAuthController::class, "destroy"])->name("platform.logout");
+    Route::patch("/api/profile", [PlatformProfileController::class, "update"])
+        ->middleware("throttle:platform-write")
+        ->name("platform.api.profile.update");
 
     Route::get("/tenants", PlatformShellController::class)->name("platform.tenants.index");
     Route::get("/tenants/{tenant}", PlatformShellController::class)->name("platform.tenants.show");

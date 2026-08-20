@@ -66,6 +66,7 @@ final class SystemCatalogSyncService {
         }
 
         $categoryOrders = $categories->pluck("order", "id");
+
         $sectionOrders = $sections->mapWithKeys(function(object $section) use ($categoryOrders): array {
 
             $categoryOrder = (int) ($categoryOrders[$section->menu_category_id] ?? 999);
@@ -100,6 +101,7 @@ final class SystemCatalogSyncService {
             ->where("company_id", $companyId)
             ->where("is_full_access", true)
             ->pluck("id");
+
         foreach($fullAccessRoleIds as $roleId) {
 
             foreach($items as $item) {

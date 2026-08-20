@@ -40,6 +40,7 @@ final class SendPendingSubscriptionEmails extends Command {
         }
 
         $rows = [];
+
         $hasFailure = false;
 
         foreach($tenants as $tenant) {
@@ -51,10 +52,11 @@ final class SendPendingSubscriptionEmails extends Command {
                     $companyId === null ? null : (int) $companyId,
                     (int) $this->option("limit")
                 );
+
                 $rows[] = [$tenant->slug, $summary["processed"], $summary["sent"], $summary["failed"], "OK"];
                 $administration->audit($tenant, "scheduled_notifications", "success", $summary, "scheduler");
 
-            } catch(Throwable $exception) {
+            }catch(Throwable $exception) {
 
                 $hasFailure = true;
                 $rows[] = [$tenant->slug, 0, 0, 0, $exception->getMessage()];
@@ -62,7 +64,7 @@ final class SendPendingSubscriptionEmails extends Command {
                     "error" => $exception->getMessage(),
                 ], "scheduler");
 
-            } finally {
+            }finally {
 
                 $connectionManager->disconnect();
 

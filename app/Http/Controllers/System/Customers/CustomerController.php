@@ -81,7 +81,7 @@ class CustomerController extends BaseController {
 
             return $this->createdResponse($customer, "created", "customer");
 
-        } catch(\Exception $e) {
+        }catch(\Exception $e) {
 
             return $this->handleException($e, "create");
 
@@ -108,6 +108,7 @@ class CustomerController extends BaseController {
             }
 
             $data = $this->prepareCustomerData($request);
+
             $customer = CustomerService::update($customer, $data, $this->getUserId());
 
             if(!Utilities::isDefined($customer)) {
@@ -123,7 +124,7 @@ class CustomerController extends BaseController {
 
             return $this->updatedResponse($customer, "updated", "customer");
 
-        } catch(\Exception $e) {
+        }catch(\Exception $e) {
 
             return $this->handleException($e, "update");
 
@@ -188,7 +189,7 @@ class CustomerController extends BaseController {
 
             return $this->successResponse(["subscriptions" => $subscriptions], "retrieved");
 
-        } catch(\Exception $e) {
+        }catch(\Exception $e) {
 
             return $this->handleException($e, "retrieve");
 
@@ -215,6 +216,7 @@ class CustomerController extends BaseController {
             }
 
             $biometricDeviceId = (int) $data["biometric_device_id"];
+
             $deviceUserId = $data["device_user_id"] ?? null;
             $fingerIndex = (int) ($data["finger_index"] ?? 0);
 
@@ -243,11 +245,11 @@ class CustomerController extends BaseController {
 
             return $this->createdResponse($fingerprint, "fingerprint_registered", "biometric_fingerprint");
 
-        } catch(\DomainException $e) {
+        }catch(\DomainException $e) {
 
             return response()->json(["bool" => false, "msg" => $e->getMessage()], 422);
 
-        } catch(\Exception $e) {
+        }catch(\Exception $e) {
 
             return $this->handleException($e, "register_fingerprint");
 

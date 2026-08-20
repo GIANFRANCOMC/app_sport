@@ -226,6 +226,7 @@ final class RecipeService {
             "name" => $option->name,
             "cost" => self::costComponents($option->components, $costs, $recipeWasteFactor, $companyId)["total"],
         ])->values();
+
         $toppings = $recipe->dishToppings->map(fn($link) => [
             "id" => $link->id,
             "name" => $link->topping?->name,

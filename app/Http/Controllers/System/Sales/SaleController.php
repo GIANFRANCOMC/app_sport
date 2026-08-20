@@ -48,6 +48,7 @@ class SaleController extends BaseController {
             "holder_id" => $request->input("holder_id"),
             "status" => $request->input("status"),
         ];
+
         $perPage = $this->getPerPage($request, Utilities::$per_page_default);
 
         return SaleService::getPaginatedList(
@@ -130,7 +131,7 @@ class SaleController extends BaseController {
 
             return $this->createdResponse($sale, "created", "sale");
 
-        } catch(\Exception $e) {
+        }catch(\Exception $e) {
 
             return $this->handleException($e, "create");
 
@@ -156,6 +157,7 @@ class SaleController extends BaseController {
             }
 
             // Verify company ownership
+
             if($serie = $sale->serie) {
 
                 $branch = $serie->branch;
@@ -179,6 +181,7 @@ class SaleController extends BaseController {
             }
 
             $stockRestored = (bool) ($sale->stock_restored_on_cancellation ?? false);
+
             $restorePolicyEnabled = (bool) ($sale->restore_stock_policy_enabled ?? false);
             $message = match (true) {
                 $stockRestored => "Venta anulada correctamente. Los productos fueron devueltos al stock del almacén correspondiente.",
@@ -192,7 +195,7 @@ class SaleController extends BaseController {
                 "sale" => $sale,
             ]);
 
-        } catch(\Exception $e) {
+        }catch(\Exception $e) {
 
             return $this->handleException($e, "cancel");
 
@@ -215,6 +218,7 @@ class SaleController extends BaseController {
             }
 
             $warehouseId = (int) ($request->warehouse_id ?? $delivery->warehouse_id);
+
             if(!AccessScopeService::canAccess($this->getAuthUser(), AccessScopeService::WAREHOUSE, $warehouseId)) {
 
                 return $this->errorResponse("warehouse_not_available", [], 403);
@@ -236,7 +240,7 @@ class SaleController extends BaseController {
                 "data" => $delivery,
             ]);
 
-        } catch(\Throwable $e) {
+        }catch(\Throwable $e) {
 
             return response()->json([
                 "bool" => false,

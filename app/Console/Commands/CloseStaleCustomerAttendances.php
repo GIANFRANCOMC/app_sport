@@ -41,6 +41,7 @@ final class CloseStaleCustomerAttendances extends Command {
         }
 
         $rows = [];
+
         $hasFailure = false;
 
         foreach($tenants as $tenant) {
@@ -53,10 +54,11 @@ final class CloseStaleCustomerAttendances extends Command {
                     max(1, (int) $this->option("limit")),
                     (bool) $this->option("force")
                 );
+
                 $rows[] = [$tenant->slug, $summary["companies"], $summary["closed"], $summary["skipped"], "OK"];
                 $administration->audit($tenant, "close_stale_customer_attendances", "success", $summary, "scheduler");
 
-            } catch(Throwable $exception) {
+            }catch(Throwable $exception) {
 
                 $hasFailure = true;
                 $rows[] = [$tenant->slug, 0, 0, 0, $exception->getMessage()];
@@ -64,7 +66,7 @@ final class CloseStaleCustomerAttendances extends Command {
                     "error" => $exception->getMessage(),
                 ], "scheduler");
 
-            } finally {
+            }finally {
 
                 $connectionManager->disconnect();
 

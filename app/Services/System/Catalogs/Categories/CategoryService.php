@@ -130,6 +130,7 @@ class CategoryService {
             $categoryData = self::prepareCategoryDataForCreate($data, $companyId, $userId);
 
             // Create the record
+
             $category = Category::create($categoryData);
 
         });
@@ -164,6 +165,7 @@ class CategoryService {
             $updateData = self::prepareCategoryDataForUpdate($category, $data);
 
             // Only update if there are changes
+
             if(!empty($updateData)) {
 
                 $updateData["updated_at"] = now();
@@ -230,7 +232,9 @@ class CategoryService {
             ]);
 
         // Apply filters
+
         $filterBy = $filters["filter_by"] ?? null;
+
         $word = $filters["word"] ?? null;
 
         if(Utilities::isDefined($word) && Utilities::isDefined($filterBy)) {

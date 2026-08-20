@@ -16,6 +16,7 @@ final class PlatformTenantProvisioner {
 
         $slug = strtolower($data["slug"]);
         $lock = Cache::lock("platform:tenant-provision:".hash("sha256", $slug), 900);
+
         if(!$lock->get()) {
 
             throw new RuntimeException("Este cliente ya se está aprovisionando. Espera a que finalice el proceso actual.");
@@ -35,7 +36,7 @@ final class PlatformTenantProvisioner {
                 "--skip-cache-clear" => true,
             ]);
 
-        } finally {
+        }finally {
 
             $this->connections->disconnect();
             $lock->release();

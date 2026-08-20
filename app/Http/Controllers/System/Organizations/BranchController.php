@@ -79,7 +79,7 @@ class BranchController extends BaseController {
 
             return $this->createdResponse($branch, "created", "branch");
 
-        } catch(\Exception $e) {
+        }catch(\Exception $e) {
 
             return $this->handleException($e, "create");
 
@@ -105,6 +105,7 @@ class BranchController extends BaseController {
             }
 
             $data = $this->prepareBranchData($request);
+
             $branch = BranchService::update($branch, $data, $this->getUserId());
 
             if(!Utilities::isDefined($branch)) {
@@ -120,7 +121,7 @@ class BranchController extends BaseController {
 
             return $this->updatedResponse($branch, "updated", "branch");
 
-        } catch(\Exception $e) {
+        }catch(\Exception $e) {
 
             return $this->handleException($e, "update");
 
@@ -183,6 +184,7 @@ class BranchController extends BaseController {
     public function publicAttendanceLink(Request $request, int $id): JsonResponse {
 
         $branch = BranchService::findByIdAndCompany($id, $this->getCompanyId(), ["active"]);
+
         if(!$branch) {
 
             return $this->notFoundResponse();
@@ -190,6 +192,7 @@ class BranchController extends BaseController {
         }
 
         $minutes = max(5, min((int) $request->input("expires_in_minutes", 1440), 10080));
+
         $expiresAt = now()->addMinutes($minutes);
         $url = URL::temporarySignedRoute(
             "guest.tracking_attendances.signed",

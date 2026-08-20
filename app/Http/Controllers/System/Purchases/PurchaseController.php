@@ -80,7 +80,7 @@ final class PurchaseController extends BaseController {
                 "data" => $purchase,
             ], 201);
 
-        } catch(\Throwable $exception) {
+        }catch(\Throwable $exception) {
 
             return response()->json([
                 "bool" => false,
@@ -114,7 +114,7 @@ final class PurchaseController extends BaseController {
                 "data" => $receipt,
             ]);
 
-        } catch(\Throwable $exception) {
+        }catch(\Throwable $exception) {
 
             return response()->json([
                 "bool" => false,
@@ -147,7 +147,7 @@ final class PurchaseController extends BaseController {
                 "data" => $purchase,
             ]);
 
-        } catch(\Throwable $exception) {
+        }catch(\Throwable $exception) {
 
             return response()->json([
                 "bool" => false,
@@ -175,7 +175,7 @@ final class PurchaseController extends BaseController {
                 "data" => $return,
             ], 201);
 
-        } catch(\Throwable $exception) {
+        }catch(\Throwable $exception) {
 
             return response()->json(["bool" => false, "msg" => $exception->getMessage()], 422);
 
@@ -193,7 +193,7 @@ final class PurchaseController extends BaseController {
                 "data" => PurchaseService::approve($this->getCompanyId(), $id, $this->getUserId()),
             ]);
 
-        } catch(\Throwable $exception) {
+        }catch(\Throwable $exception) {
 
             return response()->json(["bool" => false, "msg" => $exception->getMessage()], 422);
 

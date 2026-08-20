@@ -112,6 +112,7 @@ final class AccountsReceivableService {
         }
 
         $search = trim((string) ($filters["search"] ?? ""));
+
         if($search !== "") {
 
             $query->where(function($searchQuery) use ($search) {
@@ -130,6 +131,7 @@ final class AccountsReceivableService {
         }
 
         $status = (string) ($filters["status"] ?? "");
+
         if($status === "overdue") {
 
             $query->whereHas("installments", fn($installmentQuery) => $installmentQuery
@@ -193,10 +195,12 @@ final class AccountsReceivableService {
             ];
 
         });
+
         $nextInstallment = $installments
             ->filter(fn($installment) => $installment["pending_amount"] > 0)
             ->sortBy(fn($installment) => $installment["due_date"] ?? "9999-12-31")
             ->first();
+
         $isOverdue = $installments->contains(fn($installment) => $installment["status"] === "overdue");
         $status = $account->status;
 

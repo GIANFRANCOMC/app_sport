@@ -179,6 +179,7 @@ class ProductService {
                 }elseif($field === "capacity_control_enabled") {
 
                     $enabled = (bool) $data[$field];
+
                     if($enabled !== (bool) $item->capacity_control_enabled) {
 
                         $updateData["capacity_control_enabled"] = $enabled;
@@ -186,6 +187,7 @@ class ProductService {
                     }
 
                     $limit = $enabled ? max(1, (int) ($data["capacity_limit"] ?? 1)) : null;
+
                     if($limit !== ($item->capacity_limit === null ? null : (int) $item->capacity_limit)) {
 
                         $updateData["capacity_limit"] = $limit;
@@ -203,6 +205,7 @@ class ProductService {
                     if(($updateData["capacity_control_enabled"] ?? (bool) $item->capacity_control_enabled) === true) {
 
                         $value = max(1, (int) $data[$field]);
+
                         if($value !== (int) ($item->capacity_limit ?? 0)) {
 
                             $updateData[$field] = $value;
@@ -263,6 +266,7 @@ class ProductService {
             $itemData = self::prepareProductDataForCreate($data, $companyId, $userId);
 
             // Create the record
+
             $item = Item::create($itemData);
 
             // Create warehouse items for products
@@ -275,6 +279,7 @@ class ProductService {
             );
 
             // Sync categories
+
             if(isset($data["categories"]) && is_array($data["categories"])) {
 
                 CategoryItemService::sync($item->id, $data["categories"], $userId);
@@ -306,9 +311,11 @@ class ProductService {
             );
 
             // Prepare update data with only changed fields
+
             $updateData = self::prepareProductDataForUpdate($item, $data);
 
             // Only update if there are changes
+
             if(!empty($updateData)) {
 
                 $updateData["updated_at"] = now();
@@ -318,6 +325,7 @@ class ProductService {
             }
 
             // Sync categories
+
             if(isset($data["categories"]) && is_array($data["categories"])) {
 
                 CategoryItemService::sync($item->id, $data["categories"], $userId);

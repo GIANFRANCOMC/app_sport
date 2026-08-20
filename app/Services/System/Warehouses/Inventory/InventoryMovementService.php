@@ -113,6 +113,7 @@ final class InventoryMovementService {
             }
 
             $quantityBefore = Utilities::round((float) $warehouseItem->quantity, null, $companyId);
+
             $quantityChange = self::resolveQuantityChange($type, $quantityBefore, $data);
             $quantityAfter = Utilities::round($quantityBefore + $quantityChange, null, $companyId);
             $valueBefore = Utilities::round((float) ($warehouseItem->inventory_value ?? 0), null, $companyId);
@@ -131,6 +132,7 @@ final class InventoryMovementService {
             }
 
             $unitCost = self::resolveUnitCost($type, $quantityChange, $currentAverageCost, $data);
+
             $valueChange = Utilities::round($quantityChange * $unitCost, null, $companyId);
             $valueAfter = Utilities::round($valueBefore + $valueChange, null, $companyId);
             $averageCost = self::resolveAverageCost(
@@ -226,6 +228,7 @@ final class InventoryMovementService {
             }
 
             $reference = "TRF-".strtoupper(Str::random(12));
+
             $movements = [];
             $processedItemIds = [];
 
@@ -612,7 +615,7 @@ final class InventoryMovementService {
 
             Mail::to($recipient)->send(new InventoryStockAlertMail($alert));
 
-        } catch(Throwable $exception) {
+        }catch(Throwable $exception) {
 
             Log::warning("No se pudo enviar la alerta de stock mínimo.", [
                 "company_id" => $companyId,

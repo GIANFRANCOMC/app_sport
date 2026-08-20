@@ -78,6 +78,7 @@ final class CompanyReferenceDataService {
             ->where("status", "active");
 
         $warehouseIds = $this->allowedWarehouseIds();
+
         if($warehouseIds !== null) {
 
             $query->whereIn("id", $warehouseIds);
@@ -111,6 +112,7 @@ final class CompanyReferenceDataService {
             ->with("branch")
             ->where("company_id", $this->companyId)
             ->where("status", "active");
+
         $cashRegisterIds = $this->allowedCashRegisterIds();
 
         if($cashRegisterIds !== null) {
@@ -227,6 +229,7 @@ final class CompanyReferenceDataService {
         $query = BiometricDevice::query()
             ->where("company_id", $this->companyId)
             ->where("status", "active");
+
         $branchIds = $this->allowedBranchIds();
 
         if($branchIds !== null) {
@@ -266,6 +269,7 @@ final class CompanyReferenceDataService {
             ->where("company_id", $this->companyId);
 
         $branchIds = $this->allowedBranchIds();
+
         if($branchIds !== null) {
 
             $query->whereIn("id", $branchIds);
@@ -323,6 +327,7 @@ final class CompanyReferenceDataService {
             $this->user = User::query()
                 ->where("company_id", $this->companyId)
                 ->find($this->userId);
+
             $this->userResolved = true;
 
         }

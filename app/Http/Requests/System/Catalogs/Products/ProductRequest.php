@@ -97,6 +97,7 @@ abstract class ProductRequest extends CompanyFormRequest {
     public function after(): array {
 
         return [
+
             function(Validator $validator) {
 
                 $this->validatePriceRange($validator);
@@ -185,6 +186,7 @@ abstract class ProductRequest extends CompanyFormRequest {
         }
 
         $type = (string) $this->input("commission_type", "none");
+
         $value = (float) ($this->input("commission_value") ?? 0);
 
         if($type !== "none" && $value <= 0) {
@@ -210,6 +212,7 @@ abstract class ProductRequest extends CompanyFormRequest {
         }
 
         $price = (float) $this->input("price");
+
         $minimum = $this->positiveNumberOrNull($this->input("min_price"));
         $maximum = $this->positiveNumberOrNull($this->input("max_price"));
 
@@ -290,6 +293,7 @@ abstract class ProductRequest extends CompanyFormRequest {
                 }
 
                 $inventory["warehouse_id"] = $this->nullableIntegerFromArray($inventory, "warehouse_id");
+
                 $inventory["initial_stock"] = $this->normalizeDecimalFromArray($inventory, "initial_stock");
                 $inventory["minimum_stock"] = $this->normalizeDecimalFromArray($inventory, "minimum_stock");
 

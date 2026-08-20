@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\{Route};
 */
 
 $systemRoute = __DIR__."/System";
+
 $guestRoute = __DIR__."/Guest";
 
 // Guest Routes (Public)

@@ -26,6 +26,7 @@ final class ServiceOperationPerformanceTest extends TestCase {
         $this->branchId = (int) DB::table("branches")
             ->where("company_id", 1)
             ->value("id");
+
         $this->userId = (int) DB::table("users")
             ->where("company_id", 1)
             ->where("email", "admin@example.test")
@@ -100,9 +101,11 @@ final class ServiceOperationPerformanceTest extends TestCase {
         $identityDocumentTypeId = (int) DB::table("identity_document_types")
             ->where("company_id", 1)
             ->value("id");
+
         $currencyId = (int) DB::table("currencies")
             ->where("company_id", 1)
             ->value("id");
+
         $now = now();
         $customers = [];
         $items = [];
@@ -117,6 +120,7 @@ final class ServiceOperationPerformanceTest extends TestCase {
                 "status" => "active",
                 "created_at" => $now,
             ];
+
             $items[] = [
                 "company_id" => 1,
                 "internal_code" => "SERVICE-{$number}",

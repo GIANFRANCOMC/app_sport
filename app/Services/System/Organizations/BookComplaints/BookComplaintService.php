@@ -101,6 +101,7 @@ class BookComplaintService {
             $previousStatus = (string) $bookComplaint->status;
 
             // Only allow updating specific fields
+
             foreach(self::ALLOWED_UPDATE_FIELDS as $field) {
 
                 if(isset($data[$field])) {
@@ -112,6 +113,7 @@ class BookComplaintService {
             }
 
             // Only update if there are changes
+
             if(!empty($updateData)) {
 
                 if(($updateData["status"] ?? $previousStatus) === "resolved") {
@@ -127,11 +129,13 @@ class BookComplaintService {
                 }
 
                 $updateData["updated_at"] = now();
+
                 $updateData["updated_by"] = $userId;
 
                 $bookComplaint->update($updateData);
 
                 $newStatus = (string) $bookComplaint->status;
+
                 if($newStatus !== $previousStatus) {
 
                     BookComplaintStatusHistory::create([

@@ -30,6 +30,7 @@ final class PlatformAuthController extends Controller {
             "email" => ["required", "email", "max:190"],
             "password" => ["required", "string", "max:255"],
         ]);
+
         $user = PlatformUser::query()
             ->where("email", strtolower($credentials["email"]))
             ->where("status", "active")
@@ -44,6 +45,7 @@ final class PlatformAuthController extends Controller {
         }
 
         $request->session()->regenerate();
+
         $request->session()->put("platform_user_id", $user->id);
         $request->session()->put("platform_session_version", (int) $user->session_version);
         $user->forceFill(["last_login_at" => now(), "last_login_ip" => $request->ip()])->save();

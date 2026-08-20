@@ -28,6 +28,7 @@ final class MiscExpenseService {
         if($userId !== null) {
 
             $branchIds = \App\Services\System\Base\CompanyReferenceDataService::for($companyId, $userId)->allowedBranchIds();
+
             if($branchIds !== null) {
 
                 $query->where(function($query) use ($branchIds) {
@@ -41,6 +42,7 @@ final class MiscExpenseService {
         }
 
         $word = trim((string) ($filters["word"] ?? ""));
+
         if($word !== "") {
 
             $query->where(function($query) use ($word) {
@@ -75,6 +77,7 @@ final class MiscExpenseService {
         return DB::transaction(function() use ($companyId, $userId, $data) {
 
             $branchId = isset($data["branch_id"]) ? (int) $data["branch_id"] : null;
+
             if($branchId && !AccessScopeService::canAccess(auth()->user(), AccessScopeService::BRANCH, $branchId)) {
 
                 throw new DomainException("No tienes acceso a la sucursal seleccionada.");
@@ -82,6 +85,7 @@ final class MiscExpenseService {
             }
 
             $cashSessionId = isset($data["cash_session_id"]) ? (int) $data["cash_session_id"] : null;
+
             $cashSession = null;
 
             if($cashSessionId) {
@@ -94,6 +98,7 @@ final class MiscExpenseService {
             }
 
             $amount = Utilities::round($data["amount"]);
+
             if($amount <= 0) {
 
                 throw new DomainException("El gasto debe tener un importe mayor que cero.");

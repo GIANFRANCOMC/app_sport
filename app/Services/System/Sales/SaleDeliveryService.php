@@ -91,11 +91,13 @@ final class SaleDeliveryService {
             ]);
 
         $allowedWarehouseIds = null;
+
         if($userId !== null) {
 
             $user = \App\Models\System\Organizations\User::query()
                 ->where("company_id", $companyId)
                 ->find($userId);
+
             $allowedWarehouseIds = $user ? AccessScopeService::allowedIds($user, AccessScopeService::WAREHOUSE) : [];
 
         }
@@ -136,6 +138,7 @@ final class SaleDeliveryService {
         }
 
         $search = trim((string) ($filters["search"] ?? ""));
+
         if($search !== "") {
 
             $query->where(function($query) use ($search) {
@@ -194,6 +197,7 @@ final class SaleDeliveryService {
             }
 
             $warehouseId = (int) ($data["warehouse_id"] ?? $delivery->warehouse_id);
+
             $warehouse = Warehouse::query()
                 ->with("branch")
                 ->whereKey($warehouseId)
@@ -251,6 +255,7 @@ final class SaleDeliveryService {
                 }
 
                 $quantity = Utilities::round((float) ($payload["quantity"] ?? 0), null, $companyId);
+
                 $pending = Utilities::round((float) $deliveryItem->quantity_pending, null, $companyId);
 
                 if($quantity <= 0) {

@@ -68,6 +68,7 @@ class BelongsToCompanyTest extends TestCase {
             ->once()
             ->with("branches", "warehouses.branch_id", "=", "branches.id")
             ->andReturnSelf();
+
         $query->shouldReceive("where")->once()->with("warehouses.id", 20)->andReturnSelf();
         $query->shouldReceive("where")->once()->with("branches.company_id", 7)->andReturnSelf();
         $query->shouldReceive("where")->once()->with("warehouses.status", "active")->andReturnSelf();

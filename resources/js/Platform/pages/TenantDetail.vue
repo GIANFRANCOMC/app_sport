@@ -7,14 +7,13 @@
                     <button class="platform-icon-button" type="button" title="Volver a clientes" @click="$emit('back')"><i class="fa-solid fa-arrow-left"></i></button>
                     <div><span class="platform-eyebrow">Cliente tenant</span><h1 class="platform-title">{{ tenant.slug }}</h1><p class="platform-subtitle"><a v-if="tenant.url" :href="tenant.url" target="_blank" rel="noopener">{{ tenant.domain }}</a><span v-if="tenant.domain"> · </span>{{ tenant.database_name }}</p></div>
                 </div>
-                <div class="platform-status-control"><span :class="['platform-status', `platform-status--${tenant.status}`]">{{ statusLabel(tenant.status) }}</span><select v-model="statusForm" class="form-select form-select-sm"><option value="active">Activo</option><option value="inactive">Inactivo</option><option value="suspended">Suspendido</option></select><button class="btn btn-sm platform-btn-subtle" :disabled="savingStatus || statusForm === tenant.status" @click="saveStatus">{{ savingStatus ? "Guardando…" : "Actualizar" }}</button></div>
             </div>
 
             <div class="platform-detail-grid">
                 <div class="platform-card platform-modules-card">
                     <div class="platform-card__head platform-card__head--sticky">
                         <div><strong>Módulos habilitados</strong><p class="platform-subtitle">Define las funciones visibles dentro de la organización.</p></div>
-                        <div class="d-flex align-items-center gap-2"><span class="platform-chip">{{ enabledModuleIds.length }} / {{ modules.length }}</span><button class="btn btn-sm platform-btn-primary text-white" :disabled="savingModules" @click="saveModules"><span v-if="savingModules" class="spinner-border spinner-border-sm me-1"></span>Guardar cambios</button></div>
+                        <div class="d-flex align-items-center gap-2"><span class="platform-chip">{{ enabledModuleIds.length }} / {{ modules.length }}</span><button class="btn btn-sm platform-btn-primary" :disabled="savingModules" @click="saveModules"><span v-if="savingModules" class="spinner-border spinner-border-sm me-1"></span>{{ savingModules ? "Guardando…" : "Guardar cambios" }}</button></div>
                     </div>
                     <div class="platform-card__body platform-module-categories">
                         <section v-for="category in groupedModules" :key="category.name" class="platform-module-category">
@@ -38,9 +37,9 @@
                         <div class="platform-card__head"><div><strong>Publicar aviso</strong><p class="platform-subtitle">Comunicación visible para los usuarios del tenant.</p></div></div>
                         <form class="platform-card__body" @submit.prevent="publishAnnouncement">
                             <div class="mb-3"><label class="form-label">Título</label><input v-model.trim="announcementForm.title" class="form-control" maxlength="180" required></div>
-                            <div class="mb-3"><label class="form-label">Mensaje</label><textarea v-model.trim="announcementForm.message" class="form-control" rows="4" maxlength="2000" required></textarea></div>
+                            <div class="mb-3"><label class="form-label">Mensaje</label><textarea v-model.trim="announcementForm.message" class="form-control platform-announcement-message" rows="4" maxlength="2000" required></textarea></div>
                             <div class="row g-2"><div class="col-6"><label class="form-label">Tipo</label><select v-model="announcementForm.severity" class="form-select"><option value="info">Información</option><option value="success">Éxito</option><option value="warning">Advertencia</option><option value="danger">Importante</option></select></div><div class="col-6 d-flex align-items-end pb-1"><label :class="['platform-toggle-check', {'is-checked': announcementForm.dismissible}]"><input v-model="announcementForm.dismissible" class="platform-check__input" type="checkbox"><span class="platform-check__box" aria-hidden="true"><i class="fa-solid fa-check"></i></span><span><strong>Descartable</strong><small>El usuario podrá cerrar el aviso</small></span></label></div><div class="col-6"><label class="form-label">Desde</label><input v-model="announcementForm.starts_at" class="form-control" type="datetime-local"></div><div class="col-6"><label class="form-label">Hasta</label><input v-model="announcementForm.ends_at" class="form-control" type="datetime-local"></div></div>
-                            <button class="btn platform-btn-primary text-white w-100 mt-3" :disabled="publishing"><span v-if="publishing" class="spinner-border spinner-border-sm me-1"></span>{{ publishing ? "Publicando…" : "Publicar aviso" }}</button>
+                            <button class="btn platform-btn-primary w-100 mt-3" :disabled="publishing"><span v-if="publishing" class="spinner-border spinner-border-sm me-1"></span>{{ publishing ? "Publicando…" : "Publicar aviso" }}</button>
                         </form>
                     </div>
 
@@ -57,6 +56,36 @@
                     </div>
                 </aside>
             </div>
+
+            <div class="platform-tenant-status-bar">
+                <div><span>El estado actual es</span><strong :class="`is-${tenant.status}`">{{ statusLabel(tenant.status) }}</strong></div>
+                <button class="btn platform-btn-subtle" type="button" :disabled="loadingStatus" @click="openStatusModal"><i :class="loadingStatus ? 'fa-solid fa-spinner fa-spin me-1' : 'fa-solid fa-pen-to-square me-1'"></i>{{ loadingStatus ? "Consultando" : "Cambiar estado" }}</button>
+            </div>
+
+            <div v-if="showStatusModal" class="platform-modal" role="dialog" aria-modal="true" aria-labelledby="tenantStatusTitle" @mousedown.self="closeStatusModal">
+                <form class="platform-modal__dialog platform-modal__dialog--small" @submit.prevent="saveStatus">
+                    <header class="platform-modal__head">
+                        <div class="platform-modal__title-wrap">
+                            <span class="platform-modal__icon"><i class="fa-solid fa-power-off"></i></span>
+                            <div><span class="platform-eyebrow">{{ tenant.slug }}</span><h2 id="tenantStatusTitle">Cambiar estado</h2><p>El estado controla el acceso operativo de esta organización.</p></div>
+                        </div>
+                        <button class="platform-icon-button" type="button" aria-label="Cerrar" :disabled="savingStatus" @click="closeStatusModal"><i class="fa-solid fa-xmark"></i></button>
+                    </header>
+                    <div class="platform-modal__body">
+                        <label class="form-label">Nuevo estado</label>
+                        <select v-model="statusForm" class="form-select" required>
+                            <option value="active">Activo</option>
+                            <option value="inactive">Inactivo</option>
+                            <option value="suspended">Suspendido</option>
+                        </select>
+                        <p class="platform-status-help">Actualmente está <strong>{{ statusLabel(tenant.status).toLowerCase() }}</strong>.</p>
+                    </div>
+                    <footer class="platform-modal__footer">
+                        <span class="platform-help"><i class="fa-solid fa-shield-halved"></i> La modificación quedará auditada.</span>
+                        <div><button class="btn platform-btn-subtle" type="button" :disabled="savingStatus" @click="closeStatusModal">Cancelar</button><button class="btn platform-btn-primary" :disabled="savingStatus || statusForm === tenant.status"><span v-if="savingStatus" class="spinner-border spinner-border-sm me-1"></span>{{ savingStatus ? "Actualizando…" : "Actualizar estado" }}</button></div>
+                    </footer>
+                </form>
+            </div>
         </template>
     </section>
 </template>
@@ -68,10 +97,10 @@ const emptyAnnouncement = () => ({title: "", message: "", severity: "info", star
 
 export default {
     name: "TenantDetail",
-    props: {tenantId: {type: Number, required: true}, apiBase: {type: String, required: true}},
+    props: {tenantId: {type: String, required: true}, apiBase: {type: String, required: true}},
     emits: ["back", "notify"],
     data() {
-        return {tenant: null, modules: [], announcements: [], enabledModuleIds: [], statusForm: "active", announcementForm: emptyAnnouncement(), loading: true, savingStatus: false, savingModules: false, publishing: false, updatingAnnouncementId: null};
+        return {tenant: null, modules: [], announcements: [], enabledModuleIds: [], statusForm: "active", showStatusModal: false, announcementForm: emptyAnnouncement(), loading: true, loadingStatus: false, savingStatus: false, savingModules: false, publishing: false, updatingAnnouncementId: null};
     },
     computed: {
         endpoint() { return `${this.apiBase}/${this.tenantId}`; },
@@ -89,22 +118,43 @@ export default {
         }
     },
     mounted() { this.loadTenant(); },
+    beforeUnmount() { document.body.classList.remove("platform-modal-open"); },
     methods: {
         async loadTenant() {
             this.loading = true;
             try {
                 const {data} = await api.get(this.endpoint);
-                this.tenant = data.data.tenant; this.modules = data.data.modules || []; this.announcements = data.data.announcements || []; this.statusForm = this.tenant.status;
+                this.tenant = data.data.tenant;
+                this.modules = this.uniqueModules(data.data.modules || []);
+                this.announcements = data.data.announcements || [];
+                this.statusForm = this.tenant.status;
                 this.enabledModuleIds = this.modules.filter(module => module.company_status === "active").map(module => Number(module.id));
             } catch(error) { this.$emit("notify", {type: "danger", message: errorMessage(error, "No fue posible cargar el cliente.")}); }
             finally { this.loading = false; }
         },
         isEnabled(id) { return this.enabledModuleIds.includes(Number(id)); },
+        uniqueModules(modules) { return [...new Map(modules.map(module => [Number(module.id), module])).values()]; },
         toggleModule(id) { const value = Number(id); this.enabledModuleIds = this.isEnabled(value) ? this.enabledModuleIds.filter(current => current !== value) : [...this.enabledModuleIds, value]; },
         statusLabel(status) { return {active: "Activo", inactive: "Inactivo", suspended: "Suspendido", provisioning: "En preparación"}[status] || status; },
+        async openStatusModal() {
+            if(this.loadingStatus) return;
+            this.loadingStatus = true;
+            try {
+                const {data} = await api.get(this.endpoint);
+                this.tenant = {...this.tenant, ...data.data.tenant};
+                this.statusForm = this.tenant.status;
+                this.showStatusModal = true;
+                document.body.classList.add("platform-modal-open");
+            } catch(error) {
+                this.$emit("notify", {type: "danger", message: errorMessage(error)});
+            } finally {
+                this.loadingStatus = false;
+            }
+        },
+        closeStatusModal() { if(this.savingStatus) return; this.showStatusModal = false; document.body.classList.remove("platform-modal-open"); },
         async saveStatus() {
             this.savingStatus = true;
-            try { const {data} = await api.patch(`${this.endpoint}/status`, {status: this.statusForm}); this.tenant = {...this.tenant, ...data.data}; this.$emit("notify", data.message); }
+            try { const {data} = await api.patch(`${this.endpoint}/status`, {status: this.statusForm}); this.tenant = {...this.tenant, ...data.data}; this.showStatusModal = false; document.body.classList.remove("platform-modal-open"); this.$emit("notify", data.message); }
             catch(error) { this.$emit("notify", {type: "danger", message: errorMessage(error)}); }
             finally { this.savingStatus = false; }
         },

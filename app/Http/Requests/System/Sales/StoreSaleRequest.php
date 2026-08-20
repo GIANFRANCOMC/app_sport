@@ -183,6 +183,7 @@ class StoreSaleRequest extends CompanyFormRequest {
                 }
 
                 $detail["item_id"] = $this->nullableIntegerFromArray($detail, "item_id");
+
                 $detail["customer_id"] = $this->nullableIntegerFromArray($detail, "customer_id");
                 $detail["currency_id"] = $this->nullableIntegerFromArray($detail, "currency_id");
                 $detail["quantity"] = $this->normalizeDecimalFromArray($detail, "quantity");
@@ -192,6 +193,7 @@ class StoreSaleRequest extends CompanyFormRequest {
                 $detail["commission_amount"] = $this->normalizeDecimalFromArray($detail, "commission_amount");
                 $detail["igv_exempt"] = filter_var($detail["igv_exempt"] ?? false, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? false;
                 $detail["price_includes_tax"] = filter_var($detail["price_includes_tax"] ?? false, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? false;
+
                 if($detail["igv_exempt"]) {
 
                     $detail["price_includes_tax"] = false;
@@ -218,6 +220,7 @@ class StoreSaleRequest extends CompanyFormRequest {
                 }
 
                 $tax["tax_id"] = $this->nullableIntegerFromArray($tax, "tax_id");
+
                 $tax["rate"] = $this->normalizeDecimalFromArray($tax, "rate");
                 $tax["quantity"] = $this->nullableIntegerFromArray($tax, "quantity");
                 $tax["amount"] = $this->normalizeDecimalFromArray($tax, "amount");
@@ -243,6 +246,7 @@ class StoreSaleRequest extends CompanyFormRequest {
                 }
 
                 $payment["payment_method_id"] = $this->nullableIntegerFromArray($payment, "payment_method_id");
+
                 $payment["payment_method_variant_id"] = $this->nullableIntegerFromArray($payment, "payment_method_variant_id");
                 $payment["amount"] = $this->normalizeDecimalFromArray($payment, "amount");
 

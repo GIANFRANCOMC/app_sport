@@ -55,6 +55,7 @@ final class RecipeWasteService {
             }
 
             $recipe = RecipeDish::query()->where("company_id", $companyId)->find($recipeId);
+
             $warehouse = Warehouse::query()->where("company_id", $companyId)->where("status", "active")->find($warehouseId);
             $item = Item::query()->where("company_id", $companyId)->where("type", "product")->find($itemId);
 
@@ -65,6 +66,7 @@ final class RecipeWasteService {
             }
 
             $quantity = Utilities::round((float) $data["quantity"], null, $companyId);
+
             $unitCost = round((float) (WarehouseItem::query()
                 ->where("company_id", $companyId)
                 ->where("warehouse_id", $warehouseId)

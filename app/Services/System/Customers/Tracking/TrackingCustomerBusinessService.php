@@ -207,6 +207,7 @@ class TrackingCustomerBusinessService {
         }
 
         $sales = $response["tracking"]["sales"] ?? collect();
+
         $subscriptions = $response["tracking"]["subscriptions"] ?? collect();
         $attendances = $response["tracking"]["attendances"] ?? collect();
         $response["tracking"]["summary"] = [

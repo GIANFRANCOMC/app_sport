@@ -81,7 +81,7 @@ class UserController extends BaseController {
 
             return $this->createdResponse($user, "created", "user");
 
-        } catch(\Exception $e) {
+        }catch(\Exception $e) {
 
             return $this->handleException($e, "create");
 
@@ -107,6 +107,7 @@ class UserController extends BaseController {
             }
 
             $data = $this->prepareUserData($request);
+
             $user = UserService::update($user, $data, $this->getUserId());
 
             if(!Utilities::isDefined($user)) {
@@ -122,7 +123,7 @@ class UserController extends BaseController {
 
             return $this->updatedResponse($user, "updated", "user");
 
-        } catch(\Exception $e) {
+        }catch(\Exception $e) {
 
             return $this->handleException($e, "update");
 
@@ -133,6 +134,7 @@ class UserController extends BaseController {
     public function authenticationEvents(Request $request, int $id): JsonResponse {
 
         $user = UserService::findByIdAndCompany($id, $this->getCompanyId(), null, []);
+
         if(!$user) {
 
             return $this->notFoundResponse();
@@ -186,7 +188,7 @@ class UserController extends BaseController {
 
             return $this->updatedResponse($user, "updated", "user");
 
-        } catch(\Exception $e) {
+        }catch(\Exception $e) {
 
             return $this->handleException($e, "update");
 
@@ -201,6 +203,7 @@ class UserController extends BaseController {
         try {
 
             $user = UserService::findByIdAndCompany($id, $this->getCompanyId(), ["active"]);
+
             if(!$user) {
 
                 return $this->notFoundResponse();
@@ -208,7 +211,9 @@ class UserController extends BaseController {
             }
 
             $deviceId = (int) $data["biometric_device_id"];
+
             $device = BiometricDeviceService::findByIdAndCompany($deviceId, $this->getCompanyId(), ["active"]);
+
             if(!$device) {
 
                 return $this->errorResponse("not_found", ["msg" => "El dispositivo biométrico no está disponible."], 404);
@@ -230,11 +235,11 @@ class UserController extends BaseController {
 
             return $this->createdResponse($fingerprint, "fingerprint_registered", "biometric_fingerprint");
 
-        } catch(\DomainException $exception) {
+        }catch(\DomainException $exception) {
 
             return response()->json(["bool" => false, "msg" => $exception->getMessage()], 422);
 
-        } catch(\Throwable $exception) {
+        }catch(\Throwable $exception) {
 
             return $this->handleException($exception, "register_fingerprint");
 
@@ -284,6 +289,7 @@ class UserController extends BaseController {
         }
 
         $data["branch_scope_mode"] = empty($data["branch_ids"]) ? "inherit" : "restricted";
+
         $data["cash_register_scope_mode"] = empty($data["cash_register_ids"]) ? "inherit" : "restricted";
         $data["warehouse_scope_mode"] = empty($data["warehouse_ids"]) ? "inherit" : "restricted";
 

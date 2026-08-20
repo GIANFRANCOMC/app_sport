@@ -19,6 +19,7 @@ final class LandlordSchemaService {
         }
 
         $schema = Schema::connection((string) config("tenancy.landlord_connection", "landlord"));
+
         $requiredTables = [
             "platform_users",
             "tenant_databases",
@@ -26,6 +27,7 @@ final class LandlordSchemaService {
             "tenant_audit_logs",
             "tenant_announcements",
         ];
+
         $missingTables = collect($requiredTables)
             ->reject(fn(string $table) => $schema->hasTable($table))
             ->values();

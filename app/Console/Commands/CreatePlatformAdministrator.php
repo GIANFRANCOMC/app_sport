@@ -21,11 +21,13 @@ final class CreatePlatformAdministrator extends Command {
     public function handle(): int {
 
         $password = (string) ($this->option("password") ?: "");
+
         if($password === "" && $this->input->isInteractive()) {
 
             $password = (string) $this->secret("Contraseña del administrador SaaS");
 
         }
+
         if(strlen($password) < 8) {
 
             throw new InvalidArgumentException("La contraseña debe tener al menos 8 caracteres.");
@@ -33,6 +35,7 @@ final class CreatePlatformAdministrator extends Command {
         }
 
         $email = strtolower((string) $this->argument("email"));
+
         $user = PlatformUser::query()->firstOrNew(["email" => $email]);
         $user->forceFill([
             "name" => (string) $this->option("name"),

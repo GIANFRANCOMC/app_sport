@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use App\Models\System\Tenancy\{TenantDatabase};
 use App\Services\System\Tenancy\{TenantAdministrationService};
 use Illuminate\Console\{Command};
 use Throwable;
@@ -28,12 +29,13 @@ final class SuspendTenant extends Command {
 
         try {
 
-            $tenant = $service->changeStatus($slug, $status, get_current_user() ?: "console");
+            $tenant = TenantDatabase::query()->where("slug", $slug)->firstOrFail();
+            $tenant = $service->changeStatus($tenant, $status, get_current_user() ?: "console");
             $this->info("Tenant {$tenant->slug} actualizado a {$tenant->status}.");
 
             return self::SUCCESS;
 
-        } catch(Throwable $exception) {
+        }catch(Throwable $exception) {
 
             $this->error($exception->getMessage());
 

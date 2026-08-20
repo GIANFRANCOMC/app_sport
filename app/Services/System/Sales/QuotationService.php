@@ -21,6 +21,7 @@ final class QuotationService {
             ->with(["holder:id,name,document_number", "seller:id,name", "currency:id,code,sign", "branch:id,name"]);
 
         $word = trim((string) ($filters["word"] ?? ""));
+
         if($word !== "") {
 
             $query->where(function($query) use ($word) {
@@ -47,6 +48,7 @@ final class QuotationService {
         return DB::transaction(function() use ($companyId, $userId, $data) {
 
             $details = collect($data["details"] ?? []);
+
             if($details->isEmpty()) {
 
                 throw new DomainException("Agrega al menos un detalle a la cotización.");
@@ -54,6 +56,7 @@ final class QuotationService {
             }
 
             $itemIds = $details->pluck("item_id")->map(fn($id) => (int) $id)->unique()->values();
+
             $items = Item::query()
                 ->where("company_id", $companyId)
                 ->whereIn("id", $itemIds)

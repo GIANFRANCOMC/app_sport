@@ -141,6 +141,7 @@ class BranchService {
             $branchData = self::prepareBranchDataForCreate($data, $companyId, $userId);
 
             // Create the record
+
             $branch = Branch::create($branchData);
 
             // Create related series for document types
@@ -169,6 +170,7 @@ class BranchService {
 
             // Prepare update data with only changed fields
             $updateData = self::prepareBranchDataForUpdate($branch, $data);
+
             $nameChanged = isset($updateData["name"]);
 
             if(($updateData["status"] ?? null) === "inactive"
@@ -183,6 +185,7 @@ class BranchService {
             }
 
             // Only update if there are changes
+
             if(!empty($updateData)) {
 
                 $updateData["updated_at"] = now();
@@ -190,6 +193,7 @@ class BranchService {
                 $branch->update($updateData);
 
                 // Update related warehouses names if branch name changed
+
                 if($nameChanged) {
 
                     WarehouseService::updateNamesForBranch($branch->fresh(["warehousesAll"]), $userId);
@@ -246,7 +250,9 @@ class BranchService {
             ->with(["series.documentType", "warehouses"]);
 
         // Apply filters
+
         $filterBy = $filters["filter_by"] ?? null;
+
         $word = $filters["word"] ?? null;
 
         if(Utilities::isDefined($word) && Utilities::isDefined($filterBy)) {

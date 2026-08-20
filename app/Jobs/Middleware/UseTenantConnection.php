@@ -26,6 +26,7 @@ final class UseTenantConnection {
         }
 
         $manager = app(TenantConnectionManager::class);
+
         $context = app(TenantContext::class);
 
         try {
@@ -34,7 +35,7 @@ final class UseTenantConnection {
             $context->set($tenant);
             $next($job);
 
-        } finally {
+        }finally {
 
             $context->set(null);
             $manager->disconnect();

@@ -69,7 +69,7 @@ class TrackingCustomerController extends BaseController {
 
             return $this->errorResponse($result["msg"] ?? "retrieve_failed", [], 422);
 
-        } catch(\Exception $e) {
+        }catch(\Exception $e) {
 
             return $this->handleException($e, "retrieve");
 

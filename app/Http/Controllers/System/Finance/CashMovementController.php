@@ -52,7 +52,7 @@ final class CashMovementController extends BaseController {
                 "data" => $movement,
             ]);
 
-        } catch(RuntimeException $exception) {
+        }catch(RuntimeException $exception) {
 
             return response()->json(["bool" => false, "msg" => $exception->getMessage()], 422);
 
@@ -67,6 +67,7 @@ final class CashMovementController extends BaseController {
             $this->cashFilters($request),
             $this->getUserId()
         );
+
         $handle = fopen("php://temp", "r+");
 
         fputcsv($handle, [
@@ -96,6 +97,7 @@ final class CashMovementController extends BaseController {
         }
 
         rewind($handle);
+
         $csv = stream_get_contents($handle);
         fclose($handle);
 

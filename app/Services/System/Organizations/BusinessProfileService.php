@@ -42,10 +42,12 @@ final class BusinessProfileService {
                 ->where("business_industry_id", $industry->id)
                 ->where("status", "active")
                 ->get();
+
             $catalogIds = SubSection::query()
                 ->where("status", "active")
                 ->pluck("id")
                 ->map(fn($id) => (int) $id);
+
             $protectedIds = self::protectedModuleIds();
             $selectedIds = $sets
                 ->where("is_enabled_by_default", true)
@@ -76,6 +78,8 @@ final class BusinessProfileService {
                 );
 
             }
+
+            CompanySectionService::revokeDisabledRolePermissions($companyId, $selectedIds->values()->all());
 
             DB::table("companies")
                 ->where("id", $companyId)
@@ -110,6 +114,7 @@ final class BusinessProfileService {
                 ->where("status", "active")
                 ->pluck("id")
                 ->map(fn($id) => (int) $id);
+
             $protectedIds = self::protectedModuleIds();
             $selected = collect($enabledIds)
                 ->map(fn($id) => (int) $id)
@@ -138,6 +143,8 @@ final class BusinessProfileService {
                 );
 
             }
+
+            CompanySectionService::revokeDisabledRolePermissions($companyId, $selected->values()->all());
 
             CompanySectionService::clearCompanyCache($companyId);
 

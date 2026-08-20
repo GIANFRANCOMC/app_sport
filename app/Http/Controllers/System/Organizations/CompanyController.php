@@ -58,6 +58,7 @@ class CompanyController extends BaseController {
             }
 
             $data = $this->prepareCompanyData($request);
+
             $files = $this->prepareCompanyFiles($request);
             $company = CompanyService::update($company, $data, $files, $this->getUserId());
 
@@ -71,7 +72,7 @@ class CompanyController extends BaseController {
 
             return $this->updatedResponse($company, "updated", "company");
 
-        } catch(\Exception $e) {
+        }catch(\Exception $e) {
 
             return $this->handleException($e, "update");
 

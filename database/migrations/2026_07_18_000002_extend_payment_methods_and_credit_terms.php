@@ -302,6 +302,7 @@ return new class extends Migration {
         foreach($variantsByMethod as $methodCode => $variants) {
 
             $methodId = $methods[$methodCode] ?? null;
+
             if(!$methodId) {
 
                 continue;

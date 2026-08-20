@@ -24,6 +24,7 @@ class QueryHelper {
         $perPage = min($perPage, $maxPerPage);
 
         // Ensure perPage is at least 1
+
         $perPage = max(1, $perPage);
 
         return $query->paginate($perPage);

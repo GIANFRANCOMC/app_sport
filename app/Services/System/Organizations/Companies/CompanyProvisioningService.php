@@ -66,6 +66,7 @@ final class CompanyProvisioningService {
 
         $roleId = DB::table("roles")->where("company_id", $companyId)->where("is_full_access", true)->value("id");
         $identityId = DB::table("identity_document_types")->where("company_id", $companyId)->where("code", "dni")->value("id");
+
         if(!$roleId || !$identityId) {
 
             throw new RuntimeException("La organización debe aprovisionarse antes de crear el administrador.");
@@ -88,6 +89,7 @@ final class CompanyProvisioningService {
 
         $userId = (int) DB::table("users")->where("company_id", $companyId)->where("email", $email)->value("id");
         $branchId = DB::table("branches")->where("company_id", $companyId)->where("name", "Sede Principal")->value("id");
+
         if($branchId) {
 
             DB::table("user_branches")->updateOrInsert(
@@ -361,6 +363,7 @@ final class CompanyProvisioningService {
                 "description" => "Base para tiendas con productos, inventario, compras, caja y ventas rápidas.",
             ],
         ];
+
         $subSectionIds = DB::table("sub_sections")
             ->where("status", "active")
             ->pluck("id");
@@ -445,6 +448,7 @@ final class CompanyProvisioningService {
         foreach($variantsByMethod as $methodCode => $variants) {
 
             $methodId = $methods[$methodCode] ?? null;
+
             if(!$methodId) {
 
                 continue;
@@ -478,6 +482,7 @@ final class CompanyProvisioningService {
             ["company_id" => $companyId, "name" => "Sede Principal"],
             ["internal_code" => "SUC-PRINCIPAL", "status" => "active", "updated_at" => now()]
         );
+
         $branchId = (int) DB::table("branches")->where("company_id", $companyId)->where("name", "Sede Principal")->value("id");
 
         DB::table("warehouses")->updateOrInsert(
@@ -497,6 +502,7 @@ final class CompanyProvisioningService {
         );
 
         $documentTypes = DB::table("document_types")->where("company_id", $companyId)->get();
+
         foreach($documentTypes as $documentType) {
 
             DB::table("series")->updateOrInsert(
@@ -533,6 +539,7 @@ final class CompanyProvisioningService {
         }
 
         $subSectionIds = DB::table("sub_sections")->pluck("id");
+
         foreach($subSectionIds as $subSectionId) {
 
             DB::table("role_sub_sections")->updateOrInsert(

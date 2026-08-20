@@ -54,6 +54,7 @@ class TrackingNotificationService {
         }
 
         $before = $notification->getAttributes();
+
         $notification->forceFill([
             "status" => "pending",
             "attempts" => 0,

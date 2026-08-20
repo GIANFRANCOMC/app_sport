@@ -150,6 +150,7 @@ abstract class BaseConfigService {
     public static function registerUserCacheScope(int $companyId, int $userId): void {
 
         self::validateCompanyId($companyId);
+
         if($userId <= 0) {
 
             throw new InvalidArgumentException("User ID must be greater than zero.");
@@ -157,6 +158,7 @@ abstract class BaseConfigService {
         }
 
         $key = self::userIndexKey($companyId);
+
         $userIds = collect(Cache::get($key, []))
             ->push($userId)
             ->map(fn($id) => (int) $id)

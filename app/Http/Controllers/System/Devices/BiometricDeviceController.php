@@ -80,7 +80,7 @@ class BiometricDeviceController extends BaseController {
 
             return $this->createdResponse($device, "created", "biometric_device");
 
-        } catch(\Exception $e) {
+        }catch(\Exception $e) {
 
             return $this->handleException($e, "create");
 
@@ -106,6 +106,7 @@ class BiometricDeviceController extends BaseController {
             }
 
             $data = $this->prepareBiometricDeviceData($request);
+
             $device = BiometricDeviceService::update($device, $data, $this->getUserId());
 
             if(!Utilities::isDefined($device)) {
@@ -121,7 +122,7 @@ class BiometricDeviceController extends BaseController {
 
             return $this->updatedResponse($device, "updated", "biometric_device");
 
-        } catch(\Exception $e) {
+        }catch(\Exception $e) {
 
             return $this->handleException($e, "update");
 
@@ -134,6 +135,7 @@ class BiometricDeviceController extends BaseController {
         try {
 
             $device = BiometricDeviceService::findByIdAndCompany($id, $this->getCompanyId(), null);
+
             if(!$device) {
 
                 return $this->notFoundResponse();
@@ -146,7 +148,7 @@ class BiometricDeviceController extends BaseController {
                 "data" => BiometricDeviceService::rotateCredentials($device, $this->getUserId()),
             ]);
 
-        } catch(\Throwable $exception) {
+        }catch(\Throwable $exception) {
 
             return $this->handleException($exception, "update");
 

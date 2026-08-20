@@ -167,6 +167,7 @@ class ReportController extends BaseController {
             $expdt = $encodedExpiration === false ? "" : str_replace("T", " ", $encodedExpiration);
 
             // Validate params: INIT
+
             if(!(intval($document) > 0) || !in_array($printType, ["a4", "mm80"]) || !Utilities::isDefined($expdt)) {
 
                 return response()->view("errors.500", ["msg" => $message500], 500);
@@ -174,16 +175,17 @@ class ReportController extends BaseController {
             }
 
             // Validate params: EXPIRATION
+
             try {
 
                 $expirationDate = Carbon::parse($expdt)->startOfDay();
                 $currentDate = Carbon::now()->startOfDay();
 
-            } catch(InvalidFormatException $e) {
+            }catch(InvalidFormatException $e) {
 
                 return response()->view("errors.500", ["msg" => $message500." (expdt)"], 500);
 
-            } catch(Exception $e) {
+            }catch(Exception $e) {
 
                 return response()->view("errors.500", ["msg" => $message500]." (expdt)", 500);
 
@@ -238,7 +240,7 @@ class ReportController extends BaseController {
                 ? "data:image/".pathinfo($logotypeRoute, PATHINFO_EXTENSION).";base64,".base64_encode(file_get_contents($logotypeRoute))
                 : null;
 
-        } catch(\Exception $e) {
+        }catch(\Exception $e) {
 
             $logotypeImg = null;
 
@@ -276,7 +278,7 @@ class ReportController extends BaseController {
 
             }
 
-        } catch(\Exception $e) {
+        }catch(\Exception $e) {
 
             return response()->view("errors.500", ["msg" => $e->getMessage()], 500);
 

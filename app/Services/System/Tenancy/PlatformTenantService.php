@@ -20,16 +20,17 @@ final class PlatformTenantService {
 
         try {
 
+            $latestCompanyModules = DB::table("companies_sub_sections")
+                ->selectRaw("MAX(id) as id, company_id, sub_section_id")
+                ->where("company_id", $tenant->company_id)
+                ->groupBy("company_id", "sub_section_id");
+
             return DB::table("sub_sections as ss")
                 ->join("sections as s", "s.id", "=", "ss.section_id")
                 ->join("menu_categories as mc", "mc.id", "=", "s.menu_category_id")
                 ->leftJoin("menu_groups as mg", "mg.id", "=", "ss.menu_group_id")
-                ->leftJoin("companies_sub_sections as css", function($join) use ($tenant): void {
-
-                    $join->on("css.sub_section_id", "=", "ss.id")
-                        ->where("css.company_id", "=", $tenant->company_id);
-
-                })
+                ->leftJoinSub($latestCompanyModules, "latest_css", "latest_css.sub_section_id", "=", "ss.id")
+                ->leftJoin("companies_sub_sections as css", "css.id", "=", "latest_css.id")
                 ->where("ss.status", "active")
                 ->orderBy("mc.order")
                 ->orderBy("s.order")
@@ -43,7 +44,7 @@ final class PlatformTenantService {
                     "css.status as company_status",
                 ]);
 
-        } finally {
+        }finally {
 
             $this->connections->disconnect();
 
@@ -58,6 +59,7 @@ final class PlatformTenantService {
         try {
 
             $companyId = (int) $tenant->company_id;
+
             if($companyId <= 0 || !DB::table("companies")->where("id", $companyId)->exists()) {
 
                 throw new RuntimeException("El tenant no tiene una empresa raíz válida.");
@@ -65,6 +67,7 @@ final class PlatformTenantService {
             }
 
             $enabled = collect($enabledModuleIds)->map(fn($id) => (int) $id)->unique();
+
             $modules = DB::table("sub_sections as ss")
                 ->join("sections as s", "s.id", "=", "ss.section_id")
                 ->join("menu_categories as mc", "mc.id", "=", "s.menu_category_id")
@@ -85,17 +88,35 @@ final class PlatformTenantService {
                 "updated_at" => $now,
             ])->all();
 
-            DB::table("companies_sub_sections")->upsert(
-                $records,
-                ["company_id", "sub_section_id"],
-                ["section_order", "sub_section_order", "status", "updated_at"]
-            );
+            DB::transaction(function() use ($companyId, $enabled, $modules, $records): void {
+
+                DB::table("companies")
+                    ->where("id", $companyId)
+                    ->lockForUpdate()
+                    ->value("id");
+
+                DB::table("companies_sub_sections")
+                    ->where("company_id", $companyId)
+                    ->delete();
+
+                if($records !== []) {
+
+                    DB::table("companies_sub_sections")->insert($records);
+
+                }
+
+                CompanySectionService::revokeDisabledRolePermissions(
+                    $companyId,
+                    $enabled->intersect($modules->pluck("id"))->values()->all()
+                );
+
+            });
 
             CompanySectionService::clearCompanyCache($companyId);
 
             return $enabled->intersect($modules->pluck("id")->map(fn($id) => (int) $id))->count();
 
-        } finally {
+        }finally {
 
             $this->connections->disconnect();
 

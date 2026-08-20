@@ -12,7 +12,7 @@ La interfaz autenticada utiliza un único shell Vue. Cambiar entre el listado y 
 
 - `resources/views/Platform/layouts/app.blade.php`: documento HTML compartido por login y shell.
 - `resources/views/Platform/shell.blade.php`: único punto de montaje autenticado y configuración segura serializada con `Js::from`.
-- `resources/js/Platform/App.vue`: cabecera, navegación local, notificaciones y cierre de sesión.
+- `resources/js/Platform/App.vue`: cabecera compacta, menú único de usuario, edición segura del perfil, notificaciones y cierre de sesión.
 - `resources/js/Platform/pages/TenantIndex.vue`: filtros, paginación, indicadores y aprovisionamiento.
 - `resources/js/Platform/pages/TenantDetail.vue`: estado, módulos y avisos.
 - `resources/js/Platform/api.js`: cliente Axios con CSRF, cabeceras JSON y mensajes normalizados.
@@ -22,17 +22,18 @@ Las vistas Blade anteriores de listado y detalle se eliminaron. Ninguna página 
 ### Rutas de página
 
 - `GET /tenants`: carga el shell.
-- `GET /tenants/{tenant}`: carga el mismo shell y permite acceso directo o recarga segura del detalle.
+- `GET /tenants/{public_id}`: carga el mismo shell y permite acceso directo o recarga segura del detalle. Nunca expone el ID incremental.
 
 ### API web autenticada
 
 - `GET /api/tenants`: listado paginado, búsqueda y conteos.
 - `POST /api/tenants`: aprovisionamiento.
-- `GET /api/tenants/{tenant}`: detalle compuesto.
-- `PATCH /api/tenants/{tenant}/status`: estado operativo.
-- `PUT /api/tenants/{tenant}/modules`: módulos mediante escritura masiva.
-- `POST /api/tenants/{tenant}/announcements`: publicación de aviso.
-- `PATCH /api/tenants/{tenant}/announcements/{announcement}`: activación o desactivación.
+- `GET /api/tenants/{public_id}`: detalle compuesto.
+- `PATCH /api/tenants/{public_id}/status`: estado operativo.
+- `PUT /api/tenants/{public_id}/modules`: módulos mediante escritura masiva.
+- `POST /api/tenants/{public_id}/announcements`: publicación de aviso.
+- `PATCH /api/tenants/{public_id}/announcements/{announcement}`: activación o desactivación.
+- `PATCH /api/profile`: actualiza nombre, correo y opcionalmente contraseña del administrador autenticado.
 
 Estas rutas pertenecen al grupo `web` del dominio de plataforma. Conservan sesión, CSRF, `platform.auth`, model binding y límites de frecuencia. No se exponen mediante el API público del proyecto.
 
@@ -42,13 +43,15 @@ El listado selecciona únicamente las columnas visibles, pagina desde SQL y limi
 
 El detalle devuelve módulos y como máximo los 50 avisos más recientes. La conexión dinámica al tenant se abre solo mientras se consultan o actualizan sus módulos y siempre se libera en `finally`.
 
-La actualización de módulos genera el estado completo en memoria y ejecuta un único `upsert`. Antes se ejecutaba un `updateOrInsert` por cada módulo, por lo que el tiempo crecía linealmente con el menú.
+La actualización de módulos genera el estado completo en memoria y reemplaza atómicamente la proyección de la empresa bajo un bloqueo de fila. Esto evita duplicados incluso en bases locales antiguas que todavía no tenían la restricción única.
 
 El aprovisionamiento está encapsulado en `PlatformTenantProvisioner`; el controlador no administra conexiones ni comandos. La solicitud es asíncrona desde el navegador y mantiene un estado visual de progreso. El comando continúa siendo la única implementación del proceso de creación para evitar dos flujos de negocio diferentes.
 
 La creación se realiza desde un modal bloqueante. Mientras el backend prepara la base tenant, la interfaz impide cerrar el modal, repetir el envío o abandonar accidentalmente la página. El backend añade un bloqueo exclusivo por `slug` durante 15 minutos, conserva el `throttle` de aprovisionamiento y valida subdominio, documento y una contraseña robusta. Los intentos correctos y fallidos quedan registrados en `tenant_audit_logs` sin almacenar credenciales.
 
-Los módulos habilitados usan un control visual propio, accesible mediante teclado y con un check de alto contraste. El mismo patrón se reutiliza para la propiedad **Descartable** de los avisos. La acción de cada fila se denomina **Configurar**, y el cierre de sesión se presenta explícitamente como una acción destructiva.
+Los módulos habilitados usan un control visual propio, accesible mediante teclado y con un check de alto contraste. El mismo patrón se reutiliza para la propiedad **Descartable** de los avisos. El estado del tenant se consulta al final del detalle y solo se modifica desde una modal sincronizada. La cabecera muestra únicamente **Clientes** y un menú con el nombre del usuario; allí se agrupan perfil y cierre de sesión. Para modificar correo o contraseña siempre se exige la contraseña actual, y una rotación incrementa `session_version`.
+
+El textarea de avisos tiene altura fija y no permite redimensionamiento manual. El documento HTML declara favicon, color del navegador, política de referencia y `noindex` para evitar que el panel landlord sea indexado.
 
 ## Módulos iniciales de una organización
 
@@ -62,19 +65,21 @@ Los siguientes módulos nacen desactivados:
 - Membresías y Recetas y platillos del Catálogo comercial.
 - Activos, Gestión de activos, Dispositivos biométricos y Asistencia del personal de Mi organización.
 
-El rol administrador conserva el catálogo completo de permisos, pero la autorización siempre intersecta esos permisos con los módulos habilitados para la empresa. Por ello, un administrador tenant no puede abrir por URL directa un módulo que la plataforma haya desactivado. Al cambiar módulos se invalidan tanto la caché de navegación como la de autorización.
+La autorización siempre intersecta los permisos con los módulos habilitados para la empresa. Al desactivar un módulo se eliminan también sus registros en `role_sub_sections`, se invalidan las cachés de navegación y autorización, y una ruta principal catalogada se resuelve de forma exacta. No puede heredar acceso de otro módulo activo que comparta prefijo, por ejemplo otro `sales.*`. Los roles de acceso completo recuperan el módulo al reactivarlo; los roles restringidos deben recibir nuevamente el permiso de forma explícita.
 
 ## Migraciones e impacto
 
 Como el proyecto todavía se encuentra en etapa descartable y la base será recreada, los cambios se consolidaron en las migraciones fuente:
 
 - `tenant_databases.database_name` ahora es único. Una base física no puede pertenecer a dos tenants.
+- `tenant_databases.public_id` es un UUID v4 único y constituye la clave pública de model binding.
 - Índice de `tenant_databases(status, slug)` para listado y filtro.
 - Índice de dominios por tenant, estado y principal.
 - Índices de auditoría por tenant/fecha y acción/resultado/fecha.
-- `companies_sub_sections(company_id, sub_section_id)` ahora es único, requisito del `upsert`.
+- `companies_sub_sections(company_id, sub_section_id)` es único y la configuración se reemplaza atómicamente para tolerar instalaciones antiguas sin esa restricción.
 - Índice de navegación de módulos por empresa, estado y orden.
 - `sub_sections.is_enabled_by_default` concentra la política inicial de activación y evita listas duplicadas en controladores o componentes.
+- Los alcances de roles/usuarios y las modalidades de entrega se consolidaron en sus migraciones base; se retiraron las migraciones incrementales que solo completaban un esquema todavía descartable.
 
 Impacto al aplicar sobre datos no descartables: primero debe comprobarse que no existan bases repetidas ni filas duplicadas en `companies_sub_sections`. En el flujo actual se espera recrear las bases, por lo que no se agregó una migración de limpieza que pudiera decidir arbitrariamente qué registro conservar.
 

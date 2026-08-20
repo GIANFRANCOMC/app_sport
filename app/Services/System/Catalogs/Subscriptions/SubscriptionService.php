@@ -190,6 +190,7 @@ class SubscriptionService {
         $capacityEnabled = array_key_exists("capacity_control_enabled", $updateData)
             ? (bool) $updateData["capacity_control_enabled"]
             : (bool) $item->capacity_control_enabled;
+
         $capacityLimit = array_key_exists("capacity_limit", $updateData)
             ? (int) ($updateData["capacity_limit"] ?? 0)
             : (int) ($item->capacity_limit ?? 0);
@@ -213,6 +214,7 @@ class SubscriptionService {
         }
 
         $enabled = (bool) $itemData["capacity_control_enabled"];
+
         $itemData["capacity_control_enabled"] = $enabled;
 
         if(!$enabled) {
@@ -249,9 +251,11 @@ class SubscriptionService {
             $itemData = self::prepareSubscriptionDataForCreate($data, $companyId, $userId);
 
             // Create the record
+
             $item = Item::create($itemData);
 
             // Sync categories
+
             if(isset($data["categories"]) && is_array($data["categories"])) {
 
                 CategoryItemService::sync($item->id, $data["categories"], $userId);
@@ -280,6 +284,7 @@ class SubscriptionService {
             $updateData = self::prepareSubscriptionDataForUpdate($item, $data);
 
             // Only update if there are changes
+
             if(!empty($updateData)) {
 
                 $updateData["updated_at"] = now();
@@ -289,6 +294,7 @@ class SubscriptionService {
             }
 
             // Sync categories
+
             if(isset($data["categories"]) && is_array($data["categories"])) {
 
                 CategoryItemService::sync($item->id, $data["categories"], $userId);
@@ -347,7 +353,9 @@ class SubscriptionService {
             ->with(["currency", "categoryItems"]);
 
         // Apply filters
+
         $filterBy = $filters["filter_by"] ?? null;
+
         $word = $filters["word"] ?? null;
 
         if(Utilities::isDefined($word) && Utilities::isDefined($filterBy)) {

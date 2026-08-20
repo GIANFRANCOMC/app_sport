@@ -186,7 +186,7 @@ $config->currencies->records = MasterReferenceDataService::currencies($companyId
 
 Pasos recomendados:
 
-1. Crear migración nueva, no editar migraciones ya ejecutadas salvo en fase inicial controlada.
+1. Mientras el proyecto siga en fase reiniciable, modificar la migración base propietaria; crear una migración incremental únicamente cuando existan datos persistentes que deban conservarse.
 2. Actualizar `$fillable` o asignaciones controladas en servicio/modelo.
 3. Actualizar casts si es fecha, boolean, decimal o json.
 4. Actualizar StoreRequest y UpdateRequest.

@@ -90,6 +90,7 @@ class Utilities {
                 return $e["code"] === $code;
 
             });
+
             $result = count($filter) > 0 ? reset($filter) : null;
 
         }
@@ -169,6 +170,7 @@ class Utilities {
                 return "MENOS ".self::convertNumberToWords(-$number);
 
             }
+
             if($number == 0) {
 
                 return $units[0];
@@ -176,6 +178,7 @@ class Utilities {
             }
 
             $whole = floor($number);
+
             $cents = round(($number - $whole) * 100);
             $result = "";
 
@@ -185,12 +188,14 @@ class Utilities {
                 $whole %= 100;
 
             }
+
             if($whole >= 20) {
 
                 $result .= $units[10 * floor($whole / 10)]." ";
                 $whole %= 10;
 
             }
+
             if($whole > 0) {
 
                 $result .= $units[$whole]." ";
@@ -199,7 +204,7 @@ class Utilities {
 
             $phrase = trim($result).($cents > 0 ? " CON ".str_pad($cents, 2, "0", STR_PAD_LEFT)."/100 SOLES" : " SOLES");
 
-        } catch(Exception $e) {
+        }catch(Exception $e) {
 
             $phrase = "";
 

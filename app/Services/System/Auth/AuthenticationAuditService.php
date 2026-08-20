@@ -30,6 +30,7 @@ final class AuthenticationAuditService {
             }
 
             $tenant = app(TenantContext::class)->get();
+
             $sessionId = $request->hasSession() ? $request->session()->getId() : null;
 
             AuthenticationEvent::query()->create([
@@ -46,7 +47,7 @@ final class AuthenticationAuditService {
                 "occurred_at" => now(),
             ]);
 
-        } catch(Throwable) {
+        }catch(Throwable) {
             // La auditoría no debe impedir el acceso ni revelar fallos internos al visitante.
         }
 

@@ -10,6 +10,27 @@ return new class extends Migration {
      */
     public function up(): void {
 
+        Schema::create("sale_delivery_methods", function(Blueprint $table) {
+
+            $table->id();
+            $table->unsignedBigInteger("company_id");
+            $table->string("code", 50);
+            $table->string("name", 100);
+            $table->string("description", 300)->nullable();
+            $table->unsignedSmallInteger("sort_order")->default(0);
+            $table->boolean("is_default")->default(false);
+            $table->enum("status", ["active", "inactive"])->default("active");
+            $table->timestamp("created_at")->useCurrent()->nullable();
+            $table->integer("created_by")->nullable();
+            $table->timestamp("updated_at")->nullable();
+            $table->integer("updated_by")->nullable();
+
+            $table->foreign("company_id")->references("id")->on("companies")->onDelete("cascade");
+            $table->unique(["company_id", "code"], "sale_delivery_methods_company_code_uq");
+            $table->index(["company_id", "status", "sort_order"], "sale_delivery_methods_company_status_idx");
+
+        });
+
         Schema::create("sales_header", function(Blueprint $table) {
 
             $table->id();
@@ -20,6 +41,7 @@ return new class extends Migration {
             $table->unsignedBigInteger("seller_id");
             $table->unsignedBigInteger("currency_id");
             $table->unsignedBigInteger("warehouse_id")->nullable();
+            $table->unsignedBigInteger("delivery_method_id")->nullable();
             $table->unsignedBigInteger("cash_session_id")->nullable();
             $table->date("issue_date");
             $table->enum("delivery_mode", ["immediate", "pending"])->default("immediate");
@@ -52,6 +74,11 @@ return new class extends Migration {
             $table->foreign("seller_id")->references("id")->on("users")->restrictOnDelete();
             $table->foreign("currency_id")->references("id")->on("currencies")->restrictOnDelete();
             $table->foreign("warehouse_id")->references("id")->on("warehouses")->nullOnDelete();
+            $table->foreign("delivery_method_id", "sales_header_delivery_method_fk")
+                ->references("id")
+                ->on("sale_delivery_methods")
+                ->nullOnDelete();
+
             $table->foreign("cash_session_id")->references("id")->on("cash_sessions")->nullOnDelete();
             $table->foreign("delivered_by")->references("id")->on("users")->nullOnDelete();
             $table->foreign("company_id")->references("id")->on("companies")->onDelete("cascade");
@@ -60,6 +87,7 @@ return new class extends Migration {
             $table->index(["company_id", "holder_id", "status", "issue_date", "id"], "sales_header_holder_status_date_idx");
             $table->index(["company_id", "seller_id", "status", "issue_date", "id"], "sales_header_seller_status_date_idx");
             $table->index(["company_id", "warehouse_id", "status", "issue_date", "id"], "sales_header_warehouse_status_date_idx");
+            $table->index(["company_id", "delivery_method_id", "status", "issue_date"], "sales_header_company_delivery_method_idx");
             $table->index(["company_id", "delivery_status", "status", "issue_date", "id"], "sales_header_delivery_status_date_idx");
             $table->index(["company_id", "payment_status", "status", "issue_date", "id"], "sales_header_payment_status_date_idx");
 
@@ -88,6 +116,7 @@ return new class extends Migration {
                 ["company_id", "serie_id", "sequential", "action"],
                 "series_corr_company_serie_seq_action_uq"
             );
+
             $table->index(["company_id", "sale_header_id", "action", "occurred_at"], "series_corr_sale_action_date_idx");
 
         });
@@ -199,6 +228,7 @@ return new class extends Migration {
         Schema::dropIfExists("sales_body");
         Schema::dropIfExists("series_correlative_movements");
         Schema::dropIfExists("sales_header");
+        Schema::dropIfExists("sale_delivery_methods");
 
     }
 };

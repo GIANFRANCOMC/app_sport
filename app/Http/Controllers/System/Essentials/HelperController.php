@@ -128,7 +128,7 @@ class HelperController extends BaseController {
 
             return ApiResponse::success(null, "Correo enviado correctamente.");
 
-        } catch(\Throwable $e) {
+        }catch(\Throwable $e) {
 
             return $this->handleException($e, "send_email");
 
@@ -173,6 +173,7 @@ class HelperController extends BaseController {
         }
 
         $dataApi = json_decode((string) $responseApi);
+
         $success = (bool) ($dataApi->success ?? false);
 
         if(!$success) {

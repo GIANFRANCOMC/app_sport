@@ -360,7 +360,7 @@ final class ServiceOperationController extends BaseController {
 
             return ApiResponse::success($callback(), $message);
 
-        } catch(Throwable $exception) {
+        }catch(Throwable $exception) {
 
             return ApiResponse::error($exception->getMessage(), 422);
 

@@ -50,6 +50,7 @@ final class TenantResolver {
         }
 
         $subdomain = Str::beforeLast($host, $suffix);
+
         if(!preg_match("/^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\$/", $subdomain)) {
 
             return null;
@@ -84,6 +85,7 @@ final class TenantResolver {
             }
 
             $tenant = $domain->tenantDatabase;
+
             if($tenant->status !== "active" || $tenant->slug !== $subdomain) {
 
                 return null;
@@ -101,6 +103,7 @@ final class TenantResolver {
         };
 
         $cacheSeconds = (int) config("tenancy.resolver_cache_seconds", 60);
+
         if($cacheSeconds <= 0) {
 
             return $loadTenant();

@@ -74,7 +74,7 @@ class SaleBody extends Model {
 
             return json_decode($this->extras);
 
-        } catch(Exception $e) {
+        }catch(Exception $e) {
 
             return "";
 

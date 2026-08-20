@@ -9,6 +9,7 @@ $checked = 0;
 foreach($roots as $root) {
 
     $absoluteRoot = dirname(__DIR__).DIRECTORY_SEPARATOR.$root;
+
     if(!is_dir($absoluteRoot)) {
 
         continue;
@@ -28,7 +29,9 @@ foreach($roots as $root) {
         }
 
         $checked++;
+
         $source = file_get_contents($file->getPathname());
+
         if($source === false) {
 
             $errors[] = "No se pudo leer {$file->getPathname()}.";
@@ -41,7 +44,7 @@ foreach($roots as $root) {
 
             token_get_all($source, TOKEN_PARSE);
 
-        } catch(ParseError $exception) {
+        }catch(ParseError $exception) {
 
             $errors[] = "{$file->getPathname()}: {$exception->getMessage()}";
 

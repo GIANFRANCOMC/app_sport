@@ -43,6 +43,7 @@ final class PruneCustomerAttendances extends Command {
         }
 
         $rows = [];
+
         $hasFailure = false;
 
         foreach($tenants as $tenant) {
@@ -56,10 +57,11 @@ final class PruneCustomerAttendances extends Command {
                     max(1, (int) $this->option("limit")),
                     (bool) $this->option("dry-run")
                 );
+
                 $rows[] = [$tenant->slug, $summary["companies"], $summary["eligible"], $summary["deleted"], "OK"];
                 $administration->audit($tenant, "prune_customer_attendances", "success", $summary, "scheduler");
 
-            } catch(Throwable $exception) {
+            }catch(Throwable $exception) {
 
                 $hasFailure = true;
                 $rows[] = [$tenant->slug, 0, 0, 0, $exception->getMessage()];
@@ -67,7 +69,7 @@ final class PruneCustomerAttendances extends Command {
                     "error" => $exception->getMessage(),
                 ], "scheduler");
 
-            } finally {
+            }finally {
 
                 $connectionManager->disconnect();
 

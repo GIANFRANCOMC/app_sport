@@ -29,7 +29,7 @@ final class TenantAdministrationService {
 
         return TenantDatabase::query()
             ->select([
-                "id", "slug", "company_id", "database_name", "status",
+                "id", "public_id", "slug", "company_id", "database_name", "status",
                 "last_resolved_at", "created_at", "updated_at",
             ])
             ->with(["domains" => fn($query) => $query
@@ -81,7 +81,7 @@ final class TenantAdministrationService {
             ?? $tenant->domains->first();
 
         return [
-            "id" => (int) $tenant->id,
+            "id" => (string) $tenant->public_id,
             "slug" => (string) $tenant->slug,
             "company_id" => $tenant->company_id ? (int) $tenant->company_id : null,
             "database_name" => (string) $tenant->database_name,
@@ -119,7 +119,7 @@ final class TenantAdministrationService {
 
             return $result;
 
-        } catch(Throwable $exception) {
+        }catch(Throwable $exception) {
 
             $result = [
                 "healthy" => false,
@@ -127,11 +127,12 @@ final class TenantAdministrationService {
                 "latency_ms" => round((microtime(true) - $startedAt) * 1000, 2),
                 "message" => $exception->getMessage(),
             ];
+
             $this->audit($tenant, "health_check", "failure", $result);
 
             return $result;
 
-        } finally {
+        }finally {
 
             $this->connectionManager->disconnect();
 
@@ -139,7 +140,7 @@ final class TenantAdministrationService {
 
     }
 
-    public function changeStatus(string $slug, string $status, ?string $actor = null): TenantDatabase {
+    public function changeStatus(TenantDatabase $tenant, string $status, ?string $actor = null): TenantDatabase {
 
         if(!in_array($status, ["active", "inactive", "suspended"], true)) {
 
@@ -147,14 +148,8 @@ final class TenantAdministrationService {
 
         }
 
-        $tenant = TenantDatabase::query()->where("slug", $slug)->first();
-        if(!$tenant) {
-
-            throw new RuntimeException("El tenant solicitado no existe.");
-
-        }
-
         $previousStatus = $tenant->status;
+
         $tenant->forceFill(["status" => $status, "updated_at" => now()])->save();
         $this->clearResolverCache($tenant);
         $this->audit($tenant, "status_changed", "success", [
@@ -222,7 +217,7 @@ final class TenantAdministrationService {
                 "occurred_at" => now(),
             ]);
 
-        } catch(Throwable) {
+        }catch(Throwable) {
             // La auditoría no debe convertir un rechazo seguro o un comando operativo en un error 500.
         }
 

@@ -21,6 +21,7 @@ final class TenantController extends Controller {
             "page" => ["nullable", "integer", "min:1"],
             "per_page" => ["nullable", "integer", "min:10", "max:50"],
         ]);
+
         $tenants = $administration->paginate(
             trim((string) ($data["search"] ?? "")),
             $data["status"] ?? null,
@@ -55,12 +56,14 @@ final class TenantController extends Controller {
             "admin_email" => ["required", "email", "max:190"],
             "admin_password" => ["required", "string", "max:255", "confirmed", Password::min(12)->mixedCase()->numbers()->symbols()],
         ]);
+
         $actor = $request->attributes->get("platformUser");
+
         try {
 
             $tenant = $provisioner->create($data);
 
-        } catch(RuntimeException $exception) {
+        }catch(RuntimeException $exception) {
 
             $administration->audit(null, "tenant_provision_failed", "failure", [
                 "slug" => $data["slug"],
@@ -113,8 +116,9 @@ final class TenantController extends Controller {
         $data = $request->validate([
             "status" => ["required", Rule::in(["active", "inactive", "suspended"])],
         ]);
+
         $actor = $request->attributes->get("platformUser");
-        $updated = $administration->changeStatus($tenant->slug, $data["status"], $actor?->email);
+        $updated = $administration->changeStatus($tenant, $data["status"], $actor?->email);
 
         return response()->json([
             "message" => "Estado del cliente actualizado.",
@@ -152,6 +156,7 @@ final class TenantController extends Controller {
             "ends_at" => ["nullable", "date", "after_or_equal:starts_at"],
             "dismissible" => ["nullable", "boolean"],
         ]);
+
         $user = $request->attributes->get("platformUser");
         $announcement = TenantAnnouncement::query()->create($data + [
             "tenant_database_id" => $tenant->id,

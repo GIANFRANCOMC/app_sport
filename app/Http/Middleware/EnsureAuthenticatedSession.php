@@ -22,6 +22,7 @@ final class EnsureAuthenticatedSession {
         }
 
         $user = Auth::user();
+
         $session = $request->session();
         $currentVersion = max(1, (int) ($user->session_version ?? 1));
         $sessionVersion = $session->get(self::SESSION_VERSION_KEY);

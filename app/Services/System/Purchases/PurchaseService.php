@@ -26,6 +26,7 @@ final class PurchaseService {
         foreach($expenses as $expense) {
 
             $amount = Utilities::round((float) ($expense["amount"] ?? 0), null, $companyId);
+
             if($amount <= 0) {
 
                 continue;
@@ -33,6 +34,7 @@ final class PurchaseService {
             }
 
             $method = (string) ($expense["allocation_method"] ?? "value");
+
             $weights = collect($details)->mapWithKeys(function($detail) use ($method) {
 
                 $weight = match ($method) {
@@ -44,6 +46,7 @@ final class PurchaseService {
                 return [(int) $detail["item_id"] => max(0, $weight)];
 
             });
+
             $denominator = (float) $weights->sum();
 
             if($denominator <= 0) {
@@ -53,12 +56,15 @@ final class PurchaseService {
             }
 
             $distributed = 0.0;
+
             $lastItemId = (int) $weights->keys()->last();
+
             foreach($weights as $itemId => $weight) {
 
                 $allocated = (int) $itemId === $lastItemId
                     ? Utilities::round($amount - $distributed, null, $companyId)
                     : Utilities::round($amount * ((float) $weight / $denominator), null, $companyId);
+
                 $allocations[(int) $itemId] += $allocated;
                 $distributed += $allocated;
 
@@ -109,6 +115,7 @@ final class PurchaseService {
         }
 
         $word = trim((string) ($filters["word"] ?? ""));
+
         $hasDocumentSeriesColumn = Schema::hasColumn("purchase_headers", "document_series");
 
         if($word !== "") {
@@ -160,6 +167,7 @@ final class PurchaseService {
                 ->where("company_id", $companyId)
                 ->whereKey((int) $data["supplier_id"])
                 ->firstOrFail();
+
             $warehouse = StockManagementService::validateWarehouse(
                 (int) $data["warehouse_id"],
                 $companyId
@@ -172,6 +180,7 @@ final class PurchaseService {
             }
 
             $documentNumber = trim((string) ($data["document_number"] ?? ""));
+
             $documentSeries = trim((string) ($data["document_series"] ?? ""));
             $hasDocumentSeriesColumn = Schema::hasColumn("purchase_headers", "document_series");
 
@@ -201,6 +210,7 @@ final class PurchaseService {
             }
 
             $itemIds = collect($data["items"])->pluck("item_id")->map(fn($id) => (int) $id);
+
             $items = Item::query()
                 ->where("company_id", $companyId)
                 ->where("type", "product")
@@ -216,6 +226,7 @@ final class PurchaseService {
 
             $subtotal = collect($data["items"])->sum(fn($item) => Utilities::round((float) $item["quantity"] * (float) $item["unit_cost"], null, $companyId)
             );
+
             $selectedTaxIds = collect($data["taxes"] ?? [])
                 ->pluck("tax_id")
                 ->filter()
@@ -223,10 +234,12 @@ final class PurchaseService {
                 ->unique()
                 ->values()
                 ->all();
+
             $selectedTaxQuantities = collect($data["taxes"] ?? [])
                 ->filter(fn($tax) => !empty($tax["tax_id"]))
                 ->mapWithKeys(fn($tax) => [(int) $tax["tax_id"] => (float) ($tax["quantity"] ?? 1)])
                 ->all();
+
             $taxLines = CommercialDocumentSettlementService::taxes(
                 $companyId,
                 "purchase",
@@ -235,6 +248,7 @@ final class PurchaseService {
                 $selectedTaxIds,
                 $selectedTaxQuantities
             );
+
             $tax = Utilities::round((float) $taxLines->sum("amount"), null, $companyId);
             $expenses = is_array($data["expenses"] ?? null) ? $data["expenses"] : [];
             $expenseTotal = Utilities::round((float) collect($expenses)->sum("amount"), null, $companyId);
@@ -246,10 +260,12 @@ final class PurchaseService {
                 "default_payment_modality",
                 CommercialCreditAccountService::PAID_NOW
             );
+
             $paymentModality = CommercialCreditAccountService::normalizePaymentModality(
                 $data["payment_modality"] ?? null,
                 $defaultPaymentModality
             );
+
             $installmentExtraPercentage = $paymentModality === CommercialCreditAccountService::INSTALLMENTS
                 ? (float) CompanySettingService::value(
                     $companyId,
@@ -258,6 +274,7 @@ final class PurchaseService {
                     0
                 )
                 : 0.0;
+
             $installmentExtraAmount = Utilities::round($total * ($installmentExtraPercentage / 100), null, $companyId);
             $total = Utilities::round($total + $installmentExtraAmount, null, $companyId);
             $paymentLines = CommercialDocumentSettlementService::payments(
@@ -268,6 +285,7 @@ final class PurchaseService {
                 $userId,
                 $paymentModality === CommercialCreditAccountService::PAID_NOW
             );
+
             $paidAmount = Utilities::round((float) $paymentLines->sum("amount"), null, $companyId);
             $balanceDue = Utilities::round($total - $paidAmount, null, $companyId);
             $paymentStatus = CommercialCreditAccountService::paymentStatus((float) $total, (float) $paidAmount, (int) $companyId);
@@ -432,6 +450,7 @@ final class PurchaseService {
             }
 
             $purchase->load("items");
+
             $receipt = PurchaseReceipt::create([
                 "company_id" => $companyId,
                 "purchase_header_id" => $purchase->id,
@@ -456,6 +475,7 @@ final class PurchaseService {
                 }
 
                 $quantity = Utilities::round((float) $receivedItem["quantity"], null, $companyId);
+
                 $remaining = Utilities::round((float) $purchaseItem->quantity - (float) $purchaseItem->received_quantity, null, $companyId);
 
                 if($quantity <= 0 || $quantity > $remaining) {
@@ -510,8 +530,10 @@ final class PurchaseService {
             }
 
             $purchase->load("items");
+
             $allReceived = $purchase->items->every(fn($item) => (float) $item->received_quantity >= (float) $item->quantity
             );
+
             $purchase->update([
                 "status" => $allReceived ? "received" : "partial",
                 "updated_at" => now(),

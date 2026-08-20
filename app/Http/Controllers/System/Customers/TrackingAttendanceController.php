@@ -61,7 +61,7 @@ class TrackingAttendanceController extends BaseController {
                 AccessScopeService::allowedIds($this->getAuthUser(), AccessScopeService::BRANCH)
             );
 
-        } catch(DomainException $exception) {
+        }catch(DomainException $exception) {
 
             return response()->json([
                 "bool" => false,
@@ -98,6 +98,7 @@ class TrackingAttendanceController extends BaseController {
         }
 
         rewind($handle);
+
         $csv = stream_get_contents($handle);
         fclose($handle);
 
@@ -138,6 +139,7 @@ class TrackingAttendanceController extends BaseController {
             $startDate = Utilities::isDefined($data["start_date"] ?? null)
                 ? Carbon::parse(str_replace("T", " ", $data["start_date"]))
                 : now();
+
             $endDate = Utilities::isDefined($data["end_date"] ?? null)
                 ? Carbon::parse(str_replace("T", " ", $data["end_date"]))
                 : now();
@@ -169,7 +171,7 @@ class TrackingAttendanceController extends BaseController {
                 "attendances" => [$result],
             ], 422);
 
-        } catch(\Exception $e) {
+        }catch(\Exception $e) {
 
             return $this->handleException($e, "create");
 
@@ -230,7 +232,7 @@ class TrackingAttendanceController extends BaseController {
                 "attendances" => [$result],
             ], 422);
 
-        } catch(\Exception $e) {
+        }catch(\Exception $e) {
 
             return $this->handleException($e, "update");
 
@@ -266,7 +268,7 @@ class TrackingAttendanceController extends BaseController {
 
             return $this->updatedResponse($attendance, "canceled", "attendance");
 
-        } catch(\Exception $e) {
+        }catch(\Exception $e) {
 
             return $this->handleException($e, "cancel");
 
@@ -306,7 +308,7 @@ class TrackingAttendanceController extends BaseController {
 
             return $this->createdResponse($correction, "created", "attendanceCorrection");
 
-        } catch(\Exception $e) {
+        }catch(\Exception $e) {
 
             return $this->handleException($e, "create");
 
@@ -340,7 +342,7 @@ class TrackingAttendanceController extends BaseController {
 
             return $this->updatedResponse($correction, "updated", "attendanceCorrection");
 
-        } catch(\Exception $e) {
+        }catch(\Exception $e) {
 
             return $this->handleException($e, "update");
 
@@ -354,7 +356,7 @@ class TrackingAttendanceController extends BaseController {
 
             return $this->processBatch($request->validated(), "qr_camera", $businessService);
 
-        } catch(\Exception $e) {
+        }catch(\Exception $e) {
 
             return $this->handleException($e, "create");
 
@@ -368,7 +370,7 @@ class TrackingAttendanceController extends BaseController {
 
             return $this->processBatch($request->validated(), "qr_scanner", $businessService);
 
-        } catch(\Exception $e) {
+        }catch(\Exception $e) {
 
             return $this->handleException($e, "create");
 
@@ -393,6 +395,7 @@ class TrackingAttendanceController extends BaseController {
         $startDate = Utilities::isDefined($data["start_date"] ?? null)
             ? Carbon::parse(str_replace("T", " ", $data["start_date"]))
             : now();
+
         $endDate = Utilities::isDefined($data["end_date"] ?? null)
             ? Carbon::parse(str_replace("T", " ", $data["end_date"]))
             : now();

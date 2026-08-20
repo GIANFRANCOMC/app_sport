@@ -84,6 +84,7 @@ final class AttendanceMaintenanceService {
                 "retention_months",
                 5
             )));
+
             $cutoff = now()->subMonths($retentionMonths);
 
             $query = Attendance::query()
@@ -129,6 +130,7 @@ final class AttendanceMaintenanceService {
                 "max_active_hours",
                 20
             ));
+
             $todayStart = now()->startOfDay();
             $expiredAt = now()->subHours($maxActiveHours);
 
@@ -156,6 +158,7 @@ final class AttendanceMaintenanceService {
 
                 }
                 $note = "Marcada como ausente por cierre automático: no registró salida antes del corte operativo.";
+
                 $currentObservation = trim((string) $attendance->observation);
 
                 $attendance->end_date = $closeAt;
@@ -193,6 +196,7 @@ final class AttendanceMaintenanceService {
             "auto_close_after_time",
             "01:00"
         );
+
         $now = Carbon::now($timezone);
         $minimum = Carbon::parse($now->toDateString()." {$afterTime}", $timezone);
 
@@ -208,6 +212,7 @@ final class AttendanceMaintenanceService {
             "auto_close_end_time",
             "23:50"
         );
+
         $start = Carbon::parse($startDate);
         $closeAt = Carbon::parse($start->format("Y-m-d")." {$endTime}");
 

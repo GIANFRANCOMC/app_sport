@@ -30,6 +30,7 @@ final class MiscExpenseController extends BaseController {
             ->with("register:id,name")
             ->where("company_id", $this->getCompanyId())
             ->where("status", "open");
+
         $allowedCashRegisterIds = $references->allowedCashRegisterIds();
 
         if($allowedCashRegisterIds !== null) {
@@ -114,7 +115,7 @@ final class MiscExpenseController extends BaseController {
                 "data" => MiscExpenseService::create($this->getCompanyId(), $this->getUserId(), $validator->validated()),
             ], 201);
 
-        } catch(\Throwable $exception) {
+        }catch(\Throwable $exception) {
 
             return response()->json(["bool" => false, "msg" => $exception->getMessage()], 422);
 
@@ -132,7 +133,7 @@ final class MiscExpenseController extends BaseController {
                 "data" => MiscExpenseService::cancel($this->getCompanyId(), $id, $this->getUserId()),
             ]);
 
-        } catch(\Throwable $exception) {
+        }catch(\Throwable $exception) {
 
             return response()->json(["bool" => false, "msg" => $exception->getMessage()], 422);
 

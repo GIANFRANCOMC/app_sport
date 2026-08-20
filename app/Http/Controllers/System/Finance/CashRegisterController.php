@@ -63,7 +63,7 @@ final class CashRegisterController extends BaseController {
                 "data" => $register,
             ]);
 
-        } catch(\Throwable $exception) {
+        }catch(\Throwable $exception) {
 
             return response()->json([
                 "bool" => false,

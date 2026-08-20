@@ -44,8 +44,10 @@ final class InstallPlatformAdministration extends Command {
         }
 
         $host = config("tenancy.platform_subdomain").".".config("tenancy.base_domain");
+
         $this->components->info("Panel disponible en http://{$host}");
         $this->line("Usuario: ".config("tenancy.platform_admin.email"));
+
         if(!app()->environment("production")) {
 
             $this->line("Contraseña inicial: ".config("tenancy.platform_admin.password"));

@@ -69,7 +69,7 @@ class NotificationService {
 
                 }
 
-            } catch(Exception $e) {
+            }catch(Exception $e) {
 
                 $record->status = "failed";
                 $record->failed_at = now();
@@ -77,6 +77,7 @@ class NotificationService {
                 $record->next_attempt_at = (int) $record->attempts < (int) $record->max_attempts
                     ? now()->addMinutes(min(60, 2 ** (int) $record->attempts))
                     : null;
+
                 $record->updated_at = now();
                 $record->updated_by = null;
                 $record->save();

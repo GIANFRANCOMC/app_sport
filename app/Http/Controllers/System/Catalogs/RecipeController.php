@@ -60,7 +60,7 @@ class RecipeController extends BaseController {
                 "data" => $recipe,
             ], 201);
 
-        } catch(\Throwable $e) {
+        }catch(\Throwable $e) {
 
             return response()->json([
                 "bool" => false,
@@ -79,6 +79,7 @@ class RecipeController extends BaseController {
                 ->where("company_id", $this->getCompanyId())
                 ->with(["item"])
                 ->findOrFail($id);
+
             $recipe = RecipeService::update($recipe, $request->validated(), $this->getCompanyId(), $this->getUserId());
             InitParamsCacheInvalidationService::invalidate(InitParamsCacheInvalidationService::ITEMS, $this->getCompanyId());
 
@@ -88,7 +89,7 @@ class RecipeController extends BaseController {
                 "data" => $recipe,
             ]);
 
-        } catch(\Throwable $e) {
+        }catch(\Throwable $e) {
 
             return response()->json([
                 "bool" => false,
@@ -132,7 +133,7 @@ class RecipeController extends BaseController {
                 ),
             ]);
 
-        } catch(\DomainException $exception) {
+        }catch(\DomainException $exception) {
 
             return response()->json([
                 "bool" => false,
@@ -177,7 +178,7 @@ class RecipeController extends BaseController {
                 ),
             ], 201);
 
-        } catch(\DomainException $exception) {
+        }catch(\DomainException $exception) {
 
             return response()->json(["bool" => false, "msg" => $exception->getMessage()], 422);
 
@@ -201,7 +202,7 @@ class RecipeController extends BaseController {
                 "msg" => "Receta o platillo eliminado correctamente.",
             ]);
 
-        } catch(\Throwable $e) {
+        }catch(\Throwable $e) {
 
             return response()->json([
                 "bool" => false,

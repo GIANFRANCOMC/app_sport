@@ -78,7 +78,7 @@ class SubscriptionController extends BaseController {
 
             return $this->createdResponse($item, "created", "item");
 
-        } catch(\Exception $e) {
+        }catch(\Exception $e) {
 
             return $this->handleException($e, "create");
 
@@ -104,6 +104,7 @@ class SubscriptionController extends BaseController {
             }
 
             $data = $this->prepareSubscriptionData($request);
+
             $item = SubscriptionService::update($item, $data, $this->getUserId());
 
             if(!Utilities::isDefined($item)) {
@@ -119,7 +120,7 @@ class SubscriptionController extends BaseController {
 
             return $this->updatedResponse($item, "updated", "item");
 
-        } catch(\Exception $e) {
+        }catch(\Exception $e) {
 
             return $this->handleException($e, "update");
 

@@ -39,7 +39,7 @@ final class TrackUserNavigation {
 
             $this->navigationService->record($user, $routeName, $requestedPath);
 
-        } catch(Throwable $exception) {
+        }catch(Throwable $exception) {
 
             report($exception);
 

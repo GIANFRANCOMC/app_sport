@@ -57,7 +57,7 @@ final class BrandController extends BaseController {
 
             return $this->createdResponse($brand, "created", "brand");
 
-        } catch(\Exception $exception) {
+        }catch(\Exception $exception) {
 
             return $this->handleException($exception, "create");
 
@@ -91,7 +91,7 @@ final class BrandController extends BaseController {
 
             return $this->updatedResponse($brand, "updated", "brand");
 
-        } catch(\Exception $exception) {
+        }catch(\Exception $exception) {
 
             return $this->handleException($exception, "update");
 

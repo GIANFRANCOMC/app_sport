@@ -4,7 +4,12 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', 'Administración SaaS')</title>
+    <meta name="robots" content="noindex, nofollow, noarchive">
+    <meta name="referrer" content="same-origin">
+    <meta name="theme-color" content="#0b63a9">
+    <title>@yield('title', 'Clientes | Gympe')</title>
+    <link rel="icon" type="image/x-icon" href="{{ asset('System/assets/img/favicon/favicon.ico') }}">
+    <link rel="shortcut icon" type="image/x-icon" href="{{ asset('System/assets/img/favicon/favicon.ico') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -12,7 +17,7 @@
     <link rel="stylesheet" href="{{ asset('System/assets/vendor/fonts/fontawesome.css') }}">
     @vite('resources/css/Platform/app.css')
 </head>
-<body class="platform-body">
+<body class="platform-body" data-platform="landlord">
 <div class="platform-shell">
     <main>
         @if(session('success'))<div class="alert alert-success">{{ session('success') }}</div>@endif

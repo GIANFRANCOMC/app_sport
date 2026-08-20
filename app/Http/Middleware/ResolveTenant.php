@@ -40,6 +40,7 @@ final class ResolveTenant {
             $this->context->set(null);
             $host = $this->resolver->normalizeHost($request->getHost());
             $deduplicationKey = "tenancy:unknown-host:".hash("sha256", $host."|".$request->ip());
+
             if(cache()->add($deduplicationKey, true, now()->addMinutes(5))) {
 
                 $this->administration->audit(
@@ -58,6 +59,7 @@ final class ResolveTenant {
         }
 
         $this->connectionManager->connect($tenant);
+
         $this->context->set($tenant);
         Config::set("session.cookie", $this->tenantSessionCookieName($tenant->slug));
         Config::set("session.domain", null);

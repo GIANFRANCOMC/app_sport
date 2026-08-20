@@ -56,6 +56,7 @@ final class CashRegisterService {
             }
 
             $allowedBranchIds = CompanyReferenceDataService::for($companyId, $userId)->allowedBranchIds();
+
             if($allowedBranchIds !== null && !in_array((int) $branch->id, $allowedBranchIds, true)) {
 
                 throw new RuntimeException("No tienes acceso a la sucursal seleccionada.");
@@ -135,6 +136,7 @@ final class CashRegisterService {
             ->latest("occurred_at");
 
         $cashRegisterIds = $this->allowedCashRegisterIds($companyId, $userId);
+
         if($cashRegisterIds !== null) {
 
             $query->whereHas("cashSession", fn($sessionQuery) => $sessionQuery->whereIn("cash_register_id", $cashRegisterIds));
@@ -192,6 +194,7 @@ final class CashRegisterService {
                 ->where("status", "active")
                 ->sum("amount"), null, $companyId)
             : Utilities::round((float) $sessions->sum("expected_amount"), null, $companyId);
+
         $counted = $paymentMethodId
             ? Utilities::round((float) CashSessionPayment::query()
                 ->where("company_id", $companyId)
@@ -465,6 +468,7 @@ final class CashRegisterService {
             ->latest("occurred_at");
 
         $cashRegisterIds = $this->allowedCashRegisterIds($companyId, $userId);
+
         if($cashRegisterIds !== null) {
 
             $query->whereHas("cashSession", fn($sessionQuery) => $sessionQuery->whereIn("cash_register_id", $cashRegisterIds));
@@ -527,6 +531,7 @@ final class CashRegisterService {
             ->when($filters["date_to"] ?? null, fn($query, $date) => $query->where("opened_at", "<=", Utilities::endOfDay($date)));
 
         $cashRegisterIds = $this->allowedCashRegisterIds($companyId, $userId);
+
         if($cashRegisterIds !== null) {
 
             $query->whereIn("cash_register_id", $cashRegisterIds);

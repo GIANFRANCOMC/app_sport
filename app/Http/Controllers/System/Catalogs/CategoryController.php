@@ -78,7 +78,7 @@ class CategoryController extends BaseController {
 
             return $this->createdResponse($category, "created", "category");
 
-        } catch(\Exception $e) {
+        }catch(\Exception $e) {
 
             return $this->handleException($e, "create");
 
@@ -104,6 +104,7 @@ class CategoryController extends BaseController {
             }
 
             $data = $this->prepareCategoryData($request);
+
             $category = CategoryService::update($category, $data, $this->getUserId());
 
             if(!Utilities::isDefined($category)) {
@@ -119,11 +120,11 @@ class CategoryController extends BaseController {
 
             return $this->updatedResponse($category, "updated", "category");
 
-        } catch(\DomainException $exception) {
+        }catch(\DomainException $exception) {
 
             return response()->json(["bool" => false, "msg" => $exception->getMessage()], 422);
 
-        } catch(\Exception $e) {
+        }catch(\Exception $e) {
 
             return $this->handleException($e, "update");
 
@@ -149,7 +150,7 @@ class CategoryController extends BaseController {
 
             return response()->json(["bool" => true, "msg" => "Categoría eliminada correctamente."]);
 
-        } catch(\DomainException $exception) {
+        }catch(\DomainException $exception) {
 
             return response()->json(["bool" => false, "msg" => $exception->getMessage()], 422);
 

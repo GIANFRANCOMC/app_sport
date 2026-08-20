@@ -18,6 +18,7 @@ final class InitParamsPerformanceConventionTest extends TestCase {
             "subscriptionItems",
             "users",
         ];
+
         $currentUsages = [];
 
         foreach(File::allFiles(app_path("Services/System")) as $file) {
@@ -44,6 +45,7 @@ final class InitParamsPerformanceConventionTest extends TestCase {
         }
 
         sort($currentUsages);
+
         $knownLegacyUsages = [
             "Assets/AssetManagementConfigService.php:assets",
             "Catalogs/Recipes/RecipeConfigService.php:saleItems",

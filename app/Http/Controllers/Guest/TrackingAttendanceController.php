@@ -89,6 +89,7 @@ class TrackingAttendanceController extends Controller {
         }
 
         $bool = count($attendances->where("bool", true)) > 0;
+
         $msg = $bool ? "Asistencias creadas correctamente." : "No se han podido crear las asistencias.";
 
         return response()->json(["bool" => $bool, "msg" => $msg, "attendances" => $attendances], 200);

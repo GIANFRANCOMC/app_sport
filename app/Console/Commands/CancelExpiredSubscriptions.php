@@ -41,6 +41,7 @@ final class CancelExpiredSubscriptions extends Command {
         }
 
         $rows = [];
+
         $hasFailure = false;
 
         foreach($tenants as $tenant) {
@@ -52,10 +53,11 @@ final class CancelExpiredSubscriptions extends Command {
                     $companyId === null ? null : (int) $companyId,
                     max(1, (int) $this->option("limit"))
                 );
+
                 $rows[] = [$tenant->slug, $summary["processed"], $summary["expired"], "OK"];
                 $administration->audit($tenant, "cancel_expired_subscriptions", "success", $summary, "scheduler");
 
-            } catch(Throwable $exception) {
+            }catch(Throwable $exception) {
 
                 $hasFailure = true;
                 $rows[] = [$tenant->slug, 0, 0, $exception->getMessage()];
@@ -63,7 +65,7 @@ final class CancelExpiredSubscriptions extends Command {
                     "error" => $exception->getMessage(),
                 ], "scheduler");
 
-            } finally {
+            }finally {
 
                 $connectionManager->disconnect();
 

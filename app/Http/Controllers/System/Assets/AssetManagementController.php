@@ -97,7 +97,7 @@ class AssetManagementController extends BaseController {
 
             return $this->successResponse($information, "assigned_successfully");
 
-        } catch(\Exception $e) {
+        }catch(\Exception $e) {
 
             return $this->handleException($e, "assign");
 
@@ -139,7 +139,7 @@ class AssetManagementController extends BaseController {
 
             return $this->successResponse($information, "unassigned_successfully");
 
-        } catch(\Exception $e) {
+        }catch(\Exception $e) {
 
             return $this->handleException($e, "unassign");
 
@@ -168,6 +168,7 @@ class AssetManagementController extends BaseController {
             }
 
             $branchAssetId = (int) $validated["id"];
+
             $assetId = (int) $validated["asset_id"];
 
             $data = [
@@ -193,7 +194,7 @@ class AssetManagementController extends BaseController {
 
             return $this->successResponse($branchAsset, "updated_successfully");
 
-        } catch(\Exception $e) {
+        }catch(\Exception $e) {
 
             return $this->handleException($e, "update");
 
@@ -224,7 +225,7 @@ class AssetManagementController extends BaseController {
 
             return $this->successResponse($assignments, "assignments_found");
 
-        } catch(\Exception $e) {
+        }catch(\Exception $e) {
 
             return $this->handleException($e, "get_assignments");
 
@@ -253,6 +254,7 @@ class AssetManagementController extends BaseController {
             }
 
             $branchAssetId = (int) $data["branch_asset_id"];
+
             $assetId = (int) $data["asset_id"];
 
             $branchAsset = AssetManagementService::validateBranchAsset($branch->id, $branchAssetId, $assetId);
@@ -264,6 +266,7 @@ class AssetManagementController extends BaseController {
             }
 
             $assetQuantity = floatval($branchAsset->quantity);
+
             $totalQuantity = array_reduce($data["assignments"], function($accumulator, $currentValue) {
 
                 return $accumulator + floatval($currentValue["quantity"] ?? 0);
@@ -294,7 +297,7 @@ class AssetManagementController extends BaseController {
 
             return $this->successResponse($information, "assigned_to_users_successfully");
 
-        } catch(\Exception $e) {
+        }catch(\Exception $e) {
 
             return $this->handleException($e, "assign_to_users");
 
@@ -323,6 +326,7 @@ class AssetManagementController extends BaseController {
             }
 
             $branchAssetId = (int) $data["branch_asset_id"];
+
             $assetId = (int) $data["asset_id"];
 
             $branchAsset = AssetManagementService::validateBranchAsset($branch->id, $branchAssetId, $assetId);
@@ -351,7 +355,7 @@ class AssetManagementController extends BaseController {
 
             return $this->successResponse($information, "unassigned_from_users_successfully");
 
-        } catch(\Exception $e) {
+        }catch(\Exception $e) {
 
             return $this->handleException($e, "unassign_from_users");
 

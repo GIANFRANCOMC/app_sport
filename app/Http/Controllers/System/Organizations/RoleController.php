@@ -91,6 +91,7 @@ class RoleController extends BaseController {
             $this->getUserId(),
             $data["name"]
         );
+
         $this->invalidate();
 
         return response()->json([

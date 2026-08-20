@@ -15,7 +15,9 @@ No se relaciona con `users` de los tenants. `session_version` permite revocar to
 
 ### tenant_databases
 
-Registro central de tenants. Campos: `slug`, `company_id`, `database_name`, `status` y `last_resolved_at`.
+Registro central de tenants. Campos: `public_id`, `slug`, `company_id`, `database_name`, `status` y `last_resolved_at`.
+
+`public_id` es un UUID v4 único utilizado exclusivamente para rutas y API de plataforma. El ID incremental permanece interno y nunca se serializa hacia el navegador.
 
 `company_id` es el ID raíz esperado dentro de la BD tenant. No declara FK porque `companies` pertenece a la base tenant, no a landlord.
 

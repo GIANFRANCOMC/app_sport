@@ -28,10 +28,12 @@ final class SystemNavigationProvisioningTest extends TestCase {
             ->where("company_id", 1)
             ->where("status", "active")
             ->count();
+
         $adminRoleId = DB::table("roles")
             ->where("company_id", 1)
             ->where("is_full_access", true)
             ->value("id");
+
         $adminCount = DB::table("role_sub_sections")
             ->where("company_id", 1)
             ->where("role_id", $adminRoleId)
@@ -45,6 +47,7 @@ final class SystemNavigationProvisioningTest extends TestCase {
             "tracking_notifications.index", "book_complaints.index", "subscriptions.index", "recipes.index",
             "assets.index", "assets_management.index", "biometric_devices.index", "user_attendances.index",
         ];
+
         $disabledIds = DB::table("sub_sections")->whereIn("dom_route", $disabledRoutes)->pluck("id");
 
         $this->assertCount(14, $disabledIds);
@@ -71,6 +74,7 @@ final class SystemNavigationProvisioningTest extends TestCase {
         $this->assertFalse(
             \App\Services\System\Organizations\Roles\RolePermissionService::canAccessRoute($user, "dashboard.index")
         );
+
         $this->assertTrue(
             \App\Services\System\Organizations\Roles\RolePermissionService::canAccessRoute($user, "sales.create")
         );
@@ -85,6 +89,7 @@ final class SystemNavigationProvisioningTest extends TestCase {
             0,
             DB::table("business_industry_module_sets")->where("company_id", 1)->count()
         );
+
         $this->assertNotNull(DB::table("companies")->where("id", 1)->value("business_industry_id"));
 
     }
@@ -109,6 +114,7 @@ final class SystemNavigationProvisioningTest extends TestCase {
                 ->where("status", "active")
                 ->count()
         );
+
         $this->assertSame(
             "inactive",
             DB::table("companies_sub_sections")
@@ -116,6 +122,54 @@ final class SystemNavigationProvisioningTest extends TestCase {
                 ->where("sub_section_id", DB::table("sub_sections")->where("dom_route", "sales.create")->value("id"))
                 ->value("status")
         );
+
+    }
+
+    public function test_disabling_a_module_revokes_role_permissions_and_cannot_fall_back_to_a_sibling_route(): void {
+
+        $administrator = \App\Models\System\Organizations\User::query()
+            ->where("company_id", 1)
+            ->where("email", "admin@example.test")
+            ->firstOrFail();
+
+        $salesIndexId = (int) DB::table("sub_sections")
+            ->where("dom_route", "sales.index")
+            ->value("id");
+
+        $salesCreateId = (int) DB::table("sub_sections")
+            ->where("dom_route", "sales.create")
+            ->value("id");
+
+        BusinessProfileService::updateModules(1, [$salesIndexId], (int) $administrator->id);
+
+        $this->assertTrue(
+            \App\Services\System\Organizations\Roles\RolePermissionService::canAccessRoute(
+                $administrator,
+                "sales.index"
+            )
+        );
+
+        $this->assertFalse(
+            \App\Services\System\Organizations\Roles\RolePermissionService::canAccessRoute(
+                $administrator,
+                "sales.create"
+            )
+        );
+
+        $this->assertDatabaseMissing("role_sub_sections", [
+            "company_id" => 1,
+            "sub_section_id" => $salesCreateId,
+        ]);
+
+        Auth::login($administrator);
+
+        $this->withoutMiddleware([
+            \App\Http\Middleware\ResolveTenant::class,
+            \App\Http\Middleware\TrustHosts::class,
+            \App\Http\Middleware\EnsureTenantSession::class,
+            \App\Http\Middleware\EnsureAuthenticatedSession::class,
+            \App\Http\Middleware\EnsureOperationalScope::class,
+        ])->get(route("sales.create"))->assertForbidden();
 
     }
 
@@ -201,6 +255,7 @@ final class SystemNavigationProvisioningTest extends TestCase {
         }
 
         $this->assertFalse(Route::has("cash_registers.registers.index"));
+
         $this->assertFalse(Route::has("cash_registers.sessions.index"));
         $this->assertFalse(Route::has("cash_registers.movements.index"));
         $this->assertFalse(Route::has("cash_registers.summary.index"));
@@ -304,6 +359,7 @@ final class SystemNavigationProvisioningTest extends TestCase {
             ->where("company_id", 1)
             ->where("email", "admin@example.test")
             ->firstOrFail();
+
         Auth::login($user);
         $middleware = [
             \App\Http\Middleware\ResolveTenant::class,
@@ -317,6 +373,7 @@ final class SystemNavigationProvisioningTest extends TestCase {
         $this->withoutMiddleware($middleware)
             ->get(route("purchases.receipts.index"))
             ->assertOk();
+
         $this->withoutMiddleware($middleware)
             ->get(route("accounts_payable.list"))
             ->assertOk()

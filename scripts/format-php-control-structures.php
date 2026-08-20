@@ -14,9 +14,8 @@ $blockStarterTokens = [
     T_FINALLY,
     T_DO,
 ];
-$compactContinuationTokens = [T_ELSEIF, T_ELSE];
-$spacedContinuationTokens = [T_CATCH, T_FINALLY];
 
+$compactContinuationTokens = [T_ELSEIF, T_ELSE, T_CATCH, T_FINALLY];
 $textOf = static fn(array|string $token): string => is_array($token) ? $token[1] : $token;
 $typeOf = static fn(array|string $token): ?int => is_array($token) ? $token[0] : null;
 $isWhitespace = static fn(array|string $token): bool => is_array($token) && $token[0] === T_WHITESPACE;
@@ -65,6 +64,7 @@ $structuredStarterIndex = static function(array $tokens, int $openingIndex) use 
 ): ?int {
 
     $previousIndex = $previousSignificantIndex($tokens, $openingIndex);
+
     if($previousIndex === null) {
 
         return null;
@@ -78,6 +78,7 @@ $structuredStarterIndex = static function(array $tokens, int $openingIndex) use 
         for($index = $previousIndex; $index >= 0; $index--) {
 
             $text = $textOf($tokens[$index]);
+
             if($text === ")") {
 
                 $parenthesisDepth++;
@@ -93,6 +94,7 @@ $structuredStarterIndex = static function(array $tokens, int $openingIndex) use 
             }
 
             $parenthesisDepth--;
+
             if($parenthesisDepth !== 0) {
 
                 continue;
@@ -100,6 +102,7 @@ $structuredStarterIndex = static function(array $tokens, int $openingIndex) use 
             }
 
             $keywordIndex = $previousSignificantIndex($tokens, $index);
+
             if(
                 $keywordIndex !== null
                 && in_array($typeOf($tokens[$keywordIndex]), $blockStarterTokens, true)
@@ -118,6 +121,7 @@ $structuredStarterIndex = static function(array $tokens, int $openingIndex) use 
     for($index = $previousIndex; $index >= 0; $index--) {
 
         $text = $textOf($tokens[$index]);
+
         if(in_array($text, [";", "{", "}"], true)) {
 
             break;
@@ -142,6 +146,7 @@ $normalizeImports = static function(string $source): string {
     $normalized = preg_replace_callback($pattern, static function(array $matches): string {
 
         $lastSeparator = strrpos($matches[2], "\\");
+
         if($lastSeparator === false) {
 
             return $matches[0];
@@ -149,6 +154,7 @@ $normalizeImports = static function(string $source): string {
         }
 
         $namespace = substr($matches[2], 0, $lastSeparator);
+
         $import = substr($matches[2], $lastSeparator + 1).($matches[3] ?? "");
 
         return $matches[1].$namespace."\\{".$import."};";
@@ -168,6 +174,7 @@ $normalizeImports = static function(string $source): string {
 foreach($roots as $root) {
 
     $absoluteRoot = dirname(__DIR__).DIRECTORY_SEPARATOR.$root;
+
     if(!is_dir($absoluteRoot)) {
 
         continue;
@@ -187,7 +194,9 @@ foreach($roots as $root) {
         }
 
         $path = $file->getPathname();
+
         $source = file_get_contents($path);
+
         if($source === false) {
 
             throw new RuntimeException("No se pudo leer {$path}.");
@@ -195,7 +204,9 @@ foreach($roots as $root) {
         }
 
         $tokens = token_get_all($source);
+
         $tokenCount = count($tokens);
+        $lineEnding = str_contains($source, "\r\n") ? "\r\n" : "\n";
 
         for($index = 0; $index < $tokenCount; $index++) {
 
@@ -236,27 +247,6 @@ foreach($roots as $root) {
             }
 
             if(
-                $textOf($token) === "}"
-                && $nextIndex + 1 < $tokenCount
-                && $isWhitespace($tokens[$nextIndex])
-                && in_array($typeOf($tokens[$nextIndex + 1]), $spacedContinuationTokens, true)
-            ) {
-
-                $tokens[$nextIndex][1] = " ";
-
-            }
-
-            if(
-                $textOf($token) === "}"
-                && $nextIndex < $tokenCount
-                && in_array($typeOf($tokens[$nextIndex]), $spacedContinuationTokens, true)
-            ) {
-
-                $tokens[$index] = "} ";
-
-            }
-
-            if(
                 is_array($token)
                 && in_array($token[0], [T_FUNCTION, T_FN], true)
                 && $nextIndex + 1 < $tokenCount
@@ -270,14 +260,145 @@ foreach($roots as $root) {
 
         }
 
+        $withBlankLine = static function(string $whitespace) use ($lineEnding): string {
+
+            if(substr_count(str_replace(["\r\n", "\r"], "\n", $whitespace), "\n") >= 2) {
+
+                return $whitespace;
+
+            }
+
+            preg_match("/[\t ]*$/", $whitespace, $matches);
+
+            return $lineEnding.$lineEnding.($matches[0] ?? "");
+
+        };
+
+        for($index = 0; $index < $tokenCount; $index++) {
+
+            $token = $tokens[$index];
+
+            if(is_array($token) && in_array($token[0], $blockStarterTokens, true)) {
+
+                $whitespaceIndex = $index - 1;
+                $previousIndex = $previousSignificantIndex($tokens, $index);
+                $previousText = $previousIndex === null ? null : $textOf($tokens[$previousIndex]);
+                $isContinuation = in_array($token[0], $compactContinuationTokens, true);
+
+                if(
+                    !$isContinuation
+                    && $whitespaceIndex >= 0
+                    && $isWhitespace($tokens[$whitespaceIndex])
+                    && str_contains($textOf($tokens[$whitespaceIndex]), "\n")
+                    && !in_array($previousText, [null, "{", ":"], true)
+                ) {
+
+                    $tokens[$whitespaceIndex][1] = $withBlankLine($textOf($tokens[$whitespaceIndex]));
+
+                }
+
+            }
+
+            if(!is_array($token) || $token[0] !== T_VARIABLE) {
+
+                continue;
+
+            }
+
+            $whitespaceIndex = $index - 1;
+
+            $previousIndex = $previousSignificantIndex($tokens, $index);
+
+            if(
+                $whitespaceIndex < 0
+                || !$isWhitespace($tokens[$whitespaceIndex])
+                || !str_contains($textOf($tokens[$whitespaceIndex]), "\n")
+                || $previousIndex === null
+                || $textOf($tokens[$previousIndex]) !== ";"
+            ) {
+
+                continue;
+
+            }
+
+            $statementStart = $previousSignificantIndex($tokens, $previousIndex);
+
+            $parenthesisDepth = 0;
+            $bracketDepth = 0;
+            $braceDepth = 0;
+
+            while($statementStart !== null) {
+
+                $statementToken = $textOf($tokens[$statementStart]);
+
+                if($statementToken === ")") {
+
+                    $parenthesisDepth++;
+
+                }elseif($statementToken === "(" && $parenthesisDepth > 0) {
+
+                    $parenthesisDepth--;
+
+                }elseif($statementToken === "]") {
+
+                    $bracketDepth++;
+
+                }elseif($statementToken === "[" && $bracketDepth > 0) {
+
+                    $bracketDepth--;
+
+                }elseif($statementToken === "}") {
+
+                    $braceDepth++;
+
+                }elseif($statementToken === "{" && $braceDepth > 0) {
+
+                    $braceDepth--;
+
+                }elseif(
+                    $parenthesisDepth === 0
+                    && $bracketDepth === 0
+                    && $braceDepth === 0
+                    && in_array($statementToken, [";", "{"], true)
+                ) {
+
+                    break;
+
+                }
+
+                $statementStart = $previousSignificantIndex($tokens, $statementStart);
+
+            }
+            $statementStart = $statementStart === null ? 0 : $statementStart + 1;
+
+            $statementText = "";
+
+            for($statementIndex = $statementStart; $statementIndex <= $previousIndex; $statementIndex++) {
+
+                $statementText .= $textOf($tokens[$statementIndex]);
+
+            }
+
+            if(str_contains(trim($statementText), "\n")) {
+
+                $tokens[$whitespaceIndex][1] = $withBlankLine($textOf($tokens[$whitespaceIndex]));
+
+            }
+
+        }
+
         $lineIndents = [];
+
         $linePrefix = "";
+
         foreach($tokens as $index => $token) {
 
             $lineIndents[$index] = preg_match("/^[\t ]*/", $linePrefix, $matches) === 1
                 ? $matches[0]
                 : "";
+
             $text = $textOf($token);
+
             if(preg_match("/(?:\r\n|\n|\r)([^\r\n]*)$/", $text, $matches) === 1) {
 
                 $linePrefix = $matches[1];
@@ -291,12 +412,14 @@ foreach($roots as $root) {
         }
 
         $qualifiedOpenings = [];
+
         $matchingOpening = [];
         $braceStack = [];
 
         foreach($tokens as $index => $token) {
 
             $text = $textOf($token);
+
             if(
                 is_array($token)
                 && in_array($token[0], [T_CURLY_OPEN, T_DOLLAR_OPEN_CURLY_BRACES], true)
@@ -325,6 +448,7 @@ foreach($roots as $root) {
             }
 
             [$openingIndex, $qualified] = array_pop($braceStack);
+
             if($qualified) {
 
                 $matchingOpening[$index] = $openingIndex;
@@ -332,8 +456,6 @@ foreach($roots as $root) {
             }
 
         }
-
-        $lineEnding = str_contains($source, "\r\n") ? "\r\n" : "\n";
 
         foreach($qualifiedOpenings as $openingIndex => $starterIndex) {
 
@@ -344,6 +466,7 @@ foreach($roots as $root) {
             }
 
             $contentIndex = $nextSignificantIndex($tokens, $openingIndex);
+
             if($contentIndex === null || $textOf($tokens[$contentIndex]) === "}") {
 
                 continue;
@@ -351,6 +474,7 @@ foreach($roots as $root) {
             }
 
             $whitespaceIndex = $openingIndex + 1;
+
             $openingIndent = $lineIndents[$starterIndex];
             $contentIndent = $openingIndent."    ";
 
@@ -376,6 +500,7 @@ foreach($roots as $root) {
         foreach($matchingOpening as $closingIndex => $openingIndex) {
 
             $contentIndex = $previousSignificantIndex($tokens, $closingIndex);
+
             if($contentIndex === null || $contentIndex === $openingIndex) {
 
                 continue;
@@ -383,6 +508,7 @@ foreach($roots as $root) {
             }
 
             $starterIndex = $qualifiedOpenings[$openingIndex];
+
             $closingIndent = $starterIndex === null ? "" : $lineIndents[$starterIndex];
             $whitespaceIndex = $closingIndex - 1;
 
@@ -399,11 +525,13 @@ foreach($roots as $root) {
         }
 
         $formatted = implode("", array_map($textOf, $tokens));
+
         $formatted = preg_replace(
             "/@(if|elseif|for|foreach|while|switch)\s+\(/",
             "@$1(",
             $formatted
         );
+
         if($formatted === null) {
 
             throw new RuntimeException("No se pudieron normalizar las directivas Blade de {$path}.");
@@ -419,6 +547,7 @@ foreach($roots as $root) {
         }
 
         $changedFiles[] = $path;
+
         if(!$checkOnly && file_put_contents($path, $formatted) === false) {
 
             throw new RuntimeException("No se pudo escribir {$path}.");

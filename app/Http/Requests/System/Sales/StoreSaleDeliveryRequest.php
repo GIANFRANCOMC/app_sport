@@ -21,6 +21,7 @@ class StoreSaleDeliveryRequest extends CompanyFormRequest {
                     }
 
                     $item["sale_delivery_item_id"] = $this->nullableIntegerFromArray($item, "sale_delivery_item_id");
+
                     $item["quantity"] = $this->normalizeDecimalFromArray($item, "quantity");
 
                     return $item;

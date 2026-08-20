@@ -16,6 +16,7 @@ final class SupplierService {
             ->with(["contacts", "bankAccounts"])
             ->withCount(["purchases"])
             ->withSum("purchases as purchased_total", "total");
+
         $word = trim($word);
 
         if($word !== "") {
@@ -65,6 +66,7 @@ final class SupplierService {
                 ->where("company_id", $companyId)
                 ->lockForUpdate()
                 ->findOrFail($supplierId);
+
             $supplier->update([
                 ...Arr::except($data, ["contacts", "bank_accounts"]),
                 "updated_at" => now(),
@@ -84,6 +86,7 @@ final class SupplierService {
 
             SupplierContact::query()->where("supplier_id", $supplier->id)->delete();
             $primaryAssigned = false;
+
             foreach($data["contacts"] ?? [] as $index => $contact) {
 
                 $isPrimary = !$primaryAssigned && (bool) ($contact["is_primary"] ?? $index === 0);
@@ -104,6 +107,7 @@ final class SupplierService {
 
             SupplierBankAccount::query()->where("supplier_id", $supplier->id)->delete();
             $primaryAssigned = false;
+
             foreach($data["bank_accounts"] ?? [] as $index => $account) {
 
                 $isPrimary = !$primaryAssigned && (bool) ($account["is_primary"] ?? $index === 0);

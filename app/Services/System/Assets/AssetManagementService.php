@@ -308,6 +308,7 @@ class AssetManagementService {
         }
 
         $assetQuantity = floatval($branchAsset->quantity);
+
         $totalQuantity = array_reduce($assignments, function($accumulator, $currentValue) {
 
             return $accumulator + floatval($currentValue["quantity"] ?? 0);
@@ -382,6 +383,7 @@ class AssetManagementService {
                     }
 
                     $information["success"]["counter"]++;
+
                     $information["success"]["data"][] = ["asset_id" => $branchAsset->asset_id];
 
                 }else {

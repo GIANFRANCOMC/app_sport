@@ -25,7 +25,7 @@ final class MasterDataController extends BaseController {
                 "data" => MasterDataService::list($this->getCompanyId(), $resource),
             ]);
 
-        } catch(\Throwable $e) {
+        }catch(\Throwable $e) {
 
             return $this->handleException($e, "retrieve");
 
@@ -67,7 +67,7 @@ final class MasterDataController extends BaseController {
                 ? $this->updatedResponse($record, "updated", "masterData")
                 : $this->createdResponse($record, "created", "masterData");
 
-        } catch(\Throwable $e) {
+        }catch(\Throwable $e) {
 
             return $this->handleException($e, $id ? "update" : "create");
 

@@ -20,6 +20,7 @@ final class PurchaseReturnService {
                 ->whereIn("status", ["partial", "received"])
                 ->lockForUpdate()
                 ->find($purchaseId);
+
             if(!$purchase) {
 
                 throw new DomainException("La compra no tiene mercadería recibida disponible para devolución.");
@@ -52,6 +53,7 @@ final class PurchaseReturnService {
                     ->where("purchase_header_id", $purchaseId)
                     ->lockForUpdate()
                     ->find((int) $line["purchase_item_id"]);
+
                 if(!$purchaseItem) {
 
                     throw new DomainException("Uno de los productos no pertenece a la compra.");
@@ -64,8 +66,10 @@ final class PurchaseReturnService {
                     ->where("purchase_return_items.purchase_item_id", $purchaseItem->id)
                     ->where("purchase_returns.status", "confirmed")
                     ->sum("purchase_return_items.quantity");
+
                 $quantity = Utilities::round((float) $line["quantity"], null, $companyId);
                 $available = Utilities::round((float) $purchaseItem->received_quantity - $previouslyReturned, null, $companyId);
+
                 if($quantity > $available) {
 
                     throw new DomainException("La devolución supera la cantidad recibida disponible.");

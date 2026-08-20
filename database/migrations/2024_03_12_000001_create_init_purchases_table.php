@@ -100,6 +100,7 @@ return new class extends Migration {
                 "received",
                 "canceled",
             ])->default("confirmed");
+
             $table->timestamp("created_at")->useCurrent()->nullable();
             $table->integer("created_by")->nullable();
             $table->timestamp("updated_at")->nullable();

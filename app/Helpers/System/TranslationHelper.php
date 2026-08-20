@@ -25,6 +25,7 @@ class TranslationHelper {
 
         // Convert dots to slashes for nested directories
         $filePath = str_replace(".", "/", $entity);
+
         $translationKey = "{$filePath}.{$key}";
 
         return trans($translationKey, $replace, $locale);
@@ -45,6 +46,7 @@ class TranslationHelper {
 
         // Convert dots to slashes for nested directories
         $filePath = str_replace(".", "/", $entity);
+
         $translationKey = "{$filePath}.{$key}";
 
         // Try current locale first
@@ -52,9 +54,11 @@ class TranslationHelper {
 
         // Check if translation was found (Laravel returns the key if not found)
         // Also check if it contains slashes (which means it's a path, not a translation)
+
         $isTranslationFound = ($translation !== $translationKey) && (strpos($translation, "/") === false);
 
         // If translation not found, try English fallback
+
         if(!$isTranslationFound && $locale !== "en") {
 
             $translation = trans($translationKey, $replace, "en");
@@ -63,6 +67,7 @@ class TranslationHelper {
         }
 
         // If still not found, use default messages
+
         if(!$isTranslationFound) {
 
             $translation = self::getDefaultMessage($entity, $key, $replace);
@@ -84,6 +89,7 @@ class TranslationHelper {
 
         // Extract entity name from namespace (last part)
         $entityParts = explode(".", $entity);
+
         $entityName = end($entityParts);
 
         // Map entity names to Spanish labels
@@ -132,9 +138,11 @@ class TranslationHelper {
         ];
 
         // Get message or use key as fallback
+
         $message = $defaultMessages[$key] ?? ucfirst(str_replace("_", " ", $key));
 
         // Apply replacements if any
+
         if(!empty($replace)) {
 
             foreach($replace as $search => $value) {
@@ -180,6 +188,7 @@ class TranslationHelper {
 
         // Convert dots to slashes for nested directories
         $filePath = str_replace(".", "/", $entity);
+
         $translationKey = "{$filePath}.{$key}";
         $translation = trans($translationKey, [], $locale);
 

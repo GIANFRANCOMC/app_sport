@@ -26,6 +26,7 @@ final class EnsureTenantSession {
         }
 
         $tenant = $this->context->get();
+
         $session = $request->session();
         $currentTenantId = $tenant?->id;
         $sessionTenantId = $session->get(self::SESSION_TENANT_KEY);

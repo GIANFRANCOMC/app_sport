@@ -94,6 +94,7 @@ final class RoleService {
             $role = Role::query()
                 ->where("company_id", $companyId)
                 ->findOrFail($roleId);
+
             $role->update([
                 "name" => trim((string) $data["name"]),
                 "is_full_access" => (bool) $data["is_full_access"],
@@ -221,6 +222,7 @@ final class RoleService {
             "cash_register" => ["table" => "role_cash_registers", "key" => "cash_register_id", "resource" => "cash_registers"],
             "warehouse" => ["table" => "role_warehouses", "key" => "warehouse_id", "resource" => "warehouses"],
         ];
+
         $branchIds = self::validScopeIds($companyId, "branches", $data["branch_ids"] ?? []);
 
         foreach($definitions as $type => $definition) {
@@ -405,9 +407,11 @@ final class RoleService {
         }
 
         $allActions = RolePermissionService::actionCodes();
+
         $actorPermissions = $actor->role->roleSubSections->mapWithKeys(fn($permission) => [
             (int) $permission->sub_section_id => collect($permission->actions ?: $allActions)->values()->all(),
         ]);
+
         $requestedPermissions = collect($data["permissions"] ?? []);
 
         if($requestedPermissions->isEmpty()) {
@@ -451,6 +455,7 @@ final class RoleService {
             }
 
             $requestedIds = collect($data["{$field}_ids"] ?? [])->map(fn($id) => (int) $id);
+
             if($allowedIds !== null && $requestedIds->diff($allowedIds)->isNotEmpty()) {
 
                 throw new AuthorizationException("Seleccionaste recursos fuera de tu alcance operativo.");

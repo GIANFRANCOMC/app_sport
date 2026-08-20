@@ -62,11 +62,13 @@ final class UserAttendanceController extends BaseController {
             "date_from" => $request->input("date_from"),
             "date_to" => $request->input("date_to"),
         ];
+
         $query = UserAttendanceService::getFilteredQuery(
             $this->getCompanyId(),
             $filters,
             $this->allowedBranchIds()
         );
+
         $limit = max(100, (int) CompanySettingService::value(
             $this->getCompanyId(),
             "reports",
@@ -107,6 +109,7 @@ final class UserAttendanceController extends BaseController {
         }
 
         rewind($handle);
+
         $csv = stream_get_contents($handle);
         fclose($handle);
 
@@ -133,14 +136,14 @@ final class UserAttendanceController extends BaseController {
                 "attendance" => $attendance->load(["branch", "user"]),
             ]);
 
-        } catch(\DomainException $exception) {
+        }catch(\DomainException $exception) {
 
             return response()->json([
                 "bool" => false,
                 "msg" => $exception->getMessage(),
             ], 422);
 
-        } catch(\Exception $exception) {
+        }catch(\Exception $exception) {
 
             return $this->handleException($exception, "check_in");
 
@@ -164,14 +167,14 @@ final class UserAttendanceController extends BaseController {
                 "attendance" => $attendance,
             ]);
 
-        } catch(\DomainException $exception) {
+        }catch(\DomainException $exception) {
 
             return response()->json([
                 "bool" => false,
                 "msg" => $exception->getMessage(),
             ], 422);
 
-        } catch(\Exception $exception) {
+        }catch(\Exception $exception) {
 
             return $this->handleException($exception, "check_out");
 
@@ -197,7 +200,7 @@ final class UserAttendanceController extends BaseController {
                 "attendance" => $attendance->load(["branch", "user"]),
             ]);
 
-        } catch(\DomainException $exception) {
+        }catch(\DomainException $exception) {
 
             return response()->json(["bool" => false, "msg" => $exception->getMessage()], 422);
 
@@ -302,7 +305,7 @@ final class UserAttendanceController extends BaseController {
 
             return response()->json(["bool" => true, ...$callback()]);
 
-        } catch(\DomainException $exception) {
+        }catch(\DomainException $exception) {
 
             return response()->json(["bool" => false, "msg" => $exception->getMessage()], 422);
 

@@ -148,6 +148,7 @@ final class SystemNavigationSeeder extends Seeder {
                 ]);
 
             }
+
             foreach($catalog["sections"] as $record) {
 
                 DB::table("sections")->insert($record + [
@@ -157,6 +158,7 @@ final class SystemNavigationSeeder extends Seeder {
                 ]);
 
             }
+
             foreach($catalog["groups"] as $record) {
 
                 DB::table("menu_groups")->insert([
@@ -171,6 +173,7 @@ final class SystemNavigationSeeder extends Seeder {
                 ]);
 
             }
+
             foreach($catalog["items"] as $record) {
 
                 DB::table("sub_sections")->insert($record + [

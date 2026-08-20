@@ -144,6 +144,7 @@ final class MasterDataService {
                         Str::uuid()->toString().".".$data["image"]->guessExtension(),
                         "public"
                     );
+
                     $data["image_path"] = $newImagePath;
 
                 }
@@ -171,7 +172,7 @@ final class MasterDataService {
 
             });
 
-        } catch(\Throwable $exception) {
+        }catch(\Throwable $exception) {
 
             if($newImagePath) {
 
@@ -340,7 +341,7 @@ final class MasterDataService {
 
             return json_encode($value, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE);
 
-        } catch(\JsonException) {
+        }catch(\JsonException) {
 
             throw new DomainException("La configuración debe contener JSON válido.");
 

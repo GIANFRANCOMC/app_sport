@@ -62,6 +62,7 @@ final class BusinessAuditService {
     public static function recordModelChange(Model $model, string $action): ?BusinessAuditLog {
 
         $companyId = (int) ($model->getAttribute("company_id") ?? 0);
+
         if($companyId <= 0) {
 
             return null;
@@ -69,6 +70,7 @@ final class BusinessAuditService {
         }
 
         $before = $action === "created" ? [] : $model->getOriginal();
+
         $after = $action === "deleted" ? [] : $model->getAttributes();
 
         return self::record(
@@ -88,6 +90,7 @@ final class BusinessAuditService {
     private static function sanitize(array $data): array {
 
         $settingKey = strtolower((string) ($data["key"] ?? ""));
+
         if(array_key_exists("value", $data)
             && preg_match("/(?:secret|password|token|credential|api[_-]?key|private[_-]?key)/", $settingKey)) {
 

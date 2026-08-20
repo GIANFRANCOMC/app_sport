@@ -59,9 +59,11 @@ class WarehouseService {
         }
 
         $now = now();
+
         $seq = 1;
 
         // Update warehouses efficiently
+
         foreach($warehouses as $warehouse) {
 
             $cleanName = Warehouse::plainName((string) $warehouse->name);

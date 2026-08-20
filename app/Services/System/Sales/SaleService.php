@@ -256,6 +256,7 @@ class SaleService {
         }
 
         $item->capacity_used = max(0, (int) $item->capacity_used) + self::capacityQuantity($saleBody->quantity);
+
         $item->updated_at = now();
         $item->updated_by = $userId;
         $item->save();
@@ -290,6 +291,7 @@ class SaleService {
             }
 
             $item->capacity_used = max(0, (int) $item->capacity_used - self::capacityQuantity($position->quantity));
+
             $item->updated_at = now();
             $item->updated_by = $userId;
             $item->save();
@@ -341,6 +343,7 @@ class SaleService {
         }
 
         $saleBody = new SaleBody();
+
         $saleBody->company_id = $saleHeader->company_id;
         $saleBody->sale_header_id = $saleHeader->id;
         $saleBody->item_id = $detail["item_id"];
@@ -352,6 +355,7 @@ class SaleService {
         $saleBody->price_includes_tax = $saleBody->igv_exempt
             ? false
             : filter_var($detail["price_includes_tax"] ?? true, FILTER_VALIDATE_BOOL);
+
         $saleBody->total = Utilities::round((floatval($saleBody->quantity) * floatval($saleBody->price)), null, (int) $saleHeader->company_id);
         $saleBody->commission_type = $detail["commission_type"] ?? "none";
         $saleBody->commission_value = $detail["commission_value"] ?? 0;
@@ -359,6 +363,7 @@ class SaleService {
         $saleBody->customer_id = $saleBody->type === "subscription"
             ? (int) ($detail["customer_id"] ?? $saleHeader->holder_id)
             : $saleHeader->holder_id;
+
         $saleBody->type = $detail["type"];
         $saleBody->observation = $detail["observation"] ?? "";
         $saleBody->extras = json_encode($extras);
@@ -595,6 +600,7 @@ class SaleService {
         }
 
         $methodId = (int) ($data["delivery_method_id"] ?? 0);
+
         if($methodId <= 0) {
 
             throw new \DomainException("Selecciona una modalidad de entrega activa.");
@@ -782,6 +788,7 @@ class SaleService {
                 (string) ($data["source_channel"] ?? "sale"),
                 $requiresWarehouse
             );
+
             $deliveryMethodId = self::resolveDeliveryMethodId($data, (int) $companyId, $usesSaleDeliveryFlow);
             $deliveryStatus = SaleDeliveryPolicy::initialStatus(
                 $data["delivery_status"] ?? null,
@@ -789,6 +796,7 @@ class SaleService {
             );
 
             // Get new sequential number
+
             $newSequential = SaleHeader::getNewSequential($data["serie_id"]);
 
             if($newSequential <= 0) {
@@ -799,11 +807,13 @@ class SaleService {
 
             // Calculate totals
             $grossSubtotal = self::calculateTotal($data["details"], (int) $companyId);
+
             $commissionTotal = Utilities::round(array_reduce($data["details"], function($carry, $detail) {
 
                 return $carry + (float) ($detail["commission_amount"] ?? 0);
 
             }, 0), null, (int) $companyId);
+
             $selectedTaxIds = collect($data["taxes"] ?? [])
                 ->pluck("tax_id")
                 ->filter()
@@ -811,10 +821,12 @@ class SaleService {
                 ->unique()
                 ->values()
                 ->all();
+
             $selectedTaxQuantities = collect($data["taxes"] ?? [])
                 ->filter(fn($tax) => !empty($tax["tax_id"]))
                 ->mapWithKeys(fn($tax) => [(int) $tax["tax_id"] => (float) ($tax["quantity"] ?? 1)])
                 ->all();
+
             $taxLines = CommercialDocumentSettlementService::saleTaxes(
                 (int) $companyId,
                 $data["details"],
@@ -822,6 +834,7 @@ class SaleService {
                 $selectedTaxIds,
                 $selectedTaxQuantities
             );
+
             $taxTotal = Utilities::round((float) $taxLines->sum("amount"), null, (int) $companyId);
             $taxImpactTotal = Utilities::round((float) $taxLines->sum("_total_impact"), null, (int) $companyId);
             $includedTaxTotal = Utilities::round($taxTotal - $taxImpactTotal, null, (int) $companyId);
@@ -833,10 +846,12 @@ class SaleService {
                 "default_payment_modality",
                 CommercialCreditAccountService::PAID_NOW
             );
+
             $paymentModality = CommercialCreditAccountService::normalizePaymentModality(
                 $data["payment_modality"] ?? null,
                 $defaultPaymentModality
             );
+
             $paymentLines = CommercialDocumentSettlementService::payments(
                 (int) $companyId,
                 "sale",
@@ -845,6 +860,7 @@ class SaleService {
                 (int) $userId,
                 $paymentModality === CommercialCreditAccountService::PAID_NOW
             );
+
             $paidAmount = Utilities::round((float) $paymentLines->sum("amount"), null, (int) $companyId);
             $financedPrincipal = $paymentModality === CommercialCreditAccountService::INSTALLMENTS
                 ? Utilities::round($baseTotal - $paidAmount, null, (int) $companyId)
@@ -864,6 +880,7 @@ class SaleService {
                     0
                 )
                 : 0.0;
+
             $installmentExtraAmount = Utilities::round($financedPrincipal * ($installmentExtraPercentage / 100), null, (int) $companyId);
             $total = Utilities::round($baseTotal + $installmentExtraAmount, null, (int) $companyId);
             $balanceDue = Utilities::round($total - $paidAmount, null, (int) $companyId);
@@ -871,6 +888,7 @@ class SaleService {
 
             // Create sale header
             $saleHeader = new SaleHeader();
+
             $saleHeader->company_id = $companyId;
             $saleHeader->serie_id = $data["serie_id"];
             $saleHeader->sequential = $newSequential;
@@ -884,6 +902,7 @@ class SaleService {
             $saleHeader->issue_date = $data["issue_date"];
             // Campo legado conservado para compatibilidad; el estado es la fuente operativa.
             $saleHeader->delivery_mode = SaleDeliveryPolicy::legacyMode($deliveryStatus);
+
             $saleHeader->delivery_status = $deliveryStatus;
             $saleHeader->delivered_at = $deliveryStatus === "delivered" ? now() : null;
             $saleHeader->delivered_by = $deliveryStatus === "delivered" ? $userId : null;
@@ -947,6 +966,7 @@ class SaleService {
             $saleBodies = collect();
 
             // Create sale bodies and process details
+
             foreach($data["details"] as $detail) {
 
                 $saleBody = self::createSaleBody($saleHeader, $detail, $userId);
@@ -1159,6 +1179,7 @@ class SaleService {
 
             // Update sale header
             $saleHeader->status = "canceled";
+
             $saleHeader->delivery_status = "canceled";
             $saleHeader->updated_at = now();
             $saleHeader->updated_by = $userId;
@@ -1194,6 +1215,7 @@ class SaleService {
                 ]);
 
             // Cancel subscriptions
+
             $motive = "Por la anulación de la venta.";
 
             Subscription::where("company_id", $companyId)
@@ -1249,6 +1271,7 @@ class SaleService {
 
         $branchQuery = \App\Models\System\Organizations\Branch::where("company_id", $companyId)
             ->with(["series"]);
+
         $branchIds = $userId === null
             ? null
             : \App\Services\System\Base\CompanyReferenceDataService::for($companyId, $userId)->allowedBranchIds();
@@ -1270,6 +1293,7 @@ class SaleService {
         self::applyFilters($query, $filters);
 
         // Apply ordering
+
         $query->orderBy("id", "DESC");
 
         return $query->paginate($perPage);

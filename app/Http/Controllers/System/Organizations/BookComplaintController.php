@@ -45,6 +45,7 @@ class BookComplaintController extends BaseController {
             "branch_id",
             "word",
         ]));
+
         $perPage = $this->getPerPage($request, Utilities::$per_page_default);
 
         return BookComplaintService::getPaginatedList($this->getCompanyId(), $filters, $perPage);
@@ -80,6 +81,7 @@ class BookComplaintController extends BaseController {
             }
 
             $data = $this->prepareBookComplaintData($request);
+
             $bookComplaint = BookComplaintService::update($bookComplaint, $data, $this->getUserId());
 
             if(!Utilities::isDefined($bookComplaint)) {
@@ -90,7 +92,7 @@ class BookComplaintController extends BaseController {
 
             return $this->updatedResponse($bookComplaint, "updated", "bookComplaint");
 
-        } catch(\Exception $e) {
+        }catch(\Exception $e) {
 
             return $this->handleException($e, "update");
 

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Models\System\Tenancy;
 
 use Illuminate\Database\Eloquent\{Model};
+use Illuminate\Support\{Str};
 
 final class TenantDatabase extends Model {
     protected $connection = "landlord";
@@ -12,7 +13,7 @@ final class TenantDatabase extends Model {
     protected $table = "tenant_databases";
 
     protected $fillable = [
-        "slug",
+        "public_id", "slug",
         "company_id",
         "database_name",
         "status",
@@ -27,6 +28,22 @@ final class TenantDatabase extends Model {
         "company_id" => "integer",
         "last_resolved_at" => "datetime",
     ];
+
+    protected static function booted(): void {
+
+        self::creating(function(TenantDatabase $tenant): void {
+
+            $tenant->public_id ??= (string) Str::uuid();
+
+        });
+
+    }
+
+    public function getRouteKeyName(): string {
+
+        return "public_id";
+
+    }
 
     public function domains() {
 

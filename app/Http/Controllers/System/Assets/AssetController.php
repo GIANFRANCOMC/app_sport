@@ -78,7 +78,7 @@ class AssetController extends BaseController {
 
             return $this->createdResponse($asset, "created", "asset");
 
-        } catch(\Exception $e) {
+        }catch(\Exception $e) {
 
             return $this->handleException($e, "create");
 
@@ -104,6 +104,7 @@ class AssetController extends BaseController {
             }
 
             $data = $this->prepareAssetData($request);
+
             $asset = AssetService::update($asset, $data, $this->getUserId());
 
             if(!Utilities::isDefined($asset)) {
@@ -119,7 +120,7 @@ class AssetController extends BaseController {
 
             return $this->updatedResponse($asset, "updated", "asset");
 
-        } catch(\Exception $e) {
+        }catch(\Exception $e) {
 
             return $this->handleException($e, "update");
 

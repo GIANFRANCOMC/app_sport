@@ -178,6 +178,8 @@ return new class extends Migration {
 
             $table->foreign("section_id")->references("id")->on("sections")->onDelete("cascade");
             $table->foreign("menu_group_id")->references("id")->on("menu_groups")->nullOnDelete();
+            $table->unique("slug", "sub_sections_slug_unique");
+            $table->unique("dom_route", "sub_sections_dom_route_unique");
 
         });
         Schema::create("companies_sub_sections", function(Blueprint $table) {
@@ -207,6 +209,9 @@ return new class extends Migration {
             $table->string("slug", 255);
             $table->string("name", 255);
             $table->boolean("is_full_access")->default(false);
+            $table->enum("branch_scope_mode", ["all", "restricted"])->default("all");
+            $table->enum("cash_register_scope_mode", ["all", "restricted"])->default("all");
+            $table->enum("warehouse_scope_mode", ["all", "restricted"])->default("all");
             $table->enum("status", ["active", "inactive"])->default("active");
 
             $table->timestamp("created_at")->useCurrent()->nullable();
@@ -223,6 +228,7 @@ return new class extends Migration {
             $table->unsignedBigInteger("company_id");
             $table->unsignedBigInteger("role_id");
             $table->unsignedBigInteger("sub_section_id");
+            $table->json("actions")->nullable();
             $table->enum("status", ["active", "inactive"])->default("active");
 
             $table->timestamp("created_at")->useCurrent()->nullable();
@@ -241,6 +247,9 @@ return new class extends Migration {
             $table->id();
             $table->unsignedBigInteger("company_id");
             $table->unsignedBigInteger("role_id")->nullable();
+            $table->enum("branch_scope_mode", ["inherit", "restricted"])->default("inherit");
+            $table->enum("cash_register_scope_mode", ["inherit", "restricted"])->default("inherit");
+            $table->enum("warehouse_scope_mode", ["inherit", "restricted"])->default("inherit");
             $table->unsignedBigInteger("identity_document_type_id");
             $table->string("document_number", 255);
             $table->string("name", 255);

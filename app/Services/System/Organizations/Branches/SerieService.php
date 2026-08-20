@@ -32,7 +32,7 @@ class SerieService {
 
             $newSequential = intval($maxSequential) + 1;
 
-        } catch(Exception $e) {
+        }catch(Exception $e) {
 
             $newSequential = 0;
 
@@ -57,6 +57,7 @@ class SerieService {
         $newSequential = self::getNewSequential($companyId, $branchId);
 
         // Get all active document types for the company (only needed fields)
+
         $documentTypes = DocumentType::where("company_id", $companyId)
             ->whereIn("status", ["active"])
             ->select("id", "code")
@@ -151,6 +152,7 @@ class SerieService {
                 }
 
                 $expected = range(min($issued), max($issued));
+
                 $missing = array_values(array_diff($expected, $issued));
 
                 return empty($missing) ? null : [

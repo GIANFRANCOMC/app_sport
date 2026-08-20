@@ -157,6 +157,7 @@ class UserPreference extends Model {
             }
 
             $userPreference->status = "active";
+
             $userPreference->updated_at = now();
             $userPreference->updated_by = $userId;
             $userPreference->save();

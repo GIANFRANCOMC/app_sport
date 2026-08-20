@@ -34,6 +34,7 @@ class HomeController extends BaseController {
         }
 
         $initParams->config = $config;
+
         $initParams->bool = true;
 
         return $initParams;
@@ -98,7 +99,7 @@ class HomeController extends BaseController {
 
             return $this->errorResponse("update_failed");
 
-        } catch(\Exception $e) {
+        }catch(\Exception $e) {
 
             return $this->handleException($e, "update");
 

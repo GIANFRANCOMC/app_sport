@@ -58,7 +58,7 @@ final class QuotationController extends BaseController {
                 "data" => QuotationService::saleDraft($this->getCompanyId(), $id),
             ]);
 
-        } catch(\Throwable $exception) {
+        }catch(\Throwable $exception) {
 
             return response()->json(["bool" => false, "msg" => $exception->getMessage()], 422);
 
@@ -111,7 +111,7 @@ final class QuotationController extends BaseController {
                 "data" => QuotationService::create($this->getCompanyId(), $this->getUserId(), $validator->validated()),
             ], 201);
 
-        } catch(\Throwable $exception) {
+        }catch(\Throwable $exception) {
 
             return response()->json(["bool" => false, "msg" => $exception->getMessage()], 422);
 
@@ -129,7 +129,7 @@ final class QuotationController extends BaseController {
                 "data" => QuotationService::cancel($this->getCompanyId(), $id, $this->getUserId()),
             ]);
 
-        } catch(\Throwable $exception) {
+        }catch(\Throwable $exception) {
 
             return response()->json(["bool" => false, "msg" => $exception->getMessage()], 422);
 

@@ -33,6 +33,7 @@ final class BiometricEventService {
         }
 
         $expected = hash_hmac("sha256", $rawPayload, Crypt::decryptString($device->secret_encrypted));
+
         if(!$signature || !hash_equals($expected, $signature)) {
 
             throw new DomainException("La firma del evento biométrico no es válida.");
@@ -80,9 +81,10 @@ final class BiometricEventService {
                     "processed_at" => now(),
                     "last_error" => null,
                 ])->save();
+
                 $device->forceFill(["last_seen_at" => now()])->save();
 
-            } catch(Throwable $exception) {
+            }catch(Throwable $exception) {
 
                 $event->forceFill([
                     "processing_status" => "failed",

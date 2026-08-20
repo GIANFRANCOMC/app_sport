@@ -28,7 +28,7 @@ final class BiometricEventController extends Controller {
                 "status" => $event->processing_status,
             ], 202);
 
-        } catch(DomainException $exception) {
+        }catch(DomainException $exception) {
 
             return response()->json(["bool" => false, "msg" => $exception->getMessage()], 422);
 

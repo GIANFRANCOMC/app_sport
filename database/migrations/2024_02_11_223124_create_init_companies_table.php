@@ -165,6 +165,8 @@ return new class extends Migration {
             $table->foreign("company_id")->references("id")->on("companies")->onDelete("cascade");
             $table->foreign("user_id")->references("id")->on("users")->onDelete("cascade");
             $table->foreign("branch_id")->references("id")->on("branches")->onDelete("cascade");
+            $table->unique(["company_id", "user_id", "branch_id"]);
+            $table->index(["company_id", "user_id", "status"], "user_branches_access_idx");
 
         });
 
@@ -389,6 +391,7 @@ return new class extends Migration {
                 ["company_id", "identity_document_type_id", "document_number"],
                 "customers_company_identity_document_unique"
             );
+
             $table->index(["company_id", "status", "name"], "customers_operation_search_index");
 
         });
@@ -428,6 +431,103 @@ return new class extends Migration {
 
             $table->foreign("company_id")->references("id")->on("companies")->onDelete("cascade");
             $table->foreign("branch_id")->references("id")->on("branches")->onDelete("cascade");
+            $table->unique(["company_id", "branch_id", "name"], "cash_registers_company_branch_name_uq");
+            $table->index(["company_id", "branch_id", "status", "name"], "cash_registers_company_branch_status_idx");
+
+        });
+
+        Schema::create("role_branches", function(Blueprint $table) {
+
+            $table->id();
+            $table->unsignedBigInteger("company_id");
+            $table->unsignedBigInteger("role_id");
+            $table->unsignedBigInteger("branch_id");
+            $table->enum("status", ["active", "inactive"])->default("active");
+            $table->timestamps();
+            $table->integer("created_by")->nullable();
+            $table->integer("updated_by")->nullable();
+
+            $table->foreign("company_id")->references("id")->on("companies")->onDelete("cascade");
+            $table->foreign("role_id")->references("id")->on("roles")->onDelete("cascade");
+            $table->foreign("branch_id")->references("id")->on("branches")->onDelete("cascade");
+            $table->unique(["company_id", "role_id", "branch_id"]);
+            $table->index(["company_id", "role_id", "status"], "role_branches_access_idx");
+
+        });
+
+        Schema::create("role_cash_registers", function(Blueprint $table) {
+
+            $table->id();
+            $table->unsignedBigInteger("company_id");
+            $table->unsignedBigInteger("role_id");
+            $table->unsignedBigInteger("cash_register_id");
+            $table->enum("status", ["active", "inactive"])->default("active");
+            $table->timestamps();
+            $table->integer("created_by")->nullable();
+            $table->integer("updated_by")->nullable();
+
+            $table->foreign("company_id")->references("id")->on("companies")->onDelete("cascade");
+            $table->foreign("role_id")->references("id")->on("roles")->onDelete("cascade");
+            $table->foreign("cash_register_id")->references("id")->on("cash_registers")->onDelete("cascade");
+            $table->unique(["company_id", "role_id", "cash_register_id"]);
+            $table->index(["company_id", "role_id", "status"], "role_cash_registers_access_idx");
+
+        });
+
+        Schema::create("role_warehouses", function(Blueprint $table) {
+
+            $table->id();
+            $table->unsignedBigInteger("company_id");
+            $table->unsignedBigInteger("role_id");
+            $table->unsignedBigInteger("warehouse_id");
+            $table->enum("status", ["active", "inactive"])->default("active");
+            $table->timestamps();
+            $table->integer("created_by")->nullable();
+            $table->integer("updated_by")->nullable();
+
+            $table->foreign("company_id")->references("id")->on("companies")->onDelete("cascade");
+            $table->foreign("role_id")->references("id")->on("roles")->onDelete("cascade");
+            $table->foreign("warehouse_id")->references("id")->on("warehouses")->onDelete("cascade");
+            $table->unique(["company_id", "role_id", "warehouse_id"]);
+            $table->index(["company_id", "role_id", "status"], "role_warehouses_access_idx");
+
+        });
+
+        Schema::create("user_cash_registers", function(Blueprint $table) {
+
+            $table->id();
+            $table->unsignedBigInteger("company_id");
+            $table->unsignedBigInteger("user_id");
+            $table->unsignedBigInteger("cash_register_id");
+            $table->enum("status", ["active", "inactive"])->default("active");
+            $table->timestamps();
+            $table->integer("created_by")->nullable();
+            $table->integer("updated_by")->nullable();
+
+            $table->foreign("company_id")->references("id")->on("companies")->onDelete("cascade");
+            $table->foreign("user_id")->references("id")->on("users")->onDelete("cascade");
+            $table->foreign("cash_register_id")->references("id")->on("cash_registers")->onDelete("cascade");
+            $table->unique(["company_id", "user_id", "cash_register_id"]);
+            $table->index(["company_id", "user_id", "status"], "user_cash_registers_access_idx");
+
+        });
+
+        Schema::create("user_warehouses", function(Blueprint $table) {
+
+            $table->id();
+            $table->unsignedBigInteger("company_id");
+            $table->unsignedBigInteger("user_id");
+            $table->unsignedBigInteger("warehouse_id");
+            $table->enum("status", ["active", "inactive"])->default("active");
+            $table->timestamps();
+            $table->integer("created_by")->nullable();
+            $table->integer("updated_by")->nullable();
+
+            $table->foreign("company_id")->references("id")->on("companies")->onDelete("cascade");
+            $table->foreign("user_id")->references("id")->on("users")->onDelete("cascade");
+            $table->foreign("warehouse_id")->references("id")->on("warehouses")->onDelete("cascade");
+            $table->unique(["company_id", "user_id", "warehouse_id"]);
+            $table->index(["company_id", "user_id", "status"], "user_warehouses_access_idx");
 
         });
 
@@ -954,6 +1054,11 @@ return new class extends Migration {
         Schema::dropIfExists("cash_movements");
         Schema::dropIfExists("cash_session_payments");
         Schema::dropIfExists("cash_sessions");
+        Schema::dropIfExists("user_warehouses");
+        Schema::dropIfExists("user_cash_registers");
+        Schema::dropIfExists("role_warehouses");
+        Schema::dropIfExists("role_cash_registers");
+        Schema::dropIfExists("role_branches");
         Schema::dropIfExists("cash_registers");
         Schema::dropIfExists("warehouses");
         Schema::dropIfExists("customers");

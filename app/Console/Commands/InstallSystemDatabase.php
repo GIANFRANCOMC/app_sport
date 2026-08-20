@@ -35,7 +35,9 @@ final class InstallSystemDatabase extends Command {
         }
 
         $migrationCommand = $this->option("fresh") ? "migrate:fresh" : "migrate";
+
         $migrationOptions = ["--force" => true];
+
         if($this->option("seed")) {
 
             $migrationOptions["--seed"] = true;
@@ -52,11 +54,13 @@ final class InstallSystemDatabase extends Command {
         ]);
 
         $password = (string) ($this->option("admin-password") ?: "");
+
         if($password === "" && $this->input->isInteractive()) {
 
             $password = (string) $this->secret("Contraseña del administrador");
 
         }
+
         if(strlen($password) < 8) {
 
             $this->components->error("La contraseña del administrador debe tener al menos 8 caracteres.");
@@ -66,6 +70,7 @@ final class InstallSystemDatabase extends Command {
         }
 
         $companyId = (int) $this->option("company-id");
+
         $slug = Str::slug((string) $this->option("slug"));
         $provisioning->createOrUpdate([
             "slug" => $slug,
@@ -74,6 +79,7 @@ final class InstallSystemDatabase extends Command {
             "document_number" => (string) $this->option("document-number"),
             "email" => (string) $this->option("admin-email"),
         ], $companyId);
+
         $catalog->sync($companyId);
         $provisioning->enable($companyId);
         $provisioning->ensureAdminUser(

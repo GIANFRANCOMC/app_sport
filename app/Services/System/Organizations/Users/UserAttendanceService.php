@@ -173,6 +173,7 @@ final class UserAttendanceService {
             }
 
             $attendance->checked_out_at = $checkedOutAt;
+
             $metrics = self::calculateMetrics($attendance, $checkedInAt, $checkedOutAt);
             $attendance->worked_minutes = $metrics["worked_minutes"];
             $attendance->ordinary_minutes = $metrics["ordinary_minutes"];
@@ -262,6 +263,7 @@ final class UserAttendanceService {
             }
 
             $break->ended_at = now();
+
             $break->duration_minutes = $break->started_at->diffInMinutes($break->ended_at);
             $break->status = "finalized";
             $break->updated_by = $actorId;
@@ -351,17 +353,20 @@ final class UserAttendanceService {
                         Carbon::parse($attendance->checked_in_at),
                         Carbon::parse($attendance->checked_out_at)
                     );
+
                     $attendance->fill($metrics);
 
                 }
 
                 $attendance->updated_at = now();
+
                 $attendance->updated_by = $actorId;
                 $attendance->save();
 
             }
 
             $correction->status = $approve ? "approved" : "rejected";
+
             $correction->reviewed_by = $actorId;
             $correction->review_note = $note;
             $correction->reviewed_at = now();
@@ -471,6 +476,7 @@ final class UserAttendanceService {
         }
 
         $records = $query->orderBy("work_date")->get();
+
         $totalMinutes = (int) $records->sum("worked_minutes");
 
         return [
@@ -554,6 +560,7 @@ final class UserAttendanceService {
             ->where("user_attendance_id", $attendance->id)
             ->where("status", "finalized")
             ->sum("duration_minutes");
+
         $workedMinutes = max(0, $checkIn->diffInMinutes($checkOut) - $breakMinutes);
         $weekday = $checkIn->dayOfWeekIso;
         $schedule = DB::table("user_work_schedules")
@@ -587,7 +594,9 @@ final class UserAttendanceService {
         }
 
         $scheduledStart = Carbon::parse($checkIn->toDateString()." ".$schedule->starts_at);
+
         $scheduledEnd = Carbon::parse($checkIn->toDateString()." ".$schedule->ends_at);
+
         if($schedule->crosses_midnight || $scheduledEnd->lessThanOrEqualTo($scheduledStart)) {
 
             $scheduledEnd->addDay();
@@ -595,6 +604,7 @@ final class UserAttendanceService {
         }
 
         $scheduledMinutes = $scheduledStart->diffInMinutes($scheduledEnd);
+
         $lateMinutes = max(0, $scheduledStart->copy()->addMinutes((int) $schedule->tolerance_minutes)->diffInMinutes($checkIn, false));
 
         return [

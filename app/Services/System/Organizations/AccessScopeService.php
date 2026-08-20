@@ -107,6 +107,7 @@ final class AccessScopeService {
         }
 
         $branchIds = self::resolveType($user, $role, self::BRANCH);
+
         $cashRegisterIds = self::resolveType($user, $role, self::CASH_REGISTER);
         $warehouseIds = self::resolveType($user, $role, self::WAREHOUSE);
 
@@ -116,6 +117,7 @@ final class AccessScopeService {
             $branchIds,
             (int) $user->company_id
         );
+
         $warehouseIds = self::applyBranchHierarchy(
             self::WAREHOUSE,
             $warehouseIds,
@@ -140,6 +142,7 @@ final class AccessScopeService {
             : self::pivotIds($definition["role_table"], "role_id", (int) $role->id, $definition["resource_key"]);
 
         $userMode = (string) ($user->{$definition["user_mode"]} ?? "inherit");
+
         if($userMode !== "restricted") {
 
             return $roleIds;
@@ -174,6 +177,7 @@ final class AccessScopeService {
         }
 
         $definition = self::definition($type);
+
         $query = DB::table($definition["resource_table"])
             ->where("company_id", $companyId)
             ->whereIn("branch_id", $branchIds);

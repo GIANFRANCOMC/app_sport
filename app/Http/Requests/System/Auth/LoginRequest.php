@@ -63,6 +63,7 @@ class LoginRequest extends FormRequest {
             ->first();
 
         // Check if the company is active
+
         if(!Utilities::isDefined($company) || $company->status !== "active") {
 
             AuthenticationAuditService::record(
@@ -88,6 +89,7 @@ class LoginRequest extends FormRequest {
             ->first();
 
         // Attempt to authenticate the user
+
         if(!Utilities::isDefined($user) || !Hash::check($credentials["password"], $user->password)) {
 
             RateLimiter::hit($this->throttleKey());

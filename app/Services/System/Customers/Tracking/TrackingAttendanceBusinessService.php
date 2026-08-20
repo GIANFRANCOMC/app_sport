@@ -105,6 +105,7 @@ class TrackingAttendanceBusinessService {
         $hasActive = (clone $dailyAttendances)
             ->where("status", "active")
             ->exists();
+
         $finalized = (clone $dailyAttendances)
             ->where("status", "finalized")
             ->count();
@@ -168,6 +169,7 @@ class TrackingAttendanceBusinessService {
         $customerAttendanceType = Utilities::isDefined($data["customer_attendance_type"] ?? "")
             ? $this->normalizeLookupType((string) $data["customer_attendance_type"])
             : "carnet";
+
         $startDate = $data["start_date"] ?? null;
         $endDate = $data["end_date"] ?? null;
         $observation = $data["observation"] ?? "";
@@ -192,6 +194,7 @@ class TrackingAttendanceBusinessService {
         }
 
         // For automatic checkin actions, use current time if start_date is not provided
+
         if($startDate === null && $action === "automatic" && in_array($type, ["biometric", "qr_camera", "qr_scanner", "qr_public"])) {
 
             $startDate = now();
@@ -207,6 +210,7 @@ class TrackingAttendanceBusinessService {
         // Get customer
         // Handle biometric attendance (by device_user_id)
         $deviceId = $data["device_id"] ?? null;
+
         $deviceUserId = $data["device_user_id"] ?? null;
         $sourceReference = $data["source_reference"] ?? null;
 
@@ -301,6 +305,7 @@ class TrackingAttendanceBusinessService {
         $maxActiveHours = $this->maxActiveHours($companyId);
 
         // Handle checkout
+
         if(in_array($action, ["checkout"])) {
 
             if(!Utilities::isDefined($activeAttendance)) {
@@ -312,6 +317,7 @@ class TrackingAttendanceBusinessService {
             }
 
             $proposedStartDate = Carbon::parse($activeAttendance->start_date);
+
             $proposedEndDate = $endDate;
 
             if(!$proposedEndDate->greaterThan($proposedStartDate)) {
@@ -339,6 +345,7 @@ class TrackingAttendanceBusinessService {
             }
 
             $activeAttendance->end_date = $proposedEndDate;
+
             $activeAttendance->status = "finalized";
             $activeAttendance->updated_at = now();
             $activeAttendance->updated_by = $userId;
@@ -353,6 +360,7 @@ class TrackingAttendanceBusinessService {
         }
 
         // Break: Checkout action without active attendance
+
         if(in_array($action, ["checkout"])) {
 
             $response["msg"] = "$customer->name: Sin respuesta.";
@@ -362,6 +370,7 @@ class TrackingAttendanceBusinessService {
         }
 
         // Check for active attendance (checkin)
+
         if(Utilities::isDefined($activeAttendance)) {
 
             if($this->attendanceExceedsMaxDuration($activeAttendance, $startDate, $maxActiveHours)) {
@@ -393,6 +402,7 @@ class TrackingAttendanceBusinessService {
         }
 
         $subscription = $subscriptions->first();
+
         $limitPerDay = intval($subscription->attendance_limit_per_day);
 
         // Check attendance limits

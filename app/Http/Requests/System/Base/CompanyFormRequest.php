@@ -41,6 +41,7 @@ abstract class CompanyFormRequest extends FormRequest {
             }
 
             $value = trim($value);
+
             $normalized[$field] = $value === "" ? null : $value;
 
         }

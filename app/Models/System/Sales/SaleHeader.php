@@ -106,7 +106,7 @@ class SaleHeader extends Model {
 
             $serie_sequential = $this->serie->legible_serie."-".str_pad($this->sequential, 8, "0", STR_PAD_LEFT);
 
-        } catch(Exception $e) {
+        }catch(Exception $e) {
 
             $serie_sequential = "Error";
 
@@ -135,6 +135,7 @@ class SaleHeader extends Model {
         }
 
         $issueDateCarbon = Carbon::parse($issueDate);
+
         $todayCarbon = Carbon::now();
         $differenceInDays = $issueDateCarbon->diffInDays($todayCarbon);
 
@@ -276,7 +277,7 @@ class SaleHeader extends Model {
 
             }
 
-        } catch(Exception $e) {
+        }catch(Exception $e) {
 
             $newSequential = 0;
 

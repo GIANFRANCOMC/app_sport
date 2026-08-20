@@ -38,6 +38,7 @@ class WarehouseItemService {
                 "warehouse_id" => $warehouse->id,
                 "item_id" => $itemId,
             ]);
+
             $isNew = !$warehouseItem->exists;
 
             if($isNew) {
@@ -52,6 +53,7 @@ class WarehouseItemService {
             $warehouseItem->minimum_stock = (float) (
                 $inventoryRecord["minimum_stock"] ?? $warehouseItem->minimum_stock ?? 0
             );
+
             $warehouseItem->status = "active";
 
             if(!$isNew) {

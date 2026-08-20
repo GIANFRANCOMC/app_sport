@@ -29,6 +29,7 @@ return new class extends Migration {
         Schema::connection($this->connection)->create("tenant_databases", function(Blueprint $table): void {
 
             $table->id();
+            $table->uuid("public_id")->unique();
             $table->string("slug", 120)->unique();
             $table->unsignedBigInteger("company_id")->nullable();
             $table->string("database_name", 180)->unique();

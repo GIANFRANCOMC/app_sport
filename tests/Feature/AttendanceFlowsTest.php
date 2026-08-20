@@ -49,6 +49,7 @@ final class AttendanceFlowsTest extends TestCase {
                 "updated_at" => now(),
             ]
         );
+
         $this->branchId = (int) DB::table("branches")->where("company_id", 1)->where("name", "Sede Principal")->value("id");
         $this->currencyId = (int) DB::table("currencies")->where("company_id", 1)->where("code", "PEN")->value("id");
         $this->customerId = (int) DB::table("customers")->where("company_id", 1)->where("document_number", "70000002")->value("id");

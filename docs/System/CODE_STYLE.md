@@ -11,8 +11,9 @@ El código debe ser consistente, legible y fácil de revisar. La convención se 
 - Las directivas Blade siguen la misma regla: `@if($condicion)` y `@foreach($items as $item)`.
 - La llave de apertura permanece en la misma línea: `metodo() {`, `if(condicion) {`, `final class Servicio {`.
 - No separar el operador de negación de su expresión: `if(!Utilities::isDefined($value)) {`.
-- Las continuaciones condicionales se escriben sin separación: `}elseif(condicion) {` y `}else {`.
-- `catch` conserva un espacio después de la llave anterior: `} catch(Throwable $exception) {`.
+- Todas las continuaciones se escriben sin separación después de la llave: `}elseif(condicion) {`, `}else {`, `}catch(Throwable $exception) {` y `}finally {`.
+- Antes de iniciar una nueva condición, iteración, función local o bloque independiente debe existir una línea vacía. Las asignaciones consecutivas pueden permanecer juntas si forman una sola operación.
+- Después de una consulta, colección o asignación multilínea, separar con una línea vacía la siguiente asignación o responsabilidad.
 - Dentro de condiciones, iteraciones, funciones, `try` y `catch`, dejar una línea vacía después de la llave de apertura y otra antes de la llave de cierre:
 
 ```php
@@ -32,7 +33,7 @@ try {
 
     ejecutarOperacion();
 
-} catch(Throwable $exception) {
+}catch(Throwable $exception) {
 
     reportar($exception);
 

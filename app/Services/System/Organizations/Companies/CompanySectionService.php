@@ -7,7 +7,7 @@ namespace App\Services\System\Organizations\Companies;
 use App\Models\System\General\{Section};
 use App\Services\System\Organizations\Roles\{RolePermissionService};
 use Illuminate\Database\Eloquent\{Collection};
-use Illuminate\Support\Facades\{Cache, Route};
+use Illuminate\Support\Facades\{Cache, DB, Route};
 use InvalidArgumentException;
 
 /**
@@ -55,6 +55,29 @@ final class CompanySectionService {
             ->where("company_id", $companyId)
             ->pluck("id")
             ->each(fn($roleId) => self::clearCache($companyId, (int) $roleId));
+
+    }
+
+    public static function revokeDisabledRolePermissions(int $companyId, array $enabledSubSectionIds): int {
+
+        self::validateCompanyId($companyId);
+
+        $enabledIds = collect($enabledSubSectionIds)
+            ->map(fn($id) => (int) $id)
+            ->filter()
+            ->unique()
+            ->values();
+
+        $permissions = DB::table("role_sub_sections")
+            ->where("company_id", $companyId);
+
+        if($enabledIds->isNotEmpty()) {
+
+            $permissions->whereNotIn("sub_section_id", $enabledIds->all());
+
+        }
+
+        return $permissions->delete();
 
     }
 

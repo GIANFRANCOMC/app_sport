@@ -134,6 +134,7 @@ class AssetService {
             $assetData = self::prepareAssetDataForCreate($data, $companyId, $userId);
 
             // Create the record
+
             $asset = Asset::create($assetData);
 
         });
@@ -158,6 +159,7 @@ class AssetService {
             $updateData = self::prepareAssetDataForUpdate($asset, $data);
 
             // Only update if there are changes
+
             if(!empty($updateData)) {
 
                 $updateData["updated_at"] = now();
@@ -214,6 +216,7 @@ class AssetService {
 
         // Apply filters
         $filterBy = $filters["filter_by"] ?? null;
+
         $word = $filters["word"] ?? null;
 
         if(Utilities::isDefined($word) && Utilities::isDefined($filterBy)) {

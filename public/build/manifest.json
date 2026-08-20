@@ -255,12 +255,12 @@
     ]
   },
   "resources/css/Platform/app.css": {
-    "file": "assets/app-Dee6-Kp7.css",
+    "file": "assets/app-BgYO4a29.css",
     "src": "resources/css/Platform/app.css",
     "isEntry": true
   },
   "resources/css/System/app.css": {
-    "file": "assets/app-BF9a5Ati.css",
+    "file": "assets/app-DeTqsAqE.css",
     "src": "resources/css/System/app.css",
     "isEntry": true
   },
@@ -306,7 +306,7 @@
     ]
   },
   "resources/js/Platform/app.js": {
-    "file": "assets/app-B8SUzX7c.js",
+    "file": "assets/app-tFG_vo5X.js",
     "name": "app",
     "src": "resources/js/Platform/app.js",
     "isEntry": true,

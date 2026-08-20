@@ -169,6 +169,7 @@ final class PurchaseHeader extends Model {
         }
 
         $ordered = (float) $this->items->sum("quantity");
+
         $received = (float) $this->items->sum("received_quantity");
 
         return $ordered > 0

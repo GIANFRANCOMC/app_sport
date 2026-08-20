@@ -70,6 +70,7 @@ final class ProductListExport extends DefaultValueBinder implements FromQuery, W
             ->filter(fn($warehouseItem) => (float) ($warehouseItem->quantity ?? 0) <= (float) ($warehouseItem->minimum_stock ?? 0)
             )
             ->count();
+
         $requiresAttention = $warehouseItems->isEmpty() || $alertCount > 0;
 
         if($requiresAttention) {
@@ -193,6 +194,7 @@ final class ProductListExport extends DefaultValueBinder implements FromQuery, W
                 ],
             ],
         ]);
+
         $sheet->getRowDimension(1)->setRowHeight(24);
         $sheet->getStyle("H:J")->getNumberFormat()->setFormatCode("#,##0.00");
         $sheet->getStyle("K:K")->getNumberFormat()->setFormatCode("#,##0.00");

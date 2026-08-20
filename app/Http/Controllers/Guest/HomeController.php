@@ -52,11 +52,13 @@ class HomeController extends Controller {
             }
 
             $config->company = new stdClass();
+
             $config->company->records = [$company];
 
         }
 
         $initParams->config = $config;
+
         $initParams->bool = true;
 
         return $initParams;

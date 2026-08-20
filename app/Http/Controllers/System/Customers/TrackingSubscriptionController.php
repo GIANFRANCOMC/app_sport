@@ -45,6 +45,7 @@ class TrackingSubscriptionController extends BaseController {
             "end_date" => $request->input("end_date"),
             "status" => $request->input("status"),
         ];
+
         $perPage = $this->getPerPage($request, Utilities::$per_page_default);
 
         return TrackingSubscriptionService::getPaginatedList($this->getCompanyId(), $filters, $perPage);
@@ -82,7 +83,7 @@ class TrackingSubscriptionController extends BaseController {
 
             return $this->createdResponse($subscription, "created", "subscription");
 
-        } catch(\Exception $e) {
+        }catch(\Exception $e) {
 
             return $this->handleException($e, "create");
 
@@ -114,7 +115,7 @@ class TrackingSubscriptionController extends BaseController {
 
             return $this->updatedResponse($subscription, "canceled", "subscription");
 
-        } catch(\Exception $e) {
+        }catch(\Exception $e) {
 
             return $this->handleException($e, "cancel");
 
@@ -145,7 +146,7 @@ class TrackingSubscriptionController extends BaseController {
 
             return $this->createdResponse($renewal, "created", "subscription");
 
-        } catch(\Exception $e) {
+        }catch(\Exception $e) {
 
             return $this->handleException($e, "create");
 

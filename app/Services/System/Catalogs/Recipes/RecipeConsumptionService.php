@@ -39,6 +39,7 @@ final class RecipeConsumptionService {
         }
 
         $yield = max(0.0001, (float) $recipe->yield_quantity);
+
         $portions = max(0, (float) $saleBody->quantity);
         $recipeWasteFactor = 1 + (max(0, (float) $recipe->waste_percentage) / 100);
         $requirements = [];
@@ -46,10 +47,12 @@ final class RecipeConsumptionService {
         self::appendComponents($requirements, $recipe->components, ($portions / $yield) * $recipeWasteFactor);
 
         $extras = is_array($detail["extras"] ?? null) ? $detail["extras"] : [];
+
         foreach(($extras["recipe_options"] ?? []) as $selected) {
 
             $optionId = (int) ($selected["option_id"] ?? 0);
             $option = $recipe->options->firstWhere("id", $optionId);
+
             if(!$option) {
 
                 throw new DomainException("Una opción seleccionada no pertenece a la receta.");
@@ -57,6 +60,7 @@ final class RecipeConsumptionService {
             }
 
             $selectedPortions = max(1, (int) ($selected["portions"] ?? 1));
+
             if($option->max_portions !== null && $selectedPortions > (int) $option->max_portions) {
 
                 throw new DomainException("La cantidad elegida para {$option->name} supera el máximo permitido.");
@@ -71,6 +75,7 @@ final class RecipeConsumptionService {
 
             $linkId = (int) ($selected["recipe_dish_topping_id"] ?? 0);
             $link = $recipe->dishToppings->firstWhere("id", $linkId);
+
             if(!$link) {
 
                 throw new DomainException("Un extra seleccionado no pertenece a la receta.");
@@ -78,6 +83,7 @@ final class RecipeConsumptionService {
             }
 
             $quantity = max(0, (int) ($selected["quantity"] ?? 0));
+
             if($quantity < (int) $link->min_quantity
                 || ($link->max_quantity !== null && $quantity > (int) $link->max_quantity)) {
 

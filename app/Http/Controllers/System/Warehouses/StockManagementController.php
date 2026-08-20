@@ -106,6 +106,7 @@ class StockManagementController extends BaseController {
             "date_from",
             "date_to",
         ]);
+
         $warehouseId = (int) ($filters["warehouse_id"] ?? 0);
 
         if($warehouseId > 0 && !AccessScopeService::canAccess($this->getAuthUser(), AccessScopeService::WAREHOUSE, $warehouseId)) {
@@ -164,6 +165,7 @@ class StockManagementController extends BaseController {
         try {
 
             $warehouseId = (int) $request->warehouse_id;
+
             if(!AccessScopeService::canAccess($this->getAuthUser(), AccessScopeService::WAREHOUSE, $warehouseId)) {
 
                 return $this->errorResponse("warehouse_not_available", [], 403);
@@ -178,7 +180,7 @@ class StockManagementController extends BaseController {
 
             return $this->createdResponse($guide, "created", "inventoryGuide");
 
-        } catch(\Throwable $e) {
+        }catch(\Throwable $e) {
 
             return $this->handleException($e, "create");
 
@@ -221,7 +223,7 @@ class StockManagementController extends BaseController {
                 "data" => $movements,
             ]);
 
-        } catch(\Throwable $e) {
+        }catch(\Throwable $e) {
 
             return response()->json([
                 "bool" => false,
@@ -237,6 +239,7 @@ class StockManagementController extends BaseController {
         $view = in_array($request->input("view"), ["stock", "kardex", "transfers", "valued", "guides"], true)
             ? (string) $request->input("view")
             : "stock";
+
         $filters = $request->only([
             "warehouse_id",
             "item_id",
@@ -311,7 +314,7 @@ class StockManagementController extends BaseController {
                 "data" => $movement,
             ]);
 
-        } catch(\Throwable $e) {
+        }catch(\Throwable $e) {
 
             return response()->json([
                 "bool" => false,
@@ -354,7 +357,7 @@ class StockManagementController extends BaseController {
                 "data" => $transfer,
             ]);
 
-        } catch(\Throwable $e) {
+        }catch(\Throwable $e) {
 
             return response()->json([
                 "bool" => false,

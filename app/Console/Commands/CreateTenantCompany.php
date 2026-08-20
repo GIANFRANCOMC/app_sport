@@ -54,6 +54,7 @@ final class CreateTenantCompany extends Command {
         }
 
         LandlordSchemaService::ensure();
+
         $this->assertRegistryIsAvailable($slug, $domain, $databaseName);
 
         $tenant = null;
@@ -67,6 +68,7 @@ final class CreateTenantCompany extends Command {
             }
 
             $tenant = $this->upsertTenantRegistry($slug, $companyId, $databaseName, $domain);
+
             $connectionManager->connect($tenant);
 
             if(!$this->option("skip-migrate")) {
@@ -77,6 +79,7 @@ final class CreateTenantCompany extends Command {
                     "--database" => config("tenancy.tenant_connection", "tenant"),
                     "--force" => true,
                 ]);
+
                 $provisioning->createOrUpdate([
                     "slug" => $slug,
                     "commercial_name" => $this->option("commercial-name") ?: Str::headline($slug),
@@ -84,15 +87,18 @@ final class CreateTenantCompany extends Command {
                     "document_number" => (string) $this->option("document-number"),
                     "email" => (string) $this->option("admin-email"),
                 ], $companyId);
+
                 $catalog->sync($companyId);
                 $provisioning->enable($companyId);
 
                 $adminPassword = (string) $this->option("admin-password");
+
                 if($adminPassword === "" && $this->input->isInteractive()) {
 
                     $adminPassword = (string) $this->secret("Contraseña del administrador inicial");
 
                 }
+
                 if(strlen($adminPassword) < 8) {
 
                     throw new InvalidArgumentException("admin-password es obligatorio y debe tener al menos 8 caracteres.");
@@ -121,12 +127,13 @@ final class CreateTenantCompany extends Command {
             }
 
             $this->info("Tenant {$slug} creado correctamente.");
+
             $this->line("Dominio: {$domain}");
             $this->line("Base de datos: {$databaseName}");
 
             return self::SUCCESS;
 
-        } catch(Throwable $exception) {
+        }catch(Throwable $exception) {
 
             if($tenant) {
 
@@ -148,6 +155,7 @@ final class CreateTenantCompany extends Command {
     private function normalizeSlug(string $slug): string {
 
         $slug = Str::slug($slug);
+
         if($slug === "") {
 
             throw new InvalidArgumentException("El slug no puede estar vacío.");
@@ -197,6 +205,7 @@ final class CreateTenantCompany extends Command {
         }
 
         $prefix = (string) config("tenancy.database_prefix", "gympe_tenant_");
+
         if(config("tenancy.enforce_database_prefix", true) && !str_starts_with($database, $prefix)) {
 
             throw new InvalidArgumentException("La base de datos debe comenzar con {$prefix}.");

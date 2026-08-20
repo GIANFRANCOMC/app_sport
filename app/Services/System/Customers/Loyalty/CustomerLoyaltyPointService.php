@@ -163,6 +163,7 @@ final class CustomerLoyaltyPointService {
         }
 
         $amountStep = max(0.0001, (float) $rule->amount_step);
+
         $steps = floor($basisAmount / $amountStep);
 
         return [

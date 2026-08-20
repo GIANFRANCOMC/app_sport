@@ -132,6 +132,7 @@ class CustomerService {
             $customerData = self::prepareCustomerDataForCreate($data, $companyId, $userId);
 
             // Create the record
+
             $customer = Customer::create($customerData);
 
         });
@@ -156,6 +157,7 @@ class CustomerService {
             $updateData = self::prepareCustomerDataForUpdate($customer, $data);
 
             // Only update if there are changes
+
             if(!empty($updateData)) {
 
                 $updateData["updated_at"] = now();
@@ -212,7 +214,9 @@ class CustomerService {
             ->with(["identityDocumentType"]);
 
         // Apply filters
+
         $filterBy = $filters["filter_by"] ?? null;
+
         $word = $filters["word"] ?? null;
 
         if(Utilities::isDefined($word) && Utilities::isDefined($filterBy)) {

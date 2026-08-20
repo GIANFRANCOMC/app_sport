@@ -1,5 +1,5 @@
 @extends('Platform.layouts.app')
-@section('title', 'Administración SaaS')
+@section('title', 'Clientes | Gympe')
 @section('content')
 <div id="platform-app"></div>
 <script>
@@ -9,6 +9,7 @@
         'routes' => [
             'tenants' => route('platform.tenants.index'),
             'tenantApi' => url('/api/tenants'),
+            'profile' => route('platform.api.profile.update'),
             'logout' => route('platform.logout'),
             'login' => route('platform.login'),
         ],

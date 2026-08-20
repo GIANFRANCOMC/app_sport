@@ -92,6 +92,7 @@ class UserService {
         }
 
         // Handle password separately (it's hashed automatically by Laravel)
+
         if(isset($data["password"])) {
 
             $userData["password"] = $data["password"];
@@ -151,6 +152,7 @@ class UserService {
             $userData = self::prepareUserDataForCreate($data, $companyId, $userId);
 
             // Create the record
+
             $user = User::create($userData);
             self::syncBranches($user, $data["branch_ids"] ?? [], $companyId, $userId);
             self::syncResourceScopes($user, $data, $companyId, $userId);
@@ -185,6 +187,7 @@ class UserService {
             $updateData = self::prepareUserDataForUpdate($user, $data);
 
             // Only update if there are changes
+
             if(!empty($updateData)) {
 
                 $invalidateSessions = array_key_exists("status", $updateData)
@@ -198,6 +201,7 @@ class UserService {
                 }
 
                 $updateData["updated_at"] = now();
+
                 $updateData["updated_by"] = $userId;
                 $user->update($updateData);
 
@@ -329,6 +333,7 @@ class UserService {
             "cash_register" => ["table" => "user_cash_registers", "resource" => "cash_registers", "key" => "cash_register_id"],
             "warehouse" => ["table" => "user_warehouses", "resource" => "warehouses", "key" => "warehouse_id"],
         ];
+
         $branchIds = collect($data["branch_ids"] ?? [])->map(fn($id) => (int) $id)->filter()->all();
 
         foreach($definitions as $type => $definition) {
@@ -339,6 +344,7 @@ class UserService {
                 ->delete();
 
             $ids = collect($data["{$type}_ids"] ?? [])->map(fn($id) => (int) $id)->filter()->unique();
+
             if($ids->isEmpty()) {
 
                 continue;
@@ -455,7 +461,9 @@ class UserService {
             ->with(["identityDocumentType", "role", "branches", "cashRegisters", "warehouses"]);
 
         // Apply filters
+
         $filterBy = $filters["filter_by"] ?? null;
+
         $word = $filters["word"] ?? null;
 
         if(Utilities::isDefined($word) && Utilities::isDefined($filterBy)) {

@@ -93,6 +93,7 @@ class ProductController extends BaseController {
             }
 
             $currencyId = (int) Company::whereKey($this->getCompanyId())->value("currency_id");
+
             $import = new ProductBasicImport(
                 $this->getCompanyId(),
                 $currencyId,
@@ -113,11 +114,11 @@ class ProductController extends BaseController {
                 "data" => ["imported" => $import->importedCount()],
             ]);
 
-        } catch(ValidationException $e) {
+        }catch(ValidationException $e) {
 
             throw $e;
 
-        } catch(\Throwable $e) {
+        }catch(\Throwable $e) {
 
             return response()->json([
                 "bool" => false,
@@ -162,7 +163,7 @@ class ProductController extends BaseController {
 
             return $this->createdResponse($item, "created", "item");
 
-        } catch(\Exception $e) {
+        }catch(\Exception $e) {
 
             return $this->handleException($e, "create");
 
@@ -188,6 +189,7 @@ class ProductController extends BaseController {
             }
 
             $data = $this->prepareProductData($request);
+
             $item = ProductService::update($item, $data, $this->getUserId());
 
             if(!Utilities::isDefined($item)) {
@@ -203,7 +205,7 @@ class ProductController extends BaseController {
 
             return $this->updatedResponse($item, "updated", "item");
 
-        } catch(\Exception $e) {
+        }catch(\Exception $e) {
 
             return $this->handleException($e, "update");
 

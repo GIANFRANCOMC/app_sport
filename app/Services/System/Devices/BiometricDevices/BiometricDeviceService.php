@@ -133,6 +133,7 @@ class BiometricDeviceService {
 
             // Prepare data with only allowed fields
             $deviceData = self::prepareBiometricDeviceDataForCreate($data, $companyId, $userId);
+
             $plainSecret = Str::random(64);
             $deviceData["access_key"] = Str::lower(Str::random(32));
             $deviceData["secret_encrypted"] = Crypt::encryptString($plainSecret);
@@ -140,6 +141,7 @@ class BiometricDeviceService {
 
             // Create the record
             $device = BiometricDevice::create($deviceData);
+
             $device->setAttribute("plain_secret", $plainSecret);
 
         });
@@ -200,6 +202,7 @@ class BiometricDeviceService {
             $updateData = self::prepareBiometricDeviceDataForUpdate($device, $data);
 
             // Only update if there are changes
+
             if(!empty($updateData)) {
 
                 $updateData["updated_at"] = now();
@@ -260,7 +263,9 @@ class BiometricDeviceService {
             ]);
 
         // Apply filters
+
         $filterBy = $filters["filter_by"] ?? null;
+
         $word = $filters["word"] ?? null;
 
         if(Utilities::isDefined($word) && Utilities::isDefined($filterBy)) {
@@ -486,8 +491,10 @@ class BiometricDeviceService {
 
         $customerMax = CustomerBiometricFingerprint::where("biometric_device_id", $deviceId)
             ->max("device_user_id");
+
         $userMax = UserBiometricFingerprint::where("biometric_device_id", $deviceId)
             ->max("device_user_id");
+
         $maxUserId = max((int) ($customerMax ?? 0), (int) ($userMax ?? 0));
 
         return ($maxUserId ?? 0) + 1;
@@ -505,6 +512,7 @@ class BiometricDeviceService {
 
         $customerQuery = CustomerBiometricFingerprint::where("biometric_device_id", $deviceId)
             ->where("device_user_id", $deviceUserId);
+
         $userQuery = UserBiometricFingerprint::where("biometric_device_id", $deviceId)
             ->where("device_user_id", $deviceUserId);
 

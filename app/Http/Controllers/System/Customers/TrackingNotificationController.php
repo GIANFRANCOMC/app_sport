@@ -69,7 +69,7 @@ class TrackingNotificationController extends BaseController {
                 "data" => $notification,
             ]);
 
-        } catch(\Throwable $exception) {
+        }catch(\Throwable $exception) {
 
             return $this->handleException($exception, "update");
 

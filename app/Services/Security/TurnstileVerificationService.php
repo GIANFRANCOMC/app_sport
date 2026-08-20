@@ -43,7 +43,7 @@ final class TurnstileVerificationService {
 
             return $response->successful() && $response->json("success") === true;
 
-        } catch(\Throwable) {
+        }catch(\Throwable) {
 
             return false;
 

@@ -61,6 +61,7 @@ class TrackingSubscriptionService {
         self::applyFilters($query, $filters);
 
         // Apply ordering
+
         $query->orderBy("id", "DESC")
             ->with(["branch", "saleHeader", "customer"]);
 
@@ -119,6 +120,7 @@ class TrackingSubscriptionService {
         }
 
         $subscription->motive = $motive ?? "N/A";
+
         $subscription->status = "canceled";
         $subscription->updated_at = now();
         $subscription->updated_by = $userId;
@@ -293,6 +295,7 @@ class TrackingSubscriptionService {
         }
 
         $membershipName = $catalogSubscription?->name ?? "tu membresía";
+
         $body = view()->exists("emails.subscriptions.welcome.default")
             ? view("emails.subscriptions.welcome.default", compact("subscription", "customer", "catalogSubscription", "membershipName"))->render()
             : "<p>Hola {$customer->name},</p><p>Gracias por suscribirte a {$membershipName}. Tu membresía está activa desde {$subscription->start_date} hasta {$subscription->end_date}.</p>";
