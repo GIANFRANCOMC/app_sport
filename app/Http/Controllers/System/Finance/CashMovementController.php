@@ -103,7 +103,7 @@ final class CashMovementController extends BaseController {
 
         return response("\xEF\xBB\xBF".$csv, 200, [
             "Content-Type" => "text/csv; charset=UTF-8",
-            "Content-Disposition" => "attachment; filename=gympe-caja-movimientos-".now()->format("Ymd-His").".csv",
+            "Content-Disposition" => "attachment; filename=blapos-caja-movimientos-".now()->format("Ymd-His").".csv",
         ]);
 
     }

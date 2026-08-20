@@ -89,7 +89,7 @@ El segundo factor no forma parte del alcance vigente. Si se aprueba como proyect
 
 - `APP_ENV=production`, `APP_DEBUG=false`, HTTPS y certificado wildcard vigente.
 - `SESSION_SECURE_COOKIE=true`, `SESSION_DOMAIN=` y Redis protegido.
-- Dominio raíz dirigido al proyecto independiente; wildcard dirigido a Gympe.
+- Dominio raíz dirigido al proyecto independiente; wildcard dirigido a Blapos.
 - Origen no accesible directamente cuando exista balanceador.
 - Backups cifrados, restauración probada y retención definida.
 - Dependencias auditadas, logs sin datos sensibles y alertas de autenticación.

@@ -1,4 +1,4 @@
-# Documentacion base de Gympe
+# Documentacion base de Blapos
 
 Esta carpeta es la memoria funcional y tecnica del proyecto. Esta separada en dos dominios para no mezclar responsabilidades:
 

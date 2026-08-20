@@ -358,7 +358,7 @@ Se agrego `database/seeders/CommercialCatalogSeeder.php` para cargar datos base 
 
 Incluye:
 
-- Marcas demo: Hola, Gympe y Wellness.
+- Marcas demo: Hola, Blapos y Wellness.
 - Categorias demo: Bebidas, Suplementos, Accesorios, Servicios y Membresias.
 - 30 productos con codigo interno, codigo de barras, precio, rango de precios, marca, categoria, `price_includes_tax` e `igv_exempt`.
 - 10 servicios comerciales sin inventario.

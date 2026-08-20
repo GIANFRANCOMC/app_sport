@@ -9,12 +9,12 @@ Internet
   -> Nginx + PHP-FPM (red privada)
   -> Redis privado (sesiones y caché)
   -> MySQL privado
-       - gympe_landlord
-       - gympe_tenant_cliente_a
-       - gympe_tenant_cliente_b
+       - blapos_landlord
+       - blapos_tenant_cliente_a
+       - blapos_tenant_cliente_b
 ```
 
-El registro del dominio raíz `ejemplo.com` apunta al proyecto principal. Solo `*.app.ejemplo.com` apunta a Gympe. El certificado wildcard cubre un nivel: `*.app.ejemplo.com` cubre `cliente.app.ejemplo.com`, no niveles adicionales.
+El registro del dominio raíz `ejemplo.com` apunta al proyecto principal. Solo `*.app.ejemplo.com` apunta a Blapos. El certificado wildcard cubre un nivel: `*.app.ejemplo.com` cubre `cliente.app.ejemplo.com`, no niveles adicionales.
 
 ## Nginx
 

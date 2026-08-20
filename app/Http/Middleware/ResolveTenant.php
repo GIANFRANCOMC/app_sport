@@ -26,7 +26,7 @@ final class ResolveTenant {
 
             $this->context->set(null);
             $this->connectionManager->disconnect();
-            Config::set("session.cookie", (string) config("tenancy.platform_session_cookie", "gympe_platform_session"));
+            Config::set("session.cookie", (string) config("tenancy.platform_session_cookie", "blapos_platform_session"));
             Config::set("session.domain", null);
 
             return $next($request);
@@ -80,7 +80,7 @@ final class ResolveTenant {
 
     private function tenantSessionCookieName(string $slug): string {
 
-        $prefix = (string) config("tenancy.session_cookie_prefix", "gympe_tenant");
+        $prefix = (string) config("tenancy.session_cookie_prefix", "blapos_tenant");
         $hash = substr(hash("sha256", $slug), 0, 12);
 
         return Str::slug("{$prefix}_{$slug}_{$hash}", "_")."_session";

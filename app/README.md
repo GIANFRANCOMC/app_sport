@@ -1,6 +1,6 @@
 # Capa de aplicación
 
-`app` contiene el backend de Gympe. La referencia funcional vive en `docs`; este archivo resume únicamente las reglas estructurales del código PHP.
+`app` contiene el backend de Blapos. La referencia funcional vive en `docs`; este archivo resume únicamente las reglas estructurales del código PHP.
 
 ## Flujo recomendado
 

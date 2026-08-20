@@ -9,7 +9,7 @@ server {
     listen 443 ssl http2;
     server_name ~^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.app\.ejemplo\.com$;
 
-    root /var/www/gympe/current/public;
+    root /var/www/blapos/current/public;
     index index.php;
     charset utf-8;
 
@@ -39,7 +39,7 @@ server {
 }
 
 # El dominio raíz se configura en el proyecto correspondiente. Este fallback
-# evita que hosts desconocidos lleguen a Gympe por la IP del servidor.
+# evita que hosts desconocidos lleguen a Blapos por la IP del servidor.
 server {
     listen 80 default_server;
     listen 443 ssl default_server;

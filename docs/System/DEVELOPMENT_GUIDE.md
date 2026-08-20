@@ -116,8 +116,15 @@ $config->currencies->records = MasterReferenceDataService::currencies($companyId
 - Evitar colores aislados que no pertenezcan al branding vigente.
 - Usar iconos conocidos para acciones compactas y texto visible para comandos que puedan ser ambiguos.
 - Los `form-label` deben usar la clase global sin `fs-6`: tamaño compacto, peso medio y color secundario suavizado. Evitar labels grandes o excesivamente oscuros en formularios operativos.
+- Todo campo obligatorio debe mostrar un asterisco al final del label mediante `platform-required`; esta señal visual complementa, pero nunca reemplaza, la validación del frontend y del backend.
 - Las altas rápidas relacionadas a un selector no deben modificar la selección actual salvo que el flujo lo solicite expresamente. Deben refrescar las opciones y confirmar el resultado.
 - Si un código técnico puede generarse de forma segura, ocultarlo al usuario y explicar brevemente que se creará automáticamente con el estado inicial correspondiente.
+
+### Identidad visual Blapos
+
+- El logomark maestro de la aplicación es `public/System/assets/img/utils/owner_app/logomark.png` y la identidad se denomina **Blapos**.
+- La administración central (`app.*`) y las interfaces tenant deben reutilizar este archivo para el logomark global, la miniatura de aplicación, el avatar de producto y los iconos del documento HTML. No deben crearse iniciales, isotipos alternativos ni copias locales por módulo.
+- La identidad propia de una empresa tenant puede mostrarse en los espacios reservados para esa organización, sin sustituir el logomark maestro en los controles globales del producto.
 - Las altas rápidas que persisten datos deben bloquear temporalmente la interacción mediante el loader global; el botón también permanece deshabilitado para impedir envíos duplicados.
 - Los mensajes bajo un campo no repiten su label. Usar textos breves como `Campo obligatorio.` y normalizar respuestas HTTP mediante `Forms.handleFormErrors`.
 - Los componentes compartidos aplican `br-form-control-group` y `br-form-error`: el estado inválido bordea como una sola unidad el input, sus addons, botones, contadores y selectores.

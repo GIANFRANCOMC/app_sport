@@ -1,8 +1,8 @@
-# Gympe - Contexto del proyecto
+# Blapos - Contexto del proyecto
 
 ## Resumen
 
-Gympe es una aplicacion web para gestion operativa de gimnasios, centros deportivos o negocios similares. El repositorio remoto actual es `GIANFRANCOMC/app_sport` y el codigo local esta en `C:\laragon\www\gympe`.
+Blapos es una aplicacion web para gestion operativa de gimnasios, centros deportivos o negocios similares. El repositorio remoto actual es `GIANFRANCOMC/blapos` y el codigo local esta en `C:\laragon\www\blapos`.
 
 El sistema combina administracion interna y portal publico por empresa. Internamente permite manejar empresas, sucursales, usuarios, clientes, catalogos de productos/servicios/membresias, ventas, asistencias, inventario, activos, reportes y dispositivos biometricos. Publicamente permite mostrar informacion comercial de la empresa, registrar reclamos y registrar asistencias mediante enlaces con `company_slug`.
 
@@ -106,7 +106,7 @@ El sistema combina administracion interna y portal publico por empresa. Internam
 
 ## Estado transversal
 
-- El README raíz describe Gympe, tenancy, instalación y documentación.
+- El README raíz describe Blapos, tenancy, instalación y documentación.
 - Permisos combinan módulo + acción con alcances de sucursal, caja y almacén.
 - Asistencia pública usa enlaces firmados; biometría usa credenciales de dispositivo, firma e idempotencia.
 - Operaciones críticas conservan auditoría de negocio o trazabilidad propia.

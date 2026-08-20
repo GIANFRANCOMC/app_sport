@@ -42,7 +42,7 @@ final class CreateTenantCompany extends Command {
 
         $slug = $this->normalizeSlug((string) $this->argument("slug"));
         $companyId = (int) $this->option("company-id");
-        $databaseName = $this->normalizeDatabaseName((string) ($this->option("database") ?: config("tenancy.database_prefix", "gympe_tenant_").$slug));
+        $databaseName = $this->normalizeDatabaseName((string) ($this->option("database") ?: config("tenancy.database_prefix", "blapos_tenant_").$slug));
         $domain = $this->normalizeDomain((string) ($this->option("domain") ?: $this->defaultDomain($slug)));
 
         $this->assertSubdomainIsAllowed($slug, $domain);
@@ -204,7 +204,7 @@ final class CreateTenantCompany extends Command {
 
         }
 
-        $prefix = (string) config("tenancy.database_prefix", "gympe_tenant_");
+        $prefix = (string) config("tenancy.database_prefix", "blapos_tenant_");
 
         if(config("tenancy.enforce_database_prefix", true) && !str_starts_with($database, $prefix)) {
 

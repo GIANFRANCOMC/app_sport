@@ -14,7 +14,7 @@ final class TenantConnectionManager {
         $connectionName = config("tenancy.tenant_connection", "tenant");
         $base = config("database.connections.{$connectionName}", config("database.connections.mysql"));
         $databaseName = $tenant->database_name;
-        $databasePrefix = (string) config("tenancy.database_prefix", "gympe_tenant_");
+        $databasePrefix = (string) config("tenancy.database_prefix", "blapos_tenant_");
 
         if(!preg_match("/^[a-zA-Z0-9_]+\$/", $databaseName)) {
 

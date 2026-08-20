@@ -101,7 +101,7 @@ La vista se monta desde:
 - Abrir, cerrar y registrar movimientos valida el alcance de caja del colaborador.
 - Sesiones, movimientos y resumen aceptan fecha, sucursal, caja, responsable y método de pago; el CSV conserva el mismo filtro.
 - El filtro de responsable considera apertura o cierre en sesiones y responsable directo en movimientos. El filtro de método de pago restringe sesiones con arqueo/movimiento asociado y el desglose del resumen.
-- El CSV usa nombre versionado `gympe-caja-movimientos-{Ymd-His}.csv` para evitar sobrescrituras ambiguas.
+- El CSV usa nombre versionado `blapos-caja-movimientos-{Ymd-His}.csv` para evitar sobrescrituras ambiguas.
 - Una sesión identifica turno, caja y usuario de apertura/cierre. No se permiten dos sesiones abiertas simultáneas para la misma caja física.
 ## Alcance operativo
 

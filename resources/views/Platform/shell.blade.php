@@ -1,10 +1,11 @@
 @extends('Platform.layouts.app')
-@section('title', 'Clientes | Gympe')
+@section('title', 'Clientes | Blapos')
 @section('content')
 <div id="platform-app"></div>
 <script>
     window.PlatformConfig = {{ Illuminate\Support\Js::from([
         'user' => ['name' => $platformUser->name, 'email' => $platformUser->email],
+        'brandLogo' => asset('System/assets/img/utils/owner_app/logomark.png'),
         'initialTenantId' => $initialTenantId,
         'routes' => [
             'tenants' => route('platform.tenants.index'),

@@ -1,10 +1,10 @@
 # Generalidades del Proyecto
 
-Este archivo concentra criterios transversales que aplican a todos los módulos de Gympe. Sirve como memoria común para mantener coherencia funcional, visual y técnica entre `System`, `Guest`, backend, frontend, migraciones y documentación.
+Este archivo concentra criterios transversales que aplican a todos los módulos de Blapos. Sirve como memoria común para mantener coherencia funcional, visual y técnica entre `System`, `Guest`, backend, frontend, migraciones y documentación.
 
 ## Propósito
 
-Gympe es una plataforma multiempresa orientada a operaciones comerciales y administrativas. La regla central es separar claramente:
+Blapos es una plataforma multiempresa orientada a operaciones comerciales y administrativas. La regla central es separar claramente:
 
 - `System`: plataforma autenticada para empresas y colaboradores.
 - `Guest`: superficies públicas para visitantes, clientes finales y recursos expuestos por empresa.
@@ -30,7 +30,7 @@ Evitar colocar reglas críticas sólo en Vue. El frontend guía al usuario; el b
 
 ## Multi-tenant por BD
 
-Gympe opera exclusivamente desde subdominios registrados y con una base de datos por cliente. El dominio raíz pertenece a otro proyecto. El registro central mínimo vive en `landlord`; la operación del cliente se ejecuta en `tenant`. La guía completa está en `System/MULTITENANT.md`.
+Blapos opera exclusivamente desde subdominios registrados y con una base de datos por cliente. El dominio raíz pertenece a otro proyecto. El registro central mínimo vive en `landlord`; la operación del cliente se ejecuta en `tenant`. La guía completa está en `System/MULTITENANT.md`.
 
 Aunque exista una BD por cliente, `company_id` se mantiene en las tablas tenant para subcompañías internas y como defensa de aislamiento lógico. En tablas tenant, todo `company_id` debe tener FK local a `companies` salvo casos imposibles por diseño, como el registro central landlord.
 

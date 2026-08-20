@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 return [
-    "base_domain" => strtolower(trim((string) env("TENANCY_BASE_DOMAIN", "gympe.test"))),
+    "base_domain" => strtolower(trim((string) env("TENANCY_BASE_DOMAIN", "blapos.test"))),
 
     "platform_subdomain" => strtolower(trim((string) env("TENANCY_PLATFORM_SUBDOMAIN", "app"))),
 
@@ -18,19 +18,19 @@ return [
 
     "landlord_connection" => env("LANDLORD_DB_CONNECTION", "landlord"),
 
-    "database_prefix" => env("TENANT_DB_PREFIX", "gympe_tenant_"),
+    "database_prefix" => env("TENANT_DB_PREFIX", "blapos_tenant_"),
 
     "enforce_database_prefix" => (bool) env("TENANT_ENFORCE_DB_PREFIX", true),
 
     "resolver_cache_seconds" => max(0, (int) env("TENANCY_RESOLVER_CACHE_SECONDS", 60)),
 
-    "session_cookie_prefix" => env("TENANT_SESSION_COOKIE_PREFIX", "gympe_tenant"),
+    "session_cookie_prefix" => env("TENANT_SESSION_COOKIE_PREFIX", "blapos_tenant"),
 
-    "platform_session_cookie" => env("PLATFORM_SESSION_COOKIE", "gympe_platform_session"),
+    "platform_session_cookie" => env("PLATFORM_SESSION_COOKIE", "blapos_platform_session"),
 
     "platform_admin" => [
         "name" => env("PLATFORM_ADMIN_NAME", "Administrador SaaS"),
-        "email" => strtolower((string) env("PLATFORM_ADMIN_EMAIL", "admin@app.gympe.test")),
+        "email" => strtolower((string) env("PLATFORM_ADMIN_EMAIL", "admin@app.blapos.test")),
         "password" => env("PLATFORM_ADMIN_PASSWORD", "Admin12345!"),
     ],
 ];

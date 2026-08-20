@@ -1,4 +1,4 @@
-# Administración SaaS (`app.gympe.test`)
+# Administración SaaS (`app.blapos.test`)
 
 ## Objetivo
 
@@ -49,9 +49,9 @@ El aprovisionamiento está encapsulado en `PlatformTenantProvisioner`; el contro
 
 La creación se realiza desde un modal bloqueante. Mientras el backend prepara la base tenant, la interfaz impide cerrar el modal, repetir el envío o abandonar accidentalmente la página. El backend añade un bloqueo exclusivo por `slug` durante 15 minutos, conserva el `throttle` de aprovisionamiento y valida subdominio, documento y una contraseña robusta. Los intentos correctos y fallidos quedan registrados en `tenant_audit_logs` sin almacenar credenciales.
 
-Los módulos habilitados usan un control visual propio, accesible mediante teclado y con un check de alto contraste. El mismo patrón se reutiliza para la propiedad **Descartable** de los avisos. El estado del tenant se consulta al final del detalle y solo se modifica desde una modal sincronizada. La cabecera muestra únicamente **Clientes** y un menú con el nombre del usuario; allí se agrupan perfil y cierre de sesión. Para modificar correo o contraseña siempre se exige la contraseña actual, y una rotación incrementa `session_version`.
+Los módulos habilitados usan un control visual propio, accesible mediante teclado y con un check de alto contraste. El mismo patrón se reutiliza para la propiedad **Descartable** de los avisos. El estado se presenta como la primera tarjeta de la columna derecha y vuelve a consultarse al backend antes de abrir su modal de cambio. La cabecera utiliza únicamente el logomark de Blapos como acceso al listado y un menú con el nombre del usuario; allí se agrupan perfil y cierre de sesión. Para modificar correo o contraseña siempre se exige la contraseña actual, y una rotación incrementa `session_version`.
 
-El textarea de avisos tiene altura fija y no permite redimensionamiento manual. El documento HTML declara favicon, color del navegador, política de referencia y `noindex` para evitar que el panel landlord sea indexado.
+El textarea de avisos tiene altura fija y no permite redimensionamiento manual. Los formularios de perfil, aprovisionamiento, estado y avisos muestran un asterisco rojo al final de cada label obligatorio. El documento HTML reutiliza `public/System/assets/img/utils/owner_app/logomark.png` como favicon y miniatura de Blapos, además de declarar color del navegador, política de referencia y `noindex` para evitar que el panel landlord sea indexado.
 
 ## Módulos iniciales de una organización
 
@@ -110,11 +110,11 @@ La prueba `PlatformAdministrationArchitectureTest` protege el shell único, la e
 
 ## Validación realizada
 
-- Migración landlord ejecutada desde cero en `gympe_landlord_testing` y seeder completado.
+- Migración landlord ejecutada desde cero en `blapos_landlord_testing` y seeder completado.
 - Pruebas focalizadas de navegación y aprovisionamiento: 15 pruebas aprobadas, incluidas la política de módulos iniciales, la imposibilidad de omitirla por URL, el bloqueo de aprovisionamiento y el modal bloqueante.
 - Sintaxis PHP y formato Pint aprobados en todos los archivos PHP modificados.
 - Compilación Vite de producción aprobada, incluidos los entries independientes de Compras y la interfaz de plataforma.
-- Prueba HTTP real sobre `app.gympe.test`: shell 200, listado JSON 200 y detalle JSON 200.
+- Prueba HTTP real sobre `app.blapos.test`: shell 200, listado JSON 200 y detalle JSON 200.
 - En ejecución local caliente: listado cercano a 1.0 s, primer detalle 1.1 s y segundo detalle 0.76 s incluyendo todo el ciclo HTTP de Laragon. La consulta directa de los 49 módulos toma aproximadamente 71 ms; el resto corresponde al arranque y middleware del entorno local.
 
 El beneficio principal de navegación se percibe después del primer shell: al cambiar de listado a detalle ya no se vuelven a descargar ni parsear HTML global, fuentes, Bootstrap, CSS y JavaScript compartidos.

@@ -2,7 +2,7 @@
 
 ## Resumen
 
-Gympe atiende subdominios tenant registrados, por ejemplo `demo.gympe.test`, y reserva `app.gympe.test` para la administración central del SaaS. El dominio raíz pertenece a otro proyecto y este código no lo atiende.
+Blapos atiende subdominios tenant registrados, por ejemplo `demo.blapos.test`, y reserva `app.blapos.test` para la administración central del SaaS. El dominio raíz pertenece a otro proyecto y este código no lo atiende.
 
 La arquitectura y las convenciones del panel central están documentadas en `docs/System/PLATFORM_ADMINISTRATION.md`. Su interfaz autenticada funciona como un shell Vue con endpoints JSON y navegación sin recarga completa.
 
@@ -56,7 +56,7 @@ Los intentos contra hosts desconocidos se registran en landlord con deduplicaci�
 LANDLORD_DB_CONNECTION=landlord
 LANDLORD_DB_HOST=127.0.0.1
 LANDLORD_DB_PORT=3306
-LANDLORD_DB_DATABASE=gympe_landlord
+LANDLORD_DB_DATABASE=blapos_landlord
 LANDLORD_DB_USERNAME=usuario_landlord
 LANDLORD_DB_PASSWORD=secreto_externo
 
@@ -65,19 +65,19 @@ TENANT_DB_HOST=127.0.0.1
 TENANT_DB_PORT=3306
 TENANT_DB_USERNAME=usuario_runtime_tenant
 TENANT_DB_PASSWORD=secreto_externo
-TENANT_DB_PREFIX=gympe_tenant_
+TENANT_DB_PREFIX=blapos_tenant_
 TENANT_ENFORCE_DB_PREFIX=true
 
-TENANCY_BASE_DOMAIN=gympe.test
+TENANCY_BASE_DOMAIN=blapos.test
 TENANCY_PLATFORM_SUBDOMAIN=app
 TENANCY_ENFORCE_SUBDOMAINS=true
 TENANCY_RESERVED_SUBDOMAINS=www,api,admin,app,mail,static,assets
 TENANCY_RESOLVER_CACHE_SECONDS=60
-TENANT_SESSION_COOKIE_PREFIX=gympe_tenant
-PLATFORM_SESSION_COOKIE=gympe_platform_session
+TENANT_SESSION_COOKIE_PREFIX=blapos_tenant
+PLATFORM_SESSION_COOKIE=blapos_platform_session
 ```
 
-`SESSION_DOMAIN` debe permanecer vacío. Un dominio compartido, como `.gympe.test`, compartiría cookies entre clientes y está prohibido.
+`SESSION_DOMAIN` debe permanecer vacío. Un dominio compartido, como `.blapos.test`, compartiría cookies entre clientes y está prohibido.
 
 ## Provisionamiento
 
@@ -90,8 +90,8 @@ php artisan platform:install
 En desarrollo, si no se sobrescriben las variables `PLATFORM_ADMIN_*`, el acceso inicial es:
 
 ```text
-URL: http://app.gympe.test/login
-Usuario: admin@app.gympe.test
+URL: http://app.blapos.test/login
+Usuario: admin@app.blapos.test
 Contraseña: Admin12345!
 ```
 
@@ -113,7 +113,7 @@ En producción, infraestructura debe crear previamente la BD y conceder al usuar
 
 ```bash
 php artisan tenant:create cliente \
-  --database=gympe_tenant_cliente \
+  --database=blapos_tenant_cliente \
   --skip-create-database \
   --commercial-name="Cliente" \
   --legal-name="Cliente S.A.C." \
@@ -153,7 +153,7 @@ El scheduler ejecuta comandos tenant-aware que iteran tenants activos, conectan 
 En servidor debe configurarse un solo cron de Laravel:
 
 ```bash
-* * * * * cd /ruta/al/gympe && php artisan schedule:run >> /dev/null 2>&1
+* * * * * cd /ruta/al/blapos && php artisan schedule:run >> /dev/null 2>&1
 ```
 
 Comandos programados:
@@ -173,9 +173,9 @@ php artisan db:seed --class=LandlordTenantDemoSeeder --force
 
 | Cliente | Subdominio | Base de datos |
 | --- | --- | --- |
-| Demo Gym | `demo.gympe.test` | `gympe_tenant_demo` |
-| Andina Fitness | `andina.gympe.test` | `gympe_tenant_andina` |
-| Fit Center | `fitcenter.gympe.test` | `gympe_tenant_fitcenter` |
+| Demo Gym | `demo.blapos.test` | `blapos_tenant_demo` |
+| Andina Fitness | `andina.blapos.test` | `blapos_tenant_andina` |
+| Fit Center | `fitcenter.blapos.test` | `blapos_tenant_fitcenter` |
 
 ## Reglas obligatorias
 

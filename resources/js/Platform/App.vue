@@ -3,8 +3,7 @@
         <header class="platform-nav">
             <div class="platform-nav__inner">
                 <button class="platform-brand platform-reset-button" type="button" @click="openList">
-                    <span class="platform-brand__mark">G</span>
-                    <span>Clientes</span>
+                    <img class="platform-brand__logo" :src="config.brandLogo" alt="Blapos">
                 </button>
                 <div ref="userMenu" class="platform-user-menu">
                     <button class="platform-user-menu__trigger" type="button" :aria-expanded="showUserMenu" @click="showUserMenu = !showUserMenu">
@@ -51,20 +50,19 @@
                 </header>
                 <div class="platform-modal__body">
                     <div class="row g-3">
-                        <div class="col-12"><label class="form-label">Nombre</label><input v-model.trim="profileForm.name" class="form-control" autocomplete="name" maxlength="150" required></div>
-                        <div class="col-12"><label class="form-label">Correo</label><input v-model.trim="profileForm.email" class="form-control" type="email" autocomplete="email" maxlength="190" required></div>
-                        <div class="col-12"><label class="form-label">Contraseña actual</label><input v-model="profileForm.current_password" class="form-control" type="password" autocomplete="current-password" maxlength="255" required></div>
+                        <div class="col-12"><label class="form-label">Nombre <span class="platform-required" aria-hidden="true">*</span></label><input v-model.trim="profileForm.name" class="form-control" autocomplete="name" maxlength="150" required></div>
+                        <div class="col-12"><label class="form-label">Correo <span class="platform-required" aria-hidden="true">*</span></label><input v-model.trim="profileForm.email" class="form-control" type="email" autocomplete="email" maxlength="190" required></div>
+                        <div class="col-12"><label class="form-label">Contraseña actual <span class="platform-required" aria-hidden="true">*</span></label><input v-model="profileForm.current_password" class="form-control" type="password" autocomplete="current-password" maxlength="255" required></div>
                     </div>
                     <div class="platform-modal__section">
                         <strong>Cambiar contraseña <small class="platform-optional">Opcional</small></strong>
                         <div class="row g-3 mt-0">
                             <div class="col-12"><label class="form-label">Nueva contraseña</label><input v-model="profileForm.password" class="form-control" type="password" autocomplete="new-password" minlength="12"><small class="platform-field-help">Mínimo 12 caracteres, con mayúscula, minúscula, número y símbolo.</small></div>
-                            <div class="col-12"><label class="form-label">Confirmar nueva contraseña</label><input v-model="profileForm.password_confirmation" class="form-control" type="password" autocomplete="new-password" :required="Boolean(profileForm.password)"></div>
+                            <div class="col-12"><label class="form-label">Confirmar nueva contraseña <span v-if="profileForm.password" class="platform-required" aria-hidden="true">*</span></label><input v-model="profileForm.password_confirmation" class="form-control" type="password" autocomplete="new-password" :required="Boolean(profileForm.password)"></div>
                         </div>
                     </div>
                 </div>
                 <footer class="platform-modal__footer">
-                    <span class="platform-help"><i class="fa-solid fa-shield-halved"></i> Confirma los cambios con tu contraseña actual.</span>
                     <div><button class="btn platform-btn-subtle" type="button" :disabled="savingProfile" @click="closeProfile">Cancelar</button><button class="btn platform-btn-primary" :disabled="savingProfile"><span v-if="savingProfile" class="spinner-border spinner-border-sm me-1"></span>{{ savingProfile ? "Guardando…" : "Guardar cambios" }}</button></div>
                 </footer>
             </form>

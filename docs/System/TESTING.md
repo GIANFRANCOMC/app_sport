@@ -3,7 +3,7 @@
 ## Ejecución
 
 ```bash
-mysql -u root -e "CREATE DATABASE IF NOT EXISTS gympe_testing CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+mysql -u root -e "CREATE DATABASE IF NOT EXISTS blapos_testing CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
 php artisan test --testsuite=Unit
 php artisan test
 ```
@@ -12,8 +12,8 @@ La suite unitaria no debe depender de tablas ni registros existentes. Las prueba
 
 ## Base de datos de pruebas
 
-- `phpunit.xml` fuerza `DB_DATABASE=gympe_testing`. No retirar este aislamiento ni apuntarlo a una base de desarrollo o producción.
-- La base `gympe_testing` debe existir antes de ejecutar pruebas funcionales.
+- `phpunit.xml` fuerza `DB_DATABASE=blapos_testing`. No retirar este aislamiento ni apuntarlo a una base de desarrollo o producción.
+- La base `blapos_testing` debe existir antes de ejecutar pruebas funcionales.
 - No asumir que las migraciones insertan una organización, moneda, usuario, sede o almacén.
 - No fijar IDs autoincrementales entre pruebas; las transacciones no reinician siempre el contador MySQL.
 - Resolver IDs por claves naturales estables como código, correo o nombre dentro de la empresa.
@@ -40,7 +40,7 @@ Los servicios con `USER_SCOPED_CACHE=true` registran los usuarios que generaron 
 
 ## Autenticación
 
-Gympe no usa el scaffolding estándar de Breeze para registro público, perfil, confirmación o recuperación de contraseña. No deben conservarse pruebas generadas para rutas que el producto no publica.
+Blapos no usa el scaffolding estándar de Breeze para registro público, perfil, confirmación o recuperación de contraseña. No deben conservarse pruebas generadas para rutas que el producto no publica.
 
 La cobertura vigente comprueba:
 

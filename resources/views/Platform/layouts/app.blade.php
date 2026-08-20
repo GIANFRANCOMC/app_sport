@@ -7,9 +7,10 @@
     <meta name="robots" content="noindex, nofollow, noarchive">
     <meta name="referrer" content="same-origin">
     <meta name="theme-color" content="#0b63a9">
-    <title>@yield('title', 'Clientes | Gympe')</title>
-    <link rel="icon" type="image/x-icon" href="{{ asset('System/assets/img/favicon/favicon.ico') }}">
-    <link rel="shortcut icon" type="image/x-icon" href="{{ asset('System/assets/img/favicon/favicon.ico') }}">
+    <title>@yield('title', 'Clientes | Blapos')</title>
+    <link rel="icon" type="image/png" href="{{ asset('System/assets/img/utils/owner_app/logomark.png') }}">
+    <link rel="shortcut icon" type="image/png" href="{{ asset('System/assets/img/utils/owner_app/logomark.png') }}">
+    <link rel="apple-touch-icon" href="{{ asset('System/assets/img/utils/owner_app/logomark.png') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">

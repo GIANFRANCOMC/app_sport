@@ -56,22 +56,22 @@
                 </header>
                 <div class="platform-modal__body">
                     <div class="row g-3">
-                        <div class="col-md-6"><label class="form-label">Subdominio</label><div class="input-group"><input v-model.trim="form.slug" class="form-control" autocomplete="off" pattern="[a-z0-9](?:[a-z0-9-]{0,58}[a-z0-9])?" required maxlength="60" @input="normalizeSlug"><span class="input-group-text">.gympe.test</span></div><small class="platform-field-help">Solo minúsculas, números y guiones.</small></div>
-                        <div class="col-md-6"><label class="form-label">Documento</label><input v-model.trim="form.document_number" class="form-control" inputmode="numeric" autocomplete="off" required maxlength="20"></div>
-                        <div class="col-md-6"><label class="form-label">Nombre comercial</label><input v-model.trim="form.commercial_name" class="form-control" autocomplete="organization" required maxlength="180"></div>
-                        <div class="col-md-6"><label class="form-label">Razón social</label><input v-model.trim="form.legal_name" class="form-control" required maxlength="220"></div>
+                        <div class="col-md-6"><label class="form-label">Subdominio <span class="platform-required" aria-hidden="true">*</span></label><div class="input-group"><input v-model.trim="form.slug" class="form-control" autocomplete="off" pattern="[a-z0-9](?:[a-z0-9-]{0,58}[a-z0-9])?" required maxlength="60" @input="normalizeSlug"><span class="input-group-text">.blapos.test</span></div><small class="platform-field-help">Solo minúsculas, números y guiones.</small></div>
+                        <div class="col-md-6"><label class="form-label">Documento <span class="platform-required" aria-hidden="true">*</span></label><input v-model.trim="form.document_number" class="form-control" inputmode="numeric" autocomplete="off" required maxlength="20"></div>
+                        <div class="col-md-6"><label class="form-label">Nombre comercial <span class="platform-required" aria-hidden="true">*</span></label><input v-model.trim="form.commercial_name" class="form-control" autocomplete="organization" required maxlength="180"></div>
+                        <div class="col-md-6"><label class="form-label">Razón social <span class="platform-required" aria-hidden="true">*</span></label><input v-model.trim="form.legal_name" class="form-control" required maxlength="220"></div>
                     </div>
                     <div class="platform-modal__section">
                         <strong>Administrador inicial</strong>
                         <div class="row g-3 mt-0">
-                            <div class="col-md-6"><label class="form-label">Nombre</label><input v-model.trim="form.admin_name" class="form-control" autocomplete="name" required maxlength="150"></div>
-                            <div class="col-md-6"><label class="form-label">Correo</label><input v-model.trim="form.admin_email" class="form-control" type="email" autocomplete="email" required maxlength="190"></div>
-                            <div class="col-12"><label class="form-label">Contraseña temporal</label><input v-model="form.admin_password" class="form-control" type="password" autocomplete="new-password" minlength="12" required><small class="platform-field-help">Mínimo 12 caracteres, con mayúscula, minúscula, número y símbolo.</small></div>
+                            <div class="col-md-6"><label class="form-label">Nombre <span class="platform-required" aria-hidden="true">*</span></label><input v-model.trim="form.admin_name" class="form-control" autocomplete="name" required maxlength="150"></div>
+                            <div class="col-md-6"><label class="form-label">Correo <span class="platform-required" aria-hidden="true">*</span></label><input v-model.trim="form.admin_email" class="form-control" type="email" autocomplete="email" required maxlength="190"></div>
+                            <div class="col-md-6"><label class="form-label">Contraseña temporal <span class="platform-required" aria-hidden="true">*</span></label><input v-model="form.admin_password" class="form-control" type="password" autocomplete="new-password" minlength="12" required><small class="platform-field-help">Mínimo 12 caracteres, con mayúscula, minúscula, número y símbolo.</small></div>
+                            <div class="col-md-6"><label class="form-label">Confirmar contraseña <span class="platform-required" aria-hidden="true">*</span></label><input v-model="form.admin_password_confirmation" class="form-control" type="password" autocomplete="new-password" minlength="12" required></div>
                         </div>
                     </div>
                 </div>
                 <footer class="platform-modal__footer">
-                    <span class="platform-help"><i class="fa-solid fa-shield-halved"></i> La operación queda auditada.</span>
                     <div><button class="btn platform-btn-subtle" type="button" :disabled="creating" @click="closeCreateModal">Cancelar</button><button class="btn platform-btn-primary platform-action-button text-white" :disabled="creating"><span v-if="creating" class="spinner-border spinner-border-sm"></span><i v-else class="fa-solid fa-wand-magic-sparkles"></i><span>{{ creating ? "Creando organización…" : "Crear cliente" }}</span></button></div>
                 </footer>
             </form>
@@ -127,7 +127,6 @@ export default {
             this.creating = true;
             window.addEventListener("beforeunload", this.preventUnload);
             try {
-                this.form.admin_password_confirmation = this.form.admin_password;
                 const {data} = await api.post(this.apiBase, this.form);
                 this.$emit("notify", data.message); this.form = emptyForm(); this.showCreate = false; await this.loadTenants(1);
             } catch(error) { this.$emit("notify", {type: "danger", message: errorMessage(error, "No fue posible crear el cliente.")}); }

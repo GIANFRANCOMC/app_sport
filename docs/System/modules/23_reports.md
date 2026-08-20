@@ -23,7 +23,7 @@ Genera reportes y exportes de clientes, items, sucursales, ventas, usuarios y co
 
 - Todos los queries se filtran por `company_id` y, cuando corresponde, por sucursales autorizadas.
 - `reports.export_max_rows` rechaza exportaciones excesivas con un mensaje accionable.
-- Los archivos usan `gympe-{recurso}-{Ymd-His}.{extensión}`.
+- Los archivos usan `blapos-{recurso}-{Ymd-His}.{extensión}`.
 - Ventas admite `by_month`, `range_months`, `by_date` y `range_dates`; clientes, usuarios, items y sucursales aceptan sus filtros documentados por endpoint.
 - La vista usa `FiltersSection` como barra principal: selector de reporte, búsqueda rápida, acción de exportar/consultar y filtros avanzados mediante slot, manteniendo la misma estructura visual de Productos y demás módulos migrados.
 - La exportación usa `Requests.download`, muestra Swal de carga y conserva el nombre de archivo entregado por el backend.

@@ -1,4 +1,4 @@
-# Guia para pedir cambios en Gympe
+# Guia para pedir cambios en Blapos
 
 Este archivo describe como dar requerimientos para que Codex pueda modificar el proyecto con menos ambiguedad y menor riesgo.
 

@@ -35,7 +35,7 @@ class ReportController extends BaseController {
 
     private function exportFileName(string $resource, string $extension = "xlsx"): string {
 
-        return sprintf("gympe-%s-%s.%s", $resource, now()->format("Ymd-His"), $extension);
+        return sprintf("blapos-%s-%s.%s", $resource, now()->format("Ymd-His"), $extension);
 
     }
 

@@ -33,12 +33,20 @@
                 </div>
 
                 <aside>
+                    <div class="platform-card platform-status-card mb-4">
+                        <div class="platform-card__head"><div><strong>Estado del cliente</strong><p class="platform-subtitle">Controla el acceso operativo de esta organización.</p></div></div>
+                        <div class="platform-card__body platform-tenant-status-bar">
+                            <div><span>El estado actual es</span><strong :class="`is-${tenant.status}`">{{ statusLabel(tenant.status) }}</strong></div>
+                            <button class="btn platform-btn-subtle" type="button" :disabled="loadingStatus" @click="openStatusModal"><i :class="loadingStatus ? 'fa-solid fa-spinner fa-spin me-1' : 'fa-solid fa-pen-to-square me-1'"></i>{{ loadingStatus ? "Consultando" : "Cambiar estado" }}</button>
+                        </div>
+                    </div>
+
                     <div class="platform-card mb-4">
                         <div class="platform-card__head"><div><strong>Publicar aviso</strong><p class="platform-subtitle">Comunicación visible para los usuarios del tenant.</p></div></div>
                         <form class="platform-card__body" @submit.prevent="publishAnnouncement">
-                            <div class="mb-3"><label class="form-label">Título</label><input v-model.trim="announcementForm.title" class="form-control" maxlength="180" required></div>
-                            <div class="mb-3"><label class="form-label">Mensaje</label><textarea v-model.trim="announcementForm.message" class="form-control platform-announcement-message" rows="4" maxlength="2000" required></textarea></div>
-                            <div class="row g-2"><div class="col-6"><label class="form-label">Tipo</label><select v-model="announcementForm.severity" class="form-select"><option value="info">Información</option><option value="success">Éxito</option><option value="warning">Advertencia</option><option value="danger">Importante</option></select></div><div class="col-6 d-flex align-items-end pb-1"><label :class="['platform-toggle-check', {'is-checked': announcementForm.dismissible}]"><input v-model="announcementForm.dismissible" class="platform-check__input" type="checkbox"><span class="platform-check__box" aria-hidden="true"><i class="fa-solid fa-check"></i></span><span><strong>Descartable</strong><small>El usuario podrá cerrar el aviso</small></span></label></div><div class="col-6"><label class="form-label">Desde</label><input v-model="announcementForm.starts_at" class="form-control" type="datetime-local"></div><div class="col-6"><label class="form-label">Hasta</label><input v-model="announcementForm.ends_at" class="form-control" type="datetime-local"></div></div>
+                            <div class="mb-3"><label class="form-label">Título <span class="platform-required" aria-hidden="true">*</span></label><input v-model.trim="announcementForm.title" class="form-control" maxlength="180" required></div>
+                            <div class="mb-3"><label class="form-label">Mensaje <span class="platform-required" aria-hidden="true">*</span></label><textarea v-model.trim="announcementForm.message" class="form-control platform-announcement-message" rows="4" maxlength="2000" required></textarea></div>
+                            <div class="row g-2"><div class="col-6"><label class="form-label">Tipo <span class="platform-required" aria-hidden="true">*</span></label><select v-model="announcementForm.severity" class="form-select" required><option value="info">Información</option><option value="success">Éxito</option><option value="warning">Advertencia</option><option value="danger">Importante</option></select></div><div class="col-6 d-flex align-items-end pb-1"><label :class="['platform-toggle-check', {'is-checked': announcementForm.dismissible}]"><input v-model="announcementForm.dismissible" class="platform-check__input" type="checkbox"><span class="platform-check__box" aria-hidden="true"><i class="fa-solid fa-check"></i></span><span><strong>Descartable</strong><small>El usuario podrá cerrar el aviso</small></span></label></div><div class="col-6"><label class="form-label">Desde</label><input v-model="announcementForm.starts_at" class="form-control" type="datetime-local"></div><div class="col-6"><label class="form-label">Hasta</label><input v-model="announcementForm.ends_at" class="form-control" type="datetime-local"></div></div>
                             <button class="btn platform-btn-primary w-100 mt-3" :disabled="publishing"><span v-if="publishing" class="spinner-border spinner-border-sm me-1"></span>{{ publishing ? "Publicando…" : "Publicar aviso" }}</button>
                         </form>
                     </div>
@@ -57,11 +65,6 @@
                 </aside>
             </div>
 
-            <div class="platform-tenant-status-bar">
-                <div><span>El estado actual es</span><strong :class="`is-${tenant.status}`">{{ statusLabel(tenant.status) }}</strong></div>
-                <button class="btn platform-btn-subtle" type="button" :disabled="loadingStatus" @click="openStatusModal"><i :class="loadingStatus ? 'fa-solid fa-spinner fa-spin me-1' : 'fa-solid fa-pen-to-square me-1'"></i>{{ loadingStatus ? "Consultando" : "Cambiar estado" }}</button>
-            </div>
-
             <div v-if="showStatusModal" class="platform-modal" role="dialog" aria-modal="true" aria-labelledby="tenantStatusTitle" @mousedown.self="closeStatusModal">
                 <form class="platform-modal__dialog platform-modal__dialog--small" @submit.prevent="saveStatus">
                     <header class="platform-modal__head">
@@ -72,7 +75,7 @@
                         <button class="platform-icon-button" type="button" aria-label="Cerrar" :disabled="savingStatus" @click="closeStatusModal"><i class="fa-solid fa-xmark"></i></button>
                     </header>
                     <div class="platform-modal__body">
-                        <label class="form-label">Nuevo estado</label>
+                        <label class="form-label">Nuevo estado <span class="platform-required" aria-hidden="true">*</span></label>
                         <select v-model="statusForm" class="form-select" required>
                             <option value="active">Activo</option>
                             <option value="inactive">Inactivo</option>
@@ -81,7 +84,6 @@
                         <p class="platform-status-help">Actualmente está <strong>{{ statusLabel(tenant.status).toLowerCase() }}</strong>.</p>
                     </div>
                     <footer class="platform-modal__footer">
-                        <span class="platform-help"><i class="fa-solid fa-shield-halved"></i> La modificación quedará auditada.</span>
                         <div><button class="btn platform-btn-subtle" type="button" :disabled="savingStatus" @click="closeStatusModal">Cancelar</button><button class="btn platform-btn-primary" :disabled="savingStatus || statusForm === tenant.status"><span v-if="savingStatus" class="spinner-border spinner-border-sm me-1"></span>{{ savingStatus ? "Actualizando…" : "Actualizar estado" }}</button></div>
                     </footer>
                 </form>

@@ -115,7 +115,7 @@ final class UserAttendanceController extends BaseController {
 
         return response("\xEF\xBB\xBF".$csv, 200, [
             "Content-Type" => "text/csv; charset=UTF-8",
-            "Content-Disposition" => "attachment; filename=gympe-asistencia-laboral-".now()->format("Ymd-His").".csv",
+            "Content-Disposition" => "attachment; filename=blapos-asistencia-laboral-".now()->format("Ymd-His").".csv",
         ]);
 
     }

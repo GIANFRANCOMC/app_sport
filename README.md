@@ -1,4 +1,4 @@
-# Gympe
+# Blapos
 
 Plataforma multiempresa para ventas, POS, clientes, membresías, asistencias, catálogo, inventario, compras, caja, activos, biometría, restaurantes y servicios en curso.
 
@@ -59,7 +59,7 @@ Empieza en [docs/README.md](docs/README.md). Las referencias principales son:
 
 ## Desarrollo
 
-- No ejecutes Gympe desde el dominio raíz; usa un subdominio registrado.
+- No ejecutes Blapos desde el dominio raíz; usa un subdominio registrado.
 - No compartas `SESSION_DOMAIN` entre tenants.
 - No almacenes credenciales tenant en la base landlord.
 - No confíes en `company_id` enviado por frontend.
