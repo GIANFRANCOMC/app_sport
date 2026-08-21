@@ -94,7 +94,7 @@ php artisan platform:install
 php artisan tenant:create demo --admin-password="una-clave-segura"
 ```
 
-`platform:install` ejecuta todas las migraciones de `database/migrations/landlord` y crea el administrador configurado. Debe ejecutarse antes de cualquier `tenant:create`.
+`platform:install` crea la base landlord cuando falta, ejecuta todas las migraciones de `database/migrations/landlord` y crea el administrador configurado. Debe ejecutarse antes de cualquier `tenant:create`.
 
 ## Convenciones futuras
 
@@ -102,7 +102,7 @@ php artisan tenant:create demo --admin-password="una-clave-segura"
 2. Los listados deben paginar y seleccionar solo las columnas visibles.
 3. Las acciones deben devolver JSON y mantener un estado de carga local.
 4. Las escrituras por colección deben usar operaciones masivas con una restricción única coherente.
-5. La base landlord nunca se modifica dinámicamente fuera de migraciones.
+5. `platform:install` puede crear el contenedor de base landlord; sus tablas solo se modifican mediante migraciones.
 6. Toda consulta a una base tenant debe liberar la conexión en `finally`.
 7. El acceso directo y los botones atrás/adelante del navegador deben seguir funcionando.
 

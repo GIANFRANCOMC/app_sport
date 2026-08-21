@@ -8,7 +8,7 @@ Esta carpeta es la memoria funcional y tecnica del proyecto. Esta separada en do
 ## Orden recomendado de lectura
 
 1. [PROJECT_CONTEXT.md](PROJECT_CONTEXT.md): vision general del producto.
-2. [installation/README.md](installation/README.md): instalación, comandos, desarrollo, producción y operación.
+2. [1-Instalation.md](1-Instalation.md): instalación, comandos, desarrollo, producción y operación.
 3. [GENERALIDADES.md](GENERALIDADES.md): reglas transversales de arquitectura, UI, branding, cache, migraciones y documentacion.
 4. [System/README.md](System/README.md): entrada a la plataforma interna.
 5. [System/ARCHITECTURE.md](System/ARCHITECTURE.md): arquitectura tecnica de System.

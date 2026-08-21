@@ -1,6 +1,6 @@
 # Desarrollo local por subdominios
 
-> La instalación y los comandos canónicos están centralizados en [docs/installation/README.md](../../installation/README.md). Este archivo se limita a la configuración local de subdominios.
+> La instalación y los comandos canónicos están centralizados en [docs/1-Instalation.md](../../1-Instalation.md). Este archivo se limita a la configuración local de subdominios.
 
 ## Regla
 

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use App\Services\System\Tenancy\{LandlordDatabaseProvisioner};
 use Database\Seeders\{LandlordPlatformSeeder};
 use Illuminate\Console\{Command};
 use Illuminate\Support\Facades\{Artisan};
@@ -11,9 +12,15 @@ use Illuminate\Support\Facades\{Artisan};
 final class InstallPlatformAdministration extends Command {
     protected $signature = "platform:install";
 
-    protected $description = "Prepara landlord y crea el administrador inicial del panel app.";
+    protected $description = "Crea y prepara landlord, luego configura el administrador inicial del panel app.";
 
-    public function handle(): int {
+    public function handle(LandlordDatabaseProvisioner $databaseProvisioner): int {
+
+        if($databaseProvisioner->ensureExists()) {
+
+            $this->components->info("Base landlord creada correctamente.");
+
+        }
 
         $migrationResult = Artisan::call("migrate", [
             "--database" => (string) config("tenancy.landlord_connection", "landlord"),

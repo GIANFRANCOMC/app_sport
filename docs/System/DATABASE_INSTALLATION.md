@@ -1,6 +1,6 @@
 # Instalación y aprovisionamiento de base de datos
 
-> La secuencia completa de clonación, instalación, desarrollo, producción y referencia de comandos vive en [docs/installation/README.md](../installation/README.md). Este archivo conserva únicamente las reglas internas del esquema y aprovisionamiento.
+> La secuencia completa de clonación, instalación, desarrollo, producción y referencia de comandos vive en [docs/1-Instalation.md](../1-Instalation.md). Este archivo conserva únicamente las reglas internas del esquema y aprovisionamiento.
 
 ## Objetivo
 

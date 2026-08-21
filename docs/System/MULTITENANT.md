@@ -1,6 +1,6 @@
 # System - Arquitectura multi-tenant por subdominio
 
-> Para secuencias ejecutables de instalación, desarrollo, producción y referencia completa de comandos, consultar la [guía unificada](../installation/README.md). Este documento define la arquitectura y las reglas de tenancy.
+> Para secuencias ejecutables de instalación, desarrollo, producción y referencia completa de comandos, consultar la [guía unificada](../1-Instalation.md). Este documento define la arquitectura y las reglas de tenancy.
 
 ## Resumen
 
